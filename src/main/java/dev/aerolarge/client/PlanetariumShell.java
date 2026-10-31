@@ -27,7 +27,10 @@ final class PlanetariumShell {
     private static final float TWINKLE_SPEED = 0.07F;
     /** How far its brightness dips as it twinkles, a share of its brightest. */
     private static final float TWINKLE_DEPTH = 0.45F;
-    /** How big a twinkling star is, from its middle to its points, as a share of the dome's radius, and at least and most. */
+    /**
+     * How big a twinkling star is, from its middle to its points, as a share of the dome's radius, and at least and
+     * most.
+     */
     private static final float SPARKLE_SHARE = 0.025F;
     private static final float SPARKLE_LEAST = 0.12F;
     private static final float SPARKLE_MOST = 0.4F;
@@ -88,8 +91,9 @@ final class PlanetariumShell {
             1);
     }
 
-    /** The twinkling stars over the sky, as bright as each is at this moment of the game's time, in ticks. */
-    static void sparkles(OrreryDome dome, OrreryBrush glow, OrreryBrush.Facing facing, float ticks) {
+    /** The twinkling stars over the sky, as bright as each is at this moment of the game's time. */
+    static void sparkles(OrreryDome dome, OrreryBrush glow, OrreryBrush.Facing facing, OrreryClock clock) {
+        float ticks = clock.ticks();
         float size = Mth.clamp(dome.outer() * SPARKLE_SHARE, SPARKLE_LEAST, SPARKLE_MOST);
         for (int i = 0; i < SPARKLES; i++) {
             float strength = 1 - TWINKLE_DEPTH * (0.5F + 0.5F * Mth.sin(ticks * TWINKLE_SPEED + i));

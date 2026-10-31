@@ -23,6 +23,18 @@ public class OrreryBlockEntity extends BlockEntity {
     /** How far down its sun hangs and how far out its planets circle, in blocks, for one built without them. */
     private static final double DEFAULT_DROP = 6;
     private static final double DEFAULT_REACH = 3;
+    /**
+     * The furthest an orrery's outermost planet circles from its sun, in blocks, so that all of it reads at once from
+     * the cockpit under it; and the least worth hanging one for, under which only the dome's planetarium is drawn.
+     */
+    public static final double REACH_MOST = 6;
+    public static final double REACH_LEAST = 1.5;
+    /** How far out the orrery reaches for each block its outermost planet circles out, a share: its ecliptic hoop. */
+    public static final double EXTENT = 1.2;
+    /** How far inside the edge of the hole under the dome Saturn circles, in blocks, so he is seen through it. */
+    private static final double OCULUS_CLEAR = 0.5;
+    /** How far inside the dome's lining the orrery's outermost part keeps, in blocks. */
+    private static final double LINING_CLEAR = 0.2;
 
     private double drop = DEFAULT_DROP;
     private double reach = DEFAULT_REACH;
@@ -48,12 +60,21 @@ public class OrreryBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * How far out an orrery's outermost planet circles in a dome, in blocks: no further than the most, inside the hole
+     * under the dome, so wide from her axis to its edge, and with all of it inside the dome's lining, so far out from
+     * her axis round the sun. The same as she is built and on the clients, which measure the dome for themselves.
+     */
+    public static double reachIn(double oculus, double room) {
+        return Math.min(REACH_MOST, Math.min(oculus - OCULUS_CLEAR, (room - LINING_CLEAR) / EXTENT));
+    }
+
     /** How far down from the mount's middle the sun hangs, in blocks. */
     public double drop() {
         return drop;
     }
 
-    /** How far out from the sun the outermost planet circles, in blocks. */
+    /** How far out from the sun the outermost planet circles, in blocks; none where only the planetarium is drawn. */
     public double reach() {
         return reach;
     }

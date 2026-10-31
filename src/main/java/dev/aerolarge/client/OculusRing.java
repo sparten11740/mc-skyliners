@@ -13,13 +13,14 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 /**
  * The machined ring round the hole in the ring of ceiling over the rocket's cockpit (see {@link OrreryDome}), which
  * turns the stepped edge of that hole into one crisp circle: a band of dark gunmetal standing just inside the hole's
- * nearest blocks, from the ceiling's underside to a little over its top, with brass lips along its top and bottom, and a
- * flange out over the ceiling on either side covering the steps behind it.
+ * nearest blocks, from the ceiling's underside to a little over its top, with brass lips along its top and bottom, and
+ * a flange out over the ceiling on either side covering the steps behind it.
  *
- * <p>Round its middle thirty lamps show what her autopilot is doing, without a word and never flashing faster than three
- * times a second: a dim cyan while it is off; through her countdown, a tenth of the ring turning from red to green with
- * each second launch control counts, all of it a slowly breathing red while the count waits to begin; a white light
- * chasing round as she lifts off and climbs; a slow blue breathing in space; and an amber pulse as she comes down.
+ * <p>Round its middle thirty lamps show what her autopilot is doing, without a word and never flashing faster than
+ * three times a second: a dim cyan while it is off; through her countdown, a tenth of the ring turning from red to
+ * green with each second launch control counts, all of it a slowly breathing red while the count waits to begin; a
+ * white light chasing round as she lifts off and climbs; a slow blue breathing in space; and an amber pulse as she
+ * comes down.
  */
 public final class OculusRing {
     /** How many flat faces go round the band, and how many lamps, one on every other face. */
@@ -33,7 +34,9 @@ public final class OculusRing {
     private static final float NARROWEST = 1;
     /** How far over the ring of ceiling's top the band stands, in blocks. */
     private static final float RISE = 0.1F;
-    /** How far under the ring of ceiling's underside the band's foot and its flange are, in blocks, so neither flickers. */
+    /**
+     * How far under the ring of ceiling's underside the band's foot and its flange are, in blocks, so neither flickers.
+     */
     private static final float UNDER = 0.004F;
     /** How tall the brass lips along the band's top and bottom are, in blocks. */
     private static final float LIP = 0.12F;
@@ -172,43 +175,44 @@ public final class OculusRing {
         brush.vertex(x0, high, z0, patch.u(0), patch.v(0), r, g, b);
     }
 
-    /** The lamps' light, as her autopilot's flight has them at this moment of the game's time, in ticks. */
-    static void lamps(OrreryDome dome, OrreryBrush glow, @Nullable AutopilotBlockEntity autopilot, float ticks) {
+    /** The lamps' light, as her autopilot's flight has them at this moment of the game's time. */
+    static void lamps(OrreryDome dome, OrreryBrush glow, @Nullable AutopilotBlockEntity autopilot, OrreryClock clock) {
         float radius = dome.oculus() - INSET;
         float middle = dome.floor() + (1 + RISE - UNDER) / 2;
         float[] colour = new float[3];
         for (int lamp = 0; lamp < LAMPS; lamp++) {
-            lit(autopilot, lamp, ticks, colour);
+            lit(autopilot, lamp, clock, colour);
             window(glow, 2 * lamp, radius, middle, LIGHT_OFF, OrreryGlow.LAMP, colour[0], colour[1], colour[2]);
         }
     }
 
     /** How a lamp is lit, into the colour given, by her autopilot's phase; dim cyan for none. */
-    private static void lit(@Nullable AutopilotBlockEntity autopilot, int lamp, float ticks, float[] colour) {
+    private static void lit(@Nullable AutopilotBlockEntity autopilot, int lamp, OrreryClock clock, float[] colour) {
         AutopilotBlockEntity.Phase phase = autopilot == null ? AutopilotBlockEntity.Phase.OFF : autopilot.phase();
         switch (phase) {
             case OFF -> shade(colour, CYAN, IDLE);
             case TAKEOFF -> {
                 if (autopilot.rocketThrust() > 0) {
-                    shade(colour, WHITE, chased(lamp, ticks));
+                    shade(colour, WHITE, chased(lamp, clock));
                 } else {
-                    counting(lamp, ticks, colour);
+                    counting(lamp, clock, colour);
                 }
             }
-            case CLIMB -> shade(colour, WHITE, chased(lamp, ticks));
-            case CRUISE -> shade(colour, BLUE, breathing(ticks, SPACE_BREATH));
-            case DESCENT, LAND, ROLLOUT -> shade(colour, AMBER, breathing(ticks, PULSE));
+            case CLIMB -> shade(colour, WHITE, chased(lamp, clock));
+            case CRUISE -> shade(colour, BLUE, breathing(clock, SPACE_BREATH));
+            case DESCENT, LAND, ROLLOUT -> shade(colour, AMBER, breathing(clock, PULSE));
         }
     }
 
     /**
-     * A lamp through her countdown: green for each second launch control has counted, its tenth of the ring turning from
-     * red to green through its second, red for those to come; all red, breathing slowly, while the count waits to begin.
+     * A lamp through her countdown: green for each second launch control has counted, its tenth of the ring turning
+     * from red to green through its second, red for those to come; all red, breathing slowly, while the count waits to
+     * begin.
      */
-    private static void counting(int lamp, float ticks, float[] colour) {
-        float since = ticks - heardAt;
+    private static void counting(int lamp, OrreryClock clock, float[] colour) {
+        float since = clock.since(heardAt);
         if (heardLeft < 0 || since < 0 || since > COUNT_HEARD_FOR) {
-            shade(colour, RED, breathing(ticks, WAITING_BREATH));
+            shade(colour, RED, breathing(clock, WAITING_BREATH));
             return;
         }
         float counted = COUNT_FROM - heardLeft + since / SharedConstants.TICKS_PER_SECOND;
@@ -220,16 +224,16 @@ public final class OculusRing {
     }
 
     /** How bright a lamp is as the white light chases round the ring, its tail fading behind it. */
-    private static float chased(int lamp, float ticks) {
-        float head = (ticks / CHASE % 1) * LAMPS;
+    private static float chased(int lamp, OrreryClock clock) {
+        float head = clock.turned(CHASE) / Mth.TWO_PI * LAMPS;
         float behind = Mth.positiveModulo(head - lamp, LAMPS) / LAMPS;
         float tail = Math.max(0, 1 - behind / TAIL);
         return CHASE_FLOOR + (1 - CHASE_FLOOR) * tail * tail;
     }
 
     /** How bright a lamp breathing or pulsing once in so many ticks is now. */
-    private static float breathing(float ticks, float period) {
-        return Mth.lerp(0.5F + 0.5F * Mth.sin(Mth.TWO_PI * ticks / period), DIMMEST, 1);
+    private static float breathing(OrreryClock clock, float period) {
+        return Mth.lerp(0.5F + 0.5F * Mth.sin(clock.turned(period)), DIMMEST, 1);
     }
 
     private static void shade(float[] colour, float[] of, float brightness) {

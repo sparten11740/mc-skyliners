@@ -48,6 +48,15 @@ record OrreryBrush(VertexConsumer consumer, PoseStack.Pose pose) {
             Matrix3f back = new Matrix3f(pose.normal()).transpose();
             return new Facing(back.transform(camera.getLeftVector(), new Vector3f()), back.transform(camera.getUpVector(), new Vector3f()));
         }
+
+        /** The same, turned so far about the way to the camera, in radians: a square drawn by it turns in place. */
+        Facing turned(float angle) {
+            float cos = (float) Math.cos(angle);
+            float sin = (float) Math.sin(angle);
+            Vector3f turnedLeft = new Vector3f(left).mul(cos).add(new Vector3f(up).mul(sin));
+            Vector3f turnedUp = new Vector3f(up).mul(cos).sub(new Vector3f(left).mul(sin));
+            return new Facing(turnedLeft, turnedUp);
+        }
     }
 
     /**

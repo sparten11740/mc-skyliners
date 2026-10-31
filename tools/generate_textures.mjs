@@ -5518,47 +5518,11 @@ foodLabTextures();
 
 orreryTextures();
 
-// The rocket's orrery (see OrreryRenderer): its brass, for the mount's model too, and its sheet of sixteen-pixel
-// patches: the brass, the sun, white-hot at its middle and orange at its rim with hot spots, and each planet's surface,
-// cratered grey Mercury, cream Venus in soft swirls, the Earth's blue seas, green and brown land, white clouds and
-// poles, rusty Mars with its polar cap, Jupiter's bands and great red spot, and Saturn's pale gold bands; under them
-// the moon's cratered grey and Saturn's ring, gold and tan bands round a clear middle.
+// The rocket's orrery's mount (see OrreryBlock): polished brass, lit from its top left, for its model.
 function orreryTextures() {
-  const PATCH = 16;
-  const hash = (x, y) => (((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000 / 1000;
   const blend = (from, to, t) => from.map((c, i) => Math.round(c + (to[i] - c) * Math.max(0, Math.min(1, t))));
-  const middle = (x, y) => Math.hypot(x - 7.5, y - 7.5);
   const BRASS = [200, 154, 72];
   const brass = (x, y) => (x + y < 9 ? blend(BRASS, [244, 214, 140], 0.6) : x + y > 24 ? blend(BRASS, [120, 84, 30], 0.5) : BRASS);
-  const cratered = (base, seed) => (x, y) => (hash(x * 5 + seed, y * 7 + seed) < 0.12 ? blend(base, [40, 40, 44], 0.35) : base);
-  const PATCHES = [
-    brass,
-    (x, y) => (hash(x * 3, y * 11) < 0.08 ? [255, 255, 220] : blend([255, 250, 200], [255, 150, 40], middle(x, y) / 9)),
-    cratered([150, 146, 142], 11),
-    (x, y) => blend([238, 222, 168], [214, 188, 128], (Math.sin(y * 0.8 + x * 0.3) + 1) / 2),
-    (x, y) => {
-      if (y < 2 || y > 13) return [240, 246, 250];
-      const land = Math.sin(x * 0.7) + Math.sin(y * 0.9 + x * 0.2) + Math.sin((x + y) * 0.45);
-      if (hash(x * 9, y * 13) < 0.06) return [244, 248, 252];
-      return land > 0.4 ? (land > 1.6 ? [134, 108, 62] : [62, 140, 64]) : [36, 92, 196];
-    },
-    (x, y) => (y < 2 ? [236, 230, 224] : hash(x * 7, y * 3) < 0.2 ? [140, 52, 30] : [196, 86, 46]),
-    (x, y) => {
-      if (Math.hypot((x - 10) / 2, y - 10) < 1.3) return [190, 70, 50];
-      return [[214, 186, 142], [238, 222, 192], [170, 120, 80], [226, 204, 166]][Math.floor(y / 2) % 4];
-    },
-    (x, y) => [[232, 208, 146], [214, 184, 120], [240, 222, 170]][Math.floor(y / 3) % 3],
-    cratered([186, 186, 184], 23),
-    (x, y) => {
-      const out = middle(x, y);
-      if (out < 4.5 || out > 7.8) return [0, 0, 0, 0];
-      return out < 5.6 ? [214, 186, 128] : out < 6.4 ? [180, 150, 100] : [232, 212, 160];
-    },
-  ];
-  texture(blockOutput, "orrery", (x, y) => {
-    const paint = PATCHES[Math.floor(y / PATCH) * 8 + Math.floor(x / PATCH)];
-    return paint ? paint(x % PATCH, y % PATCH) : [0, 0, 0, 0];
-  }, 5, PATCH * 8, PATCH * 2);
   texture(blockOutput, "orrery_brass", brass, 4);
 }
 
@@ -5606,15 +5570,18 @@ function cloudNoise([x, y, z], scale, octaves) {
 // tip. It is the real northern sky, squeezed so that it reaches from the pole at the tip down past Orion at the foot,
 // and laid as it is seen from inside, not mirrored.
 function domeSkyTexture() {
-  const WIDTH = 512;
-  const HEIGHT = 256;
+  // How many pixels the sky has for each of a 512 by 256 picture's: fine enough that a star is a point of light even
+  // in the biggest rocket's dome, and the clouds of the Milky Way are smooth.
+  const DETAIL = 2;
+  const WIDTH = 512 * DETAIL;
+  const HEIGHT = 256 * DETAIL;
   const DEGREE = Math.PI / 180;
   // How much of the dome's height, tip to foot, a degree of the sky's from the pole takes: under 1, so the dome's foot
   // reaches south past the celestial equator, down to Orion and beyond.
   const SQUEEZE = 0.7;
   // How big the constellations are drawn, in pixels for a degree of the sky either way: the dome's pixels are about
   // square on it, each row's as long as it is round there, so a figure keeps its shape at any height.
-  const FIGURE = 1.6;
+  const FIGURE = 1.6 * DETAIL;
   const FOOT = [0x0f, 0x1a, 0x3a];
   const TIP = [0x04, 0x06, 0x0e];
   const LINE = [0x7a, 0x62, 0x30];
@@ -5626,10 +5593,13 @@ function domeSkyTexture() {
   // How likely each of those colours is, in the same order.
   const STAR_SHARES = [0.4, 0.35, 0.15, 0.1];
   // How many stars are scattered all over, and how many more are tried along the Milky Way, kept as thickly as it glows.
-  const SCATTERED = 2600;
-  const BAND_TRIED = 2400;
-  // The share of the stars, the brightest, drawn as a little cross.
+  const SCATTERED = 2000;
+  const BAND_TRIED = 1800;
+  // The share of the stars, the brightest, drawn as a little cross, and the next brightest, as a smaller one.
   const CROSSED = 0.01;
+  const GLINTING = 0.05;
+  // How bright the faintest star is, a share of the brightest.
+  const FAINTEST = 0.2;
   // The north galactic pole, in degrees of right ascension and declination: the Milky Way runs round its great circle.
   const GALACTIC_POLE = [192.86, 27.13];
   // How strongly the gold lines and the nebula show over the sky, a share.
@@ -5728,30 +5698,33 @@ function domeSkyTexture() {
     return [middleX - (east * FIGURE) / Math.cos(lat * DEGREE), y];
   }
 
-  // A gold line between two stars, round the shorter way, stopping short of each.
+  // A gold line between two stars, round the shorter way, stopping short of each, as many pixels wide as the detail.
   function line([x0, y0], [x1, y1]) {
     let dx = x1 - x0;
     if (Math.abs(dx) > WIDTH / 2) dx -= Math.sign(dx) * WIDTH;
     const dy = y1 - y0;
     const length = Math.hypot(dx, dy);
-    const GAP = 2.5;
+    const GAP = 2.5 * DETAIL;
     for (let s = GAP; s <= length - GAP; s += 0.3) {
-      const x = ((Math.round(x0 + (dx * s) / length) % WIDTH) + WIDTH) % WIDTH;
-      const y = Math.round(y0 + (dy * s) / length);
-      if (y >= 0 && y < HEIGHT) lines[y * WIDTH + x] = 1;
+      for (let thick = 0; thick < DETAIL * DETAIL; thick++) {
+        const x = ((Math.floor(x0 + (dx * s) / length) + (thick % DETAIL)) % WIDTH + WIDTH) % WIDTH;
+        const y = Math.floor(y0 + (dy * s) / length) + Math.floor(thick / DETAIL);
+        if (y >= 0 && y < HEIGHT) lines[y * WIDTH + x] = 1;
+      }
     }
   }
 
-  // Orion's nebula: a soft pink glow, a little wider than tall, its clouds uneven, a hot white point at its heart.
+  // Orion's nebula: a soft pink glow, a little wider than tall, its clouds uneven.
   const orion = FIGURES[0];
   const [nebulaX, nebulaY] = place(orion.centre, ...orion.nebula);
-  for (let dy = -7; dy <= 7; dy++) {
-    for (let dx = -9; dx <= 9; dx++) {
-      const r = Math.hypot(dx / 1.3, dy) / 7;
+  const NEBULA_SIZE = 7 * DETAIL;
+  for (let dy = -NEBULA_SIZE; dy <= NEBULA_SIZE; dy++) {
+    for (let dx = -2 * NEBULA_SIZE; dx <= 2 * NEBULA_SIZE; dx++) {
+      const r = Math.hypot(dx / 1.3, dy) / NEBULA_SIZE;
       const x = ((Math.round(nebulaX) + dx) % WIDTH + WIDTH) % WIDTH;
       const y = Math.round(nebulaY) + dy;
       if (r >= 1 || y < 0 || y >= HEIGHT) continue;
-      const strength = NEBULA_STRENGTH * (1 - r) ** 2 * (0.6 + 0.6 * cloudNoise([x / 9, y / 9, 1.5], 1, 3));
+      const strength = NEBULA_STRENGTH * (1 - r) ** 2 * (0.6 + 0.6 * cloudNoise([x / (9 * DETAIL), y / (9 * DETAIL), 1.5], 1, 3));
       sky[y][x] = sky[y][x].map((c, i) => c + NEBULA[i] * strength);
     }
   }
@@ -5774,38 +5747,53 @@ function domeSkyTexture() {
   }
   stars.sort((a, b) => b.bright - a.bright);
   const crossed = Math.round(stars.length * CROSSED);
+  const glinting = Math.round(stars.length * GLINTING);
   stars.forEach((star, i) => {
     const x = Math.floor(star.u * WIDTH);
     const y = Math.min(HEIGHT - 1, Math.floor((1 - star.lat / (Math.PI / 2)) * HEIGHT));
-    starAt(x, y, star.colour, i < crossed ? 1 : 0.27 + 0.73 * star.bright, i < crossed);
+    const arms = i < crossed ? DETAIL : i < glinting ? 1 : 0;
+    starAt(x, y, star.colour, i < crossed ? 1 : FAINTEST + (1 - FAINTEST) * star.bright, arms);
   });
-  placed.flat().forEach(([x, y, bright]) => starAt(Math.floor(x), Math.floor(y), STAR_COLOURS[1], bright, bright >= 0.8));
+  placed.flat().forEach(([x, y, bright]) => starAt(Math.floor(x), Math.floor(y), STAR_COLOURS[1], bright, bright >= 0.8 ? DETAIL : 1));
 
-  // A star: a point of its colour at its brightness, or a little cross, its arms half as bright.
-  function starAt(x, y, colour, bright, cross) {
+  // A star: a point of its colour at its brightness, with a little cross of arms so many pixels long, fading out.
+  function starAt(x, y, colour, bright, arms) {
     const light = (px, py, share) => {
       if (py < 0 || py >= HEIGHT) return;
       const wrapped = (px % WIDTH + WIDTH) % WIDTH;
       sky[py][wrapped] = sky[py][wrapped].map((c, i) => Math.max(c, colour[i] * share));
     };
     light(x, y, bright);
-    if (cross) {
-      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => light(x + dx, y + dy, bright * 0.5));
+    for (let out = 1; out <= arms; out++) {
+      const share = bright * 0.55 ** out;
+      [[out, 0], [-out, 0], [0, out], [0, -out]].forEach(([dx, dy]) => light(x + dx, y + dy, share));
     }
   }
 
   // The pole star at the very tip, where the top rows close round to a point.
   for (let x = 0; x < WIDTH; x++) {
-    sky[0][x] = [235, 240, 255];
-    sky[1][x] = mix(sky[1][x], [235, 240, 255], 0.6);
+    for (let row = 0; row < 2 * DETAIL; row++) {
+      sky[row][x] = row < DETAIL ? [235, 240, 255] : mix(sky[row][x], [235, 240, 255], 0.6);
+    }
   }
   writeFileSync(resolve(miscOutput, "dome_sky.png"), encodePng(sky.map((row) => row.map((c) => c.map((v) => clamp(Math.round(v)))))));
 }
 
 // The sheet the orrery's renderer draws the solid parts of the orrery and its dome from (see OrrerySheet), 256 by 128,
-// each picture at its place on it: polished brass, brushed along, at 160, 32; the dark gunmetal of the machined ring
-// round the hole over the cockpit, fine bright lines turned round it, at 224, 32; and a lamp's window in that ring,
-// smoked glass in a bright bezel, at 128, 64, 16 across.
+// each picture at its place on it. The sun and the planets are each painted once round (left to right) from the north
+// pole (top) to the south (bottom), every pixel where it lies on the globe so it wraps without a seam: the sun's
+// boiling granules, orange in the lanes between them and white-hot in their middles, with a few dark sunspots in their
+// grey penumbrae, at 0, 0, 64 by 32; Jupiter's cream, tan and brown bands, wavy where they meet, and his Great Red Spot,
+// at 64, 0; Saturn's soft pale gold bands, at 128, 0; then, 32 by 16, the Earth's blue seas, green and sandy continents,
+// white poles and drifting clouds, at 192, 0; Venus's cream clouds swirled into chevrons, at 224, 0; rusty Mars with his
+// darker lands and white polar caps, at 192, 16; cratered grey Mercury, at 224, 16; and the Moon's grey with its dark
+// seas and bright craters, at 0, 32. Saturn's ring, from its inner edge (left) to its outer, 128 by 8 at 32, 32: the
+// faint inner ring, the bright broad one, the dark gap of the Cassini division, the outer ring with its thin gap, and
+// clear past it. Polished brass, brushed along, at 160, 32; cool brushed steel, at 192, 32; the dark gunmetal of the
+// machined ring round the hole over the cockpit, fine bright lines turned round it, at 224, 32. The orrery's two gears,
+// brass discs with their teeth round them and windows between their spokes, clear outside, 64 across: the big one with
+// twenty-four teeth at 0, 64, the small one with sixteen at 64, 64. A lamp's window in the machined ring, smoked glass
+// in a bright bezel, at 128, 64, 16 across.
 function orrerySheetTexture() {
   const WIDTH = 256;
   const HEIGHT = 128;
@@ -5815,10 +5803,130 @@ function orrerySheetTexture() {
   const picture = (left, top, width, height, paint) => {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        pixels[top + y][left + x] = paint(x, y).map((c, i) => (i < 3 ? clamp(Math.round(c)) : c));
+        const [r, g, b, a = 255] = paint(x, y);
+        pixels[top + y][left + x] = [clamp(Math.round(r)), clamp(Math.round(g)), clamp(Math.round(b)), a];
       }
     }
   };
+  // A globe's picture: each pixel painted from where it lies on the globe, the way out to it and how far north it is,
+  // in radians, and how far round, a share.
+  const globePicture = (left, top, width, height, paint) => picture(left, top, width, height, (x, y) => {
+    const round = (x + 0.5) / width;
+    const lat = Math.PI * (0.5 - (y + 0.5) / height);
+    const lon = 2 * Math.PI * round;
+    return paint([Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)], lat, round, x, y);
+  });
+  const mix = (a, b, t) => a.map((c, i) => c + (b[i] - c) * Math.max(0, Math.min(1, t)));
+  const smoothstep = (from, to, t) => {
+    const s = Math.max(0, Math.min(1, (t - from) / (to - from)));
+    return s * s * (3 - 2 * s);
+  };
+  // How far apart two points of a globe are, in radians, by the way out to each.
+  const apart = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
+  const toward = (latDegrees, round) => {
+    const lat = (latDegrees * Math.PI) / 180;
+    const lon = 2 * Math.PI * round;
+    return [Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)];
+  };
+
+  // The sun: granules, and a few spots, each its latitude in degrees, how far round, and how big, in radians.
+  const SUNSPOTS = [[14, 0.12, 0.13], [-18, 0.4, 0.1], [9, 0.63, 0.15], [-11, 0.86, 0.09], [21, 0.7, 0.08]];
+  globePicture(0, 0, 64, 32, (at) => {
+    const granules = cloudNoise(at, 9, 3);
+    let colour = mix([246, 150, 44], [255, 250, 220], smoothstep(0.22, 0.58, granules));
+    for (const [lat, round, size] of SUNSPOTS) {
+      const off = apart(at, toward(lat, round));
+      colour = mix(colour, [176, 82, 24], smoothstep(size, size * 0.6, off));
+      colour = mix(colour, [62, 22, 8], smoothstep(size * 0.55, size * 0.3, off));
+    }
+    return colour;
+  });
+
+  // Jupiter: bands by how far north, the edges between them wavy, and the Great Red Spot.
+  const JUPITER_BANDS = [[234, 222, 196], [206, 168, 122], [238, 226, 200], [168, 116, 78], [226, 206, 168], [196, 140, 94], [236, 222, 192],
+    [180, 128, 86], [222, 198, 160], [204, 176, 136]];
+  globePicture(64, 0, 64, 32, (at, lat, round) => {
+    const wavy = lat + 0.07 * (cloudNoise(at, 5, 3) - 0.5) + 0.03 * Math.sin(round * 2 * Math.PI * 7 + lat * 9);
+    const band = (wavy / Math.PI + 0.5) * JUPITER_BANDS.length;
+    const index = Math.max(0, Math.min(JUPITER_BANDS.length - 1, Math.floor(band)));
+    const next = Math.min(JUPITER_BANDS.length - 1, index + 1);
+    let colour = mix(JUPITER_BANDS[index], JUPITER_BANDS[next], smoothstep(0.75, 1, band - index));
+    const spot = Math.hypot((((round - 0.3 + 1.5) % 1) - 0.5) / 0.075, (lat + 0.38) / 0.09);
+    colour = mix(colour, [236, 214, 186], smoothstep(1.35, 1.05, spot));
+    return mix(colour, [196, 84, 58], smoothstep(1.0, 0.6, spot));
+  });
+
+  // Saturn: soft pale gold bands, a little darker toward his poles.
+  globePicture(128, 0, 64, 32, (at, lat) => {
+    const bands = Math.sin(lat * 14 + 0.6 * cloudNoise(at, 4, 2)) * 0.5 + 0.5;
+    const pale = mix([214, 186, 128], [240, 220, 168], bands);
+    return mix(pale, [176, 156, 112], smoothstep(0.9, 1.4, Math.abs(lat)));
+  });
+
+  // The Earth's continents, once round from the date line eastward and from the north pole down, a cell for each
+  // eleven and a quarter degrees: land, sea and ice.
+  const EARTH = [
+    "********************************",
+    ".#########.***....##############",
+    ".#######.#.*..#.################",
+    "...########....##############.#.",
+    "....######.....#.#############..",
+    ".....####.....##############....",
+    ".......##.....########.#.###....",
+    "........###....######....##.....",
+    "........#####...####.....#####..",
+    ".........####...#####.....####..",
+    ".........###....###.......####..",
+    ".........##...................#.",
+    ".........#......................",
+    "..........*.....................",
+    "**********.********.************",
+    "********************************",
+  ];
+  // Where the land is desert: the Sahara and Arabia, and the middle of Australia.
+  const DESERT = (column, row) => (row >= 4 && row <= 6 && column >= 14 && column <= 22) || (row >= 9 && row <= 10 && column >= 27 && column <= 28);
+  globePicture(192, 0, 32, 16, (at, lat, round, x, y) => {
+    const cell = EARTH[y][x];
+    const shade = cloudNoise(at, 6, 2) - 0.5;
+    let colour = cell === "*" ? [236, 242, 248] : cell === "#" ? (DESERT(x, y) ? [196, 168, 108] : [64, 138, 70]) : [30, 78, 168];
+    colour = colour.map((c) => c * (1 + shade * 0.25));
+    return mix(colour, [246, 248, 252], 0.85 * smoothstep(0.58, 0.72, cloudNoise(at.map((c) => c + 4.1), 4, 3)));
+  });
+
+  // Venus: thick cream clouds, swirled into chevrons pointing along her equator.
+  globePicture(224, 0, 32, 16, (at, lat) => {
+    const swirled = [at[0] + Math.abs(lat) * 0.9, at[1], at[2] - Math.abs(lat) * 0.6];
+    return mix([212, 176, 116], [244, 228, 182], cloudNoise(swirled, 3, 3) * 1.3 - 0.15);
+  });
+
+  // Mars: rust, darker lands across him, and white caps at his poles.
+  globePicture(192, 16, 32, 16, (at, lat) => {
+    const rust = mix([198, 96, 52], [124, 60, 40], smoothstep(0.5, 0.65, cloudNoise(at, 3, 3)));
+    return mix(rust, [244, 240, 234], smoothstep(1.05, 1.2, Math.abs(lat)));
+  });
+
+  // Craters: on a globe's grey, each a dark floor in a bright rim, scattered by the noise.
+  const cratered = (base, dark, seas) => (at) => {
+    let colour = mix(base, dark, seas * smoothstep(0.5, 0.62, cloudNoise(at, 2, 3)));
+    const pits = cloudNoise(at.map((c) => c + 7.3), 10, 2);
+    colour = mix(colour, colour.map((c) => c * 0.62), smoothstep(0.66, 0.74, pits));
+    return mix(colour, colour.map((c) => Math.min(255, c * 1.25)), smoothstep(0.6, 0.66, pits) - smoothstep(0.66, 0.7, pits));
+  };
+  globePicture(224, 16, 32, 16, cratered([150, 144, 138], [104, 100, 96], 0.5));
+  globePicture(0, 32, 32, 16, cratered([196, 196, 192], [112, 112, 112], 1));
+
+  // Saturn's ring, out from its inner edge: each band's outer edge as a share of the way out and its colour, clear for
+  // a gap.
+  const RING = [[0.16, [122, 108, 84]], [0.2, [150, 132, 100]], [0.62, [226, 206, 162]], [0.69, null], [0.88, [204, 184, 142]], [0.9, null],
+    [0.97, [196, 176, 136]], [1.01, null]];
+  picture(32, 32, 128, 8, (x) => {
+    const out = (x + 0.5) / 128;
+    const [, colour] = RING.find(([edge]) => out < edge);
+    if (colour === null) return [0, 0, 0, 0];
+    const ripple = Math.sin(out * 170) * 7 + Math.sin(out * 61) * 5;
+    return colour.map((c) => c + ripple);
+  });
+
   const BRASS = [200, 156, 74];
   const brushed = (base, depth) => (x, y) => {
     const streak = (random() - 0.5) * depth + Math.sin(y * 1.7 + Math.sin(x * 0.3) * 0.6) * depth * 0.4;
@@ -5829,12 +5937,34 @@ function orrerySheetTexture() {
     const shine = Math.exp(-(((y - 10) / 6) ** 2)) * 46;
     return [r + shine, g + shine * 0.9, b + shine * 0.6, a];
   });
+  picture(192, 32, 32, 32, (x, y) => {
+    const [r, g, b, a] = brushed([150, 158, 168], 12)(x, y);
+    const shine = Math.exp(-(((y - 20) / 5) ** 2)) * 40;
+    return [r + shine, g + shine, b + shine, a];
+  });
   const GUNMETAL = [58, 64, 74];
   picture(224, 32, 32, 32, (x, y) => {
     const [r, g, b, a] = brushed(GUNMETAL, 8)(x, y);
     const groove = y % 8 === 0 ? -14 : y % 8 === 1 ? 10 : 0;
     return [r + groove, g + groove, b + groove + 2, a];
   });
+
+  // A gear: brass turned bright round its hub, its teeth round its rim, windows between its spokes and a hole for its
+  // axle, clear outside.
+  const gear = (teeth, spokes) => (x, y) => {
+    const out = Math.hypot(x - 31.5, y - 31.5) / 32;
+    const angle = Math.atan2(y - 31.5, x - 31.5);
+    const tooth = ((((angle / (2 * Math.PI)) * teeth) % 1) + 1) % 1;
+    const toothTip = 0.86 + 0.13 * smoothstep(0.38, 0.3, Math.abs(tooth - 0.5));
+    const spoke = ((((angle / (2 * Math.PI)) * spokes) % 1) + 1) % 1;
+    if (out > toothTip || out < 0.07 || (out > 0.3 && out < 0.7 && spoke > 0.16 && spoke < 0.84)) return [0, 0, 0, 0];
+    const turned = 0.85 + 0.15 * Math.cos(angle * 2 - 0.8);
+    const engraved = Math.abs(out - 0.76) < 0.02 || Math.abs(out - 0.26) < 0.02 ? 0.72 : 1;
+    return BRASS.map((c) => c * turned * engraved * (out > 0.86 ? 0.9 : 1));
+  };
+  picture(0, 64, 64, 64, gear(24, 6));
+  picture(64, 64, 64, 64, gear(16, 4));
+
   picture(128, 64, 16, 16, (x, y) => {
     const edge = Math.min(x, y, 15 - x, 15 - y);
     if (edge === 0) return [34, 38, 44, 255];
@@ -5845,23 +5975,50 @@ function orrerySheetTexture() {
   writeFileSync(resolve(miscOutput, "orrery_sheet.png"), encodePng(pixels));
 }
 
-// The light the orrery's renderer adds over its dome (see OrreryRenderer), 256 by 128, smoothed and not repeated past
-// its edges, each picture white on black for the renderer to tint, a black margin round it: the sparkle of a twinkling
-// star, a soft core with four thin points, at 192, 0, 32 across; and the light in one of the ring's lamps, a soft-edged
-// rounded oblong, at 224, 0.
+// The light the orrery's renderer adds over its dome and its sun (see OrreryRenderer), 256 by 128, smoothed and not
+// repeated past its edges, each picture white on black for the renderer to tint, a black margin round it: the sun's
+// corona, bright at its edge and fading out in soft streamers, at 0, 0, 64 across; the wide soft glow round it, at
+// 64, 0; its eight rays, long and short by turns, at 128, 0; the sparkle of a twinkling star, a soft core with four thin
+// points, at 192, 0, 32 across; the light in one of the oculus ring's lamps, a soft-edged rounded oblong, at 224, 0;
+// plain white, for the orbits' tracks and the Earth's air, at 192, 32; and the sun's boiling skin, bright granules
+// round it with dark lanes between, painted where each pixel lies on its globe so it wraps without a seam, 128 by 64 at
+// 0, 64.
 function orreryGlowTexture() {
   const WIDTH = 256;
   const HEIGHT = 128;
   const pixels = Array.from({ length: HEIGHT }, () => Array.from({ length: WIDTH }, () => [0, 0, 0, 255]));
+  const grey = (v) => {
+    const level = clamp(Math.round(255 * Math.max(0, Math.min(1, v))));
+    return [level, level, level, 255];
+  };
   // A picture so many pixels across with its top left corner at a point, painted from -1 to 1 each way from its middle.
   const picture = (left, top, size, paint) => {
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        const v = clamp(Math.round(255 * Math.min(1, paint(((x + 0.5) / size) * 2 - 1, ((y + 0.5) / size) * 2 - 1))));
-        pixels[top + y][left + x] = [v, v, v, 255];
+        pixels[top + y][left + x] = grey(paint(((x + 0.5) / size) * 2 - 1, ((y + 0.5) / size) * 2 - 1));
       }
     }
   };
+  const fadeOut = (r) => Math.max(0, Math.min(1, (0.98 - r) / 0.2));
+  // The sun's edge in the corona's picture, which is 2.4 times as wide as the sun, and in the glow's, 5 times.
+  const CORONA_LIMB = 1 / 2.4;
+  picture(0, 0, 64, (x, y) => {
+    const r = Math.hypot(x, y);
+    const streamers = 0.8 + 0.2 * Math.cos(Math.atan2(y, x) * 5) * Math.cos(Math.atan2(y, x) * 3);
+    return (r < CORONA_LIMB ? 1 : Math.exp(-(r - CORONA_LIMB) / (0.13 * streamers))) * fadeOut(r);
+  });
+  picture(64, 0, 64, (x, y) => {
+    const r = Math.hypot(x, y);
+    return Math.exp(-((r / 0.45) ** 2)) * fadeOut(r);
+  });
+  picture(128, 0, 64, (x, y) => {
+    const r = Math.hypot(x, y);
+    const turn = ((Math.atan2(y, x) / (2 * Math.PI)) * 8 + 8.5) % 8;
+    const ray = Math.floor(turn);
+    const across = r * Math.sin(((turn - ray - 0.5) * 2 * Math.PI) / 8);
+    const length = ray % 2 === 0 ? 0.98 : 0.66;
+    return Math.exp(-((across / 0.035) ** 2)) * Math.max(0, 1 - r / length) ** 1.4 * fadeOut(r);
+  });
   picture(192, 0, 32, (x, y) => {
     const core = Math.exp(-((Math.hypot(x, y) / 0.18) ** 2));
     const point = (across, along) => Math.exp(-((across / 0.06) ** 2)) * Math.max(0, 1 - Math.abs(along) / 0.9) ** 2.5;
@@ -5871,6 +6028,16 @@ function orreryGlowTexture() {
     const outside = Math.hypot(Math.max(0, Math.abs(x) - 0.45), Math.max(0, Math.abs(y) - 0.3));
     return Math.max(0, 1 - outside / 0.4) ** 2 * (1 - 0.25 * Math.hypot(x, y));
   });
+  picture(192, 32, 32, (x, y) => (Math.max(Math.abs(x), Math.abs(y)) < 0.75 ? 1 : 0));
+  for (let y = 0; y < 64; y++) {
+    const lat = Math.PI * (0.5 - (y + 0.5) / 64);
+    for (let x = 0; x < 128; x++) {
+      const lon = (2 * Math.PI * (x + 0.5)) / 128;
+      const at = [Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)];
+      const granules = cloudNoise(at.map((c) => c + 2.9), 11, 3);
+      pixels[64 + y][x] = grey(Math.max(0, (granules - 0.48) / 0.3) ** 1.5);
+    }
+  }
   writeFileSync(resolve(miscOutput, "orrery_glow.png"), encodePng(pixels));
   writeFileSync(resolve(miscOutput, "orrery_glow.png.mcmeta"), JSON.stringify({ texture: { blur: true, clamp: true } }, null, 2) + "\n");
 }

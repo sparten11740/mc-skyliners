@@ -19,10 +19,10 @@ import org.joml.Vector3f;
 
 /**
  * The rocket's dome as the renderer of the orrery hanging in it finds it (see {@link OrreryRenderer}): how far out from
- * her axis it is open at each row, from the ring of ceiling over her cockpit's glass up to the orrery's mount at the tip
- * of her nose, how wide the hole in that ring is, and from that the smooth shape just inside the dome's lining that the
- * planetarium's sky is drawn on (see {@link PlanetariumShell}). Positions are in the mount's own frame, from its block's
- * corner, her axis up the middle of its column.
+ * her axis it is open at each row, from the ring of ceiling over her cockpit's glass up to the orrery's mount at the
+ * tip of her nose, how wide the hole in that ring is, and from that the smooth shape just inside the dome's lining that
+ * the planetarium's sky is drawn on (see {@link PlanetariumShell}). Positions are in the mount's own frame, from its
+ * block's corner, her axis up the middle of its column.
  *
  * <p>Found on the client by looking in along each row from outside her skin, a few dozen ways round, so that whatever
  * is built against the lining is soon seen and the sky drawn in front of it, while whatever stands out in the room, as
@@ -90,6 +90,10 @@ final class OrreryDome {
     private final float oculus;
     /** How far out from her axis the outside of her skin round the dome is at most, in blocks. */
     private final float outer;
+    /**
+     * How far out from her axis each row of the dome is open, from the one over the ring of ceiling up to the mount's.
+     */
+    private final float[] open;
     /** The planetarium's shape, its rings from the dome's foot up to the top one, which is closed over. */
     private final List<Ring> shell;
     /** Where her control head is, in the level; null where none was found. */
@@ -107,6 +111,7 @@ final class OrreryDome {
         this.floor = floor;
         this.oculus = oculus;
         this.outer = outer;
+        this.open = open;
         this.shell = shaped ? shell(floor, open) : List.of();
         this.autopilot = autopilot;
     }
@@ -154,6 +159,30 @@ final class OrreryDome {
     }
 
     /**
+     * How far out from her axis a row of the dome is open, from the mount's row, in blocks; nothing outside the dome.
+     */
+    float openAt(int row) {
+        int index = row - floor - 1;
+        return index >= 0 && index < open.length ? open[index] : 0;
+    }
+
+    /**
+     * How high the planetarium's sky first comes in to so far from her axis going up, in the mount's frame: where a
+     * cable hung straight up at that radius meets it; the top of the sky where it never does.
+     */
+    float heightWithin(float radius) {
+        Ring below = shell.getFirst();
+        for (Ring ring : shell) {
+            if (ring.radius() <= radius) {
+                float share = below.radius() == ring.radius() ? 0 : (below.radius() - radius) / (below.radius() - ring.radius());
+                return Mth.lerp(Mth.clamp(share, 0, 1), below.y(), ring.y());
+            }
+            below = ring;
+        }
+        return shell.getLast().y();
+    }
+
+    /**
      * Whether the camera, given in the mount's frame, is in the cockpit or the dome over it, where the planetarium can
      * be seen: any of it is drawn only then. A dome without a shape holds the camera wherever it is.
      */
@@ -197,8 +226,9 @@ final class OrreryDome {
     }
 
     /**
-     * Where her control head is: where it was from the mount as she was built, if it is still there; otherwise, as for a
-     * rocket built before that was kept or turned since, the nearest autopilot to the sun, within its flight deck's reach.
+     * Where her control head is: where it was from the mount as she was built, if it is still there; otherwise, as for
+     * a rocket built before that was kept or turned since, the nearest autopilot to the sun, within its flight deck's
+     * reach.
      */
     @Nullable
     private static BlockPos controlHead(OrreryBlockEntity orrery, Level level) {
@@ -228,8 +258,8 @@ final class OrreryDome {
     }
 
     /**
-     * How far out from her axis a row is open, the nearest any way round, in blocks; where her skin was found each way is
-     * kept, so the next row down is looked along from just outside it.
+     * How far out from her axis a row is open, the nearest any way round, in blocks; where her skin was found each way
+     * is kept, so the next row down is looked along from just outside it.
      */
     private static float row(Level level, BlockPos mount, int row, float[] skin) {
         float nearest = Float.MAX_VALUE;

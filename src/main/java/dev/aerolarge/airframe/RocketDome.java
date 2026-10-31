@@ -10,22 +10,29 @@ import net.minecraft.world.level.block.LightBlock;
 
 /**
  * Her dome: the inside of her nose over the ring of ceiling on the cockpit's glass, finished as a night sky full of
- * stars (see {@link RocketFinish#DOME}), and a brass orrery hanging from its tip (see
- * {@link dev.aerolarge.block.OrreryBlock}), its sun low enough over the ring to be seen from the cockpit through its
- * open middle, a soft light round it, and its planets circling as far out as the dome leaves room for at her scale.
- * The server config's {@code rocket.dome} leaves it out, as {@code rocket.rooms} leaves out every room: her nose is
- * then padded inside as her cockpit is, and bare.
+ * stars (see {@link RocketFinish#DOME}), over which the clients draw a planetarium, and a brass orrery hanging from its
+ * tip (see {@link dev.aerolarge.block.OrreryBlock}), its sun a few rows over the ring, a light round it, and its
+ * planets circling inside the hole in the ring, so all of it is seen from the cockpit, as far out as the dome leaves
+ * room for at her scale. Where the hole is too narrow for an orrery worth hanging, only its mount is put up, for the
+ * planetarium; where there is no hole, as in the smallest rocket, nothing. The server config's {@code rocket.dome}
+ * leaves it out, as {@code rocket.rooms} leaves out every room: her nose is then padded inside as her cockpit is, and
+ * bare.
  */
 final class RocketDome implements RocketPiece {
-    /** How many rows over the dome's floor the orrery's sun hangs: over the glass, in sight from the cockpit. */
-    private static final int SUN_UP = 2;
-    /** How far in from the dome's lining the outermost planet circles at least, in blocks. */
-    private static final double CLEAR = 1.5;
-    /** How far out the planets circle at most, and at least for an orrery to be worth hanging, in blocks. */
-    private static final double REACH_MOST = 8;
-    private static final double REACH_LEAST = 1.5;
-    /** How bright the soft light round the sun is, in light levels: enough to see the planets by, not the stars out. */
-    private static final int SUN_LIGHT = 8;
+    /** How many rows over the dome's floor the orrery's sun hangs at most, and at least. */
+    private static final int SUN_UP = 4;
+    private static final int SUN_LEAST = 2;
+    /**
+     * How near the widest orrery the dome leaves room for one with its sun higher must come to be hung there, a share:
+     * higher, it is looked up at more nearly from under it, and reads better.
+     */
+    private static final double HIGHER_FOR = 0.97;
+    /**
+     * The narrowest hole in the ring of ceiling worth putting anything up over, from her axis to its edge, in blocks.
+     */
+    private static final double OCULUS_LEAST = 1;
+    /** How bright the light round the sun is, in light levels: enough to see the orrery by, not the stars out. */
+    private static final int SUN_LIGHT = 10;
 
     private final RocketLayout layout;
 
@@ -41,15 +48,22 @@ final class RocketDome implements RocketPiece {
     @Override
     public void build() {
         layout.finishNose(RocketFinish.DOME);
-        int sun = layout.domeFloor() + SUN_UP;
-        int tip = tip(sun);
-        double reach = Math.min(REACH_MOST, room(sun) - CLEAR);
-        if (tip <= sun + 1 || reach < REACH_LEAST || !layout.isOpen(0, sun, 0)) {
+        double oculus = opening(layout.domeFloor());
+        if (oculus < OCULUS_LEAST) {
             return;
         }
+        int sun = sunRow(oculus);
+        int tip = tip(sun);
+        if (tip <= sun + 1 || !layout.isOpen(0, sun, 0)) {
+            return;
+        }
+        double widest = OrreryBlockEntity.reachIn(oculus, opening(sun + 1));
+        double reach = widest >= OrreryBlockEntity.REACH_LEAST ? widest : 0;
         BlockPos mount = new BlockPos(0, tip, 0);
         layout.set(0, tip, 0, AerolargeRegistry.ORRERY.get().defaultBlockState());
-        layout.set(0, sun, 0, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, SUN_LIGHT));
+        if (reach > 0) {
+            layout.set(0, sun, 0, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, SUN_LIGHT));
+        }
         double drop = tip - sun;
         BlockPos head = layout.autopilot();
         layout.fit(mount, (blockEntity, rotation) -> {
@@ -57,6 +71,24 @@ final class RocketDome implements RocketPiece {
                 orrery.configure(drop, reach, head == null ? null : head.subtract(mount).rotate(rotation));
             }
         });
+    }
+
+    /**
+     * The row the sun hangs in: as high over the dome's floor as it may, unless lower leaves the orrery clearly more
+     * room, the dome narrowing over it.
+     */
+    private int sunRow(double oculus) {
+        int floor = layout.domeFloor();
+        double widest = 0;
+        for (int up = SUN_LEAST; up <= SUN_UP; up++) {
+            widest = Math.max(widest, OrreryBlockEntity.reachIn(oculus, opening(floor + up + 1)));
+        }
+        for (int up = SUN_UP; up > SUN_LEAST; up--) {
+            if (OrreryBlockEntity.reachIn(oculus, opening(floor + up + 1)) >= widest * HIGHER_FOR) {
+                return floor + up;
+            }
+        }
+        return floor + SUN_LEAST;
     }
 
     /** The highest open block inside her nose on her axis, the orrery's mount under her tip; the sun's row for none. */
@@ -69,12 +101,21 @@ final class RocketDome implements RocketPiece {
         return sun;
     }
 
-    /** How far out from her axis the dome is open at a row, to the middle of its last open block, in blocks. */
-    private double room(int y) {
-        int x = 0;
-        while (x < layout.radius() && layout.isOpen(x + 1, y, 0)) {
-            x++;
+    /**
+     * How far out from her axis a row is open, to the nearest of her blocks on it, in blocks: her axis runs up the
+     * middle of the blocks over x 0, z 0.
+     */
+    private double opening(int y) {
+        int out = (int) Math.ceil(layout.radius()) + 2;
+        int side = 2 * out + 1;
+        double nearest = out;
+        for (int i = 0; i < side * side; i++) {
+            int x = i % side - out;
+            int z = i / side - out;
+            if (!layout.isOpen(x, y, z)) {
+                nearest = Math.min(nearest, Math.hypot(Math.max(0, Math.abs(x) - 0.5), Math.max(0, Math.abs(z) - 0.5)));
+            }
         }
-        return x;
+        return nearest;
     }
 }

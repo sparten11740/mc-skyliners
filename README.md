@@ -2245,11 +2245,19 @@ what the autopilot is doing, never flashing faster than three times a second: a 
 the ring turning from red to green with each second launch control counts down, all of it a slowly breathing red while
 the count waits to begin; a white light chasing round as she lifts off and climbs; a slow blue breathing in space; and
 an amber pulse as she comes down.
-From its tip hangs a brass orrery: a long brass rod down to a glowing sun, turning slowly, and round it the six planets
-on their brass arms, each in its own colours, circling it, the nearer the faster: grey Mercury, pale Venus, the blue
-and green Earth with its little moon going round it, red Mars, banded Jupiter, the biggest, and golden Saturn in its
-tilted ring. A soft light round the sun lights them, and it is as big as her dome leaves room for at her scale: look
-up from the cockpit to see it. The server config's `rocket.dome` leaves her nose padded inside and bare. Four warm
+From its tip hangs a brass orrery, its sun a few rows over the ceiling, so all of it is seen from the cockpit through
+the ring: a slim steel rod with brass collars down to two toothed brass gears, each turning at its own speed, and under
+them the sun, its granules and sunspots boiling as it turns, in a warm corona, a wide orange glow and eight slowly
+turning rays. Round it circle the six planets, anticlockwise seen from over them, the nearer the faster (Mercury in
+40 seconds, Saturn in half an hour), each turning on its own tilted axis: cratered Mercury, swirled Venus, the blue
+Earth with her clouds, her air glowing blue and the Moon going round her, rusty Mars with his white caps, banded
+Jupiter with his Great Red Spot, the biggest, and golden Saturn in his tilted ring with its dark gap. The sun alone
+lights them, so each shows a day side and a night side, and they wax and wane through crescents as they come round.
+Each hangs on a slim rod from its own flat brass arm over the sun, so from under them the arms are spokes and never
+hide a planet; faint gold tracks show where each goes, and round it all hangs a brass hoop ticked every thirty degrees
+on four hairline cables. It is as big as the ring and the dome leave room for at her scale: under scale 1.5 or so
+only the planetarium is drawn, and at scale 1, where the ceiling closes over the cockpit, neither. The server config's
+`rocket.dome` leaves her nose padded inside and bare. Four warm
 halo lights hang on their cables from the ring of ceiling at the cockpit's diagonals, so it is lit at night.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle tiles, and beside the
@@ -2555,7 +2563,9 @@ her livery selector, and a `RocketRoom` for each furnished story, from `RocketEn
 them, `RocketPilotSeats` the cockpit's seats, `RocketCockpitLights` the lights over them, and `RocketDome` the dome
 over it, its `OrreryBlock`'s `OrreryBlockEntity` drawn by `OrreryRenderer`, which finds the dome round it as
 `OrreryDome` and lines it with the `PlanetariumShell`, rimming the hole under it with the `OculusRing`, whose lamps
-follow her autopilot's phase and launch control's spoken count); its rooms' own furniture is
+follow her autopilot's phase and launch control's spoken count, and draws the orrery as it stands at the moment
+(`OrreryNow`), its sun and planets as sun-lit `Globe`s (`OrreryPlanets`) and its brass `OrreryWorks`); its rooms' own
+furniture is
 `ShelfUnitBlock` and `PalletRackBlock`,
 and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,

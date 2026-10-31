@@ -2,76 +2,29 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
-import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.OrreryBlockEntity;
-import java.util.List;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import org.joml.Vector3f;
 
 /**
- * Draws the rocket's orrery (see {@link OrreryBlockEntity}) under its mount: a brass rod down to the sun, glowing as
- * brightly in the dark as in the light and turning slowly, and the six planets in its plane, each in its own colours on
- * a brass arm from the column under the sun and a post up, circling it, the nearer the faster, and each turning as it
- * goes: grey Mercury, pale Venus, the blue and green Earth with its moon going round it, red Mars, banded Jupiter, the
- * biggest, and golden Saturn in its tilted ring. All of it is as big as the dome it hangs in leaves room for, from how
- * far out its outermost planet circles there, and turns with the game's time at this partial tick, so smoothly and the
- * same for everyone.
+ * Draws the rocket's orrery (see {@link OrreryBlockEntity}) and the planetarium it hangs in: the night sky lining her
+ * dome (see {@link PlanetariumShell}), the machined ring round the hole under it with the lamps that show her flight
+ * (see {@link OculusRing}), and the orrery itself hanging from its mount, its sun and planets (see {@link
+ * OrreryPlanets}) and the brass works that carry them (see {@link OrreryWorks}), turning with the game's time, the same
+ * for everyone. The orrery is as big as the hole under it and the dome round it leave room for, as the dome is measured
+ * on the client (see {@link OrreryDome}), and no bigger than it was built to be.
+ *
+ * <p>None of it is drawn unless the camera is in her cockpit or her dome, where it can be seen: Sable draws an
+ * assembled rocket's block entities every frame wherever the camera looks. Everything is drawn in three batches, the
+ * solid parts from one sheet, the sky, then all the light added on, as taking another buffer finishes the one before.
  */
 public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
-    private static final ResourceLocation SHEET = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/block/orrery.png");
-    /**
-     * How many patches across and down its sheet holds, and which is which: the brass, the sun and each planet's
-     * surface in the first row, the moon and Saturn's ring in the second.
-     */
-    private static final int PATCHES_ACROSS = 8;
-    private static final int PATCHES_DOWN = 2;
-    private static final int BRASS = 0;
-    private static final int SUN = 1;
-    private static final int MOON = 8;
-    private static final int RING = 9;
-    /** How far out the outermost planet circles for the sizes given here, in blocks: the rest grow with it. */
-    private static final float BASE_REACH = 5;
-    /** How wide the sun is at the base reach, and the rod down to it, the arms and the posts at any, in blocks. */
-    private static final float SUN_SIZE = 0.7F;
-    private static final float ROD = 0.1F;
-    private static final float ARM = 0.06F;
-    /** How far under the sun the first arm leaves the column, and each next under that, in blocks at the base reach. */
-    private static final float FIRST_ARM = 0.15F;
-    private static final float ARM_STEP = 0.12F;
-    /** How far over the mount's middle the rod starts, at the foot of its brass rose, in blocks. */
-    private static final float ROSE_FOOT = 0.375F;
-    /** How long the sun takes to turn once, and each planet as it goes, in ticks. */
-    private static final float SUN_TURN = 1200;
-    private static final float PLANET_TURN = 300;
-    /**
-     * The moon: how far from the Earth it circles and how wide it is, in blocks at the base reach, and how long it
-     * takes to go round, in ticks.
-     */
-    private static final float MOON_ORBIT = 0.32F;
-    private static final float MOON_SIZE = 0.08F;
-    private static final float MOON_PERIOD = 80;
-    /** Saturn's ring: how wide it is, as a share of the planet's own width, and how far it tilts, in radians. */
-    private static final float RING_WIDTH = 2.4F;
-    private static final float RING_TILT = 0.45F;
-    /** The planets from the sun out, and which of them have the moon and the ring. */
-    private static final List<Planet> PLANETS = List.of(
-        new Planet(2, 0.22F, 0.14F, 180, 0.3F),
-        new Planet(3, 0.36F, 0.22F, 300, 2.1F),
-        new Planet(4, 0.5F, 0.24F, 460, 4.0F),
-        new Planet(5, 0.64F, 0.18F, 720, 5.2F),
-        new Planet(6, 0.82F, 0.46F, 1300, 1.2F),
-        new Planet(7, 1.0F, 0.38F, 2000, 3.3F));
-    private static final int EARTH = 2;
-    private static final int SATURN = 5;
     /** How far off the orrery and its planetarium are drawn, in blocks: from the cockpit's floor up to the tip. */
     private static final int VIEW_DISTANCE = 96;
     /**
@@ -80,17 +33,8 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
      */
     private static final double WIDEST_DOME = 24;
     private static final double DEEPEST_UNDER_SUN = 16;
-    /** A box's six sides: its corners going round (as numbered in {@link #box}), and the way it faces. */
-    private static final int[][] FACES = {
-        {0, 1, 2, 3, 0, 0, -1}, {5, 4, 7, 6, 0, 0, 1}, {4, 0, 3, 7, -1, 0, 0},
-        {1, 5, 6, 2, 1, 0, 0}, {3, 2, 6, 7, 0, 1, 0}, {4, 5, 1, 0, 0, -1, 0}};
-
-    /**
-     * A planet: its patch on the sheet, how far out it circles as a share of the reach, how wide it is in blocks at the
-     * base reach, how long it takes to go round once, in ticks, and where round it starts, in radians.
-     */
-    private record Planet(int patch, float orbit, float size, float period, float start) {
-    }
+    /** How far over the mount's middle the planetarium's top is, where the rod meets it, in blocks. */
+    private static final float ROD_TOP = 0.4F;
 
     @Override
     public void render(OrreryBlockEntity orrery, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -99,119 +43,76 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
             return;
         }
         OrreryDome dome = OrreryDome.of(orrery, level);
-        if (!dome.holds(Sight.eye(pose.last()))) {
+        Vector3f eye = Sight.eye(pose.last());
+        if (!dome.holds(eye)) {
             return;
         }
-        orrery(orrery, partialTick, pose, buffers, overlay);
-        if (!dome.shaped()) {
-            return;
+        OrreryClock clock = new OrreryClock(level.getGameTime(), partialTick);
+        float reach = reach(orrery, dome);
+        OrreryNow now = reach >= OrreryBlockEntity.REACH_LEAST ? new OrreryNow(reach, clock) : null;
+        float drop = (float) orrery.drop();
+        PoseStack.Pose block = pose.last();
+        pose.pushPose();
+        pose.translate(OrreryDome.AXIS, OrreryDome.AXIS - drop, OrreryDome.AXIS);
+        PoseStack.Pose sun = pose.last();
+        VertexConsumer sheet = buffers.getBuffer(RenderType.entityCutoutNoCull(OrrerySheet.TEXTURE));
+        if (now != null) {
+            Vector3f fromSun = new Vector3f(eye).sub(OrreryDome.AXIS, OrreryDome.AXIS - drop, OrreryDome.AXIS);
+            OrreryPlanets.solid(now, new OrreryBrush(sheet, sun), fromSun, clock);
+            OrreryWorks.solid(now, new OrreryBrush(sheet, sun), clock, drop + ROD_TOP, cableTop(dome, now, drop));
         }
-        // Each kind of quad in turn: taking another buffer finishes the one before.
-        float ticks = level.getGameTime() + partialTick;
+        if (dome.shaped()) {
+            planetarium(dome, level, buffers, sheet, block, clock);
+        }
+        if (now != null) {
+            VertexConsumer glow = buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE));
+            OrreryPlanets.glow(now, new OrreryBrush(glow, sun), OrreryBrush.Facing.of(sun), clock);
+            OrreryWorks.tracks(now, new OrreryBrush(glow, sun));
+        }
+        pose.popPose();
+    }
+
+    /**
+     * The planetarium round the orrery, in the mount's frame: the oculus ring onto the sheet the orrery went onto, the
+     * sky, then the light added on, the sky's twinkling stars and the ring's lamps, leaving that buffer for the
+     * orrery's own light after.
+     */
+    private static void planetarium(OrreryDome dome, Level level, MultiBufferSource buffers, VertexConsumer sheet, PoseStack.Pose block,
+                                    OrreryClock clock) {
         boolean ring = OculusRing.fits(dome);
         if (ring) {
-            OculusRing.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(OrrerySheet.TEXTURE)), pose.last()));
+            OculusRing.draw(dome, new OrreryBrush(sheet, block));
         }
-        PlanetariumShell.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(PlanetariumShell.SKY)), pose.last()));
-        OrreryBrush glow = new OrreryBrush(buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE)), pose.last());
-        PlanetariumShell.sparkles(dome, glow, OrreryBrush.Facing.of(pose.last()), ticks);
+        PlanetariumShell.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(PlanetariumShell.SKY)), block));
+        OrreryBrush glow = new OrreryBrush(buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE)), block);
+        PlanetariumShell.sparkles(dome, glow, OrreryBrush.Facing.of(block), clock);
         if (ring) {
-            OculusRing.lamps(dome, glow, dome.autopilot(level), ticks);
+            OculusRing.lamps(dome, glow, dome.autopilot(level), clock);
         }
     }
 
-    /** The orrery itself, hanging from its mount. */
-    private static void orrery(OrreryBlockEntity orrery, float partialTick, PoseStack pose, MultiBufferSource buffers, int overlay) {
-        float drop = (float) orrery.drop();
-        float scale = (float) orrery.reach() / BASE_REACH;
-        long time = orrery.getLevel().getGameTime();
-        int lit = LevelRenderer.getLightColor(orrery.getLevel(), orrery.getBlockPos().below(Mth.floor(drop)));
-        VertexConsumer buffer = buffers.getBuffer(RenderType.entityCutoutNoCull(SHEET));
-        pose.pushPose();
-        pose.translate(0.5, 0.5 - drop, 0.5);
-        float sunHalf = SUN_SIZE * scale / 2;
-        float top = drop + ROSE_FOOT;
-        box(pose.last(), buffer, 0, (sunHalf + top) / 2, 0, ROD / 2, (top - sunHalf) / 2, ROD / 2, BRASS, lit, overlay);
-        float lowest = sunHalf + (FIRST_ARM + ARM_STEP * PLANETS.size()) * scale;
-        box(pose.last(), buffer, 0, -(sunHalf + lowest) / 2, 0, ROD / 2, (lowest - sunHalf) / 2, ROD / 2, BRASS, lit, overlay);
-        sun(pose, buffer, sunHalf, turned(time, partialTick, SUN_TURN), overlay);
-        for (int i = 0; i < PLANETS.size(); i++) {
-            planet(pose, buffer, i, scale, sunHalf + (FIRST_ARM + ARM_STEP * i) * scale, time, partialTick, lit, overlay);
+    /**
+     * How far out the orrery's outermost planet circles, in blocks: as far as it was built to, but no further than the
+     * dome as it is now leaves room for, so a rocket built before the orrery was measured this way has it fit too.
+     */
+    private static float reach(OrreryBlockEntity orrery, OrreryDome dome) {
+        if (!dome.shaped()) {
+            return (float) orrery.reach();
         }
-        pose.popPose();
+        int overSun = 1 - Mth.floor(orrery.drop());
+        return (float) Math.min(orrery.reach(), OrreryBlockEntity.reachIn(dome.oculus(), dome.openAt(overSun)));
     }
 
-    /** How far round something going round once in so many ticks has come, at this partial tick, in radians. */
-    private static float turned(long time, float partialTick, float period) {
-        return ((time % (long) period) + partialTick) / period * Mth.TWO_PI;
-    }
-
-    /** The sun, glowing, turned so far. */
-    private static void sun(PoseStack pose, VertexConsumer buffer, float half, float turn, int overlay) {
-        pose.pushPose();
-        pose.mulPose(Axis.YP.rotation(turn));
-        box(pose.last(), buffer, 0, 0, 0, half, half, half, SUN, LightTexture.FULL_BRIGHT, overlay);
-        pose.popPose();
-    }
-
-    /** A planet on its arm, so far under the sun, where it has come round to, turning as it goes. */
-    private static void planet(PoseStack pose, VertexConsumer buffer, int index, float scale, float armDown, long time, float partialTick, int light,
-                               int overlay) {
-        Planet planet = PLANETS.get(index);
-        float out = planet.orbit() * BASE_REACH * scale;
-        float half = planet.size() * scale / 2;
-        pose.pushPose();
-        pose.mulPose(Axis.YP.rotation(planet.start() + turned(time, partialTick, planet.period())));
-        box(pose.last(), buffer, out / 2, -armDown, 0, out / 2, ARM / 2, ARM / 2, BRASS, light, overlay);
-        box(pose.last(), buffer, out, -armDown / 2, 0, ARM / 2, armDown / 2, ARM / 2, BRASS, light, overlay);
-        pose.translate(out, 0, 0);
-        if (index == EARTH) {
-            moon(pose, buffer, scale, turned(time, partialTick, MOON_PERIOD), light, overlay);
+    /**
+     * How high over the sun's middle the cables the ecliptic hoop hangs on meet the planetarium's sky, in blocks; the
+     * rod's top where the dome has no shape.
+     */
+    private static float cableTop(OrreryDome dome, OrreryNow now, float drop) {
+        if (!dome.shaped()) {
+            return drop + ROD_TOP;
         }
-        pose.mulPose(Axis.YP.rotation(turned(time, partialTick, PLANET_TURN)));
-        box(pose.last(), buffer, 0, 0, 0, half, half, half, planet.patch(), light, overlay);
-        if (index == SATURN) {
-            ring(pose, buffer, half * RING_WIDTH, light, overlay);
-        }
-        pose.popPose();
-    }
-
-    /** The Earth's moon, come so far round it. */
-    private static void moon(PoseStack pose, VertexConsumer buffer, float scale, float turn, int light, int overlay) {
-        pose.pushPose();
-        pose.mulPose(Axis.YP.rotation(turn));
-        float half = MOON_SIZE * scale / 2;
-        box(pose.last(), buffer, MOON_ORBIT * scale, 0, 0, half, half, half, MOON, light, overlay);
-        pose.popPose();
-    }
-
-    /** Saturn's ring, flat and tilted, round the planet's middle. */
-    private static void ring(PoseStack pose, VertexConsumer buffer, float half, int light, int overlay) {
-        pose.pushPose();
-        pose.mulPose(Axis.XP.rotation(RING_TILT));
-        box(pose.last(), buffer, 0, 0, 0, half, 0.001F, half, RING, light, overlay);
-        pose.popPose();
-    }
-
-    /** A box round a middle, so far out each way, every side showing the patch given. */
-    private static void box(PoseStack.Pose at, VertexConsumer buffer, float x, float y, float z, float hx, float hy, float hz, int patch, int light,
-                            int overlay) {
-        float u0 = (float) (patch % PATCHES_ACROSS) / PATCHES_ACROSS;
-        float v0 = (float) (patch / PATCHES_ACROSS) / PATCHES_DOWN;
-        float u1 = u0 + 1.0F / PATCHES_ACROSS;
-        float v1 = v0 + 1.0F / PATCHES_DOWN;
-        float[][] corners = {
-            {x - hx, y - hy, z - hz}, {x + hx, y - hy, z - hz}, {x + hx, y + hy, z - hz}, {x - hx, y + hy, z - hz},
-            {x - hx, y - hy, z + hz}, {x + hx, y - hy, z + hz}, {x + hx, y + hy, z + hz}, {x - hx, y + hy, z + hz}};
-        for (int[] face : FACES) {
-            for (int corner = 0; corner < 4; corner++) {
-                float[] point = corners[face[corner]];
-                float u = corner == 0 || corner == 3 ? u0 : u1;
-                float v = corner < 2 ? v1 : v0;
-                buffer.addVertex(at, point[0], point[1], point[2]).setColor(-1).setUv(u, v).setOverlay(overlay).setLight(light)
-                    .setNormal(at, face[4], face[5], face[6]);
-            }
-        }
+        float hoop = now.reach * (float) OrreryBlockEntity.EXTENT;
+        return Math.max(now.sun, dome.heightWithin(hoop) - OrreryDome.AXIS + drop);
     }
 
     /** Drawn whenever any of the dome it lights is in view, even with its mount out of sight up at the tip. */
