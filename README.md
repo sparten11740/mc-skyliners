@@ -2248,8 +2248,10 @@ Over her entry story is her cargo bay, and in it, on its cradle facing a door in
 on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on a mast
 and an amber beacon (the server config's `rocket.rover` leaves it out of a rocket built from then on; a rocket too small
 for it, as at scale 1, has none and keeps her back window). The panel on the back of the lift shaft's glass, facing the
-door, has three picture buttons: the rover over an arrow pointing down sends it to the ground, an arrow pointing up over
-the rover calls it home, and a remote hands you a Rover Remote paired with it. Its lamp is green with the rover in its
+door, is a little screen of three picture buttons: the rover over an arrow pointing down, on blue, sends it to the
+ground, an arrow pointing up over the rover, on green, calls it home, and a remote, on violet, hands you a Rover Remote
+paired with it. The one you look at lights up in a bold white frame, as on the lift's picture board, and the one that
+can do nothing just then, the rover being in or out, is dimmed. Its lamp is green with the rover in its
 cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red for a moment, with a
 low note, when the door will not open: it only opens while she stands still on her fins with her autopilot off. Then it
 folds down outward into a platform, a light curtain glowing red across the doorway so nobody walks out, and a yellow

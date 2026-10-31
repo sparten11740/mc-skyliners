@@ -88,6 +88,7 @@ import dev.aerolarge.client.RocketRoar;
 import dev.aerolarge.client.RocketStairsRenderer;
 import dev.aerolarge.client.RoomAmbience;
 import dev.aerolarge.client.RoverClient;
+import dev.aerolarge.client.RoverPanelRenderer;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.SearchlightBeams;
@@ -165,6 +166,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(CockpitDisplayRenderer::hideOutline);
         NeoForge.EVENT_BUS.addListener(LiftBoardRenderer::hideOutline);
+        NeoForge.EVENT_BUS.addListener(RoverPanelRenderer::hideOutline);
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
@@ -347,6 +349,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_BOARD_ENTITY.get(), context -> new LiveryBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_SELECTOR_ENTITY.get(), context -> new LiverySelectorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_BOARD_ENTITY.get(), context -> new LiftBoardRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.ROVER_PANEL_ENTITY.get(), context -> new RoverPanelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());

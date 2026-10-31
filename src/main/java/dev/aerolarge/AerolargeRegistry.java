@@ -221,6 +221,7 @@ import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.RoverBayBlockEntity;
 import dev.aerolarge.block.RoverHatchBlock;
 import dev.aerolarge.block.RoverPanelBlock;
+import dev.aerolarge.block.RoverPanelBlockEntity;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
@@ -2444,6 +2445,8 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<RoverPanelBlock> ROVER_PANEL = BLOCKS.registerBlock(
         "rover_panel", RoverPanelBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(RoverPanelBlock::glow)
     );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoverPanelBlockEntity>> ROVER_PANEL_ENTITY =
+        BLOCK_ENTITIES.register("rover_panel", () -> BlockEntityType.Builder.of(RoverPanelBlockEntity::new, ROVER_PANEL.get()).build(null));
     public static final DeferredHolder<EntityType<?>, EntityType<Rover>> ROVER = ENTITY_TYPES.register(
         "rover", () -> EntityType.Builder.<Rover>of(Rover::new, MobCategory.MISC).sized(2.5F, 1.5F).fireImmune()
             .clientTrackingRange(10).updateInterval(1).build("rover")

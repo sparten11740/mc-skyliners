@@ -4478,6 +4478,23 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   for (const [name, rows] of Object.entries(ICONS)) {
     texture(liftOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
   }
+  // The rover panel's screen (see RoverPanelRenderer): its buttons' pictures in white, as the lift's are, the remote's
+  // little screen lit green: the rover over an arrow down to the ground, an arrow up over the rover, and the remote.
+  const roverOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/rover");
+  mkdirSync(roverOutput, { recursive: true });
+  const ROVER = ["............##..", ".............#..", "..############..", "...##########...", "..##...##...##..", "..##...##...##.."];
+  const ROVER_PICTURES = {
+    deploy: ["................", ...ROVER, "................", ".......##.......", ".......##.......", "....########....", ".....######.....",
+      "......####......", ".......##.......", "################", "................"],
+    home: ["................", ".......##.......", "......####......", ".....######.....", "....########....", ".......##.......",
+      ".......##.......", "................", ...ROVER, "................", "................"],
+    remote: ["..........#.....", ".........#......", "........#.......", ".....######.....", ".....#gggg#.....", ".....#gggg#.....",
+      ".....######.....", ".....#.##.#.....", ".....######.....", ".....##.#.#.....", ".....######.....", ".....#.##.#.....",
+      ".....######.....", ".....######.....", "................", "................"],
+  };
+  for (const [name, rows] of Object.entries(ROVER_PICTURES)) {
+    texture(roverOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : rows[y][x] === "g" ? [0x40, 0xe0, 0x60, 0xff] : [0, 0, 0, 0]), 0);
+  }
 }
 
 // The rocket's LED strips (see LedStripBlock): a milky diffuser over a row of LEDs, white so that the strip's tint

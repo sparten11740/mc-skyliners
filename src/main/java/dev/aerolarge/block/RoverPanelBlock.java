@@ -17,7 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -28,14 +30,16 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The panel that works the rocket's rover bay (see {@link RoverBayBlockEntity}), on the lift shaft's back wall facing
- * the bay's door: three picture buttons under a lamp. The first, the rover over an arrow pointing down, opens the
+ * the bay's door: a little screen of three picture buttons under a lamp, drawn live by its block entity's renderer,
+ * which lights up the button looked at in a bold white frame (one built before it had a block entity shows the same
+ * pictures painted on, unlit). The first, the rover over an arrow pointing down, opens the
  * door and lowers it to the ground; the second, the rover under an arrow pointing up, calls it home and hoists it
  * aboard; the third, a remote, hands whoever presses it a remote paired with the rover. A remote used on it is paired
  * with the rover too. The lamp says how the bay stands, in colour: green with the rover in its cradle and the door
  * shut, amber while the door or the winch works, blue with the rover out, red for a moment when the door will not
  * open, she not standing still on her fins. FACING is the way its face looks, its back to the wall.
  */
-public class RoverPanelBlock extends HorizontalDirectionalBlock {
+public class RoverPanelBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<RoverPanelBlock> CODEC = simpleCodec(RoverPanelBlock::new);
 
     /** How the bay stands, as its lamp shows it. */
@@ -93,6 +97,11 @@ public class RoverPanelBlock extends HorizontalDirectionalBlock {
         return SHAPES.get(state.getValue(FACING));
     }
 
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new RoverPanelBlockEntity(pos, state);
+    }
+
     /** A button pressed, on the server: worked by the bay the panel is wired to, which says what it does. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
@@ -124,6 +133,25 @@ public class RoverPanelBlock extends HorizontalDirectionalBlock {
             }
         }
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /**
+     * Where a button is on the panel's face, as its renderer draws it and a touch finds it: across from its left edge
+     * and up from its foot as seen from the front, in blocks.
+     */
+    public record Area(double left, double bottom, double right, double top) {
+    }
+
+    /** Where a button is on the face. */
+    public static Area area(Button button) {
+        double width = (1 - 2 * MARGIN) / Button.values().length;
+        double left = MARGIN + width * button.ordinal();
+        return new Area(left, MARGIN, left + width, 1 - MARGIN - LAMP * (1 - 2 * MARGIN));
+    }
+
+    /** Where the lamp is on the face, over the buttons. */
+    public static Area lamp() {
+        return new Area(MARGIN, 1 - MARGIN - LAMP * (1 - 2 * MARGIN), 1 - MARGIN, 1 - MARGIN);
     }
 
     /**
