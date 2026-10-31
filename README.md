@@ -2235,8 +2235,12 @@ or the little rocket beside it to pick them all, what is picked glowing softly g
 suns and strips under them. Set for all of
 her, a change climbs her a story at a time from the entry story up.
 
-Over the cockpit her nose is a dome, lined as a night sky full of stars over the ring of ceiling on the glass, and
-from its tip hangs a brass orrery: a long brass rod down to a glowing sun, turning slowly, and round it the six planets
+Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass: a smooth night sky just inside
+its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky
+Way arching across in clouds of violet, teal and rose with a dark lane of dust along it, stars of every colour and
+brightness, a few dozen of them twinkling, and Orion with his pink nebula, the Plough, Cassiopeia and Cygnus picked out
+in faint gold lines; build against the dome and within a few seconds the sky draws itself in front of what you built.
+From its tip hangs a brass orrery: a long brass rod down to a glowing sun, turning slowly, and round it the six planets
 on their brass arms, each in its own colours, circling it, the nearer the faster: grey Mercury, pale Venus, the blue
 and green Earth with its little moon going round it, red Mars, banded Jupiter, the biggest, and golden Saturn in its
 tilted ring. A soft light round the sun lights them, and it is as big as her dome leaves room for at her scale: look
@@ -2544,7 +2548,8 @@ with the `AirlockDoors` across the doorway's `AirlockDoorBlock`s, which her `Air
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
 `RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of
 them, `RocketPilotSeats` the cockpit's seats, `RocketCockpitLights` the lights over them, and `RocketDome` the dome
-over it, its `OrreryBlock`'s `OrreryBlockEntity` drawn by `OrreryRenderer`); its rooms' own furniture is
+over it, its `OrreryBlock`'s `OrreryBlockEntity` drawn by `OrreryRenderer`, which finds the dome round it as
+`OrreryDome` and lines it with the `PlanetariumShell`); its rooms' own furniture is
 `ShelfUnitBlock` and `PalletRackBlock`,
 and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,

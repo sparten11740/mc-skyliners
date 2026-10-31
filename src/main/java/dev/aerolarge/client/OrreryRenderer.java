@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -71,6 +72,14 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
         new Planet(7, 1.0F, 0.38F, 2000, 3.3F));
     private static final int EARTH = 2;
     private static final int SATURN = 5;
+    /** How far off the orrery and its planetarium are drawn, in blocks: from the cockpit's floor up to the tip. */
+    private static final int VIEW_DISTANCE = 96;
+    /**
+     * Before its dome is first found: how far out from her axis the widest dome reaches, and how far under the sun the
+     * deepest cockpit's floor is, in blocks, at the biggest scale.
+     */
+    private static final double WIDEST_DOME = 24;
+    private static final double DEEPEST_UNDER_SUN = 16;
     /** A box's six sides: its corners going round (as numbered in {@link #box}), and the way it faces. */
     private static final int[][] FACES = {
         {0, 1, 2, 3, 0, 0, -1}, {5, 4, 7, 6, 0, 0, 1}, {4, 0, 3, 7, -1, 0, 0},
@@ -85,9 +94,25 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
 
     @Override
     public void render(OrreryBlockEntity orrery, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        if (orrery.getLevel() == null) {
+        Level level = orrery.getLevel();
+        if (level == null) {
             return;
         }
+        OrreryDome dome = OrreryDome.of(orrery, level);
+        if (!dome.holds(Sight.eye(pose.last()))) {
+            return;
+        }
+        orrery(orrery, partialTick, pose, buffers, overlay);
+        // Each kind of quad in turn: taking another buffer finishes the one before.
+        if (dome.shaped()) {
+            PlanetariumShell.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(PlanetariumShell.SKY)), pose.last()));
+            OrreryBrush glow = new OrreryBrush(buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE)), pose.last());
+            PlanetariumShell.sparkles(dome, glow, OrreryBrush.Facing.of(pose.last()), level.getGameTime() + partialTick);
+        }
+    }
+
+    /** The orrery itself, hanging from its mount. */
+    private static void orrery(OrreryBlockEntity orrery, float partialTick, PoseStack pose, MultiBufferSource buffers, int overlay) {
         float drop = (float) orrery.drop();
         float scale = (float) orrery.reach() / BASE_REACH;
         long time = orrery.getLevel().getGameTime();
@@ -180,10 +205,28 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
         }
     }
 
+    /** Drawn whenever any of the dome it lights is in view, even with its mount out of sight up at the tip. */
+    @Override
+    public boolean shouldRenderOffScreen(OrreryBlockEntity orrery) {
+        return true;
+    }
+
+    @Override
+    public int getViewDistance() {
+        return VIEW_DISTANCE;
+    }
+
+    /**
+     * The whole of the dome and the cockpit under it, as last found, or before it is first found as big as the biggest
+     * rocket's: the planetarium is drawn over all of it.
+     */
     @Override
     public AABB getRenderBoundingBox(OrreryBlockEntity orrery) {
         BlockPos at = orrery.getBlockPos();
-        double out = orrery.reach() + 1;
-        return new AABB(at).inflate(out, 0, out).expandTowards(0, -orrery.drop() - out, 0);
+        OrreryDome dome = OrreryDome.known(orrery);
+        if (dome == null || !dome.shaped()) {
+            return new AABB(at).inflate(WIDEST_DOME, 0, WIDEST_DOME).expandTowards(0, -orrery.drop() - DEEPEST_UNDER_SUN, 0);
+        }
+        return dome.box(at);
     }
 }

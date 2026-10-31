@@ -5562,6 +5562,270 @@ function orreryTextures() {
   texture(blockOutput, "orrery_brass", brass, 4);
 }
 
+domeSkyTexture();
+orreryGlowTexture();
+
+// Smooth noise over the sky, for the planetarium's clouds and mottling: value noise on a lattice in three dimensions,
+// so a pattern sampled round a sphere has no seam, and its sum over a few octaves.
+function latticeValue(x, y, z) {
+  let h = Math.imul(x, 0x27d4eb2d) ^ Math.imul(y, 0x165667b1) ^ Math.imul(z, 0x61c88647);
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+  h = Math.imul(h ^ (h >>> 12), 0x297a2d39);
+  return ((h ^ (h >>> 15)) >>> 0) / 4294967296;
+}
+function valueNoise(x, y, z) {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const ease = (t) => t * t * (3 - 2 * t);
+  const fx = ease(x - xi), fy = ease(y - yi), fz = ease(z - zi);
+  const mix = (a, b, t) => a + (b - a) * t;
+  const at = (dx, dy, dz) => latticeValue(xi + dx, yi + dy, zi + dz);
+  const near = mix(mix(at(0, 0, 0), at(1, 0, 0), fx), mix(at(0, 1, 0), at(1, 1, 0), fx), fy);
+  const far = mix(mix(at(0, 0, 1), at(1, 0, 1), fx), mix(at(0, 1, 1), at(1, 1, 1), fx), fy);
+  return mix(near, far, fz);
+}
+function cloudNoise([x, y, z], scale, octaves) {
+  let sum = 0;
+  let weight = 0.5;
+  let total = 0;
+  for (let octave = 0; octave < octaves; octave++) {
+    const f = scale * 2.03 ** octave;
+    sum += weight * valueNoise(x * f + octave * 17.3, y * f + octave * 5.1, z * f + octave * 11.7);
+    total += weight;
+    weight /= 2;
+  }
+  return sum / total;
+}
+
+// The planetarium's sky round the rocket's dome (see PlanetariumShell), its width once round the dome and its height
+// from the tip of her nose (the top row) down to the dome's foot over her cockpit (the bottom row), each pixel painted
+// where it lies on the sky, so nothing repeats: deep navy at the foot darkening to near black at the tip, the Milky Way
+// arching over in clouds of violet, teal and rose with a dark lane of dust along it and its stars crowded thick, stars
+// of every brightness in blue-white, white, yellow and orange, the brightest few a little cross of light, Orion, the
+// Plough, Cassiopeia and Cygnus joined by faint gold lines, the pink glow of Orion's nebula, and the pole star at the very
+// tip. It is the real northern sky, squeezed so that it reaches from the pole at the tip down past Orion at the foot,
+// and laid as it is seen from inside, not mirrored.
+function domeSkyTexture() {
+  const WIDTH = 512;
+  const HEIGHT = 256;
+  const DEGREE = Math.PI / 180;
+  // How much of the dome's height, tip to foot, a degree of the sky's from the pole takes: under 1, so the dome's foot
+  // reaches south past the celestial equator, down to Orion and beyond.
+  const SQUEEZE = 0.7;
+  // How big the constellations are drawn, in pixels for a degree of the sky either way: the dome's pixels are about
+  // square on it, each row's as long as it is round there, so a figure keeps its shape at any height.
+  const FIGURE = 1.6;
+  const FOOT = [0x0f, 0x1a, 0x3a];
+  const TIP = [0x04, 0x06, 0x0e];
+  const LINE = [0x7a, 0x62, 0x30];
+  const NEBULA = [0xd0, 0x60, 0x8a];
+  const VIOLET = [0x6e, 0x50, 0xaa];
+  const TEAL = [0x32, 0x96, 0xa0];
+  const ROSE = [0xbe, 0x5f, 0x87];
+  const STAR_COLOURS = [[200, 216, 255], [255, 255, 255], [255, 240, 190], [255, 196, 140]];
+  // How likely each of those colours is, in the same order.
+  const STAR_SHARES = [0.4, 0.35, 0.15, 0.1];
+  // How many stars are scattered all over, and how many more are tried along the Milky Way, kept as thickly as it glows.
+  const SCATTERED = 2600;
+  const BAND_TRIED = 2400;
+  // The share of the stars, the brightest, drawn as a little cross.
+  const CROSSED = 0.01;
+  // The north galactic pole, in degrees of right ascension and declination: the Milky Way runs round its great circle.
+  const GALACTIC_POLE = [192.86, 27.13];
+  // How strongly the gold lines and the nebula show over the sky, a share.
+  const LINE_STRENGTH = 0.6;
+  const NEBULA_STRENGTH = 0.55;
+  // The constellations: each star's right ascension, declination and brightness, and the lines between them.
+  const FIGURES = [
+    {
+      // Orion: Betelgeuse, Bellatrix, Meissa, his belt (Mintaka, Alnilam, Alnitak), Saiph and Rigel; his nebula under
+      // the belt.
+      centre: [84, 0],
+      stars: [[88.8, 7.4, 1], [81.3, 6.35, 0.85], [83.8, 9.9, 0.55], [83.0, -0.3, 0.75], [84.05, -1.2, 0.8], [85.2, -1.9, 0.8],
+        [86.9, -9.7, 0.75], [78.6, -8.2, 1]],
+      lines: [[0, 2], [2, 1], [0, 5], [1, 3], [3, 4], [4, 5], [5, 6], [3, 7]],
+      nebula: [83.8, -5.4],
+    },
+    {
+      // The Plough: its bowl, Dubhe, Merak, Phecda and Megrez, and its handle, Alioth, Mizar and Alkaid.
+      centre: [186, 56],
+      stars: [[165.9, 61.75, 0.9], [165.5, 56.4, 0.8], [178.5, 53.7, 0.75], [183.9, 57.0, 0.6], [193.5, 55.96, 0.9], [200.98, 54.9, 0.85],
+        [206.9, 49.3, 0.85]],
+      lines: [[0, 1], [1, 2], [2, 3], [3, 0], [3, 4], [4, 5], [5, 6]],
+    },
+    {
+      // Cassiopeia's W.
+      centre: [15, 60],
+      stars: [[2.3, 59.15, 0.8], [10.1, 56.5, 0.85], [14.2, 60.7, 0.85], [21.45, 60.2, 0.75], [28.6, 63.7, 0.7]],
+      lines: [[0, 1], [1, 2], [2, 3], [3, 4]],
+    },
+    {
+      // Cygnus, the swan's cross along the Milky Way: Deneb, Sadr, Albireo, Gienah and Fawaris.
+      centre: [303, 38],
+      stars: [[310.4, 45.3, 1], [305.6, 40.3, 0.8], [292.7, 27.96, 0.7], [311.6, 33.97, 0.75], [296.2, 45.1, 0.7]],
+      lines: [[0, 1], [1, 2], [4, 1], [1, 3]],
+    },
+  ];
+  reseed("dome_sky");
+  const mix = (a, b, t) => a.map((c, i) => c + (b[i] - c) * t);
+  const smoothstep = (from, to, t) => {
+    const s = Math.max(0, Math.min(1, (t - from) / (to - from)));
+    return s * s * (3 - 2 * s);
+  };
+  // Where a point of the dome is, so far round (0 to 1) and so far up from its foot (radians), on a sphere for the noise.
+  const direction = (u, lat) => [Math.cos(lat) * Math.cos(2 * Math.PI * u), Math.sin(lat), Math.cos(lat) * Math.sin(2 * Math.PI * u)];
+  // How far a point of the dome is from the Milky Way's middle, in radians, from where it is in the sky.
+  const galactic = (u, lat) => {
+    const ra = 360 * (1 - u) * DEGREE;
+    const dec = (90 - (90 - lat / DEGREE) / SQUEEZE) * DEGREE;
+    const [poleRa, poleDec] = GALACTIC_POLE.map((angle) => angle * DEGREE);
+    return Math.asin(Math.sin(dec) * Math.sin(poleDec) + Math.cos(dec) * Math.cos(poleDec) * Math.cos(ra - poleRa));
+  };
+  const bandGlow = (b) => Math.exp(-((b / 0.2) ** 2)) + 0.35 * Math.exp(-((b / 0.45) ** 2));
+
+  const sky = [];
+  for (let py = 0; py < HEIGHT; py++) {
+    const lat = (1 - (py + 0.5) / HEIGHT) * Math.PI / 2;
+    const row = [];
+    for (let px = 0; px < WIDTH; px++) {
+      row.push(skyPixel((px + 0.5) / WIDTH, lat, (py + 0.5) / HEIGHT));
+    }
+    sky.push(row);
+  }
+
+  // The sky behind the stars at a point: its colour down the dome, faintly mottled, and the Milky Way's glow over it.
+  function skyPixel(u, lat, down) {
+    const at = direction(u, lat);
+    const base = mix(TIP, FOOT, down ** 0.8).map((c) => c * (0.9 + 0.2 * cloudNoise(at, 6, 3)));
+    const b = galactic(u, lat);
+    const clouds = Math.max(0, (cloudNoise(at, 5, 5) - 0.35) / 0.65) ** 1.3;
+    const hue = cloudNoise(at.map((c) => c + 3.7), 2.5, 3);
+    const colour = mix(mix(VIOLET, TEAL, smoothstep(0.5, 0.62, hue)), ROSE, smoothstep(0.42, 0.3, hue));
+    const laneMiddle = 0.04 * (cloudNoise(at.map((c) => c - 2.2), 4, 3) - 0.5);
+    const lane = Math.exp(-(((b - laneMiddle) / 0.035) ** 2)) * (0.5 + 0.6 * cloudNoise(at, 7, 3));
+    const glow = bandGlow(b) * (0.25 + clouds) * (1 - Math.min(0.85, lane)) * 0.45;
+    return base.map((c, i) => c + colour[i] * glow);
+  }
+
+  // The constellations' gold lines, over the sky.
+  const placed = FIGURES.map((figure) => figure.stars.map(([ra, dec, bright]) => [...place(figure.centre, ra, dec), bright]));
+  const lines = new Float32Array(WIDTH * HEIGHT);
+  FIGURES.forEach((figure, f) => figure.lines.forEach(([from, to]) => line(placed[f][from], placed[f][to])));
+  for (let i = 0; i < lines.length; i++) {
+    const [x, y] = [i % WIDTH, Math.floor(i / WIDTH)];
+    sky[y][x] = mix(sky[y][x], LINE, LINE_STRENGTH * lines[i]);
+  }
+
+  // Where a star of a constellation goes, in pixels: the constellation's middle where it is in the squeezed sky, and the
+  // star round it as far and in the same direction as it is in the real sky, at the figures' size, so its shape is kept;
+  // laid on the inside, as it is seen, so east is toward the left of the picture.
+  function place(centre, ra, dec) {
+    const middleX = (((1 - centre[0] / 360) % 1) + 1) % 1 * WIDTH;
+    const middleY = ((90 - centre[1]) * SQUEEZE / 90) * HEIGHT;
+    const east = ((((ra - centre[0]) % 360) + 540) % 360 - 180) * Math.cos(centre[1] * DEGREE);
+    const y = middleY - (dec - centre[1]) * FIGURE;
+    const lat = (1 - y / HEIGHT) * 90;
+    return [middleX - (east * FIGURE) / Math.cos(lat * DEGREE), y];
+  }
+
+  // A gold line between two stars, round the shorter way, stopping short of each.
+  function line([x0, y0], [x1, y1]) {
+    let dx = x1 - x0;
+    if (Math.abs(dx) > WIDTH / 2) dx -= Math.sign(dx) * WIDTH;
+    const dy = y1 - y0;
+    const length = Math.hypot(dx, dy);
+    const GAP = 2.5;
+    for (let s = GAP; s <= length - GAP; s += 0.3) {
+      const x = ((Math.round(x0 + (dx * s) / length) % WIDTH) + WIDTH) % WIDTH;
+      const y = Math.round(y0 + (dy * s) / length);
+      if (y >= 0 && y < HEIGHT) lines[y * WIDTH + x] = 1;
+    }
+  }
+
+  // Orion's nebula: a soft pink glow, a little wider than tall, its clouds uneven, a hot white point at its heart.
+  const orion = FIGURES[0];
+  const [nebulaX, nebulaY] = place(orion.centre, ...orion.nebula);
+  for (let dy = -7; dy <= 7; dy++) {
+    for (let dx = -9; dx <= 9; dx++) {
+      const r = Math.hypot(dx / 1.3, dy) / 7;
+      const x = ((Math.round(nebulaX) + dx) % WIDTH + WIDTH) % WIDTH;
+      const y = Math.round(nebulaY) + dy;
+      if (r >= 1 || y < 0 || y >= HEIGHT) continue;
+      const strength = NEBULA_STRENGTH * (1 - r) ** 2 * (0.6 + 0.6 * cloudNoise([x / 9, y / 9, 1.5], 1, 3));
+      sky[y][x] = sky[y][x].map((c, i) => c + NEBULA[i] * strength);
+    }
+  }
+
+  // The stars, scattered evenly over the dome (as much in each row's length as in any other's) and crowded along the
+  // Milky Way, each drawn no dimmer than what is under it.
+  const stars = [];
+  const randomStar = () => {
+    const lat = Math.asin(random());
+    const u = random();
+    const pick = random();
+    let colour = 0;
+    for (let share = STAR_SHARES[0]; pick > share && colour < STAR_SHARES.length - 1; share += STAR_SHARES[++colour]);
+    return { u, lat, bright: random() ** 4, colour: STAR_COLOURS[colour] };
+  };
+  for (let i = 0; i < SCATTERED; i++) stars.push(randomStar());
+  for (let i = 0; i < BAND_TRIED; i++) {
+    const star = randomStar();
+    if (random() < Math.min(1, bandGlow(galactic(star.u, star.lat)))) stars.push(star);
+  }
+  stars.sort((a, b) => b.bright - a.bright);
+  const crossed = Math.round(stars.length * CROSSED);
+  stars.forEach((star, i) => {
+    const x = Math.floor(star.u * WIDTH);
+    const y = Math.min(HEIGHT - 1, Math.floor((1 - star.lat / (Math.PI / 2)) * HEIGHT));
+    starAt(x, y, star.colour, i < crossed ? 1 : 0.27 + 0.73 * star.bright, i < crossed);
+  });
+  placed.flat().forEach(([x, y, bright]) => starAt(Math.floor(x), Math.floor(y), STAR_COLOURS[1], bright, bright >= 0.8));
+
+  // A star: a point of its colour at its brightness, or a little cross, its arms half as bright.
+  function starAt(x, y, colour, bright, cross) {
+    const light = (px, py, share) => {
+      if (py < 0 || py >= HEIGHT) return;
+      const wrapped = (px % WIDTH + WIDTH) % WIDTH;
+      sky[py][wrapped] = sky[py][wrapped].map((c, i) => Math.max(c, colour[i] * share));
+    };
+    light(x, y, bright);
+    if (cross) {
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => light(x + dx, y + dy, bright * 0.5));
+    }
+  }
+
+  // The pole star at the very tip, where the top rows close round to a point.
+  for (let x = 0; x < WIDTH; x++) {
+    sky[0][x] = [235, 240, 255];
+    sky[1][x] = mix(sky[1][x], [235, 240, 255], 0.6);
+  }
+  writeFileSync(resolve(miscOutput, "dome_sky.png"), encodePng(sky.map((row) => row.map((c) => c.map((v) => clamp(Math.round(v)))))));
+}
+
+// The light the orrery's renderer adds over its dome (see OrreryRenderer), 256 by 128, smoothed and not repeated past
+// its edges, each picture white on black for the renderer to tint, a black margin round it: the sparkle of a twinkling
+// star, a soft core with four thin points, at 192, 0, 32 across.
+function orreryGlowTexture() {
+  const WIDTH = 256;
+  const HEIGHT = 128;
+  const pixels = Array.from({ length: HEIGHT }, () => Array.from({ length: WIDTH }, () => [0, 0, 0, 255]));
+  // A picture so many pixels across with its top left corner at a point, painted from -1 to 1 each way from its middle.
+  const picture = (left, top, size, paint) => {
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const v = clamp(Math.round(255 * Math.min(1, paint(((x + 0.5) / size) * 2 - 1, ((y + 0.5) / size) * 2 - 1))));
+        pixels[top + y][left + x] = [v, v, v, 255];
+      }
+    }
+  };
+  picture(192, 0, 32, (x, y) => {
+    const core = Math.exp(-((Math.hypot(x, y) / 0.18) ** 2));
+    const point = (across, along) => Math.exp(-((across / 0.06) ** 2)) * Math.max(0, 1 - Math.abs(along) / 0.9) ** 2.5;
+    return core + point(x, y) + point(y, x);
+  });
+  writeFileSync(resolve(miscOutput, "orrery_glow.png"), encodePng(pixels));
+  writeFileSync(resolve(miscOutput, "orrery_glow.png.mcmeta"), JSON.stringify({ texture: { blur: true, clamp: true } }, null, 2) + "\n");
+}
+
 // The lab's food lab (see foodLabModels in generate_resources.mjs). The bioreactor's broth, pink and glowing, bubbles
 // rising through it a pixel a frame, a streak of the glass down one edge; the clear glass of its headspace; the steak,
 // muscle pink striped along its fibres and marbled with fat; and its panel at each stage of growth, a bar more lit green
