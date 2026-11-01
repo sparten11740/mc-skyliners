@@ -146,6 +146,18 @@ for (const [name, renderType] of Object.entries(cubes)) {
   });
 }
 
+// A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
+// through, and the hub in its middle. Only the blueprint places them, so neither has an item or drops anything. They
+// are ground, not airframe (see GROUND).
+{
+  write(`assets/${ID}/blockstates/launch_pad_grate.json`, { variants: { "": { model: `${ID}:block/launch_pad_grate` } } });
+  write(`assets/${ID}/models/block/launch_pad_grate.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/zeppelin_catwalk` }, render_type: "minecraft:cutout" });
+  write(`assets/${ID}/blockstates/launch_pad_hub.json`, { variants: { "": { model: `${ID}:block/launch_pad_hub` } } });
+  write(`assets/${ID}/models/block/launch_pad_hub.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/launch_pad_hub` } });
+  cubes.launch_pad_grate = null;
+  cubes.launch_pad_hub = null;
+}
+
 // The cabin floor: carpet on top, and finished where a floor is seen from elsewhere, as an airliner's is: underneath,
 // where the upper deck's floor is the main deck's ceiling and the main deck's the hold's, white ceiling panels; round
 // its sides, where a gallery or a stairwell shows its edge, the carpet's edge over a steel trim and a white fascia.
@@ -2375,6 +2387,7 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   });
   facing("tower_radar");
   write(`assets/${ID}/models/item/tower_radar.json`, { parent: `${ID}:block/tower_radar` });
+  write(`assets/${ID}/models/item/launch_pad_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/launch_pad_blueprint` } });
   write(`assets/${ID}/models/item/control_tower_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/control_tower_blueprint` } });
   write(`assets/${ID}/models/item/runway_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/runway_blueprint` } });
   // The motion sensor: a slim white housing screwed to the face of the wall behind it (south, facing north), low in its
@@ -9676,7 +9689,7 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 // Climbed as a ladder is.
 write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable(), "bunk_ladder"].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
+const GROUND = ["launch_pad_grate", "launch_pad_hub", "landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "floor_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
@@ -10385,6 +10398,16 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.half_festive_zeppelin_blueprint": "Half-Size Festive Zeppelin Blueprint",
   "item.aerolarge.half_festive_zeppelin_blueprint.tooltip": "The half-size furnished zeppelin dressed for Christmas",
   "item.aerolarge.airliner_blueprint.usage": "Use on the ground: the tail stretches away the way you face. Sneak to build through anything in the way.",
+  "item.aerolarge.rocket_blueprint.on_pad": "Use on a launch pad: she stands in its very middle, her door to its front.",
+  "item.aerolarge.launch_pad_blueprint": "Launch Pad Blueprint",
+  "item.aerolarge.launch_pad_blueprint.tooltip": "A concrete pad for the rocket, with a flame pit, a service tower and floodlights",
+  "item.aerolarge.launch_pad_blueprint.usage": "Use on the ground: the pad's front edge goes just past where you click, its walkway toward you. Sneak to build through anything in the way.",
+  "message.aerolarge.launch_pad_building": "Building the launch pad… %s%%",
+  "message.aerolarge.launch_pad_built": "The launch pad is ready. Use the Rocket Blueprint anywhere on it: she stands in its very middle.",
+  "message.aerolarge.launch_pad_too_high": "The launch pad's tower would reach past the build height here; build it lower down.",
+  "commands.aerolarge.build_launch_pad": "Building a launch pad of %s blocks, %s of them over blocks that were in the way",
+  "block.aerolarge.launch_pad_grate": "Launch Pad Grate",
+  "block.aerolarge.launch_pad_hub": "Launch Pad Hub",
   "item.aerolarge.control_tower_blueprint": "Control Tower Blueprint",
   "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",
   "item.aerolarge.control_tower_blueprint.usage": "Use on the ground: the tower goes up ahead of you, its door toward you. Sneak to build through anything in the way.",

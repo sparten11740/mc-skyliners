@@ -80,7 +80,7 @@ public final class AirframeBuild {
                 case EAST -> Rotation.COUNTERCLOCKWISE_90;
                 default -> Rotation.NONE;
             };
-            Laying laying = new Laying(level, nose, rotation, layout.size());
+            Laying laying = new Laying(level, layout, nose, rotation);
             layout.inOrder(laying::add);
             Map<BlockPos, Fitting> fittings = new HashMap<>();
             layout.fittings().forEach((pos, fitting) -> fittings.put(nose.offset(pos.rotate(rotation)), fitting));
@@ -92,6 +92,7 @@ public final class AirframeBuild {
     /** A placement being worked out: each block turned and set at its spot in the world, and what stands in its way. */
     private static final class Laying {
         private final ServerLevel level;
+        private final Layout layout;
         private final BlockPos nose;
         private final Rotation rotation;
         private final long[] positions;
@@ -103,12 +104,13 @@ public final class AirframeBuild {
         private BlockPos firstBlocked;
         private int top = Integer.MIN_VALUE;
 
-        Laying(ServerLevel level, BlockPos nose, Rotation rotation, int size) {
+        Laying(ServerLevel level, Layout layout, BlockPos nose, Rotation rotation) {
             this.level = level;
+            this.layout = layout;
             this.nose = nose;
             this.rotation = rotation;
-            this.positions = new long[size];
-            this.states = new BlockState[size];
+            this.positions = new long[layout.size()];
+            this.states = new BlockState[layout.size()];
         }
 
         void add(BlockPos cell, BlockState state) {
@@ -119,7 +121,7 @@ public final class AirframeBuild {
             states[count] = state.rotate(level, at, rotation);
             count++;
             top = Math.max(top, at.getY());
-            if (!level.isInWorldBounds(at)) {
+            if (!level.isInWorldBounds(at) || layout.intoTheGround(cell)) {
                 return;
             }
             BlockState there = level.getBlockState(at);

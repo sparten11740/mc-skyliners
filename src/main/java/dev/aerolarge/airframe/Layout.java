@@ -32,6 +32,14 @@ public interface Layout {
     }
 
     /**
+     * Whether a block of it, by its layout position, takes the place of the ground as it goes in, so that what stands
+     * there is not in its way: nothing of an airframe's, which stands on the ground.
+     */
+    default boolean intoTheGround(BlockPos cell) {
+        return false;
+    }
+
+    /**
      * The key of a message about building it ({@code building}, {@code built} or {@code too_high}), saying it as
      * this airframe: the airliner's, unless it says otherwise.
      */

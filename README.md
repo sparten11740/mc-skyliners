@@ -1398,6 +1398,30 @@ the land it crosses that nobody has seen yet is generated without the server sta
 To line an airliner up on it, use the airliner's blueprint at the runway's far end, looking back down it. A runway laid
 down is remembered with the world, for the autopilot to land on (see Autopilot).
 
+### The launch pad
+
+The **Launch Pad Blueprint** (in the creative tab with the rocket's) lays down a pad for the rocket, sized for her at
+the scale it is built at: 81 blocks square at the default scale. Held and aimed at the ground, it shows a yellow box
+over the deck it would lay and a post at its middle. Used, the deck takes the place of the layer you click, its front
+edge just past that block and centred on it, stretching away the way you face. It refuses if anything stands over the
+deck, unless you sneak, which builds straight through it, and operators have `/aerolarge build <pos>
+<north|east|south|west> launch_pad`.
+
+Use the Rocket Blueprint anywhere on the pad, from any side, and she goes in its very middle: her axis over the yellow
+cross of its hub, her four fins' feet on their four yellow plates, her door to the pad's front, the side you built it
+from. Held and aimed at the pad, the blueprint shows her there first, a ghost at her full height, whichever part of the
+deck you are looking at. Her lift-off, her landing back where she rose and her assembly leave the pad as it was: nothing
+of it touches her above the deck.
+
+A round steel grate as wide as she is lies under her, solid underfoot, over a flame pit: a steel deflector sloping down
+into a trench that runs to one side of the deck, lit from its floor, a railing along it. Its depth is six rows, or as
+many as the world has under the deck on a superflat world. Round the grate the concrete is scorched, a band of hazard
+stripes runs round the deck, and a mast at each corner carries a floodlight and a red light. A painted walkway with
+chevrons and lamps comes in from the front to where her airstairs land; the deck behind her, where her rover comes down,
+is left open. On the side away from the trench stands the service tower, a white steel lattice with red bands, as tall
+as she is under a lightning mast with a flashing beacon, a ladder up its core, and a platform and an arm reaching toward
+her at her entry floor and at her cockpit, stopping a few blocks short of her skin.
+
 ### Flying it
 
 The finished airliner is covered in Create's Super Glue, in overlapping stretches the Physics Assembler can find from
@@ -1866,7 +1890,8 @@ A rocket standing on four fins, as tall as the airliner is long at the scale the
 default 2) and 20 blocks across, a pointed nose on top with a band of smoked, nearly black glass round the cockpit under
 it, cut to the nose's curve, one pane thick and topped inside by a level ring of ceiling. The Rocket Blueprint builds
 one just past where it is used, its front, with its door,
-facing you, and operators with `/aerolarge build <pos> <north|east|south|west> rocket`. It is driven by Create
+facing you, or used on a launch pad right in the pad's middle (see The launch pad), and operators with
+`/aerolarge build <pos> <north|east|south|west> rocket`. It is driven by Create
 Propulsion's creative thrusters, which need no fuel: five bells of them in its flat bottom, their plumes trailing as
 they fire, and two rings of four side jets in its skin, near the nose and near the bottom, that hold it upright. Its
 fins are its legs; between them her airstairs come down from her front door to the ground (see below).
@@ -2512,7 +2537,9 @@ small cell holds by `Burners`, and its boarding stairs folded away and brought d
 of the `BoardingStairsButtonBlock` at the head of each flight, as `BoardingAirstairs`, the airliner's airstairs hung in
 her belly, which `AirstairRenderer` draws as it does the airliner's; both airframes go up through `AirframeBuild` as a
 `Layout`, kept as packed positions, from an `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its
-souvenir model (`SouvenirModelBlock`), and `PropellerRenderer` draws a zeppelin's propellers behind their
+souvenir model (`SouvenirModelBlock`), as a rocket's launch pad does, a `LaunchPad` from a `LaunchPadBlueprintItem`,
+whose hub's `LaunchPadBlockEntity` tells a `RocketBlueprintItem` where to set her down; and `PropellerRenderer` draws a
+zeppelin's propellers behind their
 `PropellerBlock` hubs, which spin them with their engine's signal. Once the hull stands, `ZeppelinLayout` lays its
 features, each a `ZeppelinPiece` of its own on one list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the
 Sky Shaft and the Sky Deck, `ZeppelinCellGallery` the gallery inside the middle cell, `ZeppelinDecks` the furnished

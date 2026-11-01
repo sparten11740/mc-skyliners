@@ -178,7 +178,7 @@ public final class RocketLayout implements Layout {
     }
 
     /** How tall a rocket built at a scale stands, in rows. */
-    static int heightRows(double scale) {
+    public static int heightRows(double scale) {
         return (int) Math.round(RocketShape.HEIGHT * scale);
     }
 
@@ -196,7 +196,7 @@ public final class RocketLayout implements Layout {
      * The floors' rows of a rocket built at a scale, from the entry story up as many as fit under the cockpit, and
      * last the cockpit's floor.
      */
-    static int[] storyRows(double scale) {
+    public static int[] storyRows(double scale) {
         int noseFoot = noseFootRow(scale);
         List<Integer> rows = new ArrayList<>();
         int floor = bottomRow(scale) + ENGINE_ROOM;
@@ -209,6 +209,47 @@ public final class RocketLayout implements Layout {
         }
         rows.add(noseFoot);
         return rows.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    /** The body's radius of a rocket built at a scale, in blocks. */
+    public static double radiusAt(double scale) {
+        return RocketShape.RADIUS * scale;
+    }
+
+    /** How far out from her axis the box round a rocket built at a scale reaches each way, in blocks. */
+    public static int reachAt(double scale) {
+        return (int) Math.ceil(RocketShape.FIN_TIP * scale) + 1;
+    }
+
+    /**
+     * The columns a rocket built at a scale stands on, as x and z from her axis: her fins' feet, on the row they meet
+     * the ground, for a launch pad to paint its plates round.
+     */
+    public static List<int[]> footColumns(double scale) {
+        double height = 0.5 / scale;
+        double out = RocketShape.finReach(height) * scale;
+        double in = RocketShape.finInner(height, bottomRow(scale) / scale) * scale;
+        List<int[]> feet = new ArrayList<>();
+        for (int[] fin : FINS) {
+            addFoot(feet, fin, in, out);
+        }
+        return feet;
+    }
+
+    /** One fin's columns on its foot's row, cut as {@link #finRow} cuts them. */
+    private static void addFoot(List<int[]> feet, int[] fin, double in, double out) {
+        for (int i = 0; i <= out; i++) {
+            addFootRow(feet, fin, i, in, out);
+        }
+    }
+
+    private static void addFootRow(List<int[]> feet, int[] fin, int i, double in, double out) {
+        for (int j = Math.max(0, i - 1); j <= i + 1; j++) {
+            double across = Math.hypot(i, j);
+            if (across <= out && across >= in) {
+                feet.add(new int[]{fin[0] * i, fin[1] * j});
+            }
+        }
     }
 
     /** The finished rocket at the configured scale: its fins' feet at y 0, its axis through x 0, z 0. */
@@ -398,7 +439,7 @@ public final class RocketLayout implements Layout {
 
     /** How far out the body reaches at most, fins and all, in blocks. */
     int reach() {
-        return (int) Math.ceil(RocketShape.FIN_TIP * scale) + 1;
+        return reachAt(scale);
     }
 
     /** Each story's floor row, from the entry story up. */

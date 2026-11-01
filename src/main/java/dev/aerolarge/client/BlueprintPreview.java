@@ -4,12 +4,18 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.aerolarge.Aerolarge;
+import dev.aerolarge.AerolargeConfig;
+import dev.aerolarge.airframe.RocketLayout;
+import dev.aerolarge.airport.LaunchPad;
+import dev.aerolarge.block.LaunchPadBlockEntity;
 import dev.aerolarge.item.AirframeBlueprintItem;
+import dev.aerolarge.item.LaunchPadBlueprintItem;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -36,6 +42,11 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  * its tail pointing away, the way it would stretch. It is the souvenir model without its stand, twice its size,
  * see-through and glowing, and bobbing gently, so it reads as a preview rather than a thing in the world.
  * Only the player's own view shows it, not a picture drawn from a camera of its own (the tail camera display's).
+ *
+ * <p>A rocket's blueprint aimed at a launch pad shows her instead where she would stand, in the pad's very middle: the
+ * same model, fainter and at her full height, its fins reaching as far as hers, however far off the player stands
+ * (see {@code RocketBlueprintItem}). A launch pad's blueprint shows the deck it would lay, as a box drawn over the
+ * ground, and a post where its middle would be.
  */
 public final class BlueprintPreview {
     /** How many times the souvenir model's size the miniature is drawn. */
@@ -50,6 +61,18 @@ public final class BlueprintPreview {
     private static final double BOB_SECONDS = 2.5;
     /** How solid it looks, from 0 for not at all to 1 for wholly. */
     private static final float ALPHA = 0.65F;
+    /** How solid the rocket shown at her full size on a launch pad looks: she is big, and must not hide the pad. */
+    private static final float ALPHA_ON_PAD = 0.4F;
+    /** How tall the souvenir rocket is, and how far out from her axis its fins reach, in blocks of its own block. */
+    private static final float MODEL_ROCKET_TALL = 15 / 16F;
+    private static final float MODEL_ROCKET_REACH = 4.5F / 16;
+    /** The colour of the box a launch pad's blueprint shows, red, green and blue from 0 to 1. */
+    private static final float PAD_RED = 1;
+    private static final float PAD_GREEN = 0.8F;
+    private static final float PAD_BLUE = 0.1F;
+    /** How tall that box is, and the post at its middle, in blocks. */
+    private static final double PAD_BOX_TALL = 1;
+    private static final double PAD_POST_TALL = 8;
     /** The texture of the model's stand, whose faces are left out. */
     private static final ResourceLocation STAND = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "block/light_cable");
     /** Drawn see-through, from the block textures the model is made of. */
@@ -64,13 +87,62 @@ public final class BlueprintPreview {
         }
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        AirframeBlueprintItem blueprint = player == null ? null : heldBlueprint(player);
-        if (blueprint == null || event.getCamera() != minecraft.gameRenderer.getMainCamera()
+        if (player == null || event.getCamera() != minecraft.gameRenderer.getMainCamera()
             || !(minecraft.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
             return;
         }
+        Vec3 camera = event.getCamera().getPosition();
+        if (holdsPadBlueprint(player)) {
+            drawPadBox(event.getPoseStack(), camera, hit.getBlockPos(), player.getDirection());
+            return;
+        }
+        AirframeBlueprintItem blueprint = heldBlueprint(player);
+        if (blueprint == null) {
+            return;
+        }
+        LaunchPadBlockEntity pad = blueprint.padUnder(player.level(), hit.getBlockPos());
+        if (pad != null) {
+            drawOnPad(event.getPoseStack(), camera, blueprint, pad);
+            return;
+        }
         float ticks = player.tickCount + event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        draw(event.getPoseStack(), event.getCamera().getPosition(), blueprint, hit.getBlockPos(), player.getDirection(), ticks);
+        draw(event.getPoseStack(), camera, blueprint, hit.getBlockPos(), player.getDirection(), ticks);
+    }
+
+    private static boolean holdsPadBlueprint(LocalPlayer player) {
+        return player.getMainHandItem().getItem() instanceof LaunchPadBlueprintItem || player.getOffhandItem().getItem() instanceof LaunchPadBlueprintItem;
+    }
+
+    /** The box over the deck a launch pad would have, built from the block aimed at, and the post at its middle. */
+    private static void drawPadBox(PoseStack pose, Vec3 camera, BlockPos aimed, Direction along) {
+        BlockPos middle = LaunchPadBlueprintItem.middle(aimed, along);
+        int half = LaunchPad.halfAt(AerolargeConfig.SCALE.get());
+        pose.pushPose();
+        pose.translate(-camera.x, -camera.y, -camera.z);
+        MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
+        VertexConsumer lines = buffers.getBuffer(RenderType.lines());
+        double top = aimed.getY() + 1;
+        LevelRenderer.renderLineBox(pose, lines, middle.getX() - half, top, middle.getZ() - half, middle.getX() + half + 1, top + PAD_BOX_TALL,
+            middle.getZ() + half + 1, PAD_RED, PAD_GREEN, PAD_BLUE, 1);
+        LevelRenderer.renderLineBox(pose, lines, middle.getX(), top, middle.getZ(), middle.getX() + 1, top + PAD_POST_TALL, middle.getZ() + 1,
+            PAD_RED, PAD_GREEN, PAD_BLUE, 1);
+        buffers.endBatch(RenderType.lines());
+        pose.popPose();
+    }
+
+    /** The rocket at her full size standing where the pad would have her, turned as it would turn her. */
+    private static void drawOnPad(PoseStack pose, Vec3 camera, AirframeBlueprintItem blueprint, LaunchPadBlockEntity pad) {
+        double scale = AerolargeConfig.SCALE.get();
+        BlockPos hub = pad.getBlockPos();
+        float tall = RocketLayout.heightRows(scale) / MODEL_ROCKET_TALL;
+        float across = (RocketLayout.reachAt(scale) - 1) / MODEL_ROCKET_REACH;
+        pose.pushPose();
+        pose.translate(hub.getX() + 0.5 - camera.x, hub.getY() + 1 - camera.y, hub.getZ() + 0.5 - camera.z);
+        pose.mulPose(Axis.YP.rotationDegrees(-pad.along().toYRot()));
+        pose.scale(across, tall, across);
+        pose.translate(-0.5, 0, -0.5);
+        drawModel(pose, blueprint, ALPHA_ON_PAD);
+        pose.popPose();
     }
 
     /** The blueprint the player holds, in either hand; null for none. */
@@ -91,13 +163,18 @@ public final class BlueprintPreview {
         pose.mulPose(Axis.YP.rotationDegrees(-along.toYRot()));
         pose.scale(SCALE, SCALE, SCALE);
         pose.translate(-0.5, -blueprint.modelMiddle() / 16, -0.5);
+        drawModel(pose, blueprint, ALPHA);
+        pose.popPose();
+    }
+
+    /** The blueprint's souvenir model, see-through and glowing, as the pose has placed it. */
+    private static void drawModel(PoseStack pose, AirframeBlueprintItem blueprint, float alpha) {
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         VertexConsumer consumer = buffers.getBuffer(GHOST);
         for (BakedQuad quad : model(blueprint.model())) {
-            consumer.putBulkData(pose.last(), quad, 1, 1, 1, ALPHA, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, false);
+            consumer.putBulkData(pose.last(), quad, 1, 1, 1, alpha, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, false);
         }
         buffers.endBatch(GHOST);
-        pose.popPose();
     }
 
     /** A souvenir model's faces, nose north, but for its stand's. */

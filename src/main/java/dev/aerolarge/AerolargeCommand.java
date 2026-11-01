@@ -8,6 +8,7 @@ import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.RocketLayout;
+import dev.aerolarge.airport.LaunchPad;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
@@ -39,7 +40,8 @@ final class AerolargeCommand {
                     .then(sized(Commands.literal("zeppelin"), along, ZeppelinOptions.PLAIN)
                         .then(sized(Commands.literal("furnished"), along, ZeppelinOptions.FURNISHED))
                         .then(sized(Commands.literal("festive"), along, ZeppelinOptions.FESTIVE)))
-                    .then(Commands.literal("rocket").executes(context -> build(context, along, RocketLayout.create(), "commands.aerolarge.build_rocket")))));
+                    .then(Commands.literal("rocket").executes(context -> build(context, along, RocketLayout.create(), "commands.aerolarge.build_rocket")))
+                    .then(Commands.literal("launch_pad").executes(context -> buildLaunchPad(context, along)))));
         }
         dispatcher.register(Commands.literal(Aerolarge.MOD_ID).requires(source -> source.hasPermission(2)).then(build));
     }
@@ -59,6 +61,12 @@ final class AerolargeCommand {
 
     private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, ZeppelinOptions options) throws CommandSyntaxException {
         return build(context, along, ZeppelinLayout.create(options), "commands.aerolarge.build_zeppelin");
+    }
+
+    private static int buildLaunchPad(CommandContext<CommandSourceStack> context, Direction along) throws CommandSyntaxException {
+        int deck = BlockPosArgument.getLoadedBlockPos(context, "pos").getY();
+        int roomUnder = deck - context.getSource().getLevel().getMinBuildHeight();
+        return build(context, along, LaunchPad.create(roomUnder), "commands.aerolarge.build_launch_pad");
     }
 
     private static int build(CommandContext<CommandSourceStack> context, Direction along, Layout layout, String said) throws CommandSyntaxException {

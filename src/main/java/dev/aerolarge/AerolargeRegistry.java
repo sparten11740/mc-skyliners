@@ -143,6 +143,9 @@ import dev.aerolarge.block.BioreactorBlock;
 import dev.aerolarge.block.LabGrowerBlock;
 import dev.aerolarge.block.LabPartitionBlock;
 import dev.aerolarge.block.LabPipeBlock;
+import dev.aerolarge.block.LaunchPadBlockEntity;
+import dev.aerolarge.block.LaunchPadGrateBlock;
+import dev.aerolarge.block.LaunchPadHubBlock;
 import dev.aerolarge.block.LiftFloorBlock;
 import dev.aerolarge.block.OrreryBlock;
 import dev.aerolarge.block.OrreryBlockEntity;
@@ -325,6 +328,8 @@ import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ControlTowerBlueprintItem;
 import dev.aerolarge.item.LightFittingItem;
+import dev.aerolarge.item.LaunchPadBlueprintItem;
+import dev.aerolarge.item.RocketBlueprintItem;
 import dev.aerolarge.item.RunwayBlueprintItem;
 import dev.aerolarge.item.LaserPointerItem;
 import dev.aerolarge.item.MailSackItem;
@@ -2419,11 +2424,29 @@ public final class AerolargeRegistry {
     public static final DeferredItem<AirframeBlueprintItem> HALF_FESTIVE_ZEPPELIN_BLUEPRINT =
         halfZeppelinBlueprint("half_festive_zeppelin_blueprint", ZeppelinOptions.FESTIVE);
     /** The rocket, as tall as the airliner is long, standing on its fins. */
-    public static final DeferredItem<AirframeBlueprintItem> ROCKET_BLUEPRINT = ITEMS.register(
-        "rocket_blueprint", () -> new AirframeBlueprintItem(RocketLayout::create, () -> MODEL_ROCKET.get().defaultBlockState(), ROCKET_MODEL_MIDDLE,
+    public static final DeferredItem<RocketBlueprintItem> ROCKET_BLUEPRINT = ITEMS.register(
+        "rocket_blueprint", () -> new RocketBlueprintItem(RocketLayout::create, () -> MODEL_ROCKET.get().defaultBlockState(), ROCKET_MODEL_MIDDLE,
             "item.aerolarge.rocket_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
+    public static final DeferredItem<LaunchPadBlueprintItem> LAUNCH_PAD_BLUEPRINT = ITEMS.register(
+        "launch_pad_blueprint", () -> new LaunchPadBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
+
+    /**
+     * What a launch pad lays over its flame pit: a steel grate to look through, not hull, and at its very middle the
+     * hub that knows the pad (see {@link LaunchPadBlockEntity}). Placed only by the blueprint, so no items, and they
+     * give nothing back.
+     */
+    public static final DeferredBlock<LaunchPadGrateBlock> LAUNCH_PAD_GRATE = BLOCKS.registerBlock(
+        "launch_pad_grate", LaunchPadGrateBlock::new, metal(MapColor.METAL).noOcclusion().isViewBlocking((state, level, pos) -> false)
+    );
+    public static final DeferredBlock<LaunchPadHubBlock> LAUNCH_PAD_HUB = BLOCKS.registerBlock(
+        "launch_pad_hub", LaunchPadHubBlock::new, metal(MapColor.COLOR_YELLOW)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchPadBlockEntity>> LAUNCH_PAD_HUB_ENTITY =
+        BLOCK_ENTITIES.register("launch_pad_hub", () -> BlockEntityType.Builder.of(LaunchPadBlockEntity::new, LAUNCH_PAD_HUB.get()).build(null));
+
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
         "control_tower_blueprint", () -> new ControlTowerBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
@@ -2534,7 +2557,7 @@ public final class AerolargeRegistry {
     public static final List<TabSection> TAB_SECTIONS = List.of(
         new TabSection("blueprints", List.of(
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT, FESTIVE_ZEPPELIN_BLUEPRINT,
-            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, ROCKET_BLUEPRINT, CONTROL_TOWER_BLUEPRINT,
+            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, ROCKET_BLUEPRINT, LAUNCH_PAD_BLUEPRINT, CONTROL_TOWER_BLUEPRINT,
             RUNWAY_BLUEPRINT
         )),
         new TabSection("airframe", List.of(

@@ -850,6 +850,16 @@ function rocketFromTheSide(x, y) {
   const fins = y >= 9 && y <= 13 && (x === 5 || x === 10 || (y >= 11 && (x === 4 || x === 11)));
   return body || nose || fins;
 }
+// A launch pad from the side: a flat deck, a small rocket standing in its middle and the service tower beside her.
+function padFromTheSide(x, y) {
+  const deck = y === 12 && x >= 2 && x <= 13;
+  const rocket = x >= 5 && x <= 6 && y >= 5 && y <= 10;
+  const nose = y === 4 && x >= 5 && x <= 6;
+  const fins = y === 11 && (x === 4 || x === 7);
+  const tower = x === 10 && y >= 3 && y <= 11;
+  const arm = y === 6 && x >= 8 && x <= 9;
+  return deck || rocket || nose || fins || tower || arm;
+}
 function towerFromTheSide(x, y) {
   const mast = x === 10 && y === 3;
   const roof = y === 4 && x >= 4 && x <= 11;
@@ -866,6 +876,7 @@ blueprint("half_zeppelin_blueprint", false, halfZeppelinFromTheSide);
 blueprint("half_furnished_zeppelin_blueprint", true, halfZeppelinFromTheSide);
 blueprint("half_festive_zeppelin_blueprint", true, halfZeppelinFromTheSide, [0xe0, 0x2a, 0x32]);
 blueprint("rocket_blueprint", false, rocketFromTheSide);
+blueprint("launch_pad_blueprint", false, padFromTheSide);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 
@@ -6957,6 +6968,13 @@ function clubBarTextures() {
     return x === 0 || x === 15 || y === 0 || y === 15 ? [0x24, 0x24, 0x2a] : [0x0e, 0x0e, 0x12];
   }, 1);
 
+  // The hub in the middle of a launch pad's grate: a dark steel plate under a yellow cross, a bolt in each corner.
+  texture(blockOutput, "launch_pad_hub", (x, y) => {
+    const cross = Math.abs(x - 7.5) <= 1 || Math.abs(y - 7.5) <= 1;
+    const bolt = (x === 2 || x === 13) && (y === 2 || y === 13);
+    if (cross) return [0xe6, 0xb8, 0x1e];
+    return bolt ? [0x8c, 0x92, 0x98] : [0x2c, 0x2f, 0x34];
+  }, 2);
   texture(blockOutput, "drink_tap_grate", (x, y) => (y % 2 === 0 ? [0x9a, 0xa2, 0xaa] : [0x18, 0x19, 0x1c]), 1);
   const VIOLET = [0x5a, 0x2c, 0xc0];
   const SPARKLE = [[VIOLET, GOLD, VIOLET], [GOLD, [0xff, 0xfa, 0xe0], GOLD], [VIOLET, GOLD, VIOLET]];

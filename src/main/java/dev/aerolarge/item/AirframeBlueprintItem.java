@@ -2,8 +2,10 @@ package dev.aerolarge.item;
 
 import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.Layout;
+import dev.aerolarge.block.LaunchPadBlockEntity;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -24,6 +27,13 @@ import net.minecraft.world.level.block.state.BlockState;
  * miniature of what it builds where it would build it (see {@code BlueprintPreview}): the airframe's souvenir model.
  */
 public class AirframeBlueprintItem extends Item {
+    /** How far past the block clicked an airframe's nose is, so it does not come down on the player. */
+    private static final int AHEAD = 2;
+
+    /** Where an airframe goes: its nose tip, and the way its tail stretches from there. */
+    protected record Spot(BlockPos nose, Direction along) {
+    }
+
     private final Supplier<Layout> layout;
     private final Supplier<BlockState> model;
     private final float modelMiddle;
@@ -59,16 +69,35 @@ public class AirframeBlueprintItem extends Item {
         if (!(context.getPlayer() instanceof ServerPlayer player)) {
             return InteractionResult.PASS;
         }
+        Spot spot = spot(level, context.getClickedPos(), player.getDirection());
+        return build(level, player, layout, spot.nose(), spot.along());
+    }
+
+    /**
+     * Where a layout goes when its blueprint is used on a block by a player looking a way: its nose just past the
+     * block, its wheels on top of it, its tail stretching away from the player.
+     */
+    protected Spot spot(Level level, BlockPos clicked, Direction looking) {
+        return new Spot(clicked.above().relative(looking, AHEAD), looking);
+    }
+
+    /** The launch pad this blueprint would stand its airframe on, used on a block, on either side; null for none. */
+    @Nullable
+    public LaunchPadBlockEntity padUnder(Level level, BlockPos aimed) {
+        return null;
+    }
+
+    /**
+     * Starts building a layout for a player, its nose at a spot and its tail stretching one way; refuses while another
+     * is going up, before laying this one out, past the build height, or with something in the way unless they sneak.
+     */
+    static InteractionResult build(ServerLevel level, ServerPlayer player, Supplier<? extends Layout> layout, BlockPos nose, Direction along) {
         if (AirframeBuild.isRunning(level)) {
             player.displayClientMessage(Component.translatable("message.aerolarge.busy"), true);
             return InteractionResult.FAIL;
         }
-
-        Direction along = player.getDirection();
-        BlockPos nose = context.getClickedPos().above().relative(along, 2);
         Layout laid = layout.get();
         AirframeBuild.Placement placement = AirframeBuild.Placement.of(level, laid, nose, along);
-
         if (placement.top() >= level.getMaxBuildHeight()) {
             player.displayClientMessage(Component.translatable(laid.message("too_high")), false);
             return InteractionResult.FAIL;

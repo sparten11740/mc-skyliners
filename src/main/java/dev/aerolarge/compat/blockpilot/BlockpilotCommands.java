@@ -7,6 +7,7 @@ import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.airframe.RocketLayout;
+import dev.aerolarge.airport.LaunchPad;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
@@ -114,7 +115,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("layout", (context, args) -> layout(args))
             .onServer()
             .group("aerolarge")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket", "launch_pad")
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe out without building it: how many blocks it has and a fingerprint of them, the same however they are laid out")
             .field("blocks", "its blocks, the air inside its hull among them")
@@ -276,6 +277,7 @@ public final class BlockpilotCommands {
             case "furnished_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED.sized(size));
             case "festive_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE.sized(size));
             case "rocket" -> RocketLayout.create();
+            case "launch_pad" -> LaunchPad.create(Integer.MAX_VALUE);
             case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
             default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
         };

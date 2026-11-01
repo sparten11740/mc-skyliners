@@ -155,10 +155,19 @@ final class RocketLaunchBlast {
             double way = (puff + level.getRandom().nextDouble()) * Mth.TWO_PI / PUFFS;
             double x = centre.x + Math.cos(way) * front;
             double z = centre.z + Math.sin(way) * front;
-            double y = ground(level, x, z) + level.getRandom().nextDouble() * DUST_HIGH;
+            double y = dustFloor(level, x, z) + level.getRandom().nextDouble() * DUST_HIGH;
             double rise = puff % 3 == 0 ? TOSS : LIFT * (1 + level.getRandom().nextDouble());
             RocketPlumes.roll(level, AerolargeRegistry.ROCKET_DUST.get(), new Vec3(x, y, z), new Vec3(Math.cos(way) * speed, rise, Math.sin(way) * speed));
         }
+    }
+
+    /**
+     * The height the ring's dust rolls over at a column: its ground, but past something standing far taller than where
+     * the blast began, a launch pad's tower or its mast, at the height it began, not up on top of it.
+     */
+    private double dustFloor(ServerLevel level, double x, double z) {
+        double top = ground(level, x, z);
+        return top - centre.y > SHOVED_OVER ? centre.y : top;
     }
 
     /**
