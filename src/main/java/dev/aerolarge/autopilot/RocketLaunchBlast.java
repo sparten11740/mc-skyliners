@@ -2,7 +2,6 @@ package dev.aerolarge.autopilot;
 
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
-import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.RocketSilhouette;
 import dev.aerolarge.compat.SableFlight;
 import java.util.HashSet;
@@ -35,15 +34,10 @@ final class RocketLaunchBlast {
     private static final double ON_THE_GROUND = 3;
     /**
      * The ring: how long it takes to race out, in ticks; how far it reaches from her middle on a rocket built at scale
-     * 1, in blocks; and its puffs of dust a tick round it.
+     * 1, in blocks.
      */
     private static final int RING_TICKS = 60;
     private static final double REACH_PER_SCALE = 32;
-    private static final int PUFFS = 40;
-    /** How high over the ground its dust rolls, in blocks, and how fast its puffs rise, gently and the tossed ones. */
-    private static final double DUST_HIGH = 3.5;
-    private static final double LIFT = 0.06;
-    private static final double TOSS = 0.22;
     /**
      * Its boom beyond the ring: how far off it is still heard, as a multiple of the ring's reach, and how fast it rolls
      * on out there, in blocks a tick.
@@ -59,7 +53,7 @@ final class RocketLaunchBlast {
     private static final double SHOVE = 2.6;
     private static final double SHOVE_UP = 0.6;
     /** How high over and under the ground round her what it shoves may be, in blocks. */
-    private static final double SHOVED_OVER = 12;
+    private static final double SHOVED_OVER = RocketDustRing.HIGHEST_GROUND;
     private static final double SHOVED_UNDER = 4;
 
     /** Whether her engines fired last tick. */
@@ -148,26 +142,9 @@ final class RocketLaunchBlast {
         return Math.hypot(point.x - centre.x, point.z - centre.z);
     }
 
-    /** The ring's dust, puffs spread evenly round it, rolling along the ground under it and out with its front. */
+    /** The ring's dust for this tick, to everyone near enough: the client rolls it along the ground under the ring. */
     private void ring(ServerLevel level) {
-        double speed = frontAt(age) - frontAt(age - 1);
-        for (int puff = 0; puff < PUFFS; puff++) {
-            double way = (puff + level.getRandom().nextDouble()) * Mth.TWO_PI / PUFFS;
-            double x = centre.x + Math.cos(way) * front;
-            double z = centre.z + Math.sin(way) * front;
-            double y = dustFloor(level, x, z) + level.getRandom().nextDouble() * DUST_HIGH;
-            double rise = puff % 3 == 0 ? TOSS : LIFT * (1 + level.getRandom().nextDouble());
-            RocketPlumes.roll(level, AerolargeRegistry.ROCKET_DUST.get(), new Vec3(x, y, z), new Vec3(Math.cos(way) * speed, rise, Math.sin(way) * speed));
-        }
-    }
-
-    /**
-     * The height the ring's dust rolls over at a column: its ground, but past something standing far taller than where
-     * the blast began, a launch pad's tower or its mast, at the height it began, not up on top of it.
-     */
-    private double dustFloor(ServerLevel level, double x, double z) {
-        double top = ground(level, x, z);
-        return top - centre.y > SHOVED_OVER ? centre.y : top;
+        RocketPlumes.tell(level, centre, new RocketDustRing(centre.x, centre.y, centre.z, (float) front, (float) (frontAt(age) - frontAt(age - 1))));
     }
 
     /**

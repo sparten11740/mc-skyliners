@@ -17,6 +17,8 @@ import dev.aerolarge.block.OpenTowerRadar;
 import dev.aerolarge.block.OpenTransponder;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.RocketPilot;
+import dev.aerolarge.autopilot.RocketDustRing;
+import dev.aerolarge.autopilot.RocketPlume;
 import dev.aerolarge.autopilot.SpaceGravity;
 import dev.aerolarge.block.RocketStairsBlockEntity;
 import dev.aerolarge.block.RoverBayBlockEntity;
@@ -40,6 +42,7 @@ import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.MicroscopeScreen;
 import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
+import dev.aerolarge.client.RocketPlumeParticles;
 import dev.aerolarge.client.RocketRoar;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.TerrainMap;
@@ -168,7 +171,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("29")
+        event.registrar("30")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -215,6 +218,10 @@ public final class Aerolarge {
                 (payload, context) -> BlastFlash.blast(payload.shake(), payload.flash()))
             .playToClient(LaunchShock.TYPE, LaunchShock.STREAM_CODEC,
                 (payload, context) -> RocketRoar.shockwave(payload.strength()))
+            .playToClient(RocketPlume.TYPE, RocketPlume.STREAM_CODEC,
+                (payload, context) -> RocketPlumeParticles.show(payload))
+            .playToClient(RocketDustRing.TYPE, RocketDustRing.STREAM_CODEC,
+                (payload, context) -> RocketPlumeParticles.ring(payload))
             .playToClient(ThrownClearPayload.TYPE, ThrownClearPayload.STREAM_CODEC,
                 (payload, context) -> ThrownClear.thrown());
     }
