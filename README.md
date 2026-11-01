@@ -15,11 +15,16 @@ airliner is a building.
 
 ## In game
 
-The blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under
-banners, each with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and
-the rocket's; the flight deck; doors and stairs; the zeppelin's control car; crew kit; skydiving and drops; gadgets;
-zeppelin extras; seats; floors and walls; signs and washrooms; duty free; the hold; the garden; galley and coffee; the
-bar; the gym hall; the pool; the club; the den; lights; decorations; the airport; and the rocket's rooms.
+The blueprints are in the Aircraft creative tab; there is no recipe for them. Aerolarge's things fill eight creative
+tabs side by side, each showing a picture of what it holds: Aircraft (a blueprint), the craft's blueprints, the
+airliner's airframe and the blocks the zeppelin and the rocket are built of, her lift's parts among them; Controls (a
+ship's wheel), the flight deck, the rocket's cockpit, the doors and stairs and the zeppelin's control car; Gear and
+Gadgets (a big red button), crew kit, skydiving and drops, gadgets and zeppelin extras; Cabin (a seat), seats, floors
+and walls, signs and washrooms, duty free, the hold, the garden and the lab; Food and Drink (an ice cream), the galley
+and coffee and the bar; Leisure (a basketball), the gym hall, the pool, the club and the den; Lights and Decor (a
+hanging lamp), lights and decorations; and Airport (a wind sock), the airfields' blueprints, the control tower and the
+terminal. Inside each tab everything sorts under banners, each with the picture of its first item and the name of what
+follows it.
 
 In creative mode the mouse wheel (pick block) copies what you look at, and that holds for the mod's furniture, fittings
 and machines too: the snack machine, the LED strips, a lab's pipes and instruments, a lift's doors and all, and a
@@ -1119,7 +1124,7 @@ from the height it left at, hundreds of blocks.
 A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use it to put it on, or put it in the
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
 or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter. A Model Zeppelin, a silver
-cigar on its stand with its fins and its car, is in the creative tab.
+cigar on its stand with its fins and its car, is in the Lights and Decor creative tab.
 
 A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
@@ -1308,7 +1313,7 @@ when the airliner starts to move, and shuts the door as it goes. Breaking it tak
 
 ### Control tower and transponders
 
-The **Control Tower Blueprint** (in the creative tab with the airliners') puts up an airfield's control tower, after the
+The **Control Tower Blueprint** (in the Airport creative tab) puts up an airfield's control tower, after the
 towers at real airports: used on the ground, the tower goes up ahead of the block you click, the canopy over its door
 two blocks past it and the door toward you, and it refuses while anything is in the way unless you sneak. A slender
 octagonal shaft of white concrete, light grey pilasters at its corners and a glazed strip up two of its faces, rises
@@ -1396,7 +1401,7 @@ glowing at night, each in front of a mullion so it hides none of the view.
 
 ### Runways
 
-The **Runway Blueprint** (in the creative tab with the airliners') lays down a runway for the airliner: used on the
+The **Runway Blueprint** (in the Airport creative tab) lays down a runway for the airliner: used on the
 ground, the runway starts two blocks past the block you click, centred on it, and runs away the way you face. It is
 sized for the airliner at the scale it is built at: as wide as its wingspan with a shoulder either side, and twice as
 long as it needs to take off on the autopilot (its roll up to `rotateSpeed`, the moment from there to lifting off and
@@ -1412,7 +1417,7 @@ down is remembered with the world, for the autopilot to land on (see Autopilot).
 
 ### The launch pad
 
-The **Launch Pad Blueprint** (in the creative tab with the rocket's) lays down a pad for the rocket, sized for her at
+The **Launch Pad Blueprint** (in the Airport creative tab) lays down a pad for the rocket, sized for her at
 the scale it is built at: 81 blocks square at the default scale. Held and aimed at the ground, it shows a yellow box
 over the deck it would lay and a post at its middle. Used, the deck takes the place of the layer you click, its front
 edge just past that block and centred on it, stretching away the way you face. It refuses if anything stands over the
@@ -1515,14 +1520,16 @@ the light under her is as it ever was. Where her floodlights shine into it, it i
 flies: flying low, landing or parked, the ground they light under her is as bright as in the sun, and from a cruise
 high up her shadow there is still lifted by half or less. The client config's `greatShadow` turns it off.
 
-The Festive Zeppelin Blueprint, in the creative tab, builds the furnished zeppelin dressed for Christmas: frosted
+The Festive Zeppelin Blueprint, in the Aircraft creative tab, builds the furnished zeppelin dressed for Christmas:
+frosted
 silver with snow on its crown and a red band edged white round it at every ring, its fins and engine cars green, its
 gas cells red and green within; fairy lights round every ring, red, gold, green and blue, twinkling one colour after
 another so they seem to chase round; a wreath of evergreen garland dotted with berries round the tip of its nose, a red
 bow under it; a gold star in place of the red beacon on its mast; and sleigh bells ringing with its engines as they
 turn, heard all over the ship aboard and from its propellers below. Operators build one with `/aerolarge build <pos>
 <north|east|south|west> zeppelin festive`. Its livery selector can repaint it in any of its liveries; its cells,
-lights, wreath and star stay. The Festive Garland and Festive Bow its wreath is made of are in the creative tab too.
+lights, wreath and star stay. The Festive Garland and Festive Bow its wreath is made of are in the Lights and Decor
+creative tab.
 
 Inside, the cover is held up by seventeen rings of blue lattice girders, and in the sixteen bays between them hang its
 sixteen gas cells, huge balloons of Create Aeronautics' envelope, every one a colour of its own from red at the bow
@@ -1891,9 +1898,10 @@ blocks it lets go and unloads, so that it stops costing the server its physics, 
 within 400 blocks and it is brought back, before they could see it missing. Turn this off with `letParkedShipsGo` in the
 server config, and a ship once assembled stays loaded for good.
 
-The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk
+The zeppelin's own blocks are in the Aircraft creative tab under Zeppelin: its fabric, its girders, its catwalk
 grating, the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
-strongest redstone signal beside it), and, under Zeppelin Control Car, the hand controls (placed by hand, each faces
+strongest redstone signal beside it), and, in the Controls tab under Zeppelin Control Car, the hand controls (placed by
+hand, each faces
 whoever places it, and a
 telegraph rings for the port engines, on its red plate; they fly a zeppelin only where its blueprint laid them).
 
@@ -1918,7 +1926,8 @@ rubber gasket, and sits inside in a recess lined with steel behind a steel lip; 
 once: use one to darken its glass a step, from clear through light and medium to dark, and once more to
 clear it again, a chime falling as it darkens.
 
-The same window is the Oval Window, in the creative tab under Rocket (it can be crafted, and picking one of hers, or any
+The same window is the Oval Window, in the Aircraft creative tab under Rocket (it can be crafted, and picking one of
+hers, or any
 other, with the mouse wheel in creative mode gives one), to set by hand into any wall, floor or roof. It fills the
 opening three blocks wide and four long that the spot clicked is in, whichever block of it is clicked: standing in a
 wall, or lying flat in a floor or a roof, whichever fits the opening best (looking steeply up or down tips a tie toward
@@ -1965,7 +1974,7 @@ is shut in (see her entry story, below). A rocket built before them, or with `ro
 off, keeps her open doorway.
 
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
-and Lift Glass are in the creative tab under Rocket, and can be crafted), where the shaft runs on up into a
+and Lift Glass are in the Aircraft creative tab under Rocket, and can be crafted), where the shaft runs on up into a
 glass booth with the lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's
 `rocket.lift` leaves it out). By each landing's sliding doors is a call button, a lit push-button with an arrow up and
 an arrow down on its pale cap: press it and the car comes, the button glowing amber until it is there (busy with someone
@@ -2003,7 +2012,8 @@ a brass line along its top, on dark parquet; the cockpit dark grey padding; and 
 livery paints her
 only outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the
 wall, warm white, a cool blue in the bunk room and pink in the club. They and her halo lights are one light, the Halo
-Light in the creative tab, which takes its shape from where it is put: under a ceiling or a light cable it hangs as a
+Light in the Lights and Decor creative tab, which takes its shape from where it is put: under a ceiling or a light cable
+it hangs as a
 halo ring, against a wall it is a wall washer, and on the ground a floor light, a low dark drum with a ring of light
 round its top shining up. Use one to switch it from warm white to night blue to pink, with a soft click; broken, any of
 them gives back the Halo Light. The pendant light takes its shape from where it is put too: under a ceiling or a light
@@ -2019,8 +2029,8 @@ chain hoists on trolleys riding the girders in the cargo bay, a yellow hook on e
 the mess; warm fairy lights looping along them in the bunk room; hanging baskets trailing green in the greenhouse;
 bunting in the pool's colours over the pool; stage spotlights in the club, angled down, throwing cones of pink and cyan
 light; and in the lab a ladder of cable tray, bundled cables of every colour along it (Girder Decoration, in the
-creative tab under Decorations, hangs a chain hoist; put up by hand each takes its shape from where it goes:
-under a ceiling it hangs as these do; on a wall the patches hang flat from a rod, the hoist from a braced jib arm,
+Lights and Decor creative tab under Decorations, hangs a chain hoist; put up by hand each takes its shape from where it
+goes: under a ceiling it hangs as these do; on a wall the patches hang flat from a rod, the hoist from a braced jib arm,
 the pans from a rail, the lights and the bunting loop along it from hooks, the basket hangs from a curled bracket, the
 spotlight angles down and out from a clamp on an arm and the tray runs on a bracket; and on the floor a patch hangs
 from a banner stand, the hoist in a little A-frame gantry, the pans from a standing rack with an upright at each end,
@@ -2080,7 +2090,8 @@ sparkles showing where a plant comes on a stage. A cherry and an azalea grow amo
 rocket), a composter, a water butt and a barrel or a potting bench with pots on them stand in a corner, herb pots and a
 green bean bag on the spots left over, moss grows over the paths in patches, and glow berry vines hang from the ceiling;
 the pool's channel hangs into its ceiling, its bottom glass, so swimmers are seen overhead from among the beds. Garden
-beds, sprinklers, irrigation valves and grow lights are in the creative tab and can be crafted, for a kitchen garden
+beds, sprinklers, irrigation valves and grow lights are in the Cabin creative tab under Garden and can be crafted, for a
+kitchen garden
 anywhere: a bed's frame runs round however many beds stand together, it never dries back to dirt or gets trampled, and a
 valve sets off every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a channel two deep
 curving round the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge,
@@ -2117,7 +2128,8 @@ two Zero-G Floats, lime under a scoop of ice cream, for 30 seconds of Slow Falli
 with stars, which clear away effects as milk does; or one Rocket Fuel, fiery orange, for 30 seconds of Speed and Jump
 Boost, or one Supernova Sunrise, red, orange and yellow in layers, for five seconds of Regeneration II. Each is a sip of
 food and can be drunk whenever. Each sale it answers, shakes a cocktail shaker over its shoulder to the rattle of ice,
-pours it into the glass and sets the drink down on the bar. The bar's furniture is in the creative tab under Bar
+pours it into the glass and sets the drink down on the bar. The bar's furniture is in the Food and Drink creative tab
+under Bar
 and all of it craftable. A Drink Tap stands on a bar counter, three tall neon handles, pink, cyan and lime, on a chrome
 tower over a drip tray: use it and the handle you click tips down, and a stream of glowing Star Fizz runs fizzing into
 the tray for a second, filling a glass bottle held under it with a bottle of Star Fizz, a sparkling soda to drink (the
@@ -2151,7 +2163,8 @@ its rings; in the lab, the eighth, a black hole, its burning disk bent over it a
 deck at the top, a quasar, its jets running up and down the poster into violet clouds. Each hangs on the back of the
 shaft, or on its side where something stands in the way there, and flies with her as a part of her; a smaller rocket,
 with fewer stories, has only the posters for the stories it has. Nothing bumps into one; break any part of a poster
-and the whole of it comes down, and is given back rolled up. Rolled up, the four are in the creative tab, each showing
+and the whole of it comes down, and is given back rolled up. Rolled up, the four are in the Lights and Decor creative
+tab, each showing
 its picture, and go up on any wall: used on the side of a block, a poster goes up against it, its middle in front of
 the block used, if every block of it has open air to go in and a solid face behind it. The server config's
 `rocket.posters` leaves them out of the rocket.
@@ -2174,7 +2187,8 @@ molecule of balls and sticks, an arrow and a graph climbing past a dashed line, 
 its corner. They go only where nothing else stands, a poster, the lift's call button or its LED panel, and never in
 front of
 the lift's doorway; nothing bumps into them, so the walkway round the shaft stays clear; and a story she is too small
-to have has none. Shaft Decoration is in the creative tab under Decorations: used on the side of a block, it puts up
+to have has none. Shaft Decoration is in the Lights and Decor creative tab under Decorations: used on the side of a
+block, it puts up
 a velvet curtain tied back against it. Any piece picked with the pick-block key puts up that piece, and a piece broken
 gives itself back as it was. Used on a floor or under a ceiling, a piece becomes its room's own small decoration, whole
 in one block: the departures board as a lit screen on a stand, or hung on two rods with the other destinations on its
@@ -2229,7 +2243,8 @@ gap left to look out of the window, bubbles rising through their broth round a s
 ends an algae column glowing green and a hydroponic rack of lettuces, basil and strawberries under violet grow lights,
 the bioreactors and the algae column piped up into the ceiling and their pipes joined along it. Use a bioreactor while
 its steak is whole and its cap hisses open in a puff of steam and the steak comes out to your hand, a Lab-Grown Steak,
-as filling as a cooked one and in the creative tab too; then the bars on its panel light green one by one as a new
+as filling as a cooked one and in the Food and Drink creative tab too; then the bars on its panel light green one by one
+as a new
 steak grows up the rod, a stage a minute, with a pop of bubbles at each stage and a chime once it is whole again. Used
 before that, it only gurgles. On her right is the wet bench: a sink to wash at, cabinets with jars on some, and in the
 one nearest the tank sixteen moss carpets to feed the tardigrade with. A bigger rocket's bays are wider, with rows back
@@ -2354,7 +2369,7 @@ down already it gives up where it was going and settles straight down where it i
 the bell: only its engines hold it up, and it has no controls to hand over to, so its autopilot never lets go of it in
 the air. A new height set while it comes down calls the landing off instead: it climbs back to that height with a
 rising note and holds there, over where it is, until told to land or given a pin to fly to. Like the zeppelin, a rocket stays loaded while it flies or anyone is near, unloads when left parked with nobody within 600 blocks, and comes back as someone comes within 400. A Model Rocket,
-standing on its fins, is in the creative tab.
+standing on its fins, is in the Lights and Decor creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then

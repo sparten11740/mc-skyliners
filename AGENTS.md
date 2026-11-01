@@ -19,7 +19,8 @@ feature as a player meets it, and its Building section says which classes do wha
 ## Where things are (`src/main/java/dev/aerolarge`)
 
 - Root: `Aerolarge` (registration, server ticks, network payloads and their protocol version), `AerolargeClient`,
-  `AerolargeRegistry`, `AerolargeConfig` (server config) and `AerolargeClientConfig` (client config), commands.
+  `AerolargeRegistry`, `AerolargeTabs` (the creative tabs, each in its sections), `AerolargeConfig` (server config)
+  and `AerolargeClientConfig` (client config), commands.
 - `airframe/`: the airliner itself. `AirframeShape` holds the A380's measurements in metres, `AirframeLayout` cuts them
   into blocks nose north, `AirframeBuild` places the result with one rotation, and the fit-out classes (`CabinFitOut`,
   `UpperDeck`, `HoldFitOut`, `CrewRooms`, ...) furnish it. `OutsideCamera` places the outside cameras.
