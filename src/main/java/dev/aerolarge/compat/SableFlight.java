@@ -3,6 +3,7 @@ package dev.aerolarge.compat;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.AirstairStepBlock;
+import dev.aerolarge.block.RoverPlatformBlock;
 import dev.aerolarge.block.SlideStepBlock;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
@@ -529,6 +530,14 @@ public final class SableFlight {
     }
 
     /**
+     * The blocks a rocket's rover bay's folded-down door is walked on, letting the ground through as the airstairs' do
+     * (see {@link #airstairStep}), so a platform reaching over a hill or a tree beside her never props her up.
+     */
+    public static RoverPlatformBlock roverPlatform(BlockBehaviour.Properties properties) {
+        return SABLE ? Access.roverPlatform(properties) : new RoverPlatformBlock(properties);
+    }
+
+    /**
      * How hard gravity pulls at a point in the world, in blocks a second each second, as Sable's physics has it there;
      * without Sable, as hard as Sable pulls by default.
      */
@@ -558,6 +567,10 @@ public final class SableFlight {
             return new PassingSlideStep(properties);
         }
 
+        static RoverPlatformBlock roverPlatform(BlockBehaviour.Properties properties) {
+            return new PassingRoverPlatform(properties);
+        }
+
         /** An airstairs' step the ground passes through, to Sable's physics. */
         private static final class PassingAirstairStep extends AirstairStepBlock implements BlockWithSubLevelCollisionCallback {
             PassingAirstairStep(BlockBehaviour.Properties properties) {
@@ -573,6 +586,18 @@ public final class SableFlight {
         /** A slide's step the ground passes through, to Sable's physics. */
         private static final class PassingSlideStep extends SlideStepBlock implements BlockWithSubLevelCollisionCallback {
             PassingSlideStep(BlockBehaviour.Properties properties) {
+                super(properties);
+            }
+
+            @Override
+            public BlockSubLevelCollisionCallback sable$getCallback() {
+                return PASS_THROUGH;
+            }
+        }
+
+        /** A rover bay's platform the ground passes through, to Sable's physics. */
+        private static final class PassingRoverPlatform extends RoverPlatformBlock implements BlockWithSubLevelCollisionCallback {
+            PassingRoverPlatform(BlockBehaviour.Properties properties) {
                 super(properties);
             }
 

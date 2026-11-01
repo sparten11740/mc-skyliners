@@ -232,6 +232,7 @@ import dev.aerolarge.block.RoverBayBlockEntity;
 import dev.aerolarge.block.RoverHatchBlock;
 import dev.aerolarge.block.RoverPanelBlock;
 import dev.aerolarge.block.RoverPanelBlockEntity;
+import dev.aerolarge.block.RoverPlatformBlock;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
@@ -2522,6 +2523,16 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<RoverHatchBlock> ROVER_HATCH = BLOCKS.registerBlock(
         "rover_hatch", RoverHatchBlock::new, metal(MapColor.SNOW).noOcclusion().isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false)
+    );
+    /**
+     * What the rover bay's folded-down door is walked on: invisible plates the bay lays and takes up only, so they
+     * cannot be mined, blown up or moved, and drop nothing.
+     */
+    public static final DeferredBlock<RoverPlatformBlock> ROVER_PLATFORM = BLOCKS.registerBlock(
+        "rover_platform", SableFlight::roverPlatform,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoverBayBlockEntity>> ROVER_BAY_ENTITY =
         BLOCK_ENTITIES.register("rover_bay", () -> BlockEntityType.Builder.of(RoverBayBlockEntity::new, ROVER_HATCH.get()).build(null));

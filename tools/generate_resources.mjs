@@ -5662,12 +5662,17 @@ function snackMachineLang() {
 // renderer (see RoverBayRenderer), door, platform, boom and all, so their model is only a particle texture. Its panel
 // is a board two sixteenths thick at the back of its block, as the skywriting board is, its face in the colour of how
 // the bay stands. Only the blueprint places them, so neither has an item or drops anything, and both are part of her
-// frame, which only a wrench takes apart, as her other controls are. The rover's remote: its antenna's tip lit green
-// once it is paired (see RoverClient).
+// frame, which only a wrench takes apart, as her other controls are. The invisible plates the folded-down door is
+// walked on (see RoverPlatformBlock) only give the particles feet kick up off its deck; the bay lays and takes them up,
+// so they have no item and drop nothing, light as the rest of her but no part of her frame (see roverFittings). The
+// rover's remote: its antenna's tip lit green once it is paired (see RoverClient).
 {
   write(`assets/${ID}/blockstates/rover_hatch.json`, { variants: { "": { model: `${ID}:block/rover_hatch` } } });
   write(`assets/${ID}/models/block/rover_hatch.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
   cubes.rover_hatch = null;
+  write(`assets/${ID}/blockstates/rover_platform.json`, { variants: { "": { model: `${ID}:block/rover_platform` } } });
+  write(`assets/${ID}/models/block/rover_platform.json`, { textures: { particle: `${ID}:block/airstair_tread` } });
+  cubes.rover_platform = null;
   const variants = {};
   for (const status of ["ready", "busy", "out", "refused"]) {
     write(`assets/${ID}/models/block/rover_panel_${status}.json`, {
@@ -5694,6 +5699,9 @@ function snackMachineLang() {
   });
   write(`assets/${ID}/models/item/rover_remote_paired.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/rover_remote_paired` } });
 }
+function roverFittings() {
+  return ["rover_platform"];
+}
 /** The rover's motor, its beeps on and off, its horn and the warning near the edge of its range. */
 function roverSounds() {
   return Object.fromEntries(["rover_motor", "rover_start", "rover_stop", "rover_horn", "rover_range"].map((name) =>
@@ -5703,6 +5711,7 @@ function roverLang() {
   return {
     "block.aerolarge.rover_hatch": "Rover Bay Door",
     "block.aerolarge.rover_panel": "Rover Bay Panel",
+    "block.aerolarge.rover_platform": "Rover Bay Platform",
     "entity.aerolarge.rover": "Rover",
     "item.aerolarge.rover_remote": "Rover Remote",
     "item.aerolarge.rover_remote.paired": "Paired with its rover: use it to drive, sneak and use it to call the rover home",
@@ -9696,6 +9705,7 @@ const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "
   "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
+FITTINGS.push(...roverFittings());
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());

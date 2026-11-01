@@ -2422,7 +2422,8 @@ paired with it. The one you look at brightens, as on the lift's picture board, a
 can do nothing just then, the rover being in or out, is dimmed. Its lamp is green with the rover in its
 cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red for a moment, with a
 low note, when the door will not open: it only opens while she stands still on her fins with her autopilot off. Then it
-folds down outward into a platform, nothing across the doorway (walk out after the rover and you fall), and a boom
+folds down outward into a platform you can walk out on to its end once it lies flat (step back in before it starts to
+fold back up, or you fall), and a boom
 striped yellow and black slides out over it; the rover rolls out onto the platform, is hooked to the boom's trolley,
 lifted, run out past
 the platform's end and lowered on the winch's cable to the ground, the winch ratcheting. Use the remote to drive it
@@ -2685,7 +2686,8 @@ flight mode (saved), boost and stability (neither saved), hands the pilot the li
 stability back on before she tips too far, and the autopilot's update carries them to the clients, where
 `FlightDisplayRenderer`, `RocketRoar`, `RocketExhaust` and `HeightGauge` show them.
 Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
-(`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
+(`RoverHatchBlock`) holds it, works the door (laying the `RoverPlatformBlock`s it is walked on while down) and the winch
+along `RoverRoute` and holds her countdown through
 `RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the
 `DriveRover` payload, and `RoverRenderer`, `RoverModel` and `RoverBayRenderer` draw it (`RoverClient` sets them up).
 `RocketLab` furnishes her lab as `LabPlan` lays it out: the tank's `HabitatGlassBlock`s, its `HabitatFloorBlock`s and

@@ -36,7 +36,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * The rocket's rover bay, kept by the middle of its door's sill (see {@link RoverHatchBlock}): it holds its rover (see
  * {@link Rover}) every tick, telling it where the bay is among her blocks and how far the door is open, and works the
  * door and its winch for it. The door opens as the rover leaves its cradle and shuts once it is back in it, its motor
- * running and its latch clunking; the winch's ratchet is heard while the rover is on the hook. Its panel (see
+ * running and its latch clunking, and lying flat it is a platform anyone may walk out on after the rover; the winch's
+ * ratchet is heard while the rover is on the hook. Its panel (see
  * {@link RoverPanelBlock}) sends the rover down, calls it home and hands out remotes paired with it, and its lamp shows
  * how the bay stands.
  *
@@ -258,7 +259,9 @@ public class RoverBayBlockEntity extends BlockEntity {
 
     /**
      * The door one tick on toward open or shut: its motor heard as it starts, its latch as it gets there; its doorway
-     * clear from the moment it starts to open until it is shut again.
+     * clear from the moment it starts to open until it is shut again. Its platform is walked on while it lies flat,
+     * laid wherever a block of it is missing, and taken up as it starts to fold back up (see
+     * {@link RoverPlatformBlock}).
      */
     private void moveDoor(ServerLevel level, boolean wanted) {
         lastTicks = ticks;
@@ -266,12 +269,17 @@ public class RoverBayBlockEntity extends BlockEntity {
             open = wanted;
             if (open) {
                 clearDoorway(level, true);
+            } else {
+                RoverPlatformBlock.takeUp(level, worldPosition, facing());
             }
             level.playSound(null, worldPosition, AerolargeRegistry.AIRSTAIR_MOTOR.get(), SoundSource.BLOCKS, MOTOR_VOLUME, 1.0F);
             sync();
         }
         int next = Mth.clamp(ticks + (open ? 1 : -1), 0, DOOR_TICKS);
         if (next == ticks) {
+            if (open) {
+                RoverPlatformBlock.lay(level, worldPosition, facing());
+            }
             return;
         }
         ticks = next;
@@ -283,6 +291,11 @@ public class RoverBayBlockEntity extends BlockEntity {
             }
             sync();
         }
+    }
+
+    /** Whether a block is part of its door's platform, laid out of her while the door is down or going down. */
+    boolean holdsPlatform(BlockPos pos) {
+        return open && RoverPlatformBlock.holds(worldPosition, facing(), pos);
     }
 
     /** Every part of the door marked open, its doorway clear but for the light curtain, or shut. */

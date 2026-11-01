@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.rover.RoverRoute;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -36,10 +37,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * drawn by the client with all of them. FACING is the way out of her.
  *
  * <p>OPEN is whether the doorway is clear, from the moment the door starts to open until it is shut again: nothing then
- * stands in it, the rover rolling out through it carried along by its bay, and anyone who walks out after it falls,
- * the platform being drawn and no floor for them. Shut, each part is a quarter of its block
- * just inside the skin's cut through the block's middle, so the door sits flush with the skin beside it. Only the
- * blueprint places it, so it has no item and drops nothing.
+ * stands in it but its sill, the outer half of each of its lowest row's blocks, out from the hinge, as thick as the
+ * door and level with the deck of the platform it folds down into, the rover rolling out through it carried along by
+ * its bay; once the door lies flat, the bay lays the rest of the platform out of her for anyone who walks out after it
+ * (see {@link RoverPlatformBlock}). Shut, each part is a quarter of its block just inside the skin's cut through the
+ * block's middle, so the door sits flush with the skin beside it. Only the blueprint places it, so it has no item and
+ * drops nothing.
  */
 public class RoverHatchBlock extends BaseEntityBlock {
     private static final MapCodec<RoverHatchBlock> CODEC = simpleCodec(RoverHatchBlock::new);
@@ -59,6 +62,15 @@ public class RoverHatchBlock extends BaseEntityBlock {
         Direction.SOUTH, Block.box(0, 0, 4, 16, 16, 8),
         Direction.EAST, Block.box(4, 0, 0, 8, 16, 16),
         Direction.WEST, Block.box(8, 0, 0, 12, 16, 16)
+    );
+    /** How thick the door is, in sixteenths: how high its sill and its platform's deck stand over the floor, open. */
+    static final double DECK = RoverRoute.DECK * 16;
+    /** The open doorway's sill, the outer half of a block of its lowest row, by the way out. */
+    private static final Map<Direction, VoxelShape> SILL = Map.of(
+        Direction.NORTH, Block.box(0, 0, 0, 16, DECK, 8),
+        Direction.SOUTH, Block.box(0, 0, 8, 16, DECK, 16),
+        Direction.EAST, Block.box(8, 0, 0, 16, DECK, 16),
+        Direction.WEST, Block.box(0, 0, 0, 8, DECK, 16)
     );
 
     public RoverHatchBlock(Properties properties) {
@@ -99,9 +111,13 @@ public class RoverHatchBlock extends BaseEntityBlock {
         return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
     }
 
+    /** Shut, the door; open, only the sill in its lowest row, which whoever walks out steps up onto. */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
+        if (!state.getValue(OPEN)) {
+            return SHUT.get(state.getValue(FACING));
+        }
+        return state.getValue(ROW) == 0 ? SILL.get(state.getValue(FACING)) : Shapes.empty();
     }
 
     @Override

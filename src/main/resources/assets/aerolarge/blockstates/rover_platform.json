@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "aerolarge:block/rover_platform"
+    }
+  }
+}

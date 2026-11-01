@@ -953,6 +953,7 @@
   "subtitles.aerolarge.snack_machine_clunk": "Snack drops",
   "block.aerolarge.rover_hatch": "Rover Bay Door",
   "block.aerolarge.rover_panel": "Rover Bay Panel",
+  "block.aerolarge.rover_platform": "Rover Bay Platform",
   "entity.aerolarge.rover": "Rover",
   "item.aerolarge.rover_remote": "Rover Remote",
   "item.aerolarge.rover_remote.paired": "Paired with its rover: use it to drive, sneak and use it to call the rover home",
