@@ -1,7 +1,6 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -18,20 +17,26 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The cockpit's LED console's block entity, in the part holding the console: the panel of each of her stories, as
  * offsets from it, the entry story's first; each story's floor and ceiling, rows up from her foot, which the console's
- * silhouette of her lays its bands by; and which story it sets now, or all of them. A change made for all of them runs
- * up her from the entry story, a story every few ticks, so the new colour climbs her. Set as the rocket is built; the
- * clients draw what it holds (see the client's {@code LedConsoleRenderer}).
+ * silhouette of her lays its bands by; and which stories it sets now, any of them or all. A change made for several
+ * runs up her from the lowest of them, a story every few ticks, so the new colour climbs her. Set as the rocket is
+ * built; the clients draw what it holds (see the client's {@code LedConsoleRenderer}).
  */
 public class LedConsoleBlockEntity extends BlockEntity {
-    /** What {@link #selected} is while the console sets every story at once. */
-    public static final int WHOLE_ROCKET = -1;
-    /** How many ticks a change for all of her takes to climb from one story to the next. */
+    /** What {@link #picked} is once the whole-rocket button has picked every story, however many she has. */
+    private static final long EVERY_STORY = -1L;
+    /** How many ticks a change for several stories takes to climb from one story to the next. */
     private static final int CLIMB_TICKS = 3;
 
     private List<BlockPos> panels = List.of();
     /** Each story's floor and ceiling in turn, rows up from her foot. */
     private int[] spans = new int[0];
-    private int selected = WHOLE_ROCKET;
+    /** The stories it sets now, a bit for each, counted from the entry story up. */
+    private long picked = EVERY_STORY;
+    /**
+     * Whether a touch on a story's band adds to what is picked, as it does once a band has been touched since anything
+     * was set. Only the server's, and not saved: after a reload the next band simply starts a new pick.
+     */
+    private boolean gathering;
 
     public LedConsoleBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.LED_CONSOLE_ENTITY.get(), pos, state);
@@ -61,9 +66,14 @@ public class LedConsoleBlockEntity extends BlockEntity {
         return Math.min(panels.size(), spans.length / 2);
     }
 
-    /** The story it sets now, from the entry story up, or {@link #WHOLE_ROCKET}. */
-    public int selected() {
-        return selected;
+    /** Whether it sets a story now, counted from the entry story up. */
+    public boolean picks(int story) {
+        return (picked >> story & 1) != 0;
+    }
+
+    /** Whether it sets every one of her stories now. */
+    public boolean picksAll() {
+        return (~picked & ((1L << stories()) - 1)) == 0;
     }
 
     /** A story's panel, where it stands loaded; null where it does not. */
@@ -76,35 +86,52 @@ public class LedConsoleBlockEntity extends BlockEntity {
     }
 
     /**
-     * Works a touched control, on the server: a story picks it, the whole-rocket button picks all of them, and a
-     * swatch, brightness or mode changes the story picked, or every story in turn up her.
+     * Works a touched control, on the server: a story's band picks it (see {@link #pick}), the whole-rocket button
+     * picks all of them, and a swatch, brightness or mode changes what is picked, each story in turn up her.
      */
     void touch(LedControls.Control control) {
         switch (control) {
             case LedControls.Story story -> pick(story.story());
-            case LedControls.WholeRocket whole -> pick(WHOLE_ROCKET);
+            case LedControls.WholeRocket whole -> pickAll();
             default -> set(control);
         }
     }
 
+    /**
+     * A touch on a story's band. The first since anything was set picks it alone, so that setting one story after
+     * another takes a touch each, as on a lighting desk; those after it add more stories, or leave out one already
+     * picked, but for the last, as something is always picked for the controls to change.
+     */
     private void pick(int story) {
-        selected = story < stories() ? story : WHOLE_ROCKET;
+        long band = 1L << story;
+        if (!gathering) {
+            picked = band;
+        } else if (picked != band) {
+            picked ^= band;
+        }
+        gathering = true;
         changed();
     }
 
-    /** Changes the story picked, or each in turn from the entry story up. */
+    private void pickAll() {
+        picked = EVERY_STORY;
+        gathering = false;
+        changed();
+    }
+
+    /** Changes the stories picked, each in turn from the lowest up. */
     private void set(LedControls.Control control) {
-        List<Integer> stories = new ArrayList<>();
+        gathering = false;
+        int climbed = 0;
         for (int story = 0; story < stories(); story++) {
-            if (selected == WHOLE_ROCKET || selected == story) {
-                stories.add(story);
+            if (!picks(story)) {
+                continue;
             }
-        }
-        for (int k = 0; k < stories.size(); k++) {
-            LedPanelBlockEntity panel = panel(stories.get(k));
+            LedPanelBlockEntity panel = panel(story);
             if (panel != null) {
-                panel.change(setting -> LedControls.changed(setting, control), k * CLIMB_TICKS);
+                panel.change(setting -> LedControls.changed(setting, control), climbed * CLIMB_TICKS);
             }
+            climbed++;
         }
     }
 
@@ -121,7 +148,7 @@ public class LedConsoleBlockEntity extends BlockEntity {
         tag.put("Panels", Relays.write(panels));
         Turning.save(tag, getBlockState());
         tag.putIntArray("Spans", spans);
-        tag.putInt("Selected", selected);
+        tag.putLong("Picked", picked);
     }
 
     /**
@@ -133,7 +160,13 @@ public class LedConsoleBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         panels = Turning.turn(Relays.read(tag.getList("Panels", Tag.TAG_INT_ARRAY)), Turning.since(tag, getBlockState()));
         spans = tag.getIntArray("Spans");
-        selected = tag.contains("Selected", Tag.TAG_INT) ? tag.getInt("Selected") : WHOLE_ROCKET;
+        picked = tag.contains("Picked", Tag.TAG_LONG) ? tag.getLong("Picked") : pickedBefore(tag);
+    }
+
+    /** What a console saved when it set one story or all of them has picked. */
+    private long pickedBefore(CompoundTag tag) {
+        int story = tag.contains("Selected", Tag.TAG_INT) ? tag.getInt("Selected") : -1;
+        return story < 0 || story >= stories() ? EVERY_STORY : 1L << story;
     }
 
     @Override

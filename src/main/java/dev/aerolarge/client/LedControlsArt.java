@@ -24,7 +24,8 @@ import org.joml.Matrix4f;
  * whole-rocket button, a little rocket standing up with every story's band lit. Every tile lights up as every touch
  * panel's does (see {@link TouchPanelArt}): the one the crosshair rests on as looked at, and what is set now as picked:
  * the colour, the brightness and the mode (on the console those every story picked agrees on), and on the console the
- * story picked, or every story and the whole-rocket button. Everything is in blocks on the face, at full brightness.
+ * stories picked, with the whole-rocket button once that is all of them. Everything is in blocks on the face, at full
+ * brightness.
  */
 final class LedControlsArt {
     private static final int CASING = 0xFF15171C;
@@ -75,21 +76,23 @@ final class LedControlsArt {
 
     /**
      * The console's face, two rows wide to one tall, the player looking at one of its tiles (or none, -1): her
-     * silhouette with each story's band, the whole-rocket button, and the controls, set as the story picked is, or
-     * marking only what every story agrees on while all are picked.
+     * silhouette with each story's band, the whole-rocket button, and the controls, marking only what every story
+     * picked agrees on.
      */
     static void console(Matrix4f matrix, VertexConsumer shapes, LedConsoleBlockEntity console, int looked, double ticks) {
         background(matrix, shapes, LedControls.Face.CONSOLE.width());
         List<LedSetting> settings = new ArrayList<>();
+        List<LedSetting> picked = new ArrayList<>();
         for (int story = 0; story < console.stories(); story++) {
             LedPanelBlockEntity panel = console.panel(story);
             settings.add(panel == null ? LedSetting.PLAIN : panel.setting());
+            if (console.picks(story)) {
+                picked.add(settings.getLast());
+            }
         }
-        int picked = console.selected();
-        boolean whole = picked < 0 || picked >= settings.size();
-        silhouette(matrix, shapes, console.layout(), settings, whole ? LedConsoleBlockEntity.WHOLE_ROCKET : picked, looked, ticks);
-        wholeRocket(matrix, shapes, settings, look(LedControls.WHOLE_ROCKET_TILE, looked, whole), ticks);
-        controls(matrix, shapes, LedControls.Face.CONSOLE, whole ? settings : List.of(settings.get(picked)), looked, ticks);
+        silhouette(matrix, shapes, console, settings, looked, ticks);
+        wholeRocket(matrix, shapes, settings, look(LedControls.WHOLE_ROCKET_TILE, looked, console.picksAll()), ticks);
+        controls(matrix, shapes, LedControls.Face.CONSOLE, picked, looked, ticks);
     }
 
     /** The casing and the dark glass inside it, over a face so wide and a row tall. */
@@ -226,10 +229,10 @@ final class LedControlsArt {
     /**
      * Her silhouette laid on her side, her foot at the left: fins and body in steel, her nose stepped as her blocks
      * are, her cockpit's smoked glass, and each story a band across her body glowing as its strips do, a touch anywhere
-     * over her height at it picking it; the one picked, or all of them, picked.
+     * over her height at it picking it; those the console sets now picked.
      */
-    private static void silhouette(Matrix4f matrix, VertexConsumer shapes, TouchPanel.Layout tiles, List<LedSetting> settings, int picked, int looked,
-                                   double ticks) {
+    private static void silhouette(Matrix4f matrix, VertexConsumer shapes, LedConsoleBlockEntity console, List<LedSetting> settings, int looked, double ticks) {
+        TouchPanel.Layout tiles = console.layout();
         TouchPanel.Tile picture = LedControls.PICTURE;
         double middle = picture.middleY();
         double tall = picture.height();
@@ -251,7 +254,7 @@ final class LedControlsArt {
             TouchPanel.Tile band = tiles.get(tile);
             TouchPanel.Tile lit = new TouchPanel.Tile(band.left() + BAND_GAP, middle - BAND_HALF * tall, band.right() - BAND_GAP, middle + BAND_HALF * tall);
             TouchPanelArt.tile(shapes, matrix, lit, LedLights.looks(settings.get(story), ticks, story, false),
-                look(tile, looked, picked == LedConsoleBlockEntity.WHOLE_ROCKET || picked == story), 5 * LAYER);
+                look(tile, looked, console.picks(story)), 5 * LAYER);
         }
     }
 

@@ -2259,9 +2259,10 @@ and mess a warm full tangerine, the bunk room a dim grape breathing like a night
 light, the pool sky blue breathing like water, the techno club pulsing pink and ocean blue, the lab mint and the
 observation deck a dim ocean blue for the stars. At the commander's left hand stands the LED console, her
 silhouette along its top laid on her side, each story a band glowing as its strips do: touch a band to pick that story,
-or the little rocket beside it to pick them all, what is picked glowing softly green, then use the same swatches,
-suns and strips under them. Set for all of
-her, a change climbs her a story at a time from the entry story up.
+more bands to pick them with it (one of them touched again is left out), or the little rocket beside it to pick them
+all, what is picked glowing softly green, then use the same swatches, suns and strips under them to change them all
+alike. The next band touched after that starts a new pick, so setting one story after another takes a touch each. Set
+for several stories, a change climbs her a story at a time from the lowest up.
 
 Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass: a smooth night sky just inside
 its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky

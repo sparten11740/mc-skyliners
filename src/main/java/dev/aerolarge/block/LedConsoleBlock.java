@@ -17,10 +17,11 @@ import net.minecraft.world.phys.Vec3;
  * The LED console in the rocket's cockpit, setting the strips round any of her stories or all of them (see
  * {@link LedStripBlock}): a screen of dark glass four blocks wide and two tall (a {@link WideScreenBlock}) standing on
  * the cockpit's floor at the commander's left hand, and a touch panel (see {@link TouchPanel}). Along its top, her
- * silhouette laid on her side, each story a band glowing as its strips do; touch one to pick that story, or the button
- * beside it with all of her lit to pick every one. Under them the story panels' own controls (see
- * {@link LedControls}) change what is picked, all of her a story at a time up from her entry story. The one the player
- * looks at lights up. The client's {@code LedConsoleRenderer} draws it.
+ * silhouette laid on her side, each story a band glowing as its strips do; touch one to pick that story, more to pick
+ * them with it, or the button beside it with all of her lit to pick every one. Under them the story panels' own
+ * controls (see {@link LedControls}) change what is picked, a story at a time up her from the lowest; the next band
+ * touched after that starts a new pick. The one the player looks at lights up. The client's
+ * {@code LedConsoleRenderer} draws it.
  */
 public class LedConsoleBlock extends WideScreenBlock implements TouchPanelBlock {
     private static final MapCodec<LedConsoleBlock> CODEC = simpleCodec(LedConsoleBlock::new);
