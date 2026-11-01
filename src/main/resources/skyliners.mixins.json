@@ -1,0 +1,18 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.skyliners.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "GirderBlockMixin"
+  ],
+  "client": [
+    "AdvancedFboImplMixin",
+    "HotAirBurnerMixin",
+    "LevelMixin",
+    "LevelRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

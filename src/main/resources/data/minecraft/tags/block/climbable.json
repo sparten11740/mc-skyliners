@@ -1,9 +1,9 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:pool_ladder",
-    "aerolarge:wall_bars",
-    "aerolarge:climbing_rope",
-    "aerolarge:bunk_ladder"
+    "skyliners:pool_ladder",
+    "skyliners:wall_bars",
+    "skyliners:climbing_rope",
+    "skyliners:bunk_ladder"
   ]
 }

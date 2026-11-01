@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:overhead_bin",
+    "count": 2
+  }
+}

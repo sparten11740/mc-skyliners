@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GGG",
+    "PCP"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:black_stained_glass_pane"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "C": {
+      "item": "minecraft:compass"
+    }
+  },
+  "result": {
+    "id": "skyliners:flight_strip_board",
+    "count": 1
+  }
+}

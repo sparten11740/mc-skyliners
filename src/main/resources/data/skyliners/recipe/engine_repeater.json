@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "B",
+    "G",
+    "C"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:bell"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "result": {
+    "id": "skyliners:engine_repeater",
+    "count": 1
+  }
+}

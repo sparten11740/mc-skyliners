@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "brightness=bright": {
+      "model": "skyliners:block/starlight_panel"
+    },
+    "brightness=dim": {
+      "model": "skyliners:block/starlight_panel"
+    },
+    "brightness=night": {
+      "model": "skyliners:block/starlight_panel"
+    }
+  }
+}

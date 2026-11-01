@@ -1,0 +1,184 @@
+{
+  "variants": {
+    "design=cocktail,facing=north,lit=true": {
+      "model": "skyliners:block/neon_sign_cocktail"
+    },
+    "design=cocktail,facing=north,lit=false": {
+      "model": "skyliners:block/neon_sign_cocktail_off"
+    },
+    "design=note,facing=north,lit=true": {
+      "model": "skyliners:block/neon_sign_note"
+    },
+    "design=note,facing=north,lit=false": {
+      "model": "skyliners:block/neon_sign_note_off"
+    },
+    "design=planet,facing=north,lit=true": {
+      "model": "skyliners:block/neon_sign_planet"
+    },
+    "design=planet,facing=north,lit=false": {
+      "model": "skyliners:block/neon_sign_planet_off"
+    },
+    "design=rocket,facing=north,lit=true": {
+      "model": "skyliners:block/neon_sign_rocket"
+    },
+    "design=rocket,facing=north,lit=false": {
+      "model": "skyliners:block/neon_sign_rocket_off"
+    },
+    "design=lips,facing=north,lit=true": {
+      "model": "skyliners:block/neon_sign_lips"
+    },
+    "design=lips,facing=north,lit=false": {
+      "model": "skyliners:block/neon_sign_lips_off"
+    },
+    "design=bolt,facing=north,lit=true": {
+      "model": "skyliners:block/neon_sign_bolt"
+    },
+    "design=bolt,facing=north,lit=false": {
+      "model": "skyliners:block/neon_sign_bolt_off"
+    },
+    "design=cocktail,facing=east,lit=true": {
+      "model": "skyliners:block/neon_sign_cocktail",
+      "y": 90
+    },
+    "design=cocktail,facing=east,lit=false": {
+      "model": "skyliners:block/neon_sign_cocktail_off",
+      "y": 90
+    },
+    "design=note,facing=east,lit=true": {
+      "model": "skyliners:block/neon_sign_note",
+      "y": 90
+    },
+    "design=note,facing=east,lit=false": {
+      "model": "skyliners:block/neon_sign_note_off",
+      "y": 90
+    },
+    "design=planet,facing=east,lit=true": {
+      "model": "skyliners:block/neon_sign_planet",
+      "y": 90
+    },
+    "design=planet,facing=east,lit=false": {
+      "model": "skyliners:block/neon_sign_planet_off",
+      "y": 90
+    },
+    "design=rocket,facing=east,lit=true": {
+      "model": "skyliners:block/neon_sign_rocket",
+      "y": 90
+    },
+    "design=rocket,facing=east,lit=false": {
+      "model": "skyliners:block/neon_sign_rocket_off",
+      "y": 90
+    },
+    "design=lips,facing=east,lit=true": {
+      "model": "skyliners:block/neon_sign_lips",
+      "y": 90
+    },
+    "design=lips,facing=east,lit=false": {
+      "model": "skyliners:block/neon_sign_lips_off",
+      "y": 90
+    },
+    "design=bolt,facing=east,lit=true": {
+      "model": "skyliners:block/neon_sign_bolt",
+      "y": 90
+    },
+    "design=bolt,facing=east,lit=false": {
+      "model": "skyliners:block/neon_sign_bolt_off",
+      "y": 90
+    },
+    "design=cocktail,facing=south,lit=true": {
+      "model": "skyliners:block/neon_sign_cocktail",
+      "y": 180
+    },
+    "design=cocktail,facing=south,lit=false": {
+      "model": "skyliners:block/neon_sign_cocktail_off",
+      "y": 180
+    },
+    "design=note,facing=south,lit=true": {
+      "model": "skyliners:block/neon_sign_note",
+      "y": 180
+    },
+    "design=note,facing=south,lit=false": {
+      "model": "skyliners:block/neon_sign_note_off",
+      "y": 180
+    },
+    "design=planet,facing=south,lit=true": {
+      "model": "skyliners:block/neon_sign_planet",
+      "y": 180
+    },
+    "design=planet,facing=south,lit=false": {
+      "model": "skyliners:block/neon_sign_planet_off",
+      "y": 180
+    },
+    "design=rocket,facing=south,lit=true": {
+      "model": "skyliners:block/neon_sign_rocket",
+      "y": 180
+    },
+    "design=rocket,facing=south,lit=false": {
+      "model": "skyliners:block/neon_sign_rocket_off",
+      "y": 180
+    },
+    "design=lips,facing=south,lit=true": {
+      "model": "skyliners:block/neon_sign_lips",
+      "y": 180
+    },
+    "design=lips,facing=south,lit=false": {
+      "model": "skyliners:block/neon_sign_lips_off",
+      "y": 180
+    },
+    "design=bolt,facing=south,lit=true": {
+      "model": "skyliners:block/neon_sign_bolt",
+      "y": 180
+    },
+    "design=bolt,facing=south,lit=false": {
+      "model": "skyliners:block/neon_sign_bolt_off",
+      "y": 180
+    },
+    "design=cocktail,facing=west,lit=true": {
+      "model": "skyliners:block/neon_sign_cocktail",
+      "y": 270
+    },
+    "design=cocktail,facing=west,lit=false": {
+      "model": "skyliners:block/neon_sign_cocktail_off",
+      "y": 270
+    },
+    "design=note,facing=west,lit=true": {
+      "model": "skyliners:block/neon_sign_note",
+      "y": 270
+    },
+    "design=note,facing=west,lit=false": {
+      "model": "skyliners:block/neon_sign_note_off",
+      "y": 270
+    },
+    "design=planet,facing=west,lit=true": {
+      "model": "skyliners:block/neon_sign_planet",
+      "y": 270
+    },
+    "design=planet,facing=west,lit=false": {
+      "model": "skyliners:block/neon_sign_planet_off",
+      "y": 270
+    },
+    "design=rocket,facing=west,lit=true": {
+      "model": "skyliners:block/neon_sign_rocket",
+      "y": 270
+    },
+    "design=rocket,facing=west,lit=false": {
+      "model": "skyliners:block/neon_sign_rocket_off",
+      "y": 270
+    },
+    "design=lips,facing=west,lit=true": {
+      "model": "skyliners:block/neon_sign_lips",
+      "y": 270
+    },
+    "design=lips,facing=west,lit=false": {
+      "model": "skyliners:block/neon_sign_lips_off",
+      "y": 270
+    },
+    "design=bolt,facing=west,lit=true": {
+      "model": "skyliners:block/neon_sign_bolt",
+      "y": 270
+    },
+    "design=bolt,facing=west,lit=false": {
+      "model": "skyliners:block/neon_sign_bolt_off",
+      "y": 270
+    }
+  }
+}

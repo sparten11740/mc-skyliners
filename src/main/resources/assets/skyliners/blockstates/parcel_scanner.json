@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,scan=ready": {
+      "model": "skyliners:block/parcel_scanner_ready",
+      "y": 0
+    },
+    "facing=north,scan=scanning": {
+      "model": "skyliners:block/parcel_scanner_scanning",
+      "y": 0
+    },
+    "facing=north,scan=packed": {
+      "model": "skyliners:block/parcel_scanner_packed",
+      "y": 0
+    },
+    "facing=north,scan=empty": {
+      "model": "skyliners:block/parcel_scanner_empty",
+      "y": 0
+    },
+    "facing=east,scan=ready": {
+      "model": "skyliners:block/parcel_scanner_ready",
+      "y": 90
+    },
+    "facing=east,scan=scanning": {
+      "model": "skyliners:block/parcel_scanner_scanning",
+      "y": 90
+    },
+    "facing=east,scan=packed": {
+      "model": "skyliners:block/parcel_scanner_packed",
+      "y": 90
+    },
+    "facing=east,scan=empty": {
+      "model": "skyliners:block/parcel_scanner_empty",
+      "y": 90
+    },
+    "facing=south,scan=ready": {
+      "model": "skyliners:block/parcel_scanner_ready",
+      "y": 180
+    },
+    "facing=south,scan=scanning": {
+      "model": "skyliners:block/parcel_scanner_scanning",
+      "y": 180
+    },
+    "facing=south,scan=packed": {
+      "model": "skyliners:block/parcel_scanner_packed",
+      "y": 180
+    },
+    "facing=south,scan=empty": {
+      "model": "skyliners:block/parcel_scanner_empty",
+      "y": 180
+    },
+    "facing=west,scan=ready": {
+      "model": "skyliners:block/parcel_scanner_ready",
+      "y": 270
+    },
+    "facing=west,scan=scanning": {
+      "model": "skyliners:block/parcel_scanner_scanning",
+      "y": 270
+    },
+    "facing=west,scan=packed": {
+      "model": "skyliners:block/parcel_scanner_packed",
+      "y": 270
+    },
+    "facing=west,scan=empty": {
+      "model": "skyliners:block/parcel_scanner_empty",
+      "y": 270
+    }
+  }
+}

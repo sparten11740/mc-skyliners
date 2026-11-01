@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "Y",
+    "P",
+    "D"
+  ],
+  "key": {
+    "Y": {
+      "item": "minecraft:yellow_dye"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "D": {
+      "item": "skyliners:flight_deck"
+    }
+  },
+  "result": {
+    "id": "skyliners:deck_clamp",
+    "count": 1
+  }
+}

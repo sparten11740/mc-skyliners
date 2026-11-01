@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/hoop_ceiling",
+      "y": 0
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/hoop",
+      "y": 0
+    },
+    "facing=north,mount=floor": {
+      "model": "skyliners:block/hoop_floor",
+      "y": 0
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/hoop_ceiling",
+      "y": 90
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/hoop",
+      "y": 90
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/hoop_floor",
+      "y": 90
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/hoop_ceiling",
+      "y": 180
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/hoop",
+      "y": 180
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/hoop_floor",
+      "y": 180
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/hoop_ceiling",
+      "y": 270
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/hoop",
+      "y": 270
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/hoop_floor",
+      "y": 270
+    }
+  }
+}

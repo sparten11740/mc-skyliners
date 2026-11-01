@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "L",
+    "P"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:stone_button"
+    },
+    "P": {
+      "item": "skyliners:instrument_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:seatbelt_switch",
+    "count": 1
+  }
+}

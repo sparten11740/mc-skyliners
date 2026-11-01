@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "skyliners:block/grow_light"
+    },
+    "axis=z": {
+      "model": "skyliners:block/grow_light",
+      "y": 90
+    }
+  }
+}

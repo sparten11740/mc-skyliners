@@ -1,0 +1,132 @@
+{
+  "variants": {
+    "facing=north,growth=0,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_0",
+      "y": 0
+    },
+    "facing=north,growth=0,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_0",
+      "y": 0
+    },
+    "facing=north,growth=1,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_1",
+      "y": 0
+    },
+    "facing=north,growth=1,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_1",
+      "y": 0
+    },
+    "facing=north,growth=2,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_2",
+      "y": 0
+    },
+    "facing=north,growth=2,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_2",
+      "y": 0
+    },
+    "facing=north,growth=3,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_3",
+      "y": 0
+    },
+    "facing=north,growth=3,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_3",
+      "y": 0
+    },
+    "facing=east,growth=0,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_0",
+      "y": 90
+    },
+    "facing=east,growth=0,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_0",
+      "y": 90
+    },
+    "facing=east,growth=1,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_1",
+      "y": 90
+    },
+    "facing=east,growth=1,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_1",
+      "y": 90
+    },
+    "facing=east,growth=2,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_2",
+      "y": 90
+    },
+    "facing=east,growth=2,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_2",
+      "y": 90
+    },
+    "facing=east,growth=3,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_3",
+      "y": 90
+    },
+    "facing=east,growth=3,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_3",
+      "y": 90
+    },
+    "facing=south,growth=0,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_0",
+      "y": 180
+    },
+    "facing=south,growth=0,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_0",
+      "y": 180
+    },
+    "facing=south,growth=1,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_1",
+      "y": 180
+    },
+    "facing=south,growth=1,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_1",
+      "y": 180
+    },
+    "facing=south,growth=2,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_2",
+      "y": 180
+    },
+    "facing=south,growth=2,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_2",
+      "y": 180
+    },
+    "facing=south,growth=3,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_3",
+      "y": 180
+    },
+    "facing=south,growth=3,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_3",
+      "y": 180
+    },
+    "facing=west,growth=0,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_0",
+      "y": 270
+    },
+    "facing=west,growth=0,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_0",
+      "y": 270
+    },
+    "facing=west,growth=1,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_1",
+      "y": 270
+    },
+    "facing=west,growth=1,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_1",
+      "y": 270
+    },
+    "facing=west,growth=2,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_2",
+      "y": 270
+    },
+    "facing=west,growth=2,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_2",
+      "y": 270
+    },
+    "facing=west,growth=3,half=lower": {
+      "model": "skyliners:block/bioreactor_lower_3",
+      "y": 270
+    },
+    "facing=west,growth=3,half=upper": {
+      "model": "skyliners:block/bioreactor_upper_3",
+      "y": 270
+    }
+  }
+}

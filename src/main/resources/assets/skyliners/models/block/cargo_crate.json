@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "skyliners:block/cargo_crate_front",
+    "side": "skyliners:block/cargo_crate_side",
+    "top": "skyliners:block/cargo_crate_top"
+  }
+}

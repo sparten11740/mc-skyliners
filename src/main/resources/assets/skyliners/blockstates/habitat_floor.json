@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "kind=pool": {
+      "model": "skyliners:block/habitat_pool"
+    },
+    "kind=pebbles": {
+      "model": "skyliners:block/habitat_pebbles"
+    }
+  }
+}

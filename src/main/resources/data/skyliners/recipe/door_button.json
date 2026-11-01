@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "D",
+    "B"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:light_blue_dye"
+    },
+    "B": {
+      "item": "skyliners:airstair_button"
+    }
+  },
+  "result": {
+    "id": "skyliners:door_button",
+    "count": 1
+  }
+}

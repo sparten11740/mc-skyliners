@@ -1,0 +1,117 @@
+{
+  "parent": "skyliners:block/girder_decor_chain_hoist",
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:kind": 0,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_mission_patches_first"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_mission_patches_second"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.125,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_chain_hoist"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.125,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_chain_hoist"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.25,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_pot_rack_first"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.25,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_pot_rack_second"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.375,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_fairy_lights_first"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.375,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_fairy_lights_second"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.5,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_hanging_basket"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.5,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_hanging_basket"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.625,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_bunting_first"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.625,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_bunting_second"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.75,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_spotlight_first"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.75,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_spotlight_second"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.875,
+        "skyliners:part": 0
+      },
+      "model": "skyliners:block/girder_decor_cable_tray"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.875,
+        "skyliners:part": 0.5
+      },
+      "model": "skyliners:block/girder_decor_cable_tray"
+    }
+  ]
+}

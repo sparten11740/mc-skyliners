@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 
 // Run from anywhere: node tools/generate_sounds.mjs [<name> ...]
-// Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH (and, where FFmpeg has
+// Writes the airliner's sounds as Ogg Vorbis into assets/skyliners/sounds, with FFmpeg on PATH (and, where FFmpeg has
 // no libvorbis, as Homebrew's FFmpeg 9 has not, oggenc from vorbis-tools, the same encoder). Given sound names, it
 // writes only those and leaves the rest as they are:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
@@ -19,9 +19,9 @@ import { execFileSync } from "node:child_process";
 // Deterministic apart from the voices: Windows' are whatever it ships, and Kokoro's may differ by a hair from one kind
 // of processor to another.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const output = resolve(ROOT, "src/main/resources/assets/aerolarge/sounds");
+const output = resolve(ROOT, "src/main/resources/assets/skyliners/sounds");
 mkdirSync(output, { recursive: true });
-const scratch = mkdtempSync(join(tmpdir(), "aerolarge-sounds-"));
+const scratch = mkdtempSync(join(tmpdir(), "skyliners-sounds-"));
 
 const RATE = 44100;
 

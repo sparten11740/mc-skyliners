@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "aerolarge:block/check_in_desk_front",
-    "side": "aerolarge:block/check_in_desk_side",
-    "top": "aerolarge:block/check_in_desk_top"
-  }
-}

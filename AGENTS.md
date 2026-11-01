@@ -1,12 +1,14 @@
-# Aerolarge: notes for coding agents
+# Skyliners: notes for coding agents
 
-A NeoForge 1.21.1 mod (Java 21): an A380-style double-deck airliner big enough to build in, assembled into a flying
-body by Sable (Create Aeronautics) and flown from its own cockpit, mostly by its autopilot. `README.md` describes every
-feature as a player meets it, and its Building section says which classes do what.
+Create: Skyliners, a NeoForge 1.21.1 mod (Java 21): an A380-style double-deck airliner big enough to build in, assembled
+into a flying body by Sable (Create Aeronautics) and flown from its own cockpit, mostly by its autopilot. `README.md`
+describes every feature as a player meets it, and its Building section says which classes do what. Its mod id, packages
+and commands are `skyliners`. Up to 0.1.0-alpha.216 it was Aerolarge (`aerolarge`), as the plans in `docs/plans` still
+call it, and its airliner still flies as "Aerolarge three eight zero" on the radio.
 
 ## Build and run
 
-- `./gradlew build` writes `build/libs/aerolarge-<mod_version>+1.21.1-neoforge.jar`. There are no unit tests: the build
+- `./gradlew build` writes `build/libs/skyliners-<mod_version>+1.21.1-neoforge.jar`. There are no unit tests: the build
   is the automated check, and behaviour is checked in game (see Testing in the dev client).
 - `./gradlew runClient -PquickPlayWorld=<save>` loads straight into `run/saves/<save>`. Create, Sable, Create
   Aeronautics and Create Propulsion go in `run/mods`. `run/` (worlds, logs, options) is not committed.
@@ -16,10 +18,10 @@ feature as a player meets it, and its Building section says which classes do wha
   tools`, and air traffic control Windows' speech synthesis). Change the generator, never the file it writes: a new
   lang key goes into `generate_resources.mjs`. Rerunning the generators leaves `git status` clean.
 
-## Where things are (`src/main/java/dev/aerolarge`)
+## Where things are (`src/main/java/dev/skyliners`)
 
-- Root: `Aerolarge` (registration, server ticks, network payloads and their protocol version), `AerolargeClient`,
-  `AerolargeRegistry`, `AerolargeConfig` (server config) and `AerolargeClientConfig` (client config), commands.
+- Root: `Skyliners` (registration, server ticks, network payloads and their protocol version), `SkylinersClient`,
+  `SkylinersRegistry`, `SkylinersConfig` (server config) and `SkylinersClientConfig` (client config), commands.
 - `airframe/`: the airliner itself. `AirframeShape` holds the A380's measurements in metres, `AirframeLayout` cuts them
   into blocks nose north, `AirframeBuild` places the result with one rotation, and the fit-out classes (`CabinFitOut`,
   `UpperDeck`, `HoldFitOut`, `CrewRooms`, ...) furnish it. `OutsideCamera` places the outside cameras.
@@ -42,7 +44,7 @@ feature as a player meets it, and its Building section says which classes do wha
 
 - **Sides.** Game logic runs on the server. Client classes live in `client/` and are never loaded by common code;
   client payload handlers are registered as lambdas so a dedicated server never loads them.
-- **Network.** Changing a payload's wire format bumps the protocol version string in `Aerolarge.onRegisterPayloads`
+- **Network.** Changing a payload's wire format bumps the protocol version string in `Skyliners.onRegisterPayloads`
   (`event.registrar("<n>")`), so mismatched builds refuse to connect instead of misreading each other.
   Client-to-server payloads are checked again on the server.
 - **Saves.** NBT is read exactly as it is written, and what the last release saved still loads: a missing key gets a
@@ -58,7 +60,7 @@ feature as a player meets it, and its Building section says which classes do wha
   Veil is touched only in `TailCameraFeed`, `VeilLights` and `mixin/AdvancedFboImplMixin`. Blockpilot, the
   play-testing client mod, is touched only in `compat/blockpilot`, compiled only when Blockpilot's API is in the local
   Maven repository and reached by name from `compat/Blockpilot` behind a `ModList` check. Create Propulsion and Create
-  Aeronautics' Simulated and Offroad are named only by registry id in `AerolargeConfig` and resolved in
+  Aeronautics' Simulated and Offroad are named only by registry id in `SkylinersConfig` and resolved in
   `AirframePalette`; Aeronautics' hot air burner is also named by class, as the `@Pseudo` target of
   `mixin/HotAirBurnerMixin`, which is skipped without it. Create and Sable are compiled against, never bundled.
 - **Geometry.** New airframe geometry is drawn in `AirframeShape`'s metres in the layout's nose-north frame and turns
@@ -67,8 +69,8 @@ feature as a player meets it, and its Building section says which classes do wha
   floor. It never cuts into the hull, doors or door aisles; the moon pool, which glazes the belly before the shell pass,
   is the one exception. Hull features go in before `AirframeLayout.shell()`. Airframe blocks are tagged
   `#sable:super_light`.
-- **Mixins** only mend another mod's bug that no API reaches. They live in `dev.aerolarge.mixin` and are listed in
-  `aerolarge.mixins.json`, which is not required, so a changed target is skipped with a warning instead of crashing.
+- **Mixins** only mend another mod's bug that no API reaches. They live in `dev.skyliners.mixin` and are listed in
+  `skyliners.mixins.json`, which is not required, so a changed target is skipped with a warning instead of crashing.
 - **Drawing what moves.** The server overwrites a client's game time about once a second, so anything drawn from
   `level.getGameTime() + partialTick` snaps back wherever the server runs behind. What moves goes by
   `client/DrawingClock`: `ticks` or `wholeTicks` for what only moves for show, `gameTime` for what keeps time with a
@@ -155,14 +157,14 @@ feature as a player meets it, and its Building section says which classes do wha
   - `camera at <pos> look <pos>` and `screenshot 1280 hud=off` photograph what the build cannot show; look at every
     screenshot taken. `option gamma 1` brightens dark spaces, and the reply says `inside` when the camera is in a
     solid block.
-  - Aerolarge gives Blockpilot commands of its own (`help aerolarge`): `aerolarge:build
+  - Skyliners gives Blockpilot commands of its own (`help skyliners`): `skyliners:build
     airliner|furnished|zeppelin|furnished_zeppelin|festive_zeppelin` lays one down in front of the player and waits
-    until it stands; `aerolarge:autopilot fly|land|off [altitude=] [speed=] [heading=] [pin=x,z] [land=]` sets the
-    nearest autopilot as its screen would, assembling first; and `aerolarge:zeppelin` reads a zeppelin's flight (phase,
+    until it stands; `skyliners:autopilot fly|land|off [altitude=] [speed=] [heading=] [pin=x,z] [land=]` sets the
+    nearest autopilot as its screen would, assembling first; and `skyliners:zeppelin` reads a zeppelin's flight (phase,
     height, climb, speed, pitch, heading, mass, each cell's burner signal, the engines, what its pilot has learnt), to
-    `sample` through a flight. `aerolarge:assembly`, before a zeppelin first flies, counts the blocks its assembly takes
+    `sample` through a flight. `skyliners:assembly`, before a zeppelin first flies, counts the blocks its assembly takes
     along and names those of its own it would leave behind, touching the rest only along an edge or not at all, and the
-    other blocks pressed against it that would hold it as it flies off: a layout should leave none. `aerolarge:layout
+    other blocks pressed against it that would hold it as it flies off: a layout should leave none. `skyliners:layout
     <what>` lays an airframe out without building it and gives its block count and a fingerprint of its blocks: a
-    refactor of a layout that should move no block leaves both as they were. `aerolarge:livery <name>` repaints the
+    refactor of a layout that should move no block leaves both as they were. `skyliners:livery <name>` repaints the
     nearest zeppelin as its livery board does. A zeppelin's control head is in its control car under the bow.

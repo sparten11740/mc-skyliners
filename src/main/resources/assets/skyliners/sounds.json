@@ -1,0 +1,1763 @@
+{
+  "engine": {
+    "subtitle": "subtitles.skyliners.engine",
+    "sounds": [
+      {
+        "name": "skyliners:engine",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "callout_v1": {
+    "subtitle": "subtitles.skyliners.callout_v1",
+    "sounds": [
+      {
+        "name": "skyliners:callout_v1",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_rotate": {
+    "subtitle": "subtitles.skyliners.callout_rotate",
+    "sounds": [
+      {
+        "name": "skyliners:callout_rotate",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_positive_rate": {
+    "subtitle": "subtitles.skyliners.callout_positive_rate",
+    "sounds": [
+      {
+        "name": "skyliners:callout_positive_rate",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_100": {
+    "subtitle": "subtitles.skyliners.callout_100",
+    "sounds": [
+      {
+        "name": "skyliners:callout_100",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_50": {
+    "subtitle": "subtitles.skyliners.callout_50",
+    "sounds": [
+      {
+        "name": "skyliners:callout_50",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_40": {
+    "subtitle": "subtitles.skyliners.callout_40",
+    "sounds": [
+      {
+        "name": "skyliners:callout_40",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_30": {
+    "subtitle": "subtitles.skyliners.callout_30",
+    "sounds": [
+      {
+        "name": "skyliners:callout_30",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_20": {
+    "subtitle": "subtitles.skyliners.callout_20",
+    "sounds": [
+      {
+        "name": "skyliners:callout_20",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_10": {
+    "subtitle": "subtitles.skyliners.callout_10",
+    "sounds": [
+      {
+        "name": "skyliners:callout_10",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_retard": {
+    "subtitle": "subtitles.skyliners.callout_retard",
+    "sounds": [
+      {
+        "name": "skyliners:callout_retard",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_bank_angle": {
+    "subtitle": "subtitles.skyliners.callout_bank_angle",
+    "sounds": [
+      {
+        "name": "skyliners:callout_bank_angle",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_pull_up": {
+    "subtitle": "subtitles.skyliners.callout_pull_up",
+    "sounds": [
+      {
+        "name": "skyliners:callout_pull_up",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "callout_touchdown": {
+    "subtitle": "subtitles.skyliners.callout_touchdown",
+    "sounds": [
+      {
+        "name": "skyliners:callout_touchdown",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_welcome": {
+    "subtitle": "subtitles.skyliners.announcement_welcome",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_welcome",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_takeoff": {
+    "subtitle": "subtitles.skyliners.announcement_takeoff",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_takeoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_turbulence": {
+    "subtitle": "subtitles.skyliners.announcement_turbulence",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_turbulence",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_snacks": {
+    "subtitle": "subtitles.skyliners.announcement_snacks",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_snacks",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_window": {
+    "subtitle": "subtitles.skyliners.announcement_window",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_window",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_playtime": {
+    "subtitle": "subtitles.skyliners.announcement_playtime",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_playtime",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_sleep": {
+    "subtitle": "subtitles.skyliners.announcement_sleep",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_sleep",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_landing": {
+    "subtitle": "subtitles.skyliners.announcement_landing",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_landing",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_arrival": {
+    "subtitle": "subtitles.skyliners.announcement_arrival",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_arrival",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_space": {
+    "subtitle": "subtitles.skyliners.announcement_space",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_space",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_gravity": {
+    "subtitle": "subtitles.skyliners.announcement_gravity",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_gravity",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_arrival_rocket": {
+    "subtitle": "subtitles.skyliners.announcement_arrival_rocket",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_arrival_rocket",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_cleared_for_takeoff": {
+    "subtitle": "subtitles.skyliners.atc_cleared_for_takeoff",
+    "sounds": [
+      {
+        "name": "skyliners:atc_cleared_for_takeoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_contact_departure": {
+    "subtitle": "subtitles.skyliners.atc_contact_departure",
+    "sounds": [
+      {
+        "name": "skyliners:atc_contact_departure",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_radar_contact": {
+    "subtitle": "subtitles.skyliners.atc_radar_contact",
+    "sounds": [
+      {
+        "name": "skyliners:atc_radar_contact",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_cleared_to_land": {
+    "subtitle": "subtitles.skyliners.atc_cleared_to_land",
+    "sounds": [
+      {
+        "name": "skyliners:atc_cleared_to_land",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_go_around": {
+    "subtitle": "subtitles.skyliners.atc_go_around",
+    "sounds": [
+      {
+        "name": "skyliners:atc_go_around",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_taxi_to_gate": {
+    "subtitle": "subtitles.skyliners.atc_taxi_to_gate",
+    "sounds": [
+      {
+        "name": "skyliners:atc_taxi_to_gate",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_contact_center": {
+    "subtitle": "subtitles.skyliners.atc_contact_center",
+    "sounds": [
+      {
+        "name": "skyliners:atc_contact_center",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_center_check_in": {
+    "subtitle": "subtitles.skyliners.atc_center_check_in",
+    "sounds": [
+      {
+        "name": "skyliners:atc_center_check_in",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_traffic_two_oclock": {
+    "subtitle": "subtitles.skyliners.atc_traffic_two_oclock",
+    "sounds": [
+      {
+        "name": "skyliners:atc_traffic_two_oclock",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_traffic_ten_oclock": {
+    "subtitle": "subtitles.skyliners.atc_traffic_ten_oclock",
+    "sounds": [
+      {
+        "name": "skyliners:atc_traffic_ten_oclock",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_light_turbulence": {
+    "subtitle": "subtitles.skyliners.atc_light_turbulence",
+    "sounds": [
+      {
+        "name": "skyliners:atc_light_turbulence",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_smooth_ride": {
+    "subtitle": "subtitles.skyliners.atc_smooth_ride",
+    "sounds": [
+      {
+        "name": "skyliners:atc_smooth_ride",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_geese": {
+    "subtitle": "subtitles.skyliners.atc_geese",
+    "sounds": [
+      {
+        "name": "skyliners:atc_geese",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_balloon": {
+    "subtitle": "subtitles.skyliners.atc_balloon",
+    "sounds": [
+      {
+        "name": "skyliners:atc_balloon",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_skyhopper_hello": {
+    "subtitle": "subtitles.skyliners.atc_skyhopper_hello",
+    "sounds": [
+      {
+        "name": "skyliners:atc_skyhopper_hello",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_cargo_climb": {
+    "subtitle": "subtitles.skyliners.atc_cargo_climb",
+    "sounds": [
+      {
+        "name": "skyliners:atc_cargo_climb",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_static_open": {
+    "subtitle": "subtitles.skyliners.atc_static_open",
+    "sounds": [
+      {
+        "name": "skyliners:atc_static_open",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "atc_static_clicks": {
+    "subtitle": "subtitles.skyliners.atc_static_clicks",
+    "sounds": [
+      {
+        "name": "skyliners:atc_static_clicks",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "rocket_roar": {
+    "subtitle": "subtitles.skyliners.rocket_roar",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_roar",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_roar_aboard": {
+    "subtitle": "subtitles.skyliners.rocket_roar_aboard",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_roar_aboard"
+      }
+    ]
+  },
+  "rocket_roar_near": {
+    "subtitle": "subtitles.skyliners.rocket_roar_near",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_roar_near",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "rocket_shockwave": {
+    "subtitle": "subtitles.skyliners.rocket_shockwave",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_shockwave"
+      }
+    ]
+  },
+  "rocket_ignition": {
+    "subtitle": "subtitles.skyliners.rocket_ignition",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_ignition",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_ignition_aboard": {
+    "subtitle": "subtitles.skyliners.rocket_ignition_aboard",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_ignition_aboard"
+      }
+    ]
+  },
+  "rocket_cutoff": {
+    "subtitle": "subtitles.skyliners.rocket_cutoff",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_cutoff",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_cutoff_aboard": {
+    "subtitle": "subtitles.skyliners.rocket_cutoff_aboard",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_cutoff_aboard"
+      }
+    ]
+  },
+  "rocket_jet_puff": {
+    "subtitle": "subtitles.skyliners.rocket_jet_puff",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_jet_puff"
+      }
+    ]
+  },
+  "rocket_touchdown": {
+    "subtitle": "subtitles.skyliners.rocket_touchdown",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_touchdown",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_boost": {
+    "subtitle": "subtitles.skyliners.rocket_boost",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_boost",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_boost_aboard": {
+    "subtitle": "subtitles.skyliners.rocket_boost_aboard",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_boost_aboard"
+      }
+    ]
+  },
+  "rocket_boost_ready": {
+    "subtitle": "subtitles.skyliners.rocket_boost_ready",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_boost_ready"
+      }
+    ]
+  },
+  "rocket_scrub": {
+    "subtitle": "subtitles.skyliners.rocket_scrub",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_scrub"
+      }
+    ]
+  },
+  "rocket_stability_alarm": {
+    "subtitle": "subtitles.skyliners.rocket_stability_alarm",
+    "sounds": [
+      {
+        "name": "skyliners:rocket_stability_alarm"
+      }
+    ]
+  },
+  "launch_10": {
+    "subtitle": "subtitles.skyliners.launch_10",
+    "sounds": [
+      {
+        "name": "skyliners:launch_10",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_9": {
+    "subtitle": "subtitles.skyliners.launch_9",
+    "sounds": [
+      {
+        "name": "skyliners:launch_9",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_8": {
+    "subtitle": "subtitles.skyliners.launch_8",
+    "sounds": [
+      {
+        "name": "skyliners:launch_8",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_7": {
+    "subtitle": "subtitles.skyliners.launch_7",
+    "sounds": [
+      {
+        "name": "skyliners:launch_7",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_6": {
+    "subtitle": "subtitles.skyliners.launch_6",
+    "sounds": [
+      {
+        "name": "skyliners:launch_6",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_5": {
+    "subtitle": "subtitles.skyliners.launch_5",
+    "sounds": [
+      {
+        "name": "skyliners:launch_5",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_4": {
+    "subtitle": "subtitles.skyliners.launch_4",
+    "sounds": [
+      {
+        "name": "skyliners:launch_4",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_3": {
+    "subtitle": "subtitles.skyliners.launch_3",
+    "sounds": [
+      {
+        "name": "skyliners:launch_3",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_2": {
+    "subtitle": "subtitles.skyliners.launch_2",
+    "sounds": [
+      {
+        "name": "skyliners:launch_2",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_1": {
+    "subtitle": "subtitles.skyliners.launch_1",
+    "sounds": [
+      {
+        "name": "skyliners:launch_1",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_liftoff": {
+    "subtitle": "subtitles.skyliners.launch_liftoff",
+    "sounds": [
+      {
+        "name": "skyliners:launch_liftoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_tower_cleared": {
+    "subtitle": "subtitles.skyliners.launch_tower_cleared",
+    "sounds": [
+      {
+        "name": "skyliners:launch_tower_cleared",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_max_q": {
+    "subtitle": "subtitles.skyliners.launch_max_q",
+    "sounds": [
+      {
+        "name": "skyliners:launch_max_q",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_main_engine_cutoff": {
+    "subtitle": "subtitles.skyliners.launch_main_engine_cutoff",
+    "sounds": [
+      {
+        "name": "skyliners:launch_main_engine_cutoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_landing_burn": {
+    "subtitle": "subtitles.skyliners.launch_landing_burn",
+    "sounds": [
+      {
+        "name": "skyliners:launch_landing_burn",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_boost": {
+    "subtitle": "subtitles.skyliners.launch_boost",
+    "sounds": [
+      {
+        "name": "skyliners:launch_boost",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "pa_chime": {
+    "subtitle": "subtitles.skyliners.pa_chime",
+    "sounds": [
+      {
+        "name": "skyliners:pa_chime"
+      }
+    ]
+  },
+  "radio_crackle": {
+    "subtitle": "subtitles.skyliners.radio_crackle",
+    "sounds": [
+      {
+        "name": "skyliners:radio_crackle"
+      }
+    ]
+  },
+  "seatbelt_ding": {
+    "subtitle": "subtitles.skyliners.seatbelt_ding",
+    "sounds": [
+      {
+        "name": "skyliners:seatbelt_ding"
+      }
+    ]
+  },
+  "shade_motor": {
+    "subtitle": "subtitles.skyliners.shade_motor",
+    "sounds": [
+      {
+        "name": "skyliners:shade_motor"
+      }
+    ]
+  },
+  "trolley_squeak": {
+    "subtitle": "subtitles.skyliners.trolley_squeak",
+    "sounds": [
+      {
+        "name": "skyliners:trolley_squeak"
+      }
+    ]
+  },
+  "ball_bounce": {
+    "subtitle": "subtitles.skyliners.ball_bounce",
+    "sounds": [
+      {
+        "name": "skyliners:ball_bounce"
+      }
+    ]
+  },
+  "basket_swish": {
+    "subtitle": "subtitles.skyliners.basket_swish",
+    "sounds": [
+      {
+        "name": "skyliners:basket_swish"
+      }
+    ]
+  },
+  "scoreboard_buzzer": {
+    "subtitle": "subtitles.skyliners.scoreboard_buzzer",
+    "sounds": [
+      {
+        "name": "skyliners:scoreboard_buzzer"
+      }
+    ]
+  },
+  "springboard_boing": {
+    "subtitle": "subtitles.skyliners.springboard_boing",
+    "sounds": [
+      {
+        "name": "skyliners:springboard_boing"
+      }
+    ]
+  },
+  "paper_plane_whoosh": {
+    "subtitle": "subtitles.skyliners.paper_plane_whoosh",
+    "sounds": [
+      {
+        "name": "skyliners:paper_plane_whoosh"
+      }
+    ]
+  },
+  "shop_bell": {
+    "subtitle": "subtitles.skyliners.shop_bell",
+    "sounds": [
+      {
+        "name": "skyliners:shop_bell"
+      }
+    ]
+  },
+  "cash_register": {
+    "subtitle": "subtitles.skyliners.cash_register",
+    "sounds": [
+      {
+        "name": "skyliners:cash_register"
+      }
+    ]
+  },
+  "secret_bookshelf_open": {
+    "subtitle": "subtitles.skyliners.secret_bookshelf_open",
+    "sounds": [
+      {
+        "name": "minecraft:block/wooden_door/open1",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:block/wooden_door/open2",
+        "pitch": 0.55
+      }
+    ]
+  },
+  "secret_bookshelf_close": {
+    "subtitle": "subtitles.skyliners.secret_bookshelf_close",
+    "sounds": [
+      {
+        "name": "minecraft:block/wooden_door/close1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/wooden_door/close2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/wooden_door/close3",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "ball_pit_plop": {
+    "subtitle": "subtitles.skyliners.ball_pit_plop",
+    "sounds": [
+      {
+        "name": "minecraft:mob/chicken/plop",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:random/pop",
+        "volume": 0.6,
+        "pitch": 0.7
+      }
+    ]
+  },
+  "hud_on": {
+    "subtitle": "subtitles.skyliners.hud_on",
+    "sounds": [
+      {
+        "name": "skyliners:hud_on"
+      }
+    ]
+  },
+  "space_helmet_breath": {
+    "subtitle": "subtitles.skyliners.space_helmet_breath",
+    "sounds": [
+      {
+        "name": "skyliners:space_helmet_breath"
+      }
+    ]
+  },
+  "toilet_flush": {
+    "subtitle": "subtitles.skyliners.toilet_flush",
+    "sounds": [
+      {
+        "name": "skyliners:toilet_flush"
+      }
+    ]
+  },
+  "blue_ice_crack": {
+    "subtitle": "subtitles.skyliners.blue_ice_crack",
+    "sounds": [
+      {
+        "name": "skyliners:blue_ice_crack"
+      }
+    ]
+  },
+  "blue_ice_bonk": {
+    "subtitle": "subtitles.skyliners.blue_ice_bonk",
+    "sounds": [
+      {
+        "name": "skyliners:blue_ice_bonk"
+      }
+    ]
+  },
+  "plug_door_hiss": {
+    "subtitle": "subtitles.skyliners.plug_door_hiss",
+    "sounds": [
+      {
+        "name": "skyliners:plug_door_hiss"
+      }
+    ]
+  },
+  "plug_door_latch": {
+    "subtitle": "subtitles.skyliners.plug_door_latch",
+    "sounds": [
+      {
+        "name": "skyliners:plug_door_latch"
+      }
+    ]
+  },
+  "door_alarm": {
+    "subtitle": "subtitles.skyliners.door_alarm",
+    "sounds": [
+      {
+        "name": "skyliners:door_alarm",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "airstair_motor": {
+    "subtitle": "subtitles.skyliners.airstair_motor",
+    "sounds": [
+      {
+        "name": "skyliners:airstair_motor"
+      }
+    ]
+  },
+  "airstair_latch": {
+    "subtitle": "subtitles.skyliners.airstair_latch",
+    "sounds": [
+      {
+        "name": "skyliners:airstair_latch"
+      }
+    ]
+  },
+  "slide_inflate": {
+    "subtitle": "subtitles.skyliners.slide_inflate",
+    "sounds": [
+      {
+        "name": "skyliners:slide_inflate"
+      }
+    ]
+  },
+  "slide_deflate": {
+    "subtitle": "subtitles.skyliners.slide_deflate",
+    "sounds": [
+      {
+        "name": "skyliners:slide_deflate"
+      }
+    ]
+  },
+  "slide_whoosh": {
+    "subtitle": "subtitles.skyliners.slide_whoosh",
+    "sounds": [
+      {
+        "name": "skyliners:slide_whoosh"
+      }
+    ]
+  },
+  "rubber_duck_squeak": {
+    "subtitle": "subtitles.skyliners.rubber_duck_squeak",
+    "sounds": [
+      {
+        "name": "skyliners:rubber_duck_squeak"
+      }
+    ]
+  },
+  "giant_rubber_duck_squeak": {
+    "subtitle": "subtitles.skyliners.giant_rubber_duck_squeak",
+    "sounds": [
+      {
+        "name": "skyliners:giant_rubber_duck_squeak"
+      }
+    ]
+  },
+  "coffee_grind": {
+    "subtitle": "subtitles.skyliners.coffee_grind",
+    "sounds": [
+      {
+        "name": "skyliners:coffee_grind"
+      }
+    ]
+  },
+  "coffee_pour": {
+    "subtitle": "subtitles.skyliners.coffee_pour",
+    "sounds": [
+      {
+        "name": "skyliners:coffee_pour"
+      }
+    ]
+  },
+  "coffee_steam": {
+    "subtitle": "subtitles.skyliners.coffee_steam",
+    "sounds": [
+      {
+        "name": "skyliners:coffee_steam"
+      }
+    ]
+  },
+  "coffee_ready": {
+    "subtitle": "subtitles.skyliners.coffee_ready",
+    "sounds": [
+      {
+        "name": "skyliners:coffee_ready"
+      }
+    ]
+  },
+  "bartender_servo": {
+    "subtitle": "subtitles.skyliners.bartender_servo",
+    "sounds": [
+      {
+        "name": "skyliners:bartender_servo"
+      }
+    ]
+  },
+  "bartender_shake": {
+    "subtitle": "subtitles.skyliners.bartender_shake",
+    "sounds": [
+      {
+        "name": "skyliners:bartender_shake"
+      }
+    ]
+  },
+  "bartender_greet": {
+    "subtitle": "subtitles.skyliners.bartender_greet",
+    "sounds": [
+      {
+        "name": "skyliners:bartender_greet_1"
+      },
+      {
+        "name": "skyliners:bartender_greet_2"
+      },
+      {
+        "name": "skyliners:bartender_greet_3"
+      }
+    ]
+  },
+  "bartender_serve": {
+    "subtitle": "subtitles.skyliners.bartender_serve",
+    "sounds": [
+      {
+        "name": "skyliners:bartender_serve_1"
+      },
+      {
+        "name": "skyliners:bartender_serve_2"
+      },
+      {
+        "name": "skyliners:bartender_serve_3"
+      }
+    ]
+  },
+  "crew_locker_open": {
+    "subtitle": "subtitles.skyliners.crew_locker_open",
+    "sounds": [
+      {
+        "name": "minecraft:block/iron_trapdoor/open1",
+        "volume": 0.7,
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/open2",
+        "volume": 0.7,
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/open3",
+        "volume": 0.7,
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/open4",
+        "volume": 0.7,
+        "pitch": 1.4
+      }
+    ]
+  },
+  "crew_locker_close": {
+    "subtitle": "subtitles.skyliners.crew_locker_close",
+    "sounds": [
+      {
+        "name": "minecraft:block/iron_trapdoor/close1",
+        "volume": 0.7,
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/close2",
+        "volume": 0.7,
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/close3",
+        "volume": 0.7,
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/close4",
+        "volume": 0.7,
+        "pitch": 1.5
+      }
+    ]
+  },
+  "gear_retract": {
+    "subtitle": "subtitles.skyliners.gear_retract",
+    "sounds": [
+      {
+        "name": "skyliners:gear_retract"
+      }
+    ]
+  },
+  "gear_extend": {
+    "subtitle": "subtitles.skyliners.gear_extend",
+    "sounds": [
+      {
+        "name": "skyliners:gear_extend"
+      }
+    ]
+  },
+  "gear_horn": {
+    "subtitle": "subtitles.skyliners.gear_horn",
+    "sounds": [
+      {
+        "name": "skyliners:gear_horn"
+      }
+    ]
+  },
+  "air_pocket": {
+    "subtitle": "subtitles.skyliners.air_pocket",
+    "sounds": [
+      {
+        "name": "skyliners:air_pocket",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "laser_hiss": {
+    "subtitle": "subtitles.skyliners.laser_hiss",
+    "sounds": [
+      {
+        "name": "skyliners:laser_hiss"
+      }
+    ]
+  },
+  "laser_charge": {
+    "subtitle": "subtitles.skyliners.laser_charge",
+    "sounds": [
+      {
+        "name": "skyliners:laser_charge"
+      }
+    ]
+  },
+  "self_destruct_siren": {
+    "subtitle": "subtitles.skyliners.self_destruct_siren",
+    "sounds": [
+      {
+        "name": "skyliners:self_destruct_siren",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "self_destruct_blast": {
+    "subtitle": "subtitles.skyliners.self_destruct_blast",
+    "sounds": [
+      {
+        "name": "skyliners:self_destruct_blast",
+        "stream": true,
+        "attenuation_distance": 640
+      }
+    ]
+  },
+  "self_destruct_rumble": {
+    "subtitle": "subtitles.skyliners.self_destruct_rumble",
+    "sounds": [
+      {
+        "name": "skyliners:self_destruct_rumble",
+        "stream": true
+      }
+    ]
+  },
+  "rover_motor": {
+    "subtitle": "subtitles.skyliners.rover_motor",
+    "sounds": [
+      {
+        "name": "skyliners:rover_motor"
+      }
+    ]
+  },
+  "rover_start": {
+    "subtitle": "subtitles.skyliners.rover_start",
+    "sounds": [
+      {
+        "name": "skyliners:rover_start"
+      }
+    ]
+  },
+  "rover_stop": {
+    "subtitle": "subtitles.skyliners.rover_stop",
+    "sounds": [
+      {
+        "name": "skyliners:rover_stop"
+      }
+    ]
+  },
+  "rover_horn": {
+    "subtitle": "subtitles.skyliners.rover_horn",
+    "sounds": [
+      {
+        "name": "skyliners:rover_horn"
+      }
+    ]
+  },
+  "rover_range": {
+    "subtitle": "subtitles.skyliners.rover_range",
+    "sounds": [
+      {
+        "name": "skyliners:rover_range"
+      }
+    ]
+  },
+  "tardigrade_mrrp": {
+    "subtitle": "subtitles.skyliners.tardigrade_mrrp",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_mrrp"
+      }
+    ]
+  },
+  "tardigrade_bloop": {
+    "subtitle": "subtitles.skyliners.tardigrade_bloop",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_bloop"
+      }
+    ]
+  },
+  "tardigrade_snore": {
+    "subtitle": "subtitles.skyliners.tardigrade_snore",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_snore"
+      }
+    ]
+  },
+  "tardigrade_slurp": {
+    "subtitle": "subtitles.skyliners.tardigrade_slurp",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_slurp"
+      }
+    ]
+  },
+  "tardigrade_burp": {
+    "subtitle": "subtitles.skyliners.tardigrade_burp",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_burp"
+      }
+    ]
+  },
+  "tardigrade_jump": {
+    "subtitle": "subtitles.skyliners.tardigrade_jump",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_jump"
+      }
+    ]
+  },
+  "tardigrade_return": {
+    "subtitle": "subtitles.skyliners.tardigrade_return",
+    "sounds": [
+      {
+        "name": "skyliners:tardigrade_return"
+      }
+    ]
+  },
+  "bioreactor_harvest": {
+    "subtitle": "subtitles.skyliners.bioreactor_harvest",
+    "sounds": [
+      {
+        "name": "skyliners:bioreactor_harvest"
+      }
+    ]
+  },
+  "centrifuge_spin": {
+    "subtitle": "subtitles.skyliners.centrifuge_spin",
+    "sounds": [
+      {
+        "name": "skyliners:centrifuge_spin"
+      }
+    ]
+  },
+  "centrifuge_ding": {
+    "subtitle": "subtitles.skyliners.centrifuge_ding",
+    "sounds": [
+      {
+        "name": "skyliners:centrifuge_ding"
+      }
+    ]
+  },
+  "greenhouse_air": {
+    "subtitle": "subtitles.skyliners.greenhouse_air",
+    "sounds": [
+      {
+        "name": "skyliners:greenhouse_air"
+      }
+    ]
+  },
+  "greenhouse_bee": {
+    "subtitle": "subtitles.skyliners.greenhouse_bee",
+    "sounds": [
+      {
+        "name": "skyliners:greenhouse_bee"
+      }
+    ]
+  },
+  "pool_water": {
+    "subtitle": "subtitles.skyliners.pool_water",
+    "sounds": [
+      {
+        "name": "skyliners:pool_water"
+      }
+    ]
+  },
+  "pool_slap": {
+    "subtitle": "subtitles.skyliners.pool_slap",
+    "sounds": [
+      {
+        "name": "skyliners:pool_slap"
+      }
+    ]
+  },
+  "snack_machine_whirr": {
+    "subtitle": "subtitles.skyliners.snack_machine_whirr",
+    "sounds": [
+      {
+        "name": "skyliners:snack_machine_whirr"
+      }
+    ]
+  },
+  "snack_machine_clunk": {
+    "subtitle": "subtitles.skyliners.snack_machine_clunk",
+    "sounds": [
+      {
+        "name": "skyliners:snack_machine_clunk"
+      }
+    ]
+  },
+  "irrigation_valve": {
+    "subtitle": "subtitles.skyliners.irrigation_valve",
+    "sounds": [
+      {
+        "name": "skyliners:irrigation_valve"
+      }
+    ]
+  },
+  "sprinkler_spray": {
+    "subtitle": "subtitles.skyliners.sprinkler_spray",
+    "sounds": [
+      {
+        "name": "skyliners:sprinkler_spray"
+      }
+    ]
+  },
+  "airlock_cycle": {
+    "subtitle": "subtitles.skyliners.airlock_cycle",
+    "sounds": [
+      {
+        "name": "skyliners:airlock_cycle"
+      }
+    ]
+  },
+  "airlock_clear": {
+    "subtitle": "subtitles.skyliners.airlock_clear",
+    "sounds": [
+      {
+        "name": "skyliners:airlock_clear"
+      }
+    ]
+  },
+  "scanner_sweep": {
+    "subtitle": "subtitles.skyliners.scanner_sweep",
+    "sounds": [
+      {
+        "name": "skyliners:scanner_sweep"
+      }
+    ]
+  },
+  "scanner_pass": {
+    "subtitle": "subtitles.skyliners.scanner_pass",
+    "sounds": [
+      {
+        "name": "skyliners:scanner_pass"
+      }
+    ]
+  },
+  "scanner_fail": {
+    "subtitle": "subtitles.skyliners.scanner_fail",
+    "sounds": [
+      {
+        "name": "skyliners:scanner_fail"
+      }
+    ]
+  },
+  "fridge_open": {
+    "subtitle": "subtitles.skyliners.fridge_open",
+    "sounds": [
+      {
+        "name": "skyliners:fridge_open"
+      }
+    ]
+  },
+  "fridge_close": {
+    "subtitle": "subtitles.skyliners.fridge_close",
+    "sounds": [
+      {
+        "name": "skyliners:fridge_close"
+      }
+    ]
+  },
+  "wave_surge": {
+    "subtitle": "subtitles.skyliners.wave_surge",
+    "sounds": [
+      {
+        "name": "skyliners:wave_surge"
+      }
+    ]
+  },
+  "fog_hiss": {
+    "subtitle": "subtitles.skyliners.fog_hiss",
+    "sounds": [
+      {
+        "name": "skyliners:fog_hiss"
+      }
+    ]
+  },
+  "tap_pour": {
+    "subtitle": "subtitles.skyliners.tap_pour",
+    "sounds": [
+      {
+        "name": "skyliners:tap_pour"
+      }
+    ]
+  },
+  "neon_on": {
+    "subtitle": "subtitles.skyliners.neon_on",
+    "sounds": [
+      {
+        "name": "skyliners:neon_on"
+      }
+    ]
+  },
+  "neon_off": {
+    "subtitle": "subtitles.skyliners.neon_off",
+    "sounds": [
+      {
+        "name": "skyliners:neon_off"
+      }
+    ]
+  },
+  "zeppelin_horn": {
+    "subtitle": "subtitles.skyliners.zeppelin_horn",
+    "sounds": [
+      {
+        "name": "skyliners:zeppelin_horn"
+      }
+    ]
+  },
+  "zeppelin_horn_echo": {
+    "subtitle": "subtitles.skyliners.zeppelin_horn_echo",
+    "sounds": [
+      {
+        "name": "skyliners:zeppelin_horn_echo"
+      }
+    ]
+  },
+  "sleigh_bells": {
+    "subtitle": "subtitles.skyliners.sleigh_bells",
+    "sounds": [
+      {
+        "name": "skyliners:sleigh_bells"
+      }
+    ]
+  },
+  "flag_halyard": {
+    "subtitle": "subtitles.skyliners.flag_halyard",
+    "sounds": [
+      {
+        "name": "skyliners:flag_halyard"
+      }
+    ]
+  },
+  "lookout_bell": {
+    "subtitle": "subtitles.skyliners.lookout_bell",
+    "sounds": [
+      {
+        "name": "skyliners:lookout_bell"
+      }
+    ]
+  },
+  "handler_whistle_short": {
+    "subtitle": "subtitles.skyliners.handler_whistle_short",
+    "sounds": [
+      {
+        "name": "skyliners:handler_whistle_short"
+      }
+    ]
+  },
+  "handler_whistle_long": {
+    "subtitle": "subtitles.skyliners.handler_whistle_long",
+    "sounds": [
+      {
+        "name": "skyliners:handler_whistle_long"
+      }
+    ]
+  },
+  "water_ballast": {
+    "subtitle": "subtitles.skyliners.water_ballast",
+    "sounds": [
+      {
+        "name": "skyliners:water_ballast"
+      }
+    ]
+  },
+  "up_ship_call": {
+    "subtitle": "subtitles.skyliners.up_ship_call",
+    "sounds": [
+      {
+        "name": "skyliners:up_ship_call"
+      }
+    ]
+  },
+  "zeppelin_hull": {
+    "subtitle": "subtitles.skyliners.zeppelin_hull",
+    "sounds": [
+      {
+        "name": "skyliners:zeppelin_hull",
+        "stream": true
+      }
+    ]
+  },
+  "zeppelin_creak": {
+    "subtitle": "subtitles.skyliners.zeppelin_creak",
+    "sounds": [
+      {
+        "name": "skyliners:zeppelin_creak_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "skyliners:zeppelin_creak_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "skyliners:zeppelin_creak_3",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "speed_boost": {
+    "subtitle": "subtitles.skyliners.speed_boost",
+    "sounds": [
+      {
+        "name": "skyliners:speed_boost",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "zeppelin_engine": {
+    "subtitle": "subtitles.skyliners.zeppelin_engine",
+    "sounds": [
+      {
+        "name": "skyliners:zeppelin_engine",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "telegraph_ring": {
+    "subtitle": "subtitles.skyliners.telegraph_ring",
+    "sounds": [
+      {
+        "name": "skyliners:telegraph_ring"
+      }
+    ]
+  },
+  "telegraph_answer": {
+    "subtitle": "subtitles.skyliners.telegraph_answer",
+    "sounds": [
+      {
+        "name": "skyliners:telegraph_answer"
+      }
+    ]
+  },
+  "helm_notch": {
+    "subtitle": "subtitles.skyliners.helm_notch",
+    "sounds": [
+      {
+        "name": "skyliners:helm_notch"
+      }
+    ]
+  },
+  "control_stop": {
+    "subtitle": "subtitles.skyliners.control_stop",
+    "sounds": [
+      {
+        "name": "skyliners:control_stop"
+      }
+    ]
+  },
+  "crane_ratchet": {
+    "subtitle": "subtitles.skyliners.crane_ratchet",
+    "sounds": [
+      {
+        "name": "skyliners:crane_ratchet"
+      }
+    ]
+  },
+  "crane_latch": {
+    "subtitle": "subtitles.skyliners.crane_latch",
+    "sounds": [
+      {
+        "name": "skyliners:crane_latch"
+      }
+    ]
+  },
+  "clamp_lock": {
+    "subtitle": "subtitles.skyliners.clamp_lock",
+    "sounds": [
+      {
+        "name": "skyliners:clamp_lock"
+      }
+    ]
+  },
+  "clamp_release": {
+    "subtitle": "subtitles.skyliners.clamp_release",
+    "sounds": [
+      {
+        "name": "skyliners:clamp_release"
+      }
+    ]
+  },
+  "canopy_open": {
+    "subtitle": "subtitles.skyliners.canopy_open",
+    "sounds": [
+      {
+        "name": "skyliners:canopy_open"
+      }
+    ]
+  },
+  "touchdown": {
+    "subtitle": "subtitles.skyliners.touchdown",
+    "sounds": [
+      {
+        "name": "skyliners:touchdown"
+      }
+    ]
+  },
+  "trim_car_roll": {
+    "subtitle": "subtitles.skyliners.trim_car_roll",
+    "sounds": [
+      {
+        "name": "skyliners:trim_car_roll"
+      }
+    ]
+  },
+  "bin_open": {
+    "subtitle": "subtitles.skyliners.bin_open",
+    "sounds": [
+      {
+        "name": "skyliners:bin_open"
+      }
+    ]
+  },
+  "bin_close": {
+    "subtitle": "subtitles.skyliners.bin_close",
+    "sounds": [
+      {
+        "name": "skyliners:bin_close"
+      }
+    ]
+  },
+  "searchlight_on": {
+    "subtitle": "subtitles.skyliners.searchlight_on",
+    "sounds": [
+      {
+        "name": "skyliners:searchlight_on"
+      }
+    ]
+  },
+  "booster_cutout": {
+    "subtitle": "subtitles.skyliners.booster_cutout",
+    "sounds": [
+      {
+        "name": "skyliners:booster_cutout"
+      }
+    ]
+  },
+  "glass_squeak": {
+    "subtitle": "subtitles.skyliners.glass_squeak",
+    "sounds": [
+      {
+        "name": "skyliners:glass_squeak"
+      }
+    ]
+  },
+  "autopilot_off": {
+    "subtitle": "subtitles.skyliners.autopilot_off",
+    "sounds": [
+      {
+        "name": "skyliners:autopilot_off"
+      }
+    ]
+  },
+  "gear_lever": {
+    "subtitle": "subtitles.skyliners.gear_lever",
+    "sounds": [
+      {
+        "name": "skyliners:gear_lever"
+      }
+    ]
+  },
+  "tow_rope": {
+    "subtitle": "subtitles.skyliners.tow_rope",
+    "sounds": [
+      {
+        "name": "skyliners:flag_halyard"
+      }
+    ]
+  },
+  "lift_door": {
+    "subtitle": "subtitles.skyliners.lift_door",
+    "sounds": [
+      {
+        "name": "skyliners:lift_door"
+      }
+    ]
+  },
+  "lift_start": {
+    "subtitle": "subtitles.skyliners.lift_start",
+    "sounds": [
+      {
+        "name": "skyliners:lift_start"
+      }
+    ]
+  },
+  "lift_hum": {
+    "subtitle": "subtitles.skyliners.lift_hum",
+    "sounds": [
+      {
+        "name": "skyliners:lift_hum"
+      }
+    ]
+  },
+  "lift_chime_up": {
+    "subtitle": "subtitles.skyliners.lift_chime_up",
+    "sounds": [
+      {
+        "name": "skyliners:lift_chime_up"
+      }
+    ]
+  },
+  "lift_chime_down": {
+    "subtitle": "subtitles.skyliners.lift_chime_down",
+    "sounds": [
+      {
+        "name": "skyliners:lift_chime_down"
+      }
+    ]
+  },
+  "space_light": {
+    "subtitle": "subtitles.skyliners.space_light",
+    "sounds": [
+      {
+        "name": "skyliners:space_light"
+      }
+    ]
+  },
+  "space_heavy": {
+    "subtitle": "subtitles.skyliners.space_heavy",
+    "sounds": [
+      {
+        "name": "skyliners:space_heavy"
+      }
+    ]
+  },
+  "lift_music": {
+    "subtitle": "subtitles.skyliners.lift_music",
+    "sounds": [
+      {
+        "name": "skyliners:lift_music",
+        "volume": 0.35,
+        "attenuation_distance": 4
+      }
+    ]
+  },
+  "techno_track": {
+    "subtitle": "subtitles.skyliners.techno_track",
+    "sounds": [
+      {
+        "name": "skyliners:techno_track",
+        "stream": true
+      }
+    ]
+  },
+  "dj_scratch": {
+    "subtitle": "subtitles.skyliners.dj_scratch",
+    "sounds": [
+      {
+        "name": "skyliners:dj_scratch"
+      }
+    ]
+  }
+}

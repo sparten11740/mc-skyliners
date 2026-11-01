@@ -1,0 +1,192 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "north": "true",
+        "rake": "level|north|south"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_level"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "rake": "east"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_right"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "rake": "west"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_left"
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "rake": "level|east|west"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "rake": "south"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_right",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "rake": "north"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_left",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "rake": "level|south|north"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "rake": "west"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_right",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "rake": "east"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_left",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "rake": "level|west|east"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "rake": "north"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_right",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "rake": "south"
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_raked_left",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "north": "true",
+            "rake": "level|north|south"
+          },
+          {
+            "west": "true",
+            "rake": "level|west|east"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_corner"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "east": "true",
+            "rake": "level|east|west"
+          },
+          {
+            "north": "true",
+            "rake": "level|north|south"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_corner",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "south": "true",
+            "rake": "level|south|north"
+          },
+          {
+            "east": "true",
+            "rake": "level|east|west"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_corner",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "west": "true",
+            "rake": "level|west|east"
+          },
+          {
+            "south": "true",
+            "rake": "level|south|north"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cabin_rail_corner",
+        "y": 270
+      }
+    }
+  ]
+}

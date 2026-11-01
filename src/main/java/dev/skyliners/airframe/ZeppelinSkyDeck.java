@@ -1,0 +1,134 @@
+package dev.skyliners.airframe;
+
+import static dev.skyliners.airframe.ZeppelinShape.*;
+
+import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.block.NavLightBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+
+/**
+ * The Sky Shaft and the Sky Deck: a climbing rope up from the gangway, beside it where a ring stands between two gas
+ * cells' rounded ends, inside a cage of girders all the way up past the glowing cells, out through a hatch in the
+ * crown onto a railed deck on top of the zeppelin, with a lamp at each corner and a mast whose red beacon blinks over
+ * it. Standing on top of a flying airship is the point. The rope hangs from a gantry over the hatch, so it can be
+ * climbed until the deck is underfoot, and stepped off fore or aft. A rope can be fallen down safely, as a ladder can:
+ * climbing slows the fall, and nothing is hurt landing in it; nothing bumps into it either, so the shaft is wide
+ * enough to climb. All of it is this mod's own blocks, joined face to face from the gangway to the deck, so it is
+ * assembled with the zeppelin.
+ */
+final class ZeppelinSkyDeck implements ZeppelinPiece {
+    /** Which ring the shaft climbs at: the one just aft of the hull's middle, aft of the decks. */
+    private static final int SHAFT_RING = 9;
+    /** How far out from the middle the rope hangs, in blocks: beside the gangway, past its rail. */
+    private static final int ROPE_OUT = 2;
+    /** How far the deck reaches either way from the middle and from the shaft's ring, in blocks. */
+    private static final int DECK_HALF = 3;
+    /** How high over the deck the gantry's beam is, in blocks, the rope hanging from it: over a climber's head. */
+    private static final int GANTRY_HEIGHT = 4;
+    /** How tall the mast stands over the deck under its beacon, in blocks, and how far in from the deck's corner. */
+    private static final int MAST_HEIGHT = 3;
+    private static final int MAST_IN = 1;
+
+    private final ZeppelinLayout layout;
+
+    ZeppelinSkyDeck(ZeppelinLayout layout) {
+        this.layout = layout;
+    }
+
+    /** The row along the hull the deck is laid round, at the shaft's ring. */
+    static int station(ZeppelinLayout layout) {
+        return (int) Math.floor(ringAt(SHAFT_RING) * layout.scale());
+    }
+
+    /** The deck's front edge, its row nearest the bow. */
+    static int front(ZeppelinLayout layout) {
+        return station(layout) - DECK_HALF;
+    }
+
+    /** The row the deck's grating is laid in, once it is laid: the topmost of the zeppelin over its middle. */
+    static int floor(ZeppelinLayout layout) {
+        int y = layout.axis() + (int) Math.ceil(RADIUS * layout.scale()) + GANTRY_HEIGHT;
+        while (y > layout.axis() && layout.stateAt(0, y, station(layout)).isAir()) {
+            y--;
+        }
+        return y;
+    }
+
+    /** Where the beacon on the mast's top is, once the deck is laid. */
+    static BlockPos beacon(ZeppelinLayout layout) {
+        return new BlockPos(-DECK_HALF + MAST_IN, floor(layout) + MAST_HEIGHT + 1, station(layout) - DECK_HALF + MAST_IN);
+    }
+
+    /** Round the ring it climbs at, wherever it stands at the size; the deck itself a player's size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
+    /** Lays the shaft and the deck, once the gangway it starts from is laid. */
+    @Override
+    public void build() {
+        int z = station(layout);
+        int walkway = layout.gangwayRow();
+        int deck = deckRow(z, walkway);
+        ZeppelinRopes.foot(layout, ROPE_OUT, z);
+        deckFloor(z, deck, SkylinersRegistry.ZEPPELIN_CATWALK.get().defaultBlockState());
+        for (int y = walkway + 1; y < deck; y++) {
+            ZeppelinRopes.cageRow(layout, ROPE_OUT, y, z);
+        }
+        gantry(z, deck);
+        ZeppelinRopes.rope(layout, ROPE_OUT, z, deck + GANTRY_HEIGHT - 1);
+        mast(z, deck);
+    }
+
+    /** The row the deck is laid in: the first open air above the crown over the gangway. */
+    private int deckRow(int z, int walkway) {
+        int y = walkway + 1;
+        while (!layout.isOpen(0, y, z) || layout.inHull(0, y, z)) {
+            y++;
+        }
+        return y;
+    }
+
+    /** The deck's grating on the crown, a lamp let into each corner, and its rail round the edge. */
+    private void deckFloor(int z, int deck, BlockState catwalk) {
+        BlockState lamp = SkylinersRegistry.CABIN_LIGHT.get().defaultBlockState();
+        for (int x = -DECK_HALF; x <= DECK_HALF; x++) {
+            for (int along = z - DECK_HALF; along <= z + DECK_HALF; along++) {
+                boolean corner = Math.abs(x) == DECK_HALF && Math.abs(along - z) == DECK_HALF;
+                layout.set(x, deck, along, corner ? lamp : catwalk);
+            }
+        }
+        for (int at = -DECK_HALF; at <= DECK_HALF; at++) {
+            layout.railAlong(-DECK_HALF, deck, z + at, Direction.WEST);
+            layout.railAlong(DECK_HALF, deck, z + at, Direction.EAST);
+            layout.railAlong(at, deck, z - DECK_HALF, Direction.NORTH);
+            layout.railAlong(at, deck, z + DECK_HALF, Direction.SOUTH);
+        }
+    }
+
+    /** The gantry over the hatch: a post either side of it and the beam across them, which the rope hangs from. */
+    private void gantry(int z, int deck) {
+        BlockState girder = SkylinersRegistry.ZEPPELIN_GIRDER.get().defaultBlockState();
+        for (int y = deck + 1; y < deck + GANTRY_HEIGHT; y++) {
+            layout.set(ROPE_OUT - 1, y, z, girder);
+            layout.set(ROPE_OUT + 1, y, z, girder);
+        }
+        for (int x = ROPE_OUT - 1; x <= ROPE_OUT + 1; x++) {
+            layout.set(x, deck + GANTRY_HEIGHT, z, girder);
+        }
+    }
+
+    /** The mast at the deck's forward port corner, a red beacon blinking at its top. */
+    private void mast(int z, int deck) {
+        int x = -DECK_HALF + MAST_IN;
+        int along = z - DECK_HALF + MAST_IN;
+        for (int y = deck + 1; y <= deck + MAST_HEIGHT; y++) {
+            layout.set(x, y, along, SkylinersRegistry.ZEPPELIN_GIRDER.get().defaultBlockState());
+        }
+        layout.set(x, deck + MAST_HEIGHT + 1, along, SkylinersRegistry.NAV_LIGHT.get().defaultBlockState()
+            .setValue(NavLightBlock.FACING, Direction.UP).setValue(NavLightBlock.KIND, NavLightBlock.Kind.BEACON));
+    }
+}

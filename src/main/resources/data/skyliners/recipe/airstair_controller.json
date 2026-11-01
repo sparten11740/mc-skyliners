@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PRP",
+    "RXR",
+    "PRP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "X": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "id": "skyliners:airstair_controller",
+    "count": 1
+  }
+}

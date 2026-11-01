@@ -1,0 +1,128 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_pane",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_pane",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_pane",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_pane",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "row": "floor"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_kerb",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "row": "floor"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_kerb",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "row": "floor"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_kerb",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "row": "floor"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_kerb",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "row": "top"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_light",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "row": "top"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_light",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "row": "top"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_light",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "row": "top"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_light",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "row": "floor"
+      },
+      "apply": {
+        "model": "skyliners:block/habitat_glass_moss"
+      }
+    }
+  ]
+}

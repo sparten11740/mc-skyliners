@@ -1,0 +1,199 @@
+{
+  "variants": {
+    "facing=north,part=jamb": {
+      "model": "skyliners:block/cabin_arch_jamb"
+    },
+    "facing=north,part=narrow_1_1": {
+      "model": "skyliners:block/cabin_arch_narrow_1_1"
+    },
+    "facing=north,part=narrow_2_1": {
+      "model": "skyliners:block/cabin_arch_narrow_2_1"
+    },
+    "facing=north,part=narrow_0_2": {
+      "model": "skyliners:block/cabin_arch_narrow_0_2"
+    },
+    "facing=north,part=narrow_1_2": {
+      "model": "skyliners:block/cabin_arch_narrow_1_2"
+    },
+    "facing=north,part=narrow_2_2": {
+      "model": "skyliners:block/cabin_arch_narrow_2_2"
+    },
+    "facing=north,part=wide_2_1": {
+      "model": "skyliners:block/cabin_arch_wide_2_1"
+    },
+    "facing=north,part=wide_3_1": {
+      "model": "skyliners:block/cabin_arch_wide_3_1"
+    },
+    "facing=north,part=wide_2_2": {
+      "model": "skyliners:block/cabin_arch_wide_2_2"
+    },
+    "facing=north,part=wide_3_2": {
+      "model": "skyliners:block/cabin_arch_wide_3_2"
+    },
+    "facing=north,part=wide_0_3": {
+      "model": "skyliners:block/cabin_arch_wide_0_3"
+    },
+    "facing=north,part=wide_1_3": {
+      "model": "skyliners:block/cabin_arch_wide_1_3"
+    },
+    "facing=north,part=wide_2_3": {
+      "model": "skyliners:block/cabin_arch_wide_2_3"
+    },
+    "facing=east,part=jamb": {
+      "model": "skyliners:block/cabin_arch_jamb",
+      "y": 90
+    },
+    "facing=east,part=narrow_1_1": {
+      "model": "skyliners:block/cabin_arch_narrow_1_1",
+      "y": 90
+    },
+    "facing=east,part=narrow_2_1": {
+      "model": "skyliners:block/cabin_arch_narrow_2_1",
+      "y": 90
+    },
+    "facing=east,part=narrow_0_2": {
+      "model": "skyliners:block/cabin_arch_narrow_0_2",
+      "y": 90
+    },
+    "facing=east,part=narrow_1_2": {
+      "model": "skyliners:block/cabin_arch_narrow_1_2",
+      "y": 90
+    },
+    "facing=east,part=narrow_2_2": {
+      "model": "skyliners:block/cabin_arch_narrow_2_2",
+      "y": 90
+    },
+    "facing=east,part=wide_2_1": {
+      "model": "skyliners:block/cabin_arch_wide_2_1",
+      "y": 90
+    },
+    "facing=east,part=wide_3_1": {
+      "model": "skyliners:block/cabin_arch_wide_3_1",
+      "y": 90
+    },
+    "facing=east,part=wide_2_2": {
+      "model": "skyliners:block/cabin_arch_wide_2_2",
+      "y": 90
+    },
+    "facing=east,part=wide_3_2": {
+      "model": "skyliners:block/cabin_arch_wide_3_2",
+      "y": 90
+    },
+    "facing=east,part=wide_0_3": {
+      "model": "skyliners:block/cabin_arch_wide_0_3",
+      "y": 90
+    },
+    "facing=east,part=wide_1_3": {
+      "model": "skyliners:block/cabin_arch_wide_1_3",
+      "y": 90
+    },
+    "facing=east,part=wide_2_3": {
+      "model": "skyliners:block/cabin_arch_wide_2_3",
+      "y": 90
+    },
+    "facing=south,part=jamb": {
+      "model": "skyliners:block/cabin_arch_jamb",
+      "y": 180
+    },
+    "facing=south,part=narrow_1_1": {
+      "model": "skyliners:block/cabin_arch_narrow_1_1",
+      "y": 180
+    },
+    "facing=south,part=narrow_2_1": {
+      "model": "skyliners:block/cabin_arch_narrow_2_1",
+      "y": 180
+    },
+    "facing=south,part=narrow_0_2": {
+      "model": "skyliners:block/cabin_arch_narrow_0_2",
+      "y": 180
+    },
+    "facing=south,part=narrow_1_2": {
+      "model": "skyliners:block/cabin_arch_narrow_1_2",
+      "y": 180
+    },
+    "facing=south,part=narrow_2_2": {
+      "model": "skyliners:block/cabin_arch_narrow_2_2",
+      "y": 180
+    },
+    "facing=south,part=wide_2_1": {
+      "model": "skyliners:block/cabin_arch_wide_2_1",
+      "y": 180
+    },
+    "facing=south,part=wide_3_1": {
+      "model": "skyliners:block/cabin_arch_wide_3_1",
+      "y": 180
+    },
+    "facing=south,part=wide_2_2": {
+      "model": "skyliners:block/cabin_arch_wide_2_2",
+      "y": 180
+    },
+    "facing=south,part=wide_3_2": {
+      "model": "skyliners:block/cabin_arch_wide_3_2",
+      "y": 180
+    },
+    "facing=south,part=wide_0_3": {
+      "model": "skyliners:block/cabin_arch_wide_0_3",
+      "y": 180
+    },
+    "facing=south,part=wide_1_3": {
+      "model": "skyliners:block/cabin_arch_wide_1_3",
+      "y": 180
+    },
+    "facing=south,part=wide_2_3": {
+      "model": "skyliners:block/cabin_arch_wide_2_3",
+      "y": 180
+    },
+    "facing=west,part=jamb": {
+      "model": "skyliners:block/cabin_arch_jamb",
+      "y": 270
+    },
+    "facing=west,part=narrow_1_1": {
+      "model": "skyliners:block/cabin_arch_narrow_1_1",
+      "y": 270
+    },
+    "facing=west,part=narrow_2_1": {
+      "model": "skyliners:block/cabin_arch_narrow_2_1",
+      "y": 270
+    },
+    "facing=west,part=narrow_0_2": {
+      "model": "skyliners:block/cabin_arch_narrow_0_2",
+      "y": 270
+    },
+    "facing=west,part=narrow_1_2": {
+      "model": "skyliners:block/cabin_arch_narrow_1_2",
+      "y": 270
+    },
+    "facing=west,part=narrow_2_2": {
+      "model": "skyliners:block/cabin_arch_narrow_2_2",
+      "y": 270
+    },
+    "facing=west,part=wide_2_1": {
+      "model": "skyliners:block/cabin_arch_wide_2_1",
+      "y": 270
+    },
+    "facing=west,part=wide_3_1": {
+      "model": "skyliners:block/cabin_arch_wide_3_1",
+      "y": 270
+    },
+    "facing=west,part=wide_2_2": {
+      "model": "skyliners:block/cabin_arch_wide_2_2",
+      "y": 270
+    },
+    "facing=west,part=wide_3_2": {
+      "model": "skyliners:block/cabin_arch_wide_3_2",
+      "y": 270
+    },
+    "facing=west,part=wide_0_3": {
+      "model": "skyliners:block/cabin_arch_wide_0_3",
+      "y": 270
+    },
+    "facing=west,part=wide_1_3": {
+      "model": "skyliners:block/cabin_arch_wide_1_3",
+      "y": 270
+    },
+    "facing=west,part=wide_2_3": {
+      "model": "skyliners:block/cabin_arch_wide_2_3",
+      "y": 270
+    }
+  }
+}

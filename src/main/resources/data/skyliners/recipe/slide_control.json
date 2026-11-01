@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "Y",
+    "L",
+    "P"
+  ],
+  "key": {
+    "Y": {
+      "item": "minecraft:yellow_wool"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "P": {
+      "item": "skyliners:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:slide_control",
+    "count": 1
+  }
+}

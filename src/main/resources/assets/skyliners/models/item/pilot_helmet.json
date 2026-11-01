@@ -1,0 +1,17 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "gui_light": "front",
+  "base": {
+    "parent": "minecraft:item/generated",
+    "loader": "neoforge:item_layers",
+    "textures": {
+      "layer0": "skyliners:item/pilot_helmet",
+      "particle": "skyliners:item/pilot_helmet"
+    }
+  },
+  "perspectives": {
+    "head": {
+      "parent": "skyliners:item/pilot_helmet_worn"
+    }
+  }
+}

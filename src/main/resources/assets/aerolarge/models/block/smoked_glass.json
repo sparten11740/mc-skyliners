@@ -1,8 +1,0 @@
-{
-  "loader": "aerolarge:shell",
-  "render_type": "minecraft:translucent",
-  "textures": {
-    "skin": "aerolarge:block/smoked_glass",
-    "particle": "aerolarge:block/smoked_glass"
-  }
-}

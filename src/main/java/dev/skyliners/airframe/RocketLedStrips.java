@@ -1,0 +1,222 @@
+package dev.skyliners.airframe;
+
+import dev.skyliners.SkylinersConfig;
+import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.block.LedColour;
+import dev.skyliners.block.LedConsoleBlock;
+import dev.skyliners.block.LedConsoleBlockEntity;
+import dev.skyliners.block.LedMode;
+import dev.skyliners.block.LedPanelBlock;
+import dev.skyliners.block.LedPanelBlockEntity;
+import dev.skyliners.block.LedSetting;
+import dev.skyliners.block.LedStripBlock;
+import dev.skyliners.block.OvalWindowBlock;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+
+/**
+ * The LED strips round each of the rocket's stories (see {@link LedStripBlock}), with the panel by each story's lift
+ * door that sets them and the console in her cockpit that sets any story or all of them. Two rings of strip go round
+ * every story along the inside of her skin, one lying on the floor and one fixed under the ceiling, in every open block
+ * that the skin stands beside, out of the way of the oval windows and of whatever else stands there; on the observation
+ * deck, glass all round under a starry dome, one along the foot of its band of glass and one round the edge of its
+ * starlight ceiling, along the top of its starry wall. Each strip touches the floor or the ceiling face to face, so it
+ * is assembled with her. Each story is set as its room asks, most in the colour of its button on the lift's board, so
+ * a child who presses a colour steps out into it: the entry snow white at two thirds; the cargo bay sunshine yellow;
+ * the galley and mess a warm full tangerine; the bunk room a dim grape, breathing like a night light; the greenhouse a
+ * full pink grow light; the pool sky blue, breathing like water; the techno club pulsing pink and ocean blue to its
+ * beat; the lab mint; the observation deck a dim ocean blue for the stars. Laid last, so they fill in round every
+ * room's fittings.
+ */
+final class RocketLedStrips implements RocketPiece {
+    /** The stories whose rooms set their strips their own way, counted from the entry story up. */
+    private static final int CARGO_BAY = 1;
+    private static final int MESS = 2;
+    private static final int BUNKS = 3;
+    private static final int GREENHOUSE = 4;
+    private static final int POOL = 5;
+    private static final int TECHNO_CLUB = 6;
+    private static final int LAB = 7;
+    private static final int OBSERVATION_DECK = 8;
+    /** A dim strip, a third bright, as the observation deck's are, so the stars outshine them; and two thirds bright. */
+    private static final int DIM = 1;
+    private static final int TWO_THIRDS = 2;
+    /**
+     * Where each story's panel stands, from her axis and the story's floor: at eye height, beside the lift's doorway on
+     * its west side as she is laid out (the lift's call button has the east side), its back on the shaft's glass.
+     */
+    private static final int PANEL_X = -1;
+    private static final int PANEL_UP = 2;
+    private static final int PANEL_Z = -RocketLayout.SHAFT - 1;
+    /**
+     * The windows the strips keep clear of: how many rows over its floor a story's windows begin, as the layout sets
+     * them, and how many blocks either side of the way each looks out they reach.
+     */
+    private static final int WINDOW_FROM = 1;
+    private static final int WINDOW_HALF = OvalWindowBlock.COLUMNS / 2;
+
+    private final RocketLayout layout;
+
+    RocketLedStrips(RocketLayout layout) {
+        this.layout = layout;
+    }
+
+    /**
+     * Where a story's two rings of strip run: the row of its floor, which the one lies on, the row the one under its
+     * ceiling runs in, and whether they keep out of the way of its oval windows, as on every story but the observation
+     * deck, whose band of glass takes their place.
+     */
+    private record Rings(int floor, int under, boolean windows) {
+    }
+
+    @Override
+    public boolean wanted() {
+        return SkylinersConfig.LED_STRIPS.get();
+    }
+
+    @Override
+    public void build() {
+        List<Integer> floors = layout.floors();
+        List<BlockPos> panels = new ArrayList<>();
+        List<Integer> spans = new ArrayList<>();
+        for (int story = 0; story < floors.size(); story++) {
+            int floor = floors.get(story);
+            int over = story + 1 < floors.size() ? floors.get(story + 1) : layout.cockpitFloor();
+            int ceiling = RocketObservationDeck.ceilingOf(layout, story, floor, over);
+            int under = RocketObservationDeck.underCeiling(layout, story, ceiling);
+            BlockPos panel = story(new Rings(floor, under, !RocketObservationDeck.furnished(layout, story)), setting(story));
+            if (panel != null) {
+                panels.add(panel);
+                spans.add(floor);
+                spans.add(ceiling);
+            }
+        }
+        console(panels, spans.stream().mapToInt(Integer::intValue).toArray());
+    }
+
+    /** What a story's strips are laid set to, as its room asks. */
+    private static LedSetting setting(int story) {
+        return switch (story) {
+            case CARGO_BAY -> new LedSetting(LedColour.SUNSHINE, TWO_THIRDS, LedMode.STEADY);
+            case MESS -> new LedSetting(LedColour.TANGERINE, LedStripBlock.BRIGHTEST, LedMode.STEADY);
+            case BUNKS -> new LedSetting(LedColour.GRAPE, DIM, LedMode.BREATHE);
+            case POOL -> new LedSetting(LedColour.SKY, TWO_THIRDS, LedMode.BREATHE);
+            case LAB -> new LedSetting(LedColour.MINT, TWO_THIRDS, LedMode.STEADY);
+            case GREENHOUSE -> new LedSetting(LedColour.PINK, LedStripBlock.BRIGHTEST, LedMode.STEADY);
+            case TECHNO_CLUB -> new LedSetting(LedColour.PINK, LedStripBlock.BRIGHTEST, LedMode.CLUB);
+            case OBSERVATION_DECK -> new LedSetting(LedColour.OCEAN, DIM, LedMode.STEADY);
+            default -> LedSetting.PLAIN;
+        };
+    }
+
+    /**
+     * A story's two rings of strip and its panel, which is told where they run: the box round them, from the ring on
+     * the floor up to the one under the ceiling, whose two rows are the only ones it looks along; where the panel
+     * stands, or null where its place is taken, and then the story has no strips either, with nothing to set them.
+     */
+    @Nullable
+    private BlockPos story(Rings rings, LedSetting setting) {
+        int floor = rings.floor();
+        BlockPos panel = new BlockPos(PANEL_X, floor + PANEL_UP, PANEL_Z);
+        if (!layout.isOpen(panel.getX(), panel.getY(), panel.getZ())) {
+            return null;
+        }
+        List<BlockPos> strips = new ArrayList<>();
+        ring(rings, floor + 1, false, setting.brightness(), strips);
+        ring(rings, rings.under(), true, setting.brightness(), strips);
+        BlockPos low = new BlockPos(panel.getX(), floor + 1, panel.getZ());
+        BlockPos high = new BlockPos(panel.getX(), rings.under(), panel.getZ());
+        for (BlockPos strip : strips) {
+            low = BlockPos.min(low, strip);
+            high = BlockPos.max(high, strip);
+        }
+        layout.set(panel.getX(), panel.getY(), panel.getZ(), SkylinersRegistry.LED_PANEL.get().defaultBlockState().setValue(LedPanelBlock.FACING, Direction.NORTH));
+        BlockPos from = low.subtract(panel);
+        BlockPos to = high.subtract(panel);
+        layout.fit(panel, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LedPanelBlockEntity panelEntity) {
+                panelEntity.story(from.rotate(rotation), to.rotate(rotation), setting);
+            }
+        });
+        return panel;
+    }
+
+    /** A ring of strip round a story at a row, on its floor or under its ceiling, each strip added to the list. */
+    private void ring(Rings rings, int y, boolean ceiling, int brightness, List<BlockPos> strips) {
+        int out = layout.reach();
+        int across = 2 * out + 1;
+        for (int block = 0; block < across * across; block++) {
+            int x = block / across - out;
+            int z = block % across - out;
+            BlockState strip = strip(rings, x, y, z, ceiling, brightness);
+            if (strip != null) {
+                layout.set(x, y, z, strip);
+                strips.add(new BlockPos(x, y, z));
+            }
+        }
+    }
+
+    /**
+     * The strip at a block, running along each side of it that what strips run along stands on, further out from her
+     * axis (see {@link #wallAt}); null for none: where something stands, in front of a window, where no floor or
+     * ceiling holds it, or where nothing it runs along stands beside it on any side.
+     */
+    @Nullable
+    private BlockState strip(Rings rings, int x, int y, int z, boolean ceiling, int brightness) {
+        int up = y - rings.floor();
+        boolean window = rings.windows() && up >= WINDOW_FROM && up < WINDOW_FROM + OvalWindowBlock.ROWS
+            && (Math.abs(x) <= WINDOW_HALF || Math.abs(z) <= WINDOW_HALF);
+        int held = ceiling ? y + 1 : y - 1;
+        if (window || !layout.isOpen(x, y, z) || layout.isOpen(x, held, z)) {
+            return null;
+        }
+        BlockState strip = SkylinersRegistry.LED_STRIP.get().defaultBlockState().setValue(LedStripBlock.CEILING, ceiling)
+            .setValue(LedStripBlock.BRIGHTNESS, brightness);
+        boolean any = false;
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            boolean wall = side.getStepX() * x + side.getStepZ() * z > 0 && wallAt(x + side.getStepX(), y, z + side.getStepZ());
+            strip = strip.setValue(LedStripBlock.WALLS.get(side), wall);
+            any |= wall;
+        }
+        return any ? strip : null;
+    }
+
+    /**
+     * Whether what a strip runs along stands at a block: the cover of her skin, or on the observation deck its band of
+     * glass and the starry wall over it; not an oval window, nor anything fitted.
+     */
+    private boolean wallAt(int x, int y, int z) {
+        BlockState wall = layout.stateAt(x, y, z);
+        return wall.is(SkylinersRegistry.ZEPPELIN_COVER.get()) || wall.is(SkylinersRegistry.SMOKED_GLASS.get())
+            || wall.is(SkylinersRegistry.STARLIGHT_PANEL.get());
+    }
+
+    /**
+     * The console in the cockpit, on the left wing of her flight deck (see {@link RocketFlightDeck}), facing in at the
+     * commander's left hand, as the camera display stands at the pilot's right: wired to each story's panel, as
+     * offsets from it; none where the flight deck has no left wing, or there are no stories.
+     */
+    private void console(List<BlockPos> panels, int[] spans) {
+        BlockPos wing = layout.flightDeck().ledConsole();
+        if (panels.isEmpty() || wing == null) {
+            return;
+        }
+        int columns = LedConsoleBlock.CONSOLE_COLUMNS;
+        // Facing east, the viewer's right is north: the console reaches north and up from its first part, at the wing's
+        // back end.
+        BlockPos origin = wing.south(columns - 1);
+        BlockState console = SkylinersRegistry.LED_CONSOLE.get().defaultBlockState().setValue(LedConsoleBlock.FACING, Direction.EAST);
+        for (int part = 0; part < columns * LedConsoleBlock.CONSOLE_ROWS; part++) {
+            layout.set(origin.getX(), origin.getY() + part / columns, origin.getZ() - part % columns, console.setValue(LedConsoleBlock.PART, part));
+        }
+        layout.fit(origin, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LedConsoleBlockEntity consoleEntity) {
+                consoleEntity.wire(panels.stream().map(panel -> panel.subtract(origin).rotate(rotation)).toList(), spans);
+            }
+        });
+    }
+}

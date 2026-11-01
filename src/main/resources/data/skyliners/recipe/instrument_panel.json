@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GGG",
+    "RPR"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:black_stained_glass_pane"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "skyliners:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:instrument_panel",
+    "count": 3
+  }
+}

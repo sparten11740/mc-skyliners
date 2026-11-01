@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/aisle_carpet",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/aisle_carpet",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/aisle_carpet",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/aisle_carpet",
+      "y": 270
+    }
+  }
+}

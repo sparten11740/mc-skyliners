@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "closed=false": {
+      "model": "skyliners:block/deck_clamp"
+    },
+    "closed=true": {
+      "model": "skyliners:block/deck_clamp_closed"
+    }
+  }
+}

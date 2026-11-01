@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/lookout_glass",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/lookout_glass",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/lookout_glass",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/lookout_glass",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PTP",
+    "P P",
+    "PTP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "T": {
+      "item": "minecraft:iron_trapdoor"
+    }
+  },
+  "result": {
+    "id": "skyliners:drop_bay",
+    "count": 1
+  }
+}

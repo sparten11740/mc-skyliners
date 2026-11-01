@@ -1,11 +1,11 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:trolley",
-    "aerolarge:basketball",
-    "aerolarge:paper_plane",
-    "aerolarge:lift_car",
-    "aerolarge:rover",
-    "aerolarge:tardigrade"
+    "skyliners:trolley",
+    "skyliners:basketball",
+    "skyliners:paper_plane",
+    "skyliners:lift_car",
+    "skyliners:rover",
+    "skyliners:tardigrade"
   ]
 }

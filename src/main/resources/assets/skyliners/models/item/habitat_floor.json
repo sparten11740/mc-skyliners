@@ -1,0 +1,17 @@
+{
+  "parent": "skyliners:block/habitat_pool",
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:kind": 0
+      },
+      "model": "skyliners:block/habitat_pool"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.5
+      },
+      "model": "skyliners:block/habitat_pebbles"
+    }
+  ]
+}

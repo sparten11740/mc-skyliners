@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "skyliners:block/laser_hatch",
+    "up": "skyliners:block/airframe_panel",
+    "particle": "skyliners:block/airframe_panel",
+    "north": "skyliners:block/airframe_panel",
+    "south": "skyliners:block/airframe_panel",
+    "east": "skyliners:block/airframe_panel",
+    "west": "skyliners:block/airframe_panel"
+  }
+}

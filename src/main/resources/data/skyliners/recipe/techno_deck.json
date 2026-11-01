@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "NJN",
+    "CCC"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:note_block"
+    },
+    "J": {
+      "item": "minecraft:jukebox"
+    },
+    "C": {
+      "item": "minecraft:black_concrete"
+    }
+  },
+  "result": {
+    "id": "skyliners:techno_deck",
+    "count": 1
+  }
+}

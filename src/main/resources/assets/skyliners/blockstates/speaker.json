@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/speaker",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/speaker",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/speaker",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/speaker",
+      "y": 270
+    }
+  }
+}

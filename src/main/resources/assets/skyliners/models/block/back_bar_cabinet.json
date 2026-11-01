@@ -1,0 +1,212 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "green": "skyliners:block/bar_bottle_green",
+    "amber": "skyliners:block/bar_bottle_amber",
+    "clear": "skyliners:block/bar_bottle_clear",
+    "blue": "skyliners:block/bar_bottle_blue",
+    "red": "skyliners:block/bar_bottle_red",
+    "violet": "skyliners:block/bar_bottle_violet",
+    "cork": "skyliners:block/bar_bottle_cork",
+    "gold": "skyliners:block/perfume_cap",
+    "chrome": "skyliners:block/lavatory_basin_chrome",
+    "veneer": "skyliners:block/business_seat_veneer",
+    "doors": "skyliners:block/back_bar_doors",
+    "top": "skyliners:block/bar_top",
+    "mirror": "skyliners:block/back_bar_mirror",
+    "glass": "skyliners:block/back_bar_glass",
+    "led": "skyliners:block/back_bar_led",
+    "particle": "skyliners:block/business_seat_veneer"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#doors"
+        },
+        "south": {
+          "texture": "#veneer"
+        },
+        "east": {
+          "texture": "#veneer"
+        },
+        "west": {
+          "texture": "#veneer"
+        },
+        "up": {
+          "texture": "#veneer"
+        },
+        "down": {
+          "texture": "#veneer"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#top"
+        },
+        "south": {
+          "texture": "#top"
+        },
+        "east": {
+          "texture": "#top"
+        },
+        "west": {
+          "texture": "#top"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "down": {
+          "texture": "#top"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        13.5,
+        0.75
+      ],
+      "to": [
+        16,
+        14,
+        1
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#led",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#led",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        9,
+        0
+      ],
+      "to": [
+        14.5,
+        10,
+        0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        9.25,
+        0.5
+      ],
+      "to": [
+        3.5,
+        9.75,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        9.25,
+        0.5
+      ],
+      "to": [
+        13.5,
+        9.75,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    }
+  ]
+}

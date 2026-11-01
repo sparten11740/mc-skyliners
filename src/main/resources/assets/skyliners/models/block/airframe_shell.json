@@ -1,0 +1,8 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "skin": "skyliners:block/airframe_panel",
+    "particle": "skyliners:block/airframe_panel"
+  }
+}

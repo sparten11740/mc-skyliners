@@ -1,13 +1,13 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:cargo_crate",
-    "aerolarge:paper_plane_box",
-    "aerolarge:gym_floor",
-    "aerolarge:wall_bars",
-    "aerolarge:gym_bench",
-    "aerolarge:garden_bed",
-    "aerolarge:sprinkler",
-    "aerolarge:shelf_unit"
+    "skyliners:cargo_crate",
+    "skyliners:paper_plane_box",
+    "skyliners:gym_floor",
+    "skyliners:wall_bars",
+    "skyliners:gym_bench",
+    "skyliners:garden_bed",
+    "skyliners:sprinkler",
+    "skyliners:shelf_unit"
   ]
 }

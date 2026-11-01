@@ -1,0 +1,196 @@
+{
+  "variants": {
+    "facing=north,half=lower,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 0
+    },
+    "facing=north,half=lower,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 0
+    },
+    "facing=north,half=lower,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 0
+    },
+    "facing=north,half=lower,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 0
+    },
+    "facing=north,half=lower,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 0
+    },
+    "facing=north,half=lower,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 0
+    },
+    "facing=north,half=upper,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 0
+    },
+    "facing=north,half=upper,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 0
+    },
+    "facing=north,half=upper,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 0
+    },
+    "facing=north,half=upper,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 0
+    },
+    "facing=north,half=upper,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 0
+    },
+    "facing=north,half=upper,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 0
+    },
+    "facing=east,half=lower,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 90
+    },
+    "facing=east,half=lower,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 90
+    },
+    "facing=east,half=lower,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 90
+    },
+    "facing=east,half=lower,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 90
+    },
+    "facing=east,half=lower,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 90
+    },
+    "facing=east,half=lower,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 90
+    },
+    "facing=east,half=upper,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 90
+    },
+    "facing=east,half=upper,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 90
+    },
+    "facing=east,half=upper,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 90
+    },
+    "facing=east,half=upper,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 90
+    },
+    "facing=east,half=upper,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 90
+    },
+    "facing=east,half=upper,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 90
+    },
+    "facing=south,half=lower,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 180
+    },
+    "facing=south,half=lower,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 180
+    },
+    "facing=south,half=lower,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 180
+    },
+    "facing=south,half=lower,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 180
+    },
+    "facing=south,half=lower,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 180
+    },
+    "facing=south,half=lower,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 180
+    },
+    "facing=south,half=upper,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 180
+    },
+    "facing=south,half=upper,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 180
+    },
+    "facing=south,half=upper,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 180
+    },
+    "facing=south,half=upper,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 180
+    },
+    "facing=south,half=upper,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 180
+    },
+    "facing=south,half=upper,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 180
+    },
+    "facing=west,half=lower,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 270
+    },
+    "facing=west,half=lower,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower",
+      "y": 270
+    },
+    "facing=west,half=lower,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 270
+    },
+    "facing=west,half=lower,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_left",
+      "y": 270
+    },
+    "facing=west,half=lower,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 270
+    },
+    "facing=west,half=lower,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_lower_stick_right",
+      "y": 270
+    },
+    "facing=west,half=upper,stick=none,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,stick=none,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,stick=left,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,stick=left,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,stick=right,waterlogged=false": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,stick=right,waterlogged=true": {
+      "model": "skyliners:block/pilot_seat_upper",
+      "y": 270
+    }
+  }
+}

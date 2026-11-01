@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "door": "skyliners:block/uld_container_door",
+    "back": "skyliners:block/uld_container_back",
+    "side": "skyliners:block/uld_container_side_0",
+    "sheet": "skyliners:block/uld_container_skin",
+    "frame": "skyliners:block/uld_container_frame",
+    "particle": "skyliners:block/uld_container_skin"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#door",
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#sheet"
+        },
+        "up": {
+          "texture": "#sheet"
+        }
+      }
+    }
+  ]
+}

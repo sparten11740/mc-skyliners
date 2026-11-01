@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,tier=cabinet": {
+      "model": "skyliners:block/duty_free_display_cabinet"
+    },
+    "facing=north,tier=shelves": {
+      "model": "skyliners:block/duty_free_display_shelves"
+    },
+    "facing=east,tier=cabinet": {
+      "model": "skyliners:block/duty_free_display_cabinet",
+      "y": 90
+    },
+    "facing=east,tier=shelves": {
+      "model": "skyliners:block/duty_free_display_shelves",
+      "y": 90
+    },
+    "facing=south,tier=cabinet": {
+      "model": "skyliners:block/duty_free_display_cabinet",
+      "y": 180
+    },
+    "facing=south,tier=shelves": {
+      "model": "skyliners:block/duty_free_display_shelves",
+      "y": 180
+    },
+    "facing=west,tier=cabinet": {
+      "model": "skyliners:block/duty_free_display_cabinet",
+      "y": 270
+    },
+    "facing=west,tier=shelves": {
+      "model": "skyliners:block/duty_free_display_shelves",
+      "y": 270
+    }
+  }
+}

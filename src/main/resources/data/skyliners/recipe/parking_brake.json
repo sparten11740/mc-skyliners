@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "S",
+    "R",
+    "P"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:lever"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "skyliners:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:parking_brake",
+    "count": 1
+  }
+}

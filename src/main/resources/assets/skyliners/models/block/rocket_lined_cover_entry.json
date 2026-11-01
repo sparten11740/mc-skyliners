@@ -1,0 +1,18 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "tint_index": 0,
+  "textures": {
+    "skin": "skyliners:block/zeppelin_skin",
+    "particle": "skyliners:block/zeppelin_skin",
+    "lining": "skyliners:block/rocket_wall_entry",
+    "lining_ceiling": "skyliners:block/rocket_ceiling_entry",
+    "lining_floor": "skyliners:block/rocket_ledge_entry",
+    "lining_dado": "skyliners:block/rocket_dado_entry",
+    "lining_reveal": "skyliners:block/rocket_wall_entry",
+    "lining_reveal_pair": "skyliners:block/rocket_wall_entry",
+    "lining_reveal_head": "skyliners:block/rocket_wall_entry",
+    "lining_reveal_sill": "skyliners:block/rocket_wall_entry",
+    "lining_dado_sill": "skyliners:block/rocket_dado_entry"
+  }
+}

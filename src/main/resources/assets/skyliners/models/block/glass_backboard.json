@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "glass": "skyliners:block/glass_backboard",
+    "frame": "skyliners:block/cabin_rail_steel",
+    "red": "skyliners:block/backboard_red",
+    "particle": "skyliners:block/glass_backboard"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        1.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,row=bottom": {
+      "model": "skyliners:block/lab_partition_bottom",
+      "y": 0
+    },
+    "facing=north,row=middle": {
+      "model": "skyliners:block/lab_partition_middle",
+      "y": 0
+    },
+    "facing=north,row=top": {
+      "model": "skyliners:block/lab_partition_top",
+      "y": 0
+    },
+    "facing=east,row=bottom": {
+      "model": "skyliners:block/lab_partition_bottom",
+      "y": 90
+    },
+    "facing=east,row=middle": {
+      "model": "skyliners:block/lab_partition_middle",
+      "y": 90
+    },
+    "facing=east,row=top": {
+      "model": "skyliners:block/lab_partition_top",
+      "y": 90
+    },
+    "facing=south,row=bottom": {
+      "model": "skyliners:block/lab_partition_bottom",
+      "y": 180
+    },
+    "facing=south,row=middle": {
+      "model": "skyliners:block/lab_partition_middle",
+      "y": 180
+    },
+    "facing=south,row=top": {
+      "model": "skyliners:block/lab_partition_top",
+      "y": 180
+    },
+    "facing=west,row=bottom": {
+      "model": "skyliners:block/lab_partition_bottom",
+      "y": 270
+    },
+    "facing=west,row=middle": {
+      "model": "skyliners:block/lab_partition_middle",
+      "y": 270
+    },
+    "facing=west,row=top": {
+      "model": "skyliners:block/lab_partition_top",
+      "y": 270
+    }
+  }
+}

@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "aerolarge:block/ball_rack_front",
-    "side": "aerolarge:block/ball_rack_side",
-    "top": "aerolarge:block/ball_rack_side"
-  }
-}

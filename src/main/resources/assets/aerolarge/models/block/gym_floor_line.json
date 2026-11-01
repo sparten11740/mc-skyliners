@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "top": "aerolarge:block/gym_floor_line",
-    "bottom": "aerolarge:block/cabin_stairs_panel",
-    "side": "aerolarge:block/gym_floor"
-  }
-}

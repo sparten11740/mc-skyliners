@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "top": "aerolarge:block/rocket_floor_club",
-    "bottom": "aerolarge:block/rocket_ceiling_greenhouse",
-    "side": "aerolarge:block/rocket_floor_club"
-  }
-}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "skyliners:block/cabin_window_bottom_shaded"
+  },
+  "render_type": "minecraft:translucent"
+}

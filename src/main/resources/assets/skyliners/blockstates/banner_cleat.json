@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,streaming=false": {
+      "model": "skyliners:block/banner_cleat",
+      "y": 0
+    },
+    "facing=north,streaming=true": {
+      "model": "skyliners:block/banner_cleat_streaming",
+      "y": 0
+    },
+    "facing=east,streaming=false": {
+      "model": "skyliners:block/banner_cleat",
+      "y": 90
+    },
+    "facing=east,streaming=true": {
+      "model": "skyliners:block/banner_cleat_streaming",
+      "y": 90
+    },
+    "facing=south,streaming=false": {
+      "model": "skyliners:block/banner_cleat",
+      "y": 180
+    },
+    "facing=south,streaming=true": {
+      "model": "skyliners:block/banner_cleat_streaming",
+      "y": 180
+    },
+    "facing=west,streaming=false": {
+      "model": "skyliners:block/banner_cleat",
+      "y": 270
+    },
+    "facing=west,streaming=true": {
+      "model": "skyliners:block/banner_cleat_streaming",
+      "y": 270
+    }
+  }
+}

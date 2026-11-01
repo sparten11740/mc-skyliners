@@ -1,0 +1,77 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:black_hole_poster",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "black_hole",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:solar_system_poster",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "solar_system",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:quasar_poster",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "quasar",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:earthrise_poster",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "earthrise",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "skyliners:blocks/space_poster"
+}

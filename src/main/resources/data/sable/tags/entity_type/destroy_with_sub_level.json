@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:lift_car",
-    "aerolarge:tardigrade"
+    "skyliners:lift_car",
+    "skyliners:tardigrade"
   ]
 }

@@ -1,0 +1,252 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "rim": "skyliners:block/hoop_rim",
+    "bracket": "skyliners:block/handset_cradle",
+    "net": "skyliners:block/hoop_net",
+    "particle": "skyliners:block/hoop_rim"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        10,
+        2
+      ],
+      "to": [
+        14,
+        11,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "down": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        10,
+        12.5
+      ],
+      "to": [
+        14,
+        11,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "down": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        10,
+        3.5
+      ],
+      "to": [
+        3.5,
+        11,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "down": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        10,
+        3.5
+      ],
+      "to": [
+        14,
+        11,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "down": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        9,
+        0
+      ],
+      "to": [
+        9,
+        11,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bracket"
+        },
+        "south": {
+          "texture": "#bracket"
+        },
+        "east": {
+          "texture": "#bracket"
+        },
+        "west": {
+          "texture": "#bracket"
+        },
+        "up": {
+          "texture": "#bracket"
+        },
+        "down": {
+          "texture": "#bracket"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        4,
+        3.5
+      ],
+      "to": [
+        13,
+        10,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#net"
+        },
+        "south": {
+          "texture": "#net"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        4,
+        12.5
+      ],
+      "to": [
+        13,
+        10,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#net"
+        },
+        "south": {
+          "texture": "#net"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        4,
+        3
+      ],
+      "to": [
+        3.5,
+        10,
+        13
+      ],
+      "faces": {
+        "east": {
+          "texture": "#net"
+        },
+        "west": {
+          "texture": "#net"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        4,
+        3
+      ],
+      "to": [
+        12.5,
+        10,
+        13
+      ],
+      "faces": {
+        "east": {
+          "texture": "#net"
+        },
+        "west": {
+          "texture": "#net"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

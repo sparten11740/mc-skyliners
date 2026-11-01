@@ -1,0 +1,119 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "casing": "skyliners:block/flight_console",
+    "particle": "skyliners:block/flight_console",
+    "panel": "skyliners:block/seatbelt_switch_on",
+    "toggle": "skyliners:block/thrust_lever_knob",
+    "base": "skyliners:block/thrust_lever_handle"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#panel",
+          "rotation": 180
+        },
+        "down": {
+          "texture": "#casing",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        6,
+        2.5
+      ],
+      "to": [
+        9,
+        6.5,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base"
+        },
+        "south": {
+          "texture": "#base"
+        },
+        "east": {
+          "texture": "#base"
+        },
+        "west": {
+          "texture": "#base"
+        },
+        "up": {
+          "texture": "#base"
+        },
+        "down": {
+          "texture": "#base"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        6.5,
+        3
+      ],
+      "to": [
+        8.5,
+        9,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#toggle"
+        },
+        "south": {
+          "texture": "#toggle"
+        },
+        "east": {
+          "texture": "#toggle"
+        },
+        "west": {
+          "texture": "#toggle"
+        },
+        "up": {
+          "texture": "#toggle"
+        },
+        "down": {
+          "texture": "#toggle"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          6.5,
+          3.5
+        ],
+        "axis": "x",
+        "angle": 22.5
+      }
+    }
+  ]
+}

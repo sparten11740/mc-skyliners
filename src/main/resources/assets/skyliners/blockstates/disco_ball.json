@@ -1,0 +1,26 @@
+{
+  "variants": {
+    "mount=ceiling": {
+      "model": "skyliners:block/disco_ball"
+    },
+    "mount=floor": {
+      "model": "skyliners:block/disco_ball_floor"
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/disco_ball_wall",
+      "y": 0
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/disco_ball_wall",
+      "y": 90
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/disco_ball_wall",
+      "y": 180
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/disco_ball_wall",
+      "y": 270
+    }
+  }
+}

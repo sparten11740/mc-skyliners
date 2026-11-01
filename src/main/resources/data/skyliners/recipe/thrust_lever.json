@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "K",
+    "S",
+    "P"
+  ],
+  "key": {
+    "K": {
+      "item": "minecraft:quartz"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "P": {
+      "item": "skyliners:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:thrust_lever",
+    "count": 1
+  }
+}

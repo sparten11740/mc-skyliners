@@ -1,6 +1,6 @@
 ---
 name: review-changes
-description: Review Aerolarge's uncommitted changes (staged, unstaged and untracked) for hygiene, quality, correctness and architecture against this repo's own rules, and report ranked findings. Use before every commit, when asked to check or review the working tree, and when the Stop hook asks for it. Pass "fix" to apply the findings afterwards.
+description: Review Skyliners' uncommitted changes (staged, unstaged and untracked) for hygiene, quality, correctness and architecture against this repo's own rules, and report ranked findings. Use before every commit, when asked to check or review the working tree, and when the Stop hook asks for it. Pass "fix" to apply the findings afterwards.
 ---
 
 # Review changes
@@ -50,12 +50,12 @@ Run these and treat any failure as a finding:
   saved data without `ToldTicks`.
 - **Models on their textures:** with `tools/` or a model in the change set, run this; it prints nothing when every
   face past its block has a `uv` on its texture:
-  `node -e 'const fs=require("fs"),p=require("path"),d="src/main/resources/assets/aerolarge/models";const u={down:(f,t)=>[f[0],16-t[2],t[0],16-f[2]],up:(f,t)=>[f[0],f[2],t[0],t[2]],north:(f,t)=>[16-t[0],16-t[1],16-f[0],16-f[1]],south:(f,t)=>[f[0],16-t[1],t[0],16-f[1]],west:(f,t)=>[f[2],16-t[1],t[2],16-f[1]],east:(f,t)=>[16-t[2],16-t[1],16-f[2],16-f[1]]};for(const s of fs.readdirSync(d)){for(const n of fs.readdirSync(p.join(d,s))){const m=JSON.parse(fs.readFileSync(p.join(d,s,n)));for(const e of m.elements??[])for(const[k,f]of Object.entries(e.faces)){const v=f.uv??u[k](e.from,e.to);if(Math.min(...v)<0||Math.max(...v)>16)console.log(s+"/"+n,k)}}}'`
+  `node -e 'const fs=require("fs"),p=require("path"),d="src/main/resources/assets/skyliners/models";const u={down:(f,t)=>[f[0],16-t[2],t[0],16-f[2]],up:(f,t)=>[f[0],f[2],t[0],t[2]],north:(f,t)=>[16-t[0],16-t[1],16-f[0],16-f[1]],south:(f,t)=>[f[0],16-t[1],t[0],16-f[1]],west:(f,t)=>[f[2],16-t[1],t[2],16-f[1]],east:(f,t)=>[16-t[2],16-t[1],16-f[2],16-f[1]]};for(const s of fs.readdirSync(d)){for(const n of fs.readdirSync(p.join(d,s))){const m=JSON.parse(fs.readFileSync(p.join(d,s,n)));for(const e of m.elements??[])for(const[k,f]of Object.entries(e.faces)){const v=f.uv??u[k](e.from,e.to);if(Math.min(...v)<0||Math.max(...v)>16)console.log(s+"/"+n,k)}}}'`
 - **Lang keys:** every `Component.translatable("...")` key and every registered block, item and entity in the diff has
-  an entry in `assets/aerolarge/lang/en_us.json`, and no key in the diff is left unused. The lang file is generated:
+  an entry in `assets/skyliners/lang/en_us.json`, and no key in the diff is left unused. The lang file is generated:
   a new key must be in `tools/generate_resources.mjs`, not only in `en_us.json` (the generator run above shows it).
 - **Protocol version:** if a payload's fields or stream codec changed (any record with a `STREAM_CODEC` registered in
-  `Aerolarge.onRegisterPayloads`), the version string in `event.registrar("<n>")` went up.
+  `Skyliners.onRegisterPayloads`), the version string in `event.registrar("<n>")` went up.
 - **Version bump:** if code or assets changed, `mod_version` in `gradle.properties` must go up to a new pre-release
   before the build is handed out. It goes in its own `chore(release)` commit straight after the change, so a missing
   bump in the change set is a note for the commit split, not a defect.
@@ -99,13 +99,13 @@ style preferences the surrounding code does not share.
 ### Architecture
 - The boundaries in `AGENTS.md` hold: Sable only through `SableFlight`/`SableClient` behind `ModList` checks (with the
   two named exceptions), Veil only in `TailCameraFeed`, `VeilLights` and `AdvancedFboImplMixin`, other mods' blocks
-  only by registry id through `AerolargeConfig` and `AirframePalette`, client code only in `client/`.
+  only by registry id through `SkylinersConfig` and `AirframePalette`, client code only in `client/`.
 - Airframe geometry is drawn in `AirframeShape`'s metres in the layout's nose-north frame and turns with
   `AirframeBuild.Placement`; block entity data set at build time goes through a `Fitting`; nothing writes world-space
   data in the layout. `CabinFitOut` never cuts into the hull, doors or door aisles (but the moon pool's glazing), and
   hull features go in before the shell pass. New airframe blocks are in `#sable:super_light`.
-- Mixins only mend another mod's bug no API reaches, live in `dev.aerolarge.mixin`, and are listed in
-  `aerolarge.mixins.json`.
+- Mixins only mend another mod's bug no API reaches, live in `dev.skyliners.mixin`, and are listed in
+  `skyliners.mixins.json`.
 - New code lands in the package that matches its role, reuses existing helpers instead of copying them (`Loaded`,
   `Turning`, `Fitting`, `Sight`, `ScreenDrawing`, `PanelArt`, `MapPainter`, ...), and does not duplicate logic that
   already exists elsewhere in the diff or the codebase.

@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/model_airliner",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/model_airliner",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/model_airliner",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/model_airliner",
+      "y": 270
+    }
+  }
+}

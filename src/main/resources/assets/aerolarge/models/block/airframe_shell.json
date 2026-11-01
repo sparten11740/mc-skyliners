@@ -1,8 +1,0 @@
-{
-  "loader": "aerolarge:shell",
-  "render_type": "minecraft:solid",
-  "textures": {
-    "skin": "aerolarge:block/airframe_panel",
-    "particle": "aerolarge:block/airframe_panel"
-  }
-}

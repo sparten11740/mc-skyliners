@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PLP"
+  ],
+  "key": {
+    "L": {
+      "item": "skyliners:livery_board"
+    },
+    "P": {
+      "item": "minecraft:dark_oak_planks"
+    }
+  },
+  "result": {
+    "id": "skyliners:livery_selector",
+    "count": 1
+  }
+}

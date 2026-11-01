@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "skyliners:block/pool_deck_tile",
+    "bottom": "skyliners:block/cabin_floor_under",
+    "side": "skyliners:block/pool_deck_tile_side"
+  }
+}

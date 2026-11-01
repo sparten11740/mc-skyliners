@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,turned=false": {
+      "model": "skyliners:block/rocket_launch_key_off",
+      "y": 0
+    },
+    "facing=north,turned=true": {
+      "model": "skyliners:block/rocket_launch_key_on",
+      "y": 0
+    },
+    "facing=east,turned=false": {
+      "model": "skyliners:block/rocket_launch_key_off",
+      "y": 90
+    },
+    "facing=east,turned=true": {
+      "model": "skyliners:block/rocket_launch_key_on",
+      "y": 90
+    },
+    "facing=south,turned=false": {
+      "model": "skyliners:block/rocket_launch_key_off",
+      "y": 180
+    },
+    "facing=south,turned=true": {
+      "model": "skyliners:block/rocket_launch_key_on",
+      "y": 180
+    },
+    "facing=west,turned=false": {
+      "model": "skyliners:block/rocket_launch_key_off",
+      "y": 270
+    },
+    "facing=west,turned=true": {
+      "model": "skyliners:block/rocket_launch_key_on",
+      "y": 270
+    }
+  }
+}

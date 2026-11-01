@@ -1,0 +1,35 @@
+{
+  "parent": "skyliners:block/shelf_unit_books",
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:kind": 0
+      },
+      "model": "skyliners:block/shelf_unit_boots"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.2
+      },
+      "model": "skyliners:block/shelf_unit_books"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.4
+      },
+      "model": "skyliners:block/shelf_unit_jars"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.6
+      },
+      "model": "skyliners:block/shelf_unit_towels"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.8
+      },
+      "model": "skyliners:block/shelf_unit_tools"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "variants": {
+    "facing=north,picture=seat": {
+      "model": "skyliners:block/bulkhead_sign_seat"
+    },
+    "facing=north,picture=drop": {
+      "model": "skyliners:block/bulkhead_sign_drop"
+    },
+    "facing=north,picture=ball": {
+      "model": "skyliners:block/bulkhead_sign_ball"
+    },
+    "facing=north,picture=cup": {
+      "model": "skyliners:block/bulkhead_sign_cup"
+    },
+    "facing=north,picture=lavatory": {
+      "model": "skyliners:block/bulkhead_sign_lavatory"
+    },
+    "facing=east,picture=seat": {
+      "model": "skyliners:block/bulkhead_sign_seat",
+      "y": 90
+    },
+    "facing=east,picture=drop": {
+      "model": "skyliners:block/bulkhead_sign_drop",
+      "y": 90
+    },
+    "facing=east,picture=ball": {
+      "model": "skyliners:block/bulkhead_sign_ball",
+      "y": 90
+    },
+    "facing=east,picture=cup": {
+      "model": "skyliners:block/bulkhead_sign_cup",
+      "y": 90
+    },
+    "facing=east,picture=lavatory": {
+      "model": "skyliners:block/bulkhead_sign_lavatory",
+      "y": 90
+    },
+    "facing=south,picture=seat": {
+      "model": "skyliners:block/bulkhead_sign_seat",
+      "y": 180
+    },
+    "facing=south,picture=drop": {
+      "model": "skyliners:block/bulkhead_sign_drop",
+      "y": 180
+    },
+    "facing=south,picture=ball": {
+      "model": "skyliners:block/bulkhead_sign_ball",
+      "y": 180
+    },
+    "facing=south,picture=cup": {
+      "model": "skyliners:block/bulkhead_sign_cup",
+      "y": 180
+    },
+    "facing=south,picture=lavatory": {
+      "model": "skyliners:block/bulkhead_sign_lavatory",
+      "y": 180
+    },
+    "facing=west,picture=seat": {
+      "model": "skyliners:block/bulkhead_sign_seat",
+      "y": 270
+    },
+    "facing=west,picture=drop": {
+      "model": "skyliners:block/bulkhead_sign_drop",
+      "y": 270
+    },
+    "facing=west,picture=ball": {
+      "model": "skyliners:block/bulkhead_sign_ball",
+      "y": 270
+    },
+    "facing=west,picture=cup": {
+      "model": "skyliners:block/bulkhead_sign_cup",
+      "y": 270
+    },
+    "facing=west,picture=lavatory": {
+      "model": "skyliners:block/bulkhead_sign_lavatory",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "variants": {
+    "blank=false,facing=north": {
+      "model": "skyliners:block/instrument_panel",
+      "y": 0
+    },
+    "blank=true,facing=north": {
+      "model": "skyliners:block/instrument_panel_blank"
+    },
+    "blank=false,facing=east": {
+      "model": "skyliners:block/instrument_panel",
+      "y": 90
+    },
+    "blank=true,facing=east": {
+      "model": "skyliners:block/instrument_panel_blank"
+    },
+    "blank=false,facing=south": {
+      "model": "skyliners:block/instrument_panel",
+      "y": 180
+    },
+    "blank=true,facing=south": {
+      "model": "skyliners:block/instrument_panel_blank"
+    },
+    "blank=false,facing=west": {
+      "model": "skyliners:block/instrument_panel",
+      "y": 270
+    },
+    "blank=true,facing=west": {
+      "model": "skyliners:block/instrument_panel_blank"
+    }
+  }
+}

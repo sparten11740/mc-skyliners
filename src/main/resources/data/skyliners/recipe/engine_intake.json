@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PFP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "F": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "result": {
+    "id": "skyliners:engine_intake",
+    "count": 8
+  }
+}

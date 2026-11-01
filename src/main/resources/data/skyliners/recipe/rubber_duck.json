@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "O",
+    "W"
+  ],
+  "key": {
+    "O": {
+      "item": "minecraft:orange_dye"
+    },
+    "W": {
+      "item": "minecraft:yellow_wool"
+    }
+  },
+  "result": {
+    "id": "skyliners:rubber_duck",
+    "count": 2
+  }
+}

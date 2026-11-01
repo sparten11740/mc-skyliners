@@ -1,0 +1,164 @@
+{
+  "variants": {
+    "engines=port,facing=north,order=astern": {
+      "model": "skyliners:block/engine_telegraph_port_astern",
+      "y": 0
+    },
+    "engines=port,facing=north,order=stop": {
+      "model": "skyliners:block/engine_telegraph_port_stop",
+      "y": 0
+    },
+    "engines=port,facing=north,order=slow": {
+      "model": "skyliners:block/engine_telegraph_port_slow",
+      "y": 0
+    },
+    "engines=port,facing=north,order=half": {
+      "model": "skyliners:block/engine_telegraph_port_half",
+      "y": 0
+    },
+    "engines=port,facing=north,order=full": {
+      "model": "skyliners:block/engine_telegraph_port_full",
+      "y": 0
+    },
+    "engines=starboard,facing=north,order=astern": {
+      "model": "skyliners:block/engine_telegraph_starboard_astern",
+      "y": 0
+    },
+    "engines=starboard,facing=north,order=stop": {
+      "model": "skyliners:block/engine_telegraph_starboard_stop",
+      "y": 0
+    },
+    "engines=starboard,facing=north,order=slow": {
+      "model": "skyliners:block/engine_telegraph_starboard_slow",
+      "y": 0
+    },
+    "engines=starboard,facing=north,order=half": {
+      "model": "skyliners:block/engine_telegraph_starboard_half",
+      "y": 0
+    },
+    "engines=starboard,facing=north,order=full": {
+      "model": "skyliners:block/engine_telegraph_starboard_full",
+      "y": 0
+    },
+    "engines=port,facing=east,order=astern": {
+      "model": "skyliners:block/engine_telegraph_port_astern",
+      "y": 90
+    },
+    "engines=port,facing=east,order=stop": {
+      "model": "skyliners:block/engine_telegraph_port_stop",
+      "y": 90
+    },
+    "engines=port,facing=east,order=slow": {
+      "model": "skyliners:block/engine_telegraph_port_slow",
+      "y": 90
+    },
+    "engines=port,facing=east,order=half": {
+      "model": "skyliners:block/engine_telegraph_port_half",
+      "y": 90
+    },
+    "engines=port,facing=east,order=full": {
+      "model": "skyliners:block/engine_telegraph_port_full",
+      "y": 90
+    },
+    "engines=starboard,facing=east,order=astern": {
+      "model": "skyliners:block/engine_telegraph_starboard_astern",
+      "y": 90
+    },
+    "engines=starboard,facing=east,order=stop": {
+      "model": "skyliners:block/engine_telegraph_starboard_stop",
+      "y": 90
+    },
+    "engines=starboard,facing=east,order=slow": {
+      "model": "skyliners:block/engine_telegraph_starboard_slow",
+      "y": 90
+    },
+    "engines=starboard,facing=east,order=half": {
+      "model": "skyliners:block/engine_telegraph_starboard_half",
+      "y": 90
+    },
+    "engines=starboard,facing=east,order=full": {
+      "model": "skyliners:block/engine_telegraph_starboard_full",
+      "y": 90
+    },
+    "engines=port,facing=south,order=astern": {
+      "model": "skyliners:block/engine_telegraph_port_astern",
+      "y": 180
+    },
+    "engines=port,facing=south,order=stop": {
+      "model": "skyliners:block/engine_telegraph_port_stop",
+      "y": 180
+    },
+    "engines=port,facing=south,order=slow": {
+      "model": "skyliners:block/engine_telegraph_port_slow",
+      "y": 180
+    },
+    "engines=port,facing=south,order=half": {
+      "model": "skyliners:block/engine_telegraph_port_half",
+      "y": 180
+    },
+    "engines=port,facing=south,order=full": {
+      "model": "skyliners:block/engine_telegraph_port_full",
+      "y": 180
+    },
+    "engines=starboard,facing=south,order=astern": {
+      "model": "skyliners:block/engine_telegraph_starboard_astern",
+      "y": 180
+    },
+    "engines=starboard,facing=south,order=stop": {
+      "model": "skyliners:block/engine_telegraph_starboard_stop",
+      "y": 180
+    },
+    "engines=starboard,facing=south,order=slow": {
+      "model": "skyliners:block/engine_telegraph_starboard_slow",
+      "y": 180
+    },
+    "engines=starboard,facing=south,order=half": {
+      "model": "skyliners:block/engine_telegraph_starboard_half",
+      "y": 180
+    },
+    "engines=starboard,facing=south,order=full": {
+      "model": "skyliners:block/engine_telegraph_starboard_full",
+      "y": 180
+    },
+    "engines=port,facing=west,order=astern": {
+      "model": "skyliners:block/engine_telegraph_port_astern",
+      "y": 270
+    },
+    "engines=port,facing=west,order=stop": {
+      "model": "skyliners:block/engine_telegraph_port_stop",
+      "y": 270
+    },
+    "engines=port,facing=west,order=slow": {
+      "model": "skyliners:block/engine_telegraph_port_slow",
+      "y": 270
+    },
+    "engines=port,facing=west,order=half": {
+      "model": "skyliners:block/engine_telegraph_port_half",
+      "y": 270
+    },
+    "engines=port,facing=west,order=full": {
+      "model": "skyliners:block/engine_telegraph_port_full",
+      "y": 270
+    },
+    "engines=starboard,facing=west,order=astern": {
+      "model": "skyliners:block/engine_telegraph_starboard_astern",
+      "y": 270
+    },
+    "engines=starboard,facing=west,order=stop": {
+      "model": "skyliners:block/engine_telegraph_starboard_stop",
+      "y": 270
+    },
+    "engines=starboard,facing=west,order=slow": {
+      "model": "skyliners:block/engine_telegraph_starboard_slow",
+      "y": 270
+    },
+    "engines=starboard,facing=west,order=half": {
+      "model": "skyliners:block/engine_telegraph_starboard_half",
+      "y": 270
+    },
+    "engines=starboard,facing=west,order=full": {
+      "model": "skyliners:block/engine_telegraph_starboard_full",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "parent": "skyliners:first_flight/root",
+  "display": {
+    "icon": {
+      "id": "skyliners:seatbelt_sign"
+    },
+    "title": {
+      "translate": "advancements.skyliners.first_flight.buckle_up.title"
+    },
+    "description": {
+      "translate": "advancements.skyliners.first_flight.buckle_up.description"
+    },
+    "frame": "task"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

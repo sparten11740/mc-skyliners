@@ -1,0 +1,164 @@
+{
+  "variants": {
+    "answered=false,facing=north,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern",
+      "y": 0
+    },
+    "answered=false,facing=north,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop",
+      "y": 0
+    },
+    "answered=false,facing=north,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow",
+      "y": 0
+    },
+    "answered=false,facing=north,order=half": {
+      "model": "skyliners:block/engine_repeater_half",
+      "y": 0
+    },
+    "answered=false,facing=north,order=full": {
+      "model": "skyliners:block/engine_repeater_full",
+      "y": 0
+    },
+    "answered=true,facing=north,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern_answered",
+      "y": 0
+    },
+    "answered=true,facing=north,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop_answered",
+      "y": 0
+    },
+    "answered=true,facing=north,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow_answered",
+      "y": 0
+    },
+    "answered=true,facing=north,order=half": {
+      "model": "skyliners:block/engine_repeater_half_answered",
+      "y": 0
+    },
+    "answered=true,facing=north,order=full": {
+      "model": "skyliners:block/engine_repeater_full_answered",
+      "y": 0
+    },
+    "answered=false,facing=east,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern",
+      "y": 90
+    },
+    "answered=false,facing=east,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop",
+      "y": 90
+    },
+    "answered=false,facing=east,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow",
+      "y": 90
+    },
+    "answered=false,facing=east,order=half": {
+      "model": "skyliners:block/engine_repeater_half",
+      "y": 90
+    },
+    "answered=false,facing=east,order=full": {
+      "model": "skyliners:block/engine_repeater_full",
+      "y": 90
+    },
+    "answered=true,facing=east,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern_answered",
+      "y": 90
+    },
+    "answered=true,facing=east,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop_answered",
+      "y": 90
+    },
+    "answered=true,facing=east,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow_answered",
+      "y": 90
+    },
+    "answered=true,facing=east,order=half": {
+      "model": "skyliners:block/engine_repeater_half_answered",
+      "y": 90
+    },
+    "answered=true,facing=east,order=full": {
+      "model": "skyliners:block/engine_repeater_full_answered",
+      "y": 90
+    },
+    "answered=false,facing=south,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern",
+      "y": 180
+    },
+    "answered=false,facing=south,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop",
+      "y": 180
+    },
+    "answered=false,facing=south,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow",
+      "y": 180
+    },
+    "answered=false,facing=south,order=half": {
+      "model": "skyliners:block/engine_repeater_half",
+      "y": 180
+    },
+    "answered=false,facing=south,order=full": {
+      "model": "skyliners:block/engine_repeater_full",
+      "y": 180
+    },
+    "answered=true,facing=south,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern_answered",
+      "y": 180
+    },
+    "answered=true,facing=south,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop_answered",
+      "y": 180
+    },
+    "answered=true,facing=south,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow_answered",
+      "y": 180
+    },
+    "answered=true,facing=south,order=half": {
+      "model": "skyliners:block/engine_repeater_half_answered",
+      "y": 180
+    },
+    "answered=true,facing=south,order=full": {
+      "model": "skyliners:block/engine_repeater_full_answered",
+      "y": 180
+    },
+    "answered=false,facing=west,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern",
+      "y": 270
+    },
+    "answered=false,facing=west,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop",
+      "y": 270
+    },
+    "answered=false,facing=west,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow",
+      "y": 270
+    },
+    "answered=false,facing=west,order=half": {
+      "model": "skyliners:block/engine_repeater_half",
+      "y": 270
+    },
+    "answered=false,facing=west,order=full": {
+      "model": "skyliners:block/engine_repeater_full",
+      "y": 270
+    },
+    "answered=true,facing=west,order=astern": {
+      "model": "skyliners:block/engine_repeater_astern_answered",
+      "y": 270
+    },
+    "answered=true,facing=west,order=stop": {
+      "model": "skyliners:block/engine_repeater_stop_answered",
+      "y": 270
+    },
+    "answered=true,facing=west,order=slow": {
+      "model": "skyliners:block/engine_repeater_slow_answered",
+      "y": 270
+    },
+    "answered=true,facing=west,order=half": {
+      "model": "skyliners:block/engine_repeater_half_answered",
+      "y": 270
+    },
+    "answered=true,facing=west,order=full": {
+      "model": "skyliners:block/engine_repeater_full_answered",
+      "y": 270
+    }
+  }
+}

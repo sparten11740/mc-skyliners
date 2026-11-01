@@ -1,0 +1,171 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "grip": "skyliners:block/springboard_grip",
+    "board": "skyliners:block/springboard_board",
+    "spring": "skyliners:block/springboard_spring",
+    "particle": "skyliners:block/springboard_board"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        12,
+        0
+      ],
+      "to": [
+        14,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#board"
+        },
+        "south": {
+          "texture": "#board"
+        },
+        "east": {
+          "texture": "#board"
+        },
+        "west": {
+          "texture": "#board"
+        },
+        "up": {
+          "texture": "#grip"
+        },
+        "down": {
+          "texture": "#board"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        10.5,
+        12
+      ],
+      "to": [
+        11,
+        11.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spring"
+        },
+        "south": {
+          "texture": "#spring"
+        },
+        "east": {
+          "texture": "#spring"
+        },
+        "west": {
+          "texture": "#spring"
+        },
+        "up": {
+          "texture": "#spring"
+        },
+        "down": {
+          "texture": "#spring"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        8.5,
+        12
+      ],
+      "to": [
+        11,
+        9.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spring"
+        },
+        "south": {
+          "texture": "#spring"
+        },
+        "east": {
+          "texture": "#spring"
+        },
+        "west": {
+          "texture": "#spring"
+        },
+        "up": {
+          "texture": "#spring"
+        },
+        "down": {
+          "texture": "#spring"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        6.5,
+        12
+      ],
+      "to": [
+        11,
+        7.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spring"
+        },
+        "south": {
+          "texture": "#spring"
+        },
+        "east": {
+          "texture": "#spring"
+        },
+        "west": {
+          "texture": "#spring"
+        },
+        "up": {
+          "texture": "#spring"
+        },
+        "down": {
+          "texture": "#spring"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        6,
+        13
+      ],
+      "to": [
+        9,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spring"
+        },
+        "south": {
+          "texture": "#spring"
+        },
+        "east": {
+          "texture": "#spring"
+        },
+        "west": {
+          "texture": "#spring"
+        },
+        "up": {
+          "texture": "#spring"
+        },
+        "down": {
+          "texture": "#spring"
+        }
+      }
+    }
+  ]
+}

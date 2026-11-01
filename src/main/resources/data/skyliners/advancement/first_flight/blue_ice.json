@@ -1,0 +1,20 @@
+{
+  "parent": "skyliners:first_flight/cleared_for_takeoff",
+  "display": {
+    "icon": {
+      "id": "skyliners:vacuum_toilet"
+    },
+    "title": {
+      "translate": "advancements.skyliners.first_flight.blue_ice.title"
+    },
+    "description": {
+      "translate": "advancements.skyliners.first_flight.blue_ice.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

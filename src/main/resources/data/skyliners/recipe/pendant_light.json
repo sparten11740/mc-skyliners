@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "C",
+    "I",
+    "G"
+  ],
+  "key": {
+    "C": {
+      "item": "skyliners:light_cable"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "G": {
+      "item": "minecraft:glowstone"
+    }
+  },
+  "result": {
+    "id": "skyliners:pendant_light",
+    "count": 1
+  }
+}

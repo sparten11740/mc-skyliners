@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "skyliners:block/speaker_front",
+    "side": "skyliners:block/speaker_side",
+    "top": "skyliners:block/speaker_side"
+  }
+}

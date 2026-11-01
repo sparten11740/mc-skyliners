@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "skyliners:block/gear_bay_bottom",
+    "up": "skyliners:block/landing_gear",
+    "side": "skyliners:block/airframe_panel",
+    "particle": "skyliners:block/airframe_panel",
+    "north": "skyliners:block/airframe_panel",
+    "south": "skyliners:block/airframe_panel",
+    "east": "skyliners:block/airframe_panel",
+    "west": "skyliners:block/airframe_panel"
+  }
+}

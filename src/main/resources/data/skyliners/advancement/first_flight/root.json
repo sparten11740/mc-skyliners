@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "skyliners:airliner_blueprint"
+    },
+    "title": {
+      "translate": "advancements.skyliners.first_flight.root.title"
+    },
+    "description": {
+      "translate": "advancements.skyliners.first_flight.root.description"
+    },
+    "frame": "task",
+    "background": "skyliners:textures/block/airframe_panel.png",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

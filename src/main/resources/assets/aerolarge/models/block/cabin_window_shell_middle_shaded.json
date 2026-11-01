@@ -1,8 +1,0 @@
-{
-  "loader": "aerolarge:shell",
-  "render_type": "minecraft:translucent",
-  "textures": {
-    "skin": "aerolarge:block/cabin_window_middle_shaded",
-    "particle": "aerolarge:block/cabin_window_middle_shaded"
-  }
-}

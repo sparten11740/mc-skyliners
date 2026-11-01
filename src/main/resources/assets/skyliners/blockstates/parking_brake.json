@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,powered=true": {
+      "model": "skyliners:block/parking_brake_set",
+      "y": 0
+    },
+    "facing=north,powered=false": {
+      "model": "skyliners:block/parking_brake_released",
+      "y": 0
+    },
+    "facing=east,powered=true": {
+      "model": "skyliners:block/parking_brake_set",
+      "y": 90
+    },
+    "facing=east,powered=false": {
+      "model": "skyliners:block/parking_brake_released",
+      "y": 90
+    },
+    "facing=south,powered=true": {
+      "model": "skyliners:block/parking_brake_set",
+      "y": 180
+    },
+    "facing=south,powered=false": {
+      "model": "skyliners:block/parking_brake_released",
+      "y": 180
+    },
+    "facing=west,powered=true": {
+      "model": "skyliners:block/parking_brake_set",
+      "y": 270
+    },
+    "facing=west,powered=false": {
+      "model": "skyliners:block/parking_brake_released",
+      "y": 270
+    }
+  }
+}

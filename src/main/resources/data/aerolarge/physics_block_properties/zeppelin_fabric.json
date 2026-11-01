@@ -1,7 +1,0 @@
-{
-  "priority": 1002,
-  "selector": "#aerolarge:zeppelin_fabric",
-  "properties": {
-    "sable:mass": 0.1
-  }
-}

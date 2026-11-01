@@ -1,0 +1,7 @@
+{
+  "priority": 1002,
+  "selector": "#skyliners:zeppelin_fabric",
+  "properties": {
+    "sable:mass": 0.1
+  }
+}

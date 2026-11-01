@@ -16,10 +16,10 @@ lifting wings, four engines worked from the cockpit, wheels to roll on and every
 [[accessTransformers]]
 file="META-INF/accesstransformer.cfg"
 
-# Mends a Veil bug with a window depth that has a stencil (see dev.aerolarge.mixin). Not required: should Veil change
+# Mends a Veil bug with a window depth that has a stencil (see dev.skyliners.mixin). Not required: should Veil change
 # under it, it is left out with a warning in the log.
 [[mixins]]
-config="aerolarge.mixins.json"
+config="skyliners.mixins.json"
 
 [[dependencies.${mod_id}]]
 modId="neoforge"

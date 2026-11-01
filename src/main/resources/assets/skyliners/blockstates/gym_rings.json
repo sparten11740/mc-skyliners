@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/gym_rings",
+      "y": 0
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/gym_rings_wall",
+      "y": 0
+    },
+    "facing=north,mount=floor": {
+      "model": "skyliners:block/gym_rings_floor",
+      "y": 0
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/gym_rings",
+      "y": 90
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/gym_rings_wall",
+      "y": 90
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/gym_rings_floor",
+      "y": 90
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/gym_rings",
+      "y": 180
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/gym_rings_wall",
+      "y": 180
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/gym_rings_floor",
+      "y": 180
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/gym_rings",
+      "y": 270
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/gym_rings_wall",
+      "y": 270
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/gym_rings_floor",
+      "y": 270
+    }
+  }
+}

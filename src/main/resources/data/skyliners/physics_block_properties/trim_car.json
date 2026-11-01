@@ -1,0 +1,7 @@
+{
+  "priority": 1003,
+  "selector": "skyliners:trim_car",
+  "properties": {
+    "sable:mass": 1200
+  }
+}

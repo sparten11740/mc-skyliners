@@ -1,9 +1,0 @@
-{
-  "loader": "aerolarge:shell",
-  "render_type": "minecraft:solid",
-  "tint_index": 0,
-  "textures": {
-    "skin": "aerolarge:block/zeppelin_skin",
-    "particle": "aerolarge:block/zeppelin_skin"
-  }
-}

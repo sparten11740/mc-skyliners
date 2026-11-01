@@ -1,0 +1,8 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "skin": "skyliners:block/cabin_window_middle_shaded",
+    "particle": "skyliners:block/cabin_window_middle_shaded"
+  }
+}

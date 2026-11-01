@@ -8,8 +8,8 @@ import { deflateSync } from "node:zlib";
 // white skin with faint panel seams and rivet rows, an Airbus-blue livery, smoked cabin glass in white frames, grey
 // cabin carpet.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const blockOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/block");
-const itemOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/item");
+const blockOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/block");
+const itemOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/item");
 mkdirSync(blockOutput, { recursive: true });
 mkdirSync(itemOutput, { recursive: true });
 
@@ -708,7 +708,7 @@ for (const [kind, colour] of Object.entries(LENSES)) {
     return colour.map((c) => clamp(Math.round(c * (1 - 0.35 * fade))));
   }, 2);
 }
-const miscOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/misc");
+const miscOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/misc");
 mkdirSync(miscOutput, { recursive: true });
 {
   // 32x32: the glow is a large flare, and a 16x16 one shows its pixels.
@@ -780,7 +780,7 @@ mkdirSync(miscOutput, { recursive: true });
 
 // A contrail puff: a soft white round blob, see-through toward its edge.
 {
-  const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+  const particleOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/particle");
   mkdirSync(particleOutput, { recursive: true });
   reseed("contrail");
   const pixels = [];
@@ -970,7 +970,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (y >= 12 && x >= 6 && x <= 9) return OLIVE;
     return CLEAR;
   }, 0);
-  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/entity");
   mkdirSync(entityOutput, { recursive: true });
   texture(entityOutput, "parachute", (x, y) => {
     if (x >= 8 && y >= 12) return y % 2 === 0 ? OLIVE_DARK : OLIVE;
@@ -1242,7 +1242,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // sunk into the panel, of what the bay does, for players who cannot read yet: on the left the airliner's belly
   // overhead, its bay doors swung open in their hazard stripes and a care package dropping out, an arrow pointing on
   // down; on the right the package floating down under its parachute to the grass.
-  const guiContainer = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/container");
+  const guiContainer = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/container");
   mkdirSync(guiContainer, { recursive: true });
   const WIDTH = 176;
   const HEIGHT = 166;
@@ -1989,7 +1989,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 // the side over the grass with a cyan arrow between them. To hop a stuck airliner free: a cyan airliner seen from the
 // side, lifted off the grass on two white arrows, puffs of the jets' exhaust under them.
 {
-  const guiOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui");
+  const guiOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui");
   const panelOutput = resolve(guiOutput, "panel");
   const autopilotOutput = resolve(guiOutput, "autopilot");
   mkdirSync(panelOutput, { recursive: true });
@@ -2637,7 +2637,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (inTriangle(x, y, nose, fold, [8.5, 14])) return [0xc8, 0xd4, 0xe0];
     return null;
   }), 0);
-  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/entity");
   texture(entityOutput, "paper_plane", (x, y) => {
     const ruled = y % 3 === 1;
     if (y < 8) return ruled ? [0xc8, 0xd8, 0xf0] : [0xf6, 0xf6, 0xf0];
@@ -3477,7 +3477,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return null;
   }, wisps(6, 9, 0, 3));
 
-  const coffeeGui = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/coffee_machine");
+  const coffeeGui = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/coffee_machine");
   mkdirSync(coffeeGui, { recursive: true });
   texture(coffeeGui, "steaming_cup", (x, y) => {
     const cup = y >= 8 && y <= 12 && x >= 3 && x <= 10 && !(y === 12 && (x === 3 || x === 10));
@@ -3823,7 +3823,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 // A puff of an airliner blowing up (see BlastPuffParticle): a soft, lumpy white cloud, see-through toward its edges, a
 // ball in the middle with a few smaller ones bulging out of it, which each kind of puff tints: fire, smoke and dust.
 {
-  const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+  const particleOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/particle");
   mkdirSync(particleOutput, { recursive: true });
   reseed("blast_puff");
   const PUFF = 32;
@@ -4091,7 +4091,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // The doves released at a christening: white birds seen from the side, in two frames of a wingbeat, wings up and
   // wings down, a grey beak and the underside of the body shaded.
   {
-    const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+    const particleOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/particle");
     const DOVE = [0xf6, 0xf6, 0xf4];
     const DOVE_SHADE = [0xc4, 0xca, 0xd2];
     const body = (x, y) => ((x - 8) / 3.6) ** 2 + ((y - 8.5) / 1.6) ** 2 <= 1 || Math.hypot(x - 11.6, y - 7) <= 1.3;
@@ -4113,7 +4113,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 // The "z" rising from a sleeping tardigrade (see SleepParticle): a bold letter in pale blue-white, outlined in a night
 // blue so it reads against anything behind it.
 {
-  const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+  const particleOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/particle");
   const Z = ["#######", ".....##", "....##.", "...##..", "..##...", ".##....", "#######"];
   texture(particleOutput, "sleep_z", (x, y) => {
     const at = (px, py) => Z[py - 1]?.[px - 1] === "#";
@@ -4528,14 +4528,14 @@ const LIFT_ICONS = {
     texture(blockOutput, `lift_door_${half}`, (x, y) => (x <= 1 || x >= 14 || y === footOrHead || (half === "lower" ? y === 14 : y === 1) ? STEEL_LIGHT : PANE), 2);
   }
   texture(blockOutput, "lift_board_casing", () => [0x15, 0x17, 0x1b], 2);
-  const liftOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/lift");
+  const liftOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/lift");
   mkdirSync(liftOutput, { recursive: true });
   for (const [name, rows] of Object.entries(LIFT_ICONS)) {
     texture(liftOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
   }
   // The rover panel's screen (see RoverPanelRenderer): its buttons' pictures in white, as the lift's are, the remote's
   // little screen lit green: the rover over an arrow down to the ground, an arrow up over the rover, and the remote.
-  const roverOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/rover");
+  const roverOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/rover");
   mkdirSync(roverOutput, { recursive: true });
   const ROVER = ["............##..", ".............#..", "..############..", "...##########...", "..##...##...##..", "..##...##...##.."];
   const ROVER_PICTURES = {
@@ -5038,7 +5038,7 @@ const LIFT_ICONS = {
 // it, the rover over an arrow pointing down, an arrow pointing up over the rover, and a remote. The remote: a dark
 // handset with a screen, a thumbstick and a button, its antenna's tip red, or green once paired.
 {
-  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/entity");
   mkdirSync(entityOutput, { recursive: true });
   const ROVER_WHITE = [0xee, 0xf0, 0xf2];
   const ROVER_SEAM = [0xc6, 0xcb, 0xd2];
@@ -5203,7 +5203,7 @@ const LIFT_ICONS = {
 // tracing under its picture, slow and blue under a barrel's while it is curled up in its tun. The pool's water,
 // rippling.
 {
-  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/entity");
   mkdirSync(entityOutput, { recursive: true });
   const SKIN = [0xe8, 0xc9, 0xa8];
   const BUMP = [0xd9, 0xb7, 0x94];
@@ -6126,7 +6126,7 @@ function orreryGlowTexture() {
 // slides, each two frames: a water bear paddling, moss in its gut; algae cells jostling; muscle fibres twitching; and
 // diatoms' glass shells shimmering on a dark field. And the Lab-Grown Steak in its petri dish.
 function foodLabTextures() {
-  const guiOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/microscope");
+  const guiOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/microscope");
   mkdirSync(guiOutput, { recursive: true });
   // A random sequence and a smooth value noise of the food lab's own, so the textures above are unchanged.
   let state = 0x466f6f64;
@@ -7651,7 +7651,7 @@ function rocketControlTextures() {
   const GRIP_RED = [0xd0, 0x2a, 0x22];
   texture(blockOutput, "rocket_abort_grip", (x, y) => GRIP_RED.map((c) => Math.round(c * (y % 4 === 3 ? 0.65 : 1))), 3);
 
-  const controlsOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/rocket_controls");
+  const controlsOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/rocket_controls");
   mkdirSync(controlsOutput, { recursive: true });
   const ICONS = {
     flame: ["................", ".......#........", ".......##.......", "......###.......", "......####......", ".....#####..#...",

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "running=false": {
+      "model": "skyliners:block/wave_machine"
+    },
+    "running=true": {
+      "model": "skyliners:block/wave_machine_running"
+    }
+  }
+}

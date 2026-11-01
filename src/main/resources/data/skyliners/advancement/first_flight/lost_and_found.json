@@ -1,0 +1,26 @@
+{
+  "parent": "skyliners:first_flight/root",
+  "display": {
+    "icon": {
+      "id": "skyliners:golden_suitcase"
+    },
+    "title": {
+      "translate": "advancements.skyliners.first_flight.lost_and_found.title"
+    },
+    "description": {
+      "translate": "advancements.skyliners.first_flight.lost_and_found.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "suitcase_1": {
+      "trigger": "minecraft:impossible"
+    },
+    "suitcase_2": {
+      "trigger": "minecraft:impossible"
+    },
+    "suitcase_3": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

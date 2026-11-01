@@ -1,0 +1,148 @@
+{
+  "variants": {
+    "facing=north,turn=0": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=1": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=2": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=3": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=4": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=5": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=6": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=7": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=north,turn=8": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 0
+    },
+    "facing=east,turn=0": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=1": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=2": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=3": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=4": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=5": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=6": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=7": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=east,turn=8": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 90
+    },
+    "facing=south,turn=0": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=1": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=2": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=3": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=4": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=5": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=6": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=7": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=south,turn=8": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 180
+    },
+    "facing=west,turn=0": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=1": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=2": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=3": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=4": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=5": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=6": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=7": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    },
+    "facing=west,turn=8": {
+      "model": "skyliners:block/helm_pedestal",
+      "y": 270
+    }
+  }
+}

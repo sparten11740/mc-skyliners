@@ -1,0 +1,9 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:translucent",
+  "single_pane": true,
+  "textures": {
+    "skin": "skyliners:block/cockpit_glass",
+    "particle": "skyliners:block/cockpit_glass"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "up=false": {
+      "model": "skyliners:block/flagstaff"
+    },
+    "up=true": {
+      "model": "skyliners:block/flagstaff_top"
+    }
+  }
+}

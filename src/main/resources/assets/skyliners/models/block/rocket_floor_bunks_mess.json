@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "skyliners:block/rocket_floor_bunks",
+    "bottom": "skyliners:block/rocket_ceiling_mess",
+    "side": "skyliners:block/rocket_floor_bunks"
+  }
+}

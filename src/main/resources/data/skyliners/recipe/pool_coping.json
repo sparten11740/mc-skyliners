@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "QQQ",
+    "MMM"
+  ],
+  "key": {
+    "Q": {
+      "item": "minecraft:smooth_quartz"
+    },
+    "M": {
+      "item": "skyliners:pool_mosaic"
+    }
+  },
+  "result": {
+    "id": "skyliners:pool_coping",
+    "count": 6
+  }
+}

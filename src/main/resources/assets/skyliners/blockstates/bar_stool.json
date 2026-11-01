@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=false": {
+      "model": "skyliners:block/bar_stool"
+    },
+    "waterlogged=true": {
+      "model": "skyliners:block/bar_stool"
+    }
+  }
+}

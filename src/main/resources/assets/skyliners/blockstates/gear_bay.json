@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/gear_bay",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/gear_bay",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/gear_bay",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/gear_bay",
+      "y": 270
+    }
+  }
+}

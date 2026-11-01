@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "aerolarge:item/half_furnished_zeppelin_blueprint"
-  }
-}

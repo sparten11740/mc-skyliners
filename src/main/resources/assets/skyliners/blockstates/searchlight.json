@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "skyliners:block/searchlight"
+    },
+    "lit=true": {
+      "model": "skyliners:block/searchlight_lit"
+    }
+  }
+}

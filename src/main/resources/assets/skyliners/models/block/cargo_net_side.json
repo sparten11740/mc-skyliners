@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "net": "skyliners:block/cargo_net",
+    "strap": "skyliners:block/cargo_net_strap",
+    "steel": "skyliners:block/cargo_net_steel",
+    "particle": "skyliners:block/cargo_net"
+  },
+  "elements": [
+    {
+      "from": [
+        7.75,
+        0,
+        0
+      ],
+      "to": [
+        8.25,
+        16,
+        8
+      ],
+      "faces": {
+        "east": {
+          "texture": "#net"
+        },
+        "west": {
+          "texture": "#net"
+        }
+      }
+    }
+  ]
+}

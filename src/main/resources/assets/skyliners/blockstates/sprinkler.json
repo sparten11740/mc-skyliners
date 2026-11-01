@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "spraying=false,waterlogged=false": {
+      "model": "skyliners:block/sprinkler"
+    },
+    "spraying=false,waterlogged=true": {
+      "model": "skyliners:block/sprinkler"
+    },
+    "spraying=true,waterlogged=false": {
+      "model": "skyliners:block/sprinkler_spraying"
+    },
+    "spraying=true,waterlogged=true": {
+      "model": "skyliners:block/sprinkler_spraying"
+    }
+  }
+}

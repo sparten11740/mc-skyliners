@@ -1,0 +1,84 @@
+{
+  "variants": {
+    "facing=north,kind=boots": {
+      "model": "skyliners:block/shelf_unit_boots",
+      "y": 0
+    },
+    "facing=north,kind=books": {
+      "model": "skyliners:block/shelf_unit_books",
+      "y": 0
+    },
+    "facing=north,kind=jars": {
+      "model": "skyliners:block/shelf_unit_jars",
+      "y": 0
+    },
+    "facing=north,kind=towels": {
+      "model": "skyliners:block/shelf_unit_towels",
+      "y": 0
+    },
+    "facing=north,kind=tools": {
+      "model": "skyliners:block/shelf_unit_tools",
+      "y": 0
+    },
+    "facing=east,kind=boots": {
+      "model": "skyliners:block/shelf_unit_boots",
+      "y": 90
+    },
+    "facing=east,kind=books": {
+      "model": "skyliners:block/shelf_unit_books",
+      "y": 90
+    },
+    "facing=east,kind=jars": {
+      "model": "skyliners:block/shelf_unit_jars",
+      "y": 90
+    },
+    "facing=east,kind=towels": {
+      "model": "skyliners:block/shelf_unit_towels",
+      "y": 90
+    },
+    "facing=east,kind=tools": {
+      "model": "skyliners:block/shelf_unit_tools",
+      "y": 90
+    },
+    "facing=south,kind=boots": {
+      "model": "skyliners:block/shelf_unit_boots",
+      "y": 180
+    },
+    "facing=south,kind=books": {
+      "model": "skyliners:block/shelf_unit_books",
+      "y": 180
+    },
+    "facing=south,kind=jars": {
+      "model": "skyliners:block/shelf_unit_jars",
+      "y": 180
+    },
+    "facing=south,kind=towels": {
+      "model": "skyliners:block/shelf_unit_towels",
+      "y": 180
+    },
+    "facing=south,kind=tools": {
+      "model": "skyliners:block/shelf_unit_tools",
+      "y": 180
+    },
+    "facing=west,kind=boots": {
+      "model": "skyliners:block/shelf_unit_boots",
+      "y": 270
+    },
+    "facing=west,kind=books": {
+      "model": "skyliners:block/shelf_unit_books",
+      "y": 270
+    },
+    "facing=west,kind=jars": {
+      "model": "skyliners:block/shelf_unit_jars",
+      "y": 270
+    },
+    "facing=west,kind=towels": {
+      "model": "skyliners:block/shelf_unit_towels",
+      "y": 270
+    },
+    "facing=west,kind=tools": {
+      "model": "skyliners:block/shelf_unit_tools",
+      "y": 270
+    }
+  }
+}

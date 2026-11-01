@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "skyliners:zeppelin_fabric",
+    "skyliners:zeppelin_cover",
+    "skyliners:rocket_lined_cover",
+    "skyliners:rocket_lining_panel"
+  ]
+}

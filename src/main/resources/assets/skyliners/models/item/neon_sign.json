@@ -1,0 +1,41 @@
+{
+  "parent": "skyliners:block/neon_sign_cocktail",
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:design": 0
+      },
+      "model": "skyliners:block/neon_sign_cocktail"
+    },
+    {
+      "predicate": {
+        "skyliners:design": 0.16666666666666666
+      },
+      "model": "skyliners:block/neon_sign_note"
+    },
+    {
+      "predicate": {
+        "skyliners:design": 0.3333333333333333
+      },
+      "model": "skyliners:block/neon_sign_planet"
+    },
+    {
+      "predicate": {
+        "skyliners:design": 0.5
+      },
+      "model": "skyliners:block/neon_sign_rocket"
+    },
+    {
+      "predicate": {
+        "skyliners:design": 0.6666666666666666
+      },
+      "model": "skyliners:block/neon_sign_lips"
+    },
+    {
+      "predicate": {
+        "skyliners:design": 0.8333333333333334
+      },
+      "model": "skyliners:block/neon_sign_bolt"
+    }
+  ]
+}

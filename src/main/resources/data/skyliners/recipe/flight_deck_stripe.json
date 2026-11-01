@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "W",
+    "D"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:white_dye"
+    },
+    "D": {
+      "item": "skyliners:flight_deck"
+    }
+  },
+  "result": {
+    "id": "skyliners:flight_deck_stripe",
+    "count": 1
+  }
+}

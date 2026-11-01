@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "line=false": {
+      "model": "skyliners:block/pool_mosaic"
+    },
+    "line=true": {
+      "model": "skyliners:block/pool_mosaic_line"
+    }
+  }
+}

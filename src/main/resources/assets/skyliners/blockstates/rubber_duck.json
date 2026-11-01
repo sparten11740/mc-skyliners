@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/rubber_duck",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/rubber_duck",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/rubber_duck",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/rubber_duck",
+      "y": 270
+    }
+  }
+}

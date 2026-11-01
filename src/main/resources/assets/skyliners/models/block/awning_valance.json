@@ -1,0 +1,202 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "fabric": "skyliners:block/awning_fabric",
+    "valance": "skyliners:block/awning_valance",
+    "steel": "skyliners:block/cabin_seat_frame",
+    "particle": "skyliners:block/awning_fabric"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        15,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#fabric"
+        },
+        "south": {
+          "texture": "#fabric"
+        },
+        "east": {
+          "texture": "#fabric"
+        },
+        "west": {
+          "texture": "#fabric"
+        },
+        "up": {
+          "texture": "#fabric"
+        },
+        "down": {
+          "texture": "#fabric"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14.5,
+        0
+      ],
+      "to": [
+        0.5,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        15.5,
+        14.5,
+        0
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.05,
+        14.45,
+        -0.05
+      ],
+      "to": [
+        16.05,
+        15.25,
+        0.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0.75,
+            16,
+            1.55
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0.75,
+            16,
+            1.55
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            15.2,
+            0.75,
+            16,
+            1.55
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            15.2,
+            0.75,
+            16,
+            1.55
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            15.2,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            15.2,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        9,
+        0.25
+      ],
+      "to": [
+        16,
+        14.5,
+        0.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#valance"
+        },
+        "south": {
+          "texture": "#valance"
+        },
+        "east": {
+          "texture": "#valance"
+        },
+        "west": {
+          "texture": "#valance"
+        }
+      }
+    }
+  ]
+}

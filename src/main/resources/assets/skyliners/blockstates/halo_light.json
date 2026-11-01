@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "tone=warm": {
+      "model": "skyliners:block/halo_light_warm"
+    },
+    "tone=cool": {
+      "model": "skyliners:block/halo_light_cool"
+    },
+    "tone=pink": {
+      "model": "skyliners:block/halo_light_pink"
+    }
+  }
+}

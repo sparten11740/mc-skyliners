@@ -1,0 +1,35 @@
+{
+  "parent": "skyliners:block/lab_microscope",
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:kind": 0
+      },
+      "model": "skyliners:block/lab_microscope"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.2
+      },
+      "model": "skyliners:block/lab_samples"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.4
+      },
+      "model": "skyliners:block/lab_scan"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.6
+      },
+      "model": "skyliners:block/lab_vitals"
+    },
+    {
+      "predicate": {
+        "skyliners:kind": 0.8
+      },
+      "model": "skyliners:block/lab_specimens"
+    }
+  ]
+}

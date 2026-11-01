@@ -1,0 +1,164 @@
+{
+  "variants": {
+    "all_engines=false,facing=north,thrust=0": {
+      "model": "skyliners:block/thrust_lever_0",
+      "y": 0
+    },
+    "all_engines=true,facing=north,thrust=0": {
+      "model": "skyliners:block/thrust_lever_all_engines_0",
+      "y": 0
+    },
+    "all_engines=false,facing=north,thrust=1": {
+      "model": "skyliners:block/thrust_lever_1",
+      "y": 0
+    },
+    "all_engines=true,facing=north,thrust=1": {
+      "model": "skyliners:block/thrust_lever_all_engines_1",
+      "y": 0
+    },
+    "all_engines=false,facing=north,thrust=2": {
+      "model": "skyliners:block/thrust_lever_2",
+      "y": 0
+    },
+    "all_engines=true,facing=north,thrust=2": {
+      "model": "skyliners:block/thrust_lever_all_engines_2",
+      "y": 0
+    },
+    "all_engines=false,facing=north,thrust=3": {
+      "model": "skyliners:block/thrust_lever_3",
+      "y": 0
+    },
+    "all_engines=true,facing=north,thrust=3": {
+      "model": "skyliners:block/thrust_lever_all_engines_3",
+      "y": 0
+    },
+    "all_engines=false,facing=north,thrust=4": {
+      "model": "skyliners:block/thrust_lever_4",
+      "y": 0
+    },
+    "all_engines=true,facing=north,thrust=4": {
+      "model": "skyliners:block/thrust_lever_all_engines_4",
+      "y": 0
+    },
+    "all_engines=false,facing=east,thrust=0": {
+      "model": "skyliners:block/thrust_lever_0",
+      "y": 90
+    },
+    "all_engines=true,facing=east,thrust=0": {
+      "model": "skyliners:block/thrust_lever_all_engines_0",
+      "y": 90
+    },
+    "all_engines=false,facing=east,thrust=1": {
+      "model": "skyliners:block/thrust_lever_1",
+      "y": 90
+    },
+    "all_engines=true,facing=east,thrust=1": {
+      "model": "skyliners:block/thrust_lever_all_engines_1",
+      "y": 90
+    },
+    "all_engines=false,facing=east,thrust=2": {
+      "model": "skyliners:block/thrust_lever_2",
+      "y": 90
+    },
+    "all_engines=true,facing=east,thrust=2": {
+      "model": "skyliners:block/thrust_lever_all_engines_2",
+      "y": 90
+    },
+    "all_engines=false,facing=east,thrust=3": {
+      "model": "skyliners:block/thrust_lever_3",
+      "y": 90
+    },
+    "all_engines=true,facing=east,thrust=3": {
+      "model": "skyliners:block/thrust_lever_all_engines_3",
+      "y": 90
+    },
+    "all_engines=false,facing=east,thrust=4": {
+      "model": "skyliners:block/thrust_lever_4",
+      "y": 90
+    },
+    "all_engines=true,facing=east,thrust=4": {
+      "model": "skyliners:block/thrust_lever_all_engines_4",
+      "y": 90
+    },
+    "all_engines=false,facing=south,thrust=0": {
+      "model": "skyliners:block/thrust_lever_0",
+      "y": 180
+    },
+    "all_engines=true,facing=south,thrust=0": {
+      "model": "skyliners:block/thrust_lever_all_engines_0",
+      "y": 180
+    },
+    "all_engines=false,facing=south,thrust=1": {
+      "model": "skyliners:block/thrust_lever_1",
+      "y": 180
+    },
+    "all_engines=true,facing=south,thrust=1": {
+      "model": "skyliners:block/thrust_lever_all_engines_1",
+      "y": 180
+    },
+    "all_engines=false,facing=south,thrust=2": {
+      "model": "skyliners:block/thrust_lever_2",
+      "y": 180
+    },
+    "all_engines=true,facing=south,thrust=2": {
+      "model": "skyliners:block/thrust_lever_all_engines_2",
+      "y": 180
+    },
+    "all_engines=false,facing=south,thrust=3": {
+      "model": "skyliners:block/thrust_lever_3",
+      "y": 180
+    },
+    "all_engines=true,facing=south,thrust=3": {
+      "model": "skyliners:block/thrust_lever_all_engines_3",
+      "y": 180
+    },
+    "all_engines=false,facing=south,thrust=4": {
+      "model": "skyliners:block/thrust_lever_4",
+      "y": 180
+    },
+    "all_engines=true,facing=south,thrust=4": {
+      "model": "skyliners:block/thrust_lever_all_engines_4",
+      "y": 180
+    },
+    "all_engines=false,facing=west,thrust=0": {
+      "model": "skyliners:block/thrust_lever_0",
+      "y": 270
+    },
+    "all_engines=true,facing=west,thrust=0": {
+      "model": "skyliners:block/thrust_lever_all_engines_0",
+      "y": 270
+    },
+    "all_engines=false,facing=west,thrust=1": {
+      "model": "skyliners:block/thrust_lever_1",
+      "y": 270
+    },
+    "all_engines=true,facing=west,thrust=1": {
+      "model": "skyliners:block/thrust_lever_all_engines_1",
+      "y": 270
+    },
+    "all_engines=false,facing=west,thrust=2": {
+      "model": "skyliners:block/thrust_lever_2",
+      "y": 270
+    },
+    "all_engines=true,facing=west,thrust=2": {
+      "model": "skyliners:block/thrust_lever_all_engines_2",
+      "y": 270
+    },
+    "all_engines=false,facing=west,thrust=3": {
+      "model": "skyliners:block/thrust_lever_3",
+      "y": 270
+    },
+    "all_engines=true,facing=west,thrust=3": {
+      "model": "skyliners:block/thrust_lever_all_engines_3",
+      "y": 270
+    },
+    "all_engines=false,facing=west,thrust=4": {
+      "model": "skyliners:block/thrust_lever_4",
+      "y": 270
+    },
+    "all_engines=true,facing=west,thrust=4": {
+      "model": "skyliners:block/thrust_lever_all_engines_4",
+      "y": 270
+    }
+  }
+}

@@ -36,7 +36,7 @@ repositories {
     }
 }
 
-// Blockpilot (github.com/sparten11740/blockpilot-mcp), the client mod an agent play-tests the mod with: Aerolarge gives
+// Blockpilot (github.com/sparten11740/blockpilot-mcp), the client mod an agent play-tests the mod with: Skyliners gives
 // it commands of its own (see compat/blockpilot), compiled against its API from the local Maven repository, where
 // `./gradlew publishToMavenLocal` in Blockpilot's repository puts it. Without it there, those commands are left out of
 // the build, and nothing else changes.
@@ -54,7 +54,7 @@ if (withBlockpilot) {
     }
 } else {
     sourceSets.main {
-        java.exclude("dev/aerolarge/compat/blockpilot/**")
+        java.exclude("dev/skyliners/compat/blockpilot/**")
     }
 }
 

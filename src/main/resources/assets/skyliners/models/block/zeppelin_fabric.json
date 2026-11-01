@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "skyliners:block/zeppelin_skin"
+  }
+}

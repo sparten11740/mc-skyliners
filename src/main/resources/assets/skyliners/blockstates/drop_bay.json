@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "skyliners:block/drop_bay"
+    },
+    "open=true": {
+      "model": "skyliners:block/drop_bay_open"
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "white": "skyliners:block/robot_bartender_white",
+    "chrome": "skyliners:block/robot_bartender_chrome",
+    "dark": "skyliners:block/robot_bartender_dark",
+    "visor": "skyliners:block/robot_bartender_visor",
+    "eyes": "skyliners:block/robot_bartender_eyes",
+    "glow": "skyliners:block/robot_bartender_glow",
+    "glass": "skyliners:block/robot_bartender_glass",
+    "drink": "skyliners:block/robot_bartender_drink",
+    "cloth": "skyliners:block/robot_bartender_cloth",
+    "particle": "skyliners:block/robot_bartender_white"
+  },
+  "elements": [
+    {
+      "from": [
+        9.9,
+        15.4,
+        -0.1
+      ],
+      "to": [
+        11.8,
+        17.7,
+        2.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.9000000000000004,
+            2.299999999999999
+          ]
+        },
+        "south": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.9000000000000004,
+            2.299999999999999
+          ]
+        },
+        "east": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            2.2,
+            2.299999999999999
+          ]
+        },
+        "west": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            2.2,
+            2.299999999999999
+          ]
+        },
+        "up": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.9000000000000004,
+            2.2
+          ]
+        },
+        "down": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.9000000000000004,
+            2.2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10.2,
+        14.4,
+        0.3
+      ],
+      "to": [
+        11.5,
+        15.4,
+        1.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.3000000000000007,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.3000000000000007,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.4,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.4,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.3000000000000007,
+            1.4
+          ]
+        },
+        "down": {
+          "texture": "#cloth",
+          "uv": [
+            0,
+            0,
+            1.3000000000000007,
+            1.4
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,plant=greenery": {
+      "model": "skyliners:block/planter_greenery"
+    },
+    "facing=north,plant=flowers": {
+      "model": "skyliners:block/planter_flowers"
+    },
+    "facing=north,plant=bamboo": {
+      "model": "skyliners:block/planter_bamboo"
+    },
+    "facing=east,plant=greenery": {
+      "model": "skyliners:block/planter_greenery",
+      "y": 90
+    },
+    "facing=east,plant=flowers": {
+      "model": "skyliners:block/planter_flowers",
+      "y": 90
+    },
+    "facing=east,plant=bamboo": {
+      "model": "skyliners:block/planter_bamboo",
+      "y": 90
+    },
+    "facing=south,plant=greenery": {
+      "model": "skyliners:block/planter_greenery",
+      "y": 180
+    },
+    "facing=south,plant=flowers": {
+      "model": "skyliners:block/planter_flowers",
+      "y": 180
+    },
+    "facing=south,plant=bamboo": {
+      "model": "skyliners:block/planter_bamboo",
+      "y": 180
+    },
+    "facing=west,plant=greenery": {
+      "model": "skyliners:block/planter_greenery",
+      "y": 270
+    },
+    "facing=west,plant=flowers": {
+      "model": "skyliners:block/planter_flowers",
+      "y": 270
+    },
+    "facing=west,plant=bamboo": {
+      "model": "skyliners:block/planter_bamboo",
+      "y": 270
+    }
+  }
+}

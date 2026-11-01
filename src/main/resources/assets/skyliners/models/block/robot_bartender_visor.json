@@ -1,0 +1,46 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "white": "skyliners:block/robot_bartender_white",
+    "chrome": "skyliners:block/robot_bartender_chrome",
+    "dark": "skyliners:block/robot_bartender_dark",
+    "visor": "skyliners:block/robot_bartender_visor",
+    "eyes": "skyliners:block/robot_bartender_eyes",
+    "glow": "skyliners:block/robot_bartender_glow",
+    "glass": "skyliners:block/robot_bartender_glass",
+    "drink": "skyliners:block/robot_bartender_drink",
+    "cloth": "skyliners:block/robot_bartender_cloth",
+    "particle": "skyliners:block/robot_bartender_white"
+  },
+  "elements": [
+    {
+      "from": [
+        5.7,
+        27.2,
+        3.45
+      ],
+      "to": [
+        10.3,
+        28.3,
+        3.6
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#eyes",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}

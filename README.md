@@ -1,4 +1,4 @@
-# Aerolarge
+# Create: Skyliners
 
 A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
 wheels and is flown from its own cockpit, and a gigantic Hindenburg-style zeppelin that floats on real hot air (see The
@@ -15,7 +15,7 @@ airliner is a building.
 
 ## In game
 
-The blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under banners,
+The blueprints are in the Create: Skyliners creative tab, with no recipe. The tab sorts everything under banners,
 each with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and the rocket's,
 her lift among them; the flight deck; the rocket's cockpit; doors and stairs; the zeppelin's control car; crew kit;
 skydiving and drops; gadgets; zeppelin extras; seats; floors and walls; signs and washrooms; duty free; the hold; the
@@ -68,7 +68,7 @@ Use a blueprint on the ground: the nose goes just past the block you click and t
 While you hold one, a see-through miniature of the airliner or the zeppelin floats over the block you aim at, turned the
 way it would be built there, so you can see which way it will go before you click: nose toward you, tail away, along
 whichever of north, east, south and west you face most. It refuses while anything is in the way and says where; sneak to
-build through it. Operators can also run `/aerolarge build <pos> <north|east|south|west> [furnished]`.
+build through it. Operators can also run `/skyliners build <pos> <north|east|south|west> [furnished]`.
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
 and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the main deck's floor, 5 of them
@@ -988,7 +988,7 @@ villages on it as little houses with red roofs; the route flown since take-off a
 the airliner as a gold arrow pointing the way it goes. North is up. The map zooms out as the route grows, so the
 whole flight fits, and the land not seen yet is left dark under a faint grid. The land is taken in as the airliner
 flies over it, as far as the game has it loaded round the player, and every player keeps their own map of each world
-and dimension in the game's folder (`aerolarge/route_maps`), so it fills in a little more with every flight. The
+and dimension in the game's folder (`skyliners/route_maps`), so it fills in a little more with every flight. The
 villages come from the server, which knows where it generated each one, so a village shows whether or not its bell
 still stands.
 
@@ -1367,7 +1367,7 @@ lets it go again. Land nobody has been near is generated as it is loaded, so the
 a second, a few hundred blocks round the tower in the first minutes and all of it in under an hour, and pauses while
 the server falls behind. Every tower in a dimension shares one survey: land any of them has surveyed is never surveyed
 again, so towers near each other split the work, and a new tower near an old one knows its land at once. The survey is
-kept with the world, in the dimension's `data` folder (`aerolarge_radar.dat`). Players within 96 blocks of a radar
+kept with the world, in the dimension's `data` folder (`skyliners_radar.dat`). Players within 96 blocks of a radar
 screen are sent the land surveyed round it, a few chunks a tick, and it goes into their own maps: the radar's, the
 autopilot's (see Autopilot) and the passenger screens' route map.
 
@@ -1418,7 +1418,7 @@ The **Launch Pad Blueprint** (in the creative tab with the rocket's) lays down a
 the scale it is built at: 81 blocks square at the default scale. Held and aimed at the ground, it shows a yellow box
 over the deck it would lay and a post at its middle. Used, the deck takes the place of the layer you click, its front
 edge just past that block and centred on it, stretching away the way you face. It refuses if anything stands over the
-deck, unless you sneak, which builds straight through it, and operators have `/aerolarge build <pos>
+deck, unless you sneak, which builds straight through it, and operators have `/skyliners build <pos>
 <north|east|south|west> launch_pad`.
 
 Use the Rocket Blueprint anywhere on the pad, from any side, and she goes in its very middle: her axis over the yellow
@@ -1475,7 +1475,7 @@ climbs to the edge of space at y 1,000 (Edge of Space).
 A rigid airship in the Hindenburg's style, as big as the real one at the airliner's scale: about 490 blocks long and 82
 across, its fins reaching some 100 blocks up from the ground, as long as three airliners nose to tail. It is built at
 that size whatever `scale` the server config sets for the airliner. The Zeppelin Blueprint builds one as an airliner's
-blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin [furnished|festive]
+blueprint does, and operators with `/skyliners build <pos> <north|east|south|west> zeppelin [furnished|festive]
 [half|full]`, its nose tip at the position and its tail stretching away the way given, through whatever stands there; it
 takes a few tens of seconds to go up. At half the size, some 245 blocks long, its hull is smaller and its control car
 and decks a player's size as ever, the hull raised over the car and its gas cells fuller for its size, to float them;
@@ -1522,7 +1522,7 @@ silver with snow on its crown and a red band edged white round it at every ring,
 gas cells red and green within; fairy lights round every ring, red, gold, green and blue, twinkling one colour after
 another so they seem to chase round; a wreath of evergreen garland dotted with berries round the tip of its nose, a red
 bow under it; a gold star in place of the red beacon on its mast; and sleigh bells ringing with its engines as they
-turn, heard all over the ship aboard and from its propellers below. Operators build one with `/aerolarge build <pos>
+turn, heard all over the ship aboard and from its propellers below. Operators build one with `/skyliners build <pos>
 <north|east|south|west> zeppelin festive`. Its livery selector can repaint it in any of its liveries; its cells,
 lights, wreath and star stay. The Festive Garland and Festive Bow its wreath is made of are in the creative tab too.
 
@@ -1893,7 +1893,7 @@ blocks it lets go and unloads, so that it stops costing the server its physics, 
 within 400 blocks and it is brought back, before they could see it missing. Turn this off with `letParkedShipsGo` in the
 server config, and a ship once assembled stays loaded for good.
 
-The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk
+The zeppelin's own blocks are in the Create: Skyliners creative tab under Zeppelin: its fabric, its girders, its catwalk
 grating, the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
 strongest redstone signal beside it), and, under Zeppelin Control Car, the hand controls (placed by hand, each faces
 whoever places it, and a
@@ -1906,7 +1906,7 @@ default 2) and 20 blocks across, a pointed nose on top with a band of smoked, ne
 it, cut to the nose's curve, one pane thick and topped inside by a level ring of ceiling. The Rocket Blueprint builds
 one just past where it is used, its front, with its door,
 facing you, or used on a launch pad right in the pad's middle (see The launch pad), and operators with
-`/aerolarge build <pos> <north|east|south|west> rocket`. It is driven by Create
+`/skyliners build <pos> <north|east|south|west> rocket`. It is driven by Create
 Propulsion's creative thrusters, which need no fuel: five bells of them in its flat bottom, their plumes trailing as
 they fire, and two rings of four side jets in its skin, near the nose and near the bottom, that hold it upright. Its
 fins are its legs; between them her airstairs come down from her front door to the ground (see below).
@@ -2483,14 +2483,14 @@ pling when there is nothing to do and a deep note for wait.
 
 ### Settings
 
-The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
+The settings are changed in game in Mods → Create: Skyliners → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
 `tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`,
 `fairOverClouds`, the
 rocket's `spaceSky`, `shootingStars` and `aurora`, her lift's `liftMusic` and `heightGauge`, the space helmet's
 `helmetBreathing`, her rooms' `roomAmbience`, and the hot air burners' `burnerSmoke`) are there from the title screen.
 The server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
-they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
+they are kept in `config/skyliners-server.toml`, on a dedicated server in its own.
 
 Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
 into another one, and while it does, everything aboard can stop for a moment: at a zeppelin's speed, about once a

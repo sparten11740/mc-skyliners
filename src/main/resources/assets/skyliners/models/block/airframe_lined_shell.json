@@ -1,0 +1,17 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "skin": "skyliners:block/airframe_panel",
+    "particle": "skyliners:block/airframe_panel",
+    "lining": "skyliners:block/hull_lining",
+    "lining_ceiling": "skyliners:block/hull_lining_ceiling",
+    "lining_floor": "skyliners:block/hull_lining_floor",
+    "lining_dado": "skyliners:block/hull_lining_dado",
+    "lining_reveal": "skyliners:block/hull_lining_reveal",
+    "lining_reveal_pair": "skyliners:block/hull_lining_reveal_pair",
+    "lining_reveal_head": "skyliners:block/hull_lining_reveal_head",
+    "lining_reveal_sill": "skyliners:block/hull_lining_reveal_sill",
+    "lining_dado_sill": "skyliners:block/hull_lining_dado_sill"
+  }
+}

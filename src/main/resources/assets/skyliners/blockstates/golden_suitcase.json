@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/golden_suitcase",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/golden_suitcase",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/golden_suitcase",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/golden_suitcase",
+      "y": 270
+    }
+  }
+}

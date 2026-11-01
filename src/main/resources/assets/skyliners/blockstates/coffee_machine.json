@@ -1,0 +1,324 @@
+{
+  "variants": {
+    "brew=ready,drink=espresso,facing=north": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 0
+    },
+    "brew=ready,drink=cappuccino,facing=north": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 0
+    },
+    "brew=ready,drink=mocha,facing=north": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 0
+    },
+    "brew=ready,drink=babycino,facing=north": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 0
+    },
+    "brew=grinding,drink=espresso,facing=north": {
+      "model": "skyliners:block/coffee_machine_grinding_espresso",
+      "y": 0
+    },
+    "brew=grinding,drink=cappuccino,facing=north": {
+      "model": "skyliners:block/coffee_machine_grinding_cappuccino",
+      "y": 0
+    },
+    "brew=grinding,drink=mocha,facing=north": {
+      "model": "skyliners:block/coffee_machine_grinding_mocha",
+      "y": 0
+    },
+    "brew=grinding,drink=babycino,facing=north": {
+      "model": "skyliners:block/coffee_machine_grinding_babycino",
+      "y": 0
+    },
+    "brew=pouring,drink=espresso,facing=north": {
+      "model": "skyliners:block/coffee_machine_pouring_espresso",
+      "y": 0
+    },
+    "brew=pouring,drink=cappuccino,facing=north": {
+      "model": "skyliners:block/coffee_machine_pouring_cappuccino",
+      "y": 0
+    },
+    "brew=pouring,drink=mocha,facing=north": {
+      "model": "skyliners:block/coffee_machine_pouring_mocha",
+      "y": 0
+    },
+    "brew=pouring,drink=babycino,facing=north": {
+      "model": "skyliners:block/coffee_machine_pouring_babycino",
+      "y": 0
+    },
+    "brew=steaming,drink=espresso,facing=north": {
+      "model": "skyliners:block/coffee_machine_steaming_espresso",
+      "y": 0
+    },
+    "brew=steaming,drink=cappuccino,facing=north": {
+      "model": "skyliners:block/coffee_machine_steaming_cappuccino",
+      "y": 0
+    },
+    "brew=steaming,drink=mocha,facing=north": {
+      "model": "skyliners:block/coffee_machine_steaming_mocha",
+      "y": 0
+    },
+    "brew=steaming,drink=babycino,facing=north": {
+      "model": "skyliners:block/coffee_machine_steaming_babycino",
+      "y": 0
+    },
+    "brew=done,drink=espresso,facing=north": {
+      "model": "skyliners:block/coffee_machine_done_espresso",
+      "y": 0
+    },
+    "brew=done,drink=cappuccino,facing=north": {
+      "model": "skyliners:block/coffee_machine_done_cappuccino",
+      "y": 0
+    },
+    "brew=done,drink=mocha,facing=north": {
+      "model": "skyliners:block/coffee_machine_done_mocha",
+      "y": 0
+    },
+    "brew=done,drink=babycino,facing=north": {
+      "model": "skyliners:block/coffee_machine_done_babycino",
+      "y": 0
+    },
+    "brew=ready,drink=espresso,facing=east": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 90
+    },
+    "brew=ready,drink=cappuccino,facing=east": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 90
+    },
+    "brew=ready,drink=mocha,facing=east": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 90
+    },
+    "brew=ready,drink=babycino,facing=east": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 90
+    },
+    "brew=grinding,drink=espresso,facing=east": {
+      "model": "skyliners:block/coffee_machine_grinding_espresso",
+      "y": 90
+    },
+    "brew=grinding,drink=cappuccino,facing=east": {
+      "model": "skyliners:block/coffee_machine_grinding_cappuccino",
+      "y": 90
+    },
+    "brew=grinding,drink=mocha,facing=east": {
+      "model": "skyliners:block/coffee_machine_grinding_mocha",
+      "y": 90
+    },
+    "brew=grinding,drink=babycino,facing=east": {
+      "model": "skyliners:block/coffee_machine_grinding_babycino",
+      "y": 90
+    },
+    "brew=pouring,drink=espresso,facing=east": {
+      "model": "skyliners:block/coffee_machine_pouring_espresso",
+      "y": 90
+    },
+    "brew=pouring,drink=cappuccino,facing=east": {
+      "model": "skyliners:block/coffee_machine_pouring_cappuccino",
+      "y": 90
+    },
+    "brew=pouring,drink=mocha,facing=east": {
+      "model": "skyliners:block/coffee_machine_pouring_mocha",
+      "y": 90
+    },
+    "brew=pouring,drink=babycino,facing=east": {
+      "model": "skyliners:block/coffee_machine_pouring_babycino",
+      "y": 90
+    },
+    "brew=steaming,drink=espresso,facing=east": {
+      "model": "skyliners:block/coffee_machine_steaming_espresso",
+      "y": 90
+    },
+    "brew=steaming,drink=cappuccino,facing=east": {
+      "model": "skyliners:block/coffee_machine_steaming_cappuccino",
+      "y": 90
+    },
+    "brew=steaming,drink=mocha,facing=east": {
+      "model": "skyliners:block/coffee_machine_steaming_mocha",
+      "y": 90
+    },
+    "brew=steaming,drink=babycino,facing=east": {
+      "model": "skyliners:block/coffee_machine_steaming_babycino",
+      "y": 90
+    },
+    "brew=done,drink=espresso,facing=east": {
+      "model": "skyliners:block/coffee_machine_done_espresso",
+      "y": 90
+    },
+    "brew=done,drink=cappuccino,facing=east": {
+      "model": "skyliners:block/coffee_machine_done_cappuccino",
+      "y": 90
+    },
+    "brew=done,drink=mocha,facing=east": {
+      "model": "skyliners:block/coffee_machine_done_mocha",
+      "y": 90
+    },
+    "brew=done,drink=babycino,facing=east": {
+      "model": "skyliners:block/coffee_machine_done_babycino",
+      "y": 90
+    },
+    "brew=ready,drink=espresso,facing=south": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 180
+    },
+    "brew=ready,drink=cappuccino,facing=south": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 180
+    },
+    "brew=ready,drink=mocha,facing=south": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 180
+    },
+    "brew=ready,drink=babycino,facing=south": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 180
+    },
+    "brew=grinding,drink=espresso,facing=south": {
+      "model": "skyliners:block/coffee_machine_grinding_espresso",
+      "y": 180
+    },
+    "brew=grinding,drink=cappuccino,facing=south": {
+      "model": "skyliners:block/coffee_machine_grinding_cappuccino",
+      "y": 180
+    },
+    "brew=grinding,drink=mocha,facing=south": {
+      "model": "skyliners:block/coffee_machine_grinding_mocha",
+      "y": 180
+    },
+    "brew=grinding,drink=babycino,facing=south": {
+      "model": "skyliners:block/coffee_machine_grinding_babycino",
+      "y": 180
+    },
+    "brew=pouring,drink=espresso,facing=south": {
+      "model": "skyliners:block/coffee_machine_pouring_espresso",
+      "y": 180
+    },
+    "brew=pouring,drink=cappuccino,facing=south": {
+      "model": "skyliners:block/coffee_machine_pouring_cappuccino",
+      "y": 180
+    },
+    "brew=pouring,drink=mocha,facing=south": {
+      "model": "skyliners:block/coffee_machine_pouring_mocha",
+      "y": 180
+    },
+    "brew=pouring,drink=babycino,facing=south": {
+      "model": "skyliners:block/coffee_machine_pouring_babycino",
+      "y": 180
+    },
+    "brew=steaming,drink=espresso,facing=south": {
+      "model": "skyliners:block/coffee_machine_steaming_espresso",
+      "y": 180
+    },
+    "brew=steaming,drink=cappuccino,facing=south": {
+      "model": "skyliners:block/coffee_machine_steaming_cappuccino",
+      "y": 180
+    },
+    "brew=steaming,drink=mocha,facing=south": {
+      "model": "skyliners:block/coffee_machine_steaming_mocha",
+      "y": 180
+    },
+    "brew=steaming,drink=babycino,facing=south": {
+      "model": "skyliners:block/coffee_machine_steaming_babycino",
+      "y": 180
+    },
+    "brew=done,drink=espresso,facing=south": {
+      "model": "skyliners:block/coffee_machine_done_espresso",
+      "y": 180
+    },
+    "brew=done,drink=cappuccino,facing=south": {
+      "model": "skyliners:block/coffee_machine_done_cappuccino",
+      "y": 180
+    },
+    "brew=done,drink=mocha,facing=south": {
+      "model": "skyliners:block/coffee_machine_done_mocha",
+      "y": 180
+    },
+    "brew=done,drink=babycino,facing=south": {
+      "model": "skyliners:block/coffee_machine_done_babycino",
+      "y": 180
+    },
+    "brew=ready,drink=espresso,facing=west": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 270
+    },
+    "brew=ready,drink=cappuccino,facing=west": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 270
+    },
+    "brew=ready,drink=mocha,facing=west": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 270
+    },
+    "brew=ready,drink=babycino,facing=west": {
+      "model": "skyliners:block/coffee_machine_ready",
+      "y": 270
+    },
+    "brew=grinding,drink=espresso,facing=west": {
+      "model": "skyliners:block/coffee_machine_grinding_espresso",
+      "y": 270
+    },
+    "brew=grinding,drink=cappuccino,facing=west": {
+      "model": "skyliners:block/coffee_machine_grinding_cappuccino",
+      "y": 270
+    },
+    "brew=grinding,drink=mocha,facing=west": {
+      "model": "skyliners:block/coffee_machine_grinding_mocha",
+      "y": 270
+    },
+    "brew=grinding,drink=babycino,facing=west": {
+      "model": "skyliners:block/coffee_machine_grinding_babycino",
+      "y": 270
+    },
+    "brew=pouring,drink=espresso,facing=west": {
+      "model": "skyliners:block/coffee_machine_pouring_espresso",
+      "y": 270
+    },
+    "brew=pouring,drink=cappuccino,facing=west": {
+      "model": "skyliners:block/coffee_machine_pouring_cappuccino",
+      "y": 270
+    },
+    "brew=pouring,drink=mocha,facing=west": {
+      "model": "skyliners:block/coffee_machine_pouring_mocha",
+      "y": 270
+    },
+    "brew=pouring,drink=babycino,facing=west": {
+      "model": "skyliners:block/coffee_machine_pouring_babycino",
+      "y": 270
+    },
+    "brew=steaming,drink=espresso,facing=west": {
+      "model": "skyliners:block/coffee_machine_steaming_espresso",
+      "y": 270
+    },
+    "brew=steaming,drink=cappuccino,facing=west": {
+      "model": "skyliners:block/coffee_machine_steaming_cappuccino",
+      "y": 270
+    },
+    "brew=steaming,drink=mocha,facing=west": {
+      "model": "skyliners:block/coffee_machine_steaming_mocha",
+      "y": 270
+    },
+    "brew=steaming,drink=babycino,facing=west": {
+      "model": "skyliners:block/coffee_machine_steaming_babycino",
+      "y": 270
+    },
+    "brew=done,drink=espresso,facing=west": {
+      "model": "skyliners:block/coffee_machine_done_espresso",
+      "y": 270
+    },
+    "brew=done,drink=cappuccino,facing=west": {
+      "model": "skyliners:block/coffee_machine_done_cappuccino",
+      "y": 270
+    },
+    "brew=done,drink=mocha,facing=west": {
+      "model": "skyliners:block/coffee_machine_done_mocha",
+      "y": 270
+    },
+    "brew=done,drink=babycino,facing=west": {
+      "model": "skyliners:block/coffee_machine_done_babycino",
+      "y": 270
+    }
+  }
+}

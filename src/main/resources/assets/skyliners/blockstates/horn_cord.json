@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "skyliners:block/horn_cord"
+    },
+    "powered=true": {
+      "model": "skyliners:block/horn_cord_pulled"
+    }
+  }
+}

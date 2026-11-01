@@ -1,0 +1,1284 @@
+{
+  "variants": {
+    "column=0,facing=north,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_0_0",
+      "y": 0
+    },
+    "column=0,facing=east,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_0_0",
+      "y": 90
+    },
+    "column=0,facing=south,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_0_0",
+      "y": 180
+    },
+    "column=0,facing=west,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_0_0",
+      "y": 270
+    },
+    "column=1,facing=north,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_1_0",
+      "y": 0
+    },
+    "column=1,facing=east,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_1_0",
+      "y": 90
+    },
+    "column=1,facing=south,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_1_0",
+      "y": 180
+    },
+    "column=1,facing=west,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_1_0",
+      "y": 270
+    },
+    "column=2,facing=north,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_2_0",
+      "y": 0
+    },
+    "column=2,facing=east,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_2_0",
+      "y": 90
+    },
+    "column=2,facing=south,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_2_0",
+      "y": 180
+    },
+    "column=2,facing=west,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_2_0",
+      "y": 270
+    },
+    "column=3,facing=north,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 0
+    },
+    "column=3,facing=east,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 90
+    },
+    "column=3,facing=south,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 180
+    },
+    "column=3,facing=west,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 270
+    },
+    "column=4,facing=north,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 0
+    },
+    "column=4,facing=east,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 90
+    },
+    "column=4,facing=south,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 180
+    },
+    "column=4,facing=west,poster=black_hole,row=0": {
+      "model": "skyliners:block/space_poster_black_hole_3_0",
+      "y": 270
+    },
+    "column=0,facing=north,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_0_1",
+      "y": 0
+    },
+    "column=0,facing=east,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_0_1",
+      "y": 90
+    },
+    "column=0,facing=south,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_0_1",
+      "y": 180
+    },
+    "column=0,facing=west,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_0_1",
+      "y": 270
+    },
+    "column=1,facing=north,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_1_1",
+      "y": 0
+    },
+    "column=1,facing=east,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_1_1",
+      "y": 90
+    },
+    "column=1,facing=south,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_1_1",
+      "y": 180
+    },
+    "column=1,facing=west,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_1_1",
+      "y": 270
+    },
+    "column=2,facing=north,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_2_1",
+      "y": 0
+    },
+    "column=2,facing=east,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_2_1",
+      "y": 90
+    },
+    "column=2,facing=south,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_2_1",
+      "y": 180
+    },
+    "column=2,facing=west,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_2_1",
+      "y": 270
+    },
+    "column=3,facing=north,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 0
+    },
+    "column=3,facing=east,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 90
+    },
+    "column=3,facing=south,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 180
+    },
+    "column=3,facing=west,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 270
+    },
+    "column=4,facing=north,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 0
+    },
+    "column=4,facing=east,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 90
+    },
+    "column=4,facing=south,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 180
+    },
+    "column=4,facing=west,poster=black_hole,row=1": {
+      "model": "skyliners:block/space_poster_black_hole_3_1",
+      "y": 270
+    },
+    "column=0,facing=north,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 0
+    },
+    "column=0,facing=east,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 90
+    },
+    "column=0,facing=south,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 180
+    },
+    "column=0,facing=west,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 270
+    },
+    "column=1,facing=north,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 0
+    },
+    "column=1,facing=east,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 90
+    },
+    "column=1,facing=south,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 180
+    },
+    "column=1,facing=west,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 270
+    },
+    "column=2,facing=north,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 0
+    },
+    "column=2,facing=east,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 90
+    },
+    "column=2,facing=south,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 180
+    },
+    "column=2,facing=west,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 270
+    },
+    "column=3,facing=north,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 0
+    },
+    "column=3,facing=east,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 90
+    },
+    "column=3,facing=south,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 180
+    },
+    "column=3,facing=west,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 270
+    },
+    "column=4,facing=north,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 0
+    },
+    "column=4,facing=east,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 90
+    },
+    "column=4,facing=south,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 180
+    },
+    "column=4,facing=west,poster=black_hole,row=2": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 270
+    },
+    "column=0,facing=north,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 0
+    },
+    "column=0,facing=east,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 90
+    },
+    "column=0,facing=south,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 180
+    },
+    "column=0,facing=west,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_0_2",
+      "y": 270
+    },
+    "column=1,facing=north,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 0
+    },
+    "column=1,facing=east,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 90
+    },
+    "column=1,facing=south,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 180
+    },
+    "column=1,facing=west,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_1_2",
+      "y": 270
+    },
+    "column=2,facing=north,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 0
+    },
+    "column=2,facing=east,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 90
+    },
+    "column=2,facing=south,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 180
+    },
+    "column=2,facing=west,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_2_2",
+      "y": 270
+    },
+    "column=3,facing=north,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 0
+    },
+    "column=3,facing=east,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 90
+    },
+    "column=3,facing=south,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 180
+    },
+    "column=3,facing=west,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 270
+    },
+    "column=4,facing=north,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 0
+    },
+    "column=4,facing=east,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 90
+    },
+    "column=4,facing=south,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 180
+    },
+    "column=4,facing=west,poster=black_hole,row=3": {
+      "model": "skyliners:block/space_poster_black_hole_3_2",
+      "y": 270
+    },
+    "column=0,facing=north,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_0_0",
+      "y": 0
+    },
+    "column=0,facing=east,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_0_0",
+      "y": 90
+    },
+    "column=0,facing=south,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_0_0",
+      "y": 180
+    },
+    "column=0,facing=west,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_0_0",
+      "y": 270
+    },
+    "column=1,facing=north,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_1_0",
+      "y": 0
+    },
+    "column=1,facing=east,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_1_0",
+      "y": 90
+    },
+    "column=1,facing=south,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_1_0",
+      "y": 180
+    },
+    "column=1,facing=west,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_1_0",
+      "y": 270
+    },
+    "column=2,facing=north,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_2_0",
+      "y": 0
+    },
+    "column=2,facing=east,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_2_0",
+      "y": 90
+    },
+    "column=2,facing=south,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_2_0",
+      "y": 180
+    },
+    "column=2,facing=west,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_2_0",
+      "y": 270
+    },
+    "column=3,facing=north,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_3_0",
+      "y": 0
+    },
+    "column=3,facing=east,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_3_0",
+      "y": 90
+    },
+    "column=3,facing=south,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_3_0",
+      "y": 180
+    },
+    "column=3,facing=west,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_3_0",
+      "y": 270
+    },
+    "column=4,facing=north,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_4_0",
+      "y": 0
+    },
+    "column=4,facing=east,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_4_0",
+      "y": 90
+    },
+    "column=4,facing=south,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_4_0",
+      "y": 180
+    },
+    "column=4,facing=west,poster=solar_system,row=0": {
+      "model": "skyliners:block/space_poster_solar_system_4_0",
+      "y": 270
+    },
+    "column=0,facing=north,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 0
+    },
+    "column=0,facing=east,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 90
+    },
+    "column=0,facing=south,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 180
+    },
+    "column=0,facing=west,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 270
+    },
+    "column=1,facing=north,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 0
+    },
+    "column=1,facing=east,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 90
+    },
+    "column=1,facing=south,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 180
+    },
+    "column=1,facing=west,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 270
+    },
+    "column=2,facing=north,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 0
+    },
+    "column=2,facing=east,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 90
+    },
+    "column=2,facing=south,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 180
+    },
+    "column=2,facing=west,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 270
+    },
+    "column=3,facing=north,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 0
+    },
+    "column=3,facing=east,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 90
+    },
+    "column=3,facing=south,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 180
+    },
+    "column=3,facing=west,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 270
+    },
+    "column=4,facing=north,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 0
+    },
+    "column=4,facing=east,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 90
+    },
+    "column=4,facing=south,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 180
+    },
+    "column=4,facing=west,poster=solar_system,row=1": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 270
+    },
+    "column=0,facing=north,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 0
+    },
+    "column=0,facing=east,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 90
+    },
+    "column=0,facing=south,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 180
+    },
+    "column=0,facing=west,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 270
+    },
+    "column=1,facing=north,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 0
+    },
+    "column=1,facing=east,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 90
+    },
+    "column=1,facing=south,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 180
+    },
+    "column=1,facing=west,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 270
+    },
+    "column=2,facing=north,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 0
+    },
+    "column=2,facing=east,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 90
+    },
+    "column=2,facing=south,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 180
+    },
+    "column=2,facing=west,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 270
+    },
+    "column=3,facing=north,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 0
+    },
+    "column=3,facing=east,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 90
+    },
+    "column=3,facing=south,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 180
+    },
+    "column=3,facing=west,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 270
+    },
+    "column=4,facing=north,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 0
+    },
+    "column=4,facing=east,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 90
+    },
+    "column=4,facing=south,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 180
+    },
+    "column=4,facing=west,poster=solar_system,row=2": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 270
+    },
+    "column=0,facing=north,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 0
+    },
+    "column=0,facing=east,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 90
+    },
+    "column=0,facing=south,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 180
+    },
+    "column=0,facing=west,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_0_1",
+      "y": 270
+    },
+    "column=1,facing=north,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 0
+    },
+    "column=1,facing=east,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 90
+    },
+    "column=1,facing=south,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 180
+    },
+    "column=1,facing=west,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_1_1",
+      "y": 270
+    },
+    "column=2,facing=north,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 0
+    },
+    "column=2,facing=east,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 90
+    },
+    "column=2,facing=south,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 180
+    },
+    "column=2,facing=west,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_2_1",
+      "y": 270
+    },
+    "column=3,facing=north,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 0
+    },
+    "column=3,facing=east,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 90
+    },
+    "column=3,facing=south,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 180
+    },
+    "column=3,facing=west,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_3_1",
+      "y": 270
+    },
+    "column=4,facing=north,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 0
+    },
+    "column=4,facing=east,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 90
+    },
+    "column=4,facing=south,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 180
+    },
+    "column=4,facing=west,poster=solar_system,row=3": {
+      "model": "skyliners:block/space_poster_solar_system_4_1",
+      "y": 270
+    },
+    "column=0,facing=north,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_0_0",
+      "y": 0
+    },
+    "column=0,facing=east,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_0_0",
+      "y": 90
+    },
+    "column=0,facing=south,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_0_0",
+      "y": 180
+    },
+    "column=0,facing=west,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_0_0",
+      "y": 270
+    },
+    "column=1,facing=north,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_1_0",
+      "y": 0
+    },
+    "column=1,facing=east,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_1_0",
+      "y": 90
+    },
+    "column=1,facing=south,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_1_0",
+      "y": 180
+    },
+    "column=1,facing=west,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_1_0",
+      "y": 270
+    },
+    "column=2,facing=north,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 0
+    },
+    "column=2,facing=east,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 90
+    },
+    "column=2,facing=south,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 180
+    },
+    "column=2,facing=west,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 270
+    },
+    "column=3,facing=north,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 0
+    },
+    "column=3,facing=east,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 90
+    },
+    "column=3,facing=south,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 180
+    },
+    "column=3,facing=west,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 270
+    },
+    "column=4,facing=north,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 0
+    },
+    "column=4,facing=east,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 90
+    },
+    "column=4,facing=south,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 180
+    },
+    "column=4,facing=west,poster=quasar,row=0": {
+      "model": "skyliners:block/space_poster_quasar_2_0",
+      "y": 270
+    },
+    "column=0,facing=north,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_0_1",
+      "y": 0
+    },
+    "column=0,facing=east,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_0_1",
+      "y": 90
+    },
+    "column=0,facing=south,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_0_1",
+      "y": 180
+    },
+    "column=0,facing=west,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_0_1",
+      "y": 270
+    },
+    "column=1,facing=north,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_1_1",
+      "y": 0
+    },
+    "column=1,facing=east,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_1_1",
+      "y": 90
+    },
+    "column=1,facing=south,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_1_1",
+      "y": 180
+    },
+    "column=1,facing=west,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_1_1",
+      "y": 270
+    },
+    "column=2,facing=north,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 0
+    },
+    "column=2,facing=east,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 90
+    },
+    "column=2,facing=south,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 180
+    },
+    "column=2,facing=west,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 270
+    },
+    "column=3,facing=north,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 0
+    },
+    "column=3,facing=east,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 90
+    },
+    "column=3,facing=south,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 180
+    },
+    "column=3,facing=west,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 270
+    },
+    "column=4,facing=north,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 0
+    },
+    "column=4,facing=east,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 90
+    },
+    "column=4,facing=south,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 180
+    },
+    "column=4,facing=west,poster=quasar,row=1": {
+      "model": "skyliners:block/space_poster_quasar_2_1",
+      "y": 270
+    },
+    "column=0,facing=north,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_0_2",
+      "y": 0
+    },
+    "column=0,facing=east,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_0_2",
+      "y": 90
+    },
+    "column=0,facing=south,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_0_2",
+      "y": 180
+    },
+    "column=0,facing=west,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_0_2",
+      "y": 270
+    },
+    "column=1,facing=north,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_1_2",
+      "y": 0
+    },
+    "column=1,facing=east,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_1_2",
+      "y": 90
+    },
+    "column=1,facing=south,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_1_2",
+      "y": 180
+    },
+    "column=1,facing=west,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_1_2",
+      "y": 270
+    },
+    "column=2,facing=north,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 0
+    },
+    "column=2,facing=east,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 90
+    },
+    "column=2,facing=south,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 180
+    },
+    "column=2,facing=west,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 270
+    },
+    "column=3,facing=north,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 0
+    },
+    "column=3,facing=east,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 90
+    },
+    "column=3,facing=south,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 180
+    },
+    "column=3,facing=west,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 270
+    },
+    "column=4,facing=north,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 0
+    },
+    "column=4,facing=east,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 90
+    },
+    "column=4,facing=south,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 180
+    },
+    "column=4,facing=west,poster=quasar,row=2": {
+      "model": "skyliners:block/space_poster_quasar_2_2",
+      "y": 270
+    },
+    "column=0,facing=north,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_0_3",
+      "y": 0
+    },
+    "column=0,facing=east,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_0_3",
+      "y": 90
+    },
+    "column=0,facing=south,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_0_3",
+      "y": 180
+    },
+    "column=0,facing=west,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_0_3",
+      "y": 270
+    },
+    "column=1,facing=north,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_1_3",
+      "y": 0
+    },
+    "column=1,facing=east,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_1_3",
+      "y": 90
+    },
+    "column=1,facing=south,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_1_3",
+      "y": 180
+    },
+    "column=1,facing=west,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_1_3",
+      "y": 270
+    },
+    "column=2,facing=north,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 0
+    },
+    "column=2,facing=east,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 90
+    },
+    "column=2,facing=south,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 180
+    },
+    "column=2,facing=west,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 270
+    },
+    "column=3,facing=north,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 0
+    },
+    "column=3,facing=east,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 90
+    },
+    "column=3,facing=south,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 180
+    },
+    "column=3,facing=west,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 270
+    },
+    "column=4,facing=north,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 0
+    },
+    "column=4,facing=east,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 90
+    },
+    "column=4,facing=south,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 180
+    },
+    "column=4,facing=west,poster=quasar,row=3": {
+      "model": "skyliners:block/space_poster_quasar_2_3",
+      "y": 270
+    },
+    "column=0,facing=north,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_0_0",
+      "y": 0
+    },
+    "column=0,facing=east,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_0_0",
+      "y": 90
+    },
+    "column=0,facing=south,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_0_0",
+      "y": 180
+    },
+    "column=0,facing=west,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_0_0",
+      "y": 270
+    },
+    "column=1,facing=north,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_1_0",
+      "y": 0
+    },
+    "column=1,facing=east,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_1_0",
+      "y": 90
+    },
+    "column=1,facing=south,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_1_0",
+      "y": 180
+    },
+    "column=1,facing=west,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_1_0",
+      "y": 270
+    },
+    "column=2,facing=north,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_2_0",
+      "y": 0
+    },
+    "column=2,facing=east,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_2_0",
+      "y": 90
+    },
+    "column=2,facing=south,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_2_0",
+      "y": 180
+    },
+    "column=2,facing=west,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_2_0",
+      "y": 270
+    },
+    "column=3,facing=north,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 0
+    },
+    "column=3,facing=east,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 90
+    },
+    "column=3,facing=south,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 180
+    },
+    "column=3,facing=west,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 270
+    },
+    "column=4,facing=north,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 0
+    },
+    "column=4,facing=east,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 90
+    },
+    "column=4,facing=south,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 180
+    },
+    "column=4,facing=west,poster=earthrise,row=0": {
+      "model": "skyliners:block/space_poster_earthrise_3_0",
+      "y": 270
+    },
+    "column=0,facing=north,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_0_1",
+      "y": 0
+    },
+    "column=0,facing=east,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_0_1",
+      "y": 90
+    },
+    "column=0,facing=south,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_0_1",
+      "y": 180
+    },
+    "column=0,facing=west,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_0_1",
+      "y": 270
+    },
+    "column=1,facing=north,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_1_1",
+      "y": 0
+    },
+    "column=1,facing=east,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_1_1",
+      "y": 90
+    },
+    "column=1,facing=south,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_1_1",
+      "y": 180
+    },
+    "column=1,facing=west,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_1_1",
+      "y": 270
+    },
+    "column=2,facing=north,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_2_1",
+      "y": 0
+    },
+    "column=2,facing=east,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_2_1",
+      "y": 90
+    },
+    "column=2,facing=south,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_2_1",
+      "y": 180
+    },
+    "column=2,facing=west,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_2_1",
+      "y": 270
+    },
+    "column=3,facing=north,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 0
+    },
+    "column=3,facing=east,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 90
+    },
+    "column=3,facing=south,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 180
+    },
+    "column=3,facing=west,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 270
+    },
+    "column=4,facing=north,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 0
+    },
+    "column=4,facing=east,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 90
+    },
+    "column=4,facing=south,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 180
+    },
+    "column=4,facing=west,poster=earthrise,row=1": {
+      "model": "skyliners:block/space_poster_earthrise_3_1",
+      "y": 270
+    },
+    "column=0,facing=north,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 0
+    },
+    "column=0,facing=east,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 90
+    },
+    "column=0,facing=south,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 180
+    },
+    "column=0,facing=west,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 270
+    },
+    "column=1,facing=north,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 0
+    },
+    "column=1,facing=east,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 90
+    },
+    "column=1,facing=south,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 180
+    },
+    "column=1,facing=west,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 270
+    },
+    "column=2,facing=north,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 0
+    },
+    "column=2,facing=east,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 90
+    },
+    "column=2,facing=south,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 180
+    },
+    "column=2,facing=west,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 270
+    },
+    "column=3,facing=north,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 0
+    },
+    "column=3,facing=east,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 90
+    },
+    "column=3,facing=south,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 180
+    },
+    "column=3,facing=west,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 270
+    },
+    "column=4,facing=north,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 0
+    },
+    "column=4,facing=east,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 90
+    },
+    "column=4,facing=south,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 180
+    },
+    "column=4,facing=west,poster=earthrise,row=2": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 270
+    },
+    "column=0,facing=north,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 0
+    },
+    "column=0,facing=east,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 90
+    },
+    "column=0,facing=south,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 180
+    },
+    "column=0,facing=west,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_0_2",
+      "y": 270
+    },
+    "column=1,facing=north,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 0
+    },
+    "column=1,facing=east,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 90
+    },
+    "column=1,facing=south,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 180
+    },
+    "column=1,facing=west,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_1_2",
+      "y": 270
+    },
+    "column=2,facing=north,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 0
+    },
+    "column=2,facing=east,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 90
+    },
+    "column=2,facing=south,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 180
+    },
+    "column=2,facing=west,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_2_2",
+      "y": 270
+    },
+    "column=3,facing=north,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 0
+    },
+    "column=3,facing=east,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 90
+    },
+    "column=3,facing=south,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 180
+    },
+    "column=3,facing=west,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 270
+    },
+    "column=4,facing=north,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 0
+    },
+    "column=4,facing=east,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 90
+    },
+    "column=4,facing=south,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 180
+    },
+    "column=4,facing=west,poster=earthrise,row=3": {
+      "model": "skyliners:block/space_poster_earthrise_3_2",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "P",
+    "G",
+    "I"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "G": {
+      "item": "skyliners:landing_gear"
+    },
+    "I": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "id": "skyliners:gear_bay",
+    "count": 1
+  }
+}

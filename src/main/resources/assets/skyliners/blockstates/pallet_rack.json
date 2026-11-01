@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,load=boxes": {
+      "model": "skyliners:block/pallet_rack_boxes",
+      "y": 0
+    },
+    "facing=north,load=drums": {
+      "model": "skyliners:block/pallet_rack_drums",
+      "y": 0
+    },
+    "facing=north,load=crates": {
+      "model": "skyliners:block/pallet_rack_crates",
+      "y": 0
+    },
+    "facing=north,load=empty": {
+      "model": "skyliners:block/pallet_rack_empty",
+      "y": 0
+    },
+    "facing=east,load=boxes": {
+      "model": "skyliners:block/pallet_rack_boxes",
+      "y": 90
+    },
+    "facing=east,load=drums": {
+      "model": "skyliners:block/pallet_rack_drums",
+      "y": 90
+    },
+    "facing=east,load=crates": {
+      "model": "skyliners:block/pallet_rack_crates",
+      "y": 90
+    },
+    "facing=east,load=empty": {
+      "model": "skyliners:block/pallet_rack_empty",
+      "y": 90
+    },
+    "facing=south,load=boxes": {
+      "model": "skyliners:block/pallet_rack_boxes",
+      "y": 180
+    },
+    "facing=south,load=drums": {
+      "model": "skyliners:block/pallet_rack_drums",
+      "y": 180
+    },
+    "facing=south,load=crates": {
+      "model": "skyliners:block/pallet_rack_crates",
+      "y": 180
+    },
+    "facing=south,load=empty": {
+      "model": "skyliners:block/pallet_rack_empty",
+      "y": 180
+    },
+    "facing=west,load=boxes": {
+      "model": "skyliners:block/pallet_rack_boxes",
+      "y": 270
+    },
+    "facing=west,load=drums": {
+      "model": "skyliners:block/pallet_rack_drums",
+      "y": 270
+    },
+    "facing=west,load=crates": {
+      "model": "skyliners:block/pallet_rack_crates",
+      "y": 270
+    },
+    "facing=west,load=empty": {
+      "model": "skyliners:block/pallet_rack_empty",
+      "y": 270
+    }
+  }
+}

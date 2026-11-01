@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "III",
+    "INI",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "N": {
+      "item": "skyliners:cargo_net"
+    }
+  },
+  "result": {
+    "id": "skyliners:uld_container",
+    "count": 1
+  }
+}

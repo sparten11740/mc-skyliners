@@ -11,7 +11,7 @@ const ROOT = fileURLToPath(new URL("../src/main/resources", import.meta.url));
 const VANILLA = process.argv[2];
 const withVanilla = VANILLA !== undefined && existsSync(VANILLA);
 if (!withVanilla) console.log("No vanilla assets given: leaving the door and call button files as they are");
-const ID = "aerolarge";
+const ID = "skyliners";
 // How far a model drawn facing north is turned for each horizontal facing.
 const yRot = { north: 0, east: 90, south: 180, west: 270 };
 // How tall a module of the flight deck's centre console is, in pixels: ConsoleModule.HEIGHT.
@@ -230,10 +230,10 @@ function plugDoorSounds() {
 }
 function plugDoorLang() {
   return {
-    "block.aerolarge.plug_door": "Plug Door",
-    "subtitles.aerolarge.plug_door_hiss": "Door hisses",
-    "subtitles.aerolarge.plug_door_latch": "Door latches",
-    "subtitles.aerolarge.door_alarm": "Door alarm wails",
+    "block.skyliners.plug_door": "Plug Door",
+    "subtitles.skyliners.plug_door_hiss": "Door hisses",
+    "subtitles.skyliners.plug_door_latch": "Door latches",
+    "subtitles.skyliners.door_alarm": "Door alarm wails",
   };
 }
 
@@ -246,10 +246,10 @@ cubes.cockpit_door = null;
 // Locked from the flight deck (see CockpitDoorBlockEntity), it says so to whoever locks it or tries it from the aisle.
 function cockpitDoorLang() {
   return {
-    "block.aerolarge.cockpit_door": "Cockpit Door",
-    "message.aerolarge.cockpit_door.locked": "Cockpit door locked: it opens only from the flight deck",
-    "message.aerolarge.cockpit_door.unlocked": "Cockpit door unlocked",
-    "message.aerolarge.cockpit_door.locked_out": "Locked from the flight deck",
+    "block.skyliners.cockpit_door": "Cockpit Door",
+    "message.skyliners.cockpit_door.locked": "Cockpit door locked: it opens only from the flight deck",
+    "message.skyliners.cockpit_door.unlocked": "Cockpit door unlocked",
+    "message.skyliners.cockpit_door.locked_out": "Locked from the flight deck",
   };
 }
 
@@ -340,8 +340,8 @@ function rocketStairsRecipes() {
 }
 function rocketStairsLang() {
   return {
-    "block.aerolarge.rocket_stairs_button": "Rocket Stairs Button",
-    "message.aerolarge.rocket.countdown_stairs": "Countdown holding: step clear of the stairs and the door",
+    "block.skyliners.rocket_stairs_button": "Rocket Stairs Button",
+    "message.skyliners.rocket.countdown_stairs": "Countdown holding: step clear of the stairs and the door",
   };
 }
 // A zeppelin's speed boost button (see BoostButtonBlock): its red cap shows a fast-forward arrow.
@@ -352,7 +352,7 @@ function airstairButtonRecipes() {
 }
 function airstairButtonLang() {
   return {
-    "block.aerolarge.airstair_button": "Airstair Button",
+    "block.skyliners.airstair_button": "Airstair Button",
   };
 }
 // The door button beside each hull door (see DoorButtonBlock), its cap showing a door.
@@ -363,7 +363,7 @@ function doorButtonRecipes() {
 }
 function doorButtonLang() {
   return {
-    "block.aerolarge.door_button": "Door Button",
+    "block.skyliners.door_button": "Door Button",
   };
 }
 // The integral airstairs are drawn by their controller's renderer (see AirstairRenderer); the steps it lays under them
@@ -382,9 +382,9 @@ function airstairSounds() {
 }
 function airstairLang() {
   return {
-    "block.aerolarge.airstair_step": "Airstair Step",
-    "subtitles.aerolarge.airstair_motor": "Airstairs whirr",
-    "subtitles.aerolarge.airstair_latch": "Airstairs latch",
+    "block.skyliners.airstair_step": "Airstair Step",
+    "subtitles.skyliners.airstair_motor": "Airstairs whirr",
+    "subtitles.skyliners.airstair_latch": "Airstairs latch",
   };
 }
 // What the control surfaces' panels are walked on, aft of the wings' trailing edges: the panels are drawn by the
@@ -399,7 +399,7 @@ function surfacePanelFittings() {
 }
 function surfacePanelLang() {
   return {
-    "block.aerolarge.surface_panel": "Control Surface Panel",
+    "block.skyliners.surface_panel": "Control Surface Panel",
   };
 }
 // The evacuation slides. The control, set into the cabin wall beside a door, drawn facing north: the hull's skin all
@@ -460,17 +460,17 @@ function slideRecipes() {
 }
 function slideLang() {
   return {
-    "block.aerolarge.slide_control": "Evacuation Slide Control",
-    "block.aerolarge.slide_step": "Evacuation Slide",
-    "entity.aerolarge.slide_ride": "Evacuation Slide",
-    "subtitles.aerolarge.slide_inflate": "Slide inflates",
-    "subtitles.aerolarge.slide_deflate": "Slide deflates",
-    "subtitles.aerolarge.slide_whoosh": "Someone slides down",
-    "message.aerolarge.slide.moving": "The slide only comes out while the airliner stands still",
-    "message.aerolarge.slide.no_ground": "No ground within the slide's reach below this door",
-    "message.aerolarge.slide.blocked": "Something is in the slide's way",
-    "message.aerolarge.slide.too_low": "The ground is right below the door: no slide needed",
-    "message.aerolarge.slide.no_door": "This slide control is not next to a door",
+    "block.skyliners.slide_control": "Evacuation Slide Control",
+    "block.skyliners.slide_step": "Evacuation Slide",
+    "entity.skyliners.slide_ride": "Evacuation Slide",
+    "subtitles.skyliners.slide_inflate": "Slide inflates",
+    "subtitles.skyliners.slide_deflate": "Slide deflates",
+    "subtitles.skyliners.slide_whoosh": "Someone slides down",
+    "message.skyliners.slide.moving": "The slide only comes out while the airliner stands still",
+    "message.skyliners.slide.no_ground": "No ground within the slide's reach below this door",
+    "message.skyliners.slide.blocked": "Something is in the slide's way",
+    "message.skyliners.slide.too_low": "The ground is right below the door: no slide needed",
+    "message.skyliners.slide.no_door": "This slide control is not next to a door",
   };
 }
 // The skin, the windscreen and the moon pool's clear glass cut to the hull's curve: one model each for every shape,
@@ -528,7 +528,7 @@ write(`assets/${ID}/models/block/zeppelin_fabric.json`, { parent: "minecraft:blo
   cubes.airframe_lined_shell = null;
 }
 function hullLiningLang() {
-  return { "block.aerolarge.airframe_lined_shell": "Lined Airframe Shell" };
+  return { "block.skyliners.airframe_lined_shell": "Lined Airframe Shell" };
 }
 
 // The rocket's rooms finished inside (see RocketFinish), each its own way. Her cover where a room sees it, cut to her
@@ -583,9 +583,9 @@ const WINDOW_FINISHES = ROCKET_FINISHES.filter((finish) => finish !== "dome");
 }
 function rocketFinishLang() {
   return {
-    "block.aerolarge.rocket_lined_cover": "Lined Rocket Cover",
-    "block.aerolarge.rocket_lining_panel": "Rocket Lining Panel",
-    "block.aerolarge.rocket_floor": "Rocket Floor",
+    "block.skyliners.rocket_lined_cover": "Lined Rocket Cover",
+    "block.skyliners.rocket_lining_panel": "Rocket Lining Panel",
+    "block.skyliners.rocket_floor": "Rocket Floor",
   };
 }
 
@@ -1171,124 +1171,124 @@ cubes.propeller = null;
 }
 function flankScreenLang() {
   return {
-    "block.aerolarge.picture_board": "Picture Board",
-    "message.aerolarge.picture_board.no_map": "Hand the board a filled map to show it on the screens",
-    "message.aerolarge.picture_board.no_colours": "Hoist a banner at the flagstaff to show her colours",
-    "poster.aerolarge.nether": "See the Nether",
-    "poster.aerolarge.end": "The End: Last Stop",
-    "poster.aerolarge.jungle": "Fly to the Jungle",
-    "poster.aerolarge.peaks": "Ski the Frozen Peaks",
-    "poster.aerolarge.creeper_insurance": "Creeper Insurance",
-    "poster.aerolarge.villager_bank": "Villager Bank",
-    "poster.aerolarge.golem_guards": "Golem Guards",
-    "poster.aerolarge.cake_by_air": "Cake by Air",
+    "block.skyliners.picture_board": "Picture Board",
+    "message.skyliners.picture_board.no_map": "Hand the board a filled map to show it on the screens",
+    "message.skyliners.picture_board.no_colours": "Hoist a banner at the flagstaff to show her colours",
+    "poster.skyliners.nether": "See the Nether",
+    "poster.skyliners.end": "The End: Last Stop",
+    "poster.skyliners.jungle": "Fly to the Jungle",
+    "poster.skyliners.peaks": "Ski the Frozen Peaks",
+    "poster.skyliners.creeper_insurance": "Creeper Insurance",
+    "poster.skyliners.villager_bank": "Villager Bank",
+    "poster.skyliners.golem_guards": "Golem Guards",
+    "poster.skyliners.cake_by_air": "Cake by Air",
   };
 }
 function christeningLang() {
   return {
-    "block.aerolarge.ships_plaque": "Ship's Plaque",
-    "block.aerolarge.ships_plaque.christened_by": "Christened by %s",
-    "item.aerolarge.christening_bottle": "Christening Bottle",
-    "item.aerolarge.christening_bottle.tooltip": "Name it at an anvil, then swing it at a zeppelin's nose to christen her",
-    "message.aerolarge.christening.named": "I name this ship %s. God bless her, and all who sail in her!",
-    "message.aerolarge.christening.unnamed": "God bless her, and all who sail in her! Name the bottle at an anvil to give her a name",
-    "message.aerolarge.christening.nose": "Swing the bottle at her nose",
+    "block.skyliners.ships_plaque": "Ship's Plaque",
+    "block.skyliners.ships_plaque.christened_by": "Christened by %s",
+    "item.skyliners.christening_bottle": "Christening Bottle",
+    "item.skyliners.christening_bottle.tooltip": "Name it at an anvil, then swing it at a zeppelin's nose to christen her",
+    "message.skyliners.christening.named": "I name this ship %s. God bless her, and all who sail in her!",
+    "message.skyliners.christening.unnamed": "God bless her, and all who sail in her! Name the bottle at an anvil to give her a name",
+    "message.skyliners.christening.nose": "Swing the bottle at her nose",
   };
 }
 function shipsColoursLang() {
   return {
-    "block.aerolarge.flag_halyard": "Flag Halyard",
-    "block.aerolarge.flagstaff": "Flagstaff",
-    "subtitles.aerolarge.flag_halyard": "Halyard pulley squeaks",
+    "block.skyliners.flag_halyard": "Flag Halyard",
+    "block.skyliners.flagstaff": "Flagstaff",
+    "subtitles.skyliners.flag_halyard": "Halyard pulley squeaks",
   };
 }
 function zeppelinControlsLang() {
   return {
-    "block.aerolarge.rudder_wheel": "Rudder Wheel",
-    "block.aerolarge.elevator_wheel": "Elevator Wheel",
-    "block.aerolarge.engine_telegraph": "Engine Telegraph",
-    "block.aerolarge.engine_repeater": "Engine Repeater",
-    "block.aerolarge.trim_wheel": "Trim Wheel",
-    "block.aerolarge.trim_winch": "Trim Winch",
-    "block.aerolarge.trim_car": "Trim Car",
-    "block.aerolarge.bubble_level": "Bubble Level",
-    "block.aerolarge.techno_deck": "DJ Deck",
-    "block.aerolarge.secret_hatch": "Secret Hatch",
-    "block.aerolarge.speaker": "Speaker",
-    "block.aerolarge.dance_floor": "Dance Floor",
-    "block.aerolarge.club_wall": "Club Wall",
-    "block.aerolarge.lookout_glass": "Lookout's Glass",
-    "block.aerolarge.screen_stand": "Screen Stand",
-    "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
-    "block.aerolarge.ballast_valve": "Water Ballast Valve",
-    "block.aerolarge.searchlight": "Searchlight",
-    "block.aerolarge.floodlight": "Floodlight",
-    "block.aerolarge.franking_machine": "Franking Machine",
-    "block.aerolarge.mail_sack": "Mail Sack",
-    "block.aerolarge.banner_cleat": "Banner Cleat",
-    "block.aerolarge.crane_winch": "Crane Winch",
-    "block.aerolarge.flight_deck": "Flight Deck",
-    "block.aerolarge.flight_deck_stripe": "Flight Deck Line",
-    "block.aerolarge.deck_clamp": "Docking Clamp",
-    "block.aerolarge.carrier_lever": "Clamp Release Lever",
-    "entity.aerolarge.crane_hook": "Crane Hook",
-    "item.aerolarge.postcard": "Postcard from %s",
-    "item.aerolarge.postcard.franked": "Franked over %s, %s",
-    "item.aerolarge.postcard.the_zeppelin": "the Zeppelin",
-    "block.aerolarge.searchlight_handle": "Searchlight Handle",
-    "block.aerolarge.skywriting_board": "Skywriting Board",
-    "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
-    "block.aerolarge.boost_button": "Speed Boost Button",
-    "subtitles.aerolarge.speed_boost": "Boosters roar",
-    "subtitles.aerolarge.zeppelin_engine": "Engine car drones",
-    "subtitles.aerolarge.telegraph_ring": "Engine telegraph rings",
-    "subtitles.aerolarge.telegraph_answer": "Engine car answers",
-    "subtitles.aerolarge.helm_notch": "Ship's wheel turns",
-    "subtitles.aerolarge.control_stop": "Control at its stop",
-    "subtitles.aerolarge.crane_ratchet": "Winch ratchets",
-    "subtitles.aerolarge.crane_latch": "Crane hook clunks",
-    "subtitles.aerolarge.clamp_lock": "Docking clamps lock",
-    "subtitles.aerolarge.clamp_release": "Docking clamps open",
-    "subtitles.aerolarge.canopy_open": "Parachute opens",
-    "subtitles.aerolarge.touchdown": "Wheels touch down",
-    "subtitles.aerolarge.trim_car_roll": "Trim car rolls",
-    "subtitles.aerolarge.bin_open": "Overhead bin opens",
-    "subtitles.aerolarge.bin_close": "Overhead bin closes",
-    "subtitles.aerolarge.searchlight_on": "Searchlight strikes up",
-    "subtitles.aerolarge.booster_cutout": "Boosters cut out",
-    "subtitles.aerolarge.tow_rope": "Tow rope runs",
-    "subtitles.aerolarge.glass_squeak": "Finger squeaks on glass",
-    "subtitles.aerolarge.autopilot_off": "Autopilot disconnects",
-    "subtitles.aerolarge.gear_lever": "Gear lever clunks",
-    "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
-    "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
-    "subtitles.aerolarge.water_ballast": "Water ballast pours",
-    "subtitles.aerolarge.up_ship_call": "Up ship!",
-    "subtitles.aerolarge.techno_track": "Techno pounds",
-    "subtitles.aerolarge.dj_scratch": "DJ scratches a record",
-    "block.aerolarge.horn_cord": "Horn Cord",
-    "block.aerolarge.livery_board": "Livery Board",
-    "block.aerolarge.livery_selector": "Livery Selector",
-    "block.aerolarge.festive_garland": "Festive Garland",
-    "block.aerolarge.festive_bow": "Festive Bow",
-    "livery.aerolarge.silver": "Hindenburg silver",
-    "livery.aerolarge.cream": "Graf Zeppelin cream",
-    "livery.aerolarge.navy": "navy grey",
-    "livery.aerolarge.airline": "the airliner's colours",
-    "livery.aerolarge.polar": "polar red",
-    "livery.aerolarge.midnight": "midnight blue",
-    "livery.aerolarge.checker": "moon-rocket checks",
-    "livery.aerolarge.roll": "black and white roll stripes",
-    "livery.aerolarge.red_trim": "silver with red trim",
-    "message.aerolarge.livery_board.repainting": "Repainting in %s: watch the painters' cradle sweep along",
-    "message.aerolarge.livery_board.repainting_rocket": "Repainting in %s: watch the new paint run down her from her nose",
-    "message.aerolarge.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
-    "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
-    "subtitles.aerolarge.zeppelin_hull": "Wind booms through the hull",
-    "subtitles.aerolarge.zeppelin_creak": "Girder groans",
-    "subtitles.aerolarge.zeppelin_horn_echo": "Horn echoes off the ground",
-    "subtitles.aerolarge.sleigh_bells": "Sleigh bells jingle",
-    "block.aerolarge.burner_lever": "Burner Lever",
+    "block.skyliners.rudder_wheel": "Rudder Wheel",
+    "block.skyliners.elevator_wheel": "Elevator Wheel",
+    "block.skyliners.engine_telegraph": "Engine Telegraph",
+    "block.skyliners.engine_repeater": "Engine Repeater",
+    "block.skyliners.trim_wheel": "Trim Wheel",
+    "block.skyliners.trim_winch": "Trim Winch",
+    "block.skyliners.trim_car": "Trim Car",
+    "block.skyliners.bubble_level": "Bubble Level",
+    "block.skyliners.techno_deck": "DJ Deck",
+    "block.skyliners.secret_hatch": "Secret Hatch",
+    "block.skyliners.speaker": "Speaker",
+    "block.skyliners.dance_floor": "Dance Floor",
+    "block.skyliners.club_wall": "Club Wall",
+    "block.skyliners.lookout_glass": "Lookout's Glass",
+    "block.skyliners.screen_stand": "Screen Stand",
+    "subtitles.skyliners.lookout_bell": "Ship's bell strikes twice",
+    "block.skyliners.ballast_valve": "Water Ballast Valve",
+    "block.skyliners.searchlight": "Searchlight",
+    "block.skyliners.floodlight": "Floodlight",
+    "block.skyliners.franking_machine": "Franking Machine",
+    "block.skyliners.mail_sack": "Mail Sack",
+    "block.skyliners.banner_cleat": "Banner Cleat",
+    "block.skyliners.crane_winch": "Crane Winch",
+    "block.skyliners.flight_deck": "Flight Deck",
+    "block.skyliners.flight_deck_stripe": "Flight Deck Line",
+    "block.skyliners.deck_clamp": "Docking Clamp",
+    "block.skyliners.carrier_lever": "Clamp Release Lever",
+    "entity.skyliners.crane_hook": "Crane Hook",
+    "item.skyliners.postcard": "Postcard from %s",
+    "item.skyliners.postcard.franked": "Franked over %s, %s",
+    "item.skyliners.postcard.the_zeppelin": "the Zeppelin",
+    "block.skyliners.searchlight_handle": "Searchlight Handle",
+    "block.skyliners.skywriting_board": "Skywriting Board",
+    "block.skyliners.boarding_stairs_button": "Boarding Stairs Button",
+    "block.skyliners.boost_button": "Speed Boost Button",
+    "subtitles.skyliners.speed_boost": "Boosters roar",
+    "subtitles.skyliners.zeppelin_engine": "Engine car drones",
+    "subtitles.skyliners.telegraph_ring": "Engine telegraph rings",
+    "subtitles.skyliners.telegraph_answer": "Engine car answers",
+    "subtitles.skyliners.helm_notch": "Ship's wheel turns",
+    "subtitles.skyliners.control_stop": "Control at its stop",
+    "subtitles.skyliners.crane_ratchet": "Winch ratchets",
+    "subtitles.skyliners.crane_latch": "Crane hook clunks",
+    "subtitles.skyliners.clamp_lock": "Docking clamps lock",
+    "subtitles.skyliners.clamp_release": "Docking clamps open",
+    "subtitles.skyliners.canopy_open": "Parachute opens",
+    "subtitles.skyliners.touchdown": "Wheels touch down",
+    "subtitles.skyliners.trim_car_roll": "Trim car rolls",
+    "subtitles.skyliners.bin_open": "Overhead bin opens",
+    "subtitles.skyliners.bin_close": "Overhead bin closes",
+    "subtitles.skyliners.searchlight_on": "Searchlight strikes up",
+    "subtitles.skyliners.booster_cutout": "Boosters cut out",
+    "subtitles.skyliners.tow_rope": "Tow rope runs",
+    "subtitles.skyliners.glass_squeak": "Finger squeaks on glass",
+    "subtitles.skyliners.autopilot_off": "Autopilot disconnects",
+    "subtitles.skyliners.gear_lever": "Gear lever clunks",
+    "subtitles.skyliners.handler_whistle_short": "Whistle: hold fast",
+    "subtitles.skyliners.handler_whistle_long": "Whistle: let go",
+    "subtitles.skyliners.water_ballast": "Water ballast pours",
+    "subtitles.skyliners.up_ship_call": "Up ship!",
+    "subtitles.skyliners.techno_track": "Techno pounds",
+    "subtitles.skyliners.dj_scratch": "DJ scratches a record",
+    "block.skyliners.horn_cord": "Horn Cord",
+    "block.skyliners.livery_board": "Livery Board",
+    "block.skyliners.livery_selector": "Livery Selector",
+    "block.skyliners.festive_garland": "Festive Garland",
+    "block.skyliners.festive_bow": "Festive Bow",
+    "livery.skyliners.silver": "Hindenburg silver",
+    "livery.skyliners.cream": "Graf Zeppelin cream",
+    "livery.skyliners.navy": "navy grey",
+    "livery.skyliners.airline": "the airliner's colours",
+    "livery.skyliners.polar": "polar red",
+    "livery.skyliners.midnight": "midnight blue",
+    "livery.skyliners.checker": "moon-rocket checks",
+    "livery.skyliners.roll": "black and white roll stripes",
+    "livery.skyliners.red_trim": "silver with red trim",
+    "message.skyliners.livery_board.repainting": "Repainting in %s: watch the painters' cradle sweep along",
+    "message.skyliners.livery_board.repainting_rocket": "Repainting in %s: watch the new paint run down her from her nose",
+    "message.skyliners.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
+    "subtitles.skyliners.zeppelin_horn": "Zeppelin's horn sounds",
+    "subtitles.skyliners.zeppelin_hull": "Wind booms through the hull",
+    "subtitles.skyliners.zeppelin_creak": "Girder groans",
+    "subtitles.skyliners.zeppelin_horn_echo": "Horn echoes off the ground",
+    "subtitles.skyliners.sleigh_bells": "Sleigh bells jingle",
+    "block.skyliners.burner_lever": "Burner Lever",
   };
 }
 // The zeppelin's fabric is far lighter than the airliner's aluminium: its cover and fins weigh a tenth of a block,
@@ -1309,15 +1309,15 @@ write(`data/${ID}/physics_block_properties/trim_car.json`, {
 });
 function zeppelinLang() {
   return {
-    "itemGroup.aerolarge.zeppelin": "Zeppelin",
-    "block.aerolarge.zeppelin_fabric": "Zeppelin Fabric",
-    "block.aerolarge.zeppelin_cover": "Zeppelin Cover",
-    "block.aerolarge.zeppelin_girder": "Zeppelin Girder",
-    "block.aerolarge.zeppelin_catwalk": "Zeppelin Catwalk",
-    "block.aerolarge.propeller": "Propeller",
-    "message.aerolarge.zeppelin_building": "Building the zeppelin… %s%%",
-    "message.aerolarge.zeppelin_built": "The zeppelin is ready. Use the autopilot in its control car, under the bow, to fly it.",
-    "message.aerolarge.zeppelin_too_high": "The zeppelin would reach past the build height here; build it lower down.",
+    "itemGroup.skyliners.zeppelin": "Zeppelin",
+    "block.skyliners.zeppelin_fabric": "Zeppelin Fabric",
+    "block.skyliners.zeppelin_cover": "Zeppelin Cover",
+    "block.skyliners.zeppelin_girder": "Zeppelin Girder",
+    "block.skyliners.zeppelin_catwalk": "Zeppelin Catwalk",
+    "block.skyliners.propeller": "Propeller",
+    "message.skyliners.zeppelin_building": "Building the zeppelin… %s%%",
+    "message.skyliners.zeppelin_built": "The zeppelin is ready. Use the autopilot in its control car, under the bow, to fly it.",
+    "message.skyliners.zeppelin_too_high": "The zeppelin would reach past the build height here; build it lower down.",
   };
 }
 
@@ -1710,7 +1710,7 @@ function airPocketSounds() {
   return { air_pocket: heardAboard("air_pocket") };
 }
 function airPocketLang() {
-  return { "subtitles.aerolarge.air_pocket": "Airliner drops into an air pocket" };
+  return { "subtitles.skyliners.air_pocket": "Airliner drops into an air pocket" };
 }
 function gearRecipes() {
   shaped("gear_lever", ["T", "S", "P"], { T: `${ID}:landing_gear_tire`, S: "minecraft:lever", P: `${ID}:airframe_panel` }, 1);
@@ -1718,16 +1718,16 @@ function gearRecipes() {
 }
 function gearLang() {
   return {
-    "block.aerolarge.gear_bay": "Landing Gear Bay",
-    "block.aerolarge.gear_lever": "Landing Gear Lever",
-    "subtitles.aerolarge.gear_retract": "Landing gear retracts",
-    "subtitles.aerolarge.gear_extend": "Landing gear extends",
-    "subtitles.aerolarge.gear_horn": "Gear horn sounds",
-    "message.aerolarge.gear.up": "Gear up",
-    "message.aerolarge.gear.down": "Gear down",
-    "message.aerolarge.gear.on_ground": "The gear stays down: the airliner is standing on its wheels",
-    "message.aerolarge.gear.fixed": "The gear stays down: retractable gear is switched off on this server",
-    "message.aerolarge.gear.no_room": "The gear stays up: its wheels have no room to come down",
+    "block.skyliners.gear_bay": "Landing Gear Bay",
+    "block.skyliners.gear_lever": "Landing Gear Lever",
+    "subtitles.skyliners.gear_retract": "Landing gear retracts",
+    "subtitles.skyliners.gear_extend": "Landing gear extends",
+    "subtitles.skyliners.gear_horn": "Gear horn sounds",
+    "message.skyliners.gear.up": "Gear up",
+    "message.skyliners.gear.down": "Gear down",
+    "message.skyliners.gear.on_ground": "The gear stays down: the airliner is standing on its wheels",
+    "message.skyliners.gear.fixed": "The gear stays down: retractable gear is switched off on this server",
+    "message.skyliners.gear.no_room": "The gear stays up: its wheels have no room to come down",
   };
 }
 
@@ -1804,14 +1804,14 @@ function laserRecipes() {
 }
 function laserLang() {
   return {
-    "block.aerolarge.laser_switch": "Laser Switch",
-    "block.aerolarge.laser_turret": "Laser Turret",
-    "subtitles.aerolarge.laser_hiss": "Laser fires",
-    "subtitles.aerolarge.laser_charge": "Laser charges",
-    "message.aerolarge.laser.armed": "Laser path clearer armed",
-    "message.aerolarge.laser.disarmed": "Laser path clearer safe",
-    "message.aerolarge.laser.off": "The laser path clearer is switched off on this server",
-    "death.attack.aerolarge.laser": "%1$s was vaporised by an airliner's laser",
+    "block.skyliners.laser_switch": "Laser Switch",
+    "block.skyliners.laser_turret": "Laser Turret",
+    "subtitles.skyliners.laser_hiss": "Laser fires",
+    "subtitles.skyliners.laser_charge": "Laser charges",
+    "message.skyliners.laser.armed": "Laser path clearer armed",
+    "message.skyliners.laser.disarmed": "Laser path clearer safe",
+    "message.skyliners.laser.off": "The laser path clearer is switched off on this server",
+    "death.attack.skyliners.laser": "%1$s was vaporised by an airliner's laser",
   };
 }
 
@@ -1919,19 +1919,19 @@ function selfDestructRecipes() {
 }
 function selfDestructLang() {
   return {
-    "block.aerolarge.self_destruct_button": "Self-Destruct Button",
-    "subtitles.aerolarge.self_destruct_siren": "Self-destruct alarm wails",
-    "subtitles.aerolarge.self_destruct_blast": "Airliner explodes",
-    "subtitles.aerolarge.self_destruct_rumble": "Explosion rumbles",
-    "message.aerolarge.self_destruct.open": "Cover up: press the red button to arm the self-destruct",
-    "message.aerolarge.self_destruct.shut": "Cover shut",
-    "message.aerolarge.self_destruct.armed": "Self-destruct armed! The airliner blows up in %s seconds: press again to blow it up now, or sneak to cancel",
-    "message.aerolarge.self_destruct.alarm": "Self-destruct armed! Everyone will get a parachute",
-    "message.aerolarge.self_destruct.cancelled": "Self-destruct cancelled",
-    "message.aerolarge.self_destruct.assembling": "Getting the airliner ready: the self-destruct arms in a moment",
-    "message.aerolarge.self_destruct.not_assembled": "Nothing happens: the self-destruct only works aboard an airliner built from its blueprint",
-    "message.aerolarge.self_destruct.off": "The self-destruct is switched off on this server",
-    "message.aerolarge.self_destruct.parachute": "Boom! Your parachute opens by itself: steer it the way you walk",
+    "block.skyliners.self_destruct_button": "Self-Destruct Button",
+    "subtitles.skyliners.self_destruct_siren": "Self-destruct alarm wails",
+    "subtitles.skyliners.self_destruct_blast": "Airliner explodes",
+    "subtitles.skyliners.self_destruct_rumble": "Explosion rumbles",
+    "message.skyliners.self_destruct.open": "Cover up: press the red button to arm the self-destruct",
+    "message.skyliners.self_destruct.shut": "Cover shut",
+    "message.skyliners.self_destruct.armed": "Self-destruct armed! The airliner blows up in %s seconds: press again to blow it up now, or sneak to cancel",
+    "message.skyliners.self_destruct.alarm": "Self-destruct armed! Everyone will get a parachute",
+    "message.skyliners.self_destruct.cancelled": "Self-destruct cancelled",
+    "message.skyliners.self_destruct.assembling": "Getting the airliner ready: the self-destruct arms in a moment",
+    "message.skyliners.self_destruct.not_assembled": "Nothing happens: the self-destruct only works aboard an airliner built from its blueprint",
+    "message.skyliners.self_destruct.off": "The self-destruct is switched off on this server",
+    "message.skyliners.self_destruct.parachute": "Boom! Your parachute opens by itself: steer it the way you walk",
   };
 }
 // The rocket's centre console's controls, by their block names.
@@ -2102,36 +2102,36 @@ function rocketControlRecipes() {
 }
 function rocketControlLang() {
   return {
-    "block.aerolarge.rocket_boost_button": "Boost Button",
-    "block.aerolarge.rocket_stability_switch": "Stability Switch",
-    "block.aerolarge.rocket_mode_knob": "Flight Mode Knob",
-    "block.aerolarge.rocket_abort_handle": "Abort Handle",
-    "block.aerolarge.rocket_launch_key": "Launch Key",
-    "message.aerolarge.rocket_controls.boost": "Boost! Engines kicked up",
-    "message.aerolarge.rocket_controls.switched_off": "This control is switched off on this server",
-    "message.aerolarge.rocket_controls.boost_resting": "The boost is resting: wait for the green light",
-    "message.aerolarge.rocket_controls.boost_not_now": "No boost now: only climbing or cruising",
-    "message.aerolarge.rocket_controls.boost_light": "No boost now: everyone aboard is floating",
-    "message.aerolarge.rocket_controls.stability_cover": "Cover up: flip the switch to turn stability off. Danger!",
-    "message.aerolarge.rocket_controls.stability_off": "Stability off! She is tipping over: flip the switch back before she tips too far",
-    "message.aerolarge.rocket_controls.stability_on": "Stability on: you saved her!",
-    "message.aerolarge.rocket_controls.stability_locked": "Stability is locked on for a moment",
-    "message.aerolarge.rocket_controls.stability_not_now": "Not now: only cruising, high over the ground",
-    "message.aerolarge.rocket_controls.stability_unsteady": "Not now: wait until she is not boosting or rushing across",
-    "message.aerolarge.rocket_controls.arc_switched_off": "The arc is switched off on this server: she flies straight up",
-    "message.aerolarge.rocket_controls.mode_vertical": "Flight mode: straight up",
-    "message.aerolarge.rocket_controls.mode_arc": "Flight mode: arc, leaning toward the pin as she climbs",
-    "message.aerolarge.rocket_controls.mode_gentle": "Flight mode: gentle and slow",
-    "message.aerolarge.rocket_controls.mode_vertical_later": "Straight up next flight",
-    "message.aerolarge.rocket_controls.mode_arc_later": "Arc next flight",
-    "message.aerolarge.rocket_controls.mode_gentle_later": "Gentle next flight",
-    "message.aerolarge.rocket_controls.not_rocket": "This control only works on a rocket",
-    "message.aerolarge.rocket_controls.no_autopilot": "Nothing happens: there is no rocket's control head near",
-    "message.aerolarge.rocket_controls.abort_nothing": "Nothing to abort",
-    "message.aerolarge.rocket_controls.abort_go_around": "Landing aborted: climbing back to %s and holding",
-    "message.aerolarge.rocket_controls.abort_hold": "Aborted: holding here at %s",
-    "message.aerolarge.rocket_controls.key_stuck": "The key is stuck while she flies",
-    "message.aerolarge.rocket_controls.scrubbed": "Launch scrubbed",
+    "block.skyliners.rocket_boost_button": "Boost Button",
+    "block.skyliners.rocket_stability_switch": "Stability Switch",
+    "block.skyliners.rocket_mode_knob": "Flight Mode Knob",
+    "block.skyliners.rocket_abort_handle": "Abort Handle",
+    "block.skyliners.rocket_launch_key": "Launch Key",
+    "message.skyliners.rocket_controls.boost": "Boost! Engines kicked up",
+    "message.skyliners.rocket_controls.switched_off": "This control is switched off on this server",
+    "message.skyliners.rocket_controls.boost_resting": "The boost is resting: wait for the green light",
+    "message.skyliners.rocket_controls.boost_not_now": "No boost now: only climbing or cruising",
+    "message.skyliners.rocket_controls.boost_light": "No boost now: everyone aboard is floating",
+    "message.skyliners.rocket_controls.stability_cover": "Cover up: flip the switch to turn stability off. Danger!",
+    "message.skyliners.rocket_controls.stability_off": "Stability off! She is tipping over: flip the switch back before she tips too far",
+    "message.skyliners.rocket_controls.stability_on": "Stability on: you saved her!",
+    "message.skyliners.rocket_controls.stability_locked": "Stability is locked on for a moment",
+    "message.skyliners.rocket_controls.stability_not_now": "Not now: only cruising, high over the ground",
+    "message.skyliners.rocket_controls.stability_unsteady": "Not now: wait until she is not boosting or rushing across",
+    "message.skyliners.rocket_controls.arc_switched_off": "The arc is switched off on this server: she flies straight up",
+    "message.skyliners.rocket_controls.mode_vertical": "Flight mode: straight up",
+    "message.skyliners.rocket_controls.mode_arc": "Flight mode: arc, leaning toward the pin as she climbs",
+    "message.skyliners.rocket_controls.mode_gentle": "Flight mode: gentle and slow",
+    "message.skyliners.rocket_controls.mode_vertical_later": "Straight up next flight",
+    "message.skyliners.rocket_controls.mode_arc_later": "Arc next flight",
+    "message.skyliners.rocket_controls.mode_gentle_later": "Gentle next flight",
+    "message.skyliners.rocket_controls.not_rocket": "This control only works on a rocket",
+    "message.skyliners.rocket_controls.no_autopilot": "Nothing happens: there is no rocket's control head near",
+    "message.skyliners.rocket_controls.abort_nothing": "Nothing to abort",
+    "message.skyliners.rocket_controls.abort_go_around": "Landing aborted: climbing back to %s and holding",
+    "message.skyliners.rocket_controls.abort_hold": "Aborted: holding here at %s",
+    "message.skyliners.rocket_controls.key_stuck": "The key is stuck while she flies",
+    "message.skyliners.rocket_controls.scrubbed": "Launch scrubbed",
   };
 }
 
@@ -2527,46 +2527,46 @@ function towerInstrumentsRecipes() {
 }
 function towerInstrumentsLang() {
   return {
-    "block.aerolarge.wind_sock": "Wind Sock",
-    "block.aerolarge.atis_screen": "Weather Screen",
-    "screen.aerolarge.atis.title": "ATIS",
-    "screen.aerolarge.atis.information": "INFORMATION",
-    "screen.aerolarge.atis.wind": "WIND",
-    "screen.aerolarge.atis.wind.value": "%s° %sKT",
-    "screen.aerolarge.atis.wind.calm": "CALM",
-    "screen.aerolarge.atis.visibility": "VISIBILITY",
-    "screen.aerolarge.atis.visibility.km": "%sKM",
-    "screen.aerolarge.atis.visibility.metres": "%sM",
-    "weather.aerolarge.clear": "CLEAR",
-    "weather.aerolarge.rain": "RAIN",
-    "weather.aerolarge.snow": "SNOW",
-    "weather.aerolarge.thunder": "STORM",
-    "block.aerolarge.flight_strip_board": "Flight Strip Board",
-    "screen.aerolarge.flight_strips.column.callsign": "CALLSIGN",
-    "screen.aerolarge.flight_strips.column.height": "ALT",
-    "screen.aerolarge.flight_strips.column.distance": "DIST",
-    "screen.aerolarge.flight_strips.column.heading": "HDG",
-    "screen.aerolarge.flight_strips.column.phase": "STATUS",
-    "screen.aerolarge.flight_strips.page": "PAGE %s/%s",
-    "screen.aerolarge.flight_strips.none": "NO TRAFFIC",
-    "screen.aerolarge.flight_strips.callsign": "%s%s",
-    "screen.aerolarge.flight_strips.callsign.tower": "TWR",
-    "screen.aerolarge.flight_strips.callsign.airliner": "AER",
-    "screen.aerolarge.flight_strips.callsign.house": "HOME",
-    "screen.aerolarge.flight_strips.callsign.star": "STAR",
-    "screen.aerolarge.flight_strips.callsign.flag": "FLAG",
-    "screen.aerolarge.flight_strips.callsign.heart": "HRT",
-    "screen.aerolarge.flight_strips.callsign.gem": "GEM",
-    "screen.aerolarge.flight_strips.callsign.tree": "TREE",
-    "screen.aerolarge.flight_strips.callsign.anchor": "PORT",
-    "screen.aerolarge.flight_strips.callsign.pickaxe": "MINE",
-    "screen.aerolarge.flight_strips.phase.parked": "PARKED",
-    "screen.aerolarge.flight_strips.phase.taxi": "TAXI",
-    "screen.aerolarge.flight_strips.phase.climb": "CLIMB",
-    "screen.aerolarge.flight_strips.phase.cruise": "CRUISE",
-    "screen.aerolarge.flight_strips.phase.descend": "DESCEND",
-    "screen.aerolarge.flight_strips.phase.inbound": "INBOUND",
-    "screen.aerolarge.flight_strips.phase.fix": "FIX",
+    "block.skyliners.wind_sock": "Wind Sock",
+    "block.skyliners.atis_screen": "Weather Screen",
+    "screen.skyliners.atis.title": "ATIS",
+    "screen.skyliners.atis.information": "INFORMATION",
+    "screen.skyliners.atis.wind": "WIND",
+    "screen.skyliners.atis.wind.value": "%s° %sKT",
+    "screen.skyliners.atis.wind.calm": "CALM",
+    "screen.skyliners.atis.visibility": "VISIBILITY",
+    "screen.skyliners.atis.visibility.km": "%sKM",
+    "screen.skyliners.atis.visibility.metres": "%sM",
+    "weather.skyliners.clear": "CLEAR",
+    "weather.skyliners.rain": "RAIN",
+    "weather.skyliners.snow": "SNOW",
+    "weather.skyliners.thunder": "STORM",
+    "block.skyliners.flight_strip_board": "Flight Strip Board",
+    "screen.skyliners.flight_strips.column.callsign": "CALLSIGN",
+    "screen.skyliners.flight_strips.column.height": "ALT",
+    "screen.skyliners.flight_strips.column.distance": "DIST",
+    "screen.skyliners.flight_strips.column.heading": "HDG",
+    "screen.skyliners.flight_strips.column.phase": "STATUS",
+    "screen.skyliners.flight_strips.page": "PAGE %s/%s",
+    "screen.skyliners.flight_strips.none": "NO TRAFFIC",
+    "screen.skyliners.flight_strips.callsign": "%s%s",
+    "screen.skyliners.flight_strips.callsign.tower": "TWR",
+    "screen.skyliners.flight_strips.callsign.airliner": "AER",
+    "screen.skyliners.flight_strips.callsign.house": "HOME",
+    "screen.skyliners.flight_strips.callsign.star": "STAR",
+    "screen.skyliners.flight_strips.callsign.flag": "FLAG",
+    "screen.skyliners.flight_strips.callsign.heart": "HRT",
+    "screen.skyliners.flight_strips.callsign.gem": "GEM",
+    "screen.skyliners.flight_strips.callsign.tree": "TREE",
+    "screen.skyliners.flight_strips.callsign.anchor": "PORT",
+    "screen.skyliners.flight_strips.callsign.pickaxe": "MINE",
+    "screen.skyliners.flight_strips.phase.parked": "PARKED",
+    "screen.skyliners.flight_strips.phase.taxi": "TAXI",
+    "screen.skyliners.flight_strips.phase.climb": "CLIMB",
+    "screen.skyliners.flight_strips.phase.cruise": "CRUISE",
+    "screen.skyliners.flight_strips.phase.descend": "DESCEND",
+    "screen.skyliners.flight_strips.phase.inbound": "INBOUND",
+    "screen.skyliners.flight_strips.phase.fix": "FIX",
   };
 }
 
@@ -2797,7 +2797,7 @@ function towerInstrumentsLang() {
   dropsHaloLight("wall_light");
   cubes.wall_light = null;
 }
-// The rocket's steel girder (see AerolargeRegistry.STEEL_GIRDER): an I-beam, drawn standing up, two broad flanges, riveted
+// The rocket's steel girder (see SkylinersRegistry.STEEL_GIRDER): an I-beam, drawn standing up, two broad flanges, riveted
 // along their edges, either side of a narrow web between them; laid along the way it runs, its flanges top and bottom.
 {
   const model = boxes(
@@ -3352,7 +3352,7 @@ function girderDecorFittings() {
 }
 function girderDecorLang() {
   return {
-    "block.aerolarge.girder_decor": "Girder Decoration",
+    "block.skyliners.girder_decor": "Girder Decoration",
   };
 }
 // A block that faces the way it was placed and comes in tones: a model for each tone, turned for each facing.
@@ -3839,9 +3839,9 @@ function denFurnitureRecipes() {
 }
 function denFurnitureLang() {
   return {
-    "block.aerolarge.bunk": "Bunk",
-    "block.aerolarge.bean_bag": "Bean Bag",
-    "block.aerolarge.disco_ball": "Disco Ball",
+    "block.skyliners.bunk": "Bunk",
+    "block.skyliners.bean_bag": "Bean Bag",
+    "block.skyliners.disco_ball": "Disco Ball",
   };
 }
 // The den's treasure chest: cookies, a golden apple, a signal flare, a basketball and three twinkling star rockets.
@@ -3978,20 +3978,20 @@ function holdAndTailRecipes() {
 }
 function holdAndTailLang() {
   return {
-    "block.aerolarge.floor_hatch": "Floor Hatch",
-    "block.aerolarge.secret_bookshelf": "Secret Bookshelf Door",
-    "block.aerolarge.ball_pit": "Ball Pit",
-    "block.aerolarge.fairy_lights": "Fairy Lights",
-    "subtitles.aerolarge.secret_bookshelf_open": "Bookshelf creaks open",
-    "subtitles.aerolarge.secret_bookshelf_close": "Bookshelf creaks shut",
-    "subtitles.aerolarge.ball_pit_plop": "Ball pit plops",
-    "block.aerolarge.suitcase": "Suitcase",
-    "block.aerolarge.golden_suitcase": "Golden Suitcase",
-    "container.aerolarge.suitcase": "Suitcase",
-    "container.aerolarge.golden_suitcase": "Golden Suitcase",
-    "message.aerolarge.golden_suitcase.found": "A golden suitcase! %s of %s found",
-    "advancements.aerolarge.first_flight.lost_and_found.title": "Lost and Found",
-    "advancements.aerolarge.first_flight.lost_and_found.description": "Find the three golden suitcases hidden in an airliner's hold",
+    "block.skyliners.floor_hatch": "Floor Hatch",
+    "block.skyliners.secret_bookshelf": "Secret Bookshelf Door",
+    "block.skyliners.ball_pit": "Ball Pit",
+    "block.skyliners.fairy_lights": "Fairy Lights",
+    "subtitles.skyliners.secret_bookshelf_open": "Bookshelf creaks open",
+    "subtitles.skyliners.secret_bookshelf_close": "Bookshelf creaks shut",
+    "subtitles.skyliners.ball_pit_plop": "Ball pit plops",
+    "block.skyliners.suitcase": "Suitcase",
+    "block.skyliners.golden_suitcase": "Golden Suitcase",
+    "container.skyliners.suitcase": "Suitcase",
+    "container.skyliners.golden_suitcase": "Golden Suitcase",
+    "message.skyliners.golden_suitcase.found": "A golden suitcase! %s of %s found",
+    "advancements.skyliners.first_flight.lost_and_found.title": "Lost and Found",
+    "advancements.skyliners.first_flight.lost_and_found.description": "Find the three golden suitcases hidden in an airliner's hold",
   };
 }
 
@@ -4044,7 +4044,7 @@ function cargoNetRecipes() {
 }
 function cargoNetLang() {
   return {
-    "block.aerolarge.cargo_net": "Cargo Net",
+    "block.skyliners.cargo_net": "Cargo Net",
   };
 }
 
@@ -4109,8 +4109,8 @@ function cargoFloorRecipes() {
 }
 function cargoFloorLang() {
   return {
-    "block.aerolarge.cargo_floor": "Cargo Floor",
-    "block.aerolarge.ball_mat": "Ball Mat",
+    "block.skyliners.cargo_floor": "Cargo Floor",
+    "block.skyliners.ball_mat": "Ball Mat",
   };
 }
 
@@ -4237,7 +4237,7 @@ function uldContainerRecipes() {
 }
 function uldContainerLang() {
   return {
-    "block.aerolarge.uld_container": "ULD Container",
+    "block.skyliners.uld_container": "ULD Container",
   };
 }
 
@@ -4323,15 +4323,15 @@ function rubberDuckRecipes() {
 }
 function rubberDuckLang() {
   return {
-    "block.aerolarge.rubber_duck": "Rubber Duck",
-    "subtitles.aerolarge.rubber_duck_squeak": "Rubber duck squeaks",
-    "message.aerolarge.rubber_duck.found": "A rubber duck! %s",
-    "message.aerolarge.rubber_duck.all_found": "All five rubber ducks found!",
-    "message.aerolarge.rubber_duck.giant": "All five rubber ducks found! Something big is coming up in the moon pool...",
-    "block.aerolarge.giant_rubber_duck": "Giant Rubber Duck",
-    "subtitles.aerolarge.giant_rubber_duck_squeak": "Giant rubber duck squeaks",
-    "advancements.aerolarge.first_flight.duck_hunt.title": "Duck Hunt",
-    "advancements.aerolarge.first_flight.duck_hunt.description": "Find the five rubber ducks hidden aboard an airliner",
+    "block.skyliners.rubber_duck": "Rubber Duck",
+    "subtitles.skyliners.rubber_duck_squeak": "Rubber duck squeaks",
+    "message.skyliners.rubber_duck.found": "A rubber duck! %s",
+    "message.skyliners.rubber_duck.all_found": "All five rubber ducks found!",
+    "message.skyliners.rubber_duck.giant": "All five rubber ducks found! Something big is coming up in the moon pool...",
+    "block.skyliners.giant_rubber_duck": "Giant Rubber Duck",
+    "subtitles.skyliners.giant_rubber_duck_squeak": "Giant rubber duck squeaks",
+    "advancements.skyliners.first_flight.duck_hunt.title": "Duck Hunt",
+    "advancements.skyliners.first_flight.duck_hunt.description": "Find the five rubber ducks hidden aboard an airliner",
   };
 }
 
@@ -4438,19 +4438,19 @@ function coffeeMachineRecipes() {
 }
 function coffeeMachineLang() {
   return {
-    "block.aerolarge.coffee_machine": "Coffee Machine",
-    "item.aerolarge.espresso": "Espresso",
-    "item.aerolarge.cappuccino": "Cappuccino",
-    "item.aerolarge.mocha": "Mocha",
-    "item.aerolarge.babycino": "Babycino",
-    "screen.aerolarge.coffee_machine.title": "Coffee Machine",
-    "screen.aerolarge.coffee_machine.ready": "Ready",
-    "subtitles.aerolarge.coffee_grind": "Coffee grinder whirs",
-    "subtitles.aerolarge.coffee_pour": "Coffee machine pours",
-    "subtitles.aerolarge.coffee_steam": "Milk frother hisses",
-    "subtitles.aerolarge.coffee_ready": "Coffee machine chimes",
-    "advancements.aerolarge.first_flight.barista.title": "Barista",
-    "advancements.aerolarge.first_flight.barista.description": "Brew an espresso, a cappuccino and a mocha at a coffee machine",
+    "block.skyliners.coffee_machine": "Coffee Machine",
+    "item.skyliners.espresso": "Espresso",
+    "item.skyliners.cappuccino": "Cappuccino",
+    "item.skyliners.mocha": "Mocha",
+    "item.skyliners.babycino": "Babycino",
+    "screen.skyliners.coffee_machine.title": "Coffee Machine",
+    "screen.skyliners.coffee_machine.ready": "Ready",
+    "subtitles.skyliners.coffee_grind": "Coffee grinder whirs",
+    "subtitles.skyliners.coffee_pour": "Coffee machine pours",
+    "subtitles.skyliners.coffee_steam": "Milk frother hisses",
+    "subtitles.skyliners.coffee_ready": "Coffee machine chimes",
+    "advancements.skyliners.first_flight.barista.title": "Barista",
+    "advancements.skyliners.first_flight.barista.description": "Brew an espresso, a cappuccino and a mocha at a coffee machine",
   };
 }
 
@@ -4550,7 +4550,7 @@ write(`assets/${ID}/models/item/paper_plane.json`, { parent: "minecraft:item/gen
 write(`assets/${ID}/models/item/laser_pointer.json`, { parent: "minecraft:item/handheld", textures: { layer0: `${ID}:item/laser_pointer` } });
 function laserPointerLang() {
   return {
-    "item.aerolarge.laser_pointer": "Laser Pointer",
+    "item.skyliners.laser_pointer": "Laser Pointer",
   };
 }
 // Souvenirs. The pilot's cap, drawn as it sits on the head: worn, it is drawn there as its own model, the way a carved
@@ -4785,23 +4785,23 @@ function laserPointerLang() {
   cubes.duty_free_counter = null;
 }
 const DUTY_FREE_LANG = {
-  "block.aerolarge.duty_free_counter": "Duty-Free Counter",
-  "container.aerolarge.duty_free": "Duty Free",
-  "subtitles.aerolarge.shop_bell": "Shop bell dings",
-  "subtitles.aerolarge.cash_register": "Till rings",
-  "item.aerolarge.paper_plane": "Paper Plane",
-  "entity.aerolarge.paper_plane": "Paper Plane",
-  "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
-  "item.aerolarge.pilot_cap": "Pilot Cap",
-  "block.aerolarge.model_airliner": "Model Airliner",
-  "block.aerolarge.model_zeppelin": "Model Zeppelin",
-  "block.aerolarge.model_rocket": "Model Rocket",
-  "item.aerolarge.pilot_helmet": "Pilot Helmet",
-  "item.aerolarge.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
-  "subtitles.aerolarge.hud_on": "Pilot HUD beeps on",
-  "item.aerolarge.space_helmet": "Space Helmet",
-  "item.aerolarge.space_helmet.tooltip": "Aboard a rocket in space, you hear its air as you breathe",
-  "subtitles.aerolarge.space_helmet_breath": "Helmet air hisses",
+  "block.skyliners.duty_free_counter": "Duty-Free Counter",
+  "container.skyliners.duty_free": "Duty Free",
+  "subtitles.skyliners.shop_bell": "Shop bell dings",
+  "subtitles.skyliners.cash_register": "Till rings",
+  "item.skyliners.paper_plane": "Paper Plane",
+  "entity.skyliners.paper_plane": "Paper Plane",
+  "subtitles.skyliners.paper_plane_whoosh": "Paper plane whooshes",
+  "item.skyliners.pilot_cap": "Pilot Cap",
+  "block.skyliners.model_airliner": "Model Airliner",
+  "block.skyliners.model_zeppelin": "Model Zeppelin",
+  "block.skyliners.model_rocket": "Model Rocket",
+  "item.skyliners.pilot_helmet": "Pilot Helmet",
+  "item.skyliners.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
+  "subtitles.skyliners.hud_on": "Pilot HUD beeps on",
+  "item.skyliners.space_helmet": "Space Helmet",
+  "item.skyliners.space_helmet.tooltip": "Aboard a rocket in space, you hear its air as you breathe",
+  "subtitles.skyliners.space_helmet_breath": "Helmet air hisses",
 };
 
 // The cabin controls: modules of the centre console, drawn facing north, their top showing the setting. The cabin
@@ -5096,10 +5096,10 @@ write(`data/${ID}/physics_block_properties/dome_limit.json`, {
 });
 function ledStripLang() {
   return {
-    "block.aerolarge.led_strip": "LED Strip",
-    "block.aerolarge.led_panel": "LED Panel",
-    "block.aerolarge.led_console": "LED Console",
-    "block.aerolarge.dome_limit": "Dome Limit",
+    "block.skyliners.led_strip": "LED Strip",
+    "block.skyliners.led_panel": "LED Panel",
+    "block.skyliners.led_console": "LED Console",
+    "block.skyliners.dome_limit": "Dome Limit",
   };
 }
 
@@ -5176,11 +5176,11 @@ function spacePosterFittings() {
 }
 function spacePosterLang() {
   return {
-    "block.aerolarge.space_poster": "Space Poster",
-    "item.aerolarge.black_hole_poster": "Black Hole Poster",
-    "item.aerolarge.solar_system_poster": "Solar System Poster",
-    "item.aerolarge.quasar_poster": "Quasar Poster",
-    "item.aerolarge.earthrise_poster": "Earthrise Poster",
+    "block.skyliners.space_poster": "Space Poster",
+    "item.skyliners.black_hole_poster": "Black Hole Poster",
+    "item.skyliners.solar_system_poster": "Solar System Poster",
+    "item.skyliners.quasar_poster": "Quasar Poster",
+    "item.skyliners.earthrise_poster": "Earthrise Poster",
   };
 }
 
@@ -5726,7 +5726,7 @@ function shaftDecorFittings() {
 }
 function shaftDecorLang() {
   return {
-    "block.aerolarge.shaft_decor": "Shaft Decoration",
+    "block.skyliners.shaft_decor": "Shaft Decoration",
   };
 }
 
@@ -5788,9 +5788,9 @@ function snackMachineSounds() {
 }
 function snackMachineLang() {
   return {
-    "block.aerolarge.snack_machine": "Snack Machine",
-    "subtitles.aerolarge.snack_machine_whirr": "Snack machine whirs",
-    "subtitles.aerolarge.snack_machine_clunk": "Snack drops",
+    "block.skyliners.snack_machine": "Snack Machine",
+    "subtitles.skyliners.snack_machine_whirr": "Snack machine whirs",
+    "subtitles.skyliners.snack_machine_clunk": "Snack drops",
   };
 }
 // The rocket's rover bay (see RoverHatchBlock and RoverPanelBlock). Its door's parts are drawn only by the bay's
@@ -5844,32 +5844,32 @@ function roverSounds() {
 }
 function roverLang() {
   return {
-    "block.aerolarge.rover_hatch": "Rover Bay Door",
-    "block.aerolarge.rover_panel": "Rover Bay Panel",
-    "block.aerolarge.rover_platform": "Rover Bay Platform",
-    "entity.aerolarge.rover": "Rover",
-    "item.aerolarge.rover_remote": "Rover Remote",
-    "item.aerolarge.rover_remote.paired": "Paired with its rover: use it to drive, sneak and use it to call the rover home",
-    "item.aerolarge.rover_remote.unpaired": "Not paired: use it on a rover, or on its bay's panel",
-    "message.aerolarge.rover.deploying": "Opening the bay: the rover is on its way down",
-    "message.aerolarge.rover.not_still": "The bay only opens while she stands still on her fins, her autopilot off",
-    "message.aerolarge.rover.already_out": "The rover is out already",
-    "message.aerolarge.rover.busy": "The winch is busy: wait for it",
-    "message.aerolarge.rover.coming_home": "The rover is coming home",
-    "message.aerolarge.rover.already_home": "The rover is in its bay",
-    "message.aerolarge.rover.has_remote": "You carry a remote for this rover already",
-    "message.aerolarge.rover.remote_given": "A remote paired with the rover: use it to drive",
-    "message.aerolarge.rover.paired": "Remote paired with this rover",
-    "message.aerolarge.rover.no_answer": "No answer from the rover: it is out of reach",
-    "message.aerolarge.rover.unpaired": "This remote is not paired: use it on a rover, or on its bay's panel",
-    "message.aerolarge.rover.countdown_holding": "Countdown holding: the rover is coming home first",
-    "screen.aerolarge.rover.camera": "ROVER CAM",
-    "screen.aerolarge.rover.hint": "%s %s %s %s: drive    %s: horn    %s: back to yourself",
-    "subtitles.aerolarge.rover_motor": "Rover whirs",
-    "subtitles.aerolarge.rover_start": "Rover beeps on",
-    "subtitles.aerolarge.rover_stop": "Rover beeps off",
-    "subtitles.aerolarge.rover_horn": "Rover honks",
-    "subtitles.aerolarge.rover_range": "Rover's signal fades",
+    "block.skyliners.rover_hatch": "Rover Bay Door",
+    "block.skyliners.rover_panel": "Rover Bay Panel",
+    "block.skyliners.rover_platform": "Rover Bay Platform",
+    "entity.skyliners.rover": "Rover",
+    "item.skyliners.rover_remote": "Rover Remote",
+    "item.skyliners.rover_remote.paired": "Paired with its rover: use it to drive, sneak and use it to call the rover home",
+    "item.skyliners.rover_remote.unpaired": "Not paired: use it on a rover, or on its bay's panel",
+    "message.skyliners.rover.deploying": "Opening the bay: the rover is on its way down",
+    "message.skyliners.rover.not_still": "The bay only opens while she stands still on her fins, her autopilot off",
+    "message.skyliners.rover.already_out": "The rover is out already",
+    "message.skyliners.rover.busy": "The winch is busy: wait for it",
+    "message.skyliners.rover.coming_home": "The rover is coming home",
+    "message.skyliners.rover.already_home": "The rover is in its bay",
+    "message.skyliners.rover.has_remote": "You carry a remote for this rover already",
+    "message.skyliners.rover.remote_given": "A remote paired with the rover: use it to drive",
+    "message.skyliners.rover.paired": "Remote paired with this rover",
+    "message.skyliners.rover.no_answer": "No answer from the rover: it is out of reach",
+    "message.skyliners.rover.unpaired": "This remote is not paired: use it on a rover, or on its bay's panel",
+    "message.skyliners.rover.countdown_holding": "Countdown holding: the rover is coming home first",
+    "screen.skyliners.rover.camera": "ROVER CAM",
+    "screen.skyliners.rover.hint": "%s %s %s %s: drive    %s: horn    %s: back to yourself",
+    "subtitles.skyliners.rover_motor": "Rover whirs",
+    "subtitles.skyliners.rover_start": "Rover beeps on",
+    "subtitles.skyliners.rover_stop": "Rover beeps off",
+    "subtitles.skyliners.rover_horn": "Rover honks",
+    "subtitles.skyliners.rover_range": "Rover's signal fades",
   };
 }
 
@@ -6050,7 +6050,7 @@ function domeFittings() {
   return ["orrery"];
 }
 function domeLang() {
-  return { "block.aerolarge.orrery": "Orrery" };
+  return { "block.skyliners.orrery": "Orrery" };
 }
 // Her tardigrade's purr, soft and low now and then, the bloop as it curls up into its tun, its snore asleep, its slurp
 // sucking in what is thrown into its tank and its burp after, and its jump through the spore drive and its return.
@@ -6064,10 +6064,10 @@ function roomSounds() {
 }
 function roomLang() {
   return {
-    "subtitles.aerolarge.greenhouse_air": "Leaves rustle",
-    "subtitles.aerolarge.greenhouse_bee": "Bee buzzes by",
-    "subtitles.aerolarge.pool_water": "Pool water laps",
-    "subtitles.aerolarge.pool_slap": "Water slaps",
+    "subtitles.skyliners.greenhouse_air": "Leaves rustle",
+    "subtitles.skyliners.greenhouse_bee": "Bee buzzes by",
+    "subtitles.skyliners.pool_water": "Pool water laps",
+    "subtitles.skyliners.pool_slap": "Water slaps",
   };
 }
 // Her greenhouse (see RocketGreenhouse): its raised beds, a block of soil in a frame of spruce boards that runs round
@@ -6212,28 +6212,28 @@ function greenhouseRecipes() {
 }
 function greenhouseLang() {
   return {
-    "block.aerolarge.garden_bed": "Garden Bed",
-    "block.aerolarge.grow_light": "Grow Light",
-    "block.aerolarge.sprinkler": "Sprinkler",
-    "block.aerolarge.irrigation_valve": "Irrigation Valve",
-    "subtitles.aerolarge.irrigation_valve": "Irrigation valve squeaks",
-    "subtitles.aerolarge.sprinkler_spray": "Sprinklers spray",
+    "block.skyliners.garden_bed": "Garden Bed",
+    "block.skyliners.grow_light": "Grow Light",
+    "block.skyliners.sprinkler": "Sprinkler",
+    "block.skyliners.irrigation_valve": "Irrigation Valve",
+    "subtitles.skyliners.irrigation_valve": "Irrigation valve squeaks",
+    "subtitles.skyliners.sprinkler_spray": "Sprinklers spray",
   };
 }
 function labLang() {
   return {
-    "block.aerolarge.habitat_glass": "Tank Glass",
-    "block.aerolarge.habitat_hatch": "Feeding Hatch",
-    "block.aerolarge.lab_instrument": "Lab Instrument",
-    "block.aerolarge.habitat_floor": "Tank Floor",
-    "entity.aerolarge.tardigrade": "Tardigrade",
-    "subtitles.aerolarge.tardigrade_mrrp": "Tardigrade purrs",
-    "subtitles.aerolarge.tardigrade_bloop": "Tardigrade curls up",
-    "subtitles.aerolarge.tardigrade_snore": "Tardigrade snores",
-    "subtitles.aerolarge.tardigrade_slurp": "Tardigrade slurps",
-    "subtitles.aerolarge.tardigrade_burp": "Tardigrade burps",
-    "subtitles.aerolarge.tardigrade_jump": "Tardigrade jumps away",
-    "subtitles.aerolarge.tardigrade_return": "Tardigrade jumps back",
+    "block.skyliners.habitat_glass": "Tank Glass",
+    "block.skyliners.habitat_hatch": "Feeding Hatch",
+    "block.skyliners.lab_instrument": "Lab Instrument",
+    "block.skyliners.habitat_floor": "Tank Floor",
+    "entity.skyliners.tardigrade": "Tardigrade",
+    "subtitles.skyliners.tardigrade_mrrp": "Tardigrade purrs",
+    "subtitles.skyliners.tardigrade_bloop": "Tardigrade curls up",
+    "subtitles.skyliners.tardigrade_snore": "Tardigrade snores",
+    "subtitles.skyliners.tardigrade_slurp": "Tardigrade slurps",
+    "subtitles.skyliners.tardigrade_burp": "Tardigrade burps",
+    "subtitles.skyliners.tardigrade_jump": "Tardigrade jumps away",
+    "subtitles.skyliners.tardigrade_return": "Tardigrade jumps back",
   };
 }
 
@@ -6462,17 +6462,17 @@ function foodLabSounds() {
 }
 function foodLabLang() {
   return {
-    "block.aerolarge.bioreactor": "Bioreactor",
-    "block.aerolarge.hydroponic_rack": "Hydroponic Rack",
-    "block.aerolarge.algae_column": "Algae Column",
-    "block.aerolarge.sample_centrifuge": "Sample Centrifuge",
-    "block.aerolarge.lab_partition": "Lab Partition",
-    "block.aerolarge.lab_pipe": "Lab Pipe",
-    "item.aerolarge.lab_grown_steak": "Lab-Grown Steak",
-    "screen.aerolarge.microscope": "Microscope",
-    "subtitles.aerolarge.bioreactor_harvest": "Bioreactor hisses open",
-    "subtitles.aerolarge.centrifuge_spin": "Centrifuge whirs",
-    "subtitles.aerolarge.centrifuge_ding": "Centrifuge dings",
+    "block.skyliners.bioreactor": "Bioreactor",
+    "block.skyliners.hydroponic_rack": "Hydroponic Rack",
+    "block.skyliners.algae_column": "Algae Column",
+    "block.skyliners.sample_centrifuge": "Sample Centrifuge",
+    "block.skyliners.lab_partition": "Lab Partition",
+    "block.skyliners.lab_pipe": "Lab Pipe",
+    "item.skyliners.lab_grown_steak": "Lab-Grown Steak",
+    "screen.skyliners.microscope": "Microscope",
+    "subtitles.skyliners.bioreactor_harvest": "Bioreactor hisses open",
+    "subtitles.skyliners.centrifuge_spin": "Centrifuge whirs",
+    "subtitles.skyliners.centrifuge_ding": "Centrifuge dings",
   };
 }
 
@@ -6611,8 +6611,8 @@ function rocketRoomFittings() {
 }
 function rocketRoomLang() {
   return {
-    "block.aerolarge.shelf_unit": "Shelf Unit",
-    "block.aerolarge.pallet_rack": "Pallet Rack",
+    "block.skyliners.shelf_unit": "Shelf Unit",
+    "block.skyliners.pallet_rack": "Pallet Rack",
   };
 }
 
@@ -6652,9 +6652,9 @@ function airlockPanelSounds() {
 }
 function airlockPanelLang() {
   return {
-    "block.aerolarge.airlock_panel": "Airlock Panel",
-    "subtitles.aerolarge.airlock_cycle": "Airlock cycles",
-    "subtitles.aerolarge.airlock_clear": "Airlock chimes clear",
+    "block.skyliners.airlock_panel": "Airlock Panel",
+    "subtitles.skyliners.airlock_cycle": "Airlock cycles",
+    "subtitles.skyliners.airlock_clear": "Airlock chimes clear",
   };
 }
 // The blocks of the rocket's front doorway where her sliding airlock doors close (see AirlockDoorBlock): drawn whole
@@ -6665,7 +6665,7 @@ write(`assets/${ID}/models/block/airlock_door.json`, { textures: { particle: `${
 cubes.airlock_door = null;
 function airlockDoorLang() {
   return {
-    "block.aerolarge.airlock_door": "Airlock Door",
+    "block.skyliners.airlock_door": "Airlock Door",
   };
 }
 
@@ -6787,10 +6787,10 @@ function galleyFridgeSounds() {
 }
 function galleyFridgeLang() {
   return {
-    "block.aerolarge.galley_fridge": "Galley Fridge",
-    "container.aerolarge.galley_fridge": "Fridge",
-    "subtitles.aerolarge.fridge_open": "Fridge opens and hums",
-    "subtitles.aerolarge.fridge_close": "Fridge shuts",
+    "block.skyliners.galley_fridge": "Galley Fridge",
+    "container.skyliners.galley_fridge": "Fridge",
+    "subtitles.skyliners.fridge_open": "Fridge opens and hums",
+    "subtitles.skyliners.fridge_close": "Fridge shuts",
   };
 }
 // The pool's wave machine (see WaveMachineBlock): a chrome foot, a white post and head, a ring round the head's top and a
@@ -6834,8 +6834,8 @@ function waveMachineSounds() {
 }
 function waveMachineLang() {
   return {
-    "block.aerolarge.wave_machine": "Wave Machine",
-    "subtitles.aerolarge.wave_surge": "Waves surge",
+    "block.skyliners.wave_machine": "Wave Machine",
+    "subtitles.skyliners.wave_surge": "Waves surge",
   };
 }
 // The club's fog machine (see FogMachineBlock), drawn facing north: a black flight case on the floor, a handle on its
@@ -6880,8 +6880,8 @@ function fogMachineSounds() {
 }
 function fogMachineLang() {
   return {
-    "block.aerolarge.fog_machine": "Fog Machine",
-    "subtitles.aerolarge.fog_hiss": "Fog machine hisses",
+    "block.skyliners.fog_machine": "Fog Machine",
+    "subtitles.skyliners.fog_hiss": "Fog machine hisses",
   };
 }
 
@@ -7185,21 +7185,21 @@ function clubBarRecipes() {
 }
 function clubBarLang() {
   return {
-    "block.aerolarge.drink_tap": "Drink Tap",
-    "item.aerolarge.star_fizz": "Star Fizz",
-    "block.aerolarge.neon_sign": "Neon Sign",
-    "block.aerolarge.cocktail_table": "Cocktail Table",
-    "subtitles.aerolarge.tap_pour": "Soda fizzes from the tap",
-    "subtitles.aerolarge.neon_on": "Neon sign buzzes on",
-    "subtitles.aerolarge.neon_off": "Neon sign clicks off",
+    "block.skyliners.drink_tap": "Drink Tap",
+    "item.skyliners.star_fizz": "Star Fizz",
+    "block.skyliners.neon_sign": "Neon Sign",
+    "block.skyliners.cocktail_table": "Cocktail Table",
+    "subtitles.skyliners.tap_pour": "Soda fizzes from the tap",
+    "subtitles.skyliners.neon_on": "Neon sign buzzes on",
+    "subtitles.skyliners.neon_off": "Neon sign clicks off",
   };
 }
 function parcelScannerLang() {
   return {
-    "block.aerolarge.parcel_scanner": "Parcel Scanner",
-    "subtitles.aerolarge.scanner_sweep": "Scanner whirrs",
-    "subtitles.aerolarge.scanner_pass": "Scanner beeps: packed",
-    "subtitles.aerolarge.scanner_fail": "Scanner buzzes: empty",
+    "block.skyliners.parcel_scanner": "Parcel Scanner",
+    "subtitles.skyliners.scanner_sweep": "Scanner whirrs",
+    "subtitles.skyliners.scanner_pass": "Scanner beeps: packed",
+    "subtitles.skyliners.scanner_fail": "Scanner buzzes: empty",
   };
 }
 
@@ -7207,10 +7207,10 @@ function parcelScannerLang() {
 // part of the hull (see FITTINGS).
 const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
 const ROOM_DIVIDER_LANG = {
-  "block.aerolarge.cabin_curtain": "Cabin Curtain",
-  "block.aerolarge.cabin_partition": "Cabin Partition",
-  "block.aerolarge.cabin_arch": "Cabin Arch",
-  "block.aerolarge.exit_sign": "Exit Sign",
+  "block.skyliners.cabin_curtain": "Cabin Curtain",
+  "block.skyliners.cabin_partition": "Cabin Partition",
+  "block.skyliners.cabin_arch": "Cabin Arch",
+  "block.skyliners.exit_sign": "Exit Sign",
 };
 // The cabin curtain, drawn facing north (see CurtainBlock), one model for each way it can be drawn and joined; the
 // colour is not in it, the client tints the cloth. Shut, four pleats of cloth a pixel and a half thick, standing
@@ -7577,7 +7577,7 @@ function bulkheadSignRecipes() {
 }
 function bulkheadSignLang() {
   return {
-    "block.aerolarge.bulkhead_sign": "Bulkhead Sign",
+    "block.skyliners.bulkhead_sign": "Bulkhead Sign",
   };
 }
 
@@ -7694,8 +7694,8 @@ function wcSignRecipes() {
 }
 function wcSignLang() {
   return {
-    "block.aerolarge.wc_sign": "WC Sign",
-    "block.aerolarge.overhead_wc_sign": "Overhead WC Sign",
+    "block.skyliners.wc_sign": "WC Sign",
+    "block.skyliners.overhead_wc_sign": "Overhead WC Sign",
   };
 }
 
@@ -7883,9 +7883,9 @@ function cabinStairsRecipes() {
 }
 function cabinStairsLang() {
   return {
-    "block.aerolarge.cabin_stairs": "Cabin Stairs",
-    "block.aerolarge.cabin_landing": "Cabin Landing",
-    "block.aerolarge.cabin_rail": "Cabin Rail",
+    "block.skyliners.cabin_stairs": "Cabin Stairs",
+    "block.skyliners.cabin_landing": "Cabin Landing",
+    "block.skyliners.cabin_rail": "Cabin Rail",
   };
 }
 
@@ -8032,8 +8032,8 @@ function cabinSeatRecipes() {
 }
 function cabinSeatLang() {
   return {
-    "block.aerolarge.economy_seat": "Economy Seat",
-    "block.aerolarge.business_seat": "Business Seat",
+    "block.skyliners.economy_seat": "Economy Seat",
+    "block.skyliners.business_seat": "Business Seat",
   };
 }
 
@@ -8107,8 +8107,8 @@ function cabinCarpetRecipes() {
 }
 function cabinCarpetLang() {
   return {
-    "block.aerolarge.cabin_carpet": "Cabin Carpet",
-    "block.aerolarge.aisle_carpet": "Aisle Carpet",
+    "block.skyliners.cabin_carpet": "Cabin Carpet",
+    "block.skyliners.aisle_carpet": "Aisle Carpet",
   };
 }
 
@@ -8141,7 +8141,7 @@ function gymFloorRecipes() {
 }
 function gymFloorLang() {
   return {
-    "block.aerolarge.gym_floor": "Gym Floor",
+    "block.skyliners.gym_floor": "Gym Floor",
   };
 }
 
@@ -8209,7 +8209,7 @@ function lavatoryBasinRecipes() {
 }
 function lavatoryBasinLang() {
   return {
-    "block.aerolarge.lavatory_basin": "Lavatory Basin",
+    "block.skyliners.lavatory_basin": "Lavatory Basin",
   };
 }
 
@@ -8501,7 +8501,7 @@ function flightDeckRecipes() {
 }
 function flightDeckLang() {
   return {
-    "block.aerolarge.pilot_seat": "Pilot Seat",
+    "block.skyliners.pilot_seat": "Pilot Seat",
   };
 }
 
@@ -8566,10 +8566,10 @@ function crewLockerRecipes() {
 }
 function crewLockerLang() {
   return {
-    "block.aerolarge.crew_locker": "Flight Crew Locker",
-    "container.aerolarge.crew_locker": "Flight Crew Locker",
-    "subtitles.aerolarge.crew_locker_open": "Crew locker opens",
-    "subtitles.aerolarge.crew_locker_close": "Crew locker shuts",
+    "block.skyliners.crew_locker": "Flight Crew Locker",
+    "container.skyliners.crew_locker": "Flight Crew Locker",
+    "subtitles.skyliners.crew_locker_open": "Crew locker opens",
+    "subtitles.skyliners.crew_locker_close": "Crew locker shuts",
   };
 }
 
@@ -8600,8 +8600,8 @@ const cabinDecorLang = {};
   dropsItself("springboard");
   cubes.springboard = null;
   Object.assign(cabinDecorLang, {
-    "block.aerolarge.springboard": "Springboard",
-    "subtitles.aerolarge.springboard_boing": "Springboard boings",
+    "block.skyliners.springboard": "Springboard",
+    "subtitles.skyliners.springboard_boing": "Springboard boings",
   });
 }
 // The starlight panel: a navy cube, its twinkling stars (an animated texture with see-through gaps) laid over it
@@ -8625,7 +8625,7 @@ const cabinDecorLang = {};
   write(`assets/${ID}/models/item/starlight_panel.json`, { parent: `${ID}:block/starlight_panel` });
   dropsItself("starlight_panel");
   cubes.starlight_panel = null;
-  cabinDecorLang["block.aerolarge.starlight_panel"] = "Starlight Panel";
+  cabinDecorLang["block.skyliners.starlight_panel"] = "Starlight Panel";
 }
 // The gymnastic rings, drawn facing north: two wooden rings side by side, each a square loop on a leather strap up to
 // the top of the block, where the chain they hang from carries on. Put up elsewhere (see GymRingsBlock.MOUNT), their
@@ -8674,7 +8674,7 @@ const cabinDecorLang = {};
   write(`assets/${ID}/models/item/gym_rings.json`, { parent: `${ID}:block/gym_rings` });
   dropsItself("gym_rings");
   cubes.gym_rings = null;
-  cabinDecorLang["block.aerolarge.gym_rings"] = "Gymnastic Rings";
+  cabinDecorLang["block.skyliners.gym_rings"] = "Gymnastic Rings";
 }
 // The hide and seek button, drawn facing north: a low stand with a hand on its front, and on top a big round button
 // with an open eye; pressed, the button sits lower, its eye shut and glowing whatever the light around.
@@ -8698,7 +8698,7 @@ const cabinDecorLang = {};
   write(`assets/${ID}/models/item/hide_and_seek_button.json`, { parent: `${ID}:block/hide_and_seek_button` });
   dropsItself("hide_and_seek_button");
   cubes.hide_and_seek_button = null;
-  cabinDecorLang["block.aerolarge.hide_and_seek_button"] = "Hide and Seek Button";
+  cabinDecorLang["block.skyliners.hide_and_seek_button"] = "Hide and Seek Button";
 }
 
 // The moon pool's tiling and ladder: their models here, their fittings, recipes and names in the functions after them,
@@ -8904,12 +8904,12 @@ function poolRecipes() {
 }
 function poolLang() {
   return {
-    "block.aerolarge.pool_deck_tile": "Pool Deck Tile",
-    "block.aerolarge.pool_mosaic": "Pool Mosaic",
-    "block.aerolarge.pool_coping": "Pool Coping",
-    "block.aerolarge.pool_steps": "Pool Steps",
-    "block.aerolarge.pool_ladder": "Pool Ladder",
-    "block.aerolarge.bunk_ladder": "Bunk Ladder",
+    "block.skyliners.pool_deck_tile": "Pool Deck Tile",
+    "block.skyliners.pool_mosaic": "Pool Mosaic",
+    "block.skyliners.pool_coping": "Pool Coping",
+    "block.skyliners.pool_steps": "Pool Steps",
+    "block.skyliners.pool_ladder": "Pool Ladder",
+    "block.skyliners.bunk_ladder": "Bunk Ladder",
   };
 }
 for (const name of POOL) {
@@ -9077,11 +9077,11 @@ function gymHallRecipes() {
 }
 function gymHallLang() {
   return {
-    "block.aerolarge.wall_bars": "Wall Bars",
-    "block.aerolarge.gym_mat": "Gym Mat",
-    "block.aerolarge.climbing_rope": "Climbing Rope",
-    "block.aerolarge.glass_backboard": "Glass Backboard",
-    "block.aerolarge.gym_bench": "Gym Bench",
+    "block.skyliners.wall_bars": "Wall Bars",
+    "block.skyliners.gym_mat": "Gym Mat",
+    "block.skyliners.climbing_rope": "Climbing Rope",
+    "block.skyliners.glass_backboard": "Glass Backboard",
+    "block.skyliners.gym_bench": "Gym Bench",
   };
 }
 for (const name of GYM_HALL) {
@@ -9092,13 +9092,13 @@ for (const name of GYM_HALL) {
 // Vacuum toilets (see VacuumToiletBlock) and the blue ice they drop (see BlueIceChunk and LavIceBlock), and what they
 // add to the lang file.
 const VACUUM_TOILET_LANG = {
-  "block.aerolarge.vacuum_toilet": "Vacuum Toilet",
-  "block.aerolarge.lav_ice": "Blue Lav Ice",
-  "entity.aerolarge.blue_ice_chunk": "Blue Ice",
-  "subtitles.aerolarge.toilet_flush": "Vacuum toilet flushes",
-  "subtitles.aerolarge.blue_ice_crack": "Blue ice shatters",
-  "subtitles.aerolarge.blue_ice_bonk": "Bonk!",
-  "message.aerolarge.blue_ice.bonk": "Bonk! Blue ice from above",
+  "block.skyliners.vacuum_toilet": "Vacuum Toilet",
+  "block.skyliners.lav_ice": "Blue Lav Ice",
+  "entity.skyliners.blue_ice_chunk": "Blue Ice",
+  "subtitles.skyliners.toilet_flush": "Vacuum toilet flushes",
+  "subtitles.skyliners.blue_ice_crack": "Blue ice shatters",
+  "subtitles.skyliners.blue_ice_bonk": "Bonk!",
+  "message.skyliners.blue_ice.bonk": "Bonk! Blue ice from above",
 };
 // The vacuum toilet, drawn facing north against a wall panel along the south side of its block: a white shroud on a
 // narrower foot, the stainless bowl let into its top, a white seat on the rim, and the lid down over it or up against
@@ -9227,8 +9227,8 @@ function seatConsoleRecipes() {
 }
 function seatConsoleLang() {
   return {
-    "block.aerolarge.seat_console": "Seat Console",
-    "block.aerolarge.lounge_table": "Lounge Table",
+    "block.skyliners.seat_console": "Seat Console",
+    "block.skyliners.lounge_table": "Lounge Table",
   };
 }
 
@@ -9315,9 +9315,9 @@ function galleyUnitRecipes() {
 }
 function galleyUnitLang() {
   return {
-    "block.aerolarge.galley_oven": "Galley Oven",
-    "block.aerolarge.galley_stowage": "Galley Stowage",
-    "block.aerolarge.galley_worktop": "Galley Worktop",
+    "block.skyliners.galley_oven": "Galley Oven",
+    "block.skyliners.galley_stowage": "Galley Stowage",
+    "block.skyliners.galley_worktop": "Galley Worktop",
   };
 }
 
@@ -9393,7 +9393,7 @@ function planterRecipes() {
 }
 function planterLang() {
   return {
-    "block.aerolarge.planter": "Planter",
+    "block.skyliners.planter": "Planter",
   };
 }
 
@@ -9564,9 +9564,9 @@ function barRecipes() {
 }
 function barLang() {
   return {
-    "block.aerolarge.bar_counter": "Bar Counter",
-    "block.aerolarge.bar_stool": "Bar Stool",
-    "block.aerolarge.back_bar": "Back Bar",
+    "block.skyliners.bar_counter": "Bar Counter",
+    "block.skyliners.bar_stool": "Bar Stool",
+    "block.skyliners.back_bar": "Back Bar",
   };
 }
 
@@ -9726,17 +9726,17 @@ function robotBartenderRecipes() {
 }
 function robotBartenderLang() {
   return {
-    "block.aerolarge.robot_bartender": "Robot Bartender",
-    "container.aerolarge.mocktail_bar": "Mocktail Bar",
-    "item.aerolarge.nebula_fizz": "Nebula Fizz",
-    "item.aerolarge.rocket_fuel": "Rocket Fuel",
-    "item.aerolarge.zero_g_float": "Zero-G Float",
-    "item.aerolarge.supernova_sunrise": "Supernova Sunrise",
-    "item.aerolarge.moon_milk": "Moon Milk",
-    "subtitles.aerolarge.bartender_servo": "Robot bartender whirrs",
-    "subtitles.aerolarge.bartender_shake": "Cocktail shaker rattles",
-    "subtitles.aerolarge.bartender_greet": "Robot bartender greets you",
-    "subtitles.aerolarge.bartender_serve": "Robot bartender takes the order",
+    "block.skyliners.robot_bartender": "Robot Bartender",
+    "container.skyliners.mocktail_bar": "Mocktail Bar",
+    "item.skyliners.nebula_fizz": "Nebula Fizz",
+    "item.skyliners.rocket_fuel": "Rocket Fuel",
+    "item.skyliners.zero_g_float": "Zero-G Float",
+    "item.skyliners.supernova_sunrise": "Supernova Sunrise",
+    "item.skyliners.moon_milk": "Moon Milk",
+    "subtitles.skyliners.bartender_servo": "Robot bartender whirrs",
+    "subtitles.skyliners.bartender_shake": "Cocktail shaker rattles",
+    "subtitles.skyliners.bartender_greet": "Robot bartender greets you",
+    "subtitles.skyliners.bartender_serve": "Robot bartender takes the order",
   };
 }
 
@@ -9832,8 +9832,8 @@ function dutyFreeKioskRecipes() {
 }
 function dutyFreeKioskLang() {
   return {
-    "block.aerolarge.duty_free_display": "Duty-Free Display",
-    "block.aerolarge.awning": "Awning",
+    "block.skyliners.duty_free_display": "Duty-Free Display",
+    "block.skyliners.awning": "Awning",
   };
 }
 
@@ -10151,498 +10151,498 @@ for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
 }
 
 write(`assets/${ID}/lang/en_us.json`, {
-  "itemGroup.aerolarge": "Aerolarge",
-  "itemGroup.aerolarge.blueprints": "Blueprints",
-  "itemGroup.aerolarge.airframe": "Airliner Airframe",
-  "itemGroup.aerolarge.rocket": "Rocket",
-  "itemGroup.aerolarge.flight_deck": "Flight Deck",
-  "itemGroup.aerolarge.rocket_cockpit": "Rocket Cockpit",
-  "itemGroup.aerolarge.doors": "Doors and Stairs",
-  "itemGroup.aerolarge.control_car": "Zeppelin Control Car",
-  "itemGroup.aerolarge.crew_kit": "Crew Kit",
-  "itemGroup.aerolarge.drops": "Skydiving and Drops",
-  "itemGroup.aerolarge.gadgets": "Gadgets",
-  "itemGroup.aerolarge.zeppelin_extras": "Zeppelin Extras",
-  "itemGroup.aerolarge.seats": "Seats",
-  "itemGroup.aerolarge.floors_walls": "Floors and Walls",
-  "itemGroup.aerolarge.signs": "Signs and Washrooms",
-  "itemGroup.aerolarge.duty_free": "Duty Free",
-  "itemGroup.aerolarge.hold": "The Hold",
-  "itemGroup.aerolarge.garden": "Garden",
-  "itemGroup.aerolarge.lab": "Lab",
-  "itemGroup.aerolarge.galley": "Galley and Coffee",
-  "itemGroup.aerolarge.bar": "Bar",
-  "itemGroup.aerolarge.gym": "Gym Hall",
-  "itemGroup.aerolarge.pool": "Pool",
-  "itemGroup.aerolarge.club": "Club",
-  "itemGroup.aerolarge.den": "The Den",
-  "itemGroup.aerolarge.lights": "Lights",
-  "itemGroup.aerolarge.decorations": "Decorations",
-  "itemGroup.aerolarge.control_tower": "Control Tower",
-  "itemGroup.aerolarge.terminal": "Terminal",
-  "block.aerolarge.airframe_panel": "Airframe Panel",
-  "block.aerolarge.airframe_fairing": "Airframe Fairing",
-  "block.aerolarge.livery_panel": "Livery Panel",
-  "block.aerolarge.cabin_window": "Cabin Window",
-  "block.aerolarge.cockpit_window": "Cockpit Window",
-  "block.aerolarge.cabin_floor": "Cabin Floor",
-  "block.aerolarge.cabin_light": "Cabin Light",
-  "block.aerolarge.airliner_door": "Airliner Door",
-  "block.aerolarge.engine_intake": "Engine Intake",
-  "block.aerolarge.landing_gear": "Landing Gear",
-  "block.aerolarge.landing_gear_tire": "Landing Gear Tire",
-  "block.aerolarge.airstair_controller": "Airstair Controller",
-  "block.aerolarge.airstair_call_button": "Airstair Call Button",
-  "block.aerolarge.airframe_shell": "Airframe Shell",
-  "block.aerolarge.cockpit_glass": "Cockpit Glass",
-  "block.aerolarge.hull_glass": "Hull Glass",
-  "block.aerolarge.smoked_glass": "Smoked Glass",
-  "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
-  "block.aerolarge.oval_window": "Oval Window",
-  "block.aerolarge.flat_oval_window": "Oval Window",
-  "block.aerolarge.lift_machine": "Lift Machine",
-  "block.aerolarge.lift_floor": "Lift Car Floor",
-  "block.aerolarge.lift_call_button": "Lift Call Button",
-  "block.aerolarge.lift_door": "Lift Door",
-  "block.aerolarge.lift_board": "Lift Board",
-  "entity.aerolarge.lift_car": "Lift Car",
-  "block.aerolarge.thrust_lever": "Thrust Lever",
-  "block.aerolarge.thrust_relay": "Thrust Relay",
-  "block.aerolarge.hull_relay": "Hull Relay",
-  "block.aerolarge.instrument_panel": "Instrument Panel",
-  "message.aerolarge.thrust": "Thrust: %s%%",
-  "block.aerolarge.autopilot": "Autopilot",
-  "block.aerolarge.nav_light": "Navigation Light",
-  "block.aerolarge.engine_core": "Engine Core",
-  "block.aerolarge.tiller": "Nose Wheel Tiller",
-  "block.aerolarge.flight_display": "Flight Display",
-  "block.aerolarge.parking_brake": "Parking Brake",
-  "message.aerolarge.tiller.left": "Nose wheel: steering left",
-  "message.aerolarge.tiller.right": "Nose wheel: steering right",
-  "message.aerolarge.tiller.centre": "Nose wheel: straight ahead",
-  "message.aerolarge.brake.set": "Parking brake set",
-  "message.aerolarge.brake.released": "Parking brake released",
-  "subtitles.aerolarge.engine": "Jet engine roars",
+  "itemGroup.skyliners": "Create: Skyliners",
+  "itemGroup.skyliners.blueprints": "Blueprints",
+  "itemGroup.skyliners.airframe": "Airliner Airframe",
+  "itemGroup.skyliners.rocket": "Rocket",
+  "itemGroup.skyliners.flight_deck": "Flight Deck",
+  "itemGroup.skyliners.rocket_cockpit": "Rocket Cockpit",
+  "itemGroup.skyliners.doors": "Doors and Stairs",
+  "itemGroup.skyliners.control_car": "Zeppelin Control Car",
+  "itemGroup.skyliners.crew_kit": "Crew Kit",
+  "itemGroup.skyliners.drops": "Skydiving and Drops",
+  "itemGroup.skyliners.gadgets": "Gadgets",
+  "itemGroup.skyliners.zeppelin_extras": "Zeppelin Extras",
+  "itemGroup.skyliners.seats": "Seats",
+  "itemGroup.skyliners.floors_walls": "Floors and Walls",
+  "itemGroup.skyliners.signs": "Signs and Washrooms",
+  "itemGroup.skyliners.duty_free": "Duty Free",
+  "itemGroup.skyliners.hold": "The Hold",
+  "itemGroup.skyliners.garden": "Garden",
+  "itemGroup.skyliners.lab": "Lab",
+  "itemGroup.skyliners.galley": "Galley and Coffee",
+  "itemGroup.skyliners.bar": "Bar",
+  "itemGroup.skyliners.gym": "Gym Hall",
+  "itemGroup.skyliners.pool": "Pool",
+  "itemGroup.skyliners.club": "Club",
+  "itemGroup.skyliners.den": "The Den",
+  "itemGroup.skyliners.lights": "Lights",
+  "itemGroup.skyliners.decorations": "Decorations",
+  "itemGroup.skyliners.control_tower": "Control Tower",
+  "itemGroup.skyliners.terminal": "Terminal",
+  "block.skyliners.airframe_panel": "Airframe Panel",
+  "block.skyliners.airframe_fairing": "Airframe Fairing",
+  "block.skyliners.livery_panel": "Livery Panel",
+  "block.skyliners.cabin_window": "Cabin Window",
+  "block.skyliners.cockpit_window": "Cockpit Window",
+  "block.skyliners.cabin_floor": "Cabin Floor",
+  "block.skyliners.cabin_light": "Cabin Light",
+  "block.skyliners.airliner_door": "Airliner Door",
+  "block.skyliners.engine_intake": "Engine Intake",
+  "block.skyliners.landing_gear": "Landing Gear",
+  "block.skyliners.landing_gear_tire": "Landing Gear Tire",
+  "block.skyliners.airstair_controller": "Airstair Controller",
+  "block.skyliners.airstair_call_button": "Airstair Call Button",
+  "block.skyliners.airframe_shell": "Airframe Shell",
+  "block.skyliners.cockpit_glass": "Cockpit Glass",
+  "block.skyliners.hull_glass": "Hull Glass",
+  "block.skyliners.smoked_glass": "Smoked Glass",
+  "block.skyliners.cabin_window_shell": "Curved Cabin Window",
+  "block.skyliners.oval_window": "Oval Window",
+  "block.skyliners.flat_oval_window": "Oval Window",
+  "block.skyliners.lift_machine": "Lift Machine",
+  "block.skyliners.lift_floor": "Lift Car Floor",
+  "block.skyliners.lift_call_button": "Lift Call Button",
+  "block.skyliners.lift_door": "Lift Door",
+  "block.skyliners.lift_board": "Lift Board",
+  "entity.skyliners.lift_car": "Lift Car",
+  "block.skyliners.thrust_lever": "Thrust Lever",
+  "block.skyliners.thrust_relay": "Thrust Relay",
+  "block.skyliners.hull_relay": "Hull Relay",
+  "block.skyliners.instrument_panel": "Instrument Panel",
+  "message.skyliners.thrust": "Thrust: %s%%",
+  "block.skyliners.autopilot": "Autopilot",
+  "block.skyliners.nav_light": "Navigation Light",
+  "block.skyliners.engine_core": "Engine Core",
+  "block.skyliners.tiller": "Nose Wheel Tiller",
+  "block.skyliners.flight_display": "Flight Display",
+  "block.skyliners.parking_brake": "Parking Brake",
+  "message.skyliners.tiller.left": "Nose wheel: steering left",
+  "message.skyliners.tiller.right": "Nose wheel: steering right",
+  "message.skyliners.tiller.centre": "Nose wheel: straight ahead",
+  "message.skyliners.brake.set": "Parking brake set",
+  "message.skyliners.brake.released": "Parking brake released",
+  "subtitles.skyliners.engine": "Jet engine roars",
   ...VOICE_LANG,
   ...atcLang(),
   ...rocketSoundsLang(),
-  "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
-  "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
-  "message.aerolarge.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",
-  "message.aerolarge.autopilot.off_rocket": "Autopilot off: the rocket rests on her fins, her engines quiet, ready to count down again.",
-  "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner, and there is no Physics Assembler aboard to assemble it.",
-  "message.aerolarge.autopilot.assembling": "Assembling the airliner: the autopilot takes it from here.",
-  "message.aerolarge.autopilot.assembly_failed": "The Physics Assembler could not assemble the airliner: %s",
-  "message.aerolarge.autopilot.still_assembling": "The airliner is still being assembled.",
-  "message.aerolarge.autopilot.assembly_unknown": "it did not say why",
-  "message.aerolarge.autopilot.phase.takeoff": "TAKE-OFF",
-  "message.aerolarge.autopilot.phase.climb": "CLIMB",
-  "message.aerolarge.autopilot.phase.cruise": "CRUISE",
-  "message.aerolarge.autopilot.phase.descent": "DESCENT",
-  "message.aerolarge.autopilot.phase.land": "LAND",
-  "message.aerolarge.autopilot.phase.rollout": "ROLL-OUT",
-  "message.aerolarge.autopilot.holding": "Autopilot engaged: altitude %s at %s b/s, %s.",
-  "message.aerolarge.autopilot.set": "Autopilot set: altitude %s at %s b/s, %s.",
-  "message.aerolarge.autopilot.go_around": "Landing called off: climbing back to altitude %s at %s b/s, %s.",
-  "message.aerolarge.autopilot.mode.heading": "heading %s",
-  "message.aerolarge.autopilot.mode.orbit_left": "circling left, radius %s blocks",
-  "message.aerolarge.autopilot.mode.orbit_right": "circling right, radius %s blocks",
-  "message.aerolarge.autopilot.mode.destination": "flying to the pin, then circling it, radius %s blocks",
-  "message.aerolarge.autopilot.mode.destination_land": "flying to the pin to land near it, on clear, level ground",
-  "message.aerolarge.autopilot.mode.rocket_pin": "over to the pin and down on it",
-  "message.aerolarge.autopilot.mode.rocket_back": "and back down where she rose",
-  "message.aerolarge.autopilot.mode.rocket_hold": "holding there until told to land or given a pin",
-  "message.aerolarge.autopilot.pin.found": "Landing site found %s blocks from the pin: flying the approach, to land heading %s.",
-  "message.aerolarge.autopilot.pin.nowhere": "Nowhere clear to land near the pin yet: flying over it again and again, looking as more of the land comes into view.",
-  "message.aerolarge.autopilot.pin.go_around": "Not lined up with the landing site: going around to try again.",
-  "message.aerolarge.autopilot.coming_in": "The autopilot is landing already; set a new height to call the landing off.",
-  "message.aerolarge.autopilot.landing": "Autopilot landing: down ahead on heading %s, slowing until the nose sits level; once down it brakes to a stop and parks.",
-  "message.aerolarge.autopilot.on_ground": "The autopilot lands from the air: the airliner is on the ground already.",
-  "message.aerolarge.autopilot.rolling_out": "The autopilot is braking to a stop after landing; disengage it to take over.",
-  "message.aerolarge.autopilot.landed": "Landed and stopped: thrust levers at idle, parking brake set, autopilot off.",
-  "message.aerolarge.autopilot.unstuck": "Control jets firing: hold Unstuck to lift the airliner higher.",
-  "message.aerolarge.autopilot.unstuck.firing": "The control jets are firing already.",
-  "message.aerolarge.autopilot.unstuck.resting": "The control jets are resting: try again in a few seconds.",
-  "message.aerolarge.autopilot.unstuck.engines_off": "Push the thrust levers forward first: the jets only help engines that cannot move the airliner.",
-  "message.aerolarge.autopilot.unstuck.braked": "The parking brake is holding the airliner: release it to roll.",
-  "message.aerolarge.autopilot.unstuck.moving": "The airliner is not stuck: it is moving, or has only just stopped.",
-  "item.aerolarge.parachute": "Parachute",
-  "block.aerolarge.jump_light": "Jump Light",
-  "block.aerolarge.jump_switch": "Jump Light Switch",
-  "block.aerolarge.parachute_rack": "Parachute Rack",
-  "block.aerolarge.landing_target": "Landing Target",
-  "message.aerolarge.jump_switch.off": "Jump lights off",
-  "message.aerolarge.jump_switch.red": "Jump lights red: stand by",
-  "message.aerolarge.jump_switch.green": "Jump lights green: GO!",
-  "message.aerolarge.parachute_rack.put_on": "You put on a parachute. Jump while falling to open it.",
-  "message.aerolarge.parachute_rack.handed": "You took a parachute: wear it in your chest slot.",
-  "block.aerolarge.paper_plane_box": "Paper Plane Box",
-  "message.aerolarge.paper_plane_box.handed": "A paper plane: throw it from up here and watch it glide",
-  "message.aerolarge.parachute_rack.wearing": "You are already wearing a parachute.",
-  "message.aerolarge.decompression": "Door open! Explosive decompression: keep clear of the door, or stay in your seat.",
-  "message.aerolarge.landing_target.landed": "%s landed %s blocks from the target",
-  "message.aerolarge.landing_target.record": "%s landed %s blocks from the target: a new best!",
-  "message.aerolarge.landing_target.best": "Best landing: %s, %s blocks from the middle",
-  "message.aerolarge.landing_target.none": "No landings on this target yet",
-  "message.aerolarge.landing_target.plane_landed": "%s's paper plane came down %s blocks from the target",
-  "message.aerolarge.landing_target.plane_record": "%s's paper plane came down %s blocks from the target: a new best!",
-  "message.aerolarge.landing_target.best_plane": "Best paper plane: %s, %s blocks from the middle",
-  "block.aerolarge.handset": "Captain's Handset",
-  "block.aerolarge.tower_radio": "Tower Radio",
-  "message.aerolarge.radio.keyed_announcement": "Speak now: your next message is announced to the cabin.",
-  "message.aerolarge.radio.keyed_radio": "Speak now: your next message goes out over the radio.",
-  "message.aerolarge.radio.released": "Handset back in its cradle.",
-  "title.aerolarge.captain": "Captain %s",
-  "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
-  "chat.aerolarge.radio": "[Radio] %s: %s",
-  "block.aerolarge.signal_flare": "Signal Flare",
-  "block.aerolarge.drop_bay": "Drop Bay",
-  "block.aerolarge.drop_release": "Drop Release",
-  "container.aerolarge.drop_bay": "Drop Bay",
-  "message.aerolarge.drop_bay.empty": "The drop bay is empty",
-  "message.aerolarge.drop_bay.away": "%s away! %s left in the bay",
-  "message.aerolarge.drop_bay.no_bomb": "This version of Ultrasplosive has no bomb to drop from the air",
-  "message.aerolarge.drop_bay.too_low": "Too low to drop a nuke: climb above %s blocks over the ground first",
-  "message.aerolarge.drop_release.armed": "Bay doors open: use again to drop, sneak to close",
-  "message.aerolarge.drop_release.safe": "Bay doors closed",
-  "message.aerolarge.drop_release.no_bay": "This release is not wired to a drop bay",
-  "block.aerolarge.galley": "Galley",
-  "item.aerolarge.trolley": "Trolley",
-  "entity.aerolarge.trolley": "Trolley",
-  "item.aerolarge.chicken_meal": "Chicken Meal",
-  "item.aerolarge.pasta_meal": "Pasta Meal",
-  "item.aerolarge.pretzels": "Pretzels",
-  "item.aerolarge.ice_cream": "Ice Cream",
-  "item.aerolarge.airline_coffee": "Airline Coffee",
-  "message.aerolarge.trolley.served": "Chicken or pasta? %s for you (%s left on the trolley)",
-  "message.aerolarge.trolley.empty": "The trolley is empty: restock it at the galley",
-  "message.aerolarge.galley.rolled_out": "A full trolley, ready to go",
-  "message.aerolarge.galley.blocked": "No room in front of the galley for a trolley",
-  "message.aerolarge.galley.restocked": "Trolley restocked",
-  "message.aerolarge.galley.full": "The trolley is already full",
-  "subtitles.aerolarge.trolley_squeak": "Trolley squeaks",
-  "block.aerolarge.jet_bridge": "Jet Bridge",
-  "message.aerolarge.jet_bridge.docking": "Docking at the airliner door %s blocks out",
-  "message.aerolarge.jet_bridge.no_door": "No airliner door within %s blocks ahead of the bridge",
-  "message.aerolarge.jet_bridge.misaligned": "Not lined up with the airliner door %s blocks out: move the bridge %s",
-  "message.aerolarge.jet_bridge.left": "%s left",
-  "message.aerolarge.jet_bridge.right": "%s right",
-  "message.aerolarge.jet_bridge.up": "%s up",
-  "message.aerolarge.jet_bridge.down": "%s down",
-  "message.aerolarge.jet_bridge.moving": "Wait for the airliner to stop",
-  "message.aerolarge.jet_bridge.blocked": "Something stands in the way %s blocks out, short of the airliner door %s blocks out",
-  "block.aerolarge.check_in_desk": "Check-in Desk",
-  "item.aerolarge.boarding_pass": "Boarding Pass",
-  "item.aerolarge.boarding_pass.tooltip": "Hand it to a villager to fly it as a passenger",
-  "message.aerolarge.check_in.printed": "Boarding pass printed: hand it to a villager",
-  "message.aerolarge.passengers.off": "Villager passengers are turned off: turn on Villager Passengers in the mod settings",
-  "message.aerolarge.boarding_pass.boarding": "%s takes the boarding pass and looks for a seat",
-  "message.aerolarge.boarding_pass.already": "%s already has a boarding pass",
-  "message.aerolarge.passengers.fare": "%s paid %s emeralds for a flight of %s blocks",
-  "block.aerolarge.cargo_crate": "Care Package",
-  "container.aerolarge.cargo_crate": "Care Package",
-  "entity.aerolarge.falling_crate": "Care Package",
-  "message.aerolarge.cargo_crate.landed": "A care package has landed",
-  "message.aerolarge.cargo_crate.landed_near": "A care package has landed %s blocks from the flare",
-  "item.aerolarge.basketball": "Basketball",
-  "entity.aerolarge.basketball": "Basketball",
-  "block.aerolarge.hoop": "Basketball Hoop",
-  "block.aerolarge.scoreboard": "Scoreboard",
-  "block.aerolarge.ball_rack": "Ball Rack",
-  "team.aerolarge.home": "HOME",
-  "team.aerolarge.guest": "GUEST",
-  "message.aerolarge.hoop.team": "This hoop now counts for %s",
-  "message.aerolarge.hoop.basket": "Swish! %s points for %s",
-  "message.aerolarge.hoop.basket_score": "Swish! %s points for %s: %s",
-  "message.aerolarge.scoreboard.score": "%s %s : %s %s",
-  "message.aerolarge.scoreboard.reset": "New game: the scoreboard is back to nil all",
-  "subtitles.aerolarge.ball_bounce": "Basketball bounces",
-  "subtitles.aerolarge.basket_swish": "Basket swishes",
-  "subtitles.aerolarge.scoreboard_buzzer": "Scoreboard buzzes",
-  "block.aerolarge.window_shades": "Window Shades Control",
-  "message.aerolarge.window_shades.open": "Window shades going up",
-  "message.aerolarge.window_shades.closed": "Window shades coming down",
-  "subtitles.aerolarge.shade_motor": "Window shade whirrs",
-  "subtitles.aerolarge.lift_door": "Lift doors slide",
-  "subtitles.aerolarge.lift_start": "Lift sets off",
-  "subtitles.aerolarge.lift_hum": "Lift hums",
-  "subtitles.aerolarge.lift_chime_up": "Lift chimes, going up",
-  "subtitles.aerolarge.lift_chime_down": "Lift chimes, going down",
-  "subtitles.aerolarge.space_light": "You feel light",
-  "subtitles.aerolarge.space_heavy": "Your weight comes back",
-  "subtitles.aerolarge.lift_music": "Lift music",
-  "block.aerolarge.cabin_lights": "Cabin Lights Dimmer",
-  "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
-  "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
-  "message.aerolarge.cabin_lights.night": "Cabin lights set for the night",
+  "message.skyliners.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
+  "message.skyliners.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
+  "message.skyliners.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",
+  "message.skyliners.autopilot.off_rocket": "Autopilot off: the rocket rests on her fins, her engines quiet, ready to count down again.",
+  "message.skyliners.autopilot.not_assembled": "The autopilot only flies an assembled airliner, and there is no Physics Assembler aboard to assemble it.",
+  "message.skyliners.autopilot.assembling": "Assembling the airliner: the autopilot takes it from here.",
+  "message.skyliners.autopilot.assembly_failed": "The Physics Assembler could not assemble the airliner: %s",
+  "message.skyliners.autopilot.still_assembling": "The airliner is still being assembled.",
+  "message.skyliners.autopilot.assembly_unknown": "it did not say why",
+  "message.skyliners.autopilot.phase.takeoff": "TAKE-OFF",
+  "message.skyliners.autopilot.phase.climb": "CLIMB",
+  "message.skyliners.autopilot.phase.cruise": "CRUISE",
+  "message.skyliners.autopilot.phase.descent": "DESCENT",
+  "message.skyliners.autopilot.phase.land": "LAND",
+  "message.skyliners.autopilot.phase.rollout": "ROLL-OUT",
+  "message.skyliners.autopilot.holding": "Autopilot engaged: altitude %s at %s b/s, %s.",
+  "message.skyliners.autopilot.set": "Autopilot set: altitude %s at %s b/s, %s.",
+  "message.skyliners.autopilot.go_around": "Landing called off: climbing back to altitude %s at %s b/s, %s.",
+  "message.skyliners.autopilot.mode.heading": "heading %s",
+  "message.skyliners.autopilot.mode.orbit_left": "circling left, radius %s blocks",
+  "message.skyliners.autopilot.mode.orbit_right": "circling right, radius %s blocks",
+  "message.skyliners.autopilot.mode.destination": "flying to the pin, then circling it, radius %s blocks",
+  "message.skyliners.autopilot.mode.destination_land": "flying to the pin to land near it, on clear, level ground",
+  "message.skyliners.autopilot.mode.rocket_pin": "over to the pin and down on it",
+  "message.skyliners.autopilot.mode.rocket_back": "and back down where she rose",
+  "message.skyliners.autopilot.mode.rocket_hold": "holding there until told to land or given a pin",
+  "message.skyliners.autopilot.pin.found": "Landing site found %s blocks from the pin: flying the approach, to land heading %s.",
+  "message.skyliners.autopilot.pin.nowhere": "Nowhere clear to land near the pin yet: flying over it again and again, looking as more of the land comes into view.",
+  "message.skyliners.autopilot.pin.go_around": "Not lined up with the landing site: going around to try again.",
+  "message.skyliners.autopilot.coming_in": "The autopilot is landing already; set a new height to call the landing off.",
+  "message.skyliners.autopilot.landing": "Autopilot landing: down ahead on heading %s, slowing until the nose sits level; once down it brakes to a stop and parks.",
+  "message.skyliners.autopilot.on_ground": "The autopilot lands from the air: the airliner is on the ground already.",
+  "message.skyliners.autopilot.rolling_out": "The autopilot is braking to a stop after landing; disengage it to take over.",
+  "message.skyliners.autopilot.landed": "Landed and stopped: thrust levers at idle, parking brake set, autopilot off.",
+  "message.skyliners.autopilot.unstuck": "Control jets firing: hold Unstuck to lift the airliner higher.",
+  "message.skyliners.autopilot.unstuck.firing": "The control jets are firing already.",
+  "message.skyliners.autopilot.unstuck.resting": "The control jets are resting: try again in a few seconds.",
+  "message.skyliners.autopilot.unstuck.engines_off": "Push the thrust levers forward first: the jets only help engines that cannot move the airliner.",
+  "message.skyliners.autopilot.unstuck.braked": "The parking brake is holding the airliner: release it to roll.",
+  "message.skyliners.autopilot.unstuck.moving": "The airliner is not stuck: it is moving, or has only just stopped.",
+  "item.skyliners.parachute": "Parachute",
+  "block.skyliners.jump_light": "Jump Light",
+  "block.skyliners.jump_switch": "Jump Light Switch",
+  "block.skyliners.parachute_rack": "Parachute Rack",
+  "block.skyliners.landing_target": "Landing Target",
+  "message.skyliners.jump_switch.off": "Jump lights off",
+  "message.skyliners.jump_switch.red": "Jump lights red: stand by",
+  "message.skyliners.jump_switch.green": "Jump lights green: GO!",
+  "message.skyliners.parachute_rack.put_on": "You put on a parachute. Jump while falling to open it.",
+  "message.skyliners.parachute_rack.handed": "You took a parachute: wear it in your chest slot.",
+  "block.skyliners.paper_plane_box": "Paper Plane Box",
+  "message.skyliners.paper_plane_box.handed": "A paper plane: throw it from up here and watch it glide",
+  "message.skyliners.parachute_rack.wearing": "You are already wearing a parachute.",
+  "message.skyliners.decompression": "Door open! Explosive decompression: keep clear of the door, or stay in your seat.",
+  "message.skyliners.landing_target.landed": "%s landed %s blocks from the target",
+  "message.skyliners.landing_target.record": "%s landed %s blocks from the target: a new best!",
+  "message.skyliners.landing_target.best": "Best landing: %s, %s blocks from the middle",
+  "message.skyliners.landing_target.none": "No landings on this target yet",
+  "message.skyliners.landing_target.plane_landed": "%s's paper plane came down %s blocks from the target",
+  "message.skyliners.landing_target.plane_record": "%s's paper plane came down %s blocks from the target: a new best!",
+  "message.skyliners.landing_target.best_plane": "Best paper plane: %s, %s blocks from the middle",
+  "block.skyliners.handset": "Captain's Handset",
+  "block.skyliners.tower_radio": "Tower Radio",
+  "message.skyliners.radio.keyed_announcement": "Speak now: your next message is announced to the cabin.",
+  "message.skyliners.radio.keyed_radio": "Speak now: your next message goes out over the radio.",
+  "message.skyliners.radio.released": "Handset back in its cradle.",
+  "title.skyliners.captain": "Captain %s",
+  "chat.skyliners.announcement": "[Cabin] Captain %s: %s",
+  "chat.skyliners.radio": "[Radio] %s: %s",
+  "block.skyliners.signal_flare": "Signal Flare",
+  "block.skyliners.drop_bay": "Drop Bay",
+  "block.skyliners.drop_release": "Drop Release",
+  "container.skyliners.drop_bay": "Drop Bay",
+  "message.skyliners.drop_bay.empty": "The drop bay is empty",
+  "message.skyliners.drop_bay.away": "%s away! %s left in the bay",
+  "message.skyliners.drop_bay.no_bomb": "This version of Ultrasplosive has no bomb to drop from the air",
+  "message.skyliners.drop_bay.too_low": "Too low to drop a nuke: climb above %s blocks over the ground first",
+  "message.skyliners.drop_release.armed": "Bay doors open: use again to drop, sneak to close",
+  "message.skyliners.drop_release.safe": "Bay doors closed",
+  "message.skyliners.drop_release.no_bay": "This release is not wired to a drop bay",
+  "block.skyliners.galley": "Galley",
+  "item.skyliners.trolley": "Trolley",
+  "entity.skyliners.trolley": "Trolley",
+  "item.skyliners.chicken_meal": "Chicken Meal",
+  "item.skyliners.pasta_meal": "Pasta Meal",
+  "item.skyliners.pretzels": "Pretzels",
+  "item.skyliners.ice_cream": "Ice Cream",
+  "item.skyliners.airline_coffee": "Airline Coffee",
+  "message.skyliners.trolley.served": "Chicken or pasta? %s for you (%s left on the trolley)",
+  "message.skyliners.trolley.empty": "The trolley is empty: restock it at the galley",
+  "message.skyliners.galley.rolled_out": "A full trolley, ready to go",
+  "message.skyliners.galley.blocked": "No room in front of the galley for a trolley",
+  "message.skyliners.galley.restocked": "Trolley restocked",
+  "message.skyliners.galley.full": "The trolley is already full",
+  "subtitles.skyliners.trolley_squeak": "Trolley squeaks",
+  "block.skyliners.jet_bridge": "Jet Bridge",
+  "message.skyliners.jet_bridge.docking": "Docking at the airliner door %s blocks out",
+  "message.skyliners.jet_bridge.no_door": "No airliner door within %s blocks ahead of the bridge",
+  "message.skyliners.jet_bridge.misaligned": "Not lined up with the airliner door %s blocks out: move the bridge %s",
+  "message.skyliners.jet_bridge.left": "%s left",
+  "message.skyliners.jet_bridge.right": "%s right",
+  "message.skyliners.jet_bridge.up": "%s up",
+  "message.skyliners.jet_bridge.down": "%s down",
+  "message.skyliners.jet_bridge.moving": "Wait for the airliner to stop",
+  "message.skyliners.jet_bridge.blocked": "Something stands in the way %s blocks out, short of the airliner door %s blocks out",
+  "block.skyliners.check_in_desk": "Check-in Desk",
+  "item.skyliners.boarding_pass": "Boarding Pass",
+  "item.skyliners.boarding_pass.tooltip": "Hand it to a villager to fly it as a passenger",
+  "message.skyliners.check_in.printed": "Boarding pass printed: hand it to a villager",
+  "message.skyliners.passengers.off": "Villager passengers are turned off: turn on Villager Passengers in the mod settings",
+  "message.skyliners.boarding_pass.boarding": "%s takes the boarding pass and looks for a seat",
+  "message.skyliners.boarding_pass.already": "%s already has a boarding pass",
+  "message.skyliners.passengers.fare": "%s paid %s emeralds for a flight of %s blocks",
+  "block.skyliners.cargo_crate": "Care Package",
+  "container.skyliners.cargo_crate": "Care Package",
+  "entity.skyliners.falling_crate": "Care Package",
+  "message.skyliners.cargo_crate.landed": "A care package has landed",
+  "message.skyliners.cargo_crate.landed_near": "A care package has landed %s blocks from the flare",
+  "item.skyliners.basketball": "Basketball",
+  "entity.skyliners.basketball": "Basketball",
+  "block.skyliners.hoop": "Basketball Hoop",
+  "block.skyliners.scoreboard": "Scoreboard",
+  "block.skyliners.ball_rack": "Ball Rack",
+  "team.skyliners.home": "HOME",
+  "team.skyliners.guest": "GUEST",
+  "message.skyliners.hoop.team": "This hoop now counts for %s",
+  "message.skyliners.hoop.basket": "Swish! %s points for %s",
+  "message.skyliners.hoop.basket_score": "Swish! %s points for %s: %s",
+  "message.skyliners.scoreboard.score": "%s %s : %s %s",
+  "message.skyliners.scoreboard.reset": "New game: the scoreboard is back to nil all",
+  "subtitles.skyliners.ball_bounce": "Basketball bounces",
+  "subtitles.skyliners.basket_swish": "Basket swishes",
+  "subtitles.skyliners.scoreboard_buzzer": "Scoreboard buzzes",
+  "block.skyliners.window_shades": "Window Shades Control",
+  "message.skyliners.window_shades.open": "Window shades going up",
+  "message.skyliners.window_shades.closed": "Window shades coming down",
+  "subtitles.skyliners.shade_motor": "Window shade whirrs",
+  "subtitles.skyliners.lift_door": "Lift doors slide",
+  "subtitles.skyliners.lift_start": "Lift sets off",
+  "subtitles.skyliners.lift_hum": "Lift hums",
+  "subtitles.skyliners.lift_chime_up": "Lift chimes, going up",
+  "subtitles.skyliners.lift_chime_down": "Lift chimes, going down",
+  "subtitles.skyliners.space_light": "You feel light",
+  "subtitles.skyliners.space_heavy": "Your weight comes back",
+  "subtitles.skyliners.lift_music": "Lift music",
+  "block.skyliners.cabin_lights": "Cabin Lights Dimmer",
+  "message.skyliners.cabin_lights.bright": "Cabin lights bright",
+  "message.skyliners.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
+  "message.skyliners.cabin_lights.night": "Cabin lights set for the night",
   ...ROOM_DIVIDER_LANG,
-  "block.aerolarge.light_strip": "LED Light Strip",
-  "block.aerolarge.pendant_light": "Pendant Light",
-  "block.aerolarge.halo_light": "Halo Light",
-  "block.aerolarge.steel_girder": "Steel Girder",
-  "block.aerolarge.lift_glass": "Lift Glass",
-  "block.aerolarge.wall_light": "Wall Washer",
-  "block.aerolarge.floor_light": "Floor Light",
-  "block.aerolarge.light_cable": "Light Cable",
-  "block.aerolarge.overhead_bin": "Overhead Locker",
-  "container.aerolarge.overhead_bin": "Overhead Locker",
-  "block.aerolarge.passenger_screen": "Passenger Screen",
-  "screen.aerolarge.passenger_screen.welcome": "WELCOME ABOARD",
-  "screen.aerolarge.passenger_screen.standby": "ASSEMBLE TO FLY",
-  "screen.aerolarge.passenger_screen.title": "FLIGHT INFO",
-  "screen.aerolarge.passenger_screen.map_title": "ROUTE MAP",
-  "screen.aerolarge.passenger_screen.status.ground": "ON THE GROUND",
-  "screen.aerolarge.passenger_screen.status.climbing": "CLIMBING",
-  "screen.aerolarge.passenger_screen.status.cruising": "CRUISING",
-  "screen.aerolarge.passenger_screen.status.descending": "DESCENDING",
-  "screen.aerolarge.passenger_screen.altitude": "ALTITUDE",
-  "screen.aerolarge.passenger_screen.ground_speed": "GROUND SPEED",
-  "screen.aerolarge.passenger_screen.vertical_speed": "VERTICAL SPEED",
-  "screen.aerolarge.passenger_screen.heading": "HEADING",
-  "screen.aerolarge.passenger_screen.height": "ABOVE GROUND",
-  "screen.aerolarge.passenger_screen.distance": "DISTANCE FLOWN",
-  "screen.aerolarge.passenger_screen.flight_time": "FLIGHT TIME %s",
-  "screen.aerolarge.passenger_screen.unit.metres": "m",
-  "screen.aerolarge.passenger_screen.unit.kilometres": "km",
-  "screen.aerolarge.passenger_screen.unit.kilometres_per_hour": "km/h",
-  "screen.aerolarge.passenger_screen.unit.metres_per_second": "m/s",
-  ...Object.fromEntries(["N", "NE", "E", "SE", "S", "SW", "W", "NW"].map((point, i) => [`screen.aerolarge.passenger_screen.compass.${i}`, point])),
-  "screen.aerolarge.passenger_screen.cameras": "USE FOR OUTSIDE CAMERAS",
-  "screen.aerolarge.passenger_screen.camera": "CAM %s  %s",
-  "screen.aerolarge.passenger_screen.camera.tail": "TAIL",
-  "screen.aerolarge.passenger_screen.camera.wing": "RIGHT WING",
-  "screen.aerolarge.passenger_screen.camera.nose": "NOSE GEAR",
-  "screen.aerolarge.passenger_screen.camera.front": "FRONT",
-  "screen.aerolarge.passenger_screen.camera.bow": "BOW",
-  "screen.aerolarge.passenger_screen.camera.below": "BELOW",
-  "screen.aerolarge.passenger_screen.camera.flyby": "FLYBY",
-  "screen.aerolarge.passenger_screen.camera.side": "SIDE",
-  "screen.aerolarge.passenger_screen.camera.leg": "LANDING LEG",
-  "screen.aerolarge.passenger_screen.camera.orbit": "ORBIT",
-  "screen.aerolarge.passenger_screen.camera_hint": "%s: next camera    %s: back to the cabin",
-  "screen.aerolarge.lookout.hint": "%s: drop your flag there    Mouse wheel: zoom    %s: step back",
-  "message.aerolarge.passenger_screen.not_assembled": "The outside cameras come on once the airliner is assembled",
-  "message.aerolarge.passenger_screen.no_cameras": "This airliner has no outside cameras: it has no autopilot to fix them to",
-  "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
-  "block.aerolarge.seatbelt_switch": "Seatbelt Switch",
-  "message.aerolarge.seatbelts.on": "Seatbelt signs on",
-  "message.aerolarge.seatbelts.off": "Seatbelt signs off",
-  "message.aerolarge.seatbelts.fastened": "Your seatbelt is fastened: stay seated while the signs are on.",
-  "subtitles.aerolarge.seatbelt_ding": "Seatbelt sign dings",
-  "subtitles.aerolarge.pa_chime": "Cabin chime",
-  "subtitles.aerolarge.radio_crackle": "Radio crackles",
-  "message.aerolarge.unbreakable": "The frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
-  "block.aerolarge.tail_camera_display": "Tail Camera Display",
-  "screen.aerolarge.tail_camera_display.no_signal": "NO SIGNAL",
-  "screen.aerolarge.tail_camera_display.standby": "ASSEMBLE TO FLY",
-  "screen.aerolarge.tail_camera_display.camera": "CAM %s",
-  "block.aerolarge.announcement_panel": "Announcement Panel",
-  "block.aerolarge.flight_map": "Flight Map",
-  "message.aerolarge.announcement_panel.unlinked": "This panel is not near an airliner's autopilot.",
-  "screen.aerolarge.announcement_panel.welcome": "Welcome",
-  "screen.aerolarge.announcement_panel.takeoff": "Take-off",
-  "screen.aerolarge.announcement_panel.turbulence": "Seatbelts",
-  "screen.aerolarge.announcement_panel.snacks": "Snacks",
-  "screen.aerolarge.announcement_panel.window": "Look out",
-  "screen.aerolarge.announcement_panel.playtime": "Pool & gym",
-  "screen.aerolarge.announcement_panel.sleep": "Sleep",
-  "screen.aerolarge.announcement_panel.landing": "Landing",
-  "screen.aerolarge.announcement_panel.arrival": "Arrival",
-  "block.aerolarge.autopilot_screen": "Autopilot Screen",
-  "block.aerolarge.cockpit_display": "Cockpit Display",
-  "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
-  "screen.aerolarge.autopilot.engage": "AP %s",
-  "screen.aerolarge.autopilot.on": "ON",
-  "screen.aerolarge.autopilot.off": "OFF",
-  "screen.aerolarge.autopilot.heading_left": "◄ HDG",
-  "screen.aerolarge.autopilot.heading_right": "HDG ►",
-  "screen.aerolarge.autopilot.orbit_left": "◄ CIRCLE",
-  "screen.aerolarge.autopilot.orbit_right": "CIRCLE ►",
-  "screen.aerolarge.autopilot.altitude_down": "ALT ▼",
-  "screen.aerolarge.autopilot.altitude_up": "ALT ▲",
-  "screen.aerolarge.autopilot.speed_down": "SPD ▼",
-  "screen.aerolarge.autopilot.speed_up": "SPD ▲",
-  "screen.aerolarge.autopilot.radius_down": "SIZE ▼",
-  "screen.aerolarge.autopilot.radius_up": "SIZE ▲",
-  "screen.aerolarge.autopilot.standby": "ASSEMBLE TO FLY",
-  "screen.aerolarge.autopilot.disengaged": "AUTOPILOT OFF",
-  "screen.aerolarge.autopilot.mode": "%s  %s",
-  "screen.aerolarge.autopilot.mode.heading": "HDG %s",
-  "screen.aerolarge.autopilot.mode.orbit_left": "CIRCLE L %s",
-  "screen.aerolarge.autopilot.mode.orbit_right": "CIRCLE R %s",
-  "screen.aerolarge.autopilot.mode.destination": "PIN %s",
-  "screen.aerolarge.autopilot.mode.rocket_pin": "TO PIN",
-  "screen.aerolarge.autopilot.mode.rocket_back": "RETURN",
-  "screen.aerolarge.autopilot.targets": "ALT %s  SPD %s",
-  "screen.aerolarge.autopilot.targets.land": "TOUCHDOWN  SPD %s",
-  "screen.aerolarge.autopilot.targets.rollout": "BRAKING",
-  "screen.aerolarge.autopilot.now": "SPD %s  ALT %s  HDG %s",
-  "screen.aerolarge.autopilot.range": "%s blocks",
-  "screen.aerolarge.pilot_hud.off": "AP OFF",
-  "screen.aerolarge.autopilot_settings.title": "Autopilot",
-  "screen.aerolarge.autopilot_settings.now": "Flying",
-  "screen.aerolarge.autopilot_settings.take_off_hint": "Takes off, then climbs to fly the settings below.",
-  "screen.aerolarge.autopilot_settings.engage_hint": "Engaging flies the settings below.",
-  "screen.aerolarge.autopilot_settings.assemble_hint": "Takes off once it has been assembled into one flying body.",
-  "screen.aerolarge.autopilot_settings.assembling": "Assembling...",
-  "screen.aerolarge.autopilot_settings.mode.destination": "Fly to Pin",
-  "screen.aerolarge.autopilot_settings.turn.tight_left": "Tight Circle Left",
-  "screen.aerolarge.autopilot_settings.turn.gentle_left": "Gentle Circle Left",
-  "screen.aerolarge.autopilot_settings.turn.straight": "Straight On",
-  "screen.aerolarge.autopilot_settings.turn.gentle_right": "Gentle Circle Right",
-  "screen.aerolarge.autopilot_settings.turn.tight_right": "Tight Circle Right",
-  "screen.aerolarge.autopilot_settings.land_at_pin.on": "Land at the Pin: on, landing near it clear of buildings",
-  "screen.aerolarge.autopilot_settings.land_at_pin.off": "Land at the Pin: off, circling it",
-  "screen.aerolarge.autopilot_settings.map": "Map: drag to look about, scroll to zoom, click to drop the pin",
-  "screen.aerolarge.autopilot_settings.map.middle": "X %s  Z %s",
-  "screen.aerolarge.autopilot_settings.map.pin": "Pin X %s  Z %s",
-  "screen.aerolarge.autopilot_settings.heading": "Heading",
-  "screen.aerolarge.autopilot_settings.altitude": "Altitude",
-  "screen.aerolarge.autopilot_settings.speed": "Speed",
-  "screen.aerolarge.autopilot_settings.range.heading": "%s–%s°",
-  "screen.aerolarge.autopilot_settings.range.altitude": "Y %s–%s",
-  "screen.aerolarge.autopilot_settings.range.speed": "%s–%s b/s",
-  "screen.aerolarge.autopilot_settings.take_off": "Take Off",
-  "screen.aerolarge.autopilot_settings.engage": "Engage",
-  "screen.aerolarge.autopilot_settings.apply": "Apply",
-  "screen.aerolarge.autopilot_settings.disengage": "Disengage",
-  "screen.aerolarge.autopilot_settings.land": "Land",
-  "screen.aerolarge.autopilot_settings.unstuck": "Unstuck",
-  "aerolarge.configuration.autopilot": "Autopilot",
-  "aerolarge.configuration.climbHeight": "Climb Height",
-  "aerolarge.configuration.rotateSpeed": "Rotate Speed",
-  "aerolarge.configuration.cruiseSpeed": "Cruise Speed",
-  "aerolarge.configuration.controlSurfaces": "Control Surfaces (Experimental)",
-  "aerolarge.configuration.radio": "Radio",
-  "aerolarge.configuration.atcChatter": "Air Traffic Control",
-  "aerolarge.configuration.atcVolume": "Air Traffic Control Volume",
-  "aerolarge.configuration.cameraShake": "Camera Shake",
-  "aerolarge.configuration.tailCameraFeed": "Tail Camera Picture",
-  "aerolarge.configuration.tailCameraFps": "Tail Camera Pictures a Second",
-  "aerolarge.configuration.tailCameraRenderDistance": "Tail Camera Render Distance",
-  "aerolarge.configuration.tailCameraResolution": "Tail Camera Picture Height",
-  "aerolarge.configuration.pilotHud": "Pilot HUD",
-  "aerolarge.configuration.pilotHudScale": "Pilot HUD Size",
-  "aerolarge.configuration.nightLights": "Blue Night Lights",
-  "aerolarge.configuration.discoLights": "Disco Ball Spots",
-  "aerolarge.configuration.cloudlessCabin": "Cloudless Cabin",
-  "aerolarge.configuration.fairOverClouds": "Fair Weather Over the Clouds",
-  "aerolarge.configuration.spaceSky": "Space Sky",
-  "aerolarge.configuration.shootingStars": "Shooting Stars",
-  "aerolarge.configuration.heightGauge": "Height Gauge",
-  "aerolarge.configuration.helmetBreathing": "Helmet Breathing",
-  "aerolarge.configuration.roomAmbience": "Room Ambience",
-  "aerolarge.configuration.aurora": "Aurora",
-  "aerolarge.configuration.burnerSmoke": "Burner Smoke",
-  "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
-  "message.aerolarge.autopilot.coming_down": "Coming down here, straight down to the ground",
-  "message.aerolarge.autopilot.assembling_zeppelin": "Assembling the zeppelin: the autopilot takes it from here.",
-  "message.aerolarge.autopilot.assembling_rocket": "Assembling the rocket: the countdown begins as soon as it is ready.",
-  "message.aerolarge.autopilot.no_engines": "This rocket has no engines to fly it with: build it again with Create Propulsion installed.",
-  "message.aerolarge.autopilot.coming_down_rocket": "Coming down here, catching ourselves on the engines",
-  "message.aerolarge.autopilot.off_once_down_rocket": "Autopilot off once the rocket is down: only her engines hold her up, so she comes down here first and switches off on her fins.",
-  "message.aerolarge.autopilot.no_burners": "This zeppelin has no burners to lift it: build it again with Create Aeronautics installed.",
-  "message.aerolarge.autopilot.too_heavy": "The zeppelin is too heavy for its burners to lift, and stays on the ground.",
-  "commands.aerolarge.build_zeppelin": "Building a zeppelin of %s blocks, %s of them over blocks that were in the way",
-  "commands.aerolarge.build_rocket": "Building a rocket of %s blocks, %s of them over blocks that were in the way",
-  "item.aerolarge.airliner_blueprint": "Airliner Blueprint",
-  "item.aerolarge.furnished_airliner_blueprint": "Furnished Airliner Blueprint",
-  "item.aerolarge.airliner_blueprint.tooltip": "A double-deck airliner with an empty cabin, ready to build in",
-  "item.aerolarge.furnished_airliner_blueprint.tooltip": "A double-deck airliner fitted with a pool, a gym hall and a lounge",
-  "item.aerolarge.zeppelin_blueprint": "Zeppelin Blueprint",
-  "item.aerolarge.rocket_blueprint": "Rocket Blueprint",
-  "item.aerolarge.rocket_blueprint.tooltip": "A rocket as tall as the airliner is long, flown to a pin on the map and landed on its fins",
-  "message.aerolarge.rocket_building": "Building the rocket… %s%%",
-  "message.aerolarge.rocket_built": "The rocket is ready. Use the autopilot in its cockpit, at the top, to fly it.",
-  "message.aerolarge.rocket_too_high": "The rocket would reach past the build height here; build it lower down.",
-  "item.aerolarge.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
-  "item.aerolarge.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
-  "item.aerolarge.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",
-  "item.aerolarge.festive_zeppelin_blueprint": "Festive Zeppelin Blueprint",
-  "item.aerolarge.festive_zeppelin_blueprint.tooltip": "The furnished zeppelin dressed for Christmas: snow, red bands, green fins, fairy lights, a wreath, a star and sleigh bells",
-  "item.aerolarge.half_zeppelin_blueprint": "Half-Size Zeppelin Blueprint",
-  "item.aerolarge.half_zeppelin_blueprint.tooltip": "A zeppelin half the Hindenburg's size, 245 blocks long, its control car and decks as big as ever",
-  "item.aerolarge.half_furnished_zeppelin_blueprint": "Half-Size Furnished Zeppelin Blueprint",
-  "item.aerolarge.half_furnished_zeppelin_blueprint.tooltip": "The half-size zeppelin with its passenger decks furnished",
-  "item.aerolarge.half_festive_zeppelin_blueprint": "Half-Size Festive Zeppelin Blueprint",
-  "item.aerolarge.half_festive_zeppelin_blueprint.tooltip": "The half-size furnished zeppelin dressed for Christmas",
-  "item.aerolarge.airliner_blueprint.usage": "Use on the ground: the tail stretches away the way you face. Sneak to build through anything in the way.",
-  "item.aerolarge.rocket_blueprint.on_pad": "Use on a launch pad: she stands in its very middle, her door to its front.",
-  "item.aerolarge.launch_pad_blueprint": "Launch Pad Blueprint",
-  "item.aerolarge.launch_pad_blueprint.tooltip": "A concrete pad for the rocket, with a flame pit, a service tower and floodlights",
-  "item.aerolarge.launch_pad_blueprint.usage": "Use on the ground: the pad's front edge goes just past where you click, its walkway toward you. Sneak to build through anything in the way.",
-  "message.aerolarge.launch_pad_building": "Building the launch pad… %s%%",
-  "message.aerolarge.launch_pad_built": "The launch pad is ready. Use the Rocket Blueprint anywhere on it: she stands in its very middle.",
-  "message.aerolarge.launch_pad_too_high": "The launch pad's tower would reach past the build height here; build it lower down.",
-  "commands.aerolarge.build_launch_pad": "Building a launch pad of %s blocks, %s of them over blocks that were in the way",
-  "block.aerolarge.launch_pad_grate": "Launch Pad Grate",
-  "block.aerolarge.launch_pad_hub": "Launch Pad Hub",
-  "item.aerolarge.control_tower_blueprint": "Control Tower Blueprint",
-  "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",
-  "item.aerolarge.control_tower_blueprint.usage": "Use on the ground: the tower goes up ahead of you, its door toward you. Sneak to build through anything in the way.",
-  "message.aerolarge.control_tower.built": "The control tower is up. Take the lift or the stairs up to the cab: its transponder shows it on every autopilot's map.",
-  "item.aerolarge.runway_blueprint": "Runway Blueprint",
-  "item.aerolarge.runway_blueprint.tooltip": "A lit runway for the airliner, twice as long as it needs to take off",
-  "item.aerolarge.runway_blueprint.usage": "Use on the ground: the runway runs away the way you face, replacing whatever is there.",
-  "message.aerolarge.runway.building": "Laying the runway: %s%%",
-  "message.aerolarge.runway.busy": "A runway is already being laid; wait for it to finish.",
-  "message.aerolarge.runway.built": "The runway is down: %s blocks long and %s wide. To line an airliner up on it, use its blueprint at the far end, looking back down the runway.",
-  "block.aerolarge.transponder": "Transponder",
-  "block.aerolarge.tower_radar": "Tower Radar",
-  "block.aerolarge.motion_sensor": "Motion Sensor",
-  "block.aerolarge.lift_panel": "Lift Panel",
-  "screen.aerolarge.lift_panel.none": "NO LIFT",
-  "screen.aerolarge.radar.title": "Tower Radar",
-  "screen.aerolarge.radar.map": "Radar map",
-  "screen.aerolarge.map.contact.where": "X %s, Z %s",
-  "screen.aerolarge.map.lookout_flag": "Spotted by %s",
-  "screen.aerolarge.map.contact.distance": "%s blocks away",
-  "screen.aerolarge.map.contact.flight": "Height %s, speed %s blocks a second",
-  "marker.aerolarge.icon.tower": "Control tower",
-  "marker.aerolarge.icon.airliner": "Airliner",
-  "marker.aerolarge.icon.house": "Home",
-  "marker.aerolarge.icon.star": "Star",
-  "marker.aerolarge.icon.flag": "Flag",
-  "marker.aerolarge.icon.heart": "Heart",
-  "marker.aerolarge.icon.gem": "Treasure",
-  "marker.aerolarge.icon.tree": "Forest",
-  "marker.aerolarge.icon.anchor": "Harbour",
-  "marker.aerolarge.icon.pickaxe": "Mine",
-  "marker.aerolarge.icon.airship": "Airship",
-  "marker.aerolarge.colour.white": "White",
-  "marker.aerolarge.colour.red": "Red",
-  "marker.aerolarge.colour.orange": "Orange",
-  "marker.aerolarge.colour.yellow": "Yellow",
-  "marker.aerolarge.colour.lime": "Lime",
-  "marker.aerolarge.colour.green": "Green",
-  "marker.aerolarge.colour.cyan": "Cyan",
-  "marker.aerolarge.colour.blue": "Blue",
-  "marker.aerolarge.colour.purple": "Purple",
-  "marker.aerolarge.colour.magenta": "Magenta",
-  "marker.aerolarge.colour.pink": "Pink",
-  "marker.aerolarge.colour.brown": "Brown",
-  "message.aerolarge.building": "Building the airliner… %s%%",
-  "message.aerolarge.built": "The airliner is ready and glued together. Fold the airstairs away, then use the Physics Assembler in the cockpit to fly it.",
-  "message.aerolarge.busy": "An airliner or a zeppelin is already being built here; wait for it to finish.",
-  "message.aerolarge.too_high": "The airliner would reach past the build height here; build it lower down.",
-  "message.aerolarge.blocked": "Not enough room: %s blocks are in the way, the first at %s %s %s. Sneak to build anyway.",
-  "aerolarge.configuration.airframe": "Airframe",
-  "aerolarge.configuration.scale": "Scale",
-  "aerolarge.configuration.blocksPerTick": "Blocks per Tick",
-  "aerolarge.configuration.shellStyle": "Shell Style",
-  "aerolarge.configuration.flight": "Flight",
-  "aerolarge.configuration.wingBlock": "Wing Block",
-  "aerolarge.configuration.engineBlock": "Engine Block",
-  "aerolarge.configuration.thrustSetting": "Thrust Setting",
-  "aerolarge.configuration.assemblerBlock": "Assembler Block",
-  "aerolarge.configuration.wheelMountBlock": "Wheel Mount Block",
-  "aerolarge.configuration.tireItem": "Tire Item",
-  "aerolarge.configuration.landAhead": "Land Ahead",
-  "aerolarge.configuration.landAheadChunks": "Land Ahead Distance",
-  "aerolarge.configuration.cabin": "Cabin",
-  "aerolarge.configuration.turbulence": "Turbulence",
-  "aerolarge.configuration.decompression": "Decompression",
-  "aerolarge.configuration.villagerPassengers": "Villager Passengers",
+  "block.skyliners.light_strip": "LED Light Strip",
+  "block.skyliners.pendant_light": "Pendant Light",
+  "block.skyliners.halo_light": "Halo Light",
+  "block.skyliners.steel_girder": "Steel Girder",
+  "block.skyliners.lift_glass": "Lift Glass",
+  "block.skyliners.wall_light": "Wall Washer",
+  "block.skyliners.floor_light": "Floor Light",
+  "block.skyliners.light_cable": "Light Cable",
+  "block.skyliners.overhead_bin": "Overhead Locker",
+  "container.skyliners.overhead_bin": "Overhead Locker",
+  "block.skyliners.passenger_screen": "Passenger Screen",
+  "screen.skyliners.passenger_screen.welcome": "WELCOME ABOARD",
+  "screen.skyliners.passenger_screen.standby": "ASSEMBLE TO FLY",
+  "screen.skyliners.passenger_screen.title": "FLIGHT INFO",
+  "screen.skyliners.passenger_screen.map_title": "ROUTE MAP",
+  "screen.skyliners.passenger_screen.status.ground": "ON THE GROUND",
+  "screen.skyliners.passenger_screen.status.climbing": "CLIMBING",
+  "screen.skyliners.passenger_screen.status.cruising": "CRUISING",
+  "screen.skyliners.passenger_screen.status.descending": "DESCENDING",
+  "screen.skyliners.passenger_screen.altitude": "ALTITUDE",
+  "screen.skyliners.passenger_screen.ground_speed": "GROUND SPEED",
+  "screen.skyliners.passenger_screen.vertical_speed": "VERTICAL SPEED",
+  "screen.skyliners.passenger_screen.heading": "HEADING",
+  "screen.skyliners.passenger_screen.height": "ABOVE GROUND",
+  "screen.skyliners.passenger_screen.distance": "DISTANCE FLOWN",
+  "screen.skyliners.passenger_screen.flight_time": "FLIGHT TIME %s",
+  "screen.skyliners.passenger_screen.unit.metres": "m",
+  "screen.skyliners.passenger_screen.unit.kilometres": "km",
+  "screen.skyliners.passenger_screen.unit.kilometres_per_hour": "km/h",
+  "screen.skyliners.passenger_screen.unit.metres_per_second": "m/s",
+  ...Object.fromEntries(["N", "NE", "E", "SE", "S", "SW", "W", "NW"].map((point, i) => [`screen.skyliners.passenger_screen.compass.${i}`, point])),
+  "screen.skyliners.passenger_screen.cameras": "USE FOR OUTSIDE CAMERAS",
+  "screen.skyliners.passenger_screen.camera": "CAM %s  %s",
+  "screen.skyliners.passenger_screen.camera.tail": "TAIL",
+  "screen.skyliners.passenger_screen.camera.wing": "RIGHT WING",
+  "screen.skyliners.passenger_screen.camera.nose": "NOSE GEAR",
+  "screen.skyliners.passenger_screen.camera.front": "FRONT",
+  "screen.skyliners.passenger_screen.camera.bow": "BOW",
+  "screen.skyliners.passenger_screen.camera.below": "BELOW",
+  "screen.skyliners.passenger_screen.camera.flyby": "FLYBY",
+  "screen.skyliners.passenger_screen.camera.side": "SIDE",
+  "screen.skyliners.passenger_screen.camera.leg": "LANDING LEG",
+  "screen.skyliners.passenger_screen.camera.orbit": "ORBIT",
+  "screen.skyliners.passenger_screen.camera_hint": "%s: next camera    %s: back to the cabin",
+  "screen.skyliners.lookout.hint": "%s: drop your flag there    Mouse wheel: zoom    %s: step back",
+  "message.skyliners.passenger_screen.not_assembled": "The outside cameras come on once the airliner is assembled",
+  "message.skyliners.passenger_screen.no_cameras": "This airliner has no outside cameras: it has no autopilot to fix them to",
+  "block.skyliners.seatbelt_sign": "Seatbelt Sign",
+  "block.skyliners.seatbelt_switch": "Seatbelt Switch",
+  "message.skyliners.seatbelts.on": "Seatbelt signs on",
+  "message.skyliners.seatbelts.off": "Seatbelt signs off",
+  "message.skyliners.seatbelts.fastened": "Your seatbelt is fastened: stay seated while the signs are on.",
+  "subtitles.skyliners.seatbelt_ding": "Seatbelt sign dings",
+  "subtitles.skyliners.pa_chime": "Cabin chime",
+  "subtitles.skyliners.radio_crackle": "Radio crackles",
+  "message.skyliners.unbreakable": "The frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
+  "block.skyliners.tail_camera_display": "Tail Camera Display",
+  "screen.skyliners.tail_camera_display.no_signal": "NO SIGNAL",
+  "screen.skyliners.tail_camera_display.standby": "ASSEMBLE TO FLY",
+  "screen.skyliners.tail_camera_display.camera": "CAM %s",
+  "block.skyliners.announcement_panel": "Announcement Panel",
+  "block.skyliners.flight_map": "Flight Map",
+  "message.skyliners.announcement_panel.unlinked": "This panel is not near an airliner's autopilot.",
+  "screen.skyliners.announcement_panel.welcome": "Welcome",
+  "screen.skyliners.announcement_panel.takeoff": "Take-off",
+  "screen.skyliners.announcement_panel.turbulence": "Seatbelts",
+  "screen.skyliners.announcement_panel.snacks": "Snacks",
+  "screen.skyliners.announcement_panel.window": "Look out",
+  "screen.skyliners.announcement_panel.playtime": "Pool & gym",
+  "screen.skyliners.announcement_panel.sleep": "Sleep",
+  "screen.skyliners.announcement_panel.landing": "Landing",
+  "screen.skyliners.announcement_panel.arrival": "Arrival",
+  "block.skyliners.autopilot_screen": "Autopilot Screen",
+  "block.skyliners.cockpit_display": "Cockpit Display",
+  "message.skyliners.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
+  "screen.skyliners.autopilot.engage": "AP %s",
+  "screen.skyliners.autopilot.on": "ON",
+  "screen.skyliners.autopilot.off": "OFF",
+  "screen.skyliners.autopilot.heading_left": "◄ HDG",
+  "screen.skyliners.autopilot.heading_right": "HDG ►",
+  "screen.skyliners.autopilot.orbit_left": "◄ CIRCLE",
+  "screen.skyliners.autopilot.orbit_right": "CIRCLE ►",
+  "screen.skyliners.autopilot.altitude_down": "ALT ▼",
+  "screen.skyliners.autopilot.altitude_up": "ALT ▲",
+  "screen.skyliners.autopilot.speed_down": "SPD ▼",
+  "screen.skyliners.autopilot.speed_up": "SPD ▲",
+  "screen.skyliners.autopilot.radius_down": "SIZE ▼",
+  "screen.skyliners.autopilot.radius_up": "SIZE ▲",
+  "screen.skyliners.autopilot.standby": "ASSEMBLE TO FLY",
+  "screen.skyliners.autopilot.disengaged": "AUTOPILOT OFF",
+  "screen.skyliners.autopilot.mode": "%s  %s",
+  "screen.skyliners.autopilot.mode.heading": "HDG %s",
+  "screen.skyliners.autopilot.mode.orbit_left": "CIRCLE L %s",
+  "screen.skyliners.autopilot.mode.orbit_right": "CIRCLE R %s",
+  "screen.skyliners.autopilot.mode.destination": "PIN %s",
+  "screen.skyliners.autopilot.mode.rocket_pin": "TO PIN",
+  "screen.skyliners.autopilot.mode.rocket_back": "RETURN",
+  "screen.skyliners.autopilot.targets": "ALT %s  SPD %s",
+  "screen.skyliners.autopilot.targets.land": "TOUCHDOWN  SPD %s",
+  "screen.skyliners.autopilot.targets.rollout": "BRAKING",
+  "screen.skyliners.autopilot.now": "SPD %s  ALT %s  HDG %s",
+  "screen.skyliners.autopilot.range": "%s blocks",
+  "screen.skyliners.pilot_hud.off": "AP OFF",
+  "screen.skyliners.autopilot_settings.title": "Autopilot",
+  "screen.skyliners.autopilot_settings.now": "Flying",
+  "screen.skyliners.autopilot_settings.take_off_hint": "Takes off, then climbs to fly the settings below.",
+  "screen.skyliners.autopilot_settings.engage_hint": "Engaging flies the settings below.",
+  "screen.skyliners.autopilot_settings.assemble_hint": "Takes off once it has been assembled into one flying body.",
+  "screen.skyliners.autopilot_settings.assembling": "Assembling...",
+  "screen.skyliners.autopilot_settings.mode.destination": "Fly to Pin",
+  "screen.skyliners.autopilot_settings.turn.tight_left": "Tight Circle Left",
+  "screen.skyliners.autopilot_settings.turn.gentle_left": "Gentle Circle Left",
+  "screen.skyliners.autopilot_settings.turn.straight": "Straight On",
+  "screen.skyliners.autopilot_settings.turn.gentle_right": "Gentle Circle Right",
+  "screen.skyliners.autopilot_settings.turn.tight_right": "Tight Circle Right",
+  "screen.skyliners.autopilot_settings.land_at_pin.on": "Land at the Pin: on, landing near it clear of buildings",
+  "screen.skyliners.autopilot_settings.land_at_pin.off": "Land at the Pin: off, circling it",
+  "screen.skyliners.autopilot_settings.map": "Map: drag to look about, scroll to zoom, click to drop the pin",
+  "screen.skyliners.autopilot_settings.map.middle": "X %s  Z %s",
+  "screen.skyliners.autopilot_settings.map.pin": "Pin X %s  Z %s",
+  "screen.skyliners.autopilot_settings.heading": "Heading",
+  "screen.skyliners.autopilot_settings.altitude": "Altitude",
+  "screen.skyliners.autopilot_settings.speed": "Speed",
+  "screen.skyliners.autopilot_settings.range.heading": "%s–%s°",
+  "screen.skyliners.autopilot_settings.range.altitude": "Y %s–%s",
+  "screen.skyliners.autopilot_settings.range.speed": "%s–%s b/s",
+  "screen.skyliners.autopilot_settings.take_off": "Take Off",
+  "screen.skyliners.autopilot_settings.engage": "Engage",
+  "screen.skyliners.autopilot_settings.apply": "Apply",
+  "screen.skyliners.autopilot_settings.disengage": "Disengage",
+  "screen.skyliners.autopilot_settings.land": "Land",
+  "screen.skyliners.autopilot_settings.unstuck": "Unstuck",
+  "skyliners.configuration.autopilot": "Autopilot",
+  "skyliners.configuration.climbHeight": "Climb Height",
+  "skyliners.configuration.rotateSpeed": "Rotate Speed",
+  "skyliners.configuration.cruiseSpeed": "Cruise Speed",
+  "skyliners.configuration.controlSurfaces": "Control Surfaces (Experimental)",
+  "skyliners.configuration.radio": "Radio",
+  "skyliners.configuration.atcChatter": "Air Traffic Control",
+  "skyliners.configuration.atcVolume": "Air Traffic Control Volume",
+  "skyliners.configuration.cameraShake": "Camera Shake",
+  "skyliners.configuration.tailCameraFeed": "Tail Camera Picture",
+  "skyliners.configuration.tailCameraFps": "Tail Camera Pictures a Second",
+  "skyliners.configuration.tailCameraRenderDistance": "Tail Camera Render Distance",
+  "skyliners.configuration.tailCameraResolution": "Tail Camera Picture Height",
+  "skyliners.configuration.pilotHud": "Pilot HUD",
+  "skyliners.configuration.pilotHudScale": "Pilot HUD Size",
+  "skyliners.configuration.nightLights": "Blue Night Lights",
+  "skyliners.configuration.discoLights": "Disco Ball Spots",
+  "skyliners.configuration.cloudlessCabin": "Cloudless Cabin",
+  "skyliners.configuration.fairOverClouds": "Fair Weather Over the Clouds",
+  "skyliners.configuration.spaceSky": "Space Sky",
+  "skyliners.configuration.shootingStars": "Shooting Stars",
+  "skyliners.configuration.heightGauge": "Height Gauge",
+  "skyliners.configuration.helmetBreathing": "Helmet Breathing",
+  "skyliners.configuration.roomAmbience": "Room Ambience",
+  "skyliners.configuration.aurora": "Aurora",
+  "skyliners.configuration.burnerSmoke": "Burner Smoke",
+  "commands.skyliners.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
+  "message.skyliners.autopilot.coming_down": "Coming down here, straight down to the ground",
+  "message.skyliners.autopilot.assembling_zeppelin": "Assembling the zeppelin: the autopilot takes it from here.",
+  "message.skyliners.autopilot.assembling_rocket": "Assembling the rocket: the countdown begins as soon as it is ready.",
+  "message.skyliners.autopilot.no_engines": "This rocket has no engines to fly it with: build it again with Create Propulsion installed.",
+  "message.skyliners.autopilot.coming_down_rocket": "Coming down here, catching ourselves on the engines",
+  "message.skyliners.autopilot.off_once_down_rocket": "Autopilot off once the rocket is down: only her engines hold her up, so she comes down here first and switches off on her fins.",
+  "message.skyliners.autopilot.no_burners": "This zeppelin has no burners to lift it: build it again with Create Aeronautics installed.",
+  "message.skyliners.autopilot.too_heavy": "The zeppelin is too heavy for its burners to lift, and stays on the ground.",
+  "commands.skyliners.build_zeppelin": "Building a zeppelin of %s blocks, %s of them over blocks that were in the way",
+  "commands.skyliners.build_rocket": "Building a rocket of %s blocks, %s of them over blocks that were in the way",
+  "item.skyliners.airliner_blueprint": "Airliner Blueprint",
+  "item.skyliners.furnished_airliner_blueprint": "Furnished Airliner Blueprint",
+  "item.skyliners.airliner_blueprint.tooltip": "A double-deck airliner with an empty cabin, ready to build in",
+  "item.skyliners.furnished_airliner_blueprint.tooltip": "A double-deck airliner fitted with a pool, a gym hall and a lounge",
+  "item.skyliners.zeppelin_blueprint": "Zeppelin Blueprint",
+  "item.skyliners.rocket_blueprint": "Rocket Blueprint",
+  "item.skyliners.rocket_blueprint.tooltip": "A rocket as tall as the airliner is long, flown to a pin on the map and landed on its fins",
+  "message.skyliners.rocket_building": "Building the rocket… %s%%",
+  "message.skyliners.rocket_built": "The rocket is ready. Use the autopilot in its cockpit, at the top, to fly it.",
+  "message.skyliners.rocket_too_high": "The rocket would reach past the build height here; build it lower down.",
+  "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
+  "item.skyliners.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
+  "item.skyliners.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",
+  "item.skyliners.festive_zeppelin_blueprint": "Festive Zeppelin Blueprint",
+  "item.skyliners.festive_zeppelin_blueprint.tooltip": "The furnished zeppelin dressed for Christmas: snow, red bands, green fins, fairy lights, a wreath, a star and sleigh bells",
+  "item.skyliners.half_zeppelin_blueprint": "Half-Size Zeppelin Blueprint",
+  "item.skyliners.half_zeppelin_blueprint.tooltip": "A zeppelin half the Hindenburg's size, 245 blocks long, its control car and decks as big as ever",
+  "item.skyliners.half_furnished_zeppelin_blueprint": "Half-Size Furnished Zeppelin Blueprint",
+  "item.skyliners.half_furnished_zeppelin_blueprint.tooltip": "The half-size zeppelin with its passenger decks furnished",
+  "item.skyliners.half_festive_zeppelin_blueprint": "Half-Size Festive Zeppelin Blueprint",
+  "item.skyliners.half_festive_zeppelin_blueprint.tooltip": "The half-size furnished zeppelin dressed for Christmas",
+  "item.skyliners.airliner_blueprint.usage": "Use on the ground: the tail stretches away the way you face. Sneak to build through anything in the way.",
+  "item.skyliners.rocket_blueprint.on_pad": "Use on a launch pad: she stands in its very middle, her door to its front.",
+  "item.skyliners.launch_pad_blueprint": "Launch Pad Blueprint",
+  "item.skyliners.launch_pad_blueprint.tooltip": "A concrete pad for the rocket, with a flame pit, a service tower and floodlights",
+  "item.skyliners.launch_pad_blueprint.usage": "Use on the ground: the pad's front edge goes just past where you click, its walkway toward you. Sneak to build through anything in the way.",
+  "message.skyliners.launch_pad_building": "Building the launch pad… %s%%",
+  "message.skyliners.launch_pad_built": "The launch pad is ready. Use the Rocket Blueprint anywhere on it: she stands in its very middle.",
+  "message.skyliners.launch_pad_too_high": "The launch pad's tower would reach past the build height here; build it lower down.",
+  "commands.skyliners.build_launch_pad": "Building a launch pad of %s blocks, %s of them over blocks that were in the way",
+  "block.skyliners.launch_pad_grate": "Launch Pad Grate",
+  "block.skyliners.launch_pad_hub": "Launch Pad Hub",
+  "item.skyliners.control_tower_blueprint": "Control Tower Blueprint",
+  "item.skyliners.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",
+  "item.skyliners.control_tower_blueprint.usage": "Use on the ground: the tower goes up ahead of you, its door toward you. Sneak to build through anything in the way.",
+  "message.skyliners.control_tower.built": "The control tower is up. Take the lift or the stairs up to the cab: its transponder shows it on every autopilot's map.",
+  "item.skyliners.runway_blueprint": "Runway Blueprint",
+  "item.skyliners.runway_blueprint.tooltip": "A lit runway for the airliner, twice as long as it needs to take off",
+  "item.skyliners.runway_blueprint.usage": "Use on the ground: the runway runs away the way you face, replacing whatever is there.",
+  "message.skyliners.runway.building": "Laying the runway: %s%%",
+  "message.skyliners.runway.busy": "A runway is already being laid; wait for it to finish.",
+  "message.skyliners.runway.built": "The runway is down: %s blocks long and %s wide. To line an airliner up on it, use its blueprint at the far end, looking back down the runway.",
+  "block.skyliners.transponder": "Transponder",
+  "block.skyliners.tower_radar": "Tower Radar",
+  "block.skyliners.motion_sensor": "Motion Sensor",
+  "block.skyliners.lift_panel": "Lift Panel",
+  "screen.skyliners.lift_panel.none": "NO LIFT",
+  "screen.skyliners.radar.title": "Tower Radar",
+  "screen.skyliners.radar.map": "Radar map",
+  "screen.skyliners.map.contact.where": "X %s, Z %s",
+  "screen.skyliners.map.lookout_flag": "Spotted by %s",
+  "screen.skyliners.map.contact.distance": "%s blocks away",
+  "screen.skyliners.map.contact.flight": "Height %s, speed %s blocks a second",
+  "marker.skyliners.icon.tower": "Control tower",
+  "marker.skyliners.icon.airliner": "Airliner",
+  "marker.skyliners.icon.house": "Home",
+  "marker.skyliners.icon.star": "Star",
+  "marker.skyliners.icon.flag": "Flag",
+  "marker.skyliners.icon.heart": "Heart",
+  "marker.skyliners.icon.gem": "Treasure",
+  "marker.skyliners.icon.tree": "Forest",
+  "marker.skyliners.icon.anchor": "Harbour",
+  "marker.skyliners.icon.pickaxe": "Mine",
+  "marker.skyliners.icon.airship": "Airship",
+  "marker.skyliners.colour.white": "White",
+  "marker.skyliners.colour.red": "Red",
+  "marker.skyliners.colour.orange": "Orange",
+  "marker.skyliners.colour.yellow": "Yellow",
+  "marker.skyliners.colour.lime": "Lime",
+  "marker.skyliners.colour.green": "Green",
+  "marker.skyliners.colour.cyan": "Cyan",
+  "marker.skyliners.colour.blue": "Blue",
+  "marker.skyliners.colour.purple": "Purple",
+  "marker.skyliners.colour.magenta": "Magenta",
+  "marker.skyliners.colour.pink": "Pink",
+  "marker.skyliners.colour.brown": "Brown",
+  "message.skyliners.building": "Building the airliner… %s%%",
+  "message.skyliners.built": "The airliner is ready and glued together. Fold the airstairs away, then use the Physics Assembler in the cockpit to fly it.",
+  "message.skyliners.busy": "An airliner or a zeppelin is already being built here; wait for it to finish.",
+  "message.skyliners.too_high": "The airliner would reach past the build height here; build it lower down.",
+  "message.skyliners.blocked": "Not enough room: %s blocks are in the way, the first at %s %s %s. Sneak to build anyway.",
+  "skyliners.configuration.airframe": "Airframe",
+  "skyliners.configuration.scale": "Scale",
+  "skyliners.configuration.blocksPerTick": "Blocks per Tick",
+  "skyliners.configuration.shellStyle": "Shell Style",
+  "skyliners.configuration.flight": "Flight",
+  "skyliners.configuration.wingBlock": "Wing Block",
+  "skyliners.configuration.engineBlock": "Engine Block",
+  "skyliners.configuration.thrustSetting": "Thrust Setting",
+  "skyliners.configuration.assemblerBlock": "Assembler Block",
+  "skyliners.configuration.wheelMountBlock": "Wheel Mount Block",
+  "skyliners.configuration.tireItem": "Tire Item",
+  "skyliners.configuration.landAhead": "Land Ahead",
+  "skyliners.configuration.landAheadChunks": "Land Ahead Distance",
+  "skyliners.configuration.cabin": "Cabin",
+  "skyliners.configuration.turbulence": "Turbulence",
+  "skyliners.configuration.decompression": "Decompression",
+  "skyliners.configuration.villagerPassengers": "Villager Passengers",
   ...DUTY_FREE_LANG,
   ...cabinDecorLang,
   ...holdAndTailLang(),

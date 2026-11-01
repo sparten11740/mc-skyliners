@@ -1,0 +1,32 @@
+{
+  "parent": "skyliners:first_flight/root",
+  "display": {
+    "icon": {
+      "id": "skyliners:rubber_duck"
+    },
+    "title": {
+      "translate": "advancements.skyliners.first_flight.duck_hunt.title"
+    },
+    "description": {
+      "translate": "advancements.skyliners.first_flight.duck_hunt.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "duck_1": {
+      "trigger": "minecraft:impossible"
+    },
+    "duck_2": {
+      "trigger": "minecraft:impossible"
+    },
+    "duck_3": {
+      "trigger": "minecraft:impossible"
+    },
+    "duck_4": {
+      "trigger": "minecraft:impossible"
+    },
+    "duck_5": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

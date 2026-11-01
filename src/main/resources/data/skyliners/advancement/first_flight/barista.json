@@ -1,0 +1,26 @@
+{
+  "parent": "skyliners:first_flight/root",
+  "display": {
+    "icon": {
+      "id": "skyliners:cappuccino"
+    },
+    "title": {
+      "translate": "advancements.skyliners.first_flight.barista.title"
+    },
+    "description": {
+      "translate": "advancements.skyliners.first_flight.barista.description"
+    },
+    "frame": "task"
+  },
+  "criteria": {
+    "espresso": {
+      "trigger": "minecraft:impossible"
+    },
+    "cappuccino": {
+      "trigger": "minecraft:impossible"
+    },
+    "mocha": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,half=bottom": {
+      "model": "skyliners:block/cabin_stairs"
+    },
+    "facing=north,half=top": {
+      "model": "skyliners:block/cabin_stairs_soffit"
+    },
+    "facing=east,half=bottom": {
+      "model": "skyliners:block/cabin_stairs",
+      "y": 90
+    },
+    "facing=east,half=top": {
+      "model": "skyliners:block/cabin_stairs_soffit",
+      "y": 90
+    },
+    "facing=south,half=bottom": {
+      "model": "skyliners:block/cabin_stairs",
+      "y": 180
+    },
+    "facing=south,half=top": {
+      "model": "skyliners:block/cabin_stairs_soffit",
+      "y": 180
+    },
+    "facing=west,half=bottom": {
+      "model": "skyliners:block/cabin_stairs",
+      "y": 270
+    },
+    "facing=west,half=top": {
+      "model": "skyliners:block/cabin_stairs_soffit",
+      "y": 270
+    }
+  }
+}

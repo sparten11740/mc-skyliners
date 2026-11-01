@@ -1,0 +1,52 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "drawers": "skyliners:block/duty_free_display_drawers",
+    "side": "skyliners:block/duty_free_counter_side",
+    "white": "skyliners:block/planter_box",
+    "back": "skyliners:block/duty_free_display_back",
+    "glass": "skyliners:block/duty_free_glass",
+    "shelf": "skyliners:block/back_bar_glass",
+    "gold": "skyliners:block/perfume_cap",
+    "pink": "skyliners:block/perfume_pink",
+    "violet": "skyliners:block/perfume_violet",
+    "amber": "skyliners:block/perfume_amber",
+    "brown": "skyliners:block/chocolate_box_brown",
+    "red": "skyliners:block/chocolate_box_red",
+    "particle": "skyliners:block/duty_free_counter_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#drawers"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#white"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

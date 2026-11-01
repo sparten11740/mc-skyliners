@@ -1,0 +1,147 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "skyliners:block/shaft_decor_hazard",
+    "rubber": "skyliners:block/shaft_decor_hazard",
+    "cap": "skyliners:block/shaft_decor_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        -2,
+        0,
+        14
+      ],
+      "to": [
+        7,
+        10,
+        15.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rubber",
+          "uv": [
+            0,
+            6,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rubber",
+          "uv": [
+            0,
+            6,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rubber",
+          "uv": [
+            0,
+            6,
+            1.75,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rubber",
+          "uv": [
+            0,
+            6,
+            1.75,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rubber",
+          "uv": [
+            0,
+            0,
+            9,
+            1.75
+          ]
+        },
+        "down": {
+          "texture": "#rubber",
+          "uv": [
+            0,
+            0,
+            9,
+            1.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -1.75,
+        10,
+        14.25
+      ],
+      "to": [
+        6.75,
+        10.5,
+        15.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cap",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#cap",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#cap",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#cap",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#cap",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#cap",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

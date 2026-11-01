@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GGG",
+    "GMG",
+    "PRP"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:black_stained_glass_pane"
+    },
+    "M": {
+      "item": "minecraft:map"
+    },
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "skyliners:flight_map",
+    "count": 1
+  }
+}

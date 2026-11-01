@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "armed=false,facing=north": {
+      "model": "skyliners:block/drop_release_safe",
+      "y": 0
+    },
+    "armed=true,facing=north": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 0
+    },
+    "armed=false,facing=east": {
+      "model": "skyliners:block/drop_release_safe",
+      "y": 90
+    },
+    "armed=true,facing=east": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 90
+    },
+    "armed=false,facing=south": {
+      "model": "skyliners:block/drop_release_safe",
+      "y": 180
+    },
+    "armed=true,facing=south": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 180
+    },
+    "armed=false,facing=west": {
+      "model": "skyliners:block/drop_release_safe",
+      "y": 270
+    },
+    "armed=true,facing=west": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 270
+    }
+  }
+}

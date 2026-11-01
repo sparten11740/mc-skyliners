@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,released=false": {
+      "model": "skyliners:block/carrier_lever",
+      "y": 0
+    },
+    "facing=north,released=true": {
+      "model": "skyliners:block/carrier_lever_released",
+      "y": 0
+    },
+    "facing=east,released=false": {
+      "model": "skyliners:block/carrier_lever",
+      "y": 90
+    },
+    "facing=east,released=true": {
+      "model": "skyliners:block/carrier_lever_released",
+      "y": 90
+    },
+    "facing=south,released=false": {
+      "model": "skyliners:block/carrier_lever",
+      "y": 180
+    },
+    "facing=south,released=true": {
+      "model": "skyliners:block/carrier_lever_released",
+      "y": 180
+    },
+    "facing=west,released=false": {
+      "model": "skyliners:block/carrier_lever",
+      "y": 270
+    },
+    "facing=west,released=true": {
+      "model": "skyliners:block/carrier_lever_released",
+      "y": 270
+    }
+  }
+}

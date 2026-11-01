@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,fog=ready": {
+      "model": "skyliners:block/fog_machine_ready",
+      "y": 0
+    },
+    "facing=north,fog=fogging": {
+      "model": "skyliners:block/fog_machine_fogging",
+      "y": 0
+    },
+    "facing=north,fog=heating": {
+      "model": "skyliners:block/fog_machine_heating",
+      "y": 0
+    },
+    "facing=east,fog=ready": {
+      "model": "skyliners:block/fog_machine_ready",
+      "y": 90
+    },
+    "facing=east,fog=fogging": {
+      "model": "skyliners:block/fog_machine_fogging",
+      "y": 90
+    },
+    "facing=east,fog=heating": {
+      "model": "skyliners:block/fog_machine_heating",
+      "y": 90
+    },
+    "facing=south,fog=ready": {
+      "model": "skyliners:block/fog_machine_ready",
+      "y": 180
+    },
+    "facing=south,fog=fogging": {
+      "model": "skyliners:block/fog_machine_fogging",
+      "y": 180
+    },
+    "facing=south,fog=heating": {
+      "model": "skyliners:block/fog_machine_heating",
+      "y": 180
+    },
+    "facing=west,fog=ready": {
+      "model": "skyliners:block/fog_machine_ready",
+      "y": 270
+    },
+    "facing=west,fog=fogging": {
+      "model": "skyliners:block/fog_machine_fogging",
+      "y": 270
+    },
+    "facing=west,fog=heating": {
+      "model": "skyliners:block/fog_machine_heating",
+      "y": 270
+    }
+  }
+}

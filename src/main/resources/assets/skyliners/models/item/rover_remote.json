@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "skyliners:item/rover_remote"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:paired": 1
+      },
+      "model": "skyliners:item/rover_remote_paired"
+    }
+  ]
+}

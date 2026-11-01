@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "aerolarge:block/cockpit_window"
-  },
-  "render_type": "minecraft:translucent"
-}

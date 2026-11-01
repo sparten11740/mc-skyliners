@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "YTK",
+    " P "
+  ],
+  "key": {
+    "Y": {
+      "item": "minecraft:yellow_dye"
+    },
+    "T": {
+      "item": "minecraft:tripwire_hook"
+    },
+    "K": {
+      "item": "minecraft:black_dye"
+    },
+    "P": {
+      "item": "skyliners:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:rocket_abort_handle",
+    "count": 1
+  }
+}

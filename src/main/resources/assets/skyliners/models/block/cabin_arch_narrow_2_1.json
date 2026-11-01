@@ -1,0 +1,11 @@
+{
+  "loader": "skyliners:cabin_arch",
+  "part": "narrow_2_1",
+  "textures": {
+    "trim": "skyliners:block/cabin_arch_trim",
+    "groove": "skyliners:block/cabin_arch_groove",
+    "arch": "skyliners:block/cabin_arch",
+    "wall": "skyliners:block/cabin_partition",
+    "particle": "skyliners:block/cabin_arch"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "signal=off": {
+      "model": "skyliners:block/jump_light_off"
+    },
+    "signal=red": {
+      "model": "skyliners:block/jump_light_red"
+    },
+    "signal=green": {
+      "model": "skyliners:block/jump_light_green"
+    }
+  }
+}

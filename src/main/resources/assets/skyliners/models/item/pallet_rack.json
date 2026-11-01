@@ -1,0 +1,29 @@
+{
+  "parent": "skyliners:block/pallet_rack_boxes",
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:load": 0
+      },
+      "model": "skyliners:block/pallet_rack_boxes"
+    },
+    {
+      "predicate": {
+        "skyliners:load": 0.25
+      },
+      "model": "skyliners:block/pallet_rack_drums"
+    },
+    {
+      "predicate": {
+        "skyliners:load": 0.5
+      },
+      "model": "skyliners:block/pallet_rack_crates"
+    },
+    {
+      "predicate": {
+        "skyliners:load": 0.75
+      },
+      "model": "skyliners:block/pallet_rack_empty"
+    }
+  ]
+}

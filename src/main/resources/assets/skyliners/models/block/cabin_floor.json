@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "skyliners:block/cabin_floor",
+    "bottom": "skyliners:block/cabin_floor_under",
+    "side": "skyliners:block/cabin_floor_edge",
+    "particle": "skyliners:block/cabin_floor"
+  }
+}

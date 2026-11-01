@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "skyliners:block/steel_girder"
+    },
+    "axis=z": {
+      "model": "skyliners:block/steel_girder",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "skyliners:block/steel_girder",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

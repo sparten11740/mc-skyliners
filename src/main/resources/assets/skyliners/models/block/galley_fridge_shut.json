@@ -1,0 +1,133 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "steel": "skyliners:block/fridge_steel",
+    "door": "skyliners:block/fridge_door",
+    "inside": "skyliners:block/fridge_inside",
+    "food": "skyliners:block/fridge_food",
+    "bins": "skyliners:block/fridge_door_inside",
+    "particle": "skyliners:block/fridge_steel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1.5
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        1.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#door"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        3,
+        -1
+      ],
+      "to": [
+        3.5,
+        13,
+        0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            3,
+            1,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            15,
+            3,
+            16,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            2.5,
+            15,
+            3.5,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            2.5,
+            0,
+            3.5,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

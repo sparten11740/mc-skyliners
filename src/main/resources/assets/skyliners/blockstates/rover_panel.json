@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,status=ready": {
+      "model": "skyliners:block/rover_panel_ready",
+      "y": 0
+    },
+    "facing=east,status=ready": {
+      "model": "skyliners:block/rover_panel_ready",
+      "y": 90
+    },
+    "facing=south,status=ready": {
+      "model": "skyliners:block/rover_panel_ready",
+      "y": 180
+    },
+    "facing=west,status=ready": {
+      "model": "skyliners:block/rover_panel_ready",
+      "y": 270
+    },
+    "facing=north,status=busy": {
+      "model": "skyliners:block/rover_panel_busy",
+      "y": 0
+    },
+    "facing=east,status=busy": {
+      "model": "skyliners:block/rover_panel_busy",
+      "y": 90
+    },
+    "facing=south,status=busy": {
+      "model": "skyliners:block/rover_panel_busy",
+      "y": 180
+    },
+    "facing=west,status=busy": {
+      "model": "skyliners:block/rover_panel_busy",
+      "y": 270
+    },
+    "facing=north,status=out": {
+      "model": "skyliners:block/rover_panel_out",
+      "y": 0
+    },
+    "facing=east,status=out": {
+      "model": "skyliners:block/rover_panel_out",
+      "y": 90
+    },
+    "facing=south,status=out": {
+      "model": "skyliners:block/rover_panel_out",
+      "y": 180
+    },
+    "facing=west,status=out": {
+      "model": "skyliners:block/rover_panel_out",
+      "y": 270
+    },
+    "facing=north,status=refused": {
+      "model": "skyliners:block/rover_panel_refused",
+      "y": 0
+    },
+    "facing=east,status=refused": {
+      "model": "skyliners:block/rover_panel_refused",
+      "y": 90
+    },
+    "facing=south,status=refused": {
+      "model": "skyliners:block/rover_panel_refused",
+      "y": 180
+    },
+    "facing=west,status=refused": {
+      "model": "skyliners:block/rover_panel_refused",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "G",
+    "P"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:black_stained_glass_pane"
+    },
+    "P": {
+      "item": "skyliners:instrument_panel"
+    }
+  },
+  "result": {
+    "id": "skyliners:flight_display",
+    "count": 1
+  }
+}

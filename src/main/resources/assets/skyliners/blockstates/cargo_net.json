@@ -1,0 +1,200 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "up": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_top"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_foot"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "up": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_top",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_foot",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "up": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_top",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_foot",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "up": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_top",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_side_foot",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "north": "false",
+            "east": "false"
+          },
+          {
+            "north": "false",
+            "west": "false"
+          },
+          {
+            "south": "false",
+            "east": "false"
+          },
+          {
+            "south": "false",
+            "west": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_strap"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "north": "false",
+            "east": "false",
+            "up": "false"
+          },
+          {
+            "north": "false",
+            "west": "false",
+            "up": "false"
+          },
+          {
+            "south": "false",
+            "east": "false",
+            "up": "false"
+          },
+          {
+            "south": "false",
+            "west": "false",
+            "up": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_strap_top"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "north": "false",
+            "east": "false",
+            "down": "false"
+          },
+          {
+            "north": "false",
+            "west": "false",
+            "down": "false"
+          },
+          {
+            "south": "false",
+            "east": "false",
+            "down": "false"
+          },
+          {
+            "south": "false",
+            "west": "false",
+            "down": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/cargo_net_strap_foot"
+      }
+    }
+  ]
+}

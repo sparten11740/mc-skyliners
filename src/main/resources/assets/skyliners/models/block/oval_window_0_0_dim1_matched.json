@@ -1,0 +1,36 @@
+{
+  "loader": "neoforge:composite",
+  "textures": {
+    "particle": "skyliners:block/oval_window_glass_dim1"
+  },
+  "children": {
+    "glass": {
+      "loader": "skyliners:oval_window",
+      "part": "glass",
+      "render_type": "minecraft:translucent",
+      "column": 0,
+      "row": 0,
+      "textures": {
+        "glass": "skyliners:block/oval_window_glass_dim1",
+        "particle": "skyliners:block/oval_window_glass_dim1"
+      }
+    },
+    "frame": {
+      "loader": "skyliners:oval_window",
+      "part": "frame",
+      "render_type": "minecraft:cutout_mipped",
+      "column": 0,
+      "row": 0,
+      "matches_wall": true,
+      "textures": {
+        "frame": "skyliners:block/oval_window_0_0_frame",
+        "inside": "skyliners:block/oval_window_0_0_inside",
+        "rim": "skyliners:block/oval_window_rim",
+        "lip": "skyliners:block/oval_window_lip",
+        "reveal": "skyliners:block/oval_window_reveal",
+        "edge": "skyliners:block/zeppelin_skin",
+        "particle": "skyliners:block/oval_window_glass_dim1"
+      }
+    }
+  }
+}

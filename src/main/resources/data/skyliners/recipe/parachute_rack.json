@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:parachute"
+    }
+  },
+  "result": {
+    "id": "skyliners:parachute_rack",
+    "count": 1
+  }
+}

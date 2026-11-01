@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cloth": "skyliners:block/cabin_curtain_hem",
+    "rail": "skyliners:block/cabin_curtain_rail",
+    "tie": "skyliners:block/cabin_curtain_tie",
+    "particle": "skyliners:block/cabin_curtain"
+  },
+  "elements": []
+}

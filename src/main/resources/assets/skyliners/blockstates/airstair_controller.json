@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "skyliners:block/airstair_controller"
+    },
+    "powered=true": {
+      "model": "skyliners:block/airstair_controller"
+    }
+  }
+}

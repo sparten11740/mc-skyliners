@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "F",
+    "B"
+  ],
+  "key": {
+    "F": {
+      "item": "minecraft:fire_charge"
+    },
+    "B": {
+      "item": "minecraft:polished_blackstone_button"
+    }
+  },
+  "result": {
+    "id": "skyliners:boost_button",
+    "count": 1
+  }
+}

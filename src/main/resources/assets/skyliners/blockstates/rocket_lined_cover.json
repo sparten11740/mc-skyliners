@@ -1,0 +1,37 @@
+{
+  "variants": {
+    "finish=entry": {
+      "model": "skyliners:block/rocket_lined_cover_entry"
+    },
+    "finish=cargo": {
+      "model": "skyliners:block/rocket_lined_cover_cargo"
+    },
+    "finish=mess": {
+      "model": "skyliners:block/rocket_lined_cover_mess"
+    },
+    "finish=bunks": {
+      "model": "skyliners:block/rocket_lined_cover_bunks"
+    },
+    "finish=greenhouse": {
+      "model": "skyliners:block/rocket_lined_cover_greenhouse"
+    },
+    "finish=pool": {
+      "model": "skyliners:block/rocket_lined_cover_pool"
+    },
+    "finish=club": {
+      "model": "skyliners:block/rocket_lined_cover_club"
+    },
+    "finish=lab": {
+      "model": "skyliners:block/rocket_lined_cover_lab"
+    },
+    "finish=lounge": {
+      "model": "skyliners:block/rocket_lined_cover_lounge"
+    },
+    "finish=cockpit": {
+      "model": "skyliners:block/rocket_lined_cover_cockpit"
+    },
+    "finish=dome": {
+      "model": "skyliners:block/rocket_lined_cover_dome"
+    }
+  }
+}
