@@ -31,8 +31,8 @@ import org.joml.Vector3f;
  * stuck and dark while it is off; what it is doing, as a picture (take-off, climb, cruise, descent, landing, rolling
  * out, or off); and how it steers (straight on, circling either way, or to a pin). Under them, the height, the speed
  * and the heading it is set to (or the circle's size), each a picture beside its number, greyed out while it is off
- * (and dashes while it has never been set). The display turns a quarter at a time to face whoever looks at it, so it
- * reads the right way up from either seat beside it. And, as before the display, the airliner's control surfaces the
+ * (and dashes while it has never been set). It reads the right way up looking toward the nose, as a pilot in either
+ * seat beside it does, and stays that way round. And, as before the display, the airliner's control surfaces the
  * autopilot moves (see {@link ControlSurfaceRenderer}).
  */
 public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEntity> {
@@ -94,9 +94,7 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
         pose.mulPose(Axis.XP.rotationDegrees(-90));
         Vector3f eye = Sight.eye(pose.last());
         if (eye.z > 0 && eye.lengthSquared() < REACH * REACH) {
-            // Turned so its bottom edge is toward the onlooker, then onto its bottom left corner.
-            float quarter = (float) (Math.PI / 2);
-            pose.mulPose(Axis.ZP.rotation(Math.round(Math.atan2(eye.x, -eye.y) / quarter) * quarter));
+            // Onto its bottom left corner.
             pose.translate(-SIDE / 2, -SIDE / 2, 0);
             display(autopilot, pose, buffers);
         }

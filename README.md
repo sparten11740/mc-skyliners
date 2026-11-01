@@ -488,8 +488,8 @@ landed, its disconnect warning sounds, three quick rising tones played twice. A 
 it rolls out after landing, and while it comes in to land any touch but its altitude, so nothing touched by accident
 calls the landing off; a new height does call it off, as Apply does in its settings (see below).
 
-The control head's own small display shows what the autopilot is set to, in the same pictures and colours, turned to
-face whoever looks at it: a lamp (green while it flies the airliner, amber while it is stuck, dark while it is off),
+The control head's own small display shows what the autopilot is set to, in the same pictures and colours, the right
+way up looking toward the nose: a lamp (green while it flies the airliner, amber while it is stuck, dark while it is off),
 what it is doing (take-off, climb, cruise, descent, landing, rolling out or off) and the way it flies (the road sign,
 or the pin), and the height, speed and heading (or the circle's radius) it is set to, each a picture beside its
 number, greyed out while it is off. The settings have the same controls as the panel: at the top what the autopilot is
