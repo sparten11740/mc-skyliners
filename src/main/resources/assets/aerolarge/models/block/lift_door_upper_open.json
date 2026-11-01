@@ -20,10 +20,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#pane"
+          "texture": "#pane",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "south": {
-          "texture": "#pane"
+          "texture": "#pane",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "east": {
           "texture": "#frame"
@@ -32,10 +44,22 @@
           "texture": "#frame"
         },
         "up": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            0,
+            7,
+            16,
+            9
+          ]
         },
         "down": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            0,
+            7,
+            16,
+            9
+          ]
         }
       }
     }

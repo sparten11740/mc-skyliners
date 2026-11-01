@@ -85,16 +85,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.75,
+            11,
+            8.25,
+            16
+          ]
         },
         "south": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.75,
+            11,
+            8.25,
+            16
+          ]
         },
         "east": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            5,
+            11,
+            6,
+            16
+          ]
         },
         "west": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            10,
+            11,
+            11,
+            16
+          ]
         },
         "up": {
           "texture": "#iron"

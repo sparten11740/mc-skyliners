@@ -159,10 +159,22 @@
       ],
       "faces": {
         "east": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            15.7,
+            3,
+            16,
+            6
+          ]
         },
         "west": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            15.7,
+            3,
+            16,
+            6
+          ]
         },
         "south": {
           "texture": "#iron"

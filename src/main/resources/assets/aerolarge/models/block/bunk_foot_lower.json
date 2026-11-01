@@ -127,11 +127,23 @@
       "faces": {
         "north": {
           "texture": "#blanket",
-          "tintindex": 0
+          "tintindex": 0,
+          "uv": [
+            0.95,
+            8.2,
+            16,
+            12
+          ]
         },
         "south": {
           "texture": "#blanket",
-          "tintindex": 0
+          "tintindex": 0,
+          "uv": [
+            0.95,
+            8.2,
+            16,
+            12
+          ]
         },
         "east": {
           "texture": "#blanket",
@@ -143,11 +155,23 @@
         },
         "up": {
           "texture": "#blanket",
-          "tintindex": 0
+          "tintindex": 0,
+          "uv": [
+            0.95,
+            1,
+            16,
+            1.5
+          ]
         },
         "down": {
           "texture": "#blanket",
-          "tintindex": 0
+          "tintindex": 0,
+          "uv": [
+            0.95,
+            14.5,
+            16,
+            15
+          ]
         }
       }
     },

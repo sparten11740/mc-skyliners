@@ -85,22 +85,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            14,
+            7.75,
+            16,
+            9
+          ]
         },
         "south": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            14,
+            7.75,
+            16,
+            9
+          ]
         },
         "east": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            0,
+            7.75,
+            16,
+            9
+          ]
         },
         "west": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            0,
+            7.75,
+            16,
+            9
+          ]
         },
         "up": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            14,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            14,
+            0,
+            16,
+            16
+          ]
         }
       }
     },
@@ -117,22 +153,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            0,
+            7.7,
+            16,
+            9
+          ]
         },
         "south": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            0,
+            7.7,
+            16,
+            9
+          ]
         },
         "east": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            14,
+            7.7,
+            16,
+            9
+          ]
         },
         "west": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            14,
+            7.7,
+            16,
+            9
+          ]
         },
         "up": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
         }
       }
     },
@@ -149,22 +221,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            6.25,
+            14.75,
+            8.25,
+            16
+          ]
         },
         "south": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.75,
+            14.75,
+            9.75,
+            16
+          ]
         },
         "east": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.95,
+            14.75,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.95,
+            14.75,
+            16,
+            16
+          ]
         },
         "up": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.75,
+            7.95,
+            9.75,
+            16
+          ]
         },
         "down": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.75,
+            7.95,
+            9.75,
+            16
+          ]
         }
       }
     },
@@ -181,22 +289,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.95,
+            14.7,
+            16,
+            16
+          ]
         },
         "south": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.95,
+            14.7,
+            16,
+            16
+          ]
         },
         "east": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            6.25,
+            14.7,
+            8.25,
+            16
+          ]
         },
         "west": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.75,
+            14.7,
+            9.75,
+            16
+          ]
         },
         "up": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.95,
+            7.75,
+            16,
+            9.75
+          ]
         },
         "down": {
-          "texture": "#nosing"
+          "texture": "#nosing",
+          "uv": [
+            7.95,
+            6.25,
+            16,
+            8.25
+          ]
         }
       }
     }

@@ -56,16 +56,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#meat"
+          "texture": "#meat",
+          "uv": [
+            4,
+            8.95,
+            12,
+            16
+          ]
         },
         "south": {
-          "texture": "#meat"
+          "texture": "#meat",
+          "uv": [
+            4,
+            8.95,
+            12,
+            16
+          ]
         },
         "east": {
-          "texture": "#meat"
+          "texture": "#meat",
+          "uv": [
+            4,
+            8.95,
+            12,
+            16
+          ]
         },
         "west": {
-          "texture": "#meat"
+          "texture": "#meat",
+          "uv": [
+            4,
+            8.95,
+            12,
+            16
+          ]
         },
         "up": {
           "texture": "#meat"

@@ -107,16 +107,40 @@
           "texture": "#frame"
         },
         "east": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            11,
+            16,
+            12
+          ]
         },
         "west": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            11,
+            16,
+            12
+          ]
         },
         "up": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            4,
+            14,
+            12,
+            16
+          ]
         },
         "down": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            4,
+            14,
+            12,
+            16
+          ]
         }
       }
     },
@@ -139,16 +163,40 @@
           "texture": "#frame"
         },
         "east": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            4,
+            16,
+            5
+          ]
         },
         "west": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            4,
+            16,
+            5
+          ]
         },
         "up": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            4,
+            14,
+            12,
+            16
+          ]
         },
         "down": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            4,
+            14,
+            12,
+            16
+          ]
         }
       }
     },
@@ -171,16 +219,40 @@
           "texture": "#frame"
         },
         "east": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            5,
+            16,
+            11
+          ]
         },
         "west": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            5,
+            16,
+            11
+          ]
         },
         "up": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            4,
+            14,
+            5,
+            16
+          ]
         },
         "down": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            4,
+            14,
+            5,
+            16
+          ]
         }
       }
     },
@@ -203,16 +275,40 @@
           "texture": "#frame"
         },
         "east": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            5,
+            16,
+            11
+          ]
         },
         "west": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14,
+            5,
+            16,
+            11
+          ]
         },
         "up": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            11,
+            14,
+            12,
+            16
+          ]
         },
         "down": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            11,
+            14,
+            12,
+            16
+          ]
         }
       }
     },
@@ -235,16 +331,40 @@
           "texture": "#flap"
         },
         "east": {
-          "texture": "#flap"
+          "texture": "#flap",
+          "uv": [
+            15,
+            5,
+            16,
+            11
+          ]
         },
         "west": {
-          "texture": "#flap"
+          "texture": "#flap",
+          "uv": [
+            15,
+            5,
+            16,
+            11
+          ]
         },
         "up": {
-          "texture": "#flap"
+          "texture": "#flap",
+          "uv": [
+            5,
+            15,
+            11,
+            16
+          ]
         },
         "down": {
-          "texture": "#flap"
+          "texture": "#flap",
+          "uv": [
+            5,
+            15,
+            11,
+            16
+          ]
         }
       }
     }

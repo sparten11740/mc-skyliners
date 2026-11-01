@@ -895,16 +895,40 @@
           "texture": "#iron"
         },
         "east": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            15.2,
+            7,
+            16,
+            13.5
+          ]
         },
         "west": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            15.2,
+            7,
+            16,
+            13.5
+          ]
         },
         "up": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            6.5,
+            15.2,
+            9.5,
+            16
+          ]
         },
         "down": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            6.5,
+            15.2,
+            9.5,
+            16
+          ]
         }
       }
     },

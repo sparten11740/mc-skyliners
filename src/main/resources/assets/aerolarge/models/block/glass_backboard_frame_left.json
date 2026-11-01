@@ -26,16 +26,40 @@
           "texture": "#frame"
         },
         "east": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            13.5,
+            0,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            13.5,
+            0,
+            16,
+            16
+          ]
         },
         "up": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14.5,
+            13.5,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#frame"
+          "texture": "#frame",
+          "uv": [
+            14.5,
+            13.5,
+            16,
+            16
+          ]
         }
       }
     }

@@ -17,10 +17,51 @@ const yRot = { north: 0, east: 90, south: 180, west: 270 };
 // How tall a module of the flight deck's centre console is, in pixels: ConsoleModule.HEIGHT.
 const CONSOLE_HEIGHT = 6;
 
+// The columns and rows of its texture the game gives a face with none of its own: taken from where it lies in its block.
+function defaultUv(side, [fromX, fromY, fromZ], [toX, toY, toZ]) {
+  return {
+    down: [fromX, 16 - toZ, toX, 16 - fromZ],
+    up: [fromX, fromZ, toX, toZ],
+    north: [16 - toX, 16 - toY, 16 - fromX, 16 - fromY],
+    south: [fromX, 16 - toY, toX, 16 - fromY],
+    west: [fromZ, 16 - toY, toZ, 16 - fromY],
+    east: [16 - toZ, 16 - toY, 16 - fromZ, 16 - fromY],
+  }[side];
+}
+function offItsTexture(uv) {
+  return Math.min(...uv) < 0 || Math.max(...uv) > 16;
+}
+// One way along a texture brought back onto it: by whole textures where that will do, as the same texture would carry
+// on in the block beyond; a span as long as the texture takes all of it, a little squeezed.
+function ontoTexture(from, to) {
+  const span = to - from;
+  if (span >= 16) return [0, 16];
+  const start = Math.min(((from % 16) + 16) % 16, 16 - span);
+  return [start, start + span].map((at) => Math.round(at * 1000) / 1000);
+}
+// A model with every face past its block given columns and rows on its texture. Going by where it lies, such a face
+// runs off its texture into whatever lies beside that in the atlas: a part above its block shows another block's colours.
+function facesOnTheirTextures(model) {
+  const faceOnTexture = (element, side, face) => {
+    const uv = defaultUv(side, element.from, element.to);
+    if (face.uv || !offItsTexture(uv)) return face;
+    const [fromU, toU] = ontoTexture(uv[0], uv[2]);
+    const [fromV, toV] = ontoTexture(uv[1], uv[3]);
+    return { ...face, uv: [fromU, fromV, toU, toV] };
+  };
+  const elementOnTexture = (element) => ({
+    ...element,
+    faces: Object.fromEntries(Object.entries(element.faces).map(([side, face]) => [side, faceOnTexture(element, side, face)])),
+  });
+  return { ...model, elements: model.elements.map(elementOnTexture) };
+}
 function write(path, value) {
   const file = resolve(ROOT, path);
   mkdirSync(dirname(file), { recursive: true });
-  if (path.includes("/models/") && value && Array.isArray(value.elements)) unfight(value.elements);
+  if (path.includes("/models/") && value && Array.isArray(value.elements)) {
+    unfight(value.elements);
+    value = facesOnTheirTextures(value);
+  }
   writeFileSync(file, (typeof value === "string" ? value : JSON.stringify(value, null, 2)) + "\n");
 }
 
@@ -2262,13 +2303,6 @@ function patched(from, to, texture, rotation) {
 function solid(from, to, texture, rotation) {
   const element = { from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }])) };
   if (rotation) element.rotation = rotation;
-  return element;
-}
-// A square post that may stand above its block, its sides taking the texture rows given. A side's default rows follow
-// where it stands, so above the block they would run off the texture into whatever lies beside it in the atlas.
-function poppedUp(from, to, texture, topRow, bottomRow) {
-  const element = solid(from, to, texture);
-  for (const side of ["north", "south", "east", "west"]) element.faces[side].uv = [from[0], topRow, to[0], bottomRow];
   return element;
 }
 // A module of the flight deck's centre console (see ConsoleModule): a slab CONSOLE_HEIGHT pixels tall the size of the
@@ -5940,8 +5974,8 @@ function roomLang() {
       textures: { board: planks, bed: "minecraft:block/gravel", riser: "minecraft:block/cut_copper", head: brass, particle: planks },
       elements: [
         ...box,
-        poppedUp([7, 1, 7], [9, riser, 9], "#riser", Math.max(0, 16 - riser), 15),
-        poppedUp([6, riser, 6], [10, riser + 2, 10], "#head", 2, 4),
+        solid([7, 1, 7], [9, riser, 9], "#riser"),
+        solid([6, riser, 6], [10, riser + 2, 10], "#head"),
       ],
     });
   }

@@ -31,16 +31,40 @@
       },
       "faces": {
         "north": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "south": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "east": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "west": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "up": {
           "texture": "#iron"
@@ -72,16 +96,40 @@
       },
       "faces": {
         "north": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "south": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "east": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "west": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "up": {
           "texture": "#iron"
@@ -113,16 +161,40 @@
       },
       "faces": {
         "north": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "south": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "east": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "west": {
-          "texture": "#iron"
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            10.136,
+            8.5,
+            16
+          ]
         },
         "up": {
           "texture": "#iron"

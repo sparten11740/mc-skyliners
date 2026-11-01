@@ -191,10 +191,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#knob"
+          "texture": "#knob",
+          "uv": [
+            14.5,
+            8.75,
+            16,
+            10.25
+          ]
         },
         "south": {
-          "texture": "#knob"
+          "texture": "#knob",
+          "uv": [
+            14.5,
+            8.75,
+            16,
+            10.25
+          ]
         },
         "east": {
           "texture": "#knob"
@@ -203,10 +215,22 @@
           "texture": "#knob"
         },
         "up": {
-          "texture": "#knob"
+          "texture": "#knob",
+          "uv": [
+            14.5,
+            13.5,
+            16,
+            15
+          ]
         },
         "down": {
-          "texture": "#knob"
+          "texture": "#knob",
+          "uv": [
+            14.5,
+            1,
+            16,
+            2.5
+          ]
         }
       },
       "rotation": {

@@ -424,16 +424,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#chrome"
+          "texture": "#chrome",
+          "uv": [
+            0.5,
+            0.5,
+            15.5,
+            15.5
+          ]
         },
         "south": {
-          "texture": "#chrome"
+          "texture": "#chrome",
+          "uv": [
+            0.5,
+            0.5,
+            15.5,
+            15.5
+          ]
         },
         "east": {
-          "texture": "#chrome"
+          "texture": "#chrome",
+          "uv": [
+            0,
+            0.5,
+            0.5,
+            15.5
+          ]
         },
         "west": {
-          "texture": "#chrome"
+          "texture": "#chrome",
+          "uv": [
+            15.5,
+            0.5,
+            16,
+            15.5
+          ]
         },
         "up": {
           "texture": "#chrome"
@@ -456,16 +480,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#mirror"
+          "texture": "#mirror",
+          "uv": [
+            1.5,
+            3,
+            14.5,
+            14.5
+          ]
         },
         "south": {
-          "texture": "#mirror"
+          "texture": "#mirror",
+          "uv": [
+            1.5,
+            3,
+            14.5,
+            14.5
+          ]
         },
         "east": {
-          "texture": "#mirror"
+          "texture": "#mirror",
+          "uv": [
+            0.5,
+            3,
+            0.75,
+            14.5
+          ]
         },
         "west": {
-          "texture": "#mirror"
+          "texture": "#mirror",
+          "uv": [
+            15.25,
+            3,
+            15.5,
+            14.5
+          ]
         },
         "up": {
           "texture": "#mirror"
@@ -493,7 +541,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            1.5,
+            1.5,
+            14.5,
+            2.5
+          ]
         }
       }
     }

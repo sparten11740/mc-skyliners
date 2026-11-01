@@ -1051,10 +1051,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#gold"
+          "texture": "#gold",
+          "uv": [
+            9.2,
+            7.75,
+            16,
+            9.25
+          ]
         },
         "south": {
-          "texture": "#gold"
+          "texture": "#gold",
+          "uv": [
+            9.2,
+            7.75,
+            16,
+            9.25
+          ]
         },
         "east": {
           "texture": "#gold"
@@ -1063,10 +1075,22 @@
           "texture": "#gold"
         },
         "up": {
-          "texture": "#gold"
+          "texture": "#gold",
+          "uv": [
+            9.2,
+            11.75,
+            16,
+            15.8
+          ]
         },
         "down": {
-          "texture": "#gold"
+          "texture": "#gold",
+          "uv": [
+            9.2,
+            0.2,
+            16,
+            4.25
+          ]
         }
       }
     },

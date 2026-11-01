@@ -52,16 +52,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ]
         },
         "south": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ]
         },
         "east": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            10,
+            14,
+            12,
+            16
+          ]
         },
         "west": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            4,
+            14,
+            6,
+            16
+          ]
         },
         "up": {
           "texture": "#jaw"
@@ -84,16 +108,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ]
         },
         "south": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ]
         },
         "east": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            4,
+            14,
+            6,
+            16
+          ]
         },
         "west": {
-          "texture": "#jaw"
+          "texture": "#jaw",
+          "uv": [
+            10,
+            14,
+            12,
+            16
+          ]
         },
         "up": {
           "texture": "#jaw"
@@ -116,16 +164,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#lamp"
+          "texture": "#lamp",
+          "uv": [
+            7,
+            15.4,
+            9,
+            16
+          ]
         },
         "south": {
-          "texture": "#lamp"
+          "texture": "#lamp",
+          "uv": [
+            7,
+            15.4,
+            9,
+            16
+          ]
         },
         "east": {
-          "texture": "#lamp"
+          "texture": "#lamp",
+          "uv": [
+            7,
+            15.4,
+            9,
+            16
+          ]
         },
         "west": {
-          "texture": "#lamp"
+          "texture": "#lamp",
+          "uv": [
+            7,
+            15.4,
+            9,
+            16
+          ]
         },
         "up": {
           "texture": "#lamp"

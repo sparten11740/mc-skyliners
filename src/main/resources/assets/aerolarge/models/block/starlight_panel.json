@@ -64,7 +64,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "south": {
           "texture": "#stars",
@@ -72,7 +78,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "east": {
           "texture": "#stars",
@@ -80,7 +92,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "west": {
           "texture": "#stars",
@@ -88,7 +106,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "up": {
           "texture": "#stars",
@@ -96,7 +120,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
           "texture": "#stars",
@@ -104,7 +134,13 @@
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15
-          }
+          },
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         }
       }
     }

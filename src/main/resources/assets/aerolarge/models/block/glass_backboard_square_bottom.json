@@ -26,16 +26,40 @@
           "texture": "#red"
         },
         "east": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            0,
+            4,
+            0.25,
+            5
+          ]
         },
         "west": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            15.75,
+            4,
+            16,
+            5
+          ]
         },
         "up": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            3,
+            15.75,
+            13,
+            16
+          ]
         },
         "down": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            3,
+            0,
+            13,
+            0.25
+          ]
         }
       }
     },
@@ -58,16 +82,40 @@
           "texture": "#red"
         },
         "east": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            0,
+            0,
+            0.25,
+            4
+          ]
         },
         "west": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            15.75,
+            0,
+            16,
+            4
+          ]
         },
         "up": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            3,
+            15.75,
+            4,
+            16
+          ]
         },
         "down": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            3,
+            0,
+            4,
+            0.25
+          ]
         }
       }
     },
@@ -90,16 +138,40 @@
           "texture": "#red"
         },
         "east": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            0,
+            0,
+            0.25,
+            4
+          ]
         },
         "west": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            15.75,
+            0,
+            16,
+            4
+          ]
         },
         "up": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            12,
+            15.75,
+            13,
+            16
+          ]
         },
         "down": {
-          "texture": "#red"
+          "texture": "#red",
+          "uv": [
+            12,
+            0,
+            13,
+            0.25
+          ]
         }
       }
     }
