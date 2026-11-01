@@ -8006,7 +8006,7 @@ function gymFloorLang() {
   }
   write(`assets/${ID}/blockstates/lavatory_basin.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].map((half) =>
-      [`facing=${facing},half=${half}`, { model: `${ID}:block/lavatory_basin_${half}`, ...(y ? { y } : {}) }]))),
+      ["true", "false"].map((mirror) => [`facing=${facing},half=${half},mirror=${mirror}`, { model: `${ID}:block/lavatory_basin_${half}`, ...(y ? { y } : {}) }])).flat())),
   });
   const raised = upper.map((element) => ({ ...element, from: [element.from[0], element.from[1] + 16, element.from[2]], to: [element.to[0], element.to[1] + 16, element.to[2]] }));
   write(`assets/${ID}/models/item/lavatory_basin.json`, {

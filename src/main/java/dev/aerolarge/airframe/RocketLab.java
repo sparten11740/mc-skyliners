@@ -127,7 +127,8 @@ final class RocketLab extends RocketRoom {
             case PARTITION -> AerolargeRegistry.LAB_PARTITION.get().of(partitionRow(placed.at().getY()), placed.facing());
             case PIPE -> AerolargeRegistry.LAB_PIPE.get().running(placed.sides());
             case CABINET, FEED_CABINET -> AerolargeRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, placed.facing());
-            case SINK -> AerolargeRegistry.LAVATORY_BASIN.get().defaultBlockState().setValue(LavatoryBasinBlock.FACING, placed.facing());
+            case SINK -> AerolargeRegistry.LAVATORY_BASIN.get().defaultBlockState().setValue(LavatoryBasinBlock.FACING, placed.facing())
+                .setValue(LavatoryBasinBlock.MIRROR, false);
             case MOSS_BED -> Blocks.MOSS_BLOCK.defaultBlockState();
             case FERN -> Blocks.FERN.defaultBlockState();
             case LARGE_FERN -> Blocks.LARGE_FERN.defaultBlockState();

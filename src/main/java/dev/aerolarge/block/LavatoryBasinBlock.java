@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
@@ -43,11 +44,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * beside it; and over it, against the wall, a mirror in a steel frame with a strip of warm light along its top. It is
  * two blocks tall, the vanity the lower half and the mirror the upper, and either half is the basin to use: the tap
  * runs into it with a splash, and a glass bottle held under it comes away full of water. Put down, it faces you, its
- * back to the wall behind it. FACING is the way its front looks.
+ * back to the wall behind it. FACING is the way its front looks. With no wall to hang a mirror on, as at the rocket's
+ * lab sink, standing out on the floor, it is the vanity alone: MIRROR false, with no upper half.
  */
 public class LavatoryBasinBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<LavatoryBasinBlock> CODEC = simpleCodec(LavatoryBasinBlock::new);
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+    /** Whether it has a mirror over it, its upper half; without one the vanity stands alone. */
+    public static final BooleanProperty MIRROR = BooleanProperty.create("mirror");
     /** The tap's spout in the model drawn facing north, in pixels: where the water runs from, over the basin. */
     private static final double SPOUT_X = 8;
     private static final double SPOUT_Y = 14;
@@ -69,7 +73,7 @@ public class LavatoryBasinBlock extends HorizontalDirectionalBlock {
 
     public LavatoryBasinBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER).setValue(MIRROR, true));
     }
 
     @Override
@@ -79,7 +83,7 @@ public class LavatoryBasinBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HALF);
+        builder.add(FACING, HALF, MIRROR);
     }
 
     /** Whether this is a basin's vanity, the lower half, where the basin itself is. */
@@ -109,7 +113,7 @@ public class LavatoryBasinBlock extends HorizontalDirectionalBlock {
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbour, LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
         DoubleBlockHalf half = state.getValue(HALF);
-        boolean towardOtherHalf = direction == (half == DoubleBlockHalf.LOWER ? Direction.UP : Direction.DOWN);
+        boolean towardOtherHalf = state.getValue(MIRROR) && direction == (half == DoubleBlockHalf.LOWER ? Direction.UP : Direction.DOWN);
         if (towardOtherHalf && !(neighbour.is(this) && neighbour.getValue(HALF) != half)) {
             return Blocks.AIR.defaultBlockState();
         }

@@ -215,7 +215,7 @@ final class LabBays {
         }
         plan.keepClear(at.relative(facing));
         if (at.getZ() == SINK_AT) {
-            plan.placeTall(at, LabPlan.Part.SINK, facing);
+            plan.place(at, LabPlan.Part.SINK, facing, Set.of());
             return false;
         }
         boolean laid = plan.place(at, feed ? LabPlan.Part.FEED_CABINET : LabPlan.Part.CABINET, facing, Set.of());

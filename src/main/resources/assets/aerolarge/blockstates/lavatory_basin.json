@@ -1,32 +1,62 @@
 {
   "variants": {
-    "facing=north,half=lower": {
+    "facing=north,half=lower,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_lower"
     },
-    "facing=north,half=upper": {
+    "facing=north,half=lower,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_lower"
+    },
+    "facing=north,half=upper,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_upper"
     },
-    "facing=east,half=lower": {
+    "facing=north,half=upper,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_upper"
+    },
+    "facing=east,half=lower,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_lower",
       "y": 90
     },
-    "facing=east,half=upper": {
+    "facing=east,half=lower,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_lower",
+      "y": 90
+    },
+    "facing=east,half=upper,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_upper",
       "y": 90
     },
-    "facing=south,half=lower": {
+    "facing=east,half=upper,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_upper",
+      "y": 90
+    },
+    "facing=south,half=lower,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_lower",
       "y": 180
     },
-    "facing=south,half=upper": {
+    "facing=south,half=lower,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_lower",
+      "y": 180
+    },
+    "facing=south,half=upper,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_upper",
       "y": 180
     },
-    "facing=west,half=lower": {
+    "facing=south,half=upper,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_upper",
+      "y": 180
+    },
+    "facing=west,half=lower,mirror=true": {
       "model": "aerolarge:block/lavatory_basin_lower",
       "y": 270
     },
-    "facing=west,half=upper": {
+    "facing=west,half=lower,mirror=false": {
+      "model": "aerolarge:block/lavatory_basin_lower",
+      "y": 270
+    },
+    "facing=west,half=upper,mirror=true": {
+      "model": "aerolarge:block/lavatory_basin_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,mirror=false": {
       "model": "aerolarge:block/lavatory_basin_upper",
       "y": 270
     }
