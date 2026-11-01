@@ -56,7 +56,7 @@ public class RoverPanelRenderer implements BlockEntityRenderer<RoverPanelBlockEn
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, 0, 0, 1, 1, 0, CASING);
-        boolean blinkedOff = status == RoverPanelBlock.Status.BUSY && panel.getLevel().getGameTime() / BLINK % 2 == 1;
+        boolean blinkedOff = status == RoverPanelBlock.Status.BUSY && DrawingClock.wholeTicks() / BLINK % 2 == 1;
         TouchPanelArt.tile(shapes, matrix, RoverPanelBlock.LAMP_TILE.inset(GAP), LAMPS.get(status), new TouchPanelArt.Look(false, false, !blinkedOff),
             LAYER);
         int looked = TouchPanelArt.lookedAt(panel);

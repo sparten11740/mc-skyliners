@@ -69,7 +69,7 @@ public final class SelfDestructWarning {
         if (until == 0 || level == null || level != shownIn.get()) {
             return;
         }
-        float left = until - level.getGameTime() - deltaTracker.getGameTimeDeltaPartialTick(false);
+        float left = (float) (until - DrawingClock.gameTime(deltaTracker.getGameTimeDeltaPartialTick(false)));
         if (left <= 0) {
             until = 0;
             return;

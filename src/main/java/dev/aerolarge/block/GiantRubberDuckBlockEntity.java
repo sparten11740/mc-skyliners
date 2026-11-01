@@ -87,8 +87,8 @@ public class GiantRubberDuckBlockEntity extends BlockEntity {
     }
 
     /** How far it has risen at the time, from 0 at the bottom of the pool to 1 up and afloat, slowing as it surfaces. */
-    public float risen(float time) {
-        float share = Mth.clamp((time - rose) / RISE_TICKS, 0, 1);
+    public float risen(double time) {
+        float share = (float) Mth.clamp((time - rose) / RISE_TICKS, 0, 1);
         return 1 - (1 - share) * (1 - share);
     }
 

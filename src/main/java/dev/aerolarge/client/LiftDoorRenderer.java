@@ -27,7 +27,7 @@ public class LiftDoorRenderer implements BlockEntityRenderer<LiftDoorBlockEntity
             return;
         }
         Direction toward = LiftDoorBlock.slidesToward(state.getValue(LiftDoorBlock.FACING));
-        double along = SLIDE * door.openness(partialTick);
+        double along = SLIDE * door.openness(DrawingClock.gameTime(partialTick));
         BlockState shut = state.setValue(LiftDoorBlock.OPEN, false).setValue(LiftDoorBlock.SLIDING, false);
         pose.pushPose();
         pose.translate(toward.getStepX() * along, 0, toward.getStepZ() * along);

@@ -172,8 +172,8 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         BlockState state = bartender.getBlockState();
         Direction facing = state.getValue(RobotBartenderBlock.FACING);
         BlockState north = state.setValue(RobotBartenderBlock.FACING, Direction.NORTH);
-        float time = level.getGameTime() + partialTick;
-        Moves moves = moves(time, time - bartender.servedAt());
+        float time = (float) DrawingClock.ticks(partialTick);
+        Moves moves = moves(time, (float) (DrawingClock.gameTime(partialTick) - bartender.servedAt()));
         int light = SableClient.light(level, bartender.getBlockPos().above());
         pose.pushPose();
         pose.rotateAround(Axis.YP.rotationDegrees(180 - facing.toYRot()), 0.5F, 0, 0.5F);
@@ -181,7 +181,7 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         pose.rotateAround(Axis.YP.rotationDegrees(bartender.headYaw(partialTick)), NECK_X / 16, NECK_Y / 16, NECK_Z / 16);
         pose.rotateAround(Axis.XP.rotationDegrees(bartender.headPitch(partialTick)), NECK_X / 16, NECK_Y / 16, NECK_Z / 16);
         part(north, RobotBartenderBlock.Part.HEAD, pose, buffers, light);
-        if (!blinking(level.getGameTime() + (bartender.getBlockPos().hashCode() & BEAT_MASK))) {
+        if (!blinking(DrawingClock.wholeTicks() + (bartender.getBlockPos().hashCode() & BEAT_MASK))) {
             part(north, RobotBartenderBlock.Part.VISOR, pose, buffers, LightTexture.FULL_BRIGHT);
         }
         pose.popPose();

@@ -83,7 +83,7 @@ public class DiscoBallRenderer implements BlockEntityRenderer<DiscoBallBlockEnti
             return;
         }
         float power = ball.power(partialTick);
-        float ticks = ball.getLevel().getGameTime() + partialTick;
+        float ticks = (float) DrawingClock.ticks(partialTick);
         pose.pushPose();
         Vec3 centre = DiscoBallBlock.centre(ball.getBlockState());
         pose.translate(centre.x, centre.y, centre.z);

@@ -62,12 +62,9 @@ public class FlagHalyardBlockEntity extends BlockEntity {
         return banner.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
     }
 
-    /** How far up the staff the colours have run, 0 at its foot to 1 closed up at its top. */
-    public float hoist(float partialTick) {
-        if (level == null) {
-            return 1;
-        }
-        return Math.min(1, (level.getGameTime() - hoisted + partialTick) / HOIST_TICKS);
+    /** How far up the staff the colours have run at a time, 0 at its foot to 1 closed up at its top. */
+    public float hoist(double time) {
+        return (float) Math.min(1, (time - hoisted) / HOIST_TICKS);
     }
 
     /** How many ticks the colours have still to rise before they are closed up at the top. */

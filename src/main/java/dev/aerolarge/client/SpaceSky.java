@@ -198,8 +198,8 @@ public final class SpaceSky {
         double dip = Math.min(DIP_MOST, DIP_FROM + (height - SPACE_FROM) * DIP_A_BLOCK);
         drawPlanet(pose, dip, planetRed, planetGreen, planetBlue);
         drawGlow(pose, dip, Math.max(day, GLOW_NIGHT), opacity);
-        Aurora.draw(pose, level, partialTick, height, dip, day);
-        ShootingStars.draw(pose, level, partialTick, height, dip, starsShown(starlight, opacity));
+        Aurora.draw(pose, partialTick, height, dip, day);
+        ShootingStars.draw(pose, partialTick, height, dip, starsShown(starlight, opacity));
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();

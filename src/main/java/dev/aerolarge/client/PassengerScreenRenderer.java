@@ -179,7 +179,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BACKGROUND);
-        long now = level.getGameTime();
+        long now = DrawingClock.wholeTicks();
         boolean map = flight != null && now / PAGE_TICKS % 2 == 1;
         if (map) {
             header(shapes, matrix, HALF_HEIGHT);
@@ -201,7 +201,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_WIDTH, HALF_WIDTH, HALF_WIDTH, 0, BACKGROUND);
-        long now = level.getGameTime();
+        long now = DrawingClock.wholeTicks();
         if (flight != null) {
             header(shapes, matrix, HALF_WIDTH);
             for (Tile tile : FLIGHT_MAP_TILES) {
@@ -236,7 +236,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         if (airliner == null) {
             return null;
         }
-        long now = level.getGameTime();
+        long now = DrawingClock.wholeTicks();
         Flight flight = FLIGHTS.get(airliner);
         if (flight == null) {
             forgetOld(now);

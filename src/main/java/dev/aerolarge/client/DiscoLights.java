@@ -215,7 +215,7 @@ public final class DiscoLights {
         SableClient.Placing placing = SableClient.placing(middle, partialTick);
         float turned = ball.turned(partialTick);
         float power = ball.power(partialTick);
-        float ticks = level.getGameTime() + partialTick;
+        float ticks = (float) DrawingClock.ticks(partialTick);
         for (int i = 0; i < SPOTS.length; i++) {
             Vec3 out = out(SPOTS[i], turned);
             double reach = Mth.lerp(partialTick, lit.before[i], lit.now[i]) + BEYOND;

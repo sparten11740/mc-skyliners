@@ -14,7 +14,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ToDoubleFunction;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
@@ -23,7 +22,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -176,7 +174,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             // The picture took its own buffer; the shapes over it take theirs back, and the text its own after them.
             Component label = Component.translatable(KEY + "camera", Component.translatable(screen.camera().label()));
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-            double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, screen.camera().colour(), screen.getLevel());
+            double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, screen.camera().colour());
             if (buttons) {
                 cameraButtons(shapes, matrix, screen.camera(), looked);
             }
@@ -230,7 +228,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
      * The camera's label in the picture's top corner, the way a security camera's picture has one: a blinking red
      * recording light and a camera on a dark backing, wide enough for the name after them. Where the name starts.
      */
-    private static double cameraLabel(VertexConsumer shapes, Matrix4f matrix, double height, double nameWidth, int colour, @Nullable Level level) {
+    private static double cameraLabel(VertexConsumer shapes, Matrix4f matrix, double height, double nameWidth, int colour) {
         double top = height - BEZEL - LABEL_MARGIN;
         double bottom = top - LABEL_HEIGHT;
         double middle = (top + bottom) / 2;
@@ -240,7 +238,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         double lens = camera + CAMERA_BODY_WIDTH;
         double name = lens + CAMERA_LENS_LENGTH + LABEL_GAP;
         ScreenDrawing.rect(shapes, matrix, left, bottom, name + nameWidth + LABEL_PAD, top, 2 * LAYER, LABEL_BACKING);
-        if (level == null || level.getGameTime() / BLINK_TICKS % 2 == 0) {
+        if (DrawingClock.wholeTicks() / BLINK_TICKS % 2 == 0) {
             ScreenDrawing.rect(shapes, matrix, light, middle - RECORDING_LIGHT / 2, light + RECORDING_LIGHT, middle + RECORDING_LIGHT / 2, 3 * LAYER, RECORDING);
         }
         ScreenDrawing.rect(shapes, matrix, camera, middle - CAMERA_BODY_HEIGHT / 2, lens, middle + CAMERA_BODY_HEIGHT / 2, 3 * LAYER, colour);

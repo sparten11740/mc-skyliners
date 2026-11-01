@@ -181,7 +181,7 @@ public final class ZeppelinPaint {
             return null;
         }
         long start = autopilot.repaintStart();
-        double share = start < 0 ? 1 : Math.min(1, (level.getGameTime() - start) / (double) Livery.REPAINT_TICKS);
+        double share = start < 0 ? 1 : Math.min(1, (DrawingClock.gameTime(0) - start) / Livery.REPAINT_TICKS);
         double reached = share >= 1 ? Double.MAX_VALUE : share * sweep(craft, box, autopilot.zeppelinSize());
         Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
         List<PaintOverlay> overlays = craft == Craft.ZEPPELIN ? overlays(level, box, autopilot.zeppelinSize()) : List.of();

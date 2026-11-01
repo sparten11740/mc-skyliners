@@ -64,9 +64,9 @@ public class ShipsColoursRenderer implements BlockEntityRenderer<FlagHalyardBloc
         if (!halyard.flying()) {
             return;
         }
-        float hoist = smooth(halyard.hoist(partialTick));
+        float hoist = smooth(halyard.hoist(DrawingClock.gameTime(partialTick)));
         float size = Math.max(BUNDLE, hoist);
-        Flag flag = new Flag(fly, Mth.lerp(hoist, BUNDLE_OVER + DEPTH * BUNDLE, top), size, (level.getGameTime() + partialTick) / WAVE_TICKS);
+        Flag flag = new Flag(fly, Mth.lerp(hoist, BUNDLE_OVER + DEPTH * BUNDLE, top), size, (float) DrawingClock.ticks(partialTick) / WAVE_TICKS);
         BannerQuads.layers(buffers, halyard.base(), halyard.patterns(), (consumer, colour) -> strips(flag, last, consumer, colour, light));
     }
 

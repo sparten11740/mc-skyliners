@@ -58,7 +58,7 @@ public class WindSockRenderer implements BlockEntityRenderer<WindSockBlockEntity
             return;
         }
         Wind wind = Wind.at(level, partialTick);
-        double seconds = (level.getGameTime() + partialTick) / 20.0;
+        double seconds = DrawingClock.ticks(partialTick) / 20.0;
         Vector3f[] spine = spine(wind, seconds);
         Vector3f[][] rings = new Vector3f[PIECES + 1][];
         for (int i = 0; i <= PIECES; i++) {

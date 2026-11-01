@@ -35,7 +35,7 @@ public class SelfDestructButtonRenderer implements BlockEntityRenderer<SelfDestr
         if (button.getLevel() == null || !button.getBlockState().getValue(SelfDestructButtonBlock.ARMED)) {
             return;
         }
-        float left = button.armedUntil() - button.getLevel().getGameTime() - partialTick;
+        float left = (float) (button.armedUntil() - DrawingClock.gameTime(partialTick));
         float brightness = SelfDestructWarning.glow(left);
         if (brightness <= 0) {
             return;

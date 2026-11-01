@@ -89,7 +89,7 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     /** The ceiling flickering in the floor's colours while the record is scratched, with each stroke of the hand. */
     private static void scratchFlash(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, TechnoDeckBlockEntity deck,
                                      float partialTick) {
-        float ago = deck.getLevel() == null ? Float.MAX_VALUE : deck.getLevel().getGameTime() - deck.scratchedAt() + partialTick;
+        float ago = (float) (DrawingClock.gameTime(partialTick) - deck.scratchedAt());
         if (ago < 0 || ago > SCRATCH_FLASH_TICKS || (int) (ago / SCRATCH_FLICKER) % 2 == 1) {
             return;
         }

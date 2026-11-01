@@ -31,8 +31,8 @@ public class LiftDoorBlockEntity extends BlockEntity {
         }
     }
 
-    /** How far open its pane stands at this partial tick, from 0 shut to 1 open, eased off and in. */
-    public double openness(float partialTick) {
+    /** How far open its pane stands at a time, from 0 shut to 1 open, eased off and in. */
+    public double openness(double time) {
         BlockState state = getBlockState();
         boolean opening = state.getValue(LiftDoorBlock.OPEN);
         if (!state.getValue(LiftDoorBlock.SLIDING) || level == null) {
@@ -41,7 +41,7 @@ public class LiftDoorBlockEntity extends BlockEntity {
         if (setOff == Long.MIN_VALUE) {
             setOff = level.getGameTime();
         }
-        double done = Mth.clamp((level.getGameTime() - setOff + partialTick) / LiftMachineBlockEntity.DOOR_TICKS, 0, 1);
+        double done = Mth.clamp((time - setOff) / LiftMachineBlockEntity.DOOR_TICKS, 0, 1);
         double eased = done * done * (3 - 2 * done);
         return opening ? eased : 1 - eased;
     }

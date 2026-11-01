@@ -105,7 +105,7 @@ public class LaserTurretRenderer implements BlockEntityRenderer<LaserTurretBlock
         Vec3 pivot = Vec3.atLowerCornerOf(turret.getBlockPos()).add(0.5, PIVOT_HEIGHT - out, 0.5);
         SableClient.Placing placing = SableClient.placing(pivot, partialTick);
         Aim aim = aims.computeIfAbsent(turret, ignored -> new Aim());
-        double now = level.getGameTime() + partialTick;
+        double now = DrawingClock.ticks(partialTick);
         Vec3 muzzle = LaserBolts.inWorld(placing, LaserTurretBlockEntity.muzzle(turret.getBlockPos(), nose));
         List<LaserBolts.Bolt> fired = LaserBolts.none() ? List.of() : LaserBolts.from(muzzle, velocity(turret));
         take(aim, fired, nose, LaserBolts.inWorld(placing, pivot), placing, now);

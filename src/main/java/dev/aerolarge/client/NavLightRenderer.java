@@ -42,7 +42,7 @@ public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity
             return;
         }
         NavLightBlock.Kind kind = light.getBlockState().getValue(NavLightBlock.KIND);
-        float brightness = kind.brightness(light.getLevel().getGameTime() + partialTick);
+        float brightness = kind.brightness((float) DrawingClock.ticks(partialTick));
         if (brightness <= 0) {
             return;
         }

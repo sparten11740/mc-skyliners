@@ -8,7 +8,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.aerolarge.AerolargeClientConfig;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -110,12 +109,12 @@ public final class Aurora {
      * The northern lights, by night: along the planet's rim, so many degrees under the horizon, as far as the night has
      * fallen (the day's light given, from 0 at night to 1 by day).
      */
-    static void draw(Matrix4f pose, ClientLevel level, float partialTick, double height, double dip, float day) {
+    static void draw(Matrix4f pose, float partialTick, double height, double dip, float day) {
         float light = (1 - day) * SpaceSky.ramp(height, FROM, FULL);
         if (light <= 0 || !AerolargeClientConfig.AURORA.get()) {
             return;
         }
-        float wave = (level.getGameTime() % WAVE + partialTick) / WAVE * Mth.TWO_PI;
+        float wave = (float) (DrawingClock.ticks(partialTick) % WAVE / WAVE * Mth.TWO_PI);
         for (int column = 0; column <= COLUMNS; column++) {
             shape(column, wave, (float) dip);
         }

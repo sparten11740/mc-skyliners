@@ -45,8 +45,8 @@ public class GiantRubberDuckRenderer implements BlockEntityRenderer<GiantRubberD
         if (giant.getLevel() == null) {
             return;
         }
-        float time = giant.getLevel().getGameTime() + partialTick;
-        float risen = giant.risen(time);
+        float time = (float) DrawingClock.ticks(partialTick);
+        float risen = giant.risen(DrawingClock.gameTime(partialTick));
         Direction facing = giant.getBlockState().getValue(GiantRubberDuckBlock.FACING);
         float scale = (float) GiantRubberDuckBlock.SCALE;
         pose.pushPose();

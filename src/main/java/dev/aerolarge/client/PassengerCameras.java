@@ -390,7 +390,7 @@ public final class PassengerCameras {
         int textX = LABEL_X + LIGHT + LIGHT_GAP;
         graphics.fill(LABEL_X - BACKING_MARGIN, LABEL_Y - BACKING_MARGIN, textX + font.width(name) + BACKING_MARGIN, LABEL_Y + font.lineHeight + BACKING_MARGIN,
             BACKING);
-        if (minecraft.level == null || minecraft.level.getGameTime() / BLINK_TICKS % 2 == 0) {
+        if (DrawingClock.wholeTicks() / BLINK_TICKS % 2 == 0) {
             int lightY = LABEL_Y + (font.lineHeight - LIGHT) / 2;
             graphics.fill(LABEL_X, lightY, LABEL_X + LIGHT, lightY + LIGHT, RECORDING);
         }

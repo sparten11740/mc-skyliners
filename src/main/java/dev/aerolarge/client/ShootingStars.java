@@ -9,7 +9,6 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.aerolarge.AerolargeClientConfig;
 import dev.aerolarge.autopilot.EdgeOfSpace;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -126,15 +125,15 @@ public final class ShootingStars {
      * The shooting star of the moment, if one is streaking: across the sky, or from over the edge of space under the
      * planet's rim, so many degrees under the horizon; as bright as the stars, a share of their brightest from 0 to 1.
      */
-    static void draw(Matrix4f pose, ClientLevel level, float partialTick, double height, double dip, float starlight) {
+    static void draw(Matrix4f pose, float partialTick, double height, double dip, float starlight) {
         float light = starlight * SpaceSky.ramp(height, FROM, FULL);
         if (light <= 0 || !AerolargeClientConfig.SHOOTING_STARS.get()) {
             return;
         }
-        long time = level.getGameTime();
-        long slot = Math.floorDiv(time, SLOT);
+        double time = DrawingClock.gameTime(partialTick);
+        long slot = (long) Math.floor(time / SLOT);
         float lasts = Mth.lerp(share(slot, Pick.LIFE), SHORTEST, LONGEST);
-        float age = (time - slot * SLOT + partialTick - share(slot, Pick.START) * LATEST_START) / lasts;
+        float age = (float) (time - slot * SLOT - share(slot, Pick.START) * LATEST_START) / lasts;
         if (age <= 0 || age >= 1) {
             return;
         }

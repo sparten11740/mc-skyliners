@@ -60,7 +60,7 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
         if (!dome.holds(eye) || !holeInView(dome, pose.last(), eye)) {
             return;
         }
-        OrreryClock clock = new OrreryClock(level.getGameTime(), partialTick);
+        OrreryClock clock = OrreryClock.at(DrawingClock.gameTime(partialTick));
         float reach = reach(orrery, dome);
         OrreryNow now = reach >= OrreryBlockEntity.REACH_LEAST ? new OrreryNow(reach, clock) : null;
         float drop = (float) orrery.drop();

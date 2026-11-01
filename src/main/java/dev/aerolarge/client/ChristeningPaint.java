@@ -170,7 +170,7 @@ public final class ChristeningPaint {
         if (plaque == null || !plaque.christened()) {
             return List.of();
         }
-        double reached = FlankArt.crestFront(size) + (level.getGameTime() - plaque.when() - PAINT_DELAY) * SWEEP;
+        double reached = FlankArt.crestFront(size) + (DrawingClock.gameTime(0) - plaque.when() - PAINT_DELAY) * SWEEP;
         List<PaintOverlay> overlays = new ArrayList<>();
         if (plaque.hasCrest() && reached >= FlankArt.crestFront(size)) {
             overlays.add(new Crest(ShipsColours.picture(plaque.crestBase(), plaque.crestPatterns()), size));

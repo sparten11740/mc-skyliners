@@ -53,7 +53,7 @@ public class RubberDuckRenderer implements BlockEntityRenderer<RubberDuckBlockEn
             return;
         }
         BlockState state = duck.getBlockState();
-        float time = duck.getLevel().getGameTime() + partialTick;
+        float time = (float) DrawingClock.ticks(partialTick);
         float beat = (duck.getBlockPos().hashCode() & 0xFF) * BEAT_SPREAD;
         float lift = 0;
         float roll = 0;
@@ -62,7 +62,7 @@ public class RubberDuckRenderer implements BlockEntityRenderer<RubberDuckBlockEn
             roll = ROCK * Mth.sin(time * ROCK_SPEED + beat);
         }
         float yaw = 0;
-        float age = time - duck.wiggled();
+        float age = (float) (DrawingClock.gameTime(partialTick) - duck.wiggled());
         if (age >= 0 && age < WIGGLE_TICKS) {
             float fade = 1 - age / WIGGLE_TICKS;
             yaw = WIGGLE * Mth.sin(age * WIGGLE_SPEED) * fade;

@@ -43,7 +43,7 @@ public final class BlastFlash {
             return;
         }
         shownIn = new WeakReference<>(level);
-        started = level.getGameTime();
+        started = DrawingClock.wholeTicks();
         strength = Mth.clamp(flash, 0, 1);
         CameraShake.blast(Mth.clamp(shake, 0, 1));
     }
@@ -54,7 +54,7 @@ public final class BlastFlash {
         if (level == null || level != shownIn.get() || strength <= 0) {
             return;
         }
-        float t = level.getGameTime() - started + deltaTracker.getGameTimeDeltaPartialTick(false);
+        float t = (float) (DrawingClock.ticks(deltaTracker.getGameTimeDeltaPartialTick(false)) - started);
         float whiteness = whiteness(t);
         if (whiteness > 0) {
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), Math.round(whiteness * 255) << 24 | 0xFFFFFF);

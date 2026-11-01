@@ -36,6 +36,7 @@ import dev.aerolarge.client.CraneWinchRenderer;
 import dev.aerolarge.client.DiscoBallRenderer;
 import dev.aerolarge.client.DiscoLights;
 import dev.aerolarge.client.DoveParticle;
+import dev.aerolarge.client.DrawingClock;
 import dev.aerolarge.client.DropBayScreen;
 import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.Earshot;
@@ -167,6 +168,7 @@ public final class AerolargeClient {
     public AerolargeClient(IEventBus modEventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        NeoForge.EVENT_BUS.addListener(DrawingClock::tick);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(CockpitDisplayRenderer::hideOutline);
         NeoForge.EVENT_BUS.addListener(TouchPanelArt::hideOutline);

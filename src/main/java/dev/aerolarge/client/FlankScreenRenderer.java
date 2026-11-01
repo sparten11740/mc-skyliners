@@ -227,7 +227,7 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
         boolean big = aboard.size() <= BIG_FACES;
         int perRow = big ? BIG_FACES : SMALL_FACES;
         int rows = big ? 1 : 2;
-        int page = aboard.isEmpty() ? 0 : (int) (level.getGameTime() / PAGE_TICKS % ((aboard.size() + perRow * rows - 1) / (perRow * rows)));
+        int page = aboard.isEmpty() ? 0 : (int) (DrawingClock.wholeTicks() / PAGE_TICKS % ((aboard.size() + perRow * rows - 1) / (perRow * rows)));
         float tall = frame.height() * PICTURE_FILL / rows;
         float wide = frame.across(tall, 1);
         for (int k = 0; k < Math.min(perRow * rows, aboard.size() - page * perRow * rows); k++) {

@@ -50,7 +50,7 @@ public class LedPanelRenderer implements BlockEntityRenderer<LedPanelBlockEntity
         if (level == null) {
             return;
         }
-        double ticks = level.getGameTime() + partialTick;
+        double ticks = DrawingClock.ticks(partialTick);
         LedSetting setting = panel.setting();
         pose.pushPose();
         WideScreenFace.onto(pose, panel.getBlockState());

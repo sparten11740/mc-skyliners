@@ -147,7 +147,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         draw(pose, buffers, attitude, staticSeed, standby(autopilot));
         if (attitude != null && autopilot != null && autopilot.craft() == Craft.ROCKET && level != null) {
             long now = level.getGameTime();
-            rocketControls(pose, buffers, autopilot, attitude, now, now % SWING_TICKS + partialTick);
+            rocketControls(pose, buffers, autopilot, attitude, now, (float) (DrawingClock.ticks(partialTick) % SWING_TICKS));
         }
         pose.popPose();
     }

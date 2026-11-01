@@ -10,6 +10,12 @@ record OrreryClock(long time, float partial) {
     /** How long the twinkling and breathing go on before they start over, in ticks: an hour of the game's time. */
     private static final long LOOP = 72000;
 
+    /** The clock at a time, its whole ticks and the share of the next told apart. */
+    static OrreryClock at(double time) {
+        long whole = (long) Math.floor(time);
+        return new OrreryClock(whole, (float) (time - whole));
+    }
+
     /** How far round something going round once in so many ticks has come, in radians; backward for a negative time. */
     float turned(float period) {
         return (float) ((time % (long) period + partial) / period * Mth.TWO_PI);

@@ -5,7 +5,6 @@ import dev.aerolarge.block.LedConsoleBlock;
 import dev.aerolarge.block.LedConsoleBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -17,14 +16,13 @@ import net.minecraft.world.phys.AABB;
 public class LedConsoleRenderer implements BlockEntityRenderer<LedConsoleBlockEntity> {
     @Override
     public void render(LedConsoleBlockEntity console, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        Level level = console.getLevel();
-        if (level == null) {
+        if (console.getLevel() == null) {
             return;
         }
         pose.pushPose();
         WideScreenFace.onto(pose, console.getBlockState());
         LedControlsArt.console(pose.last().pose(), ScreenDrawing.shapes(buffers), console, TouchPanelArt.lookedAt(console),
-            level.getGameTime() + partialTick);
+            DrawingClock.ticks(partialTick));
         pose.popPose();
     }
 

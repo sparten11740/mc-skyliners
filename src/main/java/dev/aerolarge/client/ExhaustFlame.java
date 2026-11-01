@@ -110,7 +110,7 @@ final class ExhaustFlame {
         float brightness = Math.min(1, spool / FADE_IN) * (IDLE_BRIGHTNESS + (1 - IDLE_BRIGHTNESS) * spool);
         float length = radius * (IDLE_LENGTH + (FULL_LENGTH - IDLE_LENGTH) * spool);
         // Each engine flickers out of step with the others.
-        float time = level.getGameTime() + partialTick + Math.floorMod(engine.getBlockPos().hashCode(), 100);
+        float time = (float) DrawingClock.ticks(partialTick) + Math.floorMod(engine.getBlockPos().hashCode(), 100);
         pose.pushPose();
         pose.translate(0, 0, -NOZZLE_BEHIND);
         PoseStack.Pose nozzle = pose.last();

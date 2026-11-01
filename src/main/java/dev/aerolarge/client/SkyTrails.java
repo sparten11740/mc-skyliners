@@ -77,7 +77,7 @@ public final class SkyTrails {
         if (level == null) {
             return;
         }
-        long now = level.getGameTime();
+        long now = DrawingClock.wholeTicks();
         for (SkywritingBoardBlockEntity board : SkywritingBoardBlockEntity.loaded(level)) {
             if (board.writing() && board.smoke() != null) {
                 smoke(level, board, now);
@@ -115,7 +115,7 @@ public final class SkyTrails {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || level == null || TRAILS.isEmpty()) {
             return;
         }
-        long now = level.getGameTime();
+        long now = DrawingClock.wholeTicks();
         Vec3 camera = event.getCamera().getPosition();
         Quaternionf facing = event.getCamera().rotation();
         Vector3f right = facing.transform(new Vector3f(1, 0, 0));

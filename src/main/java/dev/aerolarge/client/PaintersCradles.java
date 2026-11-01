@@ -52,7 +52,7 @@ final class PaintersCradles {
             return;
         }
         long start = autopilot.repaintStart();
-        double share = start < 0 ? 1 : (level.getGameTime() + partialTick - start) / Livery.REPAINT_TICKS;
+        double share = start < 0 ? 1 : (DrawingClock.gameTime(partialTick) - start) / Livery.REPAINT_TICKS;
         if (share >= 0 && share < 1) {
             VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
             cradles(from, autopilot, share * Livery.sweep(autopilot.zeppelinSize()), pose, consumer);
