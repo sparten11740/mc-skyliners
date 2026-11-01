@@ -53,6 +53,13 @@ Every control is a picture, a colour or a sound, so players who cannot read yet 
 
 More in [docs/images](docs/images).
 
+## Videos
+
+With sound, recorded in game: [the airliner taking off](docs/videos/airliner-take-off.mp4),
+[the rocket's launch](docs/videos/rocket-launch.mp4) and [the zeppelin in flight](docs/videos/zeppelin-flight.mp4).
+
+<video src="docs/videos/rocket-launch.mp4" controls muted width="100%"></video>
+
 ## Getting started
 
 You need Minecraft 1.21.1 with [NeoForge](https://neoforged.net) 21.1.251 or newer, and:
