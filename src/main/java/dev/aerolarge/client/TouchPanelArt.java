@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -23,8 +22,9 @@ import org.joml.Matrix4f;
 /**
  * How every touch panel draws its tiles (see {@link TouchPanel}), so they all answer a player the same way, with no
  * frames: the tile under the crosshair brightens and stands out a hair larger; the tile that is picked now (the floor
- * you are on, the livery worn, the camera shown) glows softly green round its edge; a tile that can do nothing now, or
- * is not the current one, is dimmed. The game's own outline is left off a touch panel's blocks, the tile looked at
+ * you are on, the livery worn, the camera shown) has a white border round the inside of its edge, flush with it, so
+ * any number of tiles side by side can be picked and each still be told; a tile that can do nothing now, or is not the
+ * current one, is dimmed. The game's own outline is left off a touch panel's blocks, the tile looked at
  * lighting up in its place. Each panel lays out its own tiles and chooses their colours and pictures; one whose
  * buttons are painted on its block's model has them lit alike over the paint (see {@link #painted}).
  */
@@ -36,18 +36,21 @@ public final class TouchPanelArt {
     private static final double LOOKED_LIGHTER = 0.25;
     private static final double LOOKED_GROW = 0.008;
     /**
-     * The glow round the tile picked now: how far out it reaches, in the face's units, and how strong it is at the
-     * tile's edge (0 to 255), fading smoothly to nothing at its reach.
+     * The border of the tile picked now: how wide it is and the dark line just inside it, which keeps it apart from a
+     * tile or picture as pale as it is, each a share of the tile's shorter side; and how far it is lifted over the
+     * tile's picture, in the face's units.
      */
-    private static final double GLOW_REACH = 0.05;
-    private static final int GLOW_ALPHA = 0xC0;
+    private static final double BORDER_WIDTH = 0.05;
+    private static final double BORDER_LINE = 0.02;
+    private static final float BORDER_LIFT = 0.012F;
+    /** How far the copy of the border laid on the tile's cell is lifted from the layer given, just over the cell. */
+    private static final float BORDER_ON_CELL = 0.0015F;
+    private static final int BORDER_DARK = 0xFF0B0D10;
     /** How much of its colour a dimmed tile keeps. */
     private static final double DIMMED = 0.4;
-    /** Lifts a tile's cell off its glow. */
+    /** Lifts each layer of a tile off the one under it. */
     private static final float LAYER = 0.001F;
     private static final int WHITE = 0xFFF2F6FB;
-    /** The glow round the tile picked now: a bright green, the colour of what is on, standing out on any casing. */
-    private static final int PICKED = 0x3FE070;
     private static final int BLACK = 0xFF000000;
 
     /**
@@ -66,41 +69,49 @@ public final class TouchPanelArt {
 
     /**
      * A tile's cell in its colour as its look shows it, standing out a hair while looked at, and, while picked, the
-     * green glow round it. The glow is drawn at the layer given, the cell just over it.
+     * border round the inside of its edge, over whatever picture is drawn on it. The cell is drawn just over the layer
+     * given.
      */
     public static void tile(VertexConsumer shapes, Matrix4f matrix, TouchPanel.Tile tile, int colour, Look look, float z) {
-        if (look.selected()) {
-            glow(shapes, matrix, tile, z);
-        }
         TouchPanel.Tile cell = look.looked() ? tile.inset(-LOOKED_GROW) : tile;
         ScreenDrawing.rect(shapes, matrix, cell.left(), cell.bottom(), cell.right(), cell.top(), z + LAYER, colour(colour, look));
+        if (look.selected()) {
+            border(shapes, matrix, cell, z);
+        }
     }
 
     /**
-     * The soft green glow round a tile picked now: a band along each side, as strong as {@link #GLOW_ALPHA} at the
-     * tile's edge and fading smoothly to nothing at its reach, the bands meeting on the diagonals at the corners.
+     * The border of a tile picked now, over its picture. Its white is laid twice: lifted, over the picture, and right on
+     * the cell, which from a low angle shows past the lifted one, so no sliver of the cell is ever left outside it.
      */
-    public static void glow(VertexConsumer shapes, Matrix4f matrix, TouchPanel.Tile tile, float z) {
-        TouchPanel.Tile out = tile.inset(-GLOW_REACH);
-        int edge = GLOW_ALPHA << 24 | PICKED;
-        int faded = PICKED;
-        band(shapes, matrix, z, tile.left(), tile.top(), edge, tile.right(), tile.top(), edge, out.right(), out.top(), faded, out.left(), out.top(),
-            faded);
-        band(shapes, matrix, z, out.left(), out.bottom(), faded, out.right(), out.bottom(), faded, tile.right(), tile.bottom(), edge, tile.left(),
-            tile.bottom(), edge);
-        band(shapes, matrix, z, out.left(), out.bottom(), faded, tile.left(), tile.bottom(), edge, tile.left(), tile.top(), edge, out.left(),
-            out.top(), faded);
-        band(shapes, matrix, z, tile.right(), tile.bottom(), edge, out.right(), out.bottom(), faded, out.right(), out.top(), faded, tile.right(),
-            tile.top(), edge);
+    private static void border(VertexConsumer shapes, Matrix4f matrix, TouchPanel.Tile cell, float z) {
+        for (TouchPanel.Tile side : borderSides(cell)) {
+            ScreenDrawing.rect(shapes, matrix, side.left(), side.bottom(), side.right(), side.top(), z + BORDER_ON_CELL, WHITE);
+            ScreenDrawing.rect(shapes, matrix, side.left(), side.bottom(), side.right(), side.top(), z + BORDER_LIFT + LAYER, WHITE);
+        }
+        for (TouchPanel.Tile side : borderLine(cell)) {
+            ScreenDrawing.rect(shapes, matrix, side.left(), side.bottom(), side.right(), side.top(), z + BORDER_LIFT, BORDER_DARK);
+        }
     }
 
-    /** A quad from four corners going round, each in its own colour, blended smoothly between them. */
-    private static void band(VertexConsumer shapes, Matrix4f matrix, float z, double x0, double y0, int c0, double x1, double y1, int c1, double x2,
-                             double y2, int c2, double x3, double y3, int c3) {
-        ScreenDrawing.vertex(shapes, matrix, x0, y0, z, c0);
-        ScreenDrawing.vertex(shapes, matrix, x1, y1, z, c1);
-        ScreenDrawing.vertex(shapes, matrix, x2, y2, z, c2);
-        ScreenDrawing.vertex(shapes, matrix, x3, y3, z, c3);
+    /** The picked border's four sides, the outer edge of each on the cell's own. */
+    private static TouchPanel.Tile[] borderSides(TouchPanel.Tile cell) {
+        return sides(cell, BORDER_WIDTH * cell.side());
+    }
+
+    /** The four sides of the dark line just inside a picked border. */
+    private static TouchPanel.Tile[] borderLine(TouchPanel.Tile cell) {
+        return sides(cell.inset(BORDER_WIDTH * cell.side()), BORDER_LINE * cell.side());
+    }
+
+    /** The four sides of a frame so wide just inside the edge of an area, leaving no gap at its corners. */
+    private static TouchPanel.Tile[] sides(TouchPanel.Tile area, double width) {
+        TouchPanel.Tile hole = area.inset(width);
+        return new TouchPanel.Tile[]{
+            new TouchPanel.Tile(area.left(), area.bottom(), area.right(), hole.bottom()),
+            new TouchPanel.Tile(area.left(), hole.top(), area.right(), area.top()),
+            new TouchPanel.Tile(area.left(), hole.bottom(), hole.left(), hole.top()),
+            new TouchPanel.Tile(hole.right(), hole.bottom(), area.right(), hole.top())};
     }
 
     /** A tile's colour as its look shows it: brightened while looked at, its own while lit, dimmed otherwise. */
@@ -147,8 +158,9 @@ public final class TouchPanelArt {
 
     /**
      * Lights a tile painted on a block's model as {@link #tile} lights one it draws, with flat translucent quads over
-     * the paint: a white wash over it, reaching a hair past its edges, while looked at; the soft green glow round it
-     * while picked; a dark wash over it while it can do nothing now. Nothing for a tile that is none of these. The pose
+     * the paint: a white wash over it, reaching a hair past its edges, while looked at; the white border round the
+     * inside of its edge while picked; a dark wash over it while it can do nothing now. Nothing for a tile that is none
+     * of these. The pose
      * is on the painted face, x to the viewer's right and y up, in the tile's units, the quads at the depth given, just
      * off the paint.
      */
@@ -157,51 +169,25 @@ public final class TouchPanelArt {
             return;
         }
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityTranslucent(FlatQuads.WHITE));
-        if (look.selected()) {
-            paintedGlow(consumer, pose, tile, z);
-        }
+        TouchPanel.Tile cell = look.looked() ? tile.inset(-LOOKED_GROW) : tile;
         if (look.looked()) {
-            paintedQuad(consumer, pose, tile.inset(-LOOKED_GROW), z + LAYER, wash(WHITE, LOOKED_LIGHTER));
+            paintedQuad(consumer, pose, cell, z + LAYER, wash(WHITE, LOOKED_LIGHTER));
         } else if (!look.lit()) {
-            paintedQuad(consumer, pose, tile, z + LAYER, wash(BLACK, 1 - DIMMED));
+            paintedQuad(consumer, pose, cell, z + LAYER, wash(BLACK, 1 - DIMMED));
+        }
+        if (look.selected()) {
+            paintedBorder(consumer, pose, cell, z);
         }
     }
 
-    /**
-     * The soft green glow round a painted tile picked now, as {@link #glow} lays it round a drawn one: a band along each
-     * side, strongest at the tile's edge and fading smoothly out to its reach. The entity shader leaves out what is all
-     * but clear, so the glow ends a little short of nothing at its very edge.
-     */
-    private static void paintedGlow(VertexConsumer consumer, PoseStack.Pose pose, TouchPanel.Tile tile, float z) {
-        TouchPanel.Tile out = tile.inset(-GLOW_REACH);
-        int edge = GLOW_ALPHA << 24 | PICKED;
-        int faded = PICKED;
-        paintedBand(consumer, pose, z, tile.left(), tile.top(), edge, tile.right(), tile.top(), edge, out.right(), out.top(), faded, out.left(),
-            out.top(), faded);
-        paintedBand(consumer, pose, z, out.left(), out.bottom(), faded, out.right(), out.bottom(), faded, tile.right(), tile.bottom(), edge,
-            tile.left(), tile.bottom(), edge);
-        paintedBand(consumer, pose, z, out.left(), out.bottom(), faded, tile.left(), tile.bottom(), edge, tile.left(), tile.top(), edge, out.left(),
-            out.top(), faded);
-        paintedBand(consumer, pose, z, tile.right(), tile.bottom(), edge, out.right(), out.bottom(), faded, out.right(), out.top(), faded,
-            tile.right(), tile.top(), edge);
-    }
-
-    /**
-     * A quad over a painted face from four corners going round, each in its own colour, blended between them; lit at
-     * full brightness and facing up in the entity shader's light, which leaves it its full colour whichever way the face
-     * looks.
-     */
-    private static void paintedBand(VertexConsumer consumer, PoseStack.Pose pose, float z, double x0, double y0, int c0, double x1, double y1, int c1,
-                                    double x2, double y2, int c2, double x3, double y3, int c3) {
-        paintedVertex(consumer, pose, x0, y0, z, c0);
-        paintedVertex(consumer, pose, x1, y1, z, c1);
-        paintedVertex(consumer, pose, x2, y2, z, c2);
-        paintedVertex(consumer, pose, x3, y3, z, c3);
-    }
-
-    private static void paintedVertex(VertexConsumer consumer, PoseStack.Pose pose, double x, double y, float z, int colour) {
-        consumer.addVertex(pose, (float) x, (float) y, z).setColor(colour).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+    /** The white border round the inside of a painted tile picked now, as {@link #tile} lays it on a drawn one. */
+    private static void paintedBorder(VertexConsumer consumer, PoseStack.Pose pose, TouchPanel.Tile cell, float z) {
+        for (TouchPanel.Tile side : borderSides(cell)) {
+            paintedQuad(consumer, pose, side, z + 3 * LAYER, WHITE);
+        }
+        for (TouchPanel.Tile side : borderLine(cell)) {
+            paintedQuad(consumer, pose, side, z + 2 * LAYER, BORDER_DARK);
+        }
     }
 
     /**

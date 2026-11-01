@@ -156,7 +156,7 @@ for, two blocks where it can (where the nose is too narrow for the outer pair, t
 camera, and the tiller's keys go under the camera). Behind them the instrument panel carries on round to the hull as
 plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across and two
 down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour and the light
-along its bottom glows in it, as on an airliner's push button, ringed in a soft green glow: the cabin lights' dimmer
+along its bottom glows in it, as on an airliner's push button, bordered in white: the cabin lights' dimmer
 (a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at
 night), the seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights
 (a skydiver beside the jump light, its red and green halves both dark while it is off, red or green), the window
@@ -173,7 +173,7 @@ touch a line to steer that way at once (a ratchet's click, a deeper clunk back t
 line already set), and pointing at one brightens it first. While the airliner rolls, white dashes run along the line
 it follows, and with the wheel turned the straight line pulses so it is not left turned by mistake; a green dot at its
 foot shows the wheel is straight. Either pilot can taxi; under the map the parking brake, a wheel gripped red and its
-key in a soft green glow while it is set, and the landing gear (see Landing gear); under the systems screen the
+key bordered in white while it is set, and the landing gear (see Landing gear); under the systems screen the
 autopilot's buttons (see Autopilot); and
 under the camera's screen the cameras' buttons (see below). The desk runs round under the screens as one moulded
 console in a blue-grey a step lighter than the screens, its sloped top brushed between a steel trim along its front
@@ -192,8 +192,8 @@ the clouds beyond, with CAM TAIL and a blinking recording light in the corner. W
 camera panel, a tail camera display, a wide screen three blocks across, hangs from the crown just ahead of the seats
 instead, tilted 45 degrees down toward them. Four buttons on the slope under the camera's screen pick the camera
 (along the bottom left of its picture where the tiller takes that slope, and on the older tail camera display), each a
-little airliner seen from the side with a big dot where its camera is, in a colour of its own, the one shown lit in a
-soft green glow and the others dimmed: sky blue on the fin, looking ahead and down; green on the right wing, looking
+little airliner seen from the side with a big dot where its camera is, in a colour of its own, the one shown bordered
+in white and the others dimmed: sky blue on the fin, looking ahead and down; green on the right wing, looking
 out along the wing
 toward you; orange under the nose by the nose gear; and pink in front of the nose, level with the pilots' eyes and
 looking fifteen degrees down at the runway coming up to meet the airliner. The camera on the picture's label takes the
@@ -397,7 +397,7 @@ heart over the parked airliner). Where the wall leaves it no room, it hangs over
 over the pilots' seats (ahead of them over the centre console where the ceiling leaves room, else reaching back behind
 them, its rows then running the other way, so the first row, Welcome, Take-off and Seatbelts, hangs right over the
 seats, within a seated pilot's reach). The tile you look at brightens and stands out a little, as on the lift's
-picture board. A tile glows softly in its colour while it can be pressed, glows green round its edge and pulses while
+picture board. A tile glows softly in its colour while it can be pressed, is bordered in white and pulses while
 its announcement plays, blinks while it waits for the flight deck to fall quiet, and dims while another is
 playing and for twenty seconds after its own. An Announcement Panel can be crafted and put up in your own builds too,
 on a wall or against the underside of a block, its middle tile where you put it (under a ceiling its top row nearest
@@ -470,7 +470,7 @@ rim where it is set to fly and a magenta path from the nose curving round to it,
 dial where you want to go and it flies that way, straight on (in steps of 5 degrees; touch it again further round to
 turn more than a quarter). Under the dial, like road signs, the ways to fly: a tight circle left, a gentle circle
 left, straight on, a gentle circle right and a tight circle right, each the path flown from a little airliner's nose,
-the one flown lit (cyan straight on, magenta round a circle) with a soft green glow round it. Straight on flies on the
+the one flown lit (cyan straight on, magenta round a circle) and bordered in white. Straight on flies on the
 way the airliner is going. A
 tight circle is flown as steeply as the autopilot banks round a circle, 20 degrees; a gentle one at half that, about
 twice as wide, but no wider than 2500 blocks where the tight one leaves room. How big that is follows from the speed
@@ -1604,8 +1604,8 @@ the End, the jungle and the frozen peaks, and four adverts (Creeper Insurance, t
 by Air), each under its headline; Colours, the banner flying from her flagstaff, as a flag; Map, a filled map handed to
 the board, so a player's own map art is shown on her side, handed back at a second press; Faces, the faces of everyone
 aboard, a few big or more smaller, a page at a time; Flight, her height and speed in huge figures, an arrow green as she
-climbs and amber as she sinks; and Off. A new picture flickers on with a click. The button showing glows green round its
-edge, one with nothing to show yet (Map before a map is handed over, Colours with no banner flying) is dimmed, and the
+climbs and amber as she sinks; and Off. A new picture flickers on with a click. The button showing is bordered in white,
+one with nothing to show yet (Map before a map is handed over, Colours with no banner flying) is dimmed, and the
 one you look at lights up. The server config's `flankScreen` leaves
 the screens and the board off zeppelins built from then on; a Picture Board is crafted from three glass panes over
 redstone, glowstone dust and a stone button, over three dark oak planks.
@@ -1731,7 +1731,7 @@ already built hold nothing.
 
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave, the one you look at lighting up. Press one while her autopilot
-flies her along (not while she takes off or lands) and a chime sounds, its button glows green round its edge, she slows
+flies her along (not while she takes off or lands) and a chime sounds, its button is bordered in white, she slows
 to 4 blocks a second and her autopilot
 flies that shape across the sky, a few hundred blocks across, while coloured smoke streams from under her belly, puff
 after puff in her gas cells' colours, drawing the shape behind her. A circle takes about four minutes, the wave five,
@@ -1825,7 +1825,7 @@ cheatline down each flank and its fins and engine cars blue), polar red with whi
 with gold stars. Use a picture and the zeppelin is repainted in it, on the ground or in flight: with the scrape of a
 brush the new paint sweeps from the nose to the tail over a minute, a painters' cradle on each flank riding its edge, a
 plank platform with a rail and a pot of paint slung on ropes over the hull from the crown, and the camera display over
-the selector shows it happening; on the selector a soft green glow rings the livery the zeppelin wears, and the picture
+the selector shows it happening; on the selector a white border marks the livery the zeppelin wears, and the picture
 you look at lights up. The paint is only drawn, so
 no block changes and the zeppelin flies as before. The server config's `liveryBoard` leaves the selector off zeppelins
 built from then on, which keep their paint. Zeppelins built before it keep their Livery Board, six painted swatches on
@@ -1837,8 +1837,8 @@ Over the Livery Selector, at eye height on the same wall, hangs a camera display
 one, but four blocks wide and two tall, showing her outside cameras live: the flyby camera at first, circling the whole
 ship, so whoever repaints her watches the new paint sweep over her, painters' cradles and all. Three buttons along its
 bottom left pick the camera, each a little zeppelin seen from the side with a big dot where its camera is: sky blue
-over her for the flyby camera, orange at the bow and green under the control car. The one shown is lit in a soft green
-glow and the others dimmed, the one you look at brightens and grows a little, as on every touch panel aboard, its name
+over her for the flyby camera, orange at the bow and green under the control car. The one shown is bordered in white
+and the others dimmed, the one you look at brightens and grows a little, as on every touch panel aboard, its name
 is on the picture's label beside a camera in its colour, and everyone sees the camera picked. The
 flyby camera's picture reaches past the far end of the ship, so none of her is lost in the fog, but beyond your own
 render distance the land is not drawn. Until she first flies the display shows its test card, a zeppelin seen from
@@ -1953,7 +1953,7 @@ wall facing you a picture board, its back brushed steel where it shows through t
 square buttons two to a row, the lowest at the bottom: each an icon on its story's colour (a doorway for the entry, then
 a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit) under
 its number, counted from the entry up, in a dark strip across its top, the
-floor you are on glowing softly green round its edge, the car's lit, and the one you look at brightened. The car
+floor you are on bordered in white, the car's lit, and the one you look at brightened. The car
 waits with its doors open until you touch a floor (with nobody aboard it closes after eight seconds); then after a
 moment it closes and glides there, easing off and in, at up to twelve blocks a second, while its motor hums; one chime
 as it comes
@@ -2238,7 +2238,7 @@ Under it stands her livery selector (the server config's `liveryBoard` leaves it
 pictures of her laid on her side in her six liveries: the comic-book moon rocket's red and white checks, white with
 black roll stripes, silver with a red nose and fins, the airliner's white with a blue cheatline up each side and blue
 fins, polar red with white fins, and midnight blue with gold stars all over her (as she is built). The one she wears
-glows green round its edge, and the one you look at lights up. Use a picture and the new paint runs down her from her
+is bordered in white, and the one you look at lights up. Use a picture and the new paint runs down her from her
 nose to her foot over a minute, with a
 brush's sound, dripping ahead of its edge in runs, a few long and most short, each running on in spurts as wet paint
 does; it is a tint, so no block of her changes, and her windows' frames take it too.
@@ -2253,7 +2253,7 @@ ocean, grape, pink and snow); a sun for each brightness, a dark ring struck thro
 rays for a third, two thirds and full; and a little strip for each way of lighting, doing what it does: steady;
 breathing, brightening and dimming in steps over four seconds; chasing, bands of colour running round the floor one way
 and round the ceiling the other; and club, pulsing on the techno club's 128 beats a minute, its colour and a partner
-colour taking turns. What is set glows softly green round its edge, the control you look at brightens, and each
+colour taking turns. What is set is bordered in white, the control you look at brightens, and each
 touch sounds: a swatch chimes a note of a scale rising
 along the colours, a sun clicks higher the brighter it is, a mode blips. Nothing flashes faster than three times a
 second. The strips give more light the brighter they are, and cast a soft glow up the wall from the floor and down it
@@ -2264,12 +2264,12 @@ light, the pool sky blue breathing like water, the techno club pulsing pink and 
 observation deck a dim ocean blue for the stars. At the commander's left hand stands the LED console, her
 silhouette along its top laid on her side, each story a band glowing as its strips do: touch a band to pick that story,
 more bands to pick them with it (one of them touched again is left out), or the little rocket beside it to pick them
-all, what is picked glowing softly green, then use the same swatches, suns and strips under them to change them all
+all, what is picked bordered in white, then use the same swatches, suns and strips under them to change them all
 alike. The next band touched after that starts a new pick, so setting one story after another takes a touch each. Set
 for several stories, a change climbs her a story at a time from the lowest up. At the end of its bottom row four little
 oval windows, a sun and sky dimming from one to the next, set the glass of the windows on the stories picked, from clear
-to near-black, each with its falling chime, as using a window does; the one it last set them to glows green, whatever
-has been done to a window by hand since.
+to near-black, each with its falling chime, as using a window does; the one it last set them to is bordered in white,
+whatever has been done to a window by hand since.
 
 Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass (nobody gets through its sky,
 which stops you just short of it): a smooth night sky just inside its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky

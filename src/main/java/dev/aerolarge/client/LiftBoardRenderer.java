@@ -33,8 +33,8 @@ import org.joml.Matrix4f;
  * on its way, an arrow blinking on the floor it is going to; and while the ship flies, but where the car stands, in
  * place of the floors how high she flies (see {@link HeightGauge}). Players who cannot read find their floor by its
  * icon and colour. Its floors light up as every touch panel's tiles do (see {@link TouchPanelArt}): the board's own
- * floor glowing green as the one picked, and what the crosshair rests on brightened, on the board inside the car the
- * floor they would pick, on one outside the doors, as older ships have, its own floor, the lift it calls there.
+ * floor bordered in white as the one picked, and what the crosshair rests on brightened, on the board inside the car
+ * the floor they would pick, on one outside the doors, as older ships have, its own floor, the lift it calls there.
  */
 public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEntity> {
     /** The gap between two floors' cells, in blocks. */
@@ -43,15 +43,15 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
      * How far out each way from its middle a floor's icon reaches, as a share of its button's shorter side, and the
      * arrow in the corner of the floor the lift is going to; and how far in from that corner the arrow sits, in blocks.
      */
-    private static final double ICON = 0.31;
+    private static final double ICON = 0.29;
     private static final double ARROW = 0.16;
     private static final double ARROW_INSET = 0.01;
     /**
      * A floor's number: how tall the strip across the top of its button is, and the figures in it, each as a share of
-     * the button's shorter side.
+     * the button's shorter side, the figures clear of the border of the floor picked (see {@link TouchPanelArt}).
      */
-    private static final double STRIP = 0.27;
-    private static final double FIGURE = 0.19;
+    private static final double STRIP = 0.31;
+    private static final double FIGURE = 0.17;
     /** How tall the font's figures are, in font pixels. */
     private static final double FIGURE_PIXELS = 7;
     /** How often the arrow blinks, in ticks a blink. */

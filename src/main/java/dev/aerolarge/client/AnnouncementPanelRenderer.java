@@ -26,7 +26,7 @@ import org.joml.Matrix4f;
  * in the middle and its name small under it, the pictures saying it all for those who cannot read yet. Its tiles answer
  * a player as every touch panel's do (see {@link TouchPanelArt}): the one under the crosshair brightens and stands out
  * a hair. A tile shows where its announcement stands (see {@link Announcement.Standing}): ready, its glass glows softly
- * in its colour; being made, it glows green round its edge, as what is on now does on every panel, its glass pulsing in
+ * in its colour; being made, it is bordered in white, as what is on now is on every panel, its glass pulsing in
  * its colour; waiting its turn, its glass blinks; hushed while another is made, or resting after it was, it is dimmed,
  * its picture and name greyed. The face reads from the top: on a wall its top row, under a ceiling the row nearest
  * whoever looks up at it, as they face. It is only drawn with the camera in front of it.
