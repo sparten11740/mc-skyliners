@@ -361,7 +361,7 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs,
         down = !tag.contains("StairsDown") || tag.getBoolean("StairsDown");
         laid = tag.contains("Laid") ? Math.min(tag.getInt("Laid"), rows.size()) : rows.size();
         flown = tag.getBoolean("Flown");
-        belly = tag.contains("Airstairs") ? BoardingAirstairs.load(this, tag.getCompound("Airstairs"), turn, registries) : null;
+        belly = tag.contains("Airstairs") ? BoardingAirstairs.load(this, belly, tag.getCompound("Airstairs"), turn, registries) : null;
     }
 
     @Override

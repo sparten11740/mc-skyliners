@@ -555,8 +555,9 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         }
         hatch = List.copyOf(skin);
         deploying = tag.getBoolean("Deploying");
-        ticks = Math.clamp(tag.getInt("Ticks"), 0, AirstairFlight.OUT);
-        lastTicks = ticks;
+        int count = ToldTicks.count(level, ticks, Math.clamp(tag.getInt("Ticks"), 0, AirstairFlight.OUT), deploying);
+        lastTicks = count == ticks ? lastTicks : count;
+        ticks = count;
         length = Math.clamp(tag.getInt("Length"), 0, rise);
         held = tag.getBoolean("Held");
         laid = tag.getBoolean("Laid");

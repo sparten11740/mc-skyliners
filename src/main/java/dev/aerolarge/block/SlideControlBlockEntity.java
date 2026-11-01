@@ -585,8 +585,9 @@ public class SlideControlBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         door = Turning.turn(NbtUtils.readBlockPos(tag, "Door").orElse(null), Turning.since(tag, getBlockState()));
         deployed = tag.getBoolean("Deployed");
-        ticks = Mth.clamp(tag.getInt("Ticks"), 0, EvacuationSlide.INFLATE);
-        lastTicks = ticks;
+        int count = ToldTicks.count(level, ticks, Mth.clamp(tag.getInt("Ticks"), 0, EvacuationSlide.INFLATE), deployed);
+        lastTicks = count == ticks ? lastTicks : count;
+        ticks = count;
         laid = tag.getBoolean("Laid");
         held = tag.getBoolean("Held");
         plan = tag.contains("Angle") ? new EvacuationSlide.Plan(tag.getFloat("Angle"), tag.getFloat("ToeY"), tag.getFloat("Toe")) : null;

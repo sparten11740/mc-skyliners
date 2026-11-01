@@ -67,6 +67,9 @@ final class BoardingAirstairs {
         /** Tells the clients where the flight is going, which draw it. */
         void sync();
 
+        /** Marks what is saved of it as changed, without telling the clients, which count the ticks themselves. */
+        void setChanged();
+
         /**
          * Opens the door the flight comes out of as it sets out, or shuts it once it is back off the sill; a flight
          * hung in a zeppelin's belly has none.
@@ -265,8 +268,9 @@ final class BoardingAirstairs {
                 foot = AirstairSteps.lay(level, this::step, width, length, out.getOpposite());
                 laid = true;
                 sound(level, AerolargeRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, 1.0F);
+                button.sync();
             }
-            button.sync();
+            button.setChanged();
         } else if (!deploying && (ticks > 0 || hatchOpen)) {
             ticks = Math.max(0, ticks - 1);
             if (doorToShut && ticks <= AirstairFlight.SLIDE) {
@@ -279,8 +283,9 @@ final class BoardingAirstairs {
             if (ticks == 0) {
                 closeHatch(level);
                 sound(level, AerolargeRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, 1.0F);
+                button.sync();
             }
-            button.sync();
+            button.setChanged();
         }
     }
 
@@ -402,7 +407,7 @@ final class BoardingAirstairs {
      * The stairs as saved, turned by the quarter turn their button has turned since (see {@link Turning}). Saved
      * before stairs had a width or a bay, they are a zeppelin's: two wide, hung in her belly.
      */
-    static BoardingAirstairs load(Keeper button, CompoundTag tag, Rotation turn, HolderLookup.Provider registries) {
+    static BoardingAirstairs load(Keeper button, @Nullable BoardingAirstairs before, CompoundTag tag, Rotation turn, HolderLookup.Provider registries) {
         Direction out = Direction.byName(tag.getString("Out"));
         Direction right = Direction.byName(tag.getString("Right"));
         List<AirstairControllerBlockEntity.Step> parts = new ArrayList<>();
@@ -419,8 +424,9 @@ final class BoardingAirstairs {
             turn.rotate(out == null ? Direction.NORTH : out), turn.rotate(right == null ? Direction.WEST : right), rise,
             Math.clamp(tag.getInt("Sections"), 1, AirstairFlight.MOST_SECTIONS), width, parts, bay);
         stairs.deploying = tag.getBoolean("Deploying");
-        stairs.ticks = Math.clamp(tag.getInt("Ticks"), 0, AirstairFlight.OUT);
-        stairs.lastTicks = stairs.ticks;
+        int told = Math.clamp(tag.getInt("Ticks"), 0, AirstairFlight.OUT);
+        stairs.ticks = before == null ? told : ToldTicks.count(button.getLevel(), before.ticks, told, stairs.deploying);
+        stairs.lastTicks = before != null && stairs.ticks == before.ticks ? before.lastTicks : stairs.ticks;
         stairs.length = Math.clamp(tag.getInt("Length"), 0, rise);
         stairs.held = tag.getBoolean("Held");
         stairs.laid = tag.getBoolean("Laid");

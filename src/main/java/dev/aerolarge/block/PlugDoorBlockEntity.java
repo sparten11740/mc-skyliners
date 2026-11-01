@@ -439,8 +439,9 @@ public class PlugDoorBlockEntity extends BlockEntity {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         open = tag.getBoolean("Open");
-        ticks = Math.clamp(tag.getInt("Ticks"), 0, SWING_TICKS);
-        lastTicks = ticks;
+        int count = ToldTicks.count(level, ticks, Math.clamp(tag.getInt("Ticks"), 0, SWING_TICKS), open);
+        lastTicks = count == ticks ? lastTicks : count;
+        ticks = count;
         held = tag.getBoolean("Held");
         powered = tag.getBoolean("Powered");
         forVillagers = tag.getBoolean("ForVillagers");

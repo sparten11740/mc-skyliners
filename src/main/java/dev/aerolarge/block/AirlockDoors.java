@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -329,15 +330,16 @@ public final class AirlockDoors {
     }
 
     /** The doors as saved, turned by the quarter turn their keeper has turned since (see {@link Turning}). */
-    static AirlockDoors load(RocketStairsBlockEntity keeper, CompoundTag tag, Rotation turn) {
+    static AirlockDoors load(RocketStairsBlockEntity keeper, @Nullable AirlockDoors before, CompoundTag tag, Rotation turn) {
         Direction out = Direction.byName(tag.getString("Out"));
         Direction right = Direction.byName(tag.getString("Right"));
         AirlockDoors doors = new AirlockDoors(keeper, Turning.turn(NbtUtils.readBlockPos(tag, "Corner").orElse(BlockPos.ZERO), turn),
             turn.rotate(out == null ? Direction.NORTH : out), turn.rotate(right == null ? Direction.WEST : right),
             Math.max(1, tag.getInt("Width")), Math.max(1, tag.getInt("Rows")));
         doors.open = tag.getBoolean("Open");
-        doors.ticks = Math.clamp(tag.getInt("Ticks"), 0, SLIDE_TICKS);
-        doors.lastTicks = doors.ticks;
+        int told = Math.clamp(tag.getInt("Ticks"), 0, SLIDE_TICKS);
+        doors.ticks = before == null ? told : ToldTicks.count(keeper.getLevel(), before.ticks, told, doors.open || tag.getBoolean("Held"));
+        doors.lastTicks = before != null && doors.ticks == before.ticks ? before.lastTicks : doors.ticks;
         doors.cycling = Math.clamp(tag.getInt("Cycling"), 0, CYCLE_TICKS);
         doors.held = tag.getBoolean("Held");
         return doors;

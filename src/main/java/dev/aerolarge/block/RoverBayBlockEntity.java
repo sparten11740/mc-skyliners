@@ -521,8 +521,9 @@ public class RoverBayBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         rover = tag.hasUUID("Rover") ? tag.getUUID("Rover") : null;
         open = tag.getBoolean("Open");
-        ticks = Mth.clamp(tag.getInt("Ticks"), 0, DOOR_TICKS);
-        lastTicks = ticks;
+        int count = ToldTicks.count(level, ticks, Mth.clamp(tag.getInt("Ticks"), 0, DOOR_TICKS), open);
+        lastTicks = count == ticks ? lastTicks : count;
+        ticks = count;
         trolley = Trolley.named(tag.getString("Trolley"));
         Rotation turn = Turning.since(tag, getBlockState());
         panel = tag.contains("Panel") ? Turning.turn(BlockPos.of(tag.getLong("Panel")), turn) : null;

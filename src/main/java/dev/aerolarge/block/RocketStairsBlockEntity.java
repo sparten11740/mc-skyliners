@@ -345,8 +345,8 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
         super.loadAdditional(tag, registries);
         Rotation turn = Turning.since(tag, getBlockState());
         flown = tag.getBoolean("Flown");
-        stairs = tag.contains("Airstairs") ? BoardingAirstairs.load(this, tag.getCompound("Airstairs"), turn, registries) : null;
-        doors = tag.contains("Doors") ? AirlockDoors.load(this, tag.getCompound("Doors"), turn) : null;
+        stairs = tag.contains("Airstairs") ? BoardingAirstairs.load(this, stairs, tag.getCompound("Airstairs"), turn, registries) : null;
+        doors = tag.contains("Doors") ? AirlockDoors.load(this, doors, tag.getCompound("Doors"), turn) : null;
     }
 
     @Override
