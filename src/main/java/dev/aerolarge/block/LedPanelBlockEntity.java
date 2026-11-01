@@ -24,11 +24,18 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * the box round them as two corners from the panel, set as the rocket is built and turned with it. The colour and the
  * mode go to the clients, which tint the strips and animate them (see the client's {@code LedLights}); a new brightness
  * the server sets on every strip of the story itself, as their block state, for the light they give. A change may wait
- * a few ticks (see {@link #change}), so the cockpit's console can run one up the rocket a story at a time. Kept track
- * of on the clients, which look up each strip's story by its box.
+ * a few ticks (see {@link #change}), so the cockpit's console can run one up the rocket a story at a time. The console
+ * dims the story's windows through it too, which it finds in her skin round its box (see {@link #dimWindows}). Kept
+ * track of on the clients, which look up each strip's story by its box.
  */
 public class LedPanelBlockEntity extends BlockEntity {
     private static final Loaded<LedPanelBlockEntity> LOADED = new Loaded<>(LedPanelBlockEntity.class, true);
+    /** What {@link #windows} says while the console has not set the story's windows, as each is left by hand. */
+    public static final int WINDOWS_UNSET = -1;
+    /** What {@link #windowsAt} says while nothing waits. */
+    private static final long NOT_WAITING = -1;
+    /** How far past the box round its strips the story's windows may stand in her skin, in blocks. */
+    private static final int WINDOW_REACH = 3;
 
     /** The box round the story's strips, its two corners as offsets from the panel; null for a panel set by hand. */
     @Nullable
@@ -40,6 +47,10 @@ public class LedPanelBlockEntity extends BlockEntity {
     @Nullable
     private LedSetting waiting;
     private long waitingUntil;
+    /** How dark the console last set the story's windows, for it to show. */
+    private int windows = WINDOWS_UNSET;
+    /** The game time the story's windows are to take that at. */
+    private long windowsAt = NOT_WAITING;
 
     public LedPanelBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.LED_PANEL_ENTITY.get(), pos, state);
@@ -93,9 +104,33 @@ public class LedPanelBlockEntity extends BlockEntity {
         }
     }
 
-    /** Each tick on the server: makes the change waiting once its time has come. */
+    /** How dark the console last set the story's windows, or {@link #WINDOWS_UNSET}. */
+    public int windows() {
+        return windows;
+    }
+
+    /** Sets the story's windows to a darkness, on the server, in so many ticks; the console shows it at once. */
+    public void dimWindows(int dim, int delay) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        windows = dim;
+        windowsAt = level.getGameTime() + delay;
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+    }
+
+    /** Each tick on the server: makes the changes waiting once their times have come. */
     void tick() {
-        if (level == null || waiting == null || level.getGameTime() < waitingUntil) {
+        if (level == null) {
+            return;
+        }
+        if (windowsAt != NOT_WAITING && level.getGameTime() >= windowsAt) {
+            windowsAt = NOT_WAITING;
+            setChanged();
+            darkenWindows();
+        }
+        if (waiting == null || level.getGameTime() < waitingUntil) {
             return;
         }
         LedSetting now = waiting;
@@ -121,6 +156,31 @@ public class LedPanelBlockEntity extends BlockEntity {
             for (BlockPos at : BlockPos.betweenClosed(box.minX(), y, box.minZ(), box.maxX(), y, box.maxZ())) {
                 lightStrip(at.immutable(), brightness);
             }
+        }
+    }
+
+    /**
+     * Sets every piece of oval window in the story to the darkness last asked for, looking through the box round its
+     * strips and a little past it, out to her skin. Only when asked, a story at a time, and only where it is loaded.
+     */
+    private void darkenWindows() {
+        BoundingBox box = box();
+        if (box == null || level == null) {
+            return;
+        }
+        for (BlockPos at : BlockPos.betweenClosed(box.minX() - WINDOW_REACH, box.minY(), box.minZ() - WINDOW_REACH, box.maxX() + WINDOW_REACH, box.maxY(),
+            box.maxZ() + WINDOW_REACH)) {
+            darken(at.immutable());
+        }
+    }
+
+    private void darken(BlockPos at) {
+        if (!level.isLoaded(at)) {
+            return;
+        }
+        BlockState state = level.getBlockState(at);
+        if (state.getBlock() instanceof OvalWindowBlock && state.getValue(OvalWindowBlock.DIM) != windows) {
+            level.setBlock(at, state.setValue(OvalWindowBlock.DIM, windows), Block.UPDATE_ALL);
         }
     }
 
@@ -165,6 +225,8 @@ public class LedPanelBlockEntity extends BlockEntity {
             tag.put("Waiting", waiting.save());
             tag.putLong("WaitingUntil", waitingUntil);
         }
+        tag.putInt("Windows", windows);
+        tag.putLong("WindowsAt", windowsAt);
     }
 
     /** Its box turned with the rocket, if it faces another way than it was saved facing (see {@link Turning}). */
@@ -177,6 +239,8 @@ public class LedPanelBlockEntity extends BlockEntity {
         setting = LedSetting.load(tag.getCompound("Setting"), LedSetting.PLAIN);
         waiting = tag.contains("Waiting", Tag.TAG_COMPOUND) ? LedSetting.load(tag.getCompound("Waiting"), setting) : null;
         waitingUntil = tag.getLong("WaitingUntil");
+        windows = tag.contains("Windows", Tag.TAG_INT) ? tag.getInt("Windows") : WINDOWS_UNSET;
+        windowsAt = tag.contains("WindowsAt", Tag.TAG_LONG) ? tag.getLong("WindowsAt") : NOT_WAITING;
     }
 
     @Override

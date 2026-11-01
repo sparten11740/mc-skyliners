@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import java.util.List;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -17,9 +18,10 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The cockpit's LED console's block entity, in the part holding the console: the panel of each of her stories, as
  * offsets from it, the entry story's first; each story's floor and ceiling, rows up from her foot, which the console's
- * silhouette of her lays its bands by; and which stories it sets now, any of them or all. A change made for several
- * runs up her from the lowest of them, a story every few ticks, so the new colour climbs her. Set as the rocket is
- * built; the clients draw what it holds (see the client's {@code LedConsoleRenderer}).
+ * silhouette of her lays its bands by; and which stories it sets now, any of them or all, their strips and their
+ * windows' glass. A change made for several runs up her from the lowest of them, a story every few ticks, so the new
+ * colour climbs her. Set as the rocket is built; the clients draw what it holds (see the client's
+ * {@code LedConsoleRenderer}).
  */
 public class LedConsoleBlockEntity extends BlockEntity {
     /** What {@link #picked} is once the whole-rocket button has picked every story, however many she has. */
@@ -87,13 +89,15 @@ public class LedConsoleBlockEntity extends BlockEntity {
 
     /**
      * Works a touched control, on the server: a story's band picks it (see {@link #pick}), the whole-rocket button
-     * picks all of them, and a swatch, brightness or mode changes what is picked, each story in turn up her.
+     * picks all of them, and a swatch, brightness, mode or window's tile changes what is picked, each story in turn up
+     * her.
      */
     void touch(LedControls.Control control) {
         switch (control) {
             case LedControls.Story story -> pick(story.story());
             case LedControls.WholeRocket whole -> pickAll();
-            default -> set(control);
+            case LedControls.Windows windows -> climb((panel, delay) -> panel.dimWindows(windows.dim(), delay));
+            default -> climb((panel, delay) -> panel.change(setting -> LedControls.changed(setting, control), delay));
         }
     }
 
@@ -119,8 +123,8 @@ public class LedConsoleBlockEntity extends BlockEntity {
         changed();
     }
 
-    /** Changes the stories picked, each in turn from the lowest up. */
-    private void set(LedControls.Control control) {
+    /** Changes the stories picked, each in turn from the lowest up, its panel told how many ticks later it is. */
+    private void climb(BiConsumer<LedPanelBlockEntity, Integer> change) {
         gathering = false;
         int climbed = 0;
         for (int story = 0; story < stories(); story++) {
@@ -129,7 +133,7 @@ public class LedConsoleBlockEntity extends BlockEntity {
             }
             LedPanelBlockEntity panel = panel(story);
             if (panel != null) {
-                panel.change(setting -> LedControls.changed(setting, control), climbed * CLIMB_TICKS);
+                change.accept(panel, climbed * CLIMB_TICKS);
             }
             climbed++;
         }

@@ -2262,7 +2262,10 @@ silhouette along its top laid on her side, each story a band glowing as its stri
 more bands to pick them with it (one of them touched again is left out), or the little rocket beside it to pick them
 all, what is picked glowing softly green, then use the same swatches, suns and strips under them to change them all
 alike. The next band touched after that starts a new pick, so setting one story after another takes a touch each. Set
-for several stories, a change climbs her a story at a time from the lowest up.
+for several stories, a change climbs her a story at a time from the lowest up. At the end of its bottom row four little
+oval windows, a sun and sky dimming from one to the next, set the glass of the windows on the stories picked, from clear
+to near-black, each with its falling chime, as using a window does; the one it last set them to glows green, whatever
+has been done to a window by hand since.
 
 Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass: a smooth night sky just inside
 its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky

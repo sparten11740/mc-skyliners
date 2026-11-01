@@ -8,6 +8,7 @@ import dev.aerolarge.block.LedMode;
 import dev.aerolarge.block.LedPanelBlockEntity;
 import dev.aerolarge.block.LedSetting;
 import dev.aerolarge.block.LedStripBlock;
+import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.block.TouchPanel;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,13 @@ import org.joml.Matrix4f;
  * through for off and brighter with more rays up to full; a little strip for each mode doing what it does, lit
  * steadily, breathing, chasing along or pulsing in bars; each in the colour it sets. On the console, along the top, her
  * silhouette laid on her side, her foot at the left, each story a band glowing as its strips do, and beside it the
- * whole-rocket button, a little rocket standing up with every story's band lit. Every tile lights up as every touch
+ * whole-rocket button, a little rocket standing up with every story's band lit, and at the end of its bottom row an
+ * oval window in a steel rim for each darkness of her windows' glass, the sky and the sun through it dimming from tile
+ * to tile. Every tile lights up as every touch
  * panel's does (see {@link TouchPanelArt}): the one the crosshair rests on as looked at, and what is set now as picked:
  * the colour, the brightness and the mode (on the console those every story picked agrees on), and on the console the
- * stories picked, with the whole-rocket button once that is all of them. Everything is in blocks on the face, at full
- * brightness.
+ * stories picked, with the whole-rocket button once that is all of them, and the darkness it last set their windows to
+ * if they agree. Everything is in blocks on the face, at full brightness.
  */
 final class LedControlsArt {
     private static final int CASING = 0xFF15171C;
@@ -61,6 +64,20 @@ final class LedControlsArt {
     private static final int NOSE_STEPS = 5;
     private static final double BAND_HALF = 0.15;
     private static final double BAND_GAP = 0.006;
+    /**
+     * A window's tile: how big the oval is, from its middle to its rim's edge across, as a share of the button's
+     * shorter side; how much taller than wide, as her windows are; and how far in its glass starts and how big its sun
+     * is, each a share of the oval, and where the sun sits from the middle of the glass.
+     */
+    private static final float WINDOW_SIZE = 0.4F;
+    private static final float WINDOW_TALL = 4F / 3;
+    private static final float WINDOW_GLASS = 0.78F;
+    private static final float WINDOW_SUN = 0.24F;
+    private static final float WINDOW_SUN_AT = 0.28F;
+    /** The sky and the sun seen through a window, and how much of them each step of its glass lets through, a share. */
+    private static final int WINDOW_SKY = 0x8CCBF0;
+    private static final int WINDOW_SUNLIGHT = 0xFFF1B8;
+    private static final float[] WINDOW_LIGHT = {1, 0.55F, 0.3F, 0.1F};
 
     private LedControlsArt() {
     }
@@ -83,16 +100,35 @@ final class LedControlsArt {
         background(matrix, shapes, LedControls.Face.CONSOLE.width());
         List<LedSetting> settings = new ArrayList<>();
         List<LedSetting> picked = new ArrayList<>();
+        List<Integer> windows = new ArrayList<>();
         for (int story = 0; story < console.stories(); story++) {
             LedPanelBlockEntity panel = console.panel(story);
             settings.add(panel == null ? LedSetting.PLAIN : panel.setting());
             if (console.picks(story)) {
                 picked.add(settings.getLast());
+                windows.add(panel == null ? LedPanelBlockEntity.WINDOWS_UNSET : panel.windows());
             }
         }
         silhouette(matrix, shapes, console, settings, looked, ticks);
         wholeRocket(matrix, shapes, settings, look(LedControls.WHOLE_ROCKET_TILE, looked, console.picksAll()), ticks);
         controls(matrix, shapes, LedControls.Face.CONSOLE, picked, looked, ticks);
+        Integer dim = agreed(windows, Function.identity());
+        for (int step = 0; step <= OvalWindowBlock.DARKEST; step++) {
+            int tile = LedControls.window(step);
+            window(matrix, shapes, button(console.layout(), tile), step, look(tile, looked, dim != null && dim == step));
+        }
+    }
+
+    /** A darkness's window on its button: an oval in a steel rim, the sky and the sun through its glass. */
+    private static void window(Matrix4f matrix, VertexConsumer shapes, TouchPanel.Tile button, int dim, TouchPanelArt.Look look) {
+        TouchPanelArt.tile(shapes, matrix, button, TILE, look, 2 * LAYER);
+        Matrix4f oval = new Matrix4f(matrix).translate((float) button.middleX(), (float) button.middleY(), 0).scale(1, WINDOW_TALL, 1);
+        double size = WINDOW_SIZE * button.side();
+        float light = WINDOW_LIGHT[dim];
+        ScreenDrawing.disc(shapes, oval, 0, 0, size, ROUND, 4 * LAYER, HULL);
+        ScreenDrawing.disc(shapes, oval, 0, 0, size * WINDOW_GLASS, ROUND, 5 * LAYER, 0xFF000000 | LedLights.scaled(WINDOW_SKY, light));
+        ScreenDrawing.disc(shapes, oval, size * WINDOW_SUN_AT, size * WINDOW_SUN_AT, size * WINDOW_SUN, ROUND, 6 * LAYER,
+            0xFF000000 | LedLights.scaled(WINDOW_SUNLIGHT, light));
     }
 
     /** The casing and the dark glass inside it, over a face so wide and a row tall. */
@@ -139,12 +175,12 @@ final class LedControlsArt {
         return new TouchPanelArt.Look(tile == looked, picked, true);
     }
 
-    /** What every one of the settings has alike; null where they differ, or there are none. */
+    /** What every one of the things has alike; null where they differ, or there are none. */
     @Nullable
-    private static <T> T agreed(List<LedSetting> settings, Function<LedSetting, T> value) {
-        T first = settings.isEmpty() ? null : value.apply(settings.getFirst());
-        for (LedSetting setting : settings) {
-            if (!value.apply(setting).equals(first)) {
+    private static <S, T> T agreed(List<S> things, Function<S, T> value) {
+        T first = things.isEmpty() ? null : value.apply(things.getFirst());
+        for (S thing : things) {
+            if (!value.apply(thing).equals(first)) {
                 return null;
             }
         }
