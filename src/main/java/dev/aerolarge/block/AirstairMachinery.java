@@ -15,7 +15,7 @@ import org.joml.Vector3f;
  * nested in it;</li>
  * <li>a yellow carriage running on them under the head of the folded flight, rolling it out of the bay and pulling the
  * extensions out of the rails as it rolls on past the skin, where it stops while the flight swings;</li>
- * <li>a hinge tube across the head of the stringers, which the flight swings on;</li>
+ * <li>a hinge tube across the head of the stringers, under the second tread, which the flight swings on;</li>
  * <li>a three-stage lift ram either side, from the carriage up to the hinge tube, lying low under the folded flight,
  * which stands up and runs out to lift the flight's head to the sill;</li>
  * <li>a tilt ram in the middle, from the carriage to a lug under the third tread, which draws in to tip the flight
@@ -97,7 +97,7 @@ final class AirstairMachinery {
     private static final float CABLE_SPREAD = 0.5F;
     /**
      * A cable's thickness, and how far its middle runs under the line through the treads' back edges, below every
-     * tread and stringer of every section; the cable meets its drum's underside there.
+     * tread and stringer of every section; the cable leaves its drum on that line.
      */
     private static final float CABLE_SIZE = PX;
     private static final float CABLE_BELOW = AirstairFlight.TREAD_THICKNESS + PX;
@@ -105,6 +105,14 @@ final class AirstairMachinery {
     private static final float CABLE_END_BACK = 0.25F;
     /** How deep a tread is, along the flight: half a block, two to a block. */
     private static final float TREAD_DEPTH = 0.5F;
+    /**
+     * Where the hinge tube lies in the flight's own frame, out along it and up: just ahead of the pivot the flight
+     * swings about, under the second tread's plate, its drums clear of the plate, so the tread hides it from above
+     * and the cables leave the drums' undersides on their line; at the pivot itself, on that tread's back edge, it and
+     * its drums would stand across the step.
+     */
+    private static final float HINGE_U = AirstairFlight.PIVOT_U + DRUM_SIZE / 2 + PX / 2;
+    private static final float HINGE_Y = -TREAD_DEPTH - AirstairFlight.TREAD_THICKNESS - DRUM_SIZE / 2 - PX / 8;
 
     private AirstairMachinery() {
     }
@@ -128,7 +136,7 @@ final class AirstairMachinery {
         float carriage = 1 + slid + AirstairFlight.PIVOT_U - CARRIAGE_BACK;
         rails(width, deepEnd, railEnd, motion.mouth(), sink);
         carriage(width, carriage, railEnd, sink);
-        Vector3f hinge = nest.transformPosition(new Vector3f(0, AirstairFlight.PIVOT_Y, AirstairFlight.PIVOT_U));
+        Vector3f hinge = nest.transformPosition(new Vector3f(0, HINGE_Y, HINGE_U));
         for (float middle : new float[]{LIFT_RAM_IN, width - LIFT_RAM_IN}) {
             ram(new Vector3f(middle, RAM_FOOT_Y, carriage), new Vector3f(middle, hinge.y, hinge.z), LIFT_STAGE, LIFT_SIZES, sink);
         }
@@ -202,7 +210,7 @@ final class AirstairMachinery {
      * bars about the same line, one turned an eighth of a turn on the other, which together read as round.
      */
     private static void tube(Matrix4f nest, float from, float to, float size, Part part, Sink sink) {
-        Matrix4f at = new Matrix4f(nest).translate(0, AirstairFlight.PIVOT_Y, AirstairFlight.PIVOT_U);
+        Matrix4f at = new Matrix4f(nest).translate(0, HINGE_Y, HINGE_U);
         float half = size / 2;
         sink.box(at, new Vector3f(from, -half, -half), new Vector3f(to, half, half), part);
         float turned = half * 0.92F;
@@ -245,7 +253,7 @@ final class AirstairMachinery {
      * fast to a lug under that section's last tread.
      */
     private static void cable(Matrix4f nest, float middle, float footOffset, int treads, Sink sink) {
-        float from = AirstairFlight.PIVOT_U;
+        float from = HINGE_U;
         float to = (footOffset + treads) * TREAD_DEPTH - CABLE_END_BACK;
         float half = CABLE_SIZE / 2;
         Matrix4f along = new Matrix4f(nest).translate(middle, -from - CABLE_BELOW, from).rotateX(AirstairFlight.SLOPE);
