@@ -179,8 +179,8 @@ public class LedPanelBlockEntity extends BlockEntity {
             return;
         }
         BlockState state = level.getBlockState(at);
-        if (state.getBlock() instanceof OvalWindowBlock && state.getValue(OvalWindowBlock.DIM) != windows) {
-            level.setBlock(at, state.setValue(OvalWindowBlock.DIM, windows), Block.UPDATE_ALL);
+        if (state.getBlock() instanceof OvalWindowPieceBlock && state.getValue(OvalWindowPieceBlock.DIM) != windows) {
+            level.setBlock(at, state.setValue(OvalWindowPieceBlock.DIM, windows), Block.UPDATE_ALL);
         }
     }
 

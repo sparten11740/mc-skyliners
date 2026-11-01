@@ -90,6 +90,7 @@ import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlagHalyardBlock;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import dev.aerolarge.block.FlagstaffBlock;
+import dev.aerolarge.block.FlatOvalWindowBlock;
 import dev.aerolarge.block.FloodlightBlock;
 import dev.aerolarge.block.FloorLightBlock;
 import dev.aerolarge.block.FrankingMachineBlock;
@@ -721,8 +722,10 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CabinWindowShellBlock> CABIN_WINDOW_SHELL = BLOCKS.registerBlock(
         "cabin_window_shell", properties -> new CabinWindowShellBlock(properties, AerolargeRegistry.CABIN_WINDOW), glass()
     );
-    /** The rocket's big oval windows, each a few blocks of it, their glass dimming in steps. */
+    /** The rocket's big oval windows, a few blocks each, their glass dimming in steps; set into walls by hand too. */
     public static final DeferredBlock<OvalWindowBlock> OVAL_WINDOW = BLOCKS.registerBlock("oval_window", OvalWindowBlock::new, glass());
+    /** The oval window lying flat in a floor or a roof, set there by hand from the Oval Window. */
+    public static final DeferredBlock<FlatOvalWindowBlock> FLAT_OVAL_WINDOW = BLOCKS.registerBlock("flat_oval_window", FlatOvalWindowBlock::new, glass());
     /**
      * The rocket's lift: its machine at the top of the glass shaft, its landing doors, the call buttons by the doors
      * (picture boards on ships built before) and the boards on the car's back wall, the car that rides the shaft, and
@@ -1164,6 +1167,8 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
+    /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
+    public static final DeferredItem<BlockItem> OVAL_WINDOW_ITEM = ITEMS.registerSimpleBlockItem(OVAL_WINDOW);
     public static final DeferredItem<BlockItem> SHAFT_DECOR_ITEM = ITEMS.registerSimpleBlockItem(SHAFT_DECOR);
     /**
      * What hangs under the rocket's ceiling girders, themed to each room: banners, a chain hoist, pots and pans, fairy
@@ -2619,7 +2624,7 @@ public final class AerolargeRegistry {
             ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM
         )),
         new TabSection("rocket", List.of(
-            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, ROCKET_BOOST_BUTTON_ITEM, ROCKET_STABILITY_SWITCH_ITEM, ROCKET_MODE_KNOB_ITEM, ROCKET_ABORT_HANDLE_ITEM,
+            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, OVAL_WINDOW_ITEM, ROCKET_BOOST_BUTTON_ITEM, ROCKET_STABILITY_SWITCH_ITEM, ROCKET_MODE_KNOB_ITEM, ROCKET_ABORT_HANDLE_ITEM,
             ROCKET_LAUNCH_KEY_ITEM
         )),
         new TabSection("flight_deck", List.of(

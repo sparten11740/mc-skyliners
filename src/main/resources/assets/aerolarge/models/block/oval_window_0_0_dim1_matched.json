@@ -1,0 +1,36 @@
+{
+  "loader": "neoforge:composite",
+  "textures": {
+    "particle": "aerolarge:block/oval_window_glass_dim1"
+  },
+  "children": {
+    "glass": {
+      "loader": "aerolarge:oval_window",
+      "part": "glass",
+      "render_type": "minecraft:translucent",
+      "column": 0,
+      "row": 0,
+      "textures": {
+        "glass": "aerolarge:block/oval_window_glass_dim1",
+        "particle": "aerolarge:block/oval_window_glass_dim1"
+      }
+    },
+    "frame": {
+      "loader": "aerolarge:oval_window",
+      "part": "frame",
+      "render_type": "minecraft:cutout_mipped",
+      "column": 0,
+      "row": 0,
+      "matches_wall": true,
+      "textures": {
+        "frame": "aerolarge:block/oval_window_0_0_frame",
+        "inside": "aerolarge:block/oval_window_0_0_inside",
+        "rim": "aerolarge:block/oval_window_rim",
+        "lip": "aerolarge:block/oval_window_lip",
+        "reveal": "aerolarge:block/oval_window_reveal",
+        "edge": "aerolarge:block/zeppelin_skin",
+        "particle": "aerolarge:block/oval_window_glass_dim1"
+      }
+    }
+  }
+}

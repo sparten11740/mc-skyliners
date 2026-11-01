@@ -59,7 +59,7 @@ public final class LedControls {
     /** The console's whole-rocket button's tile, after the controls both faces have; its windows and bands follow. */
     public static final int WHOLE_ROCKET_TILE = CONTROLS;
     /** How many darknesses of her windows' glass the console has tiles for. */
-    private static final int WINDOW_STEPS = OvalWindowBlock.DARKEST + 1;
+    private static final int WINDOW_STEPS = OvalWindowPieceBlock.DARKEST + 1;
     /**
      * How far in from its tile each button is drawn, on the face: half the gap between two buttons, the tiles meeting
      * in the middle of it, so a touch in the gap still picks the nearer button.
@@ -125,9 +125,6 @@ public final class LedControls {
     private static final float LOWEST_NOTE = 0.5F;
     private static final float CLICK_PITCH = 0.7F;
     private static final float CLICK_STEP = 0.2F;
-    /** A window tile's chime's pitch for clear glass and how far it falls with each step darker, as a window's own. */
-    private static final float WINDOW_CLEAR_PITCH = 1.5F;
-    private static final float WINDOW_PITCH_STEP = 0.25F;
     /** How loud the panels' sounds are. */
     private static final float VOLUME = 0.5F;
 
@@ -227,7 +224,7 @@ public final class LedControls {
             case Story story -> level.playSound(null, pos, SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.BLOCKS, VOLUME, 1);
             case WholeRocket whole -> level.playSound(null, pos, SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.BLOCKS, VOLUME, 1.5F);
             case Windows windows -> level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, VOLUME,
-                WINDOW_CLEAR_PITCH - WINDOW_PITCH_STEP * windows.dim());
+                OvalWindowPieceBlock.chimePitch(windows.dim()));
         }
     }
 

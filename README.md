@@ -1918,6 +1918,16 @@ rubber gasket, and sits inside in a recess lined with steel behind a steel lip; 
 once: use one to darken its glass a step, from clear through light and medium to dark, and once more to
 clear it again, a chime falling as it darkens.
 
+The same window is the Oval Window, in the creative tab under Rocket (it can be crafted, and picking one of hers, or any
+other, with the mouse wheel in creative mode gives one), to set by hand into any wall, floor or roof. It fills the
+opening three blocks wide and four long that the spot clicked is in, whichever block of it is clicked: standing in a
+wall, or lying flat in a floor or a roof, whichever fits the opening best (looking steeply up or down tips a tie toward
+lying flat), its dome toward whoever sets it and, lying flat, its top away from them. Round its oval, outside and in, it
+looks like the wall, floor or roof beside it, whatever that is built of: stone, planks, bricks, glass or grass, a
+striped wall's stripes running on through its corners, while a sill or a lintel of something else stays out of it;
+standing on its own with no wall beside it, it keeps her silver weave. It dims as hers do, and it comes away whole:
+break any part of it and the whole window goes, giving back one Oval Window.
+
 Her front door, three blocks wide and three tall over her entry floor, across the flat of her front, has the
 airliner's integral airstairs (see Airstairs), three blocks wide to match it: open treads with yellow nosings between
 aluminium stringers, a handrail along either side, the top tread level with the sill. Stowed, they lie folded in a bay
@@ -2650,7 +2660,9 @@ picked glow alike on every panel, and over the paint of the zeppelin's `LiveryBo
 music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
-pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space round any
+pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes, and `OvalWindowWall` dresses one set
+by hand in the wall it is set into (`OvalWindowPieceBlock` holds what a window in a wall, `OvalWindowBlock`, and one
+lying flat, `FlatOvalWindowBlock`, share). `SpaceSky` draws space round any
 camera far over the top of the world, over the game's own sky, the fog the land fades into taking the planet's colour,
 and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along
 the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every

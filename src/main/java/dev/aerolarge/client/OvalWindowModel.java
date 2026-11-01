@@ -9,13 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.renderer.FaceInfo;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
+import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.model.IModelBuilder;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
@@ -46,6 +50,10 @@ import org.joml.Vector4f;
  * round skin beside it is cut deeper than the window. The rings each get the shade for the way they really face at
  * each corner, as the cabin archway's curve does (see {@link CabinArchModel}), so the glass and the steel brighten and
  * darken smoothly round the oval. A ring's face is drawn by the piece its middle lies in.
+ *
+ * <p>With {@code "matches_wall": true}, the frame of a window set by hand, it can draw the faces of the wall, floor or
+ * roof beside the window in place of the weave, the inner face's wall and the edges, on the very pixels their textures
+ * leave them (see {@link OvalWindowWall}).
  */
 public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "oval_window");
@@ -101,6 +109,10 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
      * none for a room's own wall.
      */
     private final int insideTint;
+    /**
+     * Whether it is the frame of a window set by hand, which looks like the wall it is set into (see OvalWindowWall).
+     */
+    private final boolean matchesWall;
 
     /**
      * A point of the window: how far right of its middle and below it, as seen from outside, and how deep into the
@@ -109,16 +121,37 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private record Point(float right, float down, float depth) {
     }
 
-    private OvalWindowModel(int column, int row, boolean glassPart, int insideTint) {
+    private OvalWindowModel(int column, int row, boolean glassPart, int insideTint, boolean matchesWall) {
         this.column = column;
         this.row = row;
         this.glassPart = glassPart;
         this.insideTint = insideTint;
+        this.matchesWall = matchesWall;
     }
 
     private static OvalWindowModel read(JsonObject json) {
         return new OvalWindowModel(GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"),
-            "glass".equals(GsonHelper.getAsString(json, "part")), GsonHelper.getAsInt(json, "inside_tint", COVER_TINT));
+            "glass".equals(GsonHelper.getAsString(json, "part")), GsonHelper.getAsInt(json, "inside_tint", COVER_TINT),
+            GsonHelper.getAsBoolean(json, "matches_wall", false));
+    }
+
+    /**
+     * The piece as the rocket's windows have it; for the frame of a window set into a wall by hand, that and its steel
+     * alone, with where the wall shows on it, to look like the wall beside it once one is found.
+     */
+    @Override
+    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter,
+                           ModelState modelState, ItemOverrides overrides) {
+        BakedModel weave = super.bake(context, baker, spriteGetter, modelState, overrides);
+        if (glassPart || !matchesWall) {
+            return weave;
+        }
+        Transformation turn = modelState.getRotation().blockCenterToCorner();
+        ResourceLocation hint = context.getRenderTypeHint();
+        IModelBuilder<?> steel = IModelBuilder.of(context.useAmbientOcclusion(), context.useBlockLight(), context.isGui3d(), context.getTransforms(),
+            overrides, spriteGetter.apply(context.getMaterial("particle")), hint != null ? context.getRenderType(hint) : RenderTypeGroup.EMPTY);
+        addSteel(context, steel, spriteGetter, turn);
+        return new OvalWindowWall.Baked(weave, steel.build(), wallPatches(context, spriteGetter, turn));
     }
 
     @Override
@@ -134,6 +167,18 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             }
             return;
         }
+        addSteel(owner, modelBuilder, spriteGetter, turn);
+        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), turn);
+        side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), insideTint, true, turn);
+        TextureAtlasSprite edge = spriteGetter.apply(owner.getMaterial("edge"));
+        for (Direction side : outerEdges()) {
+            side(modelBuilder, side, edge, COVER_TINT, false, turn);
+        }
+    }
+
+    /** The frame's steel: its collar outside; inside, the recess's lining, the gasket's and collar's backs, the lip. */
+    private void addSteel(IGeometryBakingContext owner, IModelBuilder<?> modelBuilder, Function<Material, TextureAtlasSprite> spriteGetter,
+                          Transformation turn) {
         TextureAtlasSprite rim = spriteGetter.apply(owner.getMaterial("rim"));
         TextureAtlasSprite lip = spriteGetter.apply(owner.getMaterial("lip"));
         TextureAtlasSprite reveal = spriteGetter.apply(owner.getMaterial("reveal"));
@@ -141,11 +186,51 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             collarFace(modelBuilder, rim, step, turn);
             recessFaces(modelBuilder, reveal, lip, step, turn);
         }
-        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), turn);
-        side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), insideTint, true, turn);
-        TextureAtlasSprite edge = spriteGetter.apply(owner.getMaterial("edge"));
+    }
+
+    /**
+     * Where a wall the window is set into shows on the piece, turned the way it looks: the frame outside, on the pixels
+     * the weave's texture leaves, its shade baked in as the weave's is; the inner face, on the pixels the wall's
+     * texture there leaves, hidden by a block against it; and the window's outer edges, hidden by the wall beside them.
+     */
+    private List<OvalWindowWall.Patch> wallPatches(IGeometryBakingContext owner, Function<Material, TextureAtlasSprite> spriteGetter,
+                                                   Transformation turn) {
+        List<OvalWindowWall.Patch> patches = new ArrayList<>();
+        float skin = (SKIN - OVER) / BLOCK;
+        SpriteContents frame = spriteGetter.apply(owner.getMaterial("frame")).contents();
+        SpriteContents inside = spriteGetter.apply(owner.getMaterial("inside")).contents();
+        for (int y = 0; y < frame.height(); y++) {
+            shownRow(patches, frame, y, Direction.NORTH, skin, true);
+        }
+        for (int y = 0; y < inside.height(); y++) {
+            shownRow(patches, inside, y, Direction.SOUTH, 1, false);
+        }
         for (Direction side : outerEdges()) {
-            side(modelBuilder, side, edge, COVER_TINT, false, turn);
+            float depth = side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : 0;
+            patches.add(side.getAxis() == Direction.Axis.X ? new OvalWindowWall.Patch(side, depth, skin, 0, 1, 1, false, true)
+                : new OvalWindowWall.Patch(side, depth, 0, skin, 1, 1, false, true));
+        }
+        return patches.stream().map(patch -> patch.turned(turn)).toList();
+    }
+
+    /**
+     * The runs of pixels a flat face's texture leaves along one of its rows, each a stretch of that face looking north
+     * or south, its texture laid as on the frame and the inner face: across from the block's east side, down from its
+     * top. The flat inner face is hidden by a block against it; the frame round the collar has its shade baked in.
+     */
+    private static void shownRow(List<OvalWindowWall.Patch> into, SpriteContents texture, int y, Direction side, float depth, boolean frame) {
+        int wide = texture.width();
+        float top = 1 - (float) y / texture.height();
+        float bottom = 1 - (float) (y + 1) / texture.height();
+        int from = 0;
+        for (int x = 0; x <= wide; x++) {
+            if (x < wide && !texture.isTransparent(0, x, y)) {
+                continue;
+            }
+            if (x > from) {
+                into.add(new OvalWindowWall.Patch(side, depth, 1 - (float) x / wide, bottom, 1 - (float) from / wide, top, frame, !frame));
+            }
+            from = x + 1;
         }
     }
 

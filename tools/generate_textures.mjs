@@ -4003,6 +4003,21 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 2);
   texture(blockOutput, "oval_window_lip", (x, y) => mix(OVAL_RIM, OVAL_RIM_LIT, y / (SIZE - 1) * 0.6), 2);
   texture(blockOutput, "oval_window_reveal", (x, y) => mix(OVAL_RIM, FRAME_DARK, (y / (SIZE - 1)) * 0.6), 2);
+  // In the hand: the window seen from outside, in its steel collar lit along its upper left, the dark gasket inside
+  // it, and the smoked glass catching the sky toward its edge with the glint high on its left, outlined dark so it shows
+  // on any background.
+  const ICON_WIDE = 5.2;
+  const ICON_TALL = 7;
+  outlinedIcon("oval_window", (x, y) => {
+    const dx = x + 0.5 - SIZE / 2;
+    const dy = y + 0.5 - SIZE / 2;
+    const out = Math.hypot(dx / ICON_WIDE, dy / ICON_TALL);
+    if (out > 1) return null;
+    if (out > 0.8) return dx + dy < 0 ? OVAL_RIM_LIT : OVAL_RIM;
+    if (out > 0.66) return FRAME_DARK;
+    if (Math.hypot(dx + 1.4, dy + 2.6) < 1.2) return HIGHLIGHT;
+    return mix([0x50, 0x60, 0x6e], OVAL_SKY, (out / 0.66) ** 2 * OVAL_SKY_EDGE);
+  }, FRAME_DARK, () => null);
   // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
   // Livery lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with its white
   // fins, midnight blue with gold stars), each where LiveryBoardBlock lays out its touch panel's tiles to light them.

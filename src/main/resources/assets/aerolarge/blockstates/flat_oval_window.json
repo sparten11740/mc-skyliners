@@ -1,0 +1,1924 @@
+{
+  "variants": {
+    "along=north,column=0,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_0_0_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_0_1_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_0_2_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=0,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=0,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=0,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=0,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=0,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=0,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=0,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=0,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_0_3_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_1_0_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_1_1_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_1_2_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=1,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=1,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=1,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=1,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=1,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=1,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=1,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=1,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_1_3_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=0,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=0,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=1,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=1,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=2,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=2,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=3,facing=down,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=3,facing=up,row=0": {
+      "model": "aerolarge:block/oval_window_2_0_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=0,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=0,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=1,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=1,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=2,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=2,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=3,facing=down,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=3,facing=up,row=1": {
+      "model": "aerolarge:block/oval_window_2_1_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=0,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=0,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=1,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=1,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=2,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=2,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=3,facing=down,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=3,facing=up,row=2": {
+      "model": "aerolarge:block/oval_window_2_2_dim3_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=0,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=0,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim0_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=1,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=1,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim1_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=2,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=2,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim2_matched",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,column=2,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,column=2,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,column=2,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,column=2,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,column=2,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,column=2,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,column=2,dim=3,facing=down,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,column=2,dim=3,facing=up,row=3": {
+      "model": "aerolarge:block/oval_window_2_3_dim3_matched",
+      "x": 270,
+      "y": 90
+    }
+  }
+}

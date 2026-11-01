@@ -4884,19 +4884,21 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // room's wall. Every block takes its share of the glass from one texture over the whole window. Each model is NeoForge's
 // composite of two parts: the glass, drawn translucent, and the rest cut out, so the clear hole in the inner face, cut
 // out, never hides the steel behind it as a translucent face would wherever it is drawn first. Modelled looking north,
-// turned for the other ways. It gives back glass.
+// turned for the other ways. A piece of hers gives back glass. Set into a wall by hand (wall=matched), its frame is
+// marked to look like the wall beside it (see OvalWindowWall), keeping the weave where no wall is found, and the whole
+// window, taken away, gives back the window itself from the middle of its bottom row. In the hand: its icon.
 {
   const variants = {};
   const edge = `${ID}:block/zeppelin_skin`;
   // A window block's model: its glass and the rest, from its textures, the wall round its oval inside tinted or not.
-  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint) => ({
+  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint, matchesWall = false) => ({
     loader: "neoforge:composite",
     textures: { particle: glass },
     children: {
       glass: { loader: `${ID}:oval_window`, part: "glass", render_type: "minecraft:translucent", column, row, textures: { glass, particle: glass } },
       frame: {
         loader: `${ID}:oval_window`, part: "frame", render_type: "minecraft:cutout_mipped", column, row, ...(insideTint === undefined ? {} : { inside_tint: insideTint }),
-        textures: { ...rest, particle: glass },
+        ...(matchesWall ? { matches_wall: true } : {}), textures: { ...rest, particle: glass },
       },
     },
   });
@@ -4912,6 +4914,13 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
         for (const [facing, y] of Object.entries(yRot)) {
           variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=cover`] = { model: `${ID}:block/${name}`, y };
         }
+        write(`assets/${ID}/models/block/${name}_matched.json`, ovalWindowModel(column, row, {
+          glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside`,
+          rim: `${ID}:block/oval_window_rim`, lip: `${ID}:block/oval_window_lip`, reveal: `${ID}:block/oval_window_reveal`, edge,
+        }, undefined, true));
+        for (const [facing, y] of Object.entries(yRot)) {
+          variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=matched`] = { model: `${ID}:block/${name}_matched`, y };
+        }
         // In a room finished its own way, the wall round the oval inside is that room's, untinted.
         for (const finish of WINDOW_FINISHES) {
           write(`assets/${ID}/models/block/${name}_${finish}.json`, ovalWindowModel(column, row, {
@@ -4926,11 +4935,46 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
     }
   }
   write(`assets/${ID}/blockstates/oval_window.json`, { variants });
+  // Lying flat in a floor or a roof (see FlatOvalWindowBlock), the same pieces as set into a wall by hand, turned to
+  // look up or down, their top row along the way given.
+  const flatVariants = {};
+  for (let column = 0; column < 3; column++) {
+    for (let row = 0; row < 4; row++) {
+      for (let dim = 0; dim < 4; dim++) {
+        for (const [along, y] of Object.entries(yRot)) {
+          const model = `${ID}:block/oval_window_${column}_${row}_dim${dim}_matched`;
+          flatVariants[`along=${along},column=${column},dim=${dim},facing=down,row=${row}`] = { model, x: 90, y };
+          flatVariants[`along=${along},column=${column},dim=${dim},facing=up,row=${row}`] = { model, x: 270, y: (y + 180) % 360 };
+        }
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/flat_oval_window.json`, { variants: flatVariants });
+  const setByHand = { condition: "minecraft:block_state_property", block: `${ID}:oval_window`, properties: { wall: "matched" } };
   write(`data/${ID}/loot_table/blocks/oval_window.json`, {
     type: "minecraft:block",
-    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: "minecraft:glass" }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    pools: [
+      {
+        rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:oval_window` }],
+        conditions: [{ ...setByHand, properties: { wall: "matched", column: "1", row: "3" } }, { condition: "minecraft:survives_explosion" }],
+      },
+      {
+        rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: "minecraft:glass" }],
+        conditions: [{ condition: "minecraft:inverted", term: setByHand }, { condition: "minecraft:survives_explosion" }],
+      },
+    ],
     random_sequence: `${ID}:blocks/oval_window`,
   });
+  write(`data/${ID}/loot_table/blocks/flat_oval_window.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:oval_window` }],
+      conditions: [{ condition: "minecraft:block_state_property", block: `${ID}:flat_oval_window`, properties: { column: "1", row: "3" } },
+        { condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/flat_oval_window`,
+  });
+  write(`assets/${ID}/models/item/oval_window.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/oval_window` } });
   cubes.oval_window = null;
 }
 // The rocket's lift (see LiftMachineBlockEntity). Its machine: a steel housing over the shaft. Its landing doors: a
@@ -9957,6 +10001,7 @@ shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft
 shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
 shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);
 shaped("lift_glass", [" G ", "GTG", " G "], { G: "minecraft:glass", T: "minecraft:tinted_glass" }, 4);
+shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("passenger_screen", ["GGG", "PRP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 3);
@@ -10148,6 +10193,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.smoked_glass": "Smoked Glass",
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.oval_window": "Oval Window",
+  "block.aerolarge.flat_oval_window": "Oval Window",
   "block.aerolarge.lift_machine": "Lift Machine",
   "block.aerolarge.lift_floor": "Lift Car Floor",
   "block.aerolarge.lift_call_button": "Lift Call Button",
