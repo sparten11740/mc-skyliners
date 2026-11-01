@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.TechnoDeckBlockEntity;
 import it.unimi.dsi.fastutil.HashCommon;
 import java.util.Map;
@@ -14,9 +15,14 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.TransparentBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.Tags;
 import org.joml.Vector3f;
 
 /**
@@ -24,8 +30,8 @@ import org.joml.Vector3f;
  * lit two by two in the beat, only those that are dance floor (the rocket's club has its tiles only in the middle,
  * round her shaft), a checkerboard of pink and blue changing every beat at first, quickening with the
  * build; then, from the drop, every tile its own colour each half beat, the beams of light from over the deck sweeping
- * the dancers, and a white flash on the ceiling on every beat of the first bars. All at full brightness, so the room
- * glows with them.
+ * the dancers, shining through glass but stopping on whatever else stands in their way, and a white flash on the
+ * ceiling on every beat of the first bars. All at full brightness, so the room glows with them.
  */
 public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEntity> {
     /** How big the dance floor's lit squares are, in blocks, and how far over the floor they are drawn. */
@@ -80,7 +86,7 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
         boolean dropped = at >= TechnoRoom.DROP_TICK;
         floor(consumer, last, from, to, at, beat, dropped, danceFloor(deck, from, to));
         if (dropped) {
-            beams(consumer, last, from, to, at);
+            beams(consumer, last, deck, from, to, at);
             flash(consumer, last, from, to, at, beat);
         }
         scratchFlash(consumer, last, from, to, deck, partialTick);
@@ -175,9 +181,9 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
 
     /**
      * Beams of light from over the deck out across the room to its far wall, through its middle, sweeping from side
-     * to side and up and down, each in its own colour.
+     * to side and up and down, each in its own colour, as far as nothing stops them.
      */
-    private static void beams(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, float at) {
+    private static void beams(VertexConsumer consumer, PoseStack.Pose pose, TechnoDeckBlockEntity deck, BlockPos from, BlockPos to, float at) {
         Vector3f start = new Vector3f(0.5F, BEAM_HEIGHT, 0.5F);
         Vector3f middle = new Vector3f((from.getX() + to.getX() + 1) / 2F, (from.getY() + to.getY() + 1) / 2F, (from.getZ() + to.getZ() + 1) / 2F);
         Vector3f toward = new Vector3f(middle.x - start.x, 0, middle.z - start.z);
@@ -186,8 +192,44 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
         for (int k = 0; k < BEAMS; k++) {
             float sweep = Mth.sin(at * SWEEP + k * 2.1F);
             Vector3f end = new Vector3f(middle).add(toward).add(new Vector3f(across).mul(sweep)).add(0, rise * Mth.cos(at * SWEEP * 0.7F + k), 0);
-            beam(consumer, pose, PALETTE[(k * 2 + 1) % PALETTE.length], start, end);
+            beam(consumer, pose, PALETTE[(k * 2 + 1) % PALETTE.length], start, stopped(deck, start, end));
         }
+    }
+
+    /** A beam's way through the room, from one point to another among the room's blocks. */
+    private record Beam(Level level, Vec3 from, Vec3 to) {
+    }
+
+    /**
+     * Where a beam from the deck toward a point ends, both as offsets from the deck: on the first thing in its way that
+     * it does not shine through, or at the point. Worked out in doubles, a ship's blocks lying too far off for a float.
+     */
+    private static Vector3f stopped(TechnoDeckBlockEntity deck, Vector3f from, Vector3f to) {
+        Level level = deck.getLevel();
+        if (level == null) {
+            return to;
+        }
+        BlockPos at = deck.getBlockPos();
+        Vec3 start = Vec3.atLowerCornerOf(at).add(from.x, from.y, from.z);
+        Vec3 end = Vec3.atLowerCornerOf(at).add(to.x, to.y, to.z);
+        Vec3 struck = BlockGetter.traverseBlocks(start, end, new Beam(level, start, end), TechnoRoomRenderer::struck, beam -> null);
+        return struck == null ? to : new Vector3f((float) (struck.x - at.getX()), (float) (struck.y - at.getY()), (float) (struck.z - at.getZ()));
+    }
+
+    /** Where a beam strikes a block on its way; null where it passes by, or the block is glass. */
+    @Nullable
+    private static Vec3 struck(Beam beam, BlockPos at) {
+        BlockState state = beam.level().getBlockState(at);
+        if (shinesThrough(state)) {
+            return null;
+        }
+        BlockHitResult hit = state.getShape(beam.level(), at).clip(beam.from(), beam.to(), at);
+        return hit == null ? null : hit.getLocation();
+    }
+
+    /** Whether a beam shines through a block: any glass, the game's, another mod's or the airframes' own. */
+    private static boolean shinesThrough(BlockState state) {
+        return state.getBlock() instanceof TransparentBlock || state.getBlock() instanceof CockpitGlassBlock || state.is(Tags.Blocks.GLASS_PANES);
     }
 
     /** A thin beam of light from one point to another: two crossed strips along it. */

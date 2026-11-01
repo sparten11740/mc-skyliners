@@ -1747,7 +1747,8 @@ glass tiles, big speakers along both walls, a disco ball and a DJ Deck at the fo
 minute-long track starts, 128 beats a minute, played from the room as the zeppelin flies, and the floor lights up two
 tiles at a time, pink and blue changing on the beat; the build quickens, the bass drops out, half a beat of silence, and
 then the drop: a huge sub-bass boom, the camera shaking with it, the ceiling flashing white on the beat, beams of
-coloured light sweeping the room and every tile flashing its own colour each half beat. It loops for as long as you stay
+coloured light sweeping the room, shining through glass but stopping on anything else in their way, and every tile
+flashing its own colour each half beat. It loops for as long as you stay
 and fades away as you climb out. Use the DJ Deck and its record is scratched back and forth, a "wikka-wikka" everyone
 in the room hears, the ceiling flickering through the floor's colours with each stroke. On a half-size zeppelin the
 room is a little shorter, 11 blocks long inside rather than
