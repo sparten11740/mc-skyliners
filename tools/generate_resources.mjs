@@ -2264,6 +2264,13 @@ function solid(from, to, texture, rotation) {
   if (rotation) element.rotation = rotation;
   return element;
 }
+// A square post that may stand above its block, its sides taking the texture rows given. A side's default rows follow
+// where it stands, so above the block they would run off the texture into whatever lies beside it in the atlas.
+function poppedUp(from, to, texture, topRow, bottomRow) {
+  const element = solid(from, to, texture);
+  for (const side of ["north", "south", "east", "west"]) element.faces[side].uv = [from[0], topRow, to[0], bottomRow];
+  return element;
+}
 // A module of the flight deck's centre console (see ConsoleModule): a slab CONSOLE_HEIGHT pixels tall the size of the
 // block in the console's casing, its top the control's panel, and the control's own parts on it. The panel reads the
 // right way up for someone at the model's south side, as for the controls that face the nose with the pilots behind
@@ -5933,8 +5940,8 @@ function roomLang() {
       textures: { board: planks, bed: "minecraft:block/gravel", riser: "minecraft:block/cut_copper", head: brass, particle: planks },
       elements: [
         ...box,
-        solid([7, 1, 7], [9, riser, 9], "#riser"),
-        solid([6, riser, 6], [10, riser + 2, 10], "#head"),
+        poppedUp([7, 1, 7], [9, riser, 9], "#riser", Math.max(0, 16 - riser), 15),
+        poppedUp([6, riser, 6], [10, riser + 2, 10], "#head", 2, 4),
       ],
     });
   }
