@@ -56,9 +56,9 @@ Run these and treat any failure as a finding:
   a new key must be in `tools/generate_resources.mjs`, not only in `en_us.json` (the generator run above shows it).
 - **Protocol version:** if a payload's fields or stream codec changed (any record with a `STREAM_CODEC` registered in
   `Skyliners.onRegisterPayloads`), the version string in `event.registrar("<n>")` went up.
-- **Version bump:** if code or assets changed, `mod_version` in `gradle.properties` must go up to a new pre-release
-  before the build is handed out. It goes in its own `chore(release)` commit straight after the change, so a missing
-  bump in the change set is a note for the commit split, not a defect.
+- **Version bump:** if code or assets changed, `mod_version` in `gradle.properties` must go up (a new `-alpha.N` of the
+  coming release, or the release itself) before the build is handed out. It goes in its own `chore(release)` commit
+  straight after the change, so a missing bump in the change set is a note for the commit split, not a defect.
 - **Docs:** a change a player can see (a block, an item, a screen, a setting, how something behaves) is described in
   `docs/guide.md` as it now is, and in `README.md` where its short tour mentions it, and `docs/building.md`'s notes
   on which class does what still hold.

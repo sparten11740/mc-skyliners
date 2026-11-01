@@ -111,9 +111,10 @@ plans in `docs/plans` still call it, and its airliner still flies as "Aerolarge 
 - **Review before committing** with the `review-changes` skill (`.claude/skills/review-changes/SKILL.md`; agents
   without skills follow that file as a checklist), and fix what it finds first. In Claude Code, a Stop hook
   (`.claude/settings.json`) asks for this review whenever a session stops with changes not yet reviewed.
-- **Versions.** Every build handed out for play-testing gets a new `mod_version` in `gradle.properties`
-  (`0.1.0-alpha.N`), in its own `chore(release): bump version to 0.1.0-alpha.N` commit straight after the change. Two
-  jars never share a version.
+- **Versions.** Releases are numbered by semantic versioning from 1.0.0: a fix bumps the patch, a feature the minor
+  version. Every build handed out for play-testing gets a new `mod_version` in `gradle.properties`, the coming release's
+  number with `-alpha.N` (`1.0.1-alpha.1`, `1.0.1-alpha.2`, ...) until the release itself goes out, each in its own
+  `chore(release): bump version to <version>` commit straight after the change. Two jars never share a version.
 - **Docs.** A change a player can see updates `docs/guide.md` along with it, and `README.md` too where its short tour
   mentions it.
 - **Verify in game** what the build cannot show: rendering, layout and fit-out (walk a freshly built airliner, looking
