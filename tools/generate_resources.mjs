@@ -5969,8 +5969,11 @@ function roomLang() {
   ];
   for (const spraying of [false, true]) {
     const riser = spraying ? 19 : 12;
+    // No smooth lighting: a part above its block, in a block that is solid to the touch, draws black with it aboard
+    // anything assembled.
     write(`assets/${ID}/models/block/sprinkler${spraying ? "_spraying" : ""}.json`, {
       parent: "minecraft:block/block",
+      ambientocclusion: false,
       textures: { board: planks, bed: "minecraft:block/gravel", riser: "minecraft:block/cut_copper", head: brass, particle: planks },
       elements: [
         ...box,
