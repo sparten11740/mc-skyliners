@@ -5330,6 +5330,27 @@ const LIFT_ICONS = {
     if (y === trace(x, frame, STILL)) return [0x58, 0xa8, 0xff];
     return x % 4 === 0 || y % 4 === 0 ? [0x0c, 0x18, 0x2a] : SCREEN;
   });
+  // Away through the spore drive: stars streaming out from the middle of the screen against the dark, spore blue going
+  // white as they near its edge, each ray at its own place along the loop, so it reads as a jump without a word.
+  const STAR_RAYS = 14;
+  const rayAt = (ray, frame) => {
+    const angle = (2 * Math.PI * ray) / STAR_RAYS + ray * 0.37;
+    const out = ((frame / FRAMES + (ray * 5) / STAR_RAYS) % 1) * 7;
+    return { angle, out };
+  };
+  animated("lab_screen_away", 2, (x, y, frame) => {
+    if (!onScreen(x, y)) return BEZEL;
+    for (let ray = 0; ray < STAR_RAYS; ray++) {
+      const { angle, out } = rayAt(ray, frame);
+      for (let back = 0; back <= out * 0.45; back += 0.5) {
+        const r = out - back;
+        if (Math.round(7.5 + Math.cos(angle) * r) === x && Math.round(7.5 + Math.sin(angle) * r) === y) {
+          return r > 4.5 ? [0xe8, 0xf6, 0xff] : [0x58, 0xc8, 0xff];
+        }
+      }
+    }
+    return [0x06, 0x0a, 0x1c];
+  });
   // Shallow clear water over the pool's bed: blue-green, ripples drifting across it, glints where they crest.
   // Each ripple drifts a whole number of its own lengths over the loop and a block, so neither the loop nor the pool's
   // blocks side by side show a seam.

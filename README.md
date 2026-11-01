@@ -2202,7 +2202,9 @@ meal. And now and then, resting awake, it jumps away through the spore drive, as
 it glows spore blue as glowing spores swirl in round it with a rising hum, vanishes in a burst of them with a deep
 whump, and a few seconds later is back where it was in another, whooshing in. Its keepers have a secret: a babycino
 from the coffee machine, fed or thrown to it, is gone in a gulp and sets its drive off at once, and it burps when it is
-back. In the tank's glass on her right is a
+back. Nothing hurts it, but get at it past the glass of its tank and hit it, by hand or with a sword or an arrow, and
+with a startled yelp it jumps away at once and stays gone a minute or two, the screen over its hatch showing stars
+streaming past for as long as it is away on any jump. In the tank's glass on her right is a
 feeding hatch at chest height,
 and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
 the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it

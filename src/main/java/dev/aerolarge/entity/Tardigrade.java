@@ -62,7 +62,8 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
  * sucks in with a slurp, the thing flying to its mouth, chews it with bits of it falling, and burps; it burps after
  * every meal. And now and then, resting awake, it jumps away through the spore drive, as its cousin on the starship
  * does: glowing as spores swirl in round it with a rising hum, gone in a burst of them with a whump, and back where it
- * was a few seconds later in another, whooshing in. A babycino sets the drive off at once.
+ * was a few seconds later in another, whooshing in. A babycino sets the drive off at once. Nothing hurts it, but a
+ * player attacking it startles it into a jump straight away, and then it stays away a minute or two.
  *
  * <p>Left without its keeper a while, as when its tank is broken, it goes; one never kept, as one summoned, stays.
  */
@@ -160,6 +161,10 @@ public class Tardigrade extends PathfinderMob {
     private static final int AWAY_FROM = 60;
     private static final int AWAY_TO = 120;
     private static final int RETURN_HEARD = 10;
+    /** How long it stays away when a player has attacked it, at least and at most, in ticks; and its yelp's pitch. */
+    private static final int FLED_FROM = 1200;
+    private static final int FLED_TO = 2400;
+    private static final float YELP_PITCH = 1.7F;
     /**
      * How many spores swirl in round it each tick it charges, from how far off, in blocks, how much of the way in they
      * fly each tick, and how fast they swirl round it, in blocks a tick; how many burst from it as it goes and as it
@@ -218,6 +223,8 @@ public class Tardigrade extends PathfinderMob {
     private ItemStack calledWith = new ItemStack(Items.MOSS_CARPET);
     /** Whether it is to burp when it is back from this jump, having jumped straight after a babycino. */
     private boolean burpOnReturn;
+    /** Whether it is charging up to flee a player who attacked it, to stay away the longer. */
+    private boolean fleeing;
     /**
      * How many ticks of munching it has left; how far it has still to turn round, in degrees; how long it has walked.
      */
@@ -687,7 +694,8 @@ public class Tardigrade extends PathfinderMob {
             case CHARGING -> {
                 if (--jumpTicks <= 0) {
                     setJump(Jump.AWAY);
-                    jumpTicks = AWAY_FROM + random.nextInt(AWAY_TO - AWAY_FROM);
+                    jumpTicks = fleeing ? FLED_FROM + random.nextInt(FLED_TO - FLED_FROM) : AWAY_FROM + random.nextInt(AWAY_TO - AWAY_FROM);
+                    fleeing = false;
                     setInvisible(true);
                     level().broadcastEntityEvent(this, JUMPED);
                 }
@@ -700,6 +708,24 @@ public class Tardigrade extends PathfinderMob {
                     back();
                 }
             }
+        }
+    }
+
+    /**
+     * Attacked by a player, on the server: nothing happens to it, but it yelps, woken if it slept, and jumps away at
+     * once for a long while. Curled up in its tun it does not notice, and away there is nothing to hit.
+     */
+    private void flee() {
+        if (level().isClientSide || isCurled() || jump() == Jump.AWAY) {
+            return;
+        }
+        rouse();
+        fleeing = true;
+        if (jump() == Jump.HERE) {
+            munching = 0;
+            burpIn = 0;
+            playSound(AerolargeRegistry.TARDIGRADE_MRRP.get(), VOLUME, YELP_PITCH);
+            chargeUp();
         }
     }
 
@@ -910,10 +936,19 @@ public class Tardigrade extends PathfinderMob {
         }
     }
 
-    /** It cannot be hurt, but by what passes every protection: an operator's kill or falling out of the world. */
+    /**
+     * It cannot be hurt, but by what passes every protection: an operator's kill or falling out of the world. A
+     * player's attack, by hand, by blade or by arrow, only sends it fleeing (see {@link #flee}).
+     */
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        return source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && super.hurt(source, amount);
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            return super.hurt(source, amount);
+        }
+        if (source.getEntity() instanceof Player) {
+            flee();
+        }
+        return false;
     }
 
     @Override

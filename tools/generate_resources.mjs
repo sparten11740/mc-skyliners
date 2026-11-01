@@ -5978,9 +5978,12 @@ function roverLang() {
   write(`assets/${ID}/models/block/lab_vitals.json`, screen("vitals", "lab_screen_vitals"));
   write(`assets/${ID}/models/block/lab_vitals_dormant.json`, screen("vitals", "lab_screen_dormant"));
   write(`assets/${ID}/models/block/lab_vitals_asleep.json`, screen("vitals", "lab_screen_asleep"));
-  // The vitals screen curled up still, else asleep slow, else beating; every other instrument as it is.
-  const instrumentModel = (kind, dormant, asleep) => {
+  write(`assets/${ID}/models/block/lab_vitals_away.json`, screen("vitals", "lab_screen_away"));
+  // The vitals screen with stars streaming past while it is away, else curled up still, else asleep slow, else beating;
+  // every other instrument as it is.
+  const instrumentModel = (kind, dormant, asleep, away = false) => {
     if (kind !== "vitals") return `lab_${kind}`;
+    if (away) return "lab_vitals_away";
     if (dormant) return "lab_vitals_dormant";
     return asleep ? "lab_vitals_asleep" : "lab_vitals";
   };
@@ -5988,7 +5991,8 @@ function roverLang() {
   for (const kind of ["microscope", "samples", "scan", "vitals", "specimens"]) {
     for (const [dormant, asleep] of [[false, false], [false, true], [true, false], [true, true]]) {
       for (const [facing, y] of Object.entries(yRot)) {
-        variants[`asleep=${asleep},dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant, asleep)}`, y };
+        variants[`asleep=${asleep},away=false,dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant, asleep)}`, y };
+        variants[`asleep=${asleep},away=true,dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant, asleep, true)}`, y };
       }
     }
   }

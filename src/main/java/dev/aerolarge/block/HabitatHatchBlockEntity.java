@@ -112,6 +112,7 @@ public class HabitatHatchBlockEntity extends BlockEntity {
         if (level.getGameTime() % LOOK_EVERY == 0) {
             keeper.lookHowHigh(level, found);
             keeper.showSleep(level, found);
+            keeper.showAway(level, found);
         }
     }
 
@@ -120,6 +121,15 @@ public class HabitatHatchBlockEntity extends BlockEntity {
         BlockState shown = vitals(level);
         if (shown != null && shown.getValue(LabInstrumentBlock.ASLEEP) != found.isAsleep()) {
             level.setBlock(worldPosition.above(), shown.setValue(LabInstrumentBlock.ASLEEP, found.isAsleep()), Block.UPDATE_ALL);
+        }
+    }
+
+    /** The vitals screen over the hatch shown with stars streaming past while the creature is away on a jump. */
+    private void showAway(ServerLevel level, Tardigrade found) {
+        BlockState shown = vitals(level);
+        boolean away = found.jump() == Tardigrade.Jump.AWAY;
+        if (shown != null && shown.getValue(LabInstrumentBlock.AWAY) != away) {
+            level.setBlock(worldPosition.above(), shown.setValue(LabInstrumentBlock.AWAY, away), Block.UPDATE_ALL);
         }
     }
 

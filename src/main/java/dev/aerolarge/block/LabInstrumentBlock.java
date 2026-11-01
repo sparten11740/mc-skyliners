@@ -38,8 +38,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * vials, their liquids glowing faintly in five colours; a scan screen on its stand showing a body scan of the specimen,
  * a line sweeping down it; the vitals screen set into the tardigrade's tank over its feeding hatch, a pulse tracing
  * across it under the creature's own picture, which goes slow and blue (DORMANT) while the creature is curled up in
- * its tun, and lies down under a crescent moon, its pulse slow (ASLEEP), while it sleeps (see
- * {@link HabitatHatchBlockEntity}); and specimen jars, three on a tray, a pickled tentacle, an eye and a
+ * its tun, lies down under a crescent moon, its pulse slow (ASLEEP), while it sleeps, and gives way to stars streaming
+ * past (AWAY) while it is away through its spore drive (see {@link HabitatHatchBlockEntity}); and specimen jars, three on a tray, a pickled tentacle, an eye and a
  * sprouting potato each in its own faintly glowing liquid. FACING is the way its front looks. Broken, they give
  * themselves back, kind and all. A vitals screen set up by hand has no creature to watch, and only ever beats.
  */
@@ -48,6 +48,8 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
     public static final EnumProperty<Kind> KIND = EnumProperty.create("kind", Kind.class);
     public static final BooleanProperty DORMANT = BooleanProperty.create("dormant");
     public static final BooleanProperty ASLEEP = BooleanProperty.create("asleep");
+    /** Whether the vitals screen shows the creature away through its spore drive, stars streaming past. */
+    public static final BooleanProperty AWAY = BooleanProperty.create("away");
     /** How brightly a kind glows, in light levels: its screen, its vials or its jars. */
     private static final int SCREEN_GLOW = 5;
     private static final int VIALS_GLOW = 3;
@@ -88,7 +90,7 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
     public LabInstrumentBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(KIND, Kind.MICROSCOPE).setValue(DORMANT, false)
-            .setValue(ASLEEP, false));
+            .setValue(ASLEEP, false).setValue(AWAY, false));
     }
 
     @Override
@@ -98,7 +100,7 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, KIND, DORMANT, ASLEEP);
+        builder.add(FACING, KIND, DORMANT, ASLEEP, AWAY);
     }
 
     /** An instrument of a kind, its front looking the way given. */
