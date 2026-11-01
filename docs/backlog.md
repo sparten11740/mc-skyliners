@@ -9,6 +9,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   autopilot with nobody aboard never finished saving: the integrated server spun in `stopServer`'s chunk unloading
   (`ChunkMap.processUnloads`), so the game had to be killed. Suspects: a keep-loaded ticket of the autopilot or of
   `ParkedShips`, or Sable. The stack dump is in `run/logs/stop-hang-2026-11-01.jstack` (not committed).
+- **The airliner can't hold its height at its slowest speed.** Twice on 2026-11-01 (1.0.0's code), set to circle a pin
+  at altitude 150 and 30 blocks a second (the lowest the autopilot's screen offers), a furnished airliner sank and
+  flew into the ground, nose down at y 100 to 112: once into the rocket's launch pad, once into a hill. Unstuck fired
+  the control jets but did not free it. At 50 blocks a second it held its height.
 - **A removed ship comes back.** `/sable remove` only drops the loaded copy; Sable's stored copy stays in
   `sable storage find_all_sub_levels` and flies again once its area loads.
 
