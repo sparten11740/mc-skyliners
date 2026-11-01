@@ -1,6 +1,6 @@
 package dev.aerolarge.client;
 
-import dev.aerolarge.AerolargeTabs;
+import dev.aerolarge.AerolargeRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +17,9 @@ import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
 /**
- * Each Aerolarge creative tab laid out in its sections (see {@link AerolargeTabs}), each under a banner with its first
- * item's picture and its name: once a tab is open, its items are spread out so that every section starts on a fresh
- * row after a row left empty, and the banner is drawn over that row as it scrolls by.
+ * The Aerolarge creative tab laid out in its sections (see {@link AerolargeRegistry#TAB_SECTIONS}), each under a
+ * banner with its name: once the tab is open, its items are spread out so that every section starts on a fresh row
+ * after a row left empty, and the banner is drawn over that row as it scrolls by.
  */
 public final class TabBanners {
     /** The creative screen's item grid: its columns and rows, a slot's size, and where its first slot's frame starts. */
@@ -36,10 +36,9 @@ public final class TabBanners {
     private TabBanners() {
     }
 
-    /** Spreads the open tab's items out into their sections, once each time the tab is filled. */
+    /** Spreads the tab's items out into their sections, once each time the tab is filled. */
     public static void layOut(ScreenEvent.Render.Pre event) {
-        AerolargeTabs.Tab tab = AerolargeTabs.of(CreativeModeInventoryScreen.selectedTab);
-        if (!(event.getScreen() instanceof CreativeModeInventoryScreen screen) || tab == null) {
+        if (!(event.getScreen() instanceof CreativeModeInventoryScreen screen) || !showing()) {
             return;
         }
         NonNullList<ItemStack> items = screen.getMenu().items;
@@ -48,8 +47,8 @@ public final class TabBanners {
             return;
         }
         Map<Item, Integer> sections = new HashMap<>();
-        for (int i = 0; i < tab.sections().size(); i++) {
-            for (Supplier<? extends Item> item : tab.sections().get(i).items()) {
+        for (int i = 0; i < AerolargeRegistry.TAB_SECTIONS.size(); i++) {
+            for (Supplier<? extends Item> item : AerolargeRegistry.TAB_SECTIONS.get(i).items()) {
                 sections.put(item.get(), i);
             }
         }
@@ -80,8 +79,7 @@ public final class TabBanners {
 
     /** Draws the banners over the empty rows in view, each naming the section that follows it. */
     public static void draw(ContainerScreenEvent.Render.Foreground event) {
-        AerolargeTabs.Tab tab = AerolargeTabs.of(CreativeModeInventoryScreen.selectedTab);
-        if (!(event.getContainerScreen() instanceof CreativeModeInventoryScreen screen) || tab == null) {
+        if (!(event.getContainerScreen() instanceof CreativeModeInventoryScreen screen) || !showing()) {
             return;
         }
         List<ItemStack> items = screen.getMenu().items;
@@ -89,7 +87,7 @@ public final class TabBanners {
         for (int row = top; row < top + ROWS; row++) {
             ItemStack first = bannerAt(items, row);
             if (first != null) {
-                banner(event.getGuiGraphics(), GRID_Y + (row - top) * SLOT, tab, first);
+                banner(event.getGuiGraphics(), GRID_Y + (row - top) * SLOT, first);
             }
         }
     }
@@ -109,7 +107,7 @@ public final class TabBanners {
         return first.isEmpty() ? null : first;
     }
 
-    private static void banner(GuiGraphics graphics, int y, AerolargeTabs.Tab tab, ItemStack first) {
+    private static void banner(GuiGraphics graphics, int y, ItemStack first) {
         int width = COLUMNS * SLOT;
         graphics.pose().pushPose();
         // Over the empty slots' frames and the highlight of a slot under the mouse.
@@ -118,10 +116,14 @@ public final class TabBanners {
         graphics.fill(GRID_X, y, GRID_X + width, y + 1, BANNER_EDGE);
         graphics.fill(GRID_X, y + SLOT - 1, GRID_X + width, y + SLOT, BANNER_EDGE);
         graphics.renderItem(first, GRID_X + 1, y + 1);
-        Component name = tab.sections().stream()
+        String name = AerolargeRegistry.TAB_SECTIONS.stream()
             .filter(section -> section.items().stream().anyMatch(item -> item.get() == first.getItem()))
-            .findFirst().map(AerolargeTabs.Section::bannerName).orElse(Component.empty());
-        graphics.drawString(Minecraft.getInstance().font, name, GRID_X + SLOT + 4, y + 5, TITLE);
+            .findFirst().map(AerolargeRegistry.TabSection::name).orElse("");
+        graphics.drawString(Minecraft.getInstance().font, Component.translatable("itemGroup.aerolarge." + name), GRID_X + SLOT + 4, y + 5, TITLE);
         graphics.pose().popPose();
+    }
+
+    private static boolean showing() {
+        return CreativeModeInventoryScreen.selectedTab == AerolargeRegistry.TAB.get();
     }
 }

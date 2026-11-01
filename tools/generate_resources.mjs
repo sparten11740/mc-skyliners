@@ -10151,14 +10151,7 @@ for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
 }
 
 write(`assets/${ID}/lang/en_us.json`, {
-  "itemGroup.aerolarge.aircraft": "Aircraft",
-  "itemGroup.aerolarge.controls": "Controls",
-  "itemGroup.aerolarge.gear": "Gear and Gadgets",
-  "itemGroup.aerolarge.cabin": "Cabin",
-  "itemGroup.aerolarge.food": "Food and Drink",
-  "itemGroup.aerolarge.leisure": "Leisure",
-  "itemGroup.aerolarge.decor": "Lights and Decor",
-  "itemGroup.aerolarge.airport": "Airport",
+  "itemGroup.aerolarge": "Aerolarge",
   "itemGroup.aerolarge.blueprints": "Blueprints",
   "itemGroup.aerolarge.airframe": "Airliner Airframe",
   "itemGroup.aerolarge.rocket": "Rocket",
@@ -10185,7 +10178,6 @@ write(`assets/${ID}/lang/en_us.json`, {
   "itemGroup.aerolarge.den": "The Den",
   "itemGroup.aerolarge.lights": "Lights",
   "itemGroup.aerolarge.decorations": "Decorations",
-  "itemGroup.aerolarge.airfield_blueprints": "Airfield Blueprints",
   "itemGroup.aerolarge.control_tower": "Control Tower",
   "itemGroup.aerolarge.terminal": "Terminal",
   "block.aerolarge.airframe_panel": "Airframe Panel",
