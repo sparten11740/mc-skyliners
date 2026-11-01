@@ -68,12 +68,11 @@ public class SlideRide extends Entity {
     /** Set down at the end: the rider may get off. */
     private boolean arrived;
     /**
-     * On a client: its own ticks, counted one a tick as it ticks, and, by them, when the ride set off. The client's clock
-     * is set back to the server's every second, where it has run ahead; timed by it, the rider would jump back up the
-     * lane each time.
+     * On a client: its own ticks since it came into being, which is as the ride sets off. The client's clock is set back
+     * to the server's every second, where it has run ahead; timed by it, the rider would jump back up the lane each
+     * time, and after a long stall of the server's start well down it.
      */
     private long ownTicks;
-    private long rideStartedAt;
 
     public SlideRide(EntityType<? extends SlideRide> type, Level level) {
         super(type, level);
@@ -122,9 +121,6 @@ public class SlideRide extends Entity {
         super.onSyncedDataUpdated(key);
         course = null;
         path = null;
-        if (key == START && level().isClientSide) {
-            rideStartedAt = ownTicks - (level().getGameTime() - entityData.get(START));
-        }
     }
 
     private EvacuationSlide.Path path() {
@@ -180,7 +176,7 @@ public class SlideRide extends Entity {
         if (level().isClientSide) {
             ownTicks++;
         }
-        long ticks = Math.max(0, level().isClientSide ? ownTicks - rideStartedAt : level().getGameTime() - entityData.get(START));
+        long ticks = Math.max(0, level().isClientSide ? ownTicks : level().getGameTime() - entityData.get(START));
         int step = (int) Math.min(ticks, along.length - 1);
         Vec3 seat = seatAt(along[step]);
         setPos(seat.x, seat.y, seat.z);
