@@ -1950,7 +1950,8 @@ an arrow down on its pale cap: press it and the car comes, the button glowing am
 else's ride, it comes once that is done), and its doors slide open with a soft rush. Step in, and on the shaft's back
 wall facing you a picture board, its back brushed steel where it shows through the shaft's glass, shows her floors as
 square buttons two to a row, the lowest at the bottom: each an icon on its story's colour (a doorway for the entry, then
-a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the
+a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit) under
+its number, counted from the entry up, in a dark strip across its top, the
 floor you are on glowing softly green round its edge, the car's lit, and the one you look at brightened. The car
 waits with its doors open until you touch a floor (with nobody aboard it closes after eight seconds); then after a
 moment it closes and glides there, easing off and in, at up to twelve blocks a second, while its motor hums; one chime
