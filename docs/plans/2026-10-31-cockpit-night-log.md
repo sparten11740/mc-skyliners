@@ -22,7 +22,7 @@ on files kept apart so their work merged without conflicts. A fourth agent revie
 dome and the layout. The lead merged each part, tested it in game with Blockpilot, flew it, and fixed what testing and
 the reviews found.
 
-## What she has now (alpha.197)
+## What she has now (alpha.198)
 
 - **A flight deck.** The control head faces forward with the commander's seat on its left and the pilot's on its right.
   - Past a row of legroom: a flight display in front of each seat, the autopilot screen between them, and a dark
@@ -67,6 +67,8 @@ the reviews found.
   - The cockpit ceiling's outer edge is lined as the cockpit, no longer in the dome's starry finish.
   - A control placed by hand links only to a rocket's autopilot, and looks again once that autopilot is gone.
   - A knob turned during the descent still waits for the next flight after a reload.
+- **alpha.198:** the stairs' new hinge tube and cable drums sat across the second tread on all three crafts, found at
+  scale 1; they now lie under that tread's plate.
 
 ## Decisions taken (for Jan to look at)
 
@@ -103,5 +105,4 @@ the reviews found.
 - Climbing into an upper bunk: the test player drops off the ladder, so it could not be checked.
 - The new controls flown at scales other than 2. They were seen in place at 1.5 and 4, and the dome was seen from the
   seats at 1.5, 2 and 4, and by night at 2.
-- The tilt dot on the flight display against how she really tips.
-- alpha.196 and alpha.197 are not on the desktop PC: it was offline all night.
+- alpha.196 to alpha.198 are not on the desktop PC: it was offline all night.
