@@ -2672,6 +2672,9 @@ player's client, where `MicroscopeScreen` shows the slide.
 sequence (`RocketRoom.scatter`): `GardenBedBlock`s, farmland in a frame that joins the beds beside it; `GrowLightBlock`s
 hung on light cables; `SprinklerBlock`s, whose `SprinklerBlockEntity` (found by the valve among those loaded) sprays and
 waters what grows round it; and the `IrrigationValveBlock` that sets them off.
+What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
+time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
+flight of stairs, takes the server's count through `ToldTicks`.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

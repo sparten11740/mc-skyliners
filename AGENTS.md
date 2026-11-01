@@ -69,6 +69,19 @@ feature as a player meets it, and its Building section says which classes do wha
   `#sable:super_light`.
 - **Mixins** only mend another mod's bug that no API reaches. They live in `dev.aerolarge.mixin` and are listed in
   `aerolarge.mixins.json`, which is not required, so a changed target is skipped with a warning instead of crashing.
+- **Drawing what moves.** The server overwrites a client's game time about once a second, so anything drawn from
+  `level.getGameTime() + partialTick` snaps back wherever the server runs behind. What moves goes by
+  `client/DrawingClock`: `ticks` or `wholeTicks` for what only moves for show, `gameTime` for what keeps time with a
+  moment the server named or looks the same to everyone. Common code cannot reach it, so a block entity's method takes
+  the time as an argument and an entity counts its own ticks, as `SlideRide` does. Whole-tick checks against a server's
+  moment, which nobody sees move, can still read the level's time. A part a client counts itself (a door, a flight of
+  stairs) takes the server's count through `ToldTicks` and is not sent it every tick. A `float` holds neither the game
+  time nor a plot coordinate (world age, ~2e7): reduce an angle to one turn in a double first, and take a moment from a
+  time in a double.
+- **Models.** A face past its block with no `uv` reads off its texture into its neighbours in the atlas: the generator's
+  `facesOnTheirTextures` brings them back on, and `write` is the only way a model reaches the disk. A part above its
+  block, in a block with a full collision shape, draws black aboard anything assembled under smooth lighting: such a
+  model sets `ambientocclusion: false`, as the sprinkler's does. Compare aboard against the ground when looking at one.
 - **Cost.** Nothing scans the world every tick without a bound. Loaded block entities are tracked with `Loaded<T>`,
   heavy work is spread over ticks, and renderers leave out what the camera cannot see.
 - **Players.** Some players are young children who cannot read yet, so every cue also gets a picture, a colour or a

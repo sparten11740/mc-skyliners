@@ -42,6 +42,15 @@ Run these and treat any failure as a finding:
   Any file that changes because of the run means a generated file was edited by hand, or the script and its output
   disagree. Leave the regenerated files in place and report it. `node tools/generate_sounds.mjs` needs rerunning only
   when it changed itself; its output is not byte-for-byte reproducible.
+- **Moving things:** these print nothing, or each hit is justified in the report:
+  `git grep -nE 'getGameTime\(\)[^;]*[pP]artial' -- src/main/java`, which is the snap-back under server lag, and
+  `git grep -nE 'float [a-zA-Z]+ = [^;]*(getGameTime\(\)|getBlockPos\(\)\.get[XZ])' -- src/main/java`, which is a time or
+  plot coordinate in a float (a difference of two whole times is fine). In the diff, also look for `sync()` or
+  `sendBlockUpdated` on a path that runs every tick while something moves, and for a client's count overwritten from
+  saved data without `ToldTicks`.
+- **Models on their textures:** with `tools/` or a model in the change set, run this; it prints nothing when every
+  face past its block has a `uv` on its texture:
+  `node -e 'const fs=require("fs"),p=require("path"),d="src/main/resources/assets/aerolarge/models";const u={down:(f,t)=>[f[0],16-t[2],t[0],16-f[2]],up:(f,t)=>[f[0],f[2],t[0],t[2]],north:(f,t)=>[16-t[0],16-t[1],16-f[0],16-f[1]],south:(f,t)=>[f[0],16-t[1],t[0],16-f[1]],west:(f,t)=>[f[2],16-t[1],t[2],16-f[1]],east:(f,t)=>[16-t[2],16-t[1],16-f[2],16-f[1]]};for(const s of fs.readdirSync(d)){for(const n of fs.readdirSync(p.join(d,s))){const m=JSON.parse(fs.readFileSync(p.join(d,s,n)));for(const e of m.elements??[])for(const[k,f]of Object.entries(e.faces)){const v=f.uv??u[k](e.from,e.to);if(Math.min(...v)<0||Math.max(...v)>16)console.log(s+"/"+n,k)}}}'`
 - **Lang keys:** every `Component.translatable("...")` key and every registered block, item and entity in the diff has
   an entry in `assets/aerolarge/lang/en_us.json`, and no key in the diff is left unused. The lang file is generated:
   a new key must be in `tools/generate_resources.mjs`, not only in `en_us.json` (the generator run above shows it).
@@ -76,6 +85,12 @@ style preferences the surrounding code does not share.
   entity's state that clients draw is sent with `getUpdateTag`/`getUpdatePacket` and `sendBlockUpdated`.
 - Entities and block entities: sensible sizes, tracking range and update interval; nothing left behind on removal
   (sounds, tasks, chunk tickets, entries in a `Loaded<T>` or a saved data); no unbounded per-tick scans.
+- **Drawing what moves:** anything turning, sliding or fading on a client goes by `DrawingClock` or its own count, never
+  `level.getGameTime() + partialTick`: the server overwrites that about once a second, and it snaps back under lag. An
+  angle reaches a `float` only reduced to one turn in a double. Say what the change was measured under: `load server 70`
+  in Blockpilot shows a snap-back a frame-by-frame log can count; an idle server shows nothing.
+- **Sending what moves:** a block entity tells clients when something changes, not on every tick of a motion they count
+  themselves. A full update tag on every tick is both a jitter and a cost.
 - Resource leaks and lifecycle: sounds stopped when a screen closes; textures and framebuffers released; long-running
   tasks finish or are dropped with their level.
 - **Scale:** airframe geometry and anything measured on the airliner works at every scale (1 to 4), not only the
@@ -94,6 +109,8 @@ style preferences the surrounding code does not share.
 - New code lands in the package that matches its role, reuses existing helpers instead of copying them (`Loaded`,
   `Turning`, `Fitting`, `Sight`, `ScreenDrawing`, `PanelArt`, `MapPainter`, ...), and does not duplicate logic that
   already exists elsewhere in the diff or the codebase.
+- A model with a part past its block is written through the generator's `write`, so its faces stay on their textures; a
+  part above its block in a block with a full collision shape sets `ambientocclusion: false`, or it draws black aboard.
 - Tunable numbers are named constants with a comment saying what they mean and in what unit, not literals buried in
   logic.
 - Assets that a tool generates are changed in the tool, never edited by hand.
