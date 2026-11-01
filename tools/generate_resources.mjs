@@ -1496,6 +1496,8 @@ function rocketSoundsLang() {
 for (const kind of ["exhaust", "cloud", "dust"]) {
   write(`assets/${ID}/particles/rocket_${kind}.json`, { textures: [`${ID}:blast_puff`] });
 }
+// A fog machine's fog has a softer picture of its own.
+write(`assets/${ID}/particles/fog_puff.json`, { textures: [`${ID}:fog_puff`] });
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {

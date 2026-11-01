@@ -339,6 +339,7 @@ public final class AerolargeClient {
         event.registerSpriteSet(AerolargeRegistry.ROCKET_EXHAUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.EXHAUST));
         event.registerSpriteSet(AerolargeRegistry.ROCKET_CLOUD.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.CLOUD));
         event.registerSpriteSet(AerolargeRegistry.ROCKET_DUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
+        event.registerSpriteSet(AerolargeRegistry.FOG_PUFF.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.FOG));
         event.registerSpriteSet(AerolargeRegistry.SLEEP_Z.get(), SleepParticle.Provider::new);
         event.registerSpriteSet(AerolargeRegistry.SPORE.get(), SporeParticle.Provider::new);
     }

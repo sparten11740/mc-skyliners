@@ -3848,6 +3848,22 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     pixels.push(row);
   }
   writeFileSync(resolve(particleOutput, "blast_puff.png"), encodePng(pixels));
+
+  // A puff of a fog machine's fog: a round, smooth fall-off with no grain and no lumps' edges, as the puffs are thin
+  // and overlap, and any grain or edge would show through them as a pattern.
+  const FOG_PUFF = 64;
+  const fogPixels = [];
+  for (let y = 0; y < FOG_PUFF; y++) {
+    const row = [];
+    for (let x = 0; x < FOG_PUFF; x++) {
+      const u = ((x + 0.5) / FOG_PUFF) * 2 - 1;
+      const v = ((y + 0.5) / FOG_PUFF) * 2 - 1;
+      const inside = Math.max(0, 1 - (u * u + v * v));
+      row.push([255, 255, 255, Math.round(255 * inside * inside)]);
+    }
+    fogPixels.push(row);
+  }
+  writeFileSync(resolve(particleOutput, "fog_puff.png"), encodePng(fogPixels));
 }
 
 // The zeppelin. Its cover is cotton doped silver with aluminium powder, as the Hindenburg's was: a soft pale grey with

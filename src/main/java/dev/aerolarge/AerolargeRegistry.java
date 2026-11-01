@@ -562,6 +562,7 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_CLOUD = PARTICLES.register("rocket_cloud", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_DUST = PARTICLES.register("rocket_dust", () -> new SimpleParticleType(false));
     /** A "z" rising from the rocket's tardigrade as it sleeps (see entity.Tardigrade). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FOG_PUFF = PARTICLES.register("fog_puff", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SLEEP_Z = PARTICLES.register("sleep_z", () -> new SimpleParticleType(false));
     /** A glowing spore of the spore drive the rocket's tardigrade jumps through (see entity.Tardigrade). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SPORE = PARTICLES.register("spore", () -> new SimpleParticleType(false));

@@ -2075,8 +2075,9 @@ floor's black glass tiles round the shaft, lit two by two in pink and blue to th
 them out to her skin a plum club carpet dotted with pink; speaker stacks at the diagonals, four disco balls and the DJ
 deck behind the shaft playing the whole room (use it to scratch its record, as in the zeppelin's). Beside the deck
 sits the Fog Machine, a black flight case, its little
-light green: press it and it hisses and pumps a stream of thick fog out of its glowing nozzle for five seconds, the fog
-rolling out over the floor behind the shaft and hanging in the disco balls' light; then its light turns amber while it
+light green: press it and it hisses and pumps a stream of thick fog out of its glowing nozzle for five seconds, big soft
+banks of it rolling out across the room, sliding along its walls and hanging about twenty seconds in the disco balls'
+light; then its light turns amber while it
 heats up again, and a beep says when it is ready. Along her left side a straight bar stands across the window there: its
 counter, stools before it and two Drink Taps on it; behind its middle, his back to the window and the stars, the Robot
 Bartender; and either side of the window the back bar, three tiers of shelves of bottles of every shape and colour lit

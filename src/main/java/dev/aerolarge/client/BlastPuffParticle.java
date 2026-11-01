@@ -20,8 +20,9 @@ import net.minecraft.world.phys.AABB;
  * nuke draws its mushroom cloud: a few thousand of these big puffs rather than tens of thousands of vanilla's smoke, so
  * the blast reads as a solid mass and costs the client little; and, the same way, a rocket's exhaust plume and the
  * clouds and dust her lift-off raises (see {@link RocketExhaust} and the autopilot's RocketPlumes and
- * RocketLaunchBlast). Every kind shares the one soft puff picture and only lives, grows, fades, drifts and colours
- * differently (see {@link Kind}). The fire, the embers and the exhaust glow whatever the light round them while they
+ * RocketLaunchBlast), and the club's fog (see {@link dev.aerolarge.block.FogMachineBlockEntity}). Every kind but the
+ * fog shares the one soft puff picture, and each only lives, grows, fades, drifts and colours differently (see
+ * {@link Kind}). The fire, the embers and the exhaust glow whatever the light round them while they
  * burn; the rest is lit as the sky and the blocks round it light it, never quite black.
  */
 public final class BlastPuffParticle extends TextureSheetParticle {
@@ -54,7 +55,9 @@ public final class BlastPuffParticle extends TextureSheetParticle {
          */
         EXHAUST,
         /** Big, white and billowing, rolling out over the ground and piling up: a rocket's lift-off clouds. */
-        CLOUD
+        CLOUD,
+        /** Big, thin and pale, hanging about twenty seconds indoors, the only kind walls stop: a fog machine's fog. */
+        FOG
     }
 
     /**
@@ -78,6 +81,8 @@ public final class BlastPuffParticle extends TextureSheetParticle {
                 case EXHAUST -> new Look(18, 12, 1.5F, 1.0F, 2.4F, 0.95F, 0.03F, 0.5F, 0.95F, 0.95F, 0, 0);
                 // The shade is how white a cloud is: some sunlit, some in the shadow of the others.
                 case CLOUD -> new Look(110, 90, 2.8F, 2.4F, 1.5F, 0.86F, 0.06F, 0.55F, 0.955F, 0.975F, 0, 0.80F + random.nextFloat() * 0.18F);
+                // Twenty seconds, fading over the last half of it, and thin, so many overlapping read as a haze.
+                case FOG -> new Look(360, 80, 3.2F, 1.4F, 0.9F, 0.34F, 0.05F, 0.5F, 0.985F, 0.992F, 0, 0.78F + random.nextFloat() * 0.12F);
             };
         }
     }
@@ -98,8 +103,8 @@ public final class BlastPuffParticle extends TextureSheetParticle {
         this.xd = xd;
         this.yd = yd;
         this.zd = zd;
-        // Out in the open air: never colliding with blocks is the biggest saving a puff can make.
-        hasPhysics = false;
+        // Never colliding with blocks is the biggest saving a puff can make. Fog keeps to its room.
+        hasPhysics = kind == Kind.FOG;
         gravity = 0;
         lifetime = look.lifetime() + random.nextInt(look.lifetimeMore());
         size = look.size() + random.nextFloat() * look.sizeMore();
@@ -148,7 +153,7 @@ public final class BlastPuffParticle extends TextureSheetParticle {
                 setColor(0.55F + 0.45F * heat, (0.18F + 0.35F * look.shade()) * heat, 0.04F * heat);
             }
             case EXHAUST -> exhaust(t);
-            case CLOUD -> setColor(look.shade(), look.shade(), Math.min(1, look.shade() * 1.03F));
+            case CLOUD, FOG -> setColor(look.shade(), look.shade(), Math.min(1, look.shade() * 1.03F));
         }
     }
 
