@@ -20,8 +20,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * cockpit, where the shaft runs on up into the cockpit as a glass booth roofed over, its machine in the middle of the
  * roof. Each landing has sliding doors in the shaft's doorway, a call button beside them outside (right of the door)
  * and a picture board on the shaft's back wall inside, listing her floors by their rooms' icons and colours, to pick
- * one on. The lift knows her autopilot, so it stands open at a floor while she flies. Everything it lays touches the
- * shaft or the cockpit's floor face to face, so it is assembled with her.
+ * one on. Everything it lays touches the shaft or the cockpit's floor face to face, so it is assembled with her.
  */
 final class RocketLift implements RocketPiece {
     /** How many rows the car stands inside, from its floor to its roof, and over that the machine. */
@@ -66,10 +65,9 @@ final class RocketLift implements RocketPiece {
             landings.add(landing(machine, floor, top ? COCKPIT_ICON : ICONS[stop % ICONS.length], top ? COCKPIT_COLOUR : COLOURS[stop % COLOURS.length]));
             landing(machine, floor, stop);
         }
-        BlockPos autopilot = layout.autopilot();
         layout.fit(machine, (blockEntity, rotation) -> {
             if (blockEntity instanceof LiftMachineBlockEntity lift) {
-                lift.configure(landings, autopilot == null ? null : autopilot.subtract(machine), rotation);
+                lift.configure(landings, rotation);
             }
         });
     }

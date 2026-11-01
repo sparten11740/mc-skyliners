@@ -332,7 +332,7 @@ public final class RocketPilot {
         Vec3 toGo = new Vec3(goal.x - state.position().x, 0, goal.z - state.position().z);
         double highest = Math.max(orders.altitude(), state.position().y - radio + CLEAR * 2);
         Attitude attitude = attitude(state);
-        if (controls.watch(level, origin, phase, radio, across(state), attitude.tilt(), attitude.growing(), attitude.leant(), orders.toPin())) {
+        if (controls.watch(level, origin, phase, radio, across(state), attitude.tilt(), attitude.growing(), attitude.leant())) {
             puffAll(level, origin);
         }
         RocketControls.Limits limits = controls.limits(orders.toPin(), radio, now);

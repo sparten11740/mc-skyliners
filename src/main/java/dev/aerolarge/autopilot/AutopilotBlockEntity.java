@@ -794,14 +794,6 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Whether nothing on its rocket's console unsteadies her, so her lift may run while she cruises (see
-     * {@link RocketControls#steady}); always for any other airframe.
-     */
-    public boolean rocketSteady() {
-        return craft != Craft.ROCKET || level == null || rocket.controls().steady(level.getGameTime());
-    }
-
-    /**
      * One of the controls on its rocket's centre console worked by a player, on the server (see {@link
      * RocketControls}): the boost button, the stability switch and the flight mode knob are worked by her controls
      * themselves; the abort handle calls off her landing or stops her where she is (see {@link #rocketAbort}), and the

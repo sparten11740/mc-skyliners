@@ -96,6 +96,14 @@ public final class SableClient {
     }
 
     /**
+     * Where a point in the world lies in the frame of the airliner a plot position is part of, as it lay last tick or
+     * lies now; the point itself when the position is in the world. Where the player stands among its blocks.
+     */
+    static Vec3 toPlot(Level level, BlockPos plot, Vec3 point, boolean lastTick) {
+        return SABLE ? Access.toPlot(level, plot, point, lastTick) : point;
+    }
+
+    /**
      * A direction in the world turned into the frame of the airliner a block is part of, as it is drawn now: a look
      * turned for something among its blocks, as the server turns it; the direction itself for a block in the world.
      */
@@ -290,6 +298,14 @@ public final class SableClient {
 
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
+        }
+
+        static Vec3 toPlot(Level level, BlockPos plot, Vec3 point, boolean lastTick) {
+            SubLevel airliner = Sable.HELPER.getContaining(level, plot);
+            if (airliner == null || Sable.HELPER.getContaining(level, point) == airliner) {
+                return point;
+            }
+            return (lastTick ? airliner.lastPose() : airliner.logicalPose()).transformPositionInverse(point);
         }
 
         static Vec3 turnToPlot(BlockPos pos, Vec3 direction) {

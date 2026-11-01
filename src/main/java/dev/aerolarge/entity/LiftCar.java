@@ -1,11 +1,15 @@
 package dev.aerolarge.entity;
 
+import dev.aerolarge.block.LiftFloorBlock;
 import dev.aerolarge.block.LiftMachineBlockEntity;
 import dev.aerolarge.compat.SableFlight;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -15,25 +19,29 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.entity.EntityMountEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The car of a ship's lift (see {@link LiftMachineBlockEntity}): a platform that rides up and down the glass shaft
- * under its machine, its riders standing on it, up to four. It lives among the ship's blocks, in her plot (its type is
- * in {@code #sable:retain_in_sub_level}), so Sable carries it and its riders as she flies and tilts, and it moves only
- * along the shaft. Where it is on the shaft follows from a ride's start and end and the tick it set off, which both
- * sides know, so the server sends no moves for it: it eases off, runs at the lift's speed and eases in (see
- * {@link #travelled}); a client times the ride by the car's own ticks (see {@link #riding}).
+ * under its machine. It lives among the ship's blocks, in her plot (its type is in {@code #sable:retain_in_sub_level}),
+ * so Sable carries it as she flies and tilts, and it moves only along the shaft. Where it is on the shaft follows from
+ * a ride's start and end and the tick it set off, which both sides know, so the server sends no moves for it: it eases
+ * off, runs at the lift's speed and eases in (see {@link #travelled}); a client times the ride by its own count of the
+ * level's ticks (see {@link #clientTicks}).
  *
- * <p>It carries riders only on a ride: standing at a floor, it has a floor laid under it and whoever is in it stands
- * and walks about freely (see {@link LiftMachineBlockEntity}). Its machine takes everyone in it aboard as it sets off
- * and lets them go where they stand as it comes in. Its machine holds it every tick; left without its machine, as when
- * the ship is taken away, it lets its riders off at the landing it last stood at and goes. No one gets off it between
- * floors.
+ * <p>Whoever is in it stands on its floor and walks about freely, at a floor and on a ride, as in any lift: the shaft
+ * is filled with blocks of its floor (see {@link LiftFloorBlock}), each solid as far as the car's floor lies in it now
+ * (see {@link #floorIn}), so the floor rides along the shaft with the car. Each client carries its own player along on
+ * it (see {@code client.LiftRide}); on the server, which leaves a player's moves to their game, the car carries
+ * everything else standing on it (see {@link #carry}). Its machine holds it every tick; left without its machine, as
+ * when the ship is taken away, it goes.
  */
 public class LiftCar extends Entity {
     /**
@@ -43,15 +51,39 @@ public class LiftCar extends Entity {
     public static final double SPEED = 0.6;
     /** How long it takes to come up to its top speed from standing, and down again, in ticks. */
     public static final int EASE = 25;
-    /** How many riders it carries at most. */
-    public static final int RIDERS = 4;
-    /** How far out from the shaft's middle its riders stand, in blocks, each in a quarter of the car. */
-    private static final double RIDER_OUT = 0.55;
-    /** How long it may go without its machine before it lets its riders off and goes, in ticks. */
+    /** How far out from the shaft's middle its floor reaches each way, in blocks: the shaft's opening, three wide. */
+    public static final double FLOOR_HALF = 1.5;
+    /** How far over its floor something's feet may be and still stand on it, carried along, in blocks. */
+    public static final double STANDING = 0.1;
+    /**
+     * How far under its floor's top something's feet may be and still be lifted back onto it, in blocks: the floor may
+     * rise past a foot between two ticks, as when someone jumps in a car going up, and no one drops down the shaft.
+     */
+    public static final double SUNK = 1.5;
+    /**
+     * How far over and under its floor the car looks for what is in it as it rides, in blocks: anything falling after a
+     * jump in a car going down stays within this of the floor.
+     */
+    private static final double REACH = 8;
+    /** How long it may go without its machine before it goes, in ticks. */
     private static final int MACHINE_LOST = 40;
     /** What a client does with a car each tick, set by the client (its motor's hum): nothing on a server. */
     public static Consumer<LiftCar> clientTicker = car -> {
     };
+    /**
+     * The client's count of its level's ticks, one each time the level ticks before anything in it does (see {@code
+     * client.LiftRide}), which every car times its ride by there. The game's clock would not do: the server sets it
+     * back every second wherever the client has run ahead of it, and timed by it the car, and its floor under whoever
+     * stands in it, would jump back a little each time, a story at its full speed.
+     */
+    private static long clientTicks;
+    /**
+     * The cars in loaded levels on each side, for the shaft's floor blocks and the client's player to find theirs; held
+     * weakly, so a level left behind is not kept by its cars, and read under their lock, as a block's shape may be
+     * asked for off the side's own thread.
+     */
+    private static final Set<LiftCar> SERVER_CARS = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    private static final Set<LiftCar> CLIENT_CARS = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     /**
      * Its machine, as a block among the ship's blocks; how far under the machine's bottom its floor stood as the ride
@@ -64,22 +96,8 @@ public class LiftCar extends Entity {
 
     /** The game tick its machine last held it. */
     private long heldAt;
-    /**
-     * On a client: its own ticks, counted one a tick as it ticks, and, by them, when the ride now under way set off.
-     * The client's clock is set back to the server's every second, where it has run ahead; timed by it, the car would
-     * jump back a little each time, a story at its full speed.
-     */
-    private long ownTicks;
+    /** On a client: when the ride now under way set off, by {@link #clientTicks}. */
     private long rideStartedAt;
-    /**
-     * Where its riders are set down, in the world, should they leave it other than at a floor (the car losing its
-     * machine, a rider leaving the game): outside the door of the landing it last stood at. Null until first held.
-     */
-    @Nullable
-    private Vec3 letOffAt;
-    /** Where its machine is setting a rider down now, in the world, or null while it sets no one down. */
-    @Nullable
-    private Vec3 releasingTo;
 
     public LiftCar(EntityType<? extends LiftCar> type, Level level) {
         super(type, level);
@@ -95,16 +113,63 @@ public class LiftCar extends Entity {
         builder.define(START, 0L);
     }
 
+    /** One more tick of the client's level, before anything in it ticks. */
+    public static void clientTick() {
+        clientTicks++;
+    }
+
+    /** The cars loaded in a level, in no order. */
+    public static List<LiftCar> cars(Level level) {
+        Set<LiftCar> side = level.isClientSide ? CLIENT_CARS : SERVER_CARS;
+        synchronized (side) {
+            return side.stream().filter(car -> car.level() == level && !car.isRemoved()).toList();
+        }
+    }
+
+    /**
+     * The car whose shaft a block among a ship's blocks is in, under its machine and within its floor; or none. Asked
+     * for by every floor block whose shape is wanted, so it looks through the cars where they are kept.
+     */
+    @Nullable
+    public static LiftCar inShaft(Level level, BlockPos cell) {
+        Set<LiftCar> side = level.isClientSide ? CLIENT_CARS : SERVER_CARS;
+        synchronized (side) {
+            for (LiftCar car : side) {
+                if (car.level() == level && !car.isRemoved() && car.shaftHolds(cell)) {
+                    return car;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Whether a block among the ship's blocks is in its shaft: under its machine, within its floor. */
+    private boolean shaftHolds(BlockPos cell) {
+        BlockPos machine = machine();
+        return cell.getY() < machine.getY() && Math.abs(cell.getX() - machine.getX()) <= 1 && Math.abs(cell.getZ() - machine.getZ()) <= 1;
+    }
+
+    @Override
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
+        (level().isClientSide ? CLIENT_CARS : SERVER_CARS).add(this);
+    }
+
+    @Override
+    public void onRemovedFromLevel() {
+        super.onRemovedFromLevel();
+        (level().isClientSide ? CLIENT_CARS : SERVER_CARS).remove(this);
+    }
+
     /** Its machine, among the ship's blocks. */
     public BlockPos machine() {
         return entityData.get(MACHINE);
     }
 
-    /** Held by its machine this tick: where the machine is, and where riders lost off a ride are set down. */
-    public void hold(ServerLevel level, BlockPos machine, @Nullable Vec3 letOff) {
+    /** Held by its machine this tick. */
+    public void hold(ServerLevel level, BlockPos machine) {
         entityData.set(MACHINE, machine);
         heldAt = level.getGameTime();
-        letOffAt = letOff;
         follow();
     }
 
@@ -131,26 +196,42 @@ public class LiftCar extends Entity {
 
     /** How far under its machine's bottom its floor stands this tick and partial tick, in blocks. */
     public double depth(float partialTick) {
+        return depthAfter(riding(partialTick));
+    }
+
+    /** How far under its machine's bottom its floor stands so many ticks into the ride, in blocks. */
+    private double depthAfter(double ticks) {
         double from = entityData.get(FROM);
         double to = entityData.get(TO);
-        return from + Math.signum(to - from) * travelled(Math.abs(to - from), riding(partialTick));
+        return from + Math.signum(to - from) * travelled(Math.abs(to - from), Math.max(0, ticks));
+    }
+
+    /** How high its floor's top is among the ship's blocks this tick, where whoever is in it stands. */
+    public double floorTop() {
+        return machine().getY() - depth(0);
+    }
+
+    /** How far its floor rose this tick, in blocks: less than nothing going down. */
+    public double rose() {
+        double ticks = riding(0);
+        return depthAfter(ticks - 1) - depthAfter(ticks);
     }
 
     /**
      * How long the ride has been under way at this partial tick, in ticks: by the game's clock on the server, and on a
-     * client by the car's own count of its ticks, which runs on smoothly whatever the server sets the clock to.
+     * client by {@link #clientTicks}, which runs on smoothly whatever the server sets the clock to.
      */
     private double riding(float partialTick) {
-        long ticks = level().isClientSide ? ownTicks - rideStartedAt : level().getGameTime() - entityData.get(START);
+        long ticks = level().isClientSide ? clientTicks - rideStartedAt : level().getGameTime() - entityData.get(START);
         return ticks + partialTick;
     }
 
-    /** A new ride's start from the server, on a client, timed from there on by the car's own ticks. */
+    /** A new ride's start from the server, on a client, timed from there on by {@link #clientTicks}. */
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (key == START && level().isClientSide) {
-            rideStartedAt = ownTicks - (level().getGameTime() - entityData.get(START));
+            rideStartedAt = clientTicks - (level().getGameTime() - entityData.get(START));
         }
     }
 
@@ -189,119 +270,104 @@ public class LiftCar extends Entity {
         return 2 * Math.sqrt(length * EASE / SPEED);
     }
 
+    /**
+     * Its floor as far as it lies in a cell of its shaft, for the floor block there (see {@link LiftFloorBlock}): from
+     * the cell's foot up to the floor's top, where the top is in it. On the server a player stands on it only while the
+     * car stands at a floor: their own game carries them as it rides, timing it by its own clock, which the server's
+     * floor would part from by a tick or two and pull them back by.
+     */
+    public VoxelShape floorIn(BlockPos cell, CollisionContext context) {
+        boolean player = context instanceof EntityCollisionContext entity && entity.getEntity() instanceof Player;
+        if (!level().isClientSide && player && !arrived()) {
+            return Shapes.empty();
+        }
+        double top = floorTop() - cell.getY();
+        if (top <= 0 || top > 1) {
+            return Shapes.empty();
+        }
+        return Shapes.box(0, 0, 0, 1, top, 1);
+    }
+
+    /**
+     * How high to stand something whose feet are at a point among the ship's blocks, on its floor; or NaN where it is
+     * not on it: off the floor's edge, in the air over it, or too far under it. Standing on it as it rode this tick, it
+     * goes along; sunk under its top, it is lifted back onto it.
+     */
+    public double standing(Vec3 feet) {
+        BlockPos machine = machine();
+        double floor = floorTop();
+        double rose = rose();
+        double before = floor - rose;
+        boolean over = Math.abs(feet.x - machine.getX() - 0.5) < FLOOR_HALF && Math.abs(feet.z - machine.getZ() - 0.5) < FLOOR_HALF;
+        if (!over || feet.y > Math.max(before, floor) + STANDING || feet.y < floor - SUNK) {
+            return Double.NaN;
+        }
+        double carried = Math.abs(feet.y - before) <= STANDING ? feet.y + rose : feet.y;
+        return Math.max(carried, floor);
+    }
+
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) {
-            ownTicks++;
-        }
         follow();
         if (level().isClientSide) {
             clientTicker.accept(this);
-        } else if (level().getGameTime() - heldAt > MACHINE_LOST) {
-            ejectPassengers();
-            discard();
+            return;
         }
+        if (level().getGameTime() - heldAt > MACHINE_LOST) {
+            discard();
+            return;
+        }
+        if (rose() != 0) {
+            carry((ServerLevel) level());
+        }
+    }
+
+    /**
+     * On the server, as it rides: nothing in it is falling, or a jump in a car going down, which drops away under it,
+     * would hurt as a fall down the shaft, where it falls no more than a few blocks in the car; and everything but
+     * players standing on its floor goes along with it, lifted back onto it where the floor rose past it (see
+     * {@link #standing}). Players are carried by their own game.
+     */
+    private void carry(ServerLevel level) {
+        Vec3 middle = SableFlight.toWorld(level, position());
+        AABB around = new AABB(middle, middle).inflate(FLOOR_HALF + 1, REACH, FLOOR_HALF + 1);
+        for (Entity inside : level.getEntities(this, around, entity -> !entity.isPassenger() && !entity.noPhysics)) {
+            carry(level, inside, SableFlight.toPlot(level, machine(), inside.position(), false));
+        }
+    }
+
+    /**
+     * One thing near the car, its feet where given among the ship's blocks, carried as it rides if it is in the shaft
+     * over the car's floor: there, as a car going down drops away from a jump faster than anything falls at first, it
+     * may be well over the floor and still in the car.
+     */
+    private void carry(ServerLevel level, Entity inside, Vec3 feet) {
+        BlockPos machine = machine();
+        double floor = floorTop();
+        boolean over = Math.abs(feet.x - machine.getX() - 0.5) < FLOOR_HALF && Math.abs(feet.z - machine.getZ() - 0.5) < FLOOR_HALF;
+        if (!over || feet.y < floor - SUNK || feet.y > machine.getY()) {
+            return;
+        }
+        inside.resetFallDistance();
+        double stand = standing(feet);
+        if (inside instanceof Player || Double.isNaN(stand) || stand == feet.y) {
+            return;
+        }
+        inside.setPos(SableFlight.toWorld(level, new Vec3(feet.x, stand, feet.z)));
+        inside.setDeltaMovement(inside.getDeltaMovement().multiply(1, 0, 1));
     }
 
     /** Stands it where its ride has it now, under its machine, on either side. */
     private void follow() {
         BlockPos machine = machine();
-        double depth = depth(0);
-        setPos(machine.getX() + 0.5, machine.getY() - depth, machine.getZ() + 0.5);
+        setPos(machine.getX() + 0.5, machine.getY() - depth(0), machine.getZ() + 0.5);
     }
 
-    /**
-     * Its riders stand each in a quarter of the car, facing as they will, their feet on its floor: the first two in the
-     * quarters by its doors, a step back from the board on the far wall that they pick their floor on, and the next two
-     * behind them. The game lowers a rider by where it sits on a vehicle, which a standing rider does not, so that is
-     * put back.
-     */
-    @Override
-    public Vec3 getPassengerRidingPosition(Entity passenger) {
-        return standingSpot(passenger).add(passenger.getVehicleAttachmentPoint(this));
-    }
-
-    /** Where a rider's feet stand on the car's floor, in its quarter of it, among the ship's blocks. */
-    public Vec3 standingSpot(Entity rider) {
-        int place = Math.max(0, getPassengers().indexOf(rider));
-        Direction doors = doorsSide();
-        Direction side = doors.getClockWise();
-        double across = (place & 1) == 0 ? -RIDER_OUT : RIDER_OUT;
-        double along = (place & 2) == 0 ? RIDER_OUT : -RIDER_OUT;
-        return position().add(Vec3.atLowerCornerOf(side.getNormal()).scale(across)).add(Vec3.atLowerCornerOf(doors.getNormal()).scale(along));
-    }
-
-    /**
-     * A rider stands still as the car carries them: the game would take every move of the ship under them for steps and
-     * swing their legs the whole ride.
-     */
-    @Override
-    protected void positionRider(Entity passenger, MoveFunction callback) {
-        super.positionRider(passenger, callback);
-        if (passenger instanceof LivingEntity living) {
-            living.walkAnimation.setSpeed(0);
-        }
-    }
-
-    /** The side of the shaft its doors are on, as its machine's landings have them; north without them. */
-    private Direction doorsSide() {
-        if (!(level().getBlockEntity(machine()) instanceof LiftMachineBlockEntity lift) || lift.landings().isEmpty()) {
-            return Direction.NORTH;
-        }
-        BlockPos door = lift.landings().getFirst().door();
-        return Direction.getNearest(door.getX(), 0, door.getZ());
-    }
-
-    @Override
-    public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
-        if (releasingTo != null) {
-            return releasingTo;
-        }
-        return letOffAt != null ? letOffAt : position();
-    }
-
-    @Override
-    public boolean shouldRiderSit() {
-        return false;
-    }
-
+    /** No one rides it: whoever is in it stands on its floor. */
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return getPassengers().size() < RIDERS;
-    }
-
-    /**
-     * A rider set down by its machine where given in the world, as the car comes in: the only way off but for the rider
-     * going, dying or being teleported.
-     */
-    public void release(Entity rider, Vec3 to) {
-        releasingTo = to;
-        rider.stopRiding();
-        releasingTo = null;
-    }
-
-    /**
-     * No one gets off a ride by sneaking: its machine lets its riders go as the car comes in at their floor. Left to
-     * the game, a rider would drop down the shaft between floors.
-     */
-    public static void onMount(EntityMountEvent event) {
-        if (event.isDismounting() && event.getEntityBeingMounted() instanceof LiftCar car && car.isAlive() && car.releasingTo == null
-            && !event.getLevel().isClientSide && event.getEntityMounting().isAlive() && event.getEntityMounting().isShiftKeyDown()) {
-            event.setCanceled(true);
-        }
-    }
-
-    /**
-     * A rider leaving the game is set down first, where the car's machine lets riders off or else where the car is:
-     * the game would otherwise save the car with them and bring a copy of it back when they come again.
-     */
-    public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity().getVehicle() instanceof LiftCar car) {
-            Vec3 off = car.letOffAt != null ? car.letOffAt : SableFlight.toWorld(car.level(), car.position());
-            event.getEntity().stopRiding();
-            event.getEntity().teleportTo(off.x, off.y, off.z);
-        }
+        return false;
     }
 
     /** Its place comes from its ride's clock, as this side has it, never from the server's last word. */

@@ -722,11 +722,12 @@ public final class AerolargeRegistry {
      */
     public static final DeferredBlock<LiftMachineBlock> LIFT_MACHINE = BLOCKS.registerBlock("lift_machine", LiftMachineBlock::new, metal(MapColor.METAL));
     /**
-     * The floor laid under a lift's car where it stands at a landing, for its riders to walk on: not drawn, not to be
-     * picked out or broken, laid and taken away only by the lift.
+     * The floor of a lift's car filling its shaft, solid where the car's floor is now, for whoever is in it to walk on:
+     * not drawn, not to be picked out or broken, laid and taken away only by the lift. Its shape follows the car, so
+     * the game does not keep it by its state.
      */
     public static final DeferredBlock<LiftFloorBlock> LIFT_FLOOR = BLOCKS.registerBlock(
-        "lift_floor", LiftFloorBlock::new, BlockBehaviour.Properties.of().strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+        "lift_floor", LiftFloorBlock::new, BlockBehaviour.Properties.of().strength(-1.0F, 3600000.0F).noLootTable().noOcclusion().dynamicShape()
             .isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
             .pushReaction(PushReaction.BLOCK)
     );

@@ -1925,16 +1925,16 @@ square buttons two to a row, the lowest at the bottom: each an icon on its story
 a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the
 floor you are on glowing softly green round its edge, the car's lit, and the one you look at brightened. The car
 waits with its doors open until you touch a floor (with nobody aboard it closes after eight seconds); then after a
-moment it closes and glides there, easing off and in, at up to six blocks a second, while its motor hums; one chime as
-it comes
+moment it closes and glides there, easing off and in, at up to twelve blocks a second, while its motor hums; one chime
+as it comes
 in going up, two going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa
 nova on an electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes
 in; the Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on
-anyone in the doorway or moves with a door open, and no one gets off between floors. At a floor you walk about in the
-car as you like and step out once its doors open: it holds its riders still only as it rides, each in a corner of it.
-While she counts down, climbs, comes down or lands, it stands at a floor with its doors
-open and takes no rides (once she holds her height, as in space, it runs again), and an amber bar lies across its
-boards; in place of her floors they show how high she flies, a little
+anyone in the doorway or moves with a door open, and no one gets off between floors. You walk about in the car as you
+like, standing at a floor or riding, and can jump in it: it carries you up and down on its floor as any lift does, and
+a jump in it going down never hurts. It runs whatever she does, standing, counting down, climbing, in space or coming
+down and landing. While she flies, its boards, but the one where the car stands, show how high she flies in place of
+her floors, a little
 rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed
 line with a star where space begins, stars twinkling over it once she is up there (the client config's `heightGauge`
 keeps her floors on them).
@@ -2353,8 +2353,8 @@ jets puffing, green while
 her jets hold her, amber while her stability is locked on, red and wobbling with a blinking warning triangle while it is
 off; and the flight mode's picture, dimmed while she flies the arc straight up. With her stability off, a red ring on
 the attitude indicator marks how far she may tip before it snaps back on, and a white dot inside it how far she tips,
-and which way: keep the dot inside the ring. Her lift parks while she boosts, with her stability off, or leaning far
-over in the arc, and her lift's height gauge trails a long flame under its little rocket while she boosts. The boost,
+and which way: keep the dot inside the ring. Her lift's height gauge trails a long flame under its little rocket while
+she boosts. The boost,
 the stability switch and the arc can each be switched off in the server
 config's `rocket.boost`, `rocket.stabilitySwitch` and `rocket.arcAscent`; switched off, their controls only sound their
 low refusal note.
@@ -2585,7 +2585,8 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
-on its shaft by a clock both sides share, with an unseen `LiftFloorBlock` floor laid under it where it stands, its
+on its shaft by a clock both sides share, its shaft filled with unseen `LiftFloorBlock`s, solid wherever the car's
+floor is now, along which `LiftRide` carries the player on the client, its
 `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
 `LiftDoorRenderer` draws its pane as it slides), a `LiftCallButtonBlock` by each landing's doors and a `LiftBoardBlock`
 inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (`LiftBoardRenderer` drawing the boards,

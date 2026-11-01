@@ -113,7 +113,7 @@ public final class AerolargeClientConfig {
                 "the Jukebox/Note Blocks volume sets. Off, the car only hums.")
             .define("liftMusic", true);
         HEIGHT_GAUGE = builder
-            .comment("While a rocket flies and her lift stands parked, show on its picture boards how high she is: the sky in the colours",
+            .comment("While a rocket flies, show on her lift's picture boards, but where its car stands, how high she is: the sky in the colours",
                 "of each height, the edge of space marked with a star, and a little rocket at her height. Off, the boards show her floors.")
             .define("heightGauge", true);
         HELMET_BREATHING = builder

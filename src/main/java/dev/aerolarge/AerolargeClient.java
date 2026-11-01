@@ -60,6 +60,7 @@ import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LaserTurretRenderer;
 import dev.aerolarge.client.LedLights;
 import dev.aerolarge.client.LiftPanelRenderer;
+import dev.aerolarge.client.LiftRide;
 import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.LiveryBoardRenderer;
 import dev.aerolarge.client.LiftBoardRenderer;
@@ -214,6 +215,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(OculusRing::heard);
         NeoForge.EVENT_BUS.addListener(Earshot::heard);
         NeoForge.EVENT_BUS.addListener(CarriedAboard::onTick);
+        NeoForge.EVENT_BUS.addListener(LiftRide::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(LiftRide::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::loggingOut);
         NeoForge.EVENT_BUS.addListener(HelmetVisor::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);

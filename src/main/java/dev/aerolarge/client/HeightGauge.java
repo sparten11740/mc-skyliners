@@ -12,12 +12,12 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
- * How high a rocket flies, as her lift's picture boards show it while the lift stands parked for her flight (see
- * {@link LiftBoardRenderer}): a column from the sea at its foot to her ceiling at its top, each height in the colour
- * the sky is there by day (see {@link SpaceSky#skyAt}), the planet a band of sea and land at its foot, a dashed white
- * line with a star where space begins, stars twinkling over the line once she is past it, and a little rocket at her
- * height, a long flame flickering under it while she boosts (see the autopilot's RocketControls). Players who cannot
- * read see how high she is and how far she has to go to space.
+ * How high a rocket flies, as her lift's picture boards show it in her flight, but where its car stands (see {@link
+ * LiftBoardRenderer}): a column from the sea at its foot to her ceiling at its top, each height in the colour the sky
+ * is there by day (see {@link SpaceSky#skyAt}), the planet a band of sea and land at its foot, a dashed white line with
+ * a star where space begins, stars twinkling over the line once she is past it, and a little rocket at her height, a
+ * long flame flickering under it while she boosts (see the autopilot's RocketControls). Players who cannot read see how
+ * high she is and how far she has to go to space.
  */
 final class HeightGauge {
     /** How many bands of colour the sky is drawn in, from the sea to her ceiling. */

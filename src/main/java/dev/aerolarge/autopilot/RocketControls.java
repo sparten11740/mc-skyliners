@@ -194,12 +194,6 @@ public final class RocketControls {
      */
     private static final int CALM = 3 * 20;
     private static final double LEARN_TILT = 10;
-    /**
-     * Flying ARC toward her pin, how far she leans before her lift parks, in degrees, and how far back she must come
-     * before it runs again, so it never flaps between the two.
-     */
-    private static final double LIFT_TILT = 10;
-    private static final double LIFT_TILT_BACK = 8;
     /** The alarm with stability off: how often it sounds standing upright and at the tilt it snaps at, in ticks. */
     private static final int ALARM_SLOWEST = 40;
     private static final int ALARM_QUICKEST = 10;
@@ -248,8 +242,6 @@ public final class RocketControls {
     private final double[] swayPhases = new double[2];
     /** When the stability alarm next sounds, in game time. */
     private long nextAlarm = NEVER;
-    /** Whether, flying ARC, she leans far enough that her lift parks (see {@link #LIFT_TILT}). */
-    private boolean leaning;
     /** Whether something the clients are shown has changed since they were last sent it. */
     private boolean changed;
 
@@ -296,14 +288,6 @@ public final class RocketControls {
     /** Whether her stability is locked on after it snapped back, at a game time. */
     public boolean lockedOut(long now) {
         return now < lockedUntil;
-    }
-
-    /**
-     * Whether nothing unsteadies her at a game time, so her lift may run while she cruises: no boost, stability on, and
-     * flying ARC not leaning far.
-     */
-    boolean steady(long now) {
-        return !boosting(now) && !unstable && !leaning;
     }
 
     /**
@@ -370,7 +354,7 @@ public final class RocketControls {
      * must, snaps it back on (see {@link #mustSnap}). Whether it snapped back this tick.
      */
     boolean watch(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase now, double radio, double across, double tilt, double growing,
-                  Vec3 leant, boolean toPin) {
+                  Vec3 leant) {
         long time = level.getGameTime();
         if (now != phase) {
             phase = now;
@@ -383,7 +367,6 @@ public final class RocketControls {
             boostUntil = time;
             changed = true;
         }
-        leaning = flies(toPin) == Mode.ARC && (leaning ? tilt > LIFT_TILT_BACK : tilt > LIFT_TILT);
         if (boosting(time) || unstable) {
             stirred = time;
         }
@@ -596,7 +579,6 @@ public final class RocketControls {
         restUntil = NEVER;
         unstable = false;
         lockedUntil = NEVER;
-        leaning = false;
         changed |= were;
     }
 
