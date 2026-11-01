@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import dev.aerolarge.entity.LiftCar;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -11,11 +12,18 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * Carries the player along on a lift car's floor as it rides (see {@link LiftCar}): before each of the player's own
  * ticks, their game moves them with the floor under their feet, up or down, as the car moves along its shaft, so they
  * stand and walk about in it as in any lift; should the floor have risen past their feet, as when they jump in a car
- * going up, it lifts them back onto it, so no one drops down the shaft. It also counts the level's ticks the cars time
+ * going up, it lifts them back onto it, so no one drops down the shaft. A player just joined hangs where they are
+ * until the ground under them has come (see {@link #waitingForGround}). It also counts the level's ticks the cars time
  * their rides by there (see {@link LiftCar#clientTick}). Only the player's own client moves them, so only their own
  * player is looked at.
  */
 public final class LiftRide {
+    /**
+     * How long after joining a player may hang waiting for the ground under them, in ticks: the half minute a world's
+     * loading screen waits for it.
+     */
+    private static final int JOINING = 600;
+
     private LiftRide() {
     }
 
@@ -35,9 +43,22 @@ public final class LiftRide {
         if (!(event.getEntity() instanceof LocalPlayer player) || player.isPassenger() || player.isSpectator()) {
             return;
         }
+        if (waitingForGround(player)) {
+            player.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
         for (LiftCar car : LiftCar.cars(player.level())) {
             carry(player, car);
         }
+    }
+
+    /**
+     * Whether a player has only just joined and their game has no ground under them yet. The game moves them from their
+     * first tick, behind the loading screen: on a slow start, whoever was saved standing in a car would be too far
+     * under its floor to be lifted back by the time it came, and would drop down the shaft.
+     */
+    private static boolean waitingForGround(LocalPlayer player) {
+        return player.tickCount < JOINING && player.level().getChunk(player.getBlockX() >> 4, player.getBlockZ() >> 4, ChunkStatus.FULL, false) == null;
     }
 
     /**

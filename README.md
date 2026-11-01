@@ -1984,7 +1984,8 @@ in; the Jukebox/Note Blocks volume sets how loud, and the client config's `liftM
 anyone in the doorway or moves with a door open, and no one gets off between floors. You walk about in the car as you
 like, standing at a floor or riding, and can jump in it: it carries you up and down on its floor as any lift does, and
 a jump in it going down never hurts. Flying in creative mode, you are lifted on its floor as it rises, never left
-under it in the shaft. It runs whatever she does, standing, counting down, climbing, in space or coming
+under it in the shaft, and leaving the game as you stand in it, you come back standing on its floor. It runs whatever
+she does, standing, counting down, climbing, in space or coming
 down and landing. While she flies, its boards, but the one where the car stands, show how high she flies in place of
 her floors, a little
 rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed

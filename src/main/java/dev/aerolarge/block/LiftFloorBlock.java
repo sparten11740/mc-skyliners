@@ -3,11 +3,14 @@ package dev.aerolarge.block;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.entity.LiftCar;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -41,11 +44,29 @@ public class LiftFloorBlock extends Block {
         return Shapes.empty();
     }
 
-    /** The car's floor as far as it lies in this block now (see {@link LiftCar#floorIn}); nothing without a car. */
+    /**
+     * The car's floor as far as it lies in this block now (see {@link LiftCar#floorIn}); nothing without a car, but for
+     * a player on a client that has no car yet (see {@link #awaitingCar}).
+     */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         LiftCar car = LiftCar.inShaft(level, pos);
-        return car == null ? Shapes.empty() : car.floorIn(pos, context);
+        if (car != null) {
+            return car.floorIn(pos, context);
+        }
+        return awaitingCar(level, context) ? Shapes.block() : Shapes.empty();
+    }
+
+    /**
+     * Whether this is a player moving on a client that has no car yet, for whom the block is solid: the car comes some
+     * ticks after a player starts to move in a world just joined, and whoever was saved standing in it would by then
+     * have dropped out of reach of its floor, down the whole shaft. It must be the player and nothing else: Sable asks
+     * once what every block of a kind collides with, with no one and nowhere in particular, and keeps the answer for
+     * the physics of every ship, on the server too, to which this block must stay nothing.
+     */
+    private static boolean awaitingCar(BlockGetter level, CollisionContext context) {
+        boolean onClient = level instanceof Level found && found.isClientSide;
+        return onClient && context instanceof EntityCollisionContext entity && entity.getEntity() instanceof Player;
     }
 
     @Override
