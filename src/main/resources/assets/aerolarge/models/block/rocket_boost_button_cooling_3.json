@@ -6,6 +6,7 @@
     "plate": "aerolarge:block/panel_side",
     "chrome": "aerolarge:block/pilot_seat_trim",
     "black": "aerolarge:block/thrust_lever_handle",
+    "picture": "aerolarge:block/rocket_plate_boost_resting",
     "cap_top": "aerolarge:block/rocket_boost_cap_resting",
     "cap_side": "aerolarge:block/rocket_boost_cap_side_resting",
     "segment": "aerolarge:block/jump_light_green",
@@ -48,14 +49,70 @@
     },
     {
       "from": [
+        2,
         6,
-        6,
-        6
+        0.75
       ],
       "to": [
-        10,
-        12.5,
-        10
+        14,
+        6.25,
+        6.75
+      ],
+      "faces": {
+        "up": {
+          "texture": "#picture",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "rotation": 180,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "north": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        6,
+        9.75
+      ],
+      "to": [
+        9.5,
+        9,
+        12.75
       ],
       "faces": {
         "north": {
@@ -82,12 +139,12 @@
       "from": [
         5.5,
         6,
-        10.5
+        13.75
       ],
       "to": [
         10.5,
         7,
-        12.5
+        15.75
       ],
       "faces": {
         "north": {
@@ -138,12 +195,12 @@
       "from": [
         3.5,
         6,
-        5.5
+        8.75
       ],
       "to": [
         5.5,
         7,
-        10.5
+        13.75
       ],
       "faces": {
         "north": {
@@ -194,12 +251,12 @@
       "from": [
         5.5,
         6,
-        3.5
+        6.75
       ],
       "to": [
         10.5,
         7,
-        5.5
+        8.75
       ],
       "faces": {
         "north": {
@@ -250,12 +307,12 @@
       "from": [
         10.5,
         6,
-        5.5
+        8.75
       ],
       "to": [
         12.5,
         7,
-        10.5
+        13.75
       ],
       "faces": {
         "north": {
@@ -280,54 +337,110 @@
     },
     {
       "from": [
-        3,
-        12.5,
-        3
+        4,
+        9,
+        7.25
       ],
       "to": [
-        13,
-        17,
-        13
+        12,
+        10.75,
+        15.25
       ],
       "faces": {
+        "north": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        10.75,
+        8.25
+      ],
+      "to": [
+        11,
+        11.5,
+        14.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#cap_side",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
         "up": {
           "texture": "#cap_top",
           "rotation": 180,
-          "neoforge_data": {
-            "block_light": 15,
-            "sky_light": 15
-          }
-        },
-        "down": {
-          "texture": "#cap_side",
-          "neoforge_data": {
-            "block_light": 15,
-            "sky_light": 15
-          }
-        },
-        "north": {
-          "texture": "#cap_side",
-          "neoforge_data": {
-            "block_light": 15,
-            "sky_light": 15
-          }
-        },
-        "south": {
-          "texture": "#cap_side",
-          "neoforge_data": {
-            "block_light": 15,
-            "sky_light": 15
-          }
-        },
-        "east": {
-          "texture": "#cap_side",
-          "neoforge_data": {
-            "block_light": 15,
-            "sky_light": 15
-          }
-        },
-        "west": {
-          "texture": "#cap_side",
           "neoforge_data": {
             "block_light": 15,
             "sky_light": 15

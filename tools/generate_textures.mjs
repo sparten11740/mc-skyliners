@@ -4408,6 +4408,53 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 0, 32, 32);
 }
 
+// The lift's picture boards' icons (see the lift's textures, below), white on clear, by name: here, for the rocket's
+// centre console to draw her lift's arrow up on its flight mode knob's picture plate too.
+const LIFT_ICONS = {
+  entry: ["................", "................", "....########....", "...#........#...", "...#........#...", "...#........#...",
+    "...#........#...", "...#......#.#...", "...#........#...", "...#........#...", "...#........#...", "...#........#...",
+    "...#........#...", "..############..", "................", "................"],
+  cargo: ["................", "................", "..############..", "..#..........#..", "..#.#......#.#..", "..#..#....#..#..",
+    "..#...#..#...#..", "..#....##....#..", "..#....##....#..", "..#...#..#...#..", "..#..#....#..#..", "..#.#......#.#..",
+    "..#..........#..", "..############..", "................", "................"],
+  galley: ["................", "...#.#.#....##..", "...#.#.#...###..", "...#.#.#...###..", "...#####...###..", "....###....###..",
+    ".....#.....###..", ".....#......##..", ".....#.......#..", ".....#.......#..", ".....#.......#..", ".....#.......#..",
+    ".....#.......#..", ".....#.......#..", "................", "................"],
+  bunks: ["................", "................", "................", "..#.............", "..#.............", "..#.###.........",
+    "..#.###########.", "..#.###########.", "..##############", "..##############", "..#............#", "..#............#",
+    "................", "................", "................", "................"],
+  greenhouse: ["................", "........###.....", ".......#####....", "......######....", ".###..#####.....", "#####.####......",
+    "######.#........", ".#####.#........", "...###.#........", ".......#........", ".......#........", "....#######.....",
+    "....#######.....", ".....#####......", ".....#####......", "................"],
+  pool: ["................", "................", "................", "................", ".##...##...##...", "#..#.#..#.#..#..",
+    "....#....#....#.", "................", ".##...##...##...", "#..#.#..#.#..#..", "....#....#....#.", "................",
+    ".##...##...##...", "#..#.#..#.#..#..", "....#....#....#.", "................"],
+  club: ["................", "........######..", "........######..", "........#....#..", "........#....#..", "........#....#..",
+    "........#....#..", "........#....#..", "........#....#..", "........#....#..", "....###.#..###..", "...#####..#####.",
+    "...#####..#####.", "....###....###..", "................", "................"],
+  lab: ["................", ".....######.....", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
+    ".....#....#.....", "....#......#....", "...#........#...", "...#.######.#...", "..#.########.#..", "..#.########.#..",
+    "..#.########.#..", "...##########...", "................", "................"],
+  observation: ["................", "................", "............##..", "..........####..", "........####....", "......####......",
+    "....####........", "..###.##........", "..##..#.#.......", "......#..#......", ".....#....#.....", "....#......#....",
+    "...#........#...", "................", "................", "................"],
+  cockpit: ["................", ".......##.......", "......####......", ".....######.....", ".....######.....", "....##....##....",
+    "....#......#....", "....#......#....", "....########....", "....########....", "....########....", "...##########...",
+    "..###.####.###..", "..##..####..##..", "......####......", "................"],
+  up: ["................", "................", ".......##.......", "......####......", ".....######.....", "....########....",
+    "...##########...", "..############..", ".......##.......", ".......##.......", ".......##.......", ".......##.......",
+    ".......##.......", "................", "................", "................"],
+  rocket: ["................", ".......##.......", "......####......", "......####......", ".....######.....", ".....######.....",
+    ".....##..##.....", ".....##..##.....", ".....######.....", ".....######.....", "....########....", "...##########...",
+    "...###.##.###...", "...##..##..##...", "..##...##...##..", "................"],
+  star: ["................", ".......##.......", ".......##.......", "......####......", "..############..", "...##########...",
+    "....########....", ".....######.....", "....###..###....", "....##....##....", "...##......##...", "................",
+    "................", "................", "................", "................"],
+  down: ["................", "................", "................", ".......##.......", ".......##.......", ".......##.......",
+    ".......##.......", ".......##.......", "..############..", "...##########...", "....########....", ".....######.....",
+    "......####......", ".......##.......", "................", "................"],
+};
+
 // The rocket's lift (see LiftMachineBlockEntity). Its machine's housing: brushed steel banded with hazard stripes,
 // bolted at its corners. Its landing doors: a pane of smoked glass in a brushed steel frame, the frame along the
 // lower half's foot and the upper half's head and up both their sides, so the two read as one tall door. Its picture
@@ -4441,51 +4488,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "lift_board_casing", () => [0x15, 0x17, 0x1b], 2);
   const liftOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/lift");
   mkdirSync(liftOutput, { recursive: true });
-  const ICONS = {
-    entry: ["................", "................", "....########....", "...#........#...", "...#........#...", "...#........#...",
-      "...#........#...", "...#......#.#...", "...#........#...", "...#........#...", "...#........#...", "...#........#...",
-      "...#........#...", "..############..", "................", "................"],
-    cargo: ["................", "................", "..############..", "..#..........#..", "..#.#......#.#..", "..#..#....#..#..",
-      "..#...#..#...#..", "..#....##....#..", "..#....##....#..", "..#...#..#...#..", "..#..#....#..#..", "..#.#......#.#..",
-      "..#..........#..", "..############..", "................", "................"],
-    galley: ["................", "...#.#.#....##..", "...#.#.#...###..", "...#.#.#...###..", "...#####...###..", "....###....###..",
-      ".....#.....###..", ".....#......##..", ".....#.......#..", ".....#.......#..", ".....#.......#..", ".....#.......#..",
-      ".....#.......#..", ".....#.......#..", "................", "................"],
-    bunks: ["................", "................", "................", "..#.............", "..#.............", "..#.###.........",
-      "..#.###########.", "..#.###########.", "..##############", "..##############", "..#............#", "..#............#",
-      "................", "................", "................", "................"],
-    greenhouse: ["................", "........###.....", ".......#####....", "......######....", ".###..#####.....", "#####.####......",
-      "######.#........", ".#####.#........", "...###.#........", ".......#........", ".......#........", "....#######.....",
-      "....#######.....", ".....#####......", ".....#####......", "................"],
-    pool: ["................", "................", "................", "................", ".##...##...##...", "#..#.#..#.#..#..",
-      "....#....#....#.", "................", ".##...##...##...", "#..#.#..#.#..#..", "....#....#....#.", "................",
-      ".##...##...##...", "#..#.#..#.#..#..", "....#....#....#.", "................"],
-    club: ["................", "........######..", "........######..", "........#....#..", "........#....#..", "........#....#..",
-      "........#....#..", "........#....#..", "........#....#..", "........#....#..", "....###.#..###..", "...#####..#####.",
-      "...#####..#####.", "....###....###..", "................", "................"],
-    lab: ["................", ".....######.....", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
-      ".....#....#.....", "....#......#....", "...#........#...", "...#.######.#...", "..#.########.#..", "..#.########.#..",
-      "..#.########.#..", "...##########...", "................", "................"],
-    observation: ["................", "................", "............##..", "..........####..", "........####....", "......####......",
-      "....####........", "..###.##........", "..##..#.#.......", "......#..#......", ".....#....#.....", "....#......#....",
-      "...#........#...", "................", "................", "................"],
-    cockpit: ["................", ".......##.......", "......####......", ".....######.....", ".....######.....", "....##....##....",
-      "....#......#....", "....#......#....", "....########....", "....########....", "....########....", "...##########...",
-      "..###.####.###..", "..##..####..##..", "......####......", "................"],
-    up: ["................", "................", ".......##.......", "......####......", ".....######.....", "....########....",
-      "...##########...", "..############..", ".......##.......", ".......##.......", ".......##.......", ".......##.......",
-      ".......##.......", "................", "................", "................"],
-    rocket: ["................", ".......##.......", "......####......", "......####......", ".....######.....", ".....######.....",
-      ".....##..##.....", ".....##..##.....", ".....######.....", ".....######.....", "....########....", "...##########...",
-      "...###.##.###...", "...##..##..##...", "..##...##...##..", "................"],
-    star: ["................", ".......##.......", ".......##.......", "......####......", "..############..", "...##########...",
-      "....########....", ".....######.....", "....###..###....", "....##....##....", "...##......##...", "................",
-      "................", "................", "................", "................"],
-    down: ["................", "................", "................", ".......##.......", ".......##.......", ".......##.......",
-      ".......##.......", ".......##.......", "..############..", "...##########...", "....########....", ".....######.....",
-      "......####......", ".......##.......", "................", "................"],
-  };
-  for (const [name, rows] of Object.entries(ICONS)) {
+  for (const [name, rows] of Object.entries(LIFT_ICONS)) {
     texture(liftOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
   }
   // The rover panel's screen (see RoverPanelRenderer): its buttons' pictures in white, as the lift's are, the remote's
@@ -7522,128 +7525,61 @@ function shaftDecorTextures() {
 shaftDecorTextures();
 
 // The hands-on controls on the rocket's centre console (see RocketControlBlock and its kinds), each drawn as the pilots
-// see it from behind the console. The boost button's cap, the lamp it is, seen from above: a flame with two chevrons
-// under it pointing up, in a lighter shade of the cap's colour, dull orange while it cannot boost, green ready, red
-// resting, and pulsing from orange to yellow while it boosts, its sides the cap's colour alone; at 32 pixels, so the
-// picture stays sharp on the cap. Lamps blue and orange as the jump light's lenses, and the stability switch's red one
-// flashing. The yellow-and-black hazard stripes of the stability switch's cover and the abort handle. The modules'
-// tops, at 32 pixels: the stability switch's a rocket with her side jets puffing on its right half, beside its cover;
-// the flight mode knob's its three modes' pictures round the knob, a blue arrow straight up on the left, an orange arc
-// bending over at the top and a green snail on the right; the abort handle's a red U-turn arrow round the handle, dark
-// and lit. The launch key's tag, amber with a rocket on it. And the flight display's pictures of the controls, white to
-// be tinted (see FlightDisplayRenderer): the boost's flame, a warning triangle, the arc and the snail, the lift's own
-// arrow and rocket standing for the rest.
+// see it from behind the console. The boost button's cap, the lamp it is, seen from above: a round lens, brightest at
+// its middle and darker to its rim, the corners outside the round darker still, so the square cap reads as round; unlit
+// orange while it cannot boost, green ready, red resting, and pulsing from orange to yellow while it boosts, its sides
+// the cap's colour alone; at 32 pixels, so the round stays smooth. Lamps blue and orange as the jump light's lenses.
+// The yellow-and-black hazard stripes painted round the stability switch, its yellow lid, a darker rim round it, and
+// the abort handle's red grip, ridged across. The flight display's pictures of the controls, white to be tinted (see
+// FlightDisplayRenderer): the boost's flame, a rocket with her side jets puffing, a warning triangle, the arc and the
+// snail, the lift's own arrow standing for straight up. And each module's picture plate, the same on every module so
+// the console reads as one: in the top half of a 64-pixel texture, a dark glass in a frame, the control's picture on it
+// glowing in its colour, or unlit grey while it waits. The flame for the boost button; the rocket with her jets puffing
+// for the stability switch, flashing to the warning triangle while it is off; the arrow up, the arc and the snail in a
+// row for the flight mode knob, the one it points at lit; a U-turn arrow for the abort handle; and a rocket over her
+// flame for the launch key.
 function rocketControlTextures() {
   const BIG = 32;
   const CAP_FRAMES = 8;
-  const LAMP_FRAMES = 2;
-  const flameAt = (x, y) => Math.hypot(x - 15.5, y - 11) < 5.5 || (y < 11 && y > 0 && Math.abs(x - 15.5) < y * 0.5);
-  const flameCoreAt = (x, y) => Math.hypot(x - 15.5, y - 12) < 3 || (y < 12 && y > 4 && Math.abs(x - 15.5) < (y - 4) * 0.35);
-  const chevronAt = (x, y) => [19, 24].some((apex) => Math.abs(x - 15.5) < 7 && Math.abs(y - apex - Math.abs(x - 15.5) * 0.8) < 1.3);
-  const capTop = (base, flame, core, chevron) => (x, y) => {
-    if (flameCoreAt(x, y)) return core;
-    if (flameAt(x, y)) return flame;
-    if (chevronAt(x, y)) return chevron;
-    const rim = Math.hypot(x - 15.5, y - 15.5) > 14.5 ? 0.8 : 1;
-    return base.map((c) => Math.round(c * rim));
+  const PLATE = 64;
+  const GREEN = [0x46, 0xe0, 0x70];
+  const ORANGE = [0xff, 0x9a, 0x2a];
+  const RED = [0xff, 0x44, 0x34];
+  const AMBER = [0xf0, 0xa8, 0x30];
+  const BLUE = [0x4c, 0x9a, 0xff];
+  const capTop = (base) => (x, y) => {
+    const out = Math.hypot(x - 15.5, y - 15.5) / 15.5;
+    const shade = out > 1 ? 0.6 : 1.2 - 0.35 * out;
+    return base.map((c) => clamp(Math.round(c * shade)));
   };
-  const CAPS = {
-    dark: [[0x7a, 0x3c, 0x14], [0x9a, 0x5a, 0x24], [0xa8, 0x70, 0x3a], [0x92, 0x62, 0x38]],
-    ready: [[0x2a, 0xb8, 0x4a], [0xc8, 0xff, 0xc8], [0xff, 0xff, 0xff], [0xe8, 0xff, 0xe8]],
-    resting: [[0xc4, 0x22, 0x1a], [0xff, 0x8a, 0x78], [0xff, 0xd8, 0xd0], [0xff, 0xb0, 0xa4]],
-  };
-  for (const [look, [base, flame, core, chevron]] of Object.entries(CAPS)) {
-    texture(blockOutput, `rocket_boost_cap_${look}`, capTop(base, flame, core, chevron), 2, BIG, BIG);
+  const CAPS = { dark: [0xd8, 0x60, 0x1c], ready: [0x2a, 0xb8, 0x4a], resting: [0xc4, 0x22, 0x1a] };
+  for (const [look, base] of Object.entries(CAPS)) {
+    texture(blockOutput, `rocket_boost_cap_${look}`, capTop(base), 2, BIG, BIG);
     texture(blockOutput, `rocket_boost_cap_side_${look}`, (x, y) => base.map((c) => Math.round(c * (y === 0 ? 1.15 : 1))).map(clamp), 2);
   }
   // Boosting, pulsing: orange to yellow and back over its frames.
   const pulse = (frame) => (1 - Math.cos((2 * Math.PI * frame) / CAP_FRAMES)) / 2;
   const boostingBase = (frame) => [0xff, Math.round(0x70 + 0x60 * pulse(frame)), Math.round(0x10 + 0x40 * pulse(frame))];
-  texture(blockOutput, "rocket_boost_cap_boosting", (x, y) => capTop(boostingBase(Math.floor(y / BIG)), [0xff, 0xd8, 0x60], [0xff, 0xff, 0xe0],
-    [0xff, 0xf4, 0xc0])(x, y % BIG), 0, BIG, BIG * CAP_FRAMES);
+  texture(blockOutput, "rocket_boost_cap_boosting", (x, y) => capTop(boostingBase(Math.floor(y / BIG)))(x, y % BIG), 0, BIG, BIG * CAP_FRAMES);
   writeFileSync(resolve(blockOutput, "rocket_boost_cap_boosting.png.mcmeta"), JSON.stringify({ animation: { frametime: 2 } }, null, 2) + "\n");
   texture(blockOutput, "rocket_boost_cap_side_boosting", (x, y) => boostingBase(Math.floor(y / SIZE)), 0, SIZE, SIZE * CAP_FRAMES);
   writeFileSync(resolve(blockOutput, "rocket_boost_cap_side_boosting.png.mcmeta"), JSON.stringify({ animation: { frametime: 2 } }, null, 2) + "\n");
 
-  const lens = (colour, lit = true) => (x, y) => {
+  const lens = (colour) => (x, y) => {
     if (x === 0 || y === 0 || x === 15 || y === 15) return FRAME_DARK;
-    const glow = lit ? Math.max(0, 1 - Math.hypot(x - 7.5, y - 7.5) / 8) : 0;
+    const glow = Math.max(0, 1 - Math.hypot(x - 7.5, y - 7.5) / 8);
     return colour.map((c) => clamp(Math.round(c + 70 * glow)));
   };
   texture(blockOutput, "rocket_lamp_blue", lens([0x30, 0x70, 0xe8]));
   texture(blockOutput, "rocket_lamp_orange", lens([0xf0, 0x70, 0x18]));
-  const flashing = [lens([0xe0, 0x28, 0x20]), lens([0x50, 0x16, 0x12], false)];
-  texture(blockOutput, "rocket_lamp_flashing", (x, y) => flashing[Math.floor(y / SIZE)](x, y % SIZE), 0, SIZE, SIZE * LAMP_FRAMES);
-  writeFileSync(resolve(blockOutput, "rocket_lamp_flashing.png.mcmeta"), JSON.stringify({ animation: { frametime: 6 } }, null, 2) + "\n");
 
   const HAZARD_YELLOW = [0xf2, 0xc0, 0x1a];
   const HAZARD_BLACK = [0x1c, 0x1d, 0x20];
   texture(blockOutput, "rocket_hazard_stripes", (x, y) => ((x + y) % 8 < 4 ? HAZARD_YELLOW : HAZARD_BLACK), 2);
-
-  const panel = (x, y) => (x === 0 || y === 0 || x === BIG - 1 || y === BIG - 1 ? PANEL_EDGE : PANEL_DARK);
-  // The stability switch: a white rocket with red fins on its right half, a puff of the side jets' gas either side of
-  // her near her nose and near her foot.
-  const ROCKET_WHITE = [0xee, 0xf2, 0xf6];
-  const FIN_RED = [0xd8, 0x30, 0x28];
-  const PUFF = [0x9c, 0xe4, 0xf4];
-  const puffAt = (x, y) => [[19.5, 10], [29.5, 10], [19.5, 21], [29.5, 21]].some(([px, py]) => Math.hypot(x - px, y - py) < 1.9);
-  texture(blockOutput, "rocket_stability_top", (x, y) => {
-    const body = Math.abs(x - 24.5) <= 2.5 && y >= 8 && y <= 24;
-    const nose = y >= 3 && y < 8 && Math.abs(x - 24.5) <= (y - 3) * 0.6;
-    const fins = y >= 20 && y <= 27 && Math.abs(x - 24.5) <= 2.5 + (y - 20) * 0.6 && !body;
-    if (body || nose) return y >= 13 && y <= 15 ? [0x5a, 0x9a, 0xd8] : ROCKET_WHITE;
-    if (fins) return FIN_RED;
-    if (puffAt(x, y)) return PUFF;
-    return panel(x, y);
-  }, 2, BIG, BIG);
-
-  // The flight mode knob's three pictures.
-  const ARROW_BLUE = [0x4c, 0x9a, 0xff];
-  const ARC_ORANGE = [0xff, 0x9a, 0x2a];
-  const SNAIL_GREEN = [0x46, 0xe0, 0x70];
-  const arrowUp = (x, y) => (y >= 15 && y <= 26 && x >= 4 && x <= 6) || (y >= 9 && y < 15 && Math.abs(x - 5) <= (y - 9) * 0.75);
-  const arcAt = (x, y) => {
-    for (let t = 0; t <= 1; t += 0.02) {
-      const ax = 10 + 11 * t;
-      const ay = 9 - 7 * Math.sin((Math.PI / 2) * t) ** 0.6;
-      if (Math.hypot(x - ax, y - ay) < 1.1) return true;
-    }
-    return x >= 20 && x <= 22 && y >= 1 && y <= 4 && Math.abs(x - 21) + Math.abs(y - 2.5) <= 2;
-  };
-  const snailAt = (x, y) => {
-    const shell = Math.hypot(x - 26.5, y - 15.5);
-    const spiral = shell < 4 && (shell > 3 || (shell > 1.2 && shell < 2.1));
-    const foot = y >= 19 && y <= 20 && x >= 22 && x <= 31;
-    const stalks = (x === 23 && y >= 15 && y <= 18) || (x === 24 && y >= 16 && y <= 18);
-    return spiral || foot || stalks;
-  };
-  texture(blockOutput, "rocket_mode_top", (x, y) => {
-    if (arrowUp(x, y)) return ARROW_BLUE;
-    if (arcAt(x, y)) return ARC_ORANGE;
-    if (snailAt(x, y)) return SNAIL_GREEN;
-    return panel(x, y);
-  }, 2, BIG, BIG);
-
-  // The abort handle's U-turn arrow: up its right, over the top round the handle, down its left to a point.
-  const uTurnAt = (x, y) => {
-    const ring = Math.hypot(x - 15.5, y - 12);
-    const over = y <= 12 && ring >= 7 && ring <= 10.5;
-    const right = x >= 23 && x <= 26 && y > 12 && y <= 27;
-    const left = x >= 5 && x <= 8 && y > 12 && y <= 19;
-    const head = y >= 19 && y <= 26 && Math.abs(x - 6.5) <= (26 - y) * 0.75;
-    return over || right || left || head;
-  };
-  for (const [look, red] of Object.entries({ dark: [0x6a, 0x16, 0x12], lit: [0xff, 0x44, 0x34] })) {
-    texture(blockOutput, `rocket_abort_top_${look}`, (x, y) => (uTurnAt(x, y) ? red : panel(x, y)), 2, BIG, BIG);
-  }
-
-  // The launch key's tag: amber, a darker edge, a hole for its ring, and a rocket on it.
-  const AMBER = [0xf0, 0xa8, 0x30];
-  const AMBER_DARK = [0xa8, 0x6a, 0x10];
-  const TAG = ["DDDDDDDDDDDDDDDD", "D......oo......D", "D......oo......D", "D..............D", "D......##......D", "D.....####.....D",
-    "D.....#..#.....D", "D.....#..#.....D", "D.....####.....D", "D.....####.....D", "D....######....D", "D...###..###...D",
-    "D...##....##...D", "D..............D", "D..............D", "DDDDDDDDDDDDDDDD"];
-  texture(blockOutput, "rocket_key_tag", (x, y) => ({ D: AMBER_DARK, o: [0x2a, 0x1c, 0x08], "#": [0x2a, 0x1c, 0x08], ".": AMBER })[TAG[y][x]], 2);
+  const LID_YELLOW = [0xf2, 0xc0, 0x1a];
+  texture(blockOutput, "rocket_switch_lid", (x, y) => LID_YELLOW.map((c) => Math.round(c * (x === 0 || y === 0 || x === 15 || y === 15 ? 0.75 : 1))), 3);
+  const GRIP_RED = [0xd0, 0x2a, 0x22];
+  texture(blockOutput, "rocket_abort_grip", (x, y) => GRIP_RED.map((c) => Math.round(c * (y % 4 === 3 ? 0.65 : 1))), 3);
 
   const controlsOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/rocket_controls");
   mkdirSync(controlsOutput, { recursive: true });
@@ -7651,6 +7587,9 @@ function rocketControlTextures() {
     flame: ["................", ".......#........", ".......##.......", "......###.......", "......####......", ".....#####..#...",
       ".....######.##..", "....##########..", "....##########..", "...###########..", "...####..#####..", "...###....####..",
       "....##....###...", ".....##..###....", "......#####.....", "................"],
+    steady: ["................", ".......##.......", "......####......", "......####......", ".##...####...##.", "###...####...###",
+      ".##...####...##.", "......####......", "......####......", "......####......", ".....######.....", ".##.########.##.",
+      "###.###..###.###", ".##.##....##.##.", "................", "................"],
     warning: ["................", ".......##.......", "......####......", "......####......", ".....##..##.....", ".....##..##.....",
       "....###..###....", "....###..###....", "...####..####...", "...##########...", "..#####..#####..", "..############..",
       ".##############.", "................", "................", "................"],
@@ -7663,6 +7602,63 @@ function rocketControlTextures() {
   };
   for (const [name, rows] of Object.entries(ICONS)) {
     texture(controlsOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
+  }
+  // The pictures only the plates show: the abort handle's U-turn, up its right, over the top and down its left to a
+  // point, and the launch key's rocket over her flame.
+  const PLATE_ICONS = {
+    uturn: ["................", "................", ".....######.....", "....########....", "...###....###...", "...##......##...",
+      "...##......##...", "...##......##...", ".######....##...", "..####.....##...", "...##......##...", "...........##...",
+      "...........##...", "...........##...", "................", "................"],
+    launch: ["................", ".......##.......", "......####......", ".....######.....", ".....##..##.....", ".....######.....",
+      ".....######.....", "....########....", "...###.##.###...", "...##..##..##...", "................", "......####......",
+      "......####......", ".......##.......", ".......##.......", "................"],
+  };
+  // A plate's frame: its pictures side by side, each its rows and its colour (unlit without one), one picture at twice
+  // the size of a row of them.
+  const GLASS = [0x0e, 0x10, 0x14];
+  const UNLIT = [0x4a, 0x4e, 0x56];
+  const plate = (pictures) => {
+    const scale = pictures.length === 1 ? 2 : 1;
+    const step = PLATE / pictures.length;
+    const top = (PLATE / 2 - 16 * scale) / 2;
+    return (x, y) => {
+      if (y >= PLATE / 2) return GLASS;
+      if (x < 2 || y < 2 || x >= PLATE - 2 || y >= PLATE / 2 - 2) return FRAME_DARK;
+      const k = Math.floor(x / step);
+      const [rows, colour] = pictures[k];
+      const u = Math.floor((x - Math.round(k * step + (step - 16 * scale) / 2)) / scale);
+      const v = Math.floor((y - top) / scale);
+      return u >= 0 && u < 16 && v >= 0 && v < 16 && rows[v][u] === "#" ? colour ?? UNLIT : GLASS;
+    };
+  };
+  // Each plate by name, its frames, more than one flashing between them.
+  const PLATES = {
+    boost_dark: [[[ICONS.flame]]],
+    boost_ready: [[[ICONS.flame, GREEN]]],
+    boost_boosting: [[[ICONS.flame, ORANGE]]],
+    boost_resting: [[[ICONS.flame, RED]]],
+    stability_holding: [[[ICONS.steady, GREEN]]],
+    stability_off: [[[ICONS.steady, RED]], [[ICONS.warning, RED]]],
+    stability_locked: [[[ICONS.steady, AMBER]]],
+    stability_refused: [[[ICONS.steady, RED]]],
+    abort_dark: [[[PLATE_ICONS.uturn]]],
+    abort_lit: [[[PLATE_ICONS.uturn, RED]]],
+    key_off: [[[PLATE_ICONS.launch, AMBER]]],
+    key_on: [[[PLATE_ICONS.launch, GREEN]]],
+  };
+  const MODES = { vertical: [LIFT_ICONS.up, BLUE], arc: [ICONS.arc, ORANGE], gentle: [ICONS.gentle, GREEN] };
+  for (const mode of Object.keys(MODES)) {
+    for (const refused of [false, true]) {
+      const row = Object.entries(MODES).map(([each, [rows, colour]]) => [rows, each !== mode ? undefined : refused ? RED : colour]);
+      PLATES[`mode_${mode}${refused ? "_refused" : ""}`] = [row];
+    }
+  }
+  for (const [name, frames] of Object.entries(PLATES)) {
+    const paints = frames.map(plate);
+    texture(blockOutput, `rocket_plate_${name}`, (x, y) => paints[Math.floor(y / PLATE)](x, y % PLATE), 0, PLATE, PLATE * frames.length);
+    if (frames.length > 1) {
+      writeFileSync(resolve(blockOutput, `rocket_plate_${name}.png.mcmeta`), JSON.stringify({ animation: { frametime: 6 } }, null, 2) + "\n");
+    }
   }
 }
 rocketControlTextures();

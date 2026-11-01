@@ -14,11 +14,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 /**
- * A rocket's launch key, before the pilot on the centre console: a key in its lock with an amber tag hanging from it,
- * a rocket on the tag, and a lamp beside it, amber while it stands off and green once turned. Turned on the ground with
- * her autopilot off, she flies what her screen last set; turned back during her countdown, she scrubs; once she has
- * lifted off it is stuck on and only thuds (see the autopilot's {@code rocketControl}). It stands turned (TURNED) for
- * as long as her autopilot flies her, and drops back off with a click as she lands.
+ * A rocket's launch key, at the commander's inboard hand on the centre console: a key in its lock behind its plate's
+ * picture of a rocket over her flame, amber while it stands off and green once turned. Turned on the ground with her
+ * autopilot off, she flies what her screen last set; turned back during her countdown, she scrubs; once she has lifted
+ * off it is stuck on and only thuds (see the autopilot's {@code rocketControl}). It stands turned (TURNED) for as long
+ * as her autopilot flies her, and drops back off with a click as she lands.
  */
 public class RocketLaunchKeyBlock extends RocketControlBlock {
     private static final MapCodec<RocketLaunchKeyBlock> CODEC = simpleCodec(RocketLaunchKeyBlock::new);
@@ -28,7 +28,7 @@ public class RocketLaunchKeyBlock extends RocketControlBlock {
     private static final float CLICK_PITCH = 0.8F;
 
     public RocketLaunchKeyBlock(Properties properties) {
-        super(properties, ConsoleModule.with(2.5, 4));
+        super(properties, ConsoleModule.behindPlate(2.5, 5));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(TURNED, false));
     }
 

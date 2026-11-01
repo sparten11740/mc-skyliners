@@ -15,23 +15,21 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A rocket's boost button, before her control head on the centre console: a big orange mushroom button on a pedestal
- * standing out of its module, a flame and double chevrons on its cap, so it reads as the button that kicks her engines
- * up without a word (see {@link RocketControls}). Its cap glows as its LOOK has it: dark while it cannot boost, green
- * ready, pulsing orange while boosting, and red while it rests after a boost, a ring of four segments round its foot
- * lighting one by one as it rests, a rising beep as it is ready again; one red blink when a press is refused.
+ * A rocket's boost button, before her control head on the centre console: a big flat round mushroom button on a short
+ * pedestal behind its plate's flame, so it reads as the button that kicks her engines up without a word (see {@link
+ * RocketControls}). Its cap and its flame glow as its LOOK has it: unlit orange while it cannot boost, green ready,
+ * pulsing orange while boosting, and red while it rests after a boost, a ring of four segments round its foot lighting
+ * one by one as it rests, a rising beep as it is ready again; one red blink when a press is refused.
  */
 public class RocketBoostButtonBlock extends RocketControlBlock {
     private static final MapCodec<RocketBoostButtonBlock> CODEC = simpleCodec(RocketBoostButtonBlock::new);
     /** What its cap and the ring round its foot show. */
     public static final EnumProperty<Look> LOOK = EnumProperty.create("look", Look.class);
-    /** The module, the pedestal on it and the cap on top, square so it holds whichever way the module faces. */
-    private static final VoxelShape SHAPE = Shapes.or(ConsoleModule.SLAB, Block.box(5.5, ConsoleModule.HEIGHT, 5.5, 10.5, 12, 10.5),
-        Block.box(3.5, 12, 3.5, 12.5, 16, 12.5));
+    /** The module, and the pedestal with the cap on top and the ring round its foot, behind its plate. */
+    private static final VoxelShape SHAPE = ConsoleModule.behindPlate(4.5, 5.5);
     /** How many segments the ring round its foot has, lighting one by one as it rests after a boost. */
     private static final int SEGMENTS = 4;
     /** How loud the beep as it is ready again is, as a share of full. */

@@ -67,11 +67,11 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
      */
     static final ResourceLocation ASSEMBLE = Pictures.AIRLINER.cruise().texture();
     /**
-     * A rocket's controls' pictures, white to be tinted, by name (see tools/generate_textures.mjs): her lift's own
-     * rocket and arrow straight up, and the rest of their own.
+     * A rocket's controls' pictures, white to be tinted, by name (see tools/generate_textures.mjs), as her centre
+     * console's plates show them: her lift's own arrow straight up, and the rest of their own.
      */
     private static final Map<String, ResourceLocation> CONTROL_PICTURES = Map.of(
-        "flame", picture("rocket_controls/flame"), "rocket", picture("lift/rocket"), "warning", picture("rocket_controls/warning"),
+        "flame", picture("rocket_controls/flame"), "steady", picture("rocket_controls/steady"), "warning", picture("rocket_controls/warning"),
         "vertical", picture("lift/up"), "arc", picture("rocket_controls/arc"), "gentle", picture("rocket_controls/gentle"));
     /** Lifts the drawing just off the block face so it does not flicker against it, and the text off the drawing. */
     private static final float SURFACE = 0.502F;
@@ -208,8 +208,8 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     }
 
     /**
-     * Her stability's rocket: green and steady holding her, amber locked on, red and wobbling while off, with a warning
-     * triangle blinking beside it.
+     * Her stability's rocket with her side jets puffing: green holding her, amber locked on, red and wobbling while
+     * off, with a warning triangle blinking beside it.
      */
     private static void stability(PoseStack pose, MultiBufferSource buffers, RocketControls controls, long now, float swing) {
         boolean off = controls.unstable();
@@ -219,7 +219,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         if (off) {
             pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(swing / 20 * Mth.TWO_PI * WOBBLE_TURNS) * WOBBLE_DEGREES));
         }
-        ScreenDrawing.picture(buffers, pose.last().pose(), CONTROL_PICTURES.get("rocket"), 0, 0, CONTROL, TEXT_LIFT, colour);
+        ScreenDrawing.picture(buffers, pose.last().pose(), CONTROL_PICTURES.get("steady"), 0, 0, CONTROL, TEXT_LIFT, colour);
         pose.popPose();
         if (off && now / WARNING_BLINK % 2 == 0) {
             ScreenDrawing.picture(buffers, pose.last().pose(), CONTROL_PICTURES.get("warning"), WARNING_RIGHT, CONTROLS_Y - CONTROL / 2, CONTROL / 2,

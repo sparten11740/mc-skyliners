@@ -19,13 +19,14 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 /**
- * A rocket's stability switch, at the commander's inboard hand on the centre console: a toggle under a yellow-and-black
- * striped flip cover, beside a picture of a rocket with her side jets puffing, so it reads as the dangerous one without
- * a word (see {@link RocketControls}). It takes two uses on purpose: the first flips the cover up (OPEN), the second
- * flips the toggle down, switching her stability off; used again, the toggle goes back up, and she is saved. Sneaking
- * and using it snaps the cover shut, switching her stability back on first if it was off. Its LAMP glows green while
- * her jets hold her upright, flashes red while they do not, and glows amber while it stays locked on after it snapped
- * back by itself, when the cover springs shut with a clack; one red blink when a press is refused.
+ * A rocket's stability switch, before the pilot on the centre console: a guarded toggle, as on an aircraft's panel,
+ * between two guard rails under a yellow flip cover, hazard stripes painted round it, behind its plate's picture of a
+ * rocket with her side jets puffing, so it reads as the dangerous one without a word (see {@link RocketControls}). It
+ * takes two uses on purpose: the first flips the cover up (OPEN), the second flips the toggle down, switching her
+ * stability off; used again, the toggle goes back up, and she is saved. Sneaking and using it snaps the cover shut,
+ * switching her stability back on first if it was off. Its LAMP, the plate's picture, glows green while her jets hold
+ * her upright, flashes red to a warning triangle while they do not, and glows amber while it stays locked on after it
+ * snapped back by itself, when the cover springs shut with a clack; one red blink when a press is refused.
  */
 public class RocketStabilitySwitchBlock extends RocketControlBlock {
     private static final MapCodec<RocketStabilitySwitchBlock> CODEC = simpleCodec(RocketStabilitySwitchBlock::new);
@@ -49,7 +50,7 @@ public class RocketStabilitySwitchBlock extends RocketControlBlock {
     }
 
     public RocketStabilitySwitchBlock(Properties properties) {
-        super(properties, ConsoleModule.with(3.5, 4));
+        super(properties, ConsoleModule.behindPlate(3, 4.75));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(OPEN, false).setValue(LAMP, Lamp.HOLDING));
     }
 

@@ -6,9 +6,8 @@
     "plate": "aerolarge:block/panel_side",
     "chrome": "aerolarge:block/pilot_seat_trim",
     "black": "aerolarge:block/thrust_lever_handle",
-    "top": "aerolarge:block/rocket_abort_top_dark",
-    "arrow": "aerolarge:block/rocket_abort_top_lit",
-    "handle": "aerolarge:block/rocket_hazard_stripes"
+    "picture": "aerolarge:block/rocket_plate_abort_dark",
+    "handle": "aerolarge:block/rocket_abort_grip"
   },
   "elements": [
     {
@@ -36,7 +35,7 @@
           "texture": "#casing"
         },
         "up": {
-          "texture": "#top",
+          "texture": "#plate",
           "rotation": 180
         },
         "down": {
@@ -47,14 +46,50 @@
     },
     {
       "from": [
+        2,
+        6,
+        0.75
+      ],
+      "to": [
+        14,
+        6.25,
+        6.75
+      ],
+      "faces": {
+        "up": {
+          "texture": "#picture",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "rotation": 180
+        },
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        }
+      }
+    },
+    {
+      "from": [
         7,
         6,
-        7
+        10.25
       ],
       "to": [
         9,
         11,
-        9
+        12.25
       ],
       "faces": {
         "north": {
@@ -81,12 +116,12 @@
       "from": [
         3.5,
         11,
-        6.5
+        9.75
       ],
       "to": [
         12.5,
         13,
-        9.5
+        12.75
       ],
       "faces": {
         "north": {

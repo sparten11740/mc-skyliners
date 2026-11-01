@@ -6,7 +6,7 @@
     "plate": "aerolarge:block/panel_side",
     "chrome": "aerolarge:block/pilot_seat_trim",
     "black": "aerolarge:block/thrust_lever_handle",
-    "top": "aerolarge:block/rocket_mode_top",
+    "picture": "aerolarge:block/rocket_plate_mode_arc_refused",
     "pointer": "aerolarge:block/jump_light_red"
   },
   "elements": [
@@ -35,7 +35,7 @@
           "texture": "#casing"
         },
         "up": {
-          "texture": "#top",
+          "texture": "#plate",
           "rotation": 180
         },
         "down": {
@@ -46,14 +46,70 @@
     },
     {
       "from": [
-        4.5,
+        2,
         6,
-        4.5
+        0.75
       ],
       "to": [
-        11.5,
-        7,
-        11.5
+        14,
+        6.25,
+        6.75
+      ],
+      "faces": {
+        "up": {
+          "texture": "#picture",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "rotation": 180,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "north": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#casing",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        6,
+        8.25
+      ],
+      "to": [
+        11,
+        6.75,
+        14.25
       ],
       "faces": {
         "north": {
@@ -78,14 +134,14 @@
     },
     {
       "from": [
-        5.5,
-        7,
-        5.5
+        6,
+        6.75,
+        9.25
       ],
       "to": [
-        10.5,
         10,
-        10.5
+        9,
+        13.25
       ],
       "faces": {
         "north": {
@@ -110,14 +166,14 @@
     },
     {
       "from": [
-        7.25,
-        10,
-        8
+        7.4,
+        9,
+        9.25
       ],
       "to": [
-        8.75,
-        10.5,
-        11
+        8.6,
+        9.35,
+        11.25
       ],
       "faces": {
         "north": {
@@ -162,6 +218,15 @@
             "sky_light": 15
           }
         }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          9,
+          11.25
+        ],
+        "axis": "y",
+        "angle": 0
       }
     }
   ]

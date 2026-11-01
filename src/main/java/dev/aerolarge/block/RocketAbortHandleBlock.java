@@ -10,11 +10,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 /**
- * A rocket's abort handle, before the commander on the centre console: a yellow-and-black striped T-handle over a red
- * U-turn arrow, which glows while pulling it would turn her round (READY), so it reads without a word. Pulled, it
- * stands out a moment (PULLED) as she calls off her landing and climbs back to hold her height, stops where she is and
- * holds there, or scrubs her countdown (see the autopilot's {@code rocketControl}); with nothing to call off, it only
- * thuds.
+ * A rocket's abort handle, before the commander on the centre console: a red T-handle behind its plate's red U-turn
+ * arrow, which glows while pulling it would turn her round (READY), so it reads without a word. Pulled, it stands out a
+ * moment (PULLED) as she calls off her landing and climbs back to hold her height, stops where she is and holds there,
+ * or scrubs her countdown (see the autopilot's {@code rocketControl}); with nothing to call off, it only thuds.
  */
 public class RocketAbortHandleBlock extends RocketControlBlock {
     private static final MapCodec<RocketAbortHandleBlock> CODEC = simpleCodec(RocketAbortHandleBlock::new);
@@ -22,7 +21,7 @@ public class RocketAbortHandleBlock extends RocketControlBlock {
     public static final BooleanProperty PULLED = BooleanProperty.create("pulled");
 
     public RocketAbortHandleBlock(Properties properties) {
-        super(properties, ConsoleModule.with(4, 4));
+        super(properties, ConsoleModule.behindPlate(4.5, 4));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(READY, false).setValue(PULLED, false));
     }
 

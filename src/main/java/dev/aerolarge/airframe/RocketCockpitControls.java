@@ -12,12 +12,14 @@ import net.minecraft.world.level.block.Block;
 
 /**
  * The hands-on controls on the rocket's centre console, round her control head (see {@link
- * dev.aerolarge.autopilot.RocketControls}): five modules of the console, their faces toward the pilots. On the head's
- * row, the stability switch at the commander's inboard hand and the flight mode knob at the pilot's; on the row in
- * front of it, the abort handle before the commander, the boost button before the head and the launch key before the
- * pilot. Each is linked to the head as she is built, the offset turning with her (see {@link Fitting}). They are laid
- * the most wanted first, each only where its cell is open and inside her, and once one does not fit none after it is
- * laid, so on a small rocket the launch key is left out first, then the abort handle, then the stability switch. The
+ * dev.aerolarge.autopilot.RocketControls}): five modules of the console, their faces toward the pilots, grouped by what
+ * they are for. Starting and stopping at the commander's side: the launch key at the commander's inboard hand and the
+ * abort handle before the commander. How she flies at the pilot's side: the flight mode knob at the pilot's inboard
+ * hand and the stability switch before the pilot. Between them, before the head, the boost button. The key and the
+ * knob, the lowest, stand on the head's row, so that from behind the console none hides the picture plate of another
+ * before it. Each is linked to the head as she is built, the offset turning with her (see {@link Fitting}). They are
+ * laid the most wanted first, each only where its cell is open and inside her, and once one does not fit none after it
+ * is laid, so on a small rocket the launch key is left out first, then the abort handle, then the stability switch. The
  * server config's {@code rocket.cockpitControls} leaves them out.
  */
 final class RocketCockpitControls implements RocketPiece {
@@ -29,9 +31,9 @@ final class RocketCockpitControls implements RocketPiece {
     private static final List<Spot> SPOTS = List.of(
         new Spot(AerolargeRegistry.ROCKET_BOOST_BUTTON, 0, 1),
         new Spot(AerolargeRegistry.ROCKET_MODE_KNOB, 1, 0),
-        new Spot(AerolargeRegistry.ROCKET_STABILITY_SWITCH, -1, 0),
+        new Spot(AerolargeRegistry.ROCKET_STABILITY_SWITCH, 1, 1),
         new Spot(AerolargeRegistry.ROCKET_ABORT_HANDLE, -1, 1),
-        new Spot(AerolargeRegistry.ROCKET_LAUNCH_KEY, 1, 1));
+        new Spot(AerolargeRegistry.ROCKET_LAUNCH_KEY, -1, 0));
 
     private final RocketLayout layout;
 

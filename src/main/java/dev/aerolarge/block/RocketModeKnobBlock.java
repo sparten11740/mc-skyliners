@@ -11,11 +11,11 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 /**
- * A rocket's flight mode knob, at the pilot's inboard hand on the centre console: a chunky rotary knob with three
- * detents, a picture at each round it, so the mode reads without a word (see {@link RocketControls.Mode}): a blue
+ * A rocket's flight mode knob, at the pilot's inboard hand on the centre console: a low rotary knob with three detents
+ * over its plate's three pictures in a row, so the mode reads without a word (see {@link RocketControls.Mode}): a blue
  * arrow straight up (VERTICAL), an orange arc (ARC, a gravity turn) and a green snail (GENTLE). Used, it turns a detent
- * on, and back sneaking; its pointer and the lamp by the picture it points at show the MODE. The lamp blinks red when
- * the mode it is turned to is refused (REFUSED).
+ * on, and back sneaking; its pointer turns to the picture of the MODE, which glows in its colour, and red while the
+ * mode it is turned to is refused (REFUSED).
  */
 public class RocketModeKnobBlock extends RocketControlBlock {
     private static final MapCodec<RocketModeKnobBlock> CODEC = simpleCodec(RocketModeKnobBlock::new);
@@ -23,7 +23,7 @@ public class RocketModeKnobBlock extends RocketControlBlock {
     public static final BooleanProperty REFUSED = BooleanProperty.create("refused");
 
     public RocketModeKnobBlock(Properties properties) {
-        super(properties, ConsoleModule.with(3.5, 3));
+        super(properties, ConsoleModule.behindPlate(3, 3.5));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(MODE, RocketControls.Mode.VERTICAL)
             .setValue(REFUSED, false));
     }

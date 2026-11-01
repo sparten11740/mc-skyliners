@@ -2,8 +2,10 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.RocketControls;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -23,17 +25,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * One of the hands-on controls on a rocket's centre console, round her control head (see {@link RocketControls}): a
- * module of the console (see {@link ConsoleModule}), its control on top, and lamps that show what it does, read from
- * her autopilot every few ticks (see {@link RocketControlBlockEntity}). Used, it asks her autopilot to work it, which
- * answers with a sound and a word in the hotbar. FACING is the way its face looks, toward the pilots, as the laser
- * switch's does.
+ * module of the console (see {@link ConsoleModule}), laid out as every other: a picture plate across the half nearest
+ * the pilots saying what it does, glowing in the colour of what it shows, and its control behind the plate. What they
+ * show is read from her autopilot every few ticks (see {@link RocketControlBlockEntity}). Used, it asks her autopilot to
+ * work it, which answers with a sound and a word in the hotbar. FACING is the way its face looks, toward the pilots, as
+ * the laser switch's does.
  */
 public abstract class RocketControlBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private final VoxelShape shape;
+    private final Map<Direction, VoxelShape> shapes;
 
-    protected RocketControlBlock(Properties properties, VoxelShape shape) {
+    /** Its shape drawn facing north, the pilots at its north side (see {@link ConsoleModule#behindPlate}). */
+    protected RocketControlBlock(Properties properties, VoxelShape north) {
         super(properties);
-        this.shape = shape;
+        this.shapes = TurnedShapes.of(north);
     }
 
     /** The control on her console it works. */
@@ -67,7 +71,7 @@ public abstract class RocketControlBlock extends HorizontalDirectionalBlock impl
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return shape;
+        return shapes.get(state.getValue(FACING));
     }
 
     @Override

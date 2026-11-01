@@ -2306,42 +2306,50 @@ rumble wherever you stand. Her side jets puff as they hold her upright. Landing,
 thunk and a hiss of their dampers, the flight deck's voice says "Touchdown.", and her engines cut off, falling away
 with a pop, her hot bells ticking as they cool.
 
-She has hands-on controls of her own, on a centre console round her control head, five modules each with its own picture
-and lamps, so nobody needs to read them (the server config's `rocket.cockpitControls` leaves them out of a rocket built
-from then on; a small rocket has those that fit). Before the head stands the boost button, a big mushroom cap with a
-flame and two chevrons on it, glowing green when it is ready: pressed, it kicks her engines up for eight seconds with a
+She has hands-on controls of her own, on a centre console round her control head, five modules all laid out alike, so
+nobody needs to read them: across the half nearest the pilots a picture plate showing what the control does, the same
+pictures her flight displays show, glowing in the colour of what it shows (unlit while it would do nothing), and the
+control standing behind it. Starting and stopping are at the commander's side, how she flies at the pilot's side, and
+the boost between them (the server config's `rocket.cockpitControls` leaves them out of a rocket built from then on; a
+small rocket has those that fit). Before the head stands the boost button, a big flat mushroom cap behind a flame, both
+glowing green when it is ready: pressed, it kicks her engines up for eight seconds with a
 crack and a deep whump, launch control calling "Boost!", her plume half as thick again round a blue-white core, her roar
 at full and the view aboard
 shaking. Climbing, she climbs twice as fast; cruising, she goes half as fast again across and leans a little further,
-still stopping over her pin; the boost ends early as she starts down. Then its cap glows red and it rests twenty
-seconds, a ring of four lamps round its foot
+still stopping over her pin; the boost ends early as she starts down. Then its cap and flame glow red and it rests
+twenty seconds, a ring of four lamps round its foot
 lighting green one by one, and beeps as it is ready again. Pressed when it cannot boost (counting down, coming down,
-resting, or with everyone aboard floating at the edge of space), it blinks red with a low note. At the commander's hand,
-under a yellow-and-black striped cover beside a picture of a rocket with her side jets puffing, is the stability switch,
-the dangerous one. Flip the cover up, then the switch, while she cruises at least 100 blocks over the ground, neither
-boosting nor crossing faster than 35 blocks a second, and its lamp flashes red and an alarm sounds, quicker the further
+resting, or with everyone aboard floating at the edge of space), it blinks red with a low note. Before the pilot, behind
+a picture of a rocket with her side jets puffing, is the stability switch, the dangerous one: a guarded toggle, as on an
+aircraft's panel, between two guard rails under a yellow flip cover, hazard stripes painted round it. Flip the cover
+up, then the switch, while she cruises at least 100 blocks over the ground, neither boosting nor crossing faster than
+35 blocks a second, and its rocket flashes red to a warning triangle and an alarm sounds, quicker the further
 she leans; her side jets bring her upright, then stop holding
 her: she starts to tip over like a broom balanced on its end, swaying as she goes, quicker and quicker, drifting across
 as she tips. Flip the
 switch back in
 time (or sneak to snap the cover shut) and you have saved her. Leave it, and it snaps back on by itself before she tips
 too far, the cover springing shut with a clack, every side jet puffing and a high note, and stays locked on for ten
-seconds, its lamp amber; it comes back on by itself, too, after twenty seconds, under 100 blocks over the ground, as she
-stops cruising or drifting too fast. At the pilot's hand the flight mode knob turns between three pictures (back the
-other way sneaking): a blue arrow straight up, as she has always flown; an orange arc, a gravity turn leaning her toward
+seconds, its rocket amber; it comes back on by itself, too, after twenty seconds, under 100 blocks over the ground, as
+she stops cruising or drifting too fast. At the pilot's inboard hand a low flight mode knob turns its pointer between
+the three pictures in a row on its plate, the one it points at glowing in its colour (back the other way sneaking): a
+blue arrow straight up, as she has always flown; an orange arc, a gravity turn leaning her toward
 her pin as she climbs, faster across and leaning further as she cruises (without a pin she flies it straight up); and a
 green snail, climbing and crossing slowly and gently and falling back at half the speed. Each has its own note; turned
-while she comes down, it is taken up next flight, with a low note. Before the commander, the striped abort handle over a
-red U-turn arrow, which glows while it would do something: coming down (in her landing burn, only while still 15 blocks
+while she comes down, it is taken up next flight, with a low note. Before the commander, the red T-handle of the abort
+behind a U-turn arrow, which glows red while it would do something: coming down (in her landing burn, only while still
+15 blocks
 up), it calls the landing off where she is, and she climbs back to her height and holds it there; climbing or cruising,
 it stops her where she is and holds the height she coasts up to, until she is given a pin or told to land; during the
-countdown it scrubs the launch. Before the pilot, the launch key with its amber tag, a rocket on it: turned on the
+countdown it scrubs the launch. At the commander's inboard hand, the launch key behind a rocket over her flame, amber
+while it stands off and green once turned: turned on the
 ground with her autopilot off, it launches her as her screen was last set, her height and her pin, assembling her first
 if she stands as blocks; turned back during the countdown it scrubs it, with falling notes; once she is up it is stuck,
 and drops back off as she lands.
 
 Her flight displays show the controls in a row of pictures over the attitude indicator: the boost's flame, dim while it
-waits, pulsing while she boosts and ringed by four segments lighting one by one while it rests; a rocket, green while
+waits, pulsing while she boosts and ringed by four segments lighting one by one while it rests; a rocket with her side
+jets puffing, green while
 her jets hold her, amber while her stability is locked on, red and wobbling with a blinking warning triangle while it is
 off; and the flight mode's picture, dimmed while she flies the arc straight up. With her stability off, a red ring on
 the attitude indicator marks how far she may tip before it snaps back on, and a white dot inside it how far she tips,

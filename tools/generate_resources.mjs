@@ -1887,89 +1887,110 @@ function selfDestructLang() {
 const ROCKET_CONTROLS = ["rocket_boost_button", "rocket_stability_switch", "rocket_mode_knob", "rocket_abort_handle", "rocket_launch_key"];
 // The hands-on controls on a rocket's centre console (see RocketControlBlock and its kinds), each a module of the
 // console drawn with the pilots at its north side, whose panel reads the right way up for them, its viewer's left at
-// its east side; their lamps glow whatever the light round them. The boost button: a chrome pedestal standing out of
-// its module, a ring of four lamp segments round its foot, and its big cap, a mushroom over it, the lamp it is, its top
-// pictured with a flame over two chevrons pointing up, glowing as it shows (dark, ready, boosting, resting); the ring's
-// segments light green one by one as it rests, clockwise from the far side as the pilots see it, all green once it is
-// ready again, and orange while it boosts. The stability switch: a toggle on the left, leaning back on and forward off,
-// a lamp in front of it, the rocket pictured on the right, and the striped cover shut over the toggle or flipped up
-// behind it. The flight mode knob: a black knob on a chrome skirt among its three modes' pictures, the bar on its top
-// pointing to the mode's, glowing in its colour (red refused). The abort handle: a striped T-handle on a stalk over the
-// U-turn arrow, which glows while it is ready, pulled up a moment as it is pulled. The launch key: a key in its lock,
-// turned a quarter on, its amber tag lying beside it and a lamp beyond, amber off and green on.
+// its east side. Every module is laid out alike, so the console reads as one: its picture plate across the half nearest
+// the pilots, saying what it does and glowing in the colour of what it shows (see rocketControlTextures in
+// generate_textures.mjs), and its control standing on the far half, behind the plate (ConsoleModule.BEHIND_PLATE). The
+// boost button: a short chrome pedestal, a ring of four lamp segments round its foot, and its cap over it, a wide flat
+// round lens in two tiers, glowing as it shows (dark, ready, boosting, resting); the ring's segments light green one by
+// one as it rests, clockwise from the far side as the pilots see it, all green once it is ready again, and orange while
+// it boosts. The stability switch: a guarded toggle leaning back on and forward off, between two guard rails, its
+// yellow lid shut over it or flipped up behind it, hazard stripes painted round it. The flight mode knob: a low black
+// knob on a chrome skirt, the pointer on its top turned to its mode's picture on the plate below it, glowing in its
+// colour (red refused). The abort handle: a red T-handle on a stalk, pulled up a moment as it is pulled. The launch
+// key: a key in its lock, turned a quarter on.
 {
   const lit = (element) => ({ ...element, faces: Object.fromEntries(Object.entries(element.faces).map(([face, value]) =>
     [face, { ...value, neoforge_data: { block_light: 15, sky_light: 15 } }])) });
   const facingOf = (variants) => Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
     variants.map(([key, model]) => [`facing=${facing}${key ? `,${key}` : ""}`, { model: `${ID}:block/${model}`, y }])));
   const plain = { plate: `${ID}:block/panel_side`, chrome: `${ID}:block/pilot_seat_trim`, black: `${ID}:block/thrust_lever_handle` };
+  // Where a control stands, behind its plate: the middle of the module across, this far from its pilots' edge, in
+  // pixels (as ConsoleModule.BEHIND_PLATE).
+  const BEHIND = 11.25;
+  const at = (x0, y0, z0, x1, y1, z1) => [[x0, y0, BEHIND + z0], [x1, y1, BEHIND + z1]];
+  // The picture plate, a pane across the half nearest the pilots, its picture in the top half of its texture.
+  const PANE = {
+    from: [2, CONSOLE_HEIGHT, 0.75], to: [14, CONSOLE_HEIGHT + 0.25, 6.75],
+    faces: {
+      up: { texture: "#picture", uv: [0, 0, 16, 8], rotation: 180 },
+      north: { texture: "#casing" }, south: { texture: "#casing" }, east: { texture: "#casing" }, west: { texture: "#casing" },
+    },
+  };
+  // A control's module: its plate showing the picture named, glowing or not, and the control's own parts behind it.
+  const controlModule = (name, textures, picture, glowing, parts) => consoleModule(name,
+    { ...plain, picture: `${ID}:block/rocket_plate_${picture}`, ...textures }, "#plate", true, [glowing ? lit(PANE) : PANE, ...parts]);
 
   // The boost button: its looks, and the cap and the segments lit for each.
   const BOOST_LOOKS = ["dark", "ready", "boosting", "cooling_0", "cooling_1", "cooling_2", "cooling_3", "refused"];
   const capOf = (look) => (look.startsWith("cooling") || look === "refused" ? "resting" : look);
   const segmentsLit = (look) => (look === "ready" || look === "boosting" ? 4 : look.startsWith("cooling") ? Number(look.slice(-1)) : 0);
-  const SEGMENTS = [[[5.5, 6, 10.5], [10.5, 7, 12.5]], [[3.5, 6, 5.5], [5.5, 7, 10.5]], [[5.5, 6, 3.5], [10.5, 7, 5.5]], [[10.5, 6, 5.5], [12.5, 7, 10.5]]];
+  const SEGMENTS = [at(5.5, 6, 2.5, 10.5, 7, 4.5), at(3.5, 6, -2.5, 5.5, 7, 2.5), at(5.5, 6, -4.5, 10.5, 7, -2.5), at(10.5, 6, -2.5, 12.5, 7, 2.5)];
+  const sides = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, down: { texture } });
   for (const look of BOOST_LOOKS) {
     const cap = capOf(look);
     const textures = {
-      ...plain, cap_top: `${ID}:block/rocket_boost_cap_${cap}`, cap_side: `${ID}:block/rocket_boost_cap_side_${cap}`,
+      cap_top: `${ID}:block/rocket_boost_cap_${cap}`, cap_side: `${ID}:block/rocket_boost_cap_side_${cap}`,
       segment: `${ID}:block/${look === "boosting" ? "rocket_lamp_orange" : "jump_light_green"}`, segment_off: `${ID}:block/jump_light_off`,
     };
-    const capBox = {
-      from: [3, 12.5, 3], to: [13, 17, 13],
-      faces: {
-        up: { texture: "#cap_top", rotation: 180 }, down: { texture: "#cap_side" },
-        north: { texture: "#cap_side" }, south: { texture: "#cap_side" }, east: { texture: "#cap_side" }, west: { texture: "#cap_side" },
-      },
-    };
+    const [lowFrom, lowTo] = at(4, 9, -4, 12, 10.75, 4);
+    const [highFrom, highTo] = at(5, 10.75, -3, 11, 11.5, 3);
+    const tiers = [
+      { from: lowFrom, to: lowTo, faces: { ...sides("#cap_side"), up: { texture: "#cap_side" } } },
+      { from: highFrom, to: highTo, faces: { ...sides("#cap_side"), up: { texture: "#cap_top", rotation: 180 } } },
+    ];
     const segments = SEGMENTS.map(([from, to], k) => (k < segmentsLit(look) ? lit(solid(from, to, "#segment")) : solid(from, to, "#segment_off")));
-    consoleModule(`rocket_boost_button_${look}`, textures, "#plate", true, [
-      solid([6, CONSOLE_HEIGHT, 6], [10, 12.5, 10], "#chrome"),
+    controlModule(`rocket_boost_button_${look}`, textures, `boost_${cap}`, cap !== "dark", [
+      solid(...at(6.5, CONSOLE_HEIGHT, -1.5, 9.5, 9, 1.5), "#chrome"),
       ...segments,
-      cap === "dark" ? capBox : lit(capBox),
+      ...(cap === "dark" ? tiers : tiers.map(lit)),
     ]);
   }
   write(`assets/${ID}/blockstates/rocket_boost_button.json`, { variants: facingOf(BOOST_LOOKS.map((look) => [`look=${look}`, `rocket_boost_button_${look}`])) });
   write(`assets/${ID}/models/item/rocket_boost_button.json`, { parent: `${ID}:block/rocket_boost_button_dark` });
 
-  // The stability switch.
-  const STABILITY_LAMPS = { holding: "jump_light_green", off: "rocket_lamp_flashing", locked: "laser_amber", refused: "jump_light_red" };
+  // The stability switch: a guarded toggle, as on an aircraft's panel. A border of hazard stripes painted on the panel
+  // round it, the toggle between two guard rails, and the yellow lid lying on the rails over it, a lip at its front to
+  // lift it by, or flipped up on its hinge at the rails' back, standing behind the toggle with its lip toward the pilots.
+  const STABILITY_LAMPS = ["holding", "off", "locked", "refused"];
+  const border = [at(4, CONSOLE_HEIGHT, -4, 12, 6.25, -3), at(4, CONSOLE_HEIGHT, 3, 12, 6.25, 4), at(4, CONSOLE_HEIGHT, -3, 5, 6.25, 3),
+    at(11, CONSOLE_HEIGHT, -3, 12, 6.25, 3)].map(([from, to]) => solid(from, to, "#stripes"));
+  const lid = (open) => (open
+    ? [solid(...at(5, 10, 2.25, 11, 14.5, 3), "#lid"), solid(...at(5, 13.75, 1.5, 11, 14.5, 2.25), "#lid")]
+    : [solid(...at(5, 10, -2.25, 11, 10.75, 2.25), "#lid"), solid(...at(5, 9.25, -2.25, 11, 10, -1.5), "#lid")]);
   for (const open of [false, true]) {
-    for (const [lamp, lens] of Object.entries(STABILITY_LAMPS)) {
-      const rotation = { origin: [11.5, 6.5, 8], axis: "x", angle: lamp === "off" ? 22.5 : -22.5 };
-      const cover = open ? solid([9, CONSOLE_HEIGHT, 11.5], [14, 13, 12.5], "#cover") : solid([9, CONSOLE_HEIGHT, 5], [14, 13, 11], "#cover");
-      consoleModule(`rocket_stability_switch_${open ? "open" : "shut"}_${lamp}`, {
-        ...plain, top: `${ID}:block/rocket_stability_top`, knob: `${ID}:block/thrust_lever_knob`, cover: `${ID}:block/rocket_hazard_stripes`,
-        lamp: `${ID}:block/${lens}`,
-      }, "#top", true, [
-        solid([10, CONSOLE_HEIGHT, 6.5], [13, 7, 9.5], "#black"),
-        solid([11, 6.5, 7.5], [12, 11.5, 8.5], "#chrome", rotation),
-        solid([10.75, 11, 7.25], [12.25, 12.5, 8.75], "#knob", rotation),
-        lit(solid([10, CONSOLE_HEIGHT, 2], [13, 7, 4], "#lamp")),
-        cover,
+    for (const lamp of STABILITY_LAMPS) {
+      const rotation = { origin: [8, 6.5, BEHIND], axis: "x", angle: lamp === "off" ? 22.5 : -22.5 };
+      controlModule(`rocket_stability_switch_${open ? "open" : "shut"}_${lamp}`, {
+        knob: `${ID}:block/thrust_lever_knob`, stripes: `${ID}:block/rocket_hazard_stripes`, lid: `${ID}:block/rocket_switch_lid`,
+      }, `stability_${lamp}`, true, [
+        ...border,
+        solid(...at(5, CONSOLE_HEIGHT, -2, 5.75, 10, 2.25), "#black"),
+        solid(...at(10.25, CONSOLE_HEIGHT, -2, 11, 10, 2.25), "#black"),
+        solid(...at(7, CONSOLE_HEIGHT, -1, 9, 7, 1), "#black"),
+        solid(...at(7.5, 6.5, -0.5, 8.5, 9, 0.5), "#chrome", rotation),
+        solid(...at(7.25, 8.5, -0.75, 8.75, 10, 0.75), "#knob", rotation),
+        ...lid(open),
       ]);
     }
   }
   write(`assets/${ID}/blockstates/rocket_stability_switch.json`, {
-    variants: facingOf(Object.keys(STABILITY_LAMPS).flatMap((lamp) => [false, true].map((open) =>
+    variants: facingOf(STABILITY_LAMPS.flatMap((lamp) => [false, true].map((open) =>
       [`lamp=${lamp},open=${open}`, `rocket_stability_switch_${open ? "open" : "shut"}_${lamp}`]))),
   });
   write(`assets/${ID}/models/item/rocket_stability_switch.json`, { parent: `${ID}:block/rocket_stability_switch_shut_holding` });
 
-  // The flight mode knob: the bar on its top pointing to each mode's picture, in each mode's colour.
-  const MODES = {
-    vertical: [[8, 10, 7.25], [11, 10.5, 8.75], "rocket_lamp_blue"],
-    arc: [[7.25, 10, 8], [8.75, 10.5, 11], "rocket_lamp_orange"],
-    gentle: [[5, 10, 7.25], [8, 10.5, 8.75], "jump_light_green"],
-  };
-  for (const [mode, [from, to, colour]] of Object.entries(MODES)) {
+  // The flight mode knob: the pointer on its top turned from the knob's middle toward each mode's picture on the plate,
+  // the arrow up at the viewer's left (east), the arc ahead of them and the snail at their right, in each mode's colour.
+  const MODES = { vertical: [-45, "rocket_lamp_blue"], arc: [0, "rocket_lamp_orange"], gentle: [45, "jump_light_green"] };
+  for (const [mode, [angle, colour]] of Object.entries(MODES)) {
     for (const refused of [false, true]) {
-      consoleModule(`rocket_mode_knob_${mode}${refused ? "_refused" : ""}`, {
-        ...plain, top: `${ID}:block/rocket_mode_top`, pointer: `${ID}:block/${refused ? "jump_light_red" : colour}`,
-      }, "#top", true, [
-        solid([4.5, CONSOLE_HEIGHT, 4.5], [11.5, 7, 11.5], "#chrome"),
-        solid([5.5, 7, 5.5], [10.5, 10, 10.5], "#black"),
-        lit(solid(from, to, "#pointer")),
+      const pointer = { origin: [8, 9, BEHIND], axis: "y", angle };
+      controlModule(`rocket_mode_knob_${mode}${refused ? "_refused" : ""}`, {
+        pointer: `${ID}:block/${refused ? "jump_light_red" : colour}`,
+      }, `mode_${mode}${refused ? "_refused" : ""}`, true, [
+        solid(...at(5, CONSOLE_HEIGHT, -3, 11, 6.75, 3), "#chrome"),
+        solid(...at(6, 6.75, -2, 10, 9, 2), "#black"),
+        lit(solid(...at(7.4, 9, -2, 8.6, 9.35, 0), "#pointer", pointer)),
       ]);
     }
   }
@@ -1979,20 +2000,15 @@ const ROCKET_CONTROLS = ["rocket_boost_button", "rocket_stability_switch", "rock
   });
   write(`assets/${ID}/models/item/rocket_mode_knob.json`, { parent: `${ID}:block/rocket_mode_knob_vertical` });
 
-  // The abort handle: the arrow lit over the module's top while it is ready.
-  const arrowLit = {
-    from: [0.5, CONSOLE_HEIGHT, 0.5], to: [15.5, CONSOLE_HEIGHT + 0.2, 15.5],
-    faces: { up: { texture: "#arrow", rotation: 180, neoforge_data: { block_light: 15, sky_light: 15 } } },
-  };
+  // The abort handle, its plate lit while it is ready.
   for (const ready of [false, true]) {
     for (const pulled of [false, true]) {
       const rise = pulled ? 3 : 0;
-      consoleModule(`rocket_abort_handle_${ready ? "lit" : "dark"}_${pulled ? "out" : "in"}`, {
-        ...plain, top: `${ID}:block/rocket_abort_top_dark`, arrow: `${ID}:block/rocket_abort_top_lit`, handle: `${ID}:block/rocket_hazard_stripes`,
-      }, "#top", true, [
-        ...(ready ? [arrowLit] : []),
-        solid([7, CONSOLE_HEIGHT, 7], [9, 8 + rise, 9], "#black"),
-        solid([3.5, 8 + rise, 6.5], [12.5, 10 + rise, 9.5], "#handle"),
+      controlModule(`rocket_abort_handle_${ready ? "lit" : "dark"}_${pulled ? "out" : "in"}`, {
+        handle: `${ID}:block/rocket_abort_grip`,
+      }, `abort_${ready ? "lit" : "dark"}`, ready, [
+        solid(...at(7, CONSOLE_HEIGHT, -1, 9, 8 + rise, 1), "#black"),
+        solid(...at(3.5, 8 + rise, -1.5, 12.5, 10 + rise, 1.5), "#handle"),
       ]);
     }
   }
@@ -2004,20 +2020,11 @@ const ROCKET_CONTROLS = ["rocket_boost_button", "rocket_stability_switch", "rock
 
   // The launch key, off and turned a quarter on.
   for (const turned of [false, true]) {
-    const tag = {
-      from: [9.5, CONSOLE_HEIGHT, 2], to: [15, CONSOLE_HEIGHT + 0.5, 8],
-      faces: { up: { texture: "#tag", uv: [0, 0, 16, 16], rotation: 180 }, north: { texture: "#tag" }, south: { texture: "#tag" },
-        east: { texture: "#tag" }, west: { texture: "#tag" } },
-    };
-    consoleModule(`rocket_launch_key_${turned ? "on" : "off"}`, {
-      ...plain, tag: `${ID}:block/rocket_key_tag`, lamp: `${ID}:block/${turned ? "jump_light_green" : "laser_amber"}`,
-    }, "#plate", true, [
-      solid([5.5, CONSOLE_HEIGHT, 5.5], [10.5, 6.5, 10.5], "#chrome"),
-      solid([6.5, 6.5, 6.5], [9.5, 7.5, 9.5], "#black"),
-      solid([7.5, 7.5, 7.5], [8.5, 8, 8.5], "#chrome"),
-      turned ? solid([7.5, 8, 6.5], [8.5, 11, 9.5], "#chrome") : solid([6.5, 8, 7.5], [9.5, 11, 8.5], "#chrome"),
-      tag,
-      lit(solid([2, CONSOLE_HEIGHT, 2.5], [4.5, 7, 5], "#lamp")),
+    controlModule(`rocket_launch_key_${turned ? "on" : "off"}`, {}, `key_${turned ? "on" : "off"}`, true, [
+      solid(...at(5.5, CONSOLE_HEIGHT, -2.5, 10.5, 6.5, 2.5), "#chrome"),
+      solid(...at(6.5, 6.5, -1.5, 9.5, 7.5, 1.5), "#black"),
+      solid(...at(7.5, 7.5, -0.5, 8.5, 8, 0.5), "#chrome"),
+      turned ? solid(...at(7.5, 8, -1.5, 8.5, 11, 1.5), "#chrome") : solid(...at(6.5, 8, -0.5, 9.5, 11, 0.5), "#chrome"),
     ]);
   }
   write(`assets/${ID}/blockstates/rocket_launch_key.json`, {
