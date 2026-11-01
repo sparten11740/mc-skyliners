@@ -40,7 +40,8 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
     public static final int ROWS = 2;
     /** Its tiles: the moving map, which a touch zooms, and the rest of its face, where a touch opens the settings. */
     public static final int MAP_TILE = 0;
-    public static final int SETTINGS_TILE = 1;
+    /** The first button's tile: each button shown has its own, by its place among them, and opens the settings. */
+    public static final int FIRST_BUTTON_TILE = 1;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
     /**
      * How thick the screen is, in pixels of its block, against the back of it: as thick as the tail camera display's
@@ -88,7 +89,8 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
 
     /**
      * The tile a hit on the screen's face lands on, measured from the bottom left corner of the whole screen: the map
-     * where it is drawn (see {@link AutopilotScreenBlockEntity#MAP}), else the rest of the face; -1 off its face.
+     * where it is drawn (see {@link AutopilotScreenBlockEntity#MAP}) or a button shown there; -1 for anywhere else,
+     * which a touch does nothing to and nothing lights up on.
      */
     @Override
     public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
@@ -96,7 +98,18 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
         if (touch == null) {
             return -1;
         }
-        return AutopilotScreenBlockEntity.MAP.contains(touch.across(), touch.up()) ? MAP_TILE : SETTINGS_TILE;
+        if (AutopilotScreenBlockEntity.MAP.contains(touch.across(), touch.up())) {
+            return MAP_TILE;
+        }
+        AutopilotScreenBlockEntity.Button button = level.getBlockEntity(origin(state, pos)) instanceof AutopilotScreenBlockEntity screen
+            ? screen.buttonAt(touch.across(), touch.up())
+            : null;
+        return button == null ? -1 : tile(button);
+    }
+
+    /** A button's tile. */
+    public static int tile(AutopilotScreenBlockEntity.Button button) {
+        return FIRST_BUTTON_TILE + button.ordinal();
     }
 
     @Override

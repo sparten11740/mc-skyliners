@@ -2,6 +2,7 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.TouchPanel;
 import dev.aerolarge.block.TouchPanelBlock;
 import net.minecraft.client.Minecraft;
@@ -11,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -128,10 +130,17 @@ public final class TouchPanelArt {
         return touchPanel.tileAt(level, state, at, hit, SableClient.turnToPlot(at, minecraft.player.getLookAngle()));
     }
 
-    /** No outline round a touch panel's blocks: the tile looked at lights up on the panel instead. */
+    /**
+     * No outline round a touch panel's blocks, as the tile looked at lights up on the panel instead, nor round a flight
+     * deck's instrument panels, its casing and its flight displays, which only show things and nothing can be done to.
+     */
     public static void hideOutline(RenderHighlightEvent.Block event) {
         Level level = Minecraft.getInstance().level;
-        if (level != null && level.getBlockState(event.getTarget().getBlockPos()).getBlock() instanceof TouchPanelBlock) {
+        if (level == null) {
+            return;
+        }
+        Block block = level.getBlockState(event.getTarget().getBlockPos()).getBlock();
+        if (block instanceof TouchPanelBlock || block instanceof InstrumentPanelBlock) {
             event.setCanceled(true);
         }
     }

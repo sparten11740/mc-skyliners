@@ -9,8 +9,8 @@ import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Button;
+import dev.aerolarge.block.AutopilotScreenBlockEntity.Shown;
 import dev.aerolarge.block.TouchPanel;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -31,10 +31,11 @@ import org.joml.Matrix4f;
  * turning to, a ring at half the map's reach, north marked, and the airliner in the middle of the lower part. Over the
  * map the autopilot's mode and targets; under it, how the airliner is flying now. On the right the buttons, the ones
  * for what the autopilot is doing lit; a rocket's has only those for what she flies to, her height and her climb. The
- * screen is a touch panel of two tiles that light up as every panel's do (see {@link TouchPanelArt}): with the
- * crosshair on the map, which a touch zooms, its glass brightens; anywhere else, where a touch opens the settings, the
- * line over the map and every button brighten together. The airliner's place and heading come from its pose as the
- * client draws it, so the map turns as smoothly as the airliner does. It is only drawn with the camera in front of it.
+ * screen is a touch panel whose tiles light up as every panel's do (see {@link TouchPanelArt}): with the crosshair on
+ * the map, which a touch zooms, its glass brightens; on a button, which a touch opens the settings with, that button
+ * does; and nothing lights up anywhere else, where a touch does nothing. The airliner's place and heading come from its
+ * pose as the client draws it, so the map turns as smoothly as the airliner does. It is only drawn with the camera in
+ * front of it.
  */
 public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScreenBlockEntity> {
     /**
@@ -48,8 +49,6 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     private static final float TEXT = 1 / 170F;
     /** How wide the edge round each button is, in blocks. */
     private static final double BUTTON_EDGE_WIDTH = 0.012;
-    /** How many rows of buttons a rocket's screen has, each taller than the airliner's: on and off, height, climb. */
-    private static final int ROCKET_ROWS = 3;
 
     /** The screen's colours, which the panels of its settings screen ({@link AutopilotSettingsScreen}, {@link PanelArt}) share. */
     static final int CASING = 0xFF15171B;
@@ -99,15 +98,14 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         MovingMap.box(fill, matrix, new Box(0, 0, AutopilotScreenBlockEntity.WIDTH, AutopilotScreenBlockEntity.HEIGHT), 0, CASING);
         int looked = TouchPanelArt.lookedAt(screen);
         TouchPanelArt.Look map = TouchPanelArt.Look.of(AutopilotScreenBlock.MAP_TILE, looked, -1, true);
-        TouchPanelArt.Look settings = TouchPanelArt.Look.of(AutopilotScreenBlock.SETTINGS_TILE, looked, -1, true);
         TouchPanelArt.tile(fill, matrix, tile(AutopilotScreenBlockEntity.MAP), GLASS, map, LAYER);
-        TouchPanelArt.tile(fill, matrix, tile(AutopilotScreenBlockEntity.HEADER), GLASS, settings, LAYER);
+        MovingMap.box(fill, matrix, AutopilotScreenBlockEntity.HEADER, LAYER, GLASS);
         MovingMap.draw(fill, matrix, AutopilotScreenBlockEntity.MAP, screen.track(), screen.range(), autopilot, here, heading, 2 * LAYER);
-        List<Shown> buttons = buttons(autopilot);
+        List<Shown> buttons = screen.buttons();
         for (Shown shown : buttons) {
             MovingMap.box(fill, matrix, shown.box(), LAYER, BUTTON_EDGE);
             TouchPanelArt.tile(fill, matrix, tile(shown.box()).inset(BUTTON_EDGE_WIDTH), lit(shown.button(), autopilot) ? BUTTON_LIT : BUTTON,
-                settings, 2 * LAYER);
+                TouchPanelArt.Look.of(AutopilotScreenBlock.tile(shown.button()), looked, -1, true), 2 * LAYER);
         }
         // Text last: it takes its own buffer, which ends the one the shapes went into.
         header(font, pose, buffers, autopilot, attitude);
@@ -121,23 +119,6 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
             text(font, pose, buffers, label, (box.x0() + box.x1()) / 2, (box.y0() + box.y1()) / 2, WHITE, ScreenDrawing.Align.CENTRE);
         }
         pose.popPose();
-    }
-
-    /** A button as the screen shows it, where it is drawn. */
-    private record Shown(Button button, Box box) {
-    }
-
-    /**
-     * The buttons the screen shows for the autopilot it works, and where: every one for an airliner or a zeppelin; for
-     * a rocket only on and off, her height and her climb, on taller rows, as she flies no heading or circle of her own.
-     */
-    private static List<Shown> buttons(@Nullable AutopilotBlockEntity autopilot) {
-        if (autopilot == null || autopilot.craft() != Craft.ROCKET) {
-            return Arrays.stream(Button.values()).map(button -> new Shown(button, button.box)).toList();
-        }
-        return List.of(new Shown(Button.ENGAGE, Button.box(0, -1, ROCKET_ROWS)),
-            new Shown(Button.ALTITUDE_DOWN, Button.box(1, 0, ROCKET_ROWS)), new Shown(Button.ALTITUDE_UP, Button.box(1, 1, ROCKET_ROWS)),
-            new Shown(Button.SPEED_DOWN, Button.box(2, 0, ROCKET_ROWS)), new Shown(Button.SPEED_UP, Button.box(2, 1, ROCKET_ROWS)));
     }
 
     /** A rectangle on the screen as a touch panel's tile, to be drawn as one (see {@link TouchPanelArt}). */

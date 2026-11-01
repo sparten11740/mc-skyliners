@@ -2,7 +2,9 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +33,13 @@ import net.minecraft.world.phys.Vec3;
  * corner as the viewer sees it. The client also keeps the track the airliner has flown here, for the map.
  */
 public class AutopilotScreenBlockEntity extends BlockEntity {
+    /** How many rows of buttons a rocket's screen has, each taller than the airliner's: on and off, height, climb. */
+    private static final int ROCKET_ROWS = 3;
+    private static final List<Shown> ALL_BUTTONS = Arrays.stream(Button.values()).map(button -> new Shown(button, button.box)).toList();
+    private static final List<Shown> ROCKET_BUTTONS = List.of(new Shown(Button.ENGAGE, Button.box(0, -1, ROCKET_ROWS)),
+        new Shown(Button.ALTITUDE_DOWN, Button.box(1, 0, ROCKET_ROWS)), new Shown(Button.ALTITUDE_UP, Button.box(1, 1, ROCKET_ROWS)),
+        new Shown(Button.SPEED_DOWN, Button.box(2, 0, ROCKET_ROWS)), new Shown(Button.SPEED_UP, Button.box(2, 1, ROCKET_ROWS)));
+
     /** The screen's size, and the margin around and between what is drawn on it. */
     public static final double WIDTH = AutopilotScreenBlock.COLUMNS;
     public static final double HEIGHT = AutopilotScreenBlock.ROWS;
@@ -53,6 +62,10 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
     }
 
     /** The buttons, top to bottom in two columns; the first spans both. */
+    /** A button as the screen shows it, where it is drawn. */
+    public record Shown(Button button, Box box) {
+    }
+
     public enum Button {
         ENGAGE(0, -1),
         HEADING_LEFT(1, 0),
@@ -153,6 +166,26 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
      * A touch on one of the screen's tiles (see {@link AutopilotScreenBlock#tileAt}), on the server: on the map it
      * zooms it, anywhere else it opens the settings.
      */
+    /**
+     * The buttons the screen shows for the autopilot it works, and where: every one for an airliner or a zeppelin; for
+     * a rocket only on and off, her height and her climb, on taller rows, as she flies no heading or circle of her own.
+     */
+    public List<Shown> buttons() {
+        AutopilotBlockEntity autopilot = autopilot();
+        return autopilot != null && autopilot.craft() == Craft.ROCKET ? ROCKET_BUTTONS : ALL_BUTTONS;
+    }
+
+    /** The button shown at a point on the face, across and up from its lower left corner; null for none there. */
+    @Nullable
+    public Button buttonAt(double across, double up) {
+        for (Shown shown : buttons()) {
+            if (shown.box().contains(across, up)) {
+                return shown.button();
+            }
+        }
+        return null;
+    }
+
     void touch(int tile, ServerPlayer player) {
         mendLink();
         if (tile == AutopilotScreenBlock.MAP_TILE) {

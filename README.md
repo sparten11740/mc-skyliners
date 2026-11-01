@@ -226,8 +226,8 @@ in it.
 In a nose too narrow for the centre console and its screens the seats stand further apart with the four thrust
 levers between them and the autopilot's control head among them, the tiller and the parking brake outboard of the
 seats where there is room, and the switches, the dimmer, the handset and the gear lever on the panel either side of
-the autopilot screen, a moving map with the autopilot's buttons lit beside it (touch the map to zoom, anywhere else
-to open the settings). There a flight display in the panel stands in front of each seat, and the tail camera display
+the autopilot screen, a moving map with the autopilot's buttons lit beside it (touch the map to zoom, a button to open
+the settings). There a flight display in the panel stands in front of each seat, and the tail camera display
 on top of the autopilot screen, as one glass unit with it. Airliners built before keep the flight deck they were
 built with.
 
@@ -605,8 +605,9 @@ release it first (Unstuck leaves the brake as it is).
 The big screen shows the autopilot at work. Its right side is the autopilot's buttons, lit for what it is doing;
 touching them opens the settings. Its left side is a moving map, heading up: the track flown, the circle being
 flown or the heading being turned to, and north; touch the map to zoom it out, and again past the widest to zoom
-back in. What you look at lights up: the map brightens under your crosshair, and anywhere else on the screen the
-buttons and the line over the map brighten together, since a touch there opens the settings.
+back in. What a touch works lights up as you look at it: the map brightens under your crosshair, and so does the
+button you look at. The line over the map and the rest of the screen only show things, and neither light up nor answer
+a touch.
 
 Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
 either pilot's seat, or standing at the console), its visor shows a head-up display: thin, see-through green lines and
@@ -2213,8 +2214,8 @@ everything from the seat. Out of the lift an aisle runs straight forward to the 
 front, with the commander's seat on its left and the pilot's on its right, the airliner's pilot seats, each with its
 sidestick at the outboard hand. Ahead of them, past a row of legroom, a flight display stands dead ahead of each seat,
 and between the two the airliner's autopilot screen, its moving map drawing where she has been and the circle round her
-pin, with only her own buttons beside it, lit while she flies: on and off, height and climb (touch the map to zoom,
-anywhere else to open the autopilot's settings); the panel's dark casing runs on from them to the glass as a
+pin, with only her own buttons beside it, lit while she flies: on and off, height and climb (touch the map to zoom, a
+button to open the autopilot's settings); the panel's dark casing runs on from them to the glass as a
 glareshield. The commander has the LED console at the left hand and the pilot the livery selector, with the large camera
 display over it, at the right (see below), both standing on the floor facing in. Where there is room, two jump seats
 stand behind the pilots, and a row of launch seats at the back glass looks out, without sticks (the server config's
