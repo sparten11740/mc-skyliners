@@ -28,9 +28,9 @@ feature as a player meets it, and its Building section says which classes do wha
 - `autopilot/`: what flies the airliner. `AutopilotBlockEntity` is the control head's block entity and flies (its
   `fly` method), `ControlSurfaces` moves the flaps, `PinLanding` with `RunwaySearch`, `GroundSurvey`, `AirlinerShape`
   and `RunwayCheck` lands near a pin, `Hop` frees a stuck airliner, `ParkedShips` unloads a parked ship with nobody near
-  and brings it back, `Callouts`, `CabinAnnouncements` and `AtcRadio` are the flight deck's voice, and `SetAutopilot`, `OpenAutopilotScreen` and `UnstickAirliner` are its screen's
-  payloads. The client draws its screens in `client/` (`AutopilotSettingsScreen`, `DestinationMap`,
-  `AutopilotScreenRenderer`).
+  and brings it back, `Callouts`, `CabinAnnouncements` and `AtcRadio` are the flight deck's voice, and `SetAutopilot`,
+  `OpenAutopilotScreen` and `UnstickAirliner` are its screen's payloads. The client draws its screens in `client/`
+  (`AutopilotSettingsScreen`, `DestinationMap`, `AutopilotScreenRenderer`).
 - `client/`: everything that only runs on the client: renderers, screens, maps, the HUD, `SableClient`.
 - `compat/`: `SableFlight`, the server's only way into Sable; `PhysicsAssembler`, which works the Physics Assembler
   as a Create deployer does; `Ultrasplosive`.
