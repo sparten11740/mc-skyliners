@@ -40,8 +40,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The feeding hatch in the glass of the tardigrade's tank, at chest height (see {@link HabitatHatchBlockEntity}, which
- * keeps the creature): a pane of the tank's glass with a small steel hatch in it. Use it with moss in hand and the
- * hatch slides open, the moss goes in and the creature comes to eat it; with an empty hand, to reach in and touch it.
+ * keeps the creature): a pane of the tank's glass with a small steel hatch in it. Use it with moss or a babycino in
+ * hand and the hatch slides open, the food goes in and the creature comes to eat it; with an empty hand, to reach in
+ * and touch it.
  * Open, a hand fits through it, so the creature can be fed or touched straight through it when it stands there. FACING
  * is the way out of the tank. Broken, it gives itself back. Set up by hand it keeps no creature, having no tank, and
  * only opens and shuts.
@@ -118,7 +119,7 @@ public class HabitatHatchBlock extends BaseEntityBlock {
         return true;
     }
 
-    /** Moss in hand: the hatch opens and the creature is called to eat it, the moss used up only if it comes. */
+    /** Its food in hand: the hatch opens and the creature is called to eat it, the food used up only if it comes. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
         BlockHitResult hit) {
@@ -127,7 +128,7 @@ public class HabitatHatchBlock extends BaseEntityBlock {
         }
         if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof HabitatHatchBlockEntity keeper) {
             open(server, pos, state);
-            if (keeper.call(server, true)) {
+            if (keeper.feed(server, stack)) {
                 stack.consume(1, player);
             }
         }

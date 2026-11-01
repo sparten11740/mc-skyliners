@@ -62,7 +62,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
  * sucks in with a slurp, the thing flying to its mouth, chews it with bits of it falling, and burps; it burps after
  * every meal. And now and then, resting awake, it jumps away through the spore drive, as its cousin on the starship
  * does: glowing as spores swirl in round it with a rising hum, gone in a burst of them with a whump, and back where it
- * was a few seconds later in another, whooshing in.
+ * was a few seconds later in another, whooshing in. A babycino sets the drive off at once.
  *
  * <p>Left without its keeper a while, as when its tank is broken, it goes; one never kept, as one summoned, stays.
  */
@@ -214,6 +214,10 @@ public class Tardigrade extends PathfinderMob {
     private Boolean called;
     @Nullable
     private Boolean coming;
+    /** What it was called to the hatch to be fed, which it gets once it is there. */
+    private ItemStack calledWith = new ItemStack(Items.MOSS_CARPET);
+    /** Whether it is to burp when it is back from this jump, having jumped straight after a babycino. */
+    private boolean burpOnReturn;
     /**
      * How many ticks of munching it has left; how far it has still to turn round, in degrees; how long it has walked.
      */
@@ -342,6 +346,15 @@ public class Tardigrade extends PathfinderMob {
         }
         called = feed;
         return true;
+    }
+
+    /** Called to the hatch to be fed this, as {@link #call} calls it; whether it heeds it. */
+    public boolean feed(ItemStack food) {
+        boolean heeded = call(true);
+        if (heeded) {
+            calledWith = food.copyWithCount(1);
+        }
+        return heeded;
     }
 
     /** Where it is in a jump through the spore drive, on either side. */
@@ -479,14 +492,15 @@ public class Tardigrade extends PathfinderMob {
         return nearest;
     }
 
-    /** Whether something held is what it eats: moss. */
+    /** Whether something held is what it eats: moss, or a babycino, which it never refuses (see {@link #chew}). */
     public static boolean eats(ItemStack stack) {
-        return stack.is(Items.MOSS_BLOCK) || stack.is(Items.MOSS_CARPET);
+        return stack.is(Items.MOSS_BLOCK) || stack.is(Items.MOSS_CARPET) || stack.is(AerolargeRegistry.BABYCINO.get());
     }
 
     /**
-     * Fed moss straight from the hand, as through the open hatch, or touched with an empty one: it munches the moss, or
-     * wriggles (or wakes, asleep), where it is. In its tun, or away through the spore drive, it heeds neither.
+     * Fed straight from the hand, as through the open hatch, or touched with an empty one: it munches the moss or
+     * gulps the babycino, or wriggles (or wakes, asleep), where it is. In its tun, or away through the spore drive, it
+     * heeds neither.
      */
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
@@ -509,13 +523,30 @@ public class Tardigrade extends PathfinderMob {
 
     /**
      * Chews what it was fed or has swallowed, on the server: a bite at once and every so often, the client shown it and
-     * bits of it falling from its mouth, and a burp once it is done.
+     * bits of it falling from its mouth, and a burp once it is done. A babycino it does not chew: it goes straight to
+     * its spore drive (see {@link #gulpAndJump}).
      */
     private void chew(ItemStack eaten) {
         entityData.set(EATEN, eaten);
+        if (eaten.is(AerolargeRegistry.BABYCINO.get())) {
+            gulpAndJump();
+            return;
+        }
         munching = MUNCH_TICKS;
         burpIn = MUNCH_TICKS + BURP_AFTER;
         level().broadcastEntityEvent(this, MUNCHING);
+    }
+
+    /**
+     * A little secret of its keepers: a babycino is gone in one gulp, and the frothed milk sets off its spore drive,
+     * however it was busy. It charges up at once and jumps, and burps when it is back.
+     */
+    private void gulpAndJump() {
+        munching = 0;
+        burpIn = 0;
+        burpOnReturn = true;
+        playSound(SoundEvents.GENERIC_DRINK, VOLUME, 0.8F);
+        chargeUp();
     }
 
     /** Burps after its meal, on the server, the client shown a puff from its mouth. */
@@ -644,14 +675,13 @@ public class Tardigrade extends PathfinderMob {
     /**
      * One tick of its spore drive, on the server: now and then, resting awake in its tank, it charges up and jumps
      * away, and a few seconds later comes back where it was, its return heard as it comes; away, it is not to be seen.
+     * It burps as it comes back from a jump a babycino set off.
      */
     private void sporeDrive() {
         switch (jump()) {
             case HERE -> {
                 if (mayJump() && random.nextFloat() < JUMP_CHANCE) {
-                    setJump(Jump.CHARGING);
-                    jumpTicks = CHARGE_TICKS;
-                    playSound(AerolargeRegistry.TARDIGRADE_JUMP.get(), VOLUME, 1.0F);
+                    chargeUp();
                 }
             }
             case CHARGING -> {
@@ -667,11 +697,27 @@ public class Tardigrade extends PathfinderMob {
                     playSound(AerolargeRegistry.TARDIGRADE_RETURN.get(), VOLUME, 1.0F);
                 }
                 if (jumpTicks <= 0) {
-                    setJump(Jump.HERE);
-                    setInvisible(false);
-                    level().broadcastEntityEvent(this, JUMPED);
+                    back();
                 }
             }
+        }
+    }
+
+    /** Starts charging up to jump, with the spore drive's rising hum. */
+    private void chargeUp() {
+        setJump(Jump.CHARGING);
+        jumpTicks = CHARGE_TICKS;
+        playSound(AerolargeRegistry.TARDIGRADE_JUMP.get(), VOLUME, 1.0F);
+    }
+
+    /** Back from a jump, where it was. */
+    private void back() {
+        setJump(Jump.HERE);
+        setInvisible(false);
+        level().broadcastEntityEvent(this, JUMPED);
+        if (burpOnReturn) {
+            burpOnReturn = false;
+            burpIn = BURP_AFTER;
         }
     }
 
@@ -855,10 +901,10 @@ public class Tardigrade extends PathfinderMob {
         return true;
     }
 
-    /** At the hatch it was called to: it munches what it was fed or wriggles at being touched. */
+    /** At the hatch it was called to: it eats what it was fed or wriggles at being touched. */
     private void arrive(boolean fed) {
         if (fed) {
-            chew(new ItemStack(Items.MOSS_CARPET));
+            chew(calledWith);
         } else {
             wiggle();
         }

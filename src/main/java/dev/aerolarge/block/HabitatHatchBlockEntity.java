@@ -11,6 +11,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -196,6 +197,12 @@ public class HabitatHatchBlockEntity extends BlockEntity {
     public boolean call(ServerLevel level, boolean feed) {
         Tardigrade found = creature(level);
         return found != null && found.call(feed);
+    }
+
+    /** Calls the creature to the hatch to be fed this; whether it comes, as for {@link #call}. */
+    public boolean feed(ServerLevel level, ItemStack food) {
+        Tardigrade found = creature(level);
+        return found != null && found.feed(food);
     }
 
     @Override

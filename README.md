@@ -2198,7 +2198,9 @@ drifts off again a while after. Whatever lands in its tank, thrown through the o
 with a slurp, the thing flying to its mouth, chews with bits of it falling and then burps, as it does after every
 meal. And now and then, resting awake, it jumps away through the spore drive, as its cousin on a certain starship does:
 it glows spore blue as glowing spores swirl in round it with a rising hum, vanishes in a burst of them with a deep
-whump, and a few seconds later is back where it was in another, whooshing in. In the tank's glass on her right is a
+whump, and a few seconds later is back where it was in another, whooshing in. Its keepers have a secret: a babycino
+from the coffee machine, fed or thrown to it, is gone in a gulp and sets its drive off at once, and it burps when it is
+back. In the tank's glass on her right is a
 feeding hatch at chest height,
 and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
 the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it
