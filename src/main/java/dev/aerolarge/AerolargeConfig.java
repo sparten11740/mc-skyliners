@@ -20,6 +20,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue RETRACTABLE_GEAR;
     public static final ModConfigSpec.BooleanValue LAND_AHEAD;
     public static final ModConfigSpec.IntValue LAND_AHEAD_CHUNKS;
+    public static final ModConfigSpec.BooleanValue LET_PARKED_SHIPS_GO;
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
@@ -158,6 +159,14 @@ public final class AerolargeConfig {
                 "chunk, and holds up its tick while it does."
             )
             .define("landAhead", true);
+        LET_PARKED_SHIPS_GO = builder
+            .comment(
+                "Whether a zeppelin or rocket on the ground with its autopilot off is unloaded once nobody is within 600",
+                "blocks of it, and brought back as someone comes within 400. A ship that never quite comes to rest on uneven",
+                "ground otherwise costs the server its physics every tick, wherever it is. Off, a ship once assembled stays",
+                "loaded for good. An unloaded ship does nothing until it is brought back."
+            )
+            .define("letParkedShipsGo", true);
         LAND_AHEAD_CHUNKS = builder
             .comment("How far past the edge of what each player sees the land ahead is loaded, in chunks.")
             .defineInRange("landAheadChunks", 8, 1, 32);

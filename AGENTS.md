@@ -27,8 +27,8 @@ feature as a player meets it, and its Building section says which classes do wha
   helpers several blocks share (`Turning`, `Loaded`, `Relays`, `Stowing`, `Control`).
 - `autopilot/`: what flies the airliner. `AutopilotBlockEntity` is the control head's block entity and flies (its
   `fly` method), `ControlSurfaces` moves the flaps, `PinLanding` with `RunwaySearch`, `GroundSurvey`, `AirlinerShape`
-  and `RunwayCheck` lands near a pin, `Hop` frees a stuck airliner, `Callouts`, `CabinAnnouncements` and `AtcRadio`
-  are the flight deck's voice, and `SetAutopilot`, `OpenAutopilotScreen` and `UnstickAirliner` are its screen's
+  and `RunwayCheck` lands near a pin, `Hop` frees a stuck airliner, `ParkedShips` unloads a parked ship with nobody near
+  and brings it back, `Callouts`, `CabinAnnouncements` and `AtcRadio` are the flight deck's voice, and `SetAutopilot`, `OpenAutopilotScreen` and `UnstickAirliner` are its screen's
   payloads. The client draws its screens in `client/` (`AutopilotSettingsScreen`, `DestinationMap`,
   `AutopilotScreenRenderer`).
 - `client/`: everything that only runs on the client: renderers, screens, maps, the HUD, `SableClient`.
@@ -83,7 +83,9 @@ feature as a player meets it, and its Building section says which classes do wha
   block, in a block with a full collision shape, draws black aboard anything assembled under smooth lighting: such a
   model sets `ambientocclusion: false`, as the sprinkler's does. Compare aboard against the ground when looking at one.
 - **Cost.** Nothing scans the world every tick without a bound. Loaded block entities are tracked with `Loaded<T>`,
-  heavy work is spread over ticks, and renderers leave out what the camera cannot see.
+  heavy work is spread over ticks, and renderers leave out what the camera cannot see. Anything loaded for good costs
+  for good: a ship with nobody near is let go (`ParkedShips`), and Sable's physics shows in a profile only as
+  "unspecified", so `/sable paused true` is how to tell its share.
 - **Players.** Some players are young children who cannot read yet, so every cue also gets a picture, a colour or a
   sound, never text alone. An experimental behaviour goes behind a config switch that defaults to off.
 

@@ -43,6 +43,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -247,6 +248,25 @@ public final class SableFlight {
      */
     public static boolean assemble(ServerLevel level, BlockPos anchor, List<BlockPos> blocks, BoundingBox box) {
         return SABLE && !blocks.isEmpty() && Access.assemble(level, anchor, blocks, box);
+    }
+
+    /**
+     * Where a ship stands in the world, in chunks, and which ship it is: its bounding box and a block round it, as Sable
+     * looks at it when it comes to load the ship back.
+     */
+    public record Footprint(UUID ship, int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ) {
+        /** How far a spot in the world is from it, in blocks along the ground: none on it. */
+        public double distanceTo(double x, double z) {
+            double acrossX = Math.max(0, Math.max(minChunkX * 16 - x, x - (maxChunkX + 1) * 16));
+            double acrossZ = Math.max(0, Math.max(minChunkZ * 16 - z, z - (maxChunkZ + 1) * 16));
+            return Math.hypot(acrossX, acrossZ);
+        }
+    }
+
+    /** Where the assembled airframe a block entity is part of stands; null when it is not part of one. */
+    @Nullable
+    public static Footprint footprint(BlockEntity blockEntity) {
+        return SABLE ? Access.footprint(blockEntity) : null;
     }
 
     /**
@@ -620,6 +640,16 @@ public final class SableFlight {
          */
         private static final SubLevelLoadingTicketType<Unit> KEPT =
             SubLevelLoadingTicketType.create(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "kept_aloft"), Unit.CODEC);
+
+        @Nullable
+        static Footprint footprint(BlockEntity blockEntity) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe)) {
+                return null;
+            }
+            var bounds = airframe.boundingBox();
+            return new Footprint(airframe.getUniqueId(), Mth.floor(bounds.minX() - 1) >> 4, Mth.floor(bounds.minZ() - 1) >> 4,
+                Mth.floor(bounds.maxX() + 1) >> 4, Mth.floor(bounds.maxZ() + 1) >> 4);
+        }
 
         static boolean keepLoaded(BlockEntity blockEntity, boolean kept) {
             if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe) || !(blockEntity.getLevel() instanceof ServerLevel level)) {

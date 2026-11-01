@@ -11,6 +11,7 @@ import dev.aerolarge.block.LookIntoMicroscope;
 import dev.aerolarge.autopilot.AssemblyFailed;
 import dev.aerolarge.autopilot.LaunchShock;
 import dev.aerolarge.autopilot.OpenAutopilotScreen;
+import dev.aerolarge.autopilot.ParkedShips;
 import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.OpenTowerRadar;
 import dev.aerolarge.block.OpenTransponder;
@@ -140,6 +141,7 @@ public final class Aerolarge {
                 SelfDestruct.tick(level);
                 ShipHorn.tick(level);
                 LandAhead.tick(level);
+                ParkedShips.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {

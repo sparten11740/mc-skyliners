@@ -1911,11 +1911,11 @@ public class AutopilotBlockEntity extends BlockEntity {
      * it is flown by those controls once handed over to them.
      */
     private void zeppelinTick(ServerLevel level, SableFlight.State flight) {
-        keepLoaded(level);
         if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) == 0) {
             SafetyCanopy.aboard(Aboard.players(this), level.getGameTime());
         }
         double radio = radioAltitude(level, flight);
+        keepLoaded(level, flight, radio);
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());
         watchUnattended(level, flight, radio);
@@ -1940,8 +1940,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * bell.
      */
     private void rocketTick(ServerLevel level, SableFlight.State flight) {
-        keepLoaded(level);
         double radio = radioAltitude(level, flight);
+        keepLoaded(level, flight, radio);
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());
         space.watch(level, this, flight);
@@ -2039,17 +2039,24 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Keeps the zeppelin loaded for as long as it is assembled, flying or parked, with anyone aboard or not. Sable
-     * loads an assembled body back only once the land under all of it is simulated, which reaches 12 chunks round a
-     * player by default, and a zeppelin is 490 blocks long: let go, it would unload where it stands once nobody was
-     * near its middle, a pilot riding in its bow included, and never load again. It is let go only when its control
-     * head is taken away (see {@link #removed}). Looked at every {@link #ABOARD_LOOK} ticks until it holds.
+     * Keeps the ship loaded while it flies or anyone is near it, aboard or not. Sable loads an assembled body back only
+     * once the land under all of it is simulated, which reaches 12 chunks round a player by default, and a zeppelin is
+     * 490 blocks long: let go, it would unload where it stands once nobody was near its middle, a pilot riding in its
+     * bow included, and never load again. On the ground with the autopilot off and nobody near, it is let go, as it costs
+     * the server its physics for as long as it is loaded, and {@link ParkedShips} brings it back. Looked at every {@link
+     * #ABOARD_LOOK} ticks.
      */
-    private void keepLoaded(ServerLevel level) {
-        if (keptLoaded || Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0) {
+    private void keepLoaded(ServerLevel level, SableFlight.State flight, double radio) {
+        if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0) {
             return;
         }
-        keptLoaded = SableFlight.keepLoaded(this, true);
+        boolean onTheGround = radio + flight.apex() - flight.position().y <= AIRBORNE;
+        if (phase == Phase.OFF && onTheGround && ParkedShips.letGo(level, this)) {
+            keptLoaded = false;
+        } else if (!keptLoaded) {
+            ParkedShips.back(level, this);
+            keptLoaded = SableFlight.keepLoaded(this, true);
+        }
     }
 
     /**
@@ -2057,6 +2064,9 @@ public class AutopilotBlockEntity extends BlockEntity {
      * loaded. Not when its chunk merely unloads, which would forget the ticket Sable saves with it.
      */
     public void removed() {
+        if (level instanceof ServerLevel server) {
+            ParkedShips.back(server, this);
+        }
         SableFlight.keepLoaded(this, false);
         keptLoaded = false;
     }

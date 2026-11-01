@@ -1848,9 +1848,11 @@ own; `safetyCanopy` in the server config's `zeppelin` section switches it off.
 
 A zeppelin is far longer than the land simulated round a player reaches (12 chunks by default): someone riding in its
 bow leaves its middle in land unloaded behind them, and Sable loads a ship back only once the land under all of it is
-simulated, which for a zeppelin it never is. So once it has been assembled it keeps itself loaded for good (a loading
-ticket of Sable's), flying or parked, with anyone aboard or not, wherever the players are; it lets go only when its
-control head is taken away. That costs a parked zeppelin's ticking, a little, wherever it is.
+simulated, which for a zeppelin it never is. So once it has been assembled it keeps itself loaded (a loading ticket of
+Sable's) while it flies or anyone is near it, aboard or not. On the ground with its autopilot off and nobody within 600
+blocks it lets go and unloads, so that it stops costing the server its physics, and it does nothing until someone comes
+within 400 blocks and it is brought back, before they could see it missing. Turn this off with `letParkedShipsGo` in the
+server config, and a ship once assembled stays loaded for good.
 
 The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk
 grating, the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
@@ -2291,7 +2293,7 @@ air, it falls back where it is and lands there. Switched off, it sounds a low no
 down already it gives up where it was going and settles straight down where it is, switching itself off on its fins with
 the bell: only its engines hold it up, and it has no controls to hand over to, so its autopilot never lets go of it in
 the air. A new height set while it comes down calls the landing off instead: it climbs back to that height with a
-rising note and holds there, over where it is, until told to land or given a pin to fly to. Like the zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model Rocket,
+rising note and holds there, over where it is, until told to land or given a pin to fly to. Like the zeppelin, a rocket stays loaded while it flies or anyone is near, unloads when left parked with nobody within 600 blocks, and comes back as someone comes within 400. A Model Rocket,
 standing on its fins, is in the creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
@@ -2558,7 +2560,7 @@ engine and hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`
 turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to
 show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through
 the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
-it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
+it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled, until `ParkedShips` lets it go, parked with nobody near, noting where it stands to load the land under it when someone comes back, as Sable would not.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned
 by `RocketFlightDeck` (where each seat, screen and console goes), its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or
