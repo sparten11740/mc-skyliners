@@ -19,10 +19,10 @@ public final class DrawingClock {
     /** What share of the way to the server's time the eased game time makes up each tick, on top of the tick itself. */
     private static final double CATCH_UP = 0.05;
     /**
-     * How far from the server's time it may get before it is simply set right, in ticks: a new world, or the server far
-     * off after a long stall. Five seconds, which a server at a quarter of its speed stays within.
+     * How far from the server's time it may get before it is simply set right, in ticks: a new world, or time changed by
+     * a command. A minute, past any stall of the server's: short of it the time waits or hurries, and never steps back.
      */
-    private static final double SET_RIGHT_AT = 100;
+    private static final double SET_RIGHT_AT = 1200;
 
     private static long ticks;
     private static double gameBefore;
