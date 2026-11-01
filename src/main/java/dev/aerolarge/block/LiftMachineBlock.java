@@ -15,7 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The machine of a ship's lift, a steel housing over the top of its glass shaft with the motor and the drum in it (see
- * {@link LiftMachineBlockEntity}, which runs the lift). Only the blueprints place it; broken, it gives back nothing.
+ * {@link LiftMachineBlockEntity}, which runs the lift). Broken, it gives itself back. One put down by hand has no shaft
+ * or landings, so it runs nothing.
  */
 public class LiftMachineBlock extends BaseEntityBlock {
     private static final MapCodec<LiftMachineBlock> CODEC = simpleCodec(LiftMachineBlock::new);

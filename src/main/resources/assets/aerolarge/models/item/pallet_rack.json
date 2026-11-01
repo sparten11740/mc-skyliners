@@ -1,0 +1,29 @@
+{
+  "parent": "aerolarge:block/pallet_rack_boxes",
+  "overrides": [
+    {
+      "predicate": {
+        "aerolarge:load": 0
+      },
+      "model": "aerolarge:block/pallet_rack_boxes"
+    },
+    {
+      "predicate": {
+        "aerolarge:load": 0.25
+      },
+      "model": "aerolarge:block/pallet_rack_drums"
+    },
+    {
+      "predicate": {
+        "aerolarge:load": 0.5
+      },
+      "model": "aerolarge:block/pallet_rack_crates"
+    },
+    {
+      "predicate": {
+        "aerolarge:load": 0.75
+      },
+      "model": "aerolarge:block/pallet_rack_empty"
+    }
+  ]
+}

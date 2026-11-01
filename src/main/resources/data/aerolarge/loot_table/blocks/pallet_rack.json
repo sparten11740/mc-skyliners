@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "aerolarge:pallet_rack",
+          "functions": [
+            {
+              "function": "minecraft:copy_state",
+              "block": "aerolarge:pallet_rack",
+              "properties": [
+                "load"
+              ],
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "condition": "minecraft:block_state_property",
+                    "block": "aerolarge:pallet_rack",
+                    "properties": {
+                      "load": "boxes"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "aerolarge:blocks/pallet_rack"
+}

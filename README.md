@@ -19,7 +19,18 @@ The blueprints are in the Aerolarge creative tab; there is no recipe for them. T
 banners, each with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and
 the rocket's; the flight deck; doors and stairs; the zeppelin's control car; crew kit; skydiving and drops; gadgets;
 zeppelin extras; seats; floors and walls; signs and washrooms; duty free; the hold; the garden; galley and coffee; the
-bar; the gym hall; the pool; the club; the den; lights; decorations; and the airport.
+bar; the gym hall; the pool; the club; the den; lights; decorations; the airport; and the rocket's rooms.
+
+In creative mode the mouse wheel (pick block) copies what you look at, and that holds for the mod's furniture, fittings
+and machines too: the snack machine, the LED strips, a lab's pipes and instruments, a lift's doors and all, and a
+trolley, a basketball or a rover (which gives its remote). What has kinds comes as the one you looked at (a shelf unit
+with its goods, a pallet rack with its load, a lab instrument), drawn so in your hand. Put up by hand, each stands whole
+and works as far as it can alone, and broken it gives itself back, but for blue lav ice, which melts. A lift's parts, an
+LED panel or an LED console put up by hand have nothing to work: a ship wires those as it is built, so they stay still
+and do nothing. LED strips take the colour of the story they are in, or stay white outside a rocket. What only goes up
+with a whole ship gives the nearest thing you can put up yourself: a screen of the curved row on a flight deck the
+flight display, flight map or camera display it shows, the autopilot's screen its control head, a hull or cockpit door
+the Airliner Door.
 
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business

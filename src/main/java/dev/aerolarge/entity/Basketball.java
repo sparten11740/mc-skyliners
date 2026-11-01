@@ -284,4 +284,10 @@ public class Basketball extends Entity implements ItemSupplier {
         thrower = tag.hasUUID("Thrower") ? tag.getUUID("Thrower") : null;
         pickupDelay = tag.getInt("PickupDelay");
     }
+
+    /** Picked, its item. */
+    @Override
+    public ItemStack getPickResult() {
+        return new ItemStack(AerolargeRegistry.BASKETBALL_ITEM.get());
+    }
 }

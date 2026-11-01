@@ -5,8 +5,13 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,8 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The glass of the tardigrade's tank in the rocket's lab: a thin pane at the very edge of a block on each side of it
  * that looks out of the tank (NORTH, EAST, SOUTH and WEST), so the tank's whole floor is the creature's to walk on. Its
  * lowest row stands on a steel kerb with moss over the floor of its block, as the rest of the tank's floor; its highest
- * is lit along its top, the soft light the creature lives under. Only the blueprints place it; broken, it gives back
- * nothing.
+ * is lit along its top, the soft light the creature lives under. Broken, it gives itself back, row and all.
  */
 public class HabitatGlassBlock extends Block {
     private static final MapCodec<HabitatGlassBlock> CODEC = simpleCodec(HabitatGlassBlock::new);
@@ -109,6 +113,27 @@ public class HabitatGlassBlock extends Block {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[index(state)];
+    }
+
+    /**
+     * Put up by hand, its pane stands against the block it was put against, or put on a floor or under a ceiling, on
+     * the side away from whoever puts it there.
+     */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction clicked = context.getClickedFace();
+        Direction side = clicked.getAxis().isHorizontal() ? clicked.getOpposite() : context.getHorizontalDirection();
+        return defaultBlockState().setValue(SIDES.get(side), true);
+    }
+
+    /** Itself, with its row, the way one broken comes back; the middle row is left plain, so they stack. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (state.getValue(ROW) != defaultBlockState().getValue(ROW)) {
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(ROW, state.getValue(ROW)));
+        }
+        return stack;
     }
 
     /** Its panes turn with it, as when the rocket is built facing another way. */

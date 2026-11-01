@@ -7697,4 +7697,61 @@ function rocketControlTextures() {
 }
 rocketControlTextures();
 
+// Item icons of what is drawn live or by its renderer, or too faint to see, whose block models show too little to know
+// them by: the LED strip, a bar of little lights running through her colours; a story's LED panel, its swatches over
+// its suns; the cockpit's LED console, her stories' bands over its swatches; a lift's picture board, its floors two to
+// a row; the orrery, a sun on a brass rod from its rose, a planet either side of it; and a tank's glass, a pale pane on
+// its steel kerb, a glint across it.
+{
+  const SWATCHES = [[0xff, 0x30, 0x40], [0xff, 0x8a, 0x20], [0xff, 0xd8, 0x40], [0x80, 0xff, 0x50], [0x30, 0xe0, 0xa0], [0x40, 0xc8, 0xff],
+    [0x40, 0x70, 0xff], [0xa0, 0x50, 0xff], [0xff, 0x60, 0xc0], [0xf0, 0xf4, 0xff]];
+  const CASING = [0x15, 0x17, 0x1c];
+  const GLOSS = [0x09, 0x0a, 0x0d];
+  const swatch = (at, of) => SWATCHES[Math.floor((at * SWATCHES.length) / of) % SWATCHES.length];
+  texture(itemOutput, "led_strip", (x, y) => {
+    if (y < 6 || y > 9) return CLEAR;
+    if (y === 6 || y === 9) return CASING;
+    return x % 2 === 0 ? swatch(x, 16) : swatch(x, 16).map((value) => Math.round(value * 0.75));
+  }, 0);
+  texture(itemOutput, "led_panel", (x, y) => {
+    if (x < 1 || x > 14 || y < 1 || y > 14) return CLEAR;
+    if (x === 1 || x === 14 || y === 1 || y === 14) return CASING;
+    if (y >= 3 && y <= 5 && x >= 3 && x <= 12) return swatch(x - 3, 10);
+    if (y >= 7 && y <= 8 && x >= 3 && x <= 12) return swatch(x - 3 + 5, 10);
+    if (y >= 10 && y <= 12 && (x === 4 || x === 7 || x === 8 || x === 11)) return [0xf0, 0xf4, 0xff];
+    return GLOSS;
+  }, 0);
+  texture(itemOutput, "led_console", (x, y) => {
+    if (y < 3 || y > 12) return CLEAR;
+    if (x === 0 || x === 15 || y === 3 || y === 12) return CASING;
+    if (y >= 5 && y <= 7 && x >= 2 && x <= 13) return swatch(x - 2, 12);
+    if (y >= 9 && y <= 10 && x >= 2 && x <= 13 && x % 2 === 0) return swatch(x - 2 + 3, 12);
+    return GLOSS;
+  }, 0);
+  texture(itemOutput, "lift_board", (x, y) => {
+    if (x < 3 || x > 12) return CLEAR;
+    if (x === 3 || x === 12 || y === 0 || y === 15) return CASING;
+    const across = Math.floor((x - 4) / 4);
+    const down = Math.floor((y - 1) / 3);
+    const inButton = (x - 4) % 4 < 3 && (y - 1) % 3 < 2 && down < 5;
+    return inButton ? swatch(down * 2 + across, 10) : GLOSS;
+  }, 0);
+  texture(itemOutput, "habitat_glass", (x, y) => {
+    if (x < 2 || x > 13 || y < 1) return CLEAR;
+    if (y >= 13) return [0x6a, 0x71, 0x79];
+    if (x === 2 || x === 13 || y === 1) return [0xa8, 0xc8, 0xd8];
+    return Math.abs(x - 12 + y) < 2 || Math.abs(x - 6 + y) < 1 ? [0xe8, 0xf6, 0xff] : [0xb8, 0xdc, 0xec];
+  }, 0);
+  const BRASS = [0xc8, 0x98, 0x40];
+  const BRASS_DARK = [0x7a, 0x58, 0x20];
+  texture(itemOutput, "orrery", (x, y) => {
+    if (y <= 1 && x >= 5 && x <= 10) return y === 0 ? BRASS : BRASS_DARK;
+    if (Math.hypot(x - 7.5, y - 8.5) < 3) return [0xff, 0xd8, 0x60];
+    if (x >= 7 && x <= 8 && y <= 6) return BRASS;
+    if (y === 8 && (x <= 4 || x >= 11)) return BRASS_DARK;
+    if (Math.hypot(x - 1.5, y - 8.5) < 1.6) return [0x60, 0xa0, 0xff];
+    if (Math.hypot(x - 14, y - 8.5) < 1.6) return [0xd0, 0x60, 0x50];
+    return CLEAR;
+  }, 0);
+}
 console.log("Textures written to", blockOutput, "and", itemOutput);

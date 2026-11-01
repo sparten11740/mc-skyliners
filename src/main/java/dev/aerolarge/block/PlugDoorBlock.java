@@ -12,8 +12,10 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -299,5 +301,11 @@ public class PlugDoorBlock extends BaseEntityBlock {
     private static boolean isPart(BlockState state, BlockState bottom, int column, int row) {
         return isDoor(state) && state.getValue(FACING) == bottom.getValue(FACING) && state.getValue(HINGE) == bottom.getValue(HINGE)
             && state.getValue(COLUMN) == column && state.getValue(ROW) == row;
+    }
+
+    /** Picked, the airliner door that can be put up by hand: this one only goes up in a hull's doorway. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(AerolargeRegistry.AIRLINER_DOOR_ITEM.get());
     }
 }

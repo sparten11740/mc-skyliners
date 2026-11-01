@@ -10,6 +10,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -52,6 +53,12 @@ public class GalleyFridgeBlock extends HorizontalDirectionalBlock implements Ent
     /** How bright it glows: lit inside while open, dark shut. */
     public static int glow(BlockState state) {
         return state.getValue(OPEN) ? OPEN_GLOW : 0;
+    }
+
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override

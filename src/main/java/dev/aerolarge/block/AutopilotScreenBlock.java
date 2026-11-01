@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.AerolargeRegistry;
 import java.util.EnumMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -11,8 +12,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -128,6 +131,12 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
             level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.4F, 1.6F);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /** Picked, the autopilot's control head, which it is the screen of: the screen itself goes up with a deck. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(AerolargeRegistry.AUTOPILOT_ITEM.get());
     }
 
     @Nullable

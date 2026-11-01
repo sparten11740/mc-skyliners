@@ -5,8 +5,13 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,8 +24,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A glazed partition dividing the rocket's lab into its parts, as a lab's clean room is screened off: glass in a slim
  * steel frame through the middle of its block, a mullion at each side, a steel kick plate along its foot (ROW
  * {@code bottom}), a frosted band at eye height (ROW {@code middle}) and a head rail along its top (ROW {@code top}).
- * FACING is the way one of its faces looks; it is the same from both sides. Only the blueprints place it; broken, it
- * gives back nothing.
+ * FACING is the way one of its faces looks; it is the same from both sides. Broken, it gives itself back, row and all.
  */
 public class LabPartitionBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<LabPartitionBlock> CODEC = simpleCodec(LabPartitionBlock::new);
@@ -56,6 +60,22 @@ public class LabPartitionBlock extends HorizontalDirectionalBlock {
     /** A row of the partition, its faces looking the way given and the opposite way. */
     public BlockState of(Row row, Direction facing) {
         return defaultBlockState().setValue(ROW, row).setValue(FACING, facing);
+    }
+
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** Itself, with its row, the way one broken comes back; the middle row is left plain, so they stack. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (state.getValue(ROW) != defaultBlockState().getValue(ROW)) {
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(ROW, state.getValue(ROW)));
+        }
+        return stack;
     }
 
     @Override

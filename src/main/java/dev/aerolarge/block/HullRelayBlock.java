@@ -1,5 +1,9 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.AerolargeRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -30,5 +34,11 @@ public class HullRelayBlock extends ThrustRelayBlock {
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
         return Lining.mirror(state, mirror);
+    }
+
+    /** Picked, the airframe panel it is passed off as. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(AerolargeRegistry.AIRFRAME_PANEL_ITEM.get());
     }
 }

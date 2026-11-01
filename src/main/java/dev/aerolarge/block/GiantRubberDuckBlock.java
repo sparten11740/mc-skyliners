@@ -18,6 +18,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -54,7 +56,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * shape, so it is solid where the duck is drawn, and the origin's renderer draws the whole duck from the rubber duck's
  * own model. Landing or standing on it bounces whoever it is straight back up with a squeak, like the pool's
  * springboard (see {@link SpringboardBlock}); sneak to stand on it. Used or hit, it squeaks; like a hidden duck it only
- * comes apart for a player who sneaks, and then breaking any part takes the whole duck away, leaving nothing behind.
+ * comes apart for a player who sneaks, and then breaking any part takes the whole duck away, giving back one duck.
  */
 public class GiantRubberDuckBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
     private static final MapCodec<GiantRubberDuckBlock> CODEC = simpleCodec(GiantRubberDuckBlock::new);
@@ -212,6 +214,25 @@ public class GiantRubberDuckBlock extends HorizontalDirectionalBlock implements 
         }
     }
 
+    /**
+     * Put down by hand, it looks at whoever puts it there, if there is room for all of it. Only its origin goes in now:
+     * its block entity finds it already risen and puts the rest in round it on its next tick, squeak, fanfare and all.
+     */
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction facing = context.getHorizontalDirection().getOpposite();
+        BlockPos origin = context.getClickedPos();
+        Level level = context.getLevel();
+        for (int part : SOLID) {
+            BlockPos at = origin.offset(offset(part, facing));
+            if (level.isOutsideBuildHeight(at) || !roomFor(level.getBlockState(at))) {
+                return null;
+            }
+        }
+        return partAt(level, origin, ORIGIN, facing);
+    }
+
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING))[state.getValue(PART)];
@@ -286,6 +307,13 @@ public class GiantRubberDuckBlock extends HorizontalDirectionalBlock implements 
             return false;
         }
         return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+    }
+
+    /** Broken by someone not in creative mode, the whole of it gives back one duck, whichever part they broke. */
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+        super.playerDestroy(level, player, pos, state, blockEntity, tool);
+        popResource(level, pos, new ItemStack(this));
     }
 
     /** Its deep squeak, used or hit, with a few hearts over the part of it touched. */

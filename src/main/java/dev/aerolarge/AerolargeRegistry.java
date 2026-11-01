@@ -1306,7 +1306,7 @@ public final class AerolargeRegistry {
     /**
      * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
      * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
-     * away. Only a falling chunk leaves a lump, so it has no item and gives nothing back; nothing bumps into it, so it
+     * away. It melts, so it gives nothing back, and its item is only for copying one; nothing bumps into it, so it
      * never stands in the way of a wheel.
      */
     public static final DeferredBlock<VacuumToiletBlock> VACUUM_TOILET = BLOCKS.registerBlock(
@@ -1466,11 +1466,11 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BUNK_ITEM = ITEMS.registerSimpleBlockItem(BUNK);
     /**
      * The ladder up a bunk bed's foot end to its upper bunk (see {@link BunkBlock.Tier}), climbed as any ladder is: it
-     * comes and goes with its bunk bed, so it has no item and drops nothing.
+     * comes and goes with its bunk bed, which takes it down with nothing dropped, but a piece broken gives itself back.
      */
     public static final DeferredBlock<RungLadderBlock> BUNK_LADDER = BLOCKS.registerBlock(
         "bunk_ladder", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.BUNK_LADDER),
-        metal(MapColor.SNOW).sound(SoundType.METAL).noOcclusion().noLootTable().pushReaction(PushReaction.DESTROY)
+        metal(MapColor.SNOW).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
             .isValidSpawn(AerolargeRegistry::never)
     );
     /**
@@ -1523,9 +1523,9 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> RUBBER_DUCK_ITEM = ITEMS.registerSimpleBlockItem(RUBBER_DUCK);
     public static final DeferredHolder<SoundEvent, SoundEvent> RUBBER_DUCK_SQUEAK = sound("rubber_duck_squeak");
     /**
-     * The giant rubber duck that rises out of the moon pool once all the hidden ducks are found, and its huge squeak:
-     * only ever raised, so it has no item, and it leaves nothing behind. Its blocks are as light as the rest of the
-     * fittings, so it does not tip the airliner.
+     * The giant rubber duck that rises out of the moon pool once all the hidden ducks are found, and its huge squeak.
+     * Its blocks are as light as the rest of the fittings, so it does not tip the airliner. Its loot is its block's own
+     * (see {@link GiantRubberDuckBlock}), one duck for however many parts come down.
      */
     public static final DeferredBlock<GiantRubberDuckBlock> GIANT_RUBBER_DUCK = BLOCKS.registerBlock(
         "giant_rubber_duck", GiantRubberDuckBlock::new,
@@ -1947,7 +1947,6 @@ public final class AerolargeRegistry {
     /**
      * The rocket's LED strips round each of her stories, the panel by each story's lift door that sets them, and the
      * console in her cockpit that sets any story or all of them (see {@link dev.aerolarge.airframe.RocketLedStrips}).
-     * Placed only by the blueprint, so no items, and they give nothing back.
      */
     /** The invisible limit of her planetarium's sky, which nobody climbs or flies through. */
     public static final DeferredBlock<DomeLimitBlock> DOME_LIMIT = BLOCKS.registerBlock(
@@ -1958,26 +1957,26 @@ public final class AerolargeRegistry {
     );
     public static final DeferredBlock<LedStripBlock> LED_STRIP = BLOCKS.registerBlock(
         "led_strip", LedStripBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion().noLootTable()
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
             .lightLevel(LedStripBlock::light)
     );
     public static final DeferredBlock<LedPanelBlock> LED_PANEL = BLOCKS.registerBlock(
-        "led_panel", LedPanelBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable()
+        "led_panel", LedPanelBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedPanelBlockEntity>> LED_PANEL_ENTITY =
         BLOCK_ENTITIES.register("led_panel", () -> BlockEntityType.Builder.of(LedPanelBlockEntity::new, LED_PANEL.get()).build(null));
     public static final DeferredBlock<LedConsoleBlock> LED_CONSOLE = BLOCKS.registerBlock(
-        "led_console", LedConsoleBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable()
+        "led_console", LedConsoleBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedConsoleBlockEntity>> LED_CONSOLE_ENTITY =
         BLOCK_ENTITIES.register("led_console", () -> BlockEntityType.Builder.of(LedConsoleBlockEntity::new, LED_CONSOLE.get()).build(null));
     /**
      * The snack machine in the rocket's cafeteria, on her observation deck's mezzanine (see
      * {@link dev.aerolarge.airframe.RocketObservationDeck}), and the whirr of its spiral turning and the clunk of a snack
-     * dropping into its flap. Placed only by the blueprint, so no item, and it gives nothing back.
+     * dropping into its flap.
      */
     public static final DeferredBlock<SnackMachineBlock> SNACK_MACHINE = BLOCKS.registerBlock(
-        "snack_machine", SnackMachineBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().noLootTable().lightLevel(SnackMachineBlock::light)
+        "snack_machine", SnackMachineBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().lightLevel(SnackMachineBlock::light)
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> SNACK_MACHINE_WHIRR = sound("snack_machine_whirr");
     public static final DeferredHolder<SoundEvent, SoundEvent> SNACK_MACHINE_CLUNK = sound("snack_machine_clunk");
@@ -1985,30 +1984,30 @@ public final class AerolargeRegistry {
      * The rocket's lab (see {@link dev.aerolarge.airframe.RocketLab}): the glass of her tardigrade's tank, its lowest
      * row mossy and its highest lit; its feeding hatch, whose block entity keeps the creature; the lab's instruments,
      * the vitals screen among them; the pool and pebble beds of the tank's floor; the creature itself, and its purr and
-     * the bloop as it curls up. Placed only by the blueprint, so no items, and they give nothing back.
+     * the bloop as it curls up.
      */
     public static final DeferredBlock<HabitatGlassBlock> HABITAT_GLASS = BLOCKS.registerBlock(
         "habitat_glass", HabitatGlassBlock::new,
-        glass().noLootTable().lightLevel(state -> state.getValue(HabitatGlassBlock.ROW) == HabitatGlassBlock.Row.TOP ? HabitatGlassBlock.GLOW : 0)
+        glass().lightLevel(state -> state.getValue(HabitatGlassBlock.ROW) == HabitatGlassBlock.Row.TOP ? HabitatGlassBlock.GLOW : 0)
     );
-    public static final DeferredBlock<HabitatHatchBlock> HABITAT_HATCH = BLOCKS.registerBlock("habitat_hatch", HabitatHatchBlock::new, glass().noLootTable());
+    public static final DeferredBlock<HabitatHatchBlock> HABITAT_HATCH = BLOCKS.registerBlock("habitat_hatch", HabitatHatchBlock::new, glass());
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HabitatHatchBlockEntity>> HABITAT_HATCH_ENTITY =
         BLOCK_ENTITIES.register("habitat_hatch", () -> BlockEntityType.Builder.of(HabitatHatchBlockEntity::new, HABITAT_HATCH.get()).build(null));
     public static final DeferredBlock<LabInstrumentBlock> LAB_INSTRUMENT = BLOCKS.registerBlock(
-        "lab_instrument", LabInstrumentBlock::new, metal(MapColor.SNOW).noOcclusion().noLootTable().lightLevel(LabInstrumentBlock::light)
+        "lab_instrument", LabInstrumentBlock::new, metal(MapColor.SNOW).noOcclusion().lightLevel(LabInstrumentBlock::light)
     );
     /**
      * The brass orrery hanging from the tip of the rocket's nose over her cockpit, its sun and planets drawn by its
-     * block entity. Placed only by the blueprint, so no item, and it gives nothing back.
+     * block entity.
      */
     public static final DeferredBlock<OrreryBlock> ORRERY = BLOCKS.registerBlock(
-        "orrery", OrreryBlock::new, metal(MapColor.GOLD).noCollission().noOcclusion().noLootTable().pushReaction(PushReaction.DESTROY)
+        "orrery", OrreryBlock::new, metal(MapColor.GOLD).noCollission().noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OrreryBlockEntity>> ORRERY_ENTITY =
         BLOCK_ENTITIES.register("orrery", () -> BlockEntityType.Builder.of(OrreryBlockEntity::new, ORRERY.get()).build(null));
     public static final DeferredBlock<HabitatFloorBlock> HABITAT_FLOOR = BLOCKS.registerBlock(
         "habitat_floor", HabitatFloorBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.1F).sound(SoundType.MOSS_CARPET).noOcclusion().noLootTable()
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.1F).sound(SoundType.MOSS_CARPET).noOcclusion()
             .isValidSpawn(AerolargeRegistry::never)
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Tardigrade>> TARDIGRADE = ENTITY_TYPES.register(
@@ -2026,28 +2025,27 @@ public final class AerolargeRegistry {
      * The lab's food lab (see {@link dev.aerolarge.airframe.LabPlan}): the cultured-meat bioreactor, which grows a
      * Lab-Grown Steak over and over; the hydroponic rack and the algae column glowing beside it; the sample centrifuge
      * on the counters; the glazed partition screening the food lab off; the pipes feeding the machines from the
-     * ceiling; the steak; and the sounds of a harvest and of a spin. Placed only by the blueprint, so the blocks have no
-     * items, and they give nothing back.
+     * ceiling; the steak; and the sounds of a harvest and of a spin.
      */
     public static final DeferredBlock<BioreactorBlock> BIOREACTOR = BLOCKS.registerBlock(
-        "bioreactor", BioreactorBlock::new, glass().noLootTable().lightLevel(state -> BioreactorBlock.GLOW)
+        "bioreactor", BioreactorBlock::new, glass().lightLevel(state -> BioreactorBlock.GLOW)
     );
     public static final DeferredBlock<LabGrowerBlock> HYDROPONIC_RACK = BLOCKS.registerBlock(
         "hydroponic_rack", properties -> new LabGrowerBlock(properties, LabGrowerBlock.Kind.HYDROPONIC_RACK),
-        metal(MapColor.PLANT).noOcclusion().noLootTable().lightLevel(state -> LabGrowerBlock.RACK_GLOW)
+        metal(MapColor.PLANT).noOcclusion().lightLevel(state -> LabGrowerBlock.RACK_GLOW)
     );
     public static final DeferredBlock<LabGrowerBlock> ALGAE_COLUMN = BLOCKS.registerBlock(
         "algae_column", properties -> new LabGrowerBlock(properties, LabGrowerBlock.Kind.ALGAE_COLUMN),
-        glass().noLootTable().lightLevel(state -> LabGrowerBlock.COLUMN_GLOW)
+        glass().lightLevel(state -> LabGrowerBlock.COLUMN_GLOW)
     );
     public static final DeferredBlock<SampleCentrifugeBlock> SAMPLE_CENTRIFUGE = BLOCKS.registerBlock(
         "sample_centrifuge", SampleCentrifugeBlock::new,
-        metal(MapColor.SNOW).noOcclusion().noLootTable()
+        metal(MapColor.SNOW).noOcclusion()
             .lightLevel(state -> state.getValue(SampleCentrifugeBlock.SPINNING) ? SampleCentrifugeBlock.SPIN_GLOW : 0)
     );
-    public static final DeferredBlock<LabPartitionBlock> LAB_PARTITION = BLOCKS.registerBlock("lab_partition", LabPartitionBlock::new, glass().noLootTable());
+    public static final DeferredBlock<LabPartitionBlock> LAB_PARTITION = BLOCKS.registerBlock("lab_partition", LabPartitionBlock::new, glass());
     public static final DeferredBlock<LabPipeBlock> LAB_PIPE = BLOCKS.registerBlock(
-        "lab_pipe", LabPipeBlock::new, metal(MapColor.METAL).noOcclusion().noLootTable()
+        "lab_pipe", LabPipeBlock::new, metal(MapColor.METAL).noOcclusion()
     );
     /** A steak grown in the lab's bioreactor: as filling as a cooked steak, and no cow the worse for it. */
     public static final DeferredItem<Item> LAB_GROWN_STEAK = ITEMS.registerSimpleItem(
@@ -2474,20 +2472,19 @@ public final class AerolargeRegistry {
 
     /**
      * The furniture of the rocket's rooms (see {@link dev.aerolarge.airframe.RocketRoom}): open shelf units stocked with
-     * each room's things, stood across her rooms as low dividers, and the bays of her cargo bay's pallet racks. Placed
-     * only by the blueprint, so no items, and they give nothing back.
+     * each room's things, stood across her rooms as low dividers, and the bays of her cargo bay's pallet racks.
      */
     public static final DeferredBlock<ShelfUnitBlock> SHELF_UNIT = BLOCKS.registerBlock(
         "shelf_unit", ShelfUnitBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion().noLootTable()
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
             .isValidSpawn(AerolargeRegistry::never)
     );
     public static final DeferredBlock<PalletRackBlock> PALLET_RACK = BLOCKS.registerBlock(
-        "pallet_rack", PalletRackBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().noLootTable()
+        "pallet_rack", PalletRackBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion()
     );
     /** The entry's airlock panel, its screen glowing, and its cycle's clunk and hiss and the chime as it clears. */
     public static final DeferredBlock<AirlockPanelBlock> AIRLOCK_PANEL = BLOCKS.registerBlock(
-        "airlock_panel", AirlockPanelBlock::new, metal(MapColor.METAL).noOcclusion().noLootTable().lightLevel(AirlockPanelBlock::glow)
+        "airlock_panel", AirlockPanelBlock::new, metal(MapColor.METAL).noOcclusion().lightLevel(AirlockPanelBlock::glow)
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CYCLE = sound("airlock_cycle");
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CLEAR = sound("airlock_clear");
@@ -2498,14 +2495,14 @@ public final class AerolargeRegistry {
     );
     /** The cargo bay's parcel scanner, its lamp and screen glowing, and its whirr as it scans, its beep and its buzz. */
     public static final DeferredBlock<ParcelScannerBlock> PARCEL_SCANNER = BLOCKS.registerBlock(
-        "parcel_scanner", ParcelScannerBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().noLootTable().lightLevel(ParcelScannerBlock::glow)
+        "parcel_scanner", ParcelScannerBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(ParcelScannerBlock::glow)
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_SWEEP = sound("scanner_sweep");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_PASS = sound("scanner_pass");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_FAIL = sound("scanner_fail");
     /** The galley's fridge, lit inside while it stands open, what it holds, and its door's pop and hum and its thud. */
     public static final DeferredBlock<GalleyFridgeBlock> GALLEY_FRIDGE = BLOCKS.registerBlock(
-        "galley_fridge", GalleyFridgeBlock::new, metal(MapColor.METAL).noOcclusion().noLootTable().lightLevel(GalleyFridgeBlock::glow)
+        "galley_fridge", GalleyFridgeBlock::new, metal(MapColor.METAL).noOcclusion().lightLevel(GalleyFridgeBlock::glow)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GalleyFridgeBlockEntity>> GALLEY_FRIDGE_ENTITY =
         BLOCK_ENTITIES.register("galley_fridge", () -> BlockEntityType.Builder.of(GalleyFridgeBlockEntity::new, GALLEY_FRIDGE.get()).build(null));
@@ -2513,14 +2510,14 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> FRIDGE_CLOSE = sound("fridge_close");
     /** The pool's wave machine, its button glowing, the block entity that draws its waves, and their sound. */
     public static final DeferredBlock<WaveMachineBlock> WAVE_MACHINE = BLOCKS.registerBlock(
-        "wave_machine", WaveMachineBlock::new, metal(MapColor.SNOW).noOcclusion().noLootTable().lightLevel(WaveMachineBlock::glow)
+        "wave_machine", WaveMachineBlock::new, metal(MapColor.SNOW).noOcclusion().lightLevel(WaveMachineBlock::glow)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WaveMachineBlockEntity>> WAVE_MACHINE_ENTITY =
         BLOCK_ENTITIES.register("wave_machine", () -> BlockEntityType.Builder.of(WaveMachineBlockEntity::new, WAVE_MACHINE.get()).build(null));
     public static final DeferredHolder<SoundEvent, SoundEvent> WAVE_SURGE = sound("wave_surge");
     /** The club's fog machine, its nozzle glowing as it pumps, the block entity that draws its fog, and its hiss. */
     public static final DeferredBlock<FogMachineBlock> FOG_MACHINE = BLOCKS.registerBlock(
-        "fog_machine", FogMachineBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable().lightLevel(FogMachineBlock::glow)
+        "fog_machine", FogMachineBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(FogMachineBlock::glow)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FogMachineBlockEntity>> FOG_MACHINE_ENTITY =
         BLOCK_ENTITIES.register("fog_machine", () -> BlockEntityType.Builder.of(FogMachineBlockEntity::new, FOG_MACHINE.get()).build(null));
@@ -2564,6 +2561,40 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_HORN = sound("rover_horn");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_RANGE = sound("rover_range");
 
+    /**
+     * The items of what the blueprints lay in the rocket's rooms, so that a player can copy them with the pick block
+     * key and put them up anywhere: each works on its own as far as it can without what a ship wires it to.
+     */
+    public static final DeferredItem<BlockItem> SNACK_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(SNACK_MACHINE);
+    public static final DeferredItem<BlockItem> GALLEY_FRIDGE_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_FRIDGE);
+    public static final DeferredItem<BlockItem> SHELF_UNIT_ITEM = ITEMS.registerSimpleBlockItem(SHELF_UNIT);
+    public static final DeferredItem<BlockItem> PALLET_RACK_ITEM = ITEMS.registerSimpleBlockItem(PALLET_RACK);
+    public static final DeferredItem<BlockItem> PARCEL_SCANNER_ITEM = ITEMS.registerSimpleBlockItem(PARCEL_SCANNER);
+    public static final DeferredItem<BlockItem> AIRLOCK_PANEL_ITEM = ITEMS.registerSimpleBlockItem(AIRLOCK_PANEL);
+    public static final DeferredItem<BlockItem> FOG_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(FOG_MACHINE);
+    public static final DeferredItem<BlockItem> WAVE_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(WAVE_MACHINE);
+    public static final DeferredItem<BlockItem> BUNK_LADDER_ITEM = ITEMS.registerSimpleBlockItem(BUNK_LADDER);
+    public static final DeferredItem<BlockItem> ORRERY_ITEM = ITEMS.registerSimpleBlockItem(ORRERY);
+    public static final DeferredItem<BlockItem> GIANT_RUBBER_DUCK_ITEM = ITEMS.registerSimpleBlockItem(GIANT_RUBBER_DUCK);
+    public static final DeferredItem<BlockItem> LAV_ICE_ITEM = ITEMS.registerSimpleBlockItem(LAV_ICE);
+    public static final DeferredItem<BlockItem> BIOREACTOR_ITEM = ITEMS.registerSimpleBlockItem(BIOREACTOR);
+    public static final DeferredItem<BlockItem> HYDROPONIC_RACK_ITEM = ITEMS.registerSimpleBlockItem(HYDROPONIC_RACK);
+    public static final DeferredItem<BlockItem> ALGAE_COLUMN_ITEM = ITEMS.registerSimpleBlockItem(ALGAE_COLUMN);
+    public static final DeferredItem<BlockItem> SAMPLE_CENTRIFUGE_ITEM = ITEMS.registerSimpleBlockItem(SAMPLE_CENTRIFUGE);
+    public static final DeferredItem<BlockItem> LAB_INSTRUMENT_ITEM = ITEMS.registerSimpleBlockItem(LAB_INSTRUMENT);
+    public static final DeferredItem<BlockItem> LAB_PARTITION_ITEM = ITEMS.registerSimpleBlockItem(LAB_PARTITION);
+    public static final DeferredItem<BlockItem> LAB_PIPE_ITEM = ITEMS.registerSimpleBlockItem(LAB_PIPE);
+    public static final DeferredItem<BlockItem> HABITAT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(HABITAT_GLASS);
+    public static final DeferredItem<BlockItem> HABITAT_HATCH_ITEM = ITEMS.registerSimpleBlockItem(HABITAT_HATCH);
+    public static final DeferredItem<BlockItem> HABITAT_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(HABITAT_FLOOR);
+    public static final DeferredItem<BlockItem> LED_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LED_STRIP);
+    public static final DeferredItem<BlockItem> LED_PANEL_ITEM = ITEMS.registerSimpleBlockItem(LED_PANEL);
+    public static final DeferredItem<BlockItem> LED_CONSOLE_ITEM = ITEMS.registerSimpleBlockItem(LED_CONSOLE);
+    public static final DeferredItem<BlockItem> LIFT_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(LIFT_MACHINE);
+    public static final DeferredItem<BlockItem> LIFT_DOOR_ITEM = ITEMS.registerSimpleBlockItem(LIFT_DOOR);
+    public static final DeferredItem<BlockItem> LIFT_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIFT_BOARD);
+    public static final DeferredItem<BlockItem> LIFT_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(LIFT_CALL_BUTTON);
+
     /** A section of the creative tab, under a banner of its own: its name ("itemGroup.aerolarge.<name>") and items. */
     public record TabSection(String name, List<? extends Supplier<? extends Item>> items) {
     }
@@ -2571,8 +2602,8 @@ public final class AerolargeRegistry {
     /**
      * The creative tab's sections, in order, each under a banner of its own (see {@link dev.aerolarge.client.TabBanners}):
      * what the craft are built from, the controls they are flown and worked by, the gear and gadgets aboard, the cabin's
-     * and the rooms' furniture, food and drink, the leisure rooms, lights and decorations, and the airport; related things
-     * side by side and variants next to each other.
+     * and the rooms' furniture, food and drink, the leisure rooms, lights and decorations, the airport and what the
+     * rocket's rooms are fitted with; related things side by side and variants next to each other.
      */
     public static final List<TabSection> TAB_SECTIONS = List.of(
         new TabSection("blueprints", List.of(
@@ -2671,6 +2702,14 @@ public final class AerolargeRegistry {
         new TabSection("airport", List.of(
             TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, FLIGHT_STRIP_BOARD_ITEM, ATIS_SCREEN_ITEM, WIND_SOCK_ITEM, MOTION_SENSOR_ITEM,
             LIFT_PANEL_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, JET_BRIDGE_ITEM
+        )),
+        new TabSection("rocket_rooms", List.of(
+            SNACK_MACHINE_ITEM, GALLEY_FRIDGE_ITEM, SHELF_UNIT_ITEM, PALLET_RACK_ITEM, PARCEL_SCANNER_ITEM, AIRLOCK_PANEL_ITEM, FOG_MACHINE_ITEM,
+            WAVE_MACHINE_ITEM, BUNK_LADDER_ITEM, ORRERY_ITEM, GIANT_RUBBER_DUCK_ITEM, LAV_ICE_ITEM,
+            BIOREACTOR_ITEM, HYDROPONIC_RACK_ITEM, ALGAE_COLUMN_ITEM, SAMPLE_CENTRIFUGE_ITEM, LAB_INSTRUMENT_ITEM, LAB_PARTITION_ITEM, LAB_PIPE_ITEM,
+            HABITAT_GLASS_ITEM, HABITAT_HATCH_ITEM, HABITAT_FLOOR_ITEM,
+            LED_STRIP_ITEM, LED_PANEL_ITEM, LED_CONSOLE_ITEM,
+            LIFT_MACHINE_ITEM, LIFT_DOOR_ITEM, LIFT_BOARD_ITEM, LIFT_CALL_BUTTON_ITEM
         ))
     );
 

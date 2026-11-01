@@ -244,9 +244,12 @@ public class BunkBlock extends HorizontalDirectionalBlock {
         }
     }
 
-    /** The ladder up a bunk bed's foot end, standing at its foot. */
+    /**
+     * The ladder up a bunk bed's foot end, standing at its foot: from the top down, as a piece left with nothing under
+     * it would fall and give itself back, and the ladder goes with its bed with nothing dropped.
+     */
     private static void takeDownLadder(Level level, BlockPos foot) {
-        for (int row = 0; row < LADDER_ROWS; row++) {
+        for (int row = LADDER_ROWS - 1; row >= 0; row--) {
             BlockPos at = foot.above(row);
             if (level.getBlockState(at).is(AerolargeRegistry.BUNK_LADDER.get())) {
                 level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);

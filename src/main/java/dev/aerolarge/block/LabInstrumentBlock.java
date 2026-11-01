@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -13,8 +14,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,8 +40,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * across it under the creature's own picture, which goes slow and blue (DORMANT) while the creature is curled up in
  * its tun, and lies down under a crescent moon, its pulse slow (ASLEEP), while it sleeps (see
  * {@link HabitatHatchBlockEntity}); and specimen jars, three on a tray, a pickled tentacle, an eye and a
- * sprouting potato each in its own faintly glowing liquid. FACING is the way its front looks. Only the blueprints place
- * them; broken, they give back nothing.
+ * sprouting potato each in its own faintly glowing liquid. FACING is the way its front looks. Broken, they give
+ * themselves back, kind and all. A vitals screen set up by hand has no creature to watch, and only ever beats.
  */
 public class LabInstrumentBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<LabInstrumentBlock> CODEC = simpleCodec(LabInstrumentBlock::new);
@@ -126,6 +131,22 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
             case WEST -> Block.box(z0, y0, 16 - x1, z1, y1, 16 - x0);
             default -> Block.box(x0, y0, z0, x1, y1, z1);
         };
+    }
+
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** Itself, with its kind, the way one broken comes back; the microscope is left plain, so they stack. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (state.getValue(KIND) != defaultBlockState().getValue(KIND)) {
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(KIND, state.getValue(KIND)));
+        }
+        return stack;
     }
 
     @Override

@@ -5,6 +5,7 @@ import dev.aerolarge.AerolargeRegistry;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,10 +14,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -102,6 +105,33 @@ public class SnackMachineBlock extends HorizontalDirectionalBlock {
     /** The upper block over a machine's lower block. */
     public static BlockState upper(BlockState lower) {
         return lower.setValue(HALF, DoubleBlockHalf.UPPER);
+    }
+
+    /** Put down by hand, it faces whoever puts it there, and needs the room above for its upper block. */
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockPos pos = context.getClickedPos();
+        Level level = context.getLevel();
+        if (pos.getY() >= level.getMaxBuildHeight() - 1 || !level.getBlockState(pos.above()).canBeReplaced(context)) {
+            return null;
+        }
+        return lower(this, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** The upper block goes up over the lower block put down. */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        level.setBlock(pos.above(), upper(state), Block.UPDATE_ALL);
+    }
+
+    /** Broken by its upper block in creative mode, the lower block it takes with it drops nothing either. */
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide && player.isCreative() && state.getValue(HALF) == DoubleBlockHalf.UPPER && level.getBlockState(pos.below()).is(this)) {
+            level.setBlock(pos.below(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
+        }
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     /** The light a block of it gives: its showcase always, its flap while a sale is under way. */

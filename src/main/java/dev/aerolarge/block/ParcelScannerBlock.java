@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -78,6 +79,12 @@ public class ParcelScannerBlock extends HorizontalDirectionalBlock {
      * Scans what is on its belt when ready; while busy, only a click, or its next step at once where that was lost, as
      * when the rocket was assembled in the middle of a scan.
      */
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level instanceof ServerLevel server) || player.isSpectator()) {

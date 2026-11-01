@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -13,8 +14,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -172,5 +175,15 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return state.getValue(HOLDER) ? new CockpitDisplayBlockEntity(pos, state) : null;
+    }
+
+    /** Picked, the screen put up by hand that shows what this one does: the row itself goes up with a deck. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(switch (state.getValue(SHOWS)) {
+            case FLIGHT, SYSTEMS -> AerolargeRegistry.FLIGHT_DISPLAY_ITEM.get();
+            case MAP -> AerolargeRegistry.FLIGHT_MAP_ITEM.get();
+            case CAMERA -> AerolargeRegistry.TAIL_CAMERA_DISPLAY_ITEM.get();
+        });
     }
 }

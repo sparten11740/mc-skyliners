@@ -2,7 +2,10 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.PipeBlock;
@@ -15,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
  * The lab's plumbing: a brushed steel pipe a quarter of a block thick, banded green where it joins, run up from the
  * caps of the food machines into the ceiling and along it, feeding them their broth, water and air. It runs from its
  * middle each way it has set (NORTH, EAST, SOUTH, WEST, UP and DOWN), as the blueprint lays it, so its runs turn
- * corners and branch. Only the blueprints place it; broken, it gives back nothing.
+ * corners and branch. Broken, it gives itself back.
  */
 public class LabPipeBlock extends PipeBlock {
     private static final MapCodec<LabPipeBlock> CODEC = simpleCodec(LabPipeBlock::new);
@@ -48,6 +51,30 @@ public class LabPipeBlock extends PipeBlock {
             state = state.setValue(PROPERTY_BY_DIRECTION.get(way), true);
         }
         return state;
+    }
+
+    /**
+     * Put up by hand, it runs into the block it was put against and each pipe beside it, so a run laid a block at a
+     * time joins up as it goes.
+     */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockState state = defaultBlockState().setValue(PROPERTY_BY_DIRECTION.get(context.getClickedFace().getOpposite()), true);
+        for (Direction way : Direction.values()) {
+            if (context.getLevel().getBlockState(context.getClickedPos().relative(way)).is(this)) {
+                state = state.setValue(PROPERTY_BY_DIRECTION.get(way), true);
+            }
+        }
+        return state;
+    }
+
+    /** A pipe laid beside it joins it, and a run ends where what it ran into is gone, so no stub points at the air. */
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbour, LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
+        if (neighbour.is(this)) {
+            return state.setValue(PROPERTY_BY_DIRECTION.get(direction), true);
+        }
+        return neighbour.isAir() ? state.setValue(PROPERTY_BY_DIRECTION.get(direction), false) : state;
     }
 
     /** Its runs turn with it, as when the rocket is built facing another way. */

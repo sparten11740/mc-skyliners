@@ -2,8 +2,14 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Locale;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -52,5 +58,21 @@ public class PalletRackBlock extends HorizontalDirectionalBlock {
     /** A bay of this block with this load, facing the way given, as the blueprints put one in. */
     public static BlockState loaded(Block rack, Load load, Direction facing) {
         return rack.defaultBlockState().setValue(LOAD, load).setValue(FACING, facing);
+    }
+
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** Itself, with its load, the way one broken comes back; the boxes is left plain, so they stack. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (state.getValue(LOAD) != defaultBlockState().getValue(LOAD)) {
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LOAD, state.getValue(LOAD)));
+        }
+        return stack;
     }
 }

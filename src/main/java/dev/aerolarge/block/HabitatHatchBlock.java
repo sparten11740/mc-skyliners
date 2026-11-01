@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -42,7 +43,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * keeps the creature): a pane of the tank's glass with a small steel hatch in it. Use it with moss in hand and the
  * hatch slides open, the moss goes in and the creature comes to eat it; with an empty hand, to reach in and touch it.
  * Open, a hand fits through it, so the creature can be fed or touched straight through it when it stands there. FACING
- * is the way out of the tank. Only the blueprints place it; broken, it gives back nothing.
+ * is the way out of the tank. Broken, it gives itself back. Set up by hand it keeps no creature, having no tank, and
+ * only opens and shuts.
  */
 public class HabitatHatchBlock extends BaseEntityBlock {
     private static final MapCodec<HabitatHatchBlock> CODEC = simpleCodec(HabitatHatchBlock::new);
@@ -78,6 +80,12 @@ public class HabitatHatchBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, OPEN);
+    }
+
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     /** A box given in pixels as drawn facing north, turned to face the given way about the block's middle. */

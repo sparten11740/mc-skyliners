@@ -968,4 +968,10 @@ public class Rover extends Entity {
         forced = homing && tag.getBoolean("Forced");
         snapping = state == State.LOWERING || state == State.HOISTING;
     }
+
+    /** Picked, its remote. */
+    @Override
+    public ItemStack getPickResult() {
+        return new ItemStack(AerolargeRegistry.ROVER_REMOTE.get());
+    }
 }

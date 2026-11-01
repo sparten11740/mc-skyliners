@@ -1,8 +1,11 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.EnumSet;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -16,8 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The brass orrery hanging from the tip of the rocket's nose, over her cockpit (see {@code airframe.RocketDome}): this
  * block is its mount, a brass rose against her skin, and its block entity draws the rest on the clients, a brass rod
- * down to a glowing sun and the planets circling it on their arms. Placed only by the blueprint, so it has no item and
- * gives nothing back; taken down, it takes the soft light round its sun with it.
+ * down to a glowing sun and the planets circling it on their arms. Broken, it gives itself back; taken down, it takes
+ * the soft light round its sun with it.
  */
 public class OrreryBlock extends Block implements EntityBlock {
     private static final MapCodec<OrreryBlock> CODEC = simpleCodec(OrreryBlock::new);
@@ -31,6 +34,13 @@ public class OrreryBlock extends Block implements EntityBlock {
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
+    }
+
+    /** Put up by hand, it hangs from a ceiling, and nowhere else. */
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Mounting.support(context, EnumSet.of(Mount.CEILING)) == null ? null : defaultBlockState();
     }
 
     @Override

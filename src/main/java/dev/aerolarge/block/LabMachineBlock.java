@@ -1,8 +1,12 @@
 package dev.aerolarge.block;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -18,8 +22,8 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 /**
  * One of the food machines of the rocket's lab, standing two blocks tall on the floor, a little over a player's height
  * (see {@link BioreactorBlock} and {@link LabGrowerBlock}): the lower half on the floor, the upper over it, either half
- * the machine to use. A half whose other half is gone goes too, so a machine is only ever whole. FACING is the way its
- * front looks. Only the blueprints place them; broken, they give back nothing.
+ * the machine to use. A half whose other half is gone goes too, so a machine is only ever whole, and the lower half
+ * gives the machine back. FACING is the way its front looks.
  */
 public abstract class LabMachineBlock extends HorizontalDirectionalBlock {
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
@@ -36,6 +40,24 @@ public abstract class LabMachineBlock extends HorizontalDirectionalBlock {
     /** Where the machine's lower half is, under the half given or the half itself. */
     protected static BlockPos lower(BlockPos pos, BlockState state) {
         return state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
+    }
+
+    /** Put down by hand, it faces whoever puts it there, and needs the room above for its upper half. */
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockPos pos = context.getClickedPos();
+        Level level = context.getLevel();
+        if (pos.getY() >= level.getMaxBuildHeight() - 1 || !level.getBlockState(pos.above()).canBeReplaced(context)) {
+            return null;
+        }
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** The upper half goes up over the lower half put down. */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        level.setBlock(pos.above(), state.setValue(HALF, DoubleBlockHalf.UPPER), Block.UPDATE_ALL);
     }
 
     @Override

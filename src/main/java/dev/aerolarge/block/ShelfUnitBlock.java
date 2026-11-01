@@ -5,8 +5,13 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,6 +65,22 @@ public class ShelfUnitBlock extends HorizontalDirectionalBlock {
     /** A shelf unit of this block with these things on it, facing the way given, as the blueprints put one in. */
     public static BlockState stocked(Block shelf, Kind kind, Direction facing) {
         return shelf.defaultBlockState().setValue(KIND, kind).setValue(FACING, facing);
+    }
+
+    /** Put down by hand, it faces whoever puts it there. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** Itself, with what is kept on it, the way one broken comes back; the books is left plain, so they stack. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (state.getValue(KIND) != defaultBlockState().getValue(KIND)) {
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(KIND, state.getValue(KIND)));
+        }
+        return stack;
     }
 
     @Override

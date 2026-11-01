@@ -183,4 +183,10 @@ public class Trolley extends Entity {
         stock = tag.contains("Stock") ? tag.getInt("Stock") : FULL;
         nextServing = Math.floorMod(tag.getInt("NextServing"), MENU.size());
     }
+
+    /** Picked, its item. */
+    @Override
+    public ItemStack getPickResult() {
+        return new ItemStack(AerolargeRegistry.TROLLEY_ITEM.get());
+    }
 }

@@ -20,9 +20,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A lump of blue lav ice on the ground: the frozen blue toilet water an airliner's vacuum toilet drops (see
- * {@link dev.aerolarge.entity.BlueIceChunk}), light blue, see-through and glinting. It is only ever left where there
- * was nothing at all, on solid ground, and it never stays: it melts away a few minutes after it lands, or at once when
- * the ground under it goes. Broken, it gives nothing back.
+ * {@link dev.aerolarge.entity.BlueIceChunk}), light blue, see-through and glinting. A chunk only leaves one where there
+ * was nothing at all, on solid ground, and it never stays, nor does one a player sets down: it melts away a few minutes
+ * after it lands, or at once when the ground under it goes. Broken, it gives nothing back.
  */
 public class LavIceBlock extends Block {
     private static final MapCodec<LavIceBlock> CODEC = simpleCodec(LavIceBlock::new);

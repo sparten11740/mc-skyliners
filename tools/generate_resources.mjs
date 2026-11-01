@@ -281,9 +281,8 @@ function cockpitDoorLang() {
 // middle six pixels of its texture, its picture, the right way up for someone standing at the button's foot; on a
 // wall, turned up off the floor, it would stand on its head and back to front, so a wall button's face is turned half
 // round to read the right way up. In the hand, the button upright, its cap to the north. A button may wear another's
-// cap, its picture and all; one that works only wired to what it works as an airframe lays it, as the lift's call
-// button, can be no item and drop nothing.
-function litButton(name, capName = name, asItem = true) {
+// cap, its picture and all.
+function litButton(name, capName = name) {
   const block = (texture) => `${ID}:block/${texture}`;
   const bezel = block("airstair_button_bezel");
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
@@ -303,9 +302,6 @@ function litButton(name, capName = name, asItem = true) {
   }
   litButtonState(name);
   cubes[name] = null;
-  if (!asItem) {
-    return;
-  }
   write(`assets/${ID}/models/block/${name}_inventory.json`, {
     parent: "minecraft:block/block",
     textures: { bezel, cap: block(capName), particle: bezel },
@@ -2293,6 +2289,73 @@ function keptLooks(item, looks, modelOf, plain) {
     })),
   });
 }
+// Something of several blocks, each a state of one block, that gives itself back from only one of them: the state's
+// properties say which, as { half: "lower" } or { part: "0" }.
+function dropsFrom(name, properties) {
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:${name}` }],
+      conditions: [{ condition: "minecraft:block_state_property", block: `${ID}:${name}`, properties }, { condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
+}
+// What gives itself back keeping a block state property, as picking it does; the plain value is left off, so they
+// stack.
+function dropsKeeping(name, property, plain) {
+  const block = `${ID}:${name}`;
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item",
+        name: block,
+        functions: [{
+          function: "minecraft:copy_state", block, properties: [property],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block, properties: { [property]: plain } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
+}
+// How something two blocks tall is held and shown small enough to fit, as the lavatory basin's item is.
+const TALL_ITEM_DISPLAY = {
+  gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
+  ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
+  fixed: { rotation: [0, 0, 0], translation: [0, -3, 0], scale: [0.3, 0.3, 0.3] },
+  thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 1.5, 0], scale: [0.22, 0.22, 0.22] },
+  firstperson_righthand: { rotation: [0, 45, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+  firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+};
+// The item of something two blocks tall, drawn whole: its lower block's model, as already written, with its upper's
+// over it, whose textures keep their own names so that two halves with the same name for different pictures stay apart.
+function tallItem(name, lower, upper) {
+  const written = (model) => JSON.parse(readFileSync(resolve(ROOT, `assets/${ID}/models/block/${model}.json`), "utf8"));
+  const under = written(lower);
+  const over = written(upper);
+  const upperName = (texture) => `#upper_${texture.slice(1)}`;
+  const raised = over.elements.map((element) => ({
+    ...element,
+    from: [element.from[0], element.from[1] + 16, element.from[2]],
+    to: [element.to[0], element.to[1] + 16, element.to[2]],
+    ...(element.rotation ? { rotation: { ...element.rotation, origin: [element.rotation.origin[0], element.rotation.origin[1] + 16, element.rotation.origin[2]] } } : {}),
+    faces: Object.fromEntries(Object.entries(element.faces).map(([side, face]) => [side, { ...face, texture: upperName(face.texture) }])),
+  }));
+  write(`assets/${ID}/models/item/${name}.json`, {
+    parent: "minecraft:block/block",
+    ...(under.render_type ? { render_type: under.render_type } : {}),
+    textures: { ...under.textures, ...Object.fromEntries(Object.entries(over.textures).map(([key, texture]) => [`upper_${key}`, texture])) },
+    elements: [...under.elements, ...raised],
+    display: TALL_ITEM_DISPLAY,
+  });
+}
 function dropsItself(name) {
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
@@ -4223,11 +4286,12 @@ function uldContainerLang() {
   cubes.rubber_duck = null;
 }
 // The giant rubber duck, its blocks drawn by the renderer of the one in the middle, from the rubber duck's model: the
-// blocks themselves show nothing but the duck's yellow as they break. Only ever raised, it has no item and leaves
-// nothing behind.
+// blocks themselves show nothing but the duck's yellow as they break. In the hand it is the rubber duck; broken, it
+// gives itself back by its block's own hand, whichever part was broken (see GiantRubberDuckBlock.playerDestroy).
 {
   write(`assets/${ID}/blockstates/giant_rubber_duck.json`, { variants: { "": { model: `${ID}:block/giant_rubber_duck` } } });
   write(`assets/${ID}/models/block/giant_rubber_duck.json`, { textures: { particle: `${ID}:block/rubber_duck` } });
+  write(`assets/${ID}/models/item/giant_rubber_duck.json`, { parent: `${ID}:item/rubber_duck` });
   cubes.giant_rubber_duck = null;
 }
 // Duck Hunt, in the First Flight tab: one criterion for each of the ducks hidden aboard a furnished airliner
@@ -4874,10 +4938,12 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // aside into the shaft's wall by the doorway, so it is drawn reaching into the next block. Its picture boards: the slim
 // screen of the camera display and the livery selector, a block wide and two tall, its renderer drawing the floors. The
 // floor laid under its car at a landing is not drawn, so its model has nothing in it but the glass's crumbs for its
-// particles. Only the blueprints and the lift place them, and they give back nothing.
+// particles, and only the lift lays it, so it has no item and gives nothing back; the rest give themselves back.
 {
   write(`assets/${ID}/models/block/lift_machine.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/lift_machine` } });
   write(`assets/${ID}/blockstates/lift_machine.json`, { variants: { "": { model: `${ID}:block/lift_machine` } } });
+  write(`assets/${ID}/models/item/lift_machine.json`, { parent: `${ID}:block/lift_machine` });
+  dropsItself("lift_machine");
   cubes.lift_machine = null;
   write(`assets/${ID}/models/block/lift_floor.json`, { textures: { particle: `${ID}:block/lift_glass` } });
   write(`assets/${ID}/blockstates/lift_floor.json`, { variants: { "": { model: `${ID}:block/lift_floor` } } });
@@ -4906,24 +4972,28 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   // is drawn empty.
   write(`assets/${ID}/models/block/lift_door_sliding.json`, { textures: { particle: `${ID}:block/lift_door_lower` } });
   write(`assets/${ID}/blockstates/lift_door.json`, { variants });
+  tallItem("lift_door", "lift_door_lower", "lift_door_upper");
+  dropsFrom("lift_door", { half: "lower" });
   cubes.lift_door = null;
   slimScreenModels("lift_board", `${ID}:block/lift_board_casing`, `${ID}:block/rocket_panel_back`);
   write(`assets/${ID}/blockstates/lift_board.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4, 5, 6, 7].flatMap((part) =>
       [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/lift_board${tilted ? "_tilted" : ""}`, y }])))),
   });
+  write(`assets/${ID}/models/item/lift_board.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/lift_board` } });
+  dropsFrom("lift_board", { part: "0" });
   cubes.lift_board = null;
   // The call button beside each landing's doors (see LiftCallButtonBlock), its cap showing a lift's arrows up and down.
-  litButton("lift_call_button", "lift_call_button", false);
+  litButton("lift_call_button");
 }
 
 // The rocket's LED strips (see LedStripBlock): a thin bar along each side of its block that her skin stands on, lying
 // on the floor or fixed under the ceiling, its faces glowing whatever the light around and tinted in its story's colour
 // (see the client's LedLights); one model for each, drawn along the north side and turned for the others, the bars of
 // a strip along two sides meeting in its corner. The panel by each story's lift door and the console in her cockpit
-// are slim screens of dark glass that their renderers draw over (see LedPanelRenderer and LedConsoleRenderer). All of
-// them are placed only by the blueprint, so they have no items and give nothing back; fitted into her, so breakable,
-// and light as the rest of her is (see FITTINGS).
+// are slim screens of dark glass that their renderers draw over (see LedPanelRenderer and LedConsoleRenderer), so in
+// the hand each is a picture of its own, as the strip is, which is lit only by its tint. All of them give themselves
+// back; fitted into her, so breakable, and light as the rest of her is (see FITTINGS).
 {
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   const face = (uv) => ({ texture: "#strip", uv, tintindex: 0, ...lit });
@@ -4944,6 +5014,8 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
       apply: { model: `${ID}:block/led_strip_${ceiling === "true" ? "ceiling" : "floor"}`, y },
     }))),
   });
+  write(`assets/${ID}/models/item/led_strip.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/led_strip` } });
+  dropsItself("led_strip");
   cubes.led_strip = null;
   // A strip is a thin bar of LEDs, next to nothing beside her skin: it weighs a twentieth of a block, overriding the
   // airframe's quarter (sable:super_light), so her many hundreds of strips hardly add to her weight.
@@ -4959,6 +5031,8 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
       variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4, 5, 6, 7].flatMap((part) =>
         [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/${name}${tilted ? "_tilted" : ""}`, y }])))),
     });
+    write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
+    dropsFrom(name, { part: "0" });
     cubes[name] = null;
   }
 }
@@ -5618,8 +5692,8 @@ function shaftDecorLang() {
 // with the control column beside it on the right as one faces it: the lamp and the keypad above, the card reader
 // below; under the showcase, the flap a snack drops into, lit green with the packet in it once one has. The lamp's
 // colour is the step it is at: cyan ready, blinking amber while the spiral turns, green with a snack in the flap. One
-// model for each block and step (the lower block shows only whether a snack waits), turned for each facing. Only the
-// blueprint places it, so it has no item and gives nothing back.
+// model for each block and step (the lower block shows only whether a snack waits), turned for each facing. Its lower
+// block gives it back.
 {
   const block = (name) => `${ID}:block/${name}`;
   const cabinet = { side: block("snack_machine_side"), top: block("snack_machine_top"), trim: block("snack_machine_trim"), particle: block("snack_machine_side") };
@@ -5654,6 +5728,8 @@ function shaftDecorLang() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => VENDS.map((vend) =>
       [`facing=${facing},half=${half},vend=${vend}`, { model: `${ID}:block/${model(half, vend)}`, y }])))),
   });
+  tallItem("snack_machine", "snack_machine_lower_ready", "snack_machine_upper_ready");
+  dropsFrom("snack_machine", { half: "lower" });
   cubes.snack_machine = null;
 }
 // The snack machine is fitted into the rocket rather than built into her: light like the rest, but no part of her
@@ -5761,8 +5837,9 @@ function roverLang() {
 // white enamel on a charcoal foot, its eyepieces tilted up toward whoever uses it and its stage lit from under; a rack
 // of five vials, their liquids glowing; a scan screen on a stand; and the vitals screen, a panel of the tank's wall,
 // beating, asleep beating slowly under a moon, or, curled up, still. The tank's floor patches lie on the floor as a
-// carpet does: the pool, rippling water over gravel; the pebbles, smooth stones in moss. All are placed only by the blueprint, so they have no items and
-// give nothing back; the glass and the hatch are built into her, the rest fitted (see labFittings).
+// carpet does: the pool, rippling water over gravel; the pebbles, smooth stones in moss. All give themselves back, the
+// instruments, the patches and the glass keeping their kind or row, as picking them does; the glass and the hatch are
+// built into her, the rest fitted (see labFittings).
 {
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   const pane = { texture: "#glass" };
@@ -5786,6 +5863,8 @@ function roverLang() {
       { when: { row: "floor" }, apply: { model: `${ID}:block/habitat_glass_moss` } },
     ],
   });
+  write(`assets/${ID}/models/item/habitat_glass.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/habitat_glass` } });
+  dropsKeeping("habitat_glass", "row", "middle");
   cubes.habitat_glass = null;
 
   const frame = "#frame";
@@ -5808,6 +5887,8 @@ function roverLang() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((open) =>
       [`facing=${facing},open=${open}`, { model: `${ID}:block/habitat_hatch${open ? "_open" : ""}`, y }]))),
   });
+  write(`assets/${ID}/models/item/habitat_hatch.json`, { parent: `${ID}:block/habitat_hatch` });
+  dropsItself("habitat_hatch");
   cubes.habitat_hatch = null;
 
   const instrument = { white: `${ID}:block/lab_white`, dark: `${ID}:block/lab_dark`, chrome: `${ID}:block/lab_chrome`, particle: `${ID}:block/lab_white` };
@@ -5868,6 +5949,10 @@ function roverLang() {
     }
   }
   write(`assets/${ID}/blockstates/lab_instrument.json`, { variants });
+  // In the Java enum's order (see keptLooks).
+  keptLooks("lab_instrument", { kind: ["microscope", "samples", "scan", "vitals", "specimens"] },
+    (kind) => `${ID}:block/${instrumentModel(kind, false, false)}`, ["microscope"]);
+  dropsKeeping("lab_instrument", "kind", "microscope");
   cubes.lab_instrument = null;
 
   write(`assets/${ID}/models/block/habitat_pool.json`, {
@@ -5887,6 +5972,8 @@ function roverLang() {
   write(`assets/${ID}/blockstates/habitat_floor.json`, {
     variants: { "kind=pool": { model: `${ID}:block/habitat_pool` }, "kind=pebbles": { model: `${ID}:block/habitat_pebbles` } },
   });
+  keptLooks("habitat_floor", { kind: ["pool", "pebbles"] }, (kind) => `${ID}:block/habitat_${kind}`, ["pool"]);
+  dropsKeeping("habitat_floor", "kind", "pool");
   cubes.habitat_floor = null;
 }
 foodLabModels();
@@ -5897,7 +5984,7 @@ function labFittings() {
 }
 // The rocket's dome (see RocketDome): the orrery's mount, a brass rose against her skin at the tip of her nose, a boss
 // under it for the rod; the rest of the orrery, its rod, its sun and its planets, is drawn by its block entity from a
-// sheet of its own (see OrreryRenderer). Placed only by the blueprint, so it has no item and gives nothing back.
+// sheet of its own (see OrreryRenderer), so in the hand it is a picture of its own. It gives itself back.
 {
   const brass = "#brass";
   write(`assets/${ID}/models/block/orrery.json`, {
@@ -5906,6 +5993,8 @@ function labFittings() {
     elements: [solid([5, 15, 5], [11, 16, 11], brass), solid([6.5, 14, 6.5], [9.5, 15, 9.5], brass)],
   });
   write(`assets/${ID}/blockstates/orrery.json`, { variants: { "": { model: `${ID}:block/orrery` } } });
+  write(`assets/${ID}/models/item/orrery.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/orrery` } });
+  dropsItself("orrery");
   cubes.orrery = null;
 }
 // The orrery is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
@@ -6166,6 +6255,8 @@ function foodLabModels() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3].flatMap((growth) => ["lower", "upper"].map((half) =>
       [`facing=${facing},growth=${growth},half=${half}`, { model: `${ID}:block/bioreactor_${half}_${growth}`, y }])))),
   });
+  tallItem("bioreactor", "bioreactor_lower_3", "bioreactor_upper_3");
+  dropsFrom("bioreactor", { half: "lower" });
   cubes.bioreactor = null;
 
   // A shelf of the rack: its plate, its trough, and what grows in it under a bar of grow light so far over it.
@@ -6198,6 +6289,8 @@ function foodLabModels() {
       [`facing=${facing},half=${half}`, { model: `${ID}:block/${name}_${half}`, y }]))),
   });
   machineStates("hydroponic_rack");
+  tallItem("hydroponic_rack", "hydroponic_rack_lower", "hydroponic_rack_upper");
+  dropsFrom("hydroponic_rack", { half: "lower" });
   cubes.hydroponic_rack = null;
 
   const columnTextures = { ...steel, algae: `${ID}:block/algae_tube`, particle: `${ID}:block/algae_tube` };
@@ -6219,6 +6312,8 @@ function foodLabModels() {
     ],
   });
   machineStates("algae_column");
+  tallItem("algae_column", "algae_column_lower", "algae_column_upper");
+  dropsFrom("algae_column", { half: "lower" });
   cubes.algae_column = null;
 
   for (const spinning of [false, true]) {
@@ -6239,6 +6334,8 @@ function foodLabModels() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((spinning) =>
       [`facing=${facing},spinning=${spinning}`, { model: `${ID}:block/sample_centrifuge${spinning ? "_spinning" : ""}`, y }]))),
   });
+  write(`assets/${ID}/models/item/sample_centrifuge.json`, { parent: `${ID}:block/sample_centrifuge` });
+  dropsItself("sample_centrifuge");
   cubes.sample_centrifuge = null;
 
   const pane = (from, to, texture) => ({ from, to, faces: { north: face(texture), south: face(texture) } });
@@ -6260,6 +6357,9 @@ function foodLabModels() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(partition).map((row) =>
       [`facing=${facing},row=${row}`, { model: `${ID}:block/lab_partition_${row}`, y }]))),
   });
+  // In the Java enum's order (see keptLooks).
+  keptLooks("lab_partition", { row: ["bottom", "middle", "top"] }, (row) => `${ID}:block/lab_partition_${row}`, ["middle"]);
+  dropsKeeping("lab_partition", "row", "middle");
   cubes.lab_partition = null;
 
   const pipeTextures = { pipe: `${ID}:block/lab_pipe`, joint: `${ID}:block/lab_pipe_joint`, particle: `${ID}:block/lab_pipe` };
@@ -6272,6 +6372,8 @@ function foodLabModels() {
       ...Object.entries(arms).map(([way, turn]) => ({ when: { [way]: "true" }, apply: { model: `${ID}:block/lab_pipe_arm`, ...turn } })),
     ],
   });
+  write(`assets/${ID}/models/item/lab_pipe.json`, boxes(pipeTextures, [[[6, 6, 0], [10, 10, 16], "#pipe"], [[5.5, 5.5, 5.5], [10.5, 10.5, 10.5], "#joint"]]));
+  dropsItself("lab_pipe");
   cubes.lab_pipe = null;
 
   // The specimen jars: each its liquid, its cork and what floats in it.
@@ -6416,6 +6518,9 @@ function rocketRoomFurniture() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(kinds).map((kind) =>
       [`facing=${facing},kind=${kind}`, { model: `${ID}:block/shelf_unit_${kind}`, y }]))),
   });
+  // In the Java enum's order (see keptLooks).
+  keptLooks("shelf_unit", { kind: ["boots", "books", "jars", "towels", "tools"] }, (kind) => `${ID}:block/shelf_unit_${kind}`, ["books"]);
+  dropsKeeping("shelf_unit", "kind", "books");
   cubes.shelf_unit = null;
 
   const rack = [
@@ -6446,6 +6551,8 @@ function rocketRoomFurniture() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(loads).map((load) =>
       [`facing=${facing},load=${load}`, { model: `${ID}:block/pallet_rack_${load}`, y }]))),
   });
+  keptLooks("pallet_rack", { load: ["boxes", "drums", "crates", "empty"] }, (load) => `${ID}:block/pallet_rack_${load}`, ["boxes"]);
+  dropsKeeping("pallet_rack", "load", "boxes");
   cubes.pallet_rack = null;
 }
 rocketRoomFurniture();
@@ -6482,6 +6589,8 @@ function airlockPanel() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["sealed", "cycling", "clear"].map((cycle) =>
       [`cycle=${cycle},facing=${facing}`, { model: `${ID}:block/airlock_panel_${cycle}`, y }]))),
   });
+  write(`assets/${ID}/models/item/airlock_panel.json`, { parent: `${ID}:block/airlock_panel_sealed` });
+  dropsItself("airlock_panel");
   cubes.airlock_panel = null;
 }
 airlockPanel();
@@ -6556,6 +6665,9 @@ function parcelScanner() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["ready", "scanning", "packed", "empty"].map((scan) =>
       [`facing=${facing},scan=${scan}`, { model: `${ID}:block/parcel_scanner_${scan}`, y }]))),
   });
+  // Its gantry stands over the top of its block, so it is shown as something two blocks tall is.
+  write(`assets/${ID}/models/item/parcel_scanner.json`, { parent: `${ID}:block/parcel_scanner_ready`, display: TALL_ITEM_DISPLAY });
+  dropsItself("parcel_scanner");
   cubes.parcel_scanner = null;
 }
 parcelScanner();
@@ -6612,6 +6724,8 @@ function galleyFridge() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isOpen) =>
       [`facing=${facing},open=${isOpen}`, { model: `${ID}:block/galley_fridge_${isOpen ? "open" : "shut"}`, y }]))),
   });
+  write(`assets/${ID}/models/item/galley_fridge.json`, { parent: `${ID}:block/galley_fridge_shut` });
+  dropsItself("galley_fridge");
   cubes.galley_fridge = null;
 }
 galleyFridge();
@@ -6657,6 +6771,8 @@ function waveMachine() {
   write(`assets/${ID}/blockstates/wave_machine.json`, {
     variants: { "running=false": { model: `${ID}:block/wave_machine` }, "running=true": { model: `${ID}:block/wave_machine_running` } },
   });
+  write(`assets/${ID}/models/item/wave_machine.json`, { parent: `${ID}:block/wave_machine` });
+  dropsItself("wave_machine");
   cubes.wave_machine = null;
 }
 waveMachine();
@@ -6701,6 +6817,8 @@ function fogMachine() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["ready", "fogging", "heating"].map((fog) =>
       [`facing=${facing},fog=${fog}`, { model: `${ID}:block/fog_machine_${fog}`, y }]))),
   });
+  write(`assets/${ID}/models/item/fog_machine.json`, { parent: `${ID}:block/fog_machine_ready` });
+  dropsItself("fog_machine");
   cubes.fog_machine = null;
 }
 fogMachine();
@@ -8028,28 +8146,9 @@ function gymFloorLang() {
     parent: "minecraft:block/block",
     textures,
     elements: [...lower, ...raised],
-    display: {
-      gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
-      ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
-      fixed: { rotation: [0, 0, 0], translation: [0, -3, 0], scale: [0.3, 0.3, 0.3] },
-      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 1.5, 0], scale: [0.22, 0.22, 0.22] },
-      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
-      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
-    },
+    display: TALL_ITEM_DISPLAY,
   });
-  write(`data/${ID}/loot_table/blocks/lavatory_basin.json`, {
-    type: "minecraft:block",
-    pools: [{
-      rolls: 1.0,
-      bonus_rolls: 0.0,
-      entries: [{ type: "minecraft:item", name: `${ID}:lavatory_basin` }],
-      conditions: [
-        { condition: "minecraft:block_state_property", block: `${ID}:lavatory_basin`, properties: { half: "lower" } },
-        { condition: "minecraft:survives_explosion" },
-      ],
-    }],
-    random_sequence: `${ID}:blocks/lavatory_basin`,
-  });
+  dropsFrom("lavatory_basin", { half: "lower" });
   cubes.lavatory_basin = null;
 }
 // The basin is fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
@@ -8141,19 +8240,7 @@ function wideScreen(name, model, sizes = [""]) {
         { model: `${ID}:block/${model}${tilted ? "_tilted" : ""}`, y }]))))),
   });
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
-  write(`data/${ID}/loot_table/blocks/${name}.json`, {
-    type: "minecraft:block",
-    pools: [{
-      rolls: 1.0,
-      bonus_rolls: 0.0,
-      entries: [{ type: "minecraft:item", name: `${ID}:${name}` }],
-      conditions: [
-        { condition: "minecraft:block_state_property", block: `${ID}:${name}`, properties: { part: "0" } },
-        { condition: "minecraft:survives_explosion" },
-      ],
-    }],
-    random_sequence: `${ID}:blocks/${name}`,
-  });
+  dropsFrom(name, { part: "0" });
   cubes[name] = null;
 }
 
@@ -8745,6 +8832,8 @@ const POOL = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps", "poo
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isTop) =>
       [`facing=${facing},top=${isTop}`, { model: `${ID}:block/bunk_ladder${isTop ? "_top" : ""}`, ...(y ? { y } : {}) }]))),
   });
+  write(`assets/${ID}/models/item/bunk_ladder.json`, { parent: `${ID}:block/bunk_ladder` });
+  dropsItself("bunk_ladder");
   cubes.bunk_ladder = null;
 }
 // The pool's tiles and ladder are fitted into the cabin rather than built into the airliner: breakable, and no part of
@@ -9001,7 +9090,7 @@ const VACUUM_TOILET_LANG = {
   cubes.vacuum_toilet = null;
 }
 // The lump of blue lav ice a chunk lands as: a slab of see-through blue ice with a smaller one frozen on top, turned
-// any way. Only a falling chunk leaves one: no item, and it drops nothing.
+// any way. It melts away wherever it is, so it drops nothing.
 {
   const lump = boxes({ ice: `${ID}:block/lav_ice`, particle: `${ID}:block/lav_ice` }, [
     [[3, 0, 3], [13, 5, 13], "#ice"],
@@ -9012,6 +9101,7 @@ const VACUUM_TOILET_LANG = {
   lump.render_type = "minecraft:translucent";
   write(`assets/${ID}/models/block/lav_ice.json`, lump);
   write(`assets/${ID}/blockstates/lav_ice.json`, { variants: { "": Object.values(yRot).map((y) => ({ model: `${ID}:block/lav_ice`, y })) } });
+  write(`assets/${ID}/models/item/lav_ice.json`, { parent: `${ID}:block/lav_ice` });
 }
 
 // A box of a model for the lounge's, business class's and the galleys' furniture below: every face showing the texture
@@ -10016,6 +10106,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "itemGroup.aerolarge.blueprints": "Blueprints",
   "itemGroup.aerolarge.airframe": "Airliner Airframe",
   "itemGroup.aerolarge.rocket": "Rocket",
+  "itemGroup.aerolarge.rocket_rooms": "Rocket Rooms",
   "itemGroup.aerolarge.flight_deck": "Flight Deck",
   "itemGroup.aerolarge.doors": "Doors and Stairs",
   "itemGroup.aerolarge.control_car": "Zeppelin Control Car",
