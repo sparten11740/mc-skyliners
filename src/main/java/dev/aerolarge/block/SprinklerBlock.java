@@ -109,7 +109,7 @@ public class SprinklerBlock extends Block implements EntityBlock, SimpleWaterlog
             return null;
         }
         return level.isClientSide
-            ? (tickLevel, pos, tickState, sprinkler) -> SprinklerBlockEntity.clientTick(tickLevel, pos, tickState)
+            ? (tickLevel, pos, tickState, sprinkler) -> ((SprinklerBlockEntity) sprinkler).clientTick(tickLevel, tickState)
             : (tickLevel, pos, tickState, sprinkler) -> ((SprinklerBlockEntity) sprinkler).serverTick((ServerLevel) tickLevel, tickState);
     }
 }

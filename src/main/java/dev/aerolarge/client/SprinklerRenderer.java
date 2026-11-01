@@ -29,7 +29,7 @@ public class SprinklerRenderer implements BlockEntityRenderer<SprinklerBlockEnti
             return;
         }
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
-        double angle = SprinklerBlockEntity.jetAngle(sprinkler.getBlockPos(), sprinkler.getLevel().getGameTime() + partialTick);
+        double angle = sprinkler.jetAngle(partialTick);
         float reach = (float) SprinklerBlockEntity.NOZZLE_REACH;
         pose.pushPose();
         pose.translate(0.5, SprinklerBlockEntity.HEAD, 0.5);

@@ -22,9 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * A sprinkler's block entity: until when it sprays, on the server, so it drops its head again on time even with its
  * valve gone. While it sprays it waters what is round it once a second, wetting dry soil and bringing on what grows
- * there now and then by a stage, a sparkle of green showing where; on the client its jet sweeps round, a stream of
- * drops thrown out over the beds that splash where they land. The sprinklers loaded are kept track of, so a valve finds
- * the ones it reaches without searching the world.
+ * there now and then by a stage, a sparkle of green showing where; on the client its jet sweeps round by the client's
+ * own count of ticks, a stream of drops thrown out over the beds that splash where they land. The sprinklers loaded are
+ * kept track of, so a valve finds the ones it reaches without searching the world.
  */
 public class SprinklerBlockEntity extends BlockEntity {
     private static final Loaded<SprinklerBlockEntity> LOADED = new Loaded<>(SprinklerBlockEntity.class);
@@ -61,6 +61,11 @@ public class SprinklerBlockEntity extends BlockEntity {
 
     /** The game time its spray stops; none at or before it. */
     private long until;
+    /**
+     * How many ticks it has sprayed on this client, the clock its jet sweeps by. The game time will not do: the server
+     * sets a client's copy of it once a second, so wherever the server runs behind, the jet would snap back.
+     */
+    private long sweptTicks;
 
     public SprinklerBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.SPRINKLER_ENTITY.get(), pos, state);
@@ -150,18 +155,19 @@ public class SprinklerBlockEntity extends BlockEntity {
      * Once a tick on the client while it sprays: the jet sweeping round from the popped-up head, drops thrown out along
      * it that fall onto the beds and splash, and a spit of water at the nozzle.
      */
-    static void clientTick(Level level, BlockPos pos, BlockState state) {
+    void clientTick(Level level, BlockState state) {
         if (!state.getValue(SprinklerBlock.SPRAYING)) {
             return;
         }
+        sweptTicks++;
         RandomSource random = level.getRandom();
-        double angle = jetAngle(pos, level.getGameTime());
+        double angle = jetAngle(0);
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
         double tip = NOZZLE_REACH * Math.cos(LAUNCH);
-        double x = pos.getX() + 0.5 + cos * tip;
-        double y = pos.getY() + HEAD + NOZZLE_REACH * Math.sin(LAUNCH);
-        double z = pos.getZ() + 0.5 + sin * tip;
+        double x = worldPosition.getX() + 0.5 + cos * tip;
+        double y = worldPosition.getY() + HEAD + NOZZLE_REACH * Math.sin(LAUNCH);
+        double z = worldPosition.getZ() + 0.5 + sin * tip;
         for (int i = 0; i < DROPS; i++) {
             double out = THROW * random.nextDouble();
             double rise = 4 * ARC * (out / THROW) * (1 - out / THROW);
@@ -171,11 +177,13 @@ public class SprinklerBlockEntity extends BlockEntity {
     }
 
     /**
-     * Which way a sprinkler's jet points at a game time, in radians round from east toward south: sweeping round, each
-     * sprinkler out of step with the next. Its renderer turns the nozzle by it too.
+     * Which way its jet points so far through a tick, in radians round from east toward south: sweeping round, each
+     * sprinkler out of step with the next. Its renderer turns the nozzle by it too, in a float, so it is kept within
+     * one turn: aboard an assembled ship, whose blocks lie millions of blocks out, a float would hold it only to within
+     * radians.
      */
-    public static double jetAngle(BlockPos pos, double time) {
-        return time * SWEEP + (pos.getX() + 2 * pos.getZ()) * OUT_OF_STEP;
+    public double jetAngle(float partialTick) {
+        return ((sweptTicks + partialTick) * SWEEP + (worldPosition.getX() + 2 * worldPosition.getZ()) * OUT_OF_STEP) % (2 * Math.PI);
     }
 
     @Override
