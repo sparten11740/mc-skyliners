@@ -255,14 +255,16 @@ public final class RocketLayout implements Layout {
 
     /**
      * A block of her cover, floor or windows as it is finished inside: the cover lined, the floor finished, the wall
-     * round a window's oval the room's; null for any other block, or cover no room sees.
+     * round a window's oval the room's; null for any other block, or cover no room sees. Her cover on the row of the
+     * ring of ceiling over her cockpit is seen from the cockpit under it, so it is lined as the cockpit is, not as her
+     * dome over it, whose sky hides it from above.
      */
     @Nullable
     private BlockState finished(BlockPos at, BlockState state) {
         if (state.is(AerolargeRegistry.CABIN_FLOOR.get())) {
             return inside(at) ? finishedFloor(at.getY()) : null;
         }
-        RocketFinish finish = finishAt(at.getY());
+        RocketFinish finish = at.getY() == domeFloor() ? RocketFinish.COCKPIT : finishAt(at.getY());
         if (finish != null && state.getBlock() instanceof OvalWindowBlock) {
             return state.setValue(OvalWindowBlock.WALL, OvalWindowBlock.Wall.of(finish));
         }
