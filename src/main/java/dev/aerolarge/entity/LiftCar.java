@@ -59,7 +59,8 @@ public class LiftCar extends Entity {
     public static final double STANDING = 0.1;
     /**
      * How far under its floor's top something's feet may be and still be lifted back onto it, in blocks: the floor may
-     * rise past a foot between two ticks, as when someone jumps in a car going up, and no one drops down the shaft.
+     * rise past a foot between two ticks, as when someone jumps or flies in a car going up, and no one drops down the
+     * shaft.
      */
     public static final double SUNK = 1.5;
     /**

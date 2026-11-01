@@ -26,9 +26,13 @@ public final class LiftRide {
         }
     }
 
-    /** The player about to tick: carried along on the floor of any car they stand in. */
+    /**
+     * The player about to tick: carried along on the floor of any car they stand in. Someone flying in creative mode is
+     * carried too: a double tap of the jump key in a car going up would otherwise leave them hanging as its floor rose
+     * through them, under it and in the shaft when they stopped flying.
+     */
     public static void onPlayerTick(PlayerTickEvent.Pre event) {
-        if (!(event.getEntity() instanceof LocalPlayer player) || player.isPassenger() || player.isSpectator() || player.getAbilities().flying) {
+        if (!(event.getEntity() instanceof LocalPlayer player) || player.isPassenger() || player.isSpectator()) {
             return;
         }
         for (LiftCar car : LiftCar.cars(player.level())) {
