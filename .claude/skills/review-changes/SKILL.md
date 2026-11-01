@@ -38,7 +38,7 @@ Run these and treat any failure as a finding:
 - **Build:** `./gradlew build --console=plain`. Report compiler errors and new warnings in changed files.
 - **Generated assets are reproducible:** if a script in `tools/` or the files it writes changed, rerun
   `node tools/generate_textures.mjs` and `node tools/generate_resources.mjs` (with the extracted vanilla client
-  resources if the change touches the door or call button files, see the README), then `git status --short` again.
+  resources if the change touches the door or call button files, see docs/building.md), then `git status --short` again.
   Any file that changes because of the run means a generated file was edited by hand, or the script and its output
   disagree. Leave the regenerated files in place and report it. `node tools/generate_sounds.mjs` needs rerunning only
   when it changed itself; its output is not byte-for-byte reproducible.
@@ -59,8 +59,9 @@ Run these and treat any failure as a finding:
 - **Version bump:** if code or assets changed, `mod_version` in `gradle.properties` must go up to a new pre-release
   before the build is handed out. It goes in its own `chore(release)` commit straight after the change, so a missing
   bump in the change set is a note for the commit split, not a defect.
-- **README:** a change a player can see (a block, an item, a screen, a setting, how something behaves) is described in
-  `README.md` as it now is, and the Building section's notes on which class does what still hold.
+- **Docs:** a change a player can see (a block, an item, a screen, a setting, how something behaves) is described in
+  `docs/guide.md` as it now is, and in `README.md` where its short tour mentions it, and `docs/building.md`'s notes
+  on which class does what still hold.
 
 ## 3. Review
 
@@ -126,7 +127,7 @@ style preferences the surrounding code does not share.
   English with British spelling, saying what a thing is and *why*; no narration of what the next line does. Comments
   wrap at 120 columns.
 - Every cue a player needs also has a picture, colour or sound, not text alone: some players cannot read yet.
-- `README.md` describes the behaviour as it now is.
+- `docs/guide.md` describes the behaviour as it now is.
 
 ### Hygiene
 - No unused imports, fields, methods, constants, lang keys, textures or models; nothing left over from removed
@@ -145,7 +146,7 @@ Lead with a one-line verdict: ready to commit, or not and why. Then list finding
 
 Each finding gives `path:line`, what is wrong, why it matters and the suggested fix, in a sentence or two. Group
 findings by file only when there are many in one file. Finish with what was checked mechanically (build,
-regeneration, lang keys, protocol version, mod version, README) and the result of each. If nothing is wrong in an
+regeneration, lang keys, protocol version, mod version, docs) and the result of each. If nothing is wrong in an
 area, say so in one line rather than padding the report.
 
 Then say what the change still needs checked in game that the build cannot show (rendering, layout and fit-out in a

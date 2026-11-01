@@ -42,7 +42,7 @@ import net.minecraft.world.level.block.state.properties.Half;
  * snapped style ({@link ShellGeometry#snapped}), from where each block's corners lie against the surface. Under the
  * crown of each of the sixteen bays between the rings hangs a gas cell, a balloon of Create Aeronautics' envelope in a
  * colour of its own, its hot air burners standing in it on posts; the zeppelin floats on their hot air (see the
- * README's How it flies). Below the cells an axial gangway runs nearly the whole length of the hull, the passenger
+ * guide's How it flies). Below the cells an axial gangway runs nearly the whole length of the hull, the passenger
  * decks lie in its belly with promenade windows down both sides, the control car hangs under the bow (see
  * {@link ZeppelinControlCar}), the four engine cars stand out on struts on the flanks, and four fins in a cross carry
  * the tail. Once the hull stands, the features laid into it, each a piece of its own (see {@link ZeppelinPiece}):

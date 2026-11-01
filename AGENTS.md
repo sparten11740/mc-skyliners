@@ -1,10 +1,10 @@
 # Skyliners: notes for coding agents
 
 Create: Skyliners, a NeoForge 1.21.1 mod (Java 21): an A380-style double-deck airliner big enough to build in, assembled
-into a flying body by Sable (Create Aeronautics) and flown from its own cockpit, mostly by its autopilot. `README.md`
-describes every feature as a player meets it, and its Building section says which classes do what. Its mod id, packages
-and commands are `skyliners`. Up to 0.1.0-alpha.216 it was Aerolarge (`aerolarge`), as the plans in `docs/plans` still
-call it, and its airliner still flies as "Aerolarge three eight zero" on the radio.
+into a flying body by Sable (Create Aeronautics) and flown from its own cockpit, mostly by its autopilot. `README.md` is
+the short tour, `docs/guide.md` describes every feature as a player meets it, and `docs/building.md` says which classes
+do what. Its mod id, packages and commands are `skyliners`. Up to 0.1.0-alpha.216 it was Aerolarge (`aerolarge`), as the
+plans in `docs/plans` still call it, and its airliner still flies as "Aerolarge three eight zero" on the radio.
 
 ## Build and run
 
@@ -114,7 +114,8 @@ call it, and its airliner still flies as "Aerolarge three eight zero" on the rad
 - **Versions.** Every build handed out for play-testing gets a new `mod_version` in `gradle.properties`
   (`0.1.0-alpha.N`), in its own `chore(release): bump version to 0.1.0-alpha.N` commit straight after the change. Two
   jars never share a version.
-- **README.** A change a player can see updates `README.md` along with it.
+- **Docs.** A change a player can see updates `docs/guide.md` along with it, and `README.md` too where its short tour
+  mentions it.
 - **Verify in game** what the build cannot show: rendering, layout and fit-out (walk a freshly built airliner, looking
   for floating or misplaced blocks), and flight behaviour (in flight). Say plainly what was not verified.
 
