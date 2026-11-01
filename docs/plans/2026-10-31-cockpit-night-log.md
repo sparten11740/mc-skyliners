@@ -22,7 +22,7 @@ on files kept apart so their work merged without conflicts. A fourth agent revie
 dome and the layout. The lead merged each part, tested it in game with Blockpilot, flew it, and fixed what testing and
 the reviews found.
 
-## What she has now (alpha.196)
+## What she has now (alpha.197)
 
 - **A flight deck.** The control head faces forward with the commander's seat on its left and the pilot's on its right.
   - Past a row of legroom: a flight display in front of each seat, the autopilot screen between them, and a dark
@@ -61,6 +61,12 @@ the reviews found.
 
   Rockets built before tonight get the sky and the orrery too, and find their autopilot.
 - **Flush ceiling lights** replace the pendant lights hanging on cables across the cockpit's glass.
+- **After the reviews (alpha.197):**
+  - From the cockpit, the dome's orrery is drawn only while the hole in the ceiling is in front of the camera; inside
+    the dome, the works and the sun's light only while they are in front of it. Globes no longer allocate each frame.
+  - The cockpit ceiling's outer edge is lined as the cockpit, no longer in the dome's starry finish.
+  - A control placed by hand links only to a rocket's autopilot, and looks again once that autopilot is gone.
+  - A knob turned during the descent still waits for the next flight after a reload.
 
 ## Decisions taken (for Jan to look at)
 
@@ -95,7 +101,7 @@ the reviews found.
 ## Not verified
 
 - Climbing into an upper bunk: the test player drops off the ladder, so it could not be checked.
-- The dome by night, and at scales 1.5 and 4, from the seats.
-- The new controls at scales other than 2.
+- The new controls flown at scales other than 2. They were seen in place at 1.5 and 4, and the dome was seen from the
+  seats at 1.5, 2 and 4, and by night at 2.
 - The tilt dot on the flight display against how she really tips.
-- alpha.196 is not on the desktop PC: it was offline all night.
+- alpha.196 and alpha.197 are not on the desktop PC: it was offline all night.
