@@ -2,6 +2,7 @@ package dev.aerolarge.autopilot;
 
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.airframe.Thrusters;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
@@ -208,6 +209,8 @@ public final class RocketPilot {
     private List<List<BlockPos>> bells = List.of();
     private Jets top = Jets.NONE;
     private Jets bottom = Jets.NONE;
+    /** Whether its side jets' plumes have been left out since it was loaded, not saved. */
+    private boolean jetPlumesLeftOut;
     /** How many engines it has, each with its relay. */
     private int engines;
     /** The trim learnt for its engines' push: how much more thrust than it works out it takes to climb as it wants. */
@@ -320,6 +323,7 @@ public final class RocketPilot {
         if (rose == null) {
             begin(state);
         }
+        leaveJetPlumesOut(level, origin);
         lastRadio = radio;
         AutopilotBlockEntity.Phase phase = orders.phase();
         if (phase == AutopilotBlockEntity.Phase.TAKEOFF && counted < COUNTDOWN) {
@@ -556,6 +560,20 @@ public final class RocketPilot {
         int[] now = {pushFront > 0 ? frontSignal : 0, pushRight > 0 ? sideSignal : 0, pushFront < 0 ? frontSignal : 0, pushRight < 0 ? sideSignal : 0,
             pushFront < 0 ? frontSignal : 0, pushRight < 0 ? sideSignal : 0, pushFront > 0 ? frontSignal : 0, pushRight > 0 ? sideSignal : 0};
         System.arraycopy(now, 0, jetSignals, 0, jetSignals.length);
+    }
+
+    /**
+     * Leaves out its side jets' plumes, once each time it is loaded and flies: a rocket built before they went without
+     * one has them still.
+     */
+    private void leaveJetPlumesOut(ServerLevel level, BlockPos origin) {
+        if (jetPlumesLeftOut) {
+            return;
+        }
+        jetPlumesLeftOut = true;
+        for (Jets ring : List.of(top, bottom)) {
+            ring.all().forEach(relay -> Thrusters.leavePlumeOut(level, origin.offset(relay)));
+        }
     }
 
     /** The signal a push asks of a jet: as strong as the push, up to full. */

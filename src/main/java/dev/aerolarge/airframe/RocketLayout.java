@@ -752,19 +752,19 @@ public final class RocketLayout implements Layout {
         for (int[] middle : middles) {
             List<BlockPos> relays = new ArrayList<>();
             for (int[] at : BELL_THRUSTERS) {
-                relays.add(thruster(engine.get(), middle[0] + at[0], bottom, middle[1] + at[1], Direction.UP));
+                relays.add(thruster(engine.get(), middle[0] + at[0], bottom, middle[1] + at[1], Direction.UP, EngineFlames.PROPULSION_PLUME));
             }
             bells.add(relays);
         }
     }
 
     /**
-     * A creative thruster at a block pushing the way given, at the configured setting with its plume shown, and the
+     * A creative thruster at a block pushing the way given, at the configured setting with the flames given, and the
      * relay that drives it beside it, on its far side from its nozzle; where the relay stands.
      */
-    private BlockPos thruster(BlockState engine, int x, int y, int z, Direction pushes) {
+    private BlockPos thruster(BlockState engine, int x, int y, int z, Direction pushes, EngineFlames flames) {
         set(x, y, z, AirframePalette.with(engine, "facing", pushes.getSerializedName()));
-        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(EngineFlames.PROPULSION_PLUME, 1));
+        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(flames, 1));
         BlockPos relay = new BlockPos(x, y, z).relative(pushes);
         cells.put(relay, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
         return relay;
@@ -773,7 +773,8 @@ public final class RocketLayout implements Layout {
     /**
      * The side jets: a ring of four in the skin near the nose and another near the bottom, one at the front, the back
      * and either side of each, each pushing the rocket across toward the side opposite it, its exhaust leaving out of
-     * the skin and its relay inside.
+     * the skin and its relay inside. They show no plume: firing in short bursts all the way up, they are heard puffing
+     * instead (see {@link dev.aerolarge.autopilot.RocketSounds}).
      */
     private void jets() {
         Optional<BlockState> engine = palette.engine();
@@ -788,7 +789,7 @@ public final class RocketLayout implements Layout {
         for (Direction side : Direction.Plane.HORIZONTAL) {
             BlockPos skin = outermost(side, 0, y, 0);
             if (skin != null) {
-                jets.put(side.getOpposite(), thruster(engine, skin.getX(), y, skin.getZ(), side.getOpposite()));
+                jets.put(side.getOpposite(), thruster(engine, skin.getX(), y, skin.getZ(), side.getOpposite(), EngineFlames.NONE));
             }
         }
     }

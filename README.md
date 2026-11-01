@@ -2329,7 +2329,8 @@ between two beeps: "Tower cleared." 40 blocks up, "Max Q." 160 blocks up on her 
 cut-off." as she reaches her height, and "Landing burn." as her landing burn begins, each waiting for whatever else is
 being said to end first (the server config's `rocket.callouts` leaves them out). The roar follows her thrust,
 louder and higher the harder they push, and carries far across the ground; aboard, it comes through her hull as a deep
-rumble wherever you stand. Her side jets puff as they hold her upright. Landing, her fins take her weight with a heavy
+rumble wherever you stand. Her side jets puff as they hold her upright, heard but showing no plume of their own.
+Landing, her fins take her weight with a heavy
 thunk and a hiss of their dampers, the flight deck's voice says "Touchdown.", and her engines cut off, falling away
 with a pop, her hot bells ticking as they cool.
 
