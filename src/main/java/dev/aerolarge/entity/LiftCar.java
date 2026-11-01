@@ -20,6 +20,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +28,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.fml.util.thread.EffectiveSide;
 
 /**
  * The car of a ship's lift (see {@link LiftMachineBlockEntity}): a platform that rides up and down the glass shaft
@@ -128,14 +130,18 @@ public class LiftCar extends Entity {
 
     /**
      * The car whose shaft a block among a ship's blocks is in, under its machine and within its floor; or none. Asked
-     * for by every floor block whose shape is wanted, so it looks through the cars where they are kept.
+     * for by every floor block whose shape is wanted, so it looks through the cars where they are kept. The blocks may
+     * be read through the level or through something else reading them, as Sable's collision with a ship's blocks reads
+     * them through its own reader of the level: then the side is the thread's.
      */
     @Nullable
-    public static LiftCar inShaft(Level level, BlockPos cell) {
-        Set<LiftCar> side = level.isClientSide ? CLIENT_CARS : SERVER_CARS;
+    public static LiftCar inShaft(BlockGetter blocks, BlockPos cell) {
+        Level level = blocks instanceof Level found ? found : null;
+        boolean client = level != null ? level.isClientSide : EffectiveSide.get().isClient();
+        Set<LiftCar> side = client ? CLIENT_CARS : SERVER_CARS;
         synchronized (side) {
             for (LiftCar car : side) {
-                if (car.level() == level && !car.isRemoved() && car.shaftHolds(cell)) {
+                if ((level == null || car.level() == level) && !car.isRemoved() && car.shaftHolds(cell)) {
                     return car;
                 }
             }
@@ -226,12 +232,19 @@ public class LiftCar extends Entity {
         return ticks + partialTick;
     }
 
-    /** A new ride's start from the server, on a client, timed from there on by {@link #clientTicks}. */
+    /**
+     * A ride's start from the server, on a client, timed from there on by {@link #clientTicks}. A ride that starts
+     * while the client has the car sets off there as it hears of it, whatever the game's clock says: the client's clock
+     * runs on ahead of a lagging server's until the server sets it back, by seconds after a stall, and reckoned by it
+     * the car's floor would leap blocks up the shaft at once, out from under whoever stands on it. The ride the car
+     * brings along as the client first has it is reckoned by the clock, as it may long since have ended.
+     */
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (key == START && level().isClientSide) {
-            rideStartedAt = clientTicks - (level().getGameTime() - entityData.get(START));
+            boolean firstHeard = tickCount == 0;
+            rideStartedAt = clientTicks - (firstHeard ? Math.max(0, level().getGameTime() - entityData.get(START)) : 0);
         }
     }
 
@@ -272,20 +285,23 @@ public class LiftCar extends Entity {
 
     /**
      * Its floor as far as it lies in a cell of its shaft, for the floor block there (see {@link LiftFloorBlock}): from
-     * the cell's foot up to the floor's top, where the top is in it. On the server a player stands on it only while the
-     * car stands at a floor: their own game carries them as it rides, timing it by its own clock, which the server's
-     * floor would part from by a tick or two and pull them back by.
+     * the cell's foot up to the floor's top, where the top is in it. On the server it is there only once the car stands
+     * at a floor, and for a player only from over it: whoever is in the car is carried as it rides by their own game,
+     * or by the car (see {@link #carry}), and a player's game times the ride by its own clock, which the server's,
+     * lagging or catching up, runs behind or ahead of, so the server's floor would pull them back down or bar their way
+     * up.
      */
     public VoxelShape floorIn(BlockPos cell, CollisionContext context) {
-        boolean player = context instanceof EntityCollisionContext entity && entity.getEntity() instanceof Player;
-        if (!level().isClientSide && player && !arrived()) {
-            return Shapes.empty();
-        }
         double top = floorTop() - cell.getY();
         if (top <= 0 || top > 1) {
             return Shapes.empty();
         }
-        return Shapes.box(0, 0, 0, 1, top, 1);
+        VoxelShape floor = Shapes.box(0, 0, 0, 1, top, 1);
+        if (level().isClientSide) {
+            return floor;
+        }
+        boolean player = context instanceof EntityCollisionContext entity && entity.getEntity() instanceof Player;
+        return arrived() && (!player || context.isAbove(floor, cell, false)) ? floor : Shapes.empty();
     }
 
     /**

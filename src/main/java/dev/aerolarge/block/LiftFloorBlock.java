@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import dev.aerolarge.entity.LiftCar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,7 +44,7 @@ public class LiftFloorBlock extends Block {
     /** The car's floor as far as it lies in this block now (see {@link LiftCar#floorIn}); nothing without a car. */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        LiftCar car = level instanceof Level world ? LiftCar.inShaft(world, pos) : null;
+        LiftCar car = LiftCar.inShaft(level, pos);
         return car == null ? Shapes.empty() : car.floorIn(pos, context);
     }
 
