@@ -350,11 +350,26 @@ final class BoardingAirstairs {
         hatchOpen = false;
     }
 
-    /** Whether she stands on the ground: something solid in the world at the foot of a whole flight, or just under it. */
+    /**
+     * Whether she stands on the ground: something solid in the world anywhere along the flight's way down, where a step
+     * would go or just under it, from her sill to the foot of the whole flight, for it to come down onto. A rocket's
+     * flight reaches lower than her fins stand, for ground falling away under her door, and on a flat world the foot of
+     * the whole flight lies under the world's floor.
+     */
     boolean onGround(ServerLevel level) {
+        for (int down = 1; down <= rise; down++) {
+            if (groundAt(level, down)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether the world has something solid where a row of steps so far down would go, or just under it. */
+    private boolean groundAt(ServerLevel level, int down) {
         for (int column = 0; column < width; column++) {
-            BlockPos foot = step(rise, column);
-            if (solidInWorld(level, foot) || solidInWorld(level, foot.below())) {
+            BlockPos step = step(down, column);
+            if (solidInWorld(level, step) || solidInWorld(level, step.below())) {
                 return true;
             }
         }
