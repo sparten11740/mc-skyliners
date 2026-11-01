@@ -21,6 +21,9 @@ public class SkywritingBoardRenderer implements BlockEntityRenderer<SkywritingBo
 
     @Override
     public void render(SkywritingBoardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         Direction facing = board.getBlockState().getValue(SkywritingBoardBlock.FACING);
         int looked = TouchPanelArt.lookedAt(board);
         int writing = board.shape() == null ? -1 : SkywritingBoardBlock.BUTTONS.indexOf(board.shape());

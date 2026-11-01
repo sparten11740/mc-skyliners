@@ -23,6 +23,8 @@ import org.joml.Vector3f;
  * side and up and down, harder and faster the stronger the wind. It is lit by the light where it is, as cloth is.
  */
 public class WindSockRenderer implements BlockEntityRenderer<WindSockBlockEntity> {
+    /** How far from its block any of the sock can reach, in blocks: past it, it is behind the camera. */
+    private static final float WIND_SOCK_REACH = 3;
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/block/wind_sock.png");
     /** How many pieces its spine is made of, and how many sides its tube has. */
     private static final int PIECES = 10;
@@ -55,6 +57,9 @@ public class WindSockRenderer implements BlockEntityRenderer<WindSockBlockEntity
     public void render(WindSockBlockEntity sock, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Level level = sock.getLevel();
         if (level == null) {
+            return;
+        }
+        if (!Sight.ahead(pose.last(), WIND_SOCK_REACH)) {
             return;
         }
         Wind wind = Wind.at(level, partialTick);

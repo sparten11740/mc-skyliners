@@ -29,6 +29,8 @@ import org.joml.Matrix4f;
  * band's corner; with none, it says there is no traffic.
  */
 public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStripBoardBlockEntity> {
+    /** How far from its block any of the board can reach, in blocks: past it, it is behind the camera. */
+    private static final float BOARD_REACH = 10;
     /** The face's width, in blocks: the board is always a wide screen of its own size. */
     private static final double WIDTH = FlightStripBoardBlock.COLUMNS;
     /** The bezel round the board, the band of the columns' names along its top and each strip's height, in blocks. */
@@ -70,6 +72,9 @@ public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStrip
     public void render(FlightStripBoardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Level level = board.getLevel();
         if (level == null) {
+            return;
+        }
+        if (!Sight.ahead(pose.last(), BOARD_REACH)) {
             return;
         }
         BlockState state = board.getBlockState();

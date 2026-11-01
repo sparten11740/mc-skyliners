@@ -39,6 +39,9 @@ public class HelmRenderer implements BlockEntityRenderer<HelmBlockEntity> {
 
     @Override
     public void render(HelmBlockEntity helm, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight, int overlay) {
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         Direction facing = helm.getBlockState().getValue(HelmBlock.FACING);
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
         pose.pushPose();

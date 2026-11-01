@@ -23,7 +23,7 @@ public class LiftDoorRenderer implements BlockEntityRenderer<LiftDoorBlockEntity
     @Override
     public void render(LiftDoorBlockEntity door, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         BlockState state = door.getBlockState();
-        if (!state.getValue(LiftDoorBlock.SLIDING)) {
+        if (!state.getValue(LiftDoorBlock.SLIDING) || !Sight.ahead(pose.last())) {
             return;
         }
         Direction toward = LiftDoorBlock.slidesToward(state.getValue(LiftDoorBlock.FACING));

@@ -40,6 +40,9 @@ public class BubbleLevelRenderer implements BlockEntityRenderer<BubbleLevelBlock
         if (world == null) {
             return;
         }
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         Direction facing = level.getBlockState().getValue(BubbleLevelBlock.FACING);
         float shift = (float) Mth.clamp(tilt(world, level.getBlockPos().getCenter(), facing.getClockWise()) / FULL_TILT, -1, 1) * BUBBLE_TRAVEL;
         pose.pushPose();

@@ -52,6 +52,9 @@ public class RubberDuckRenderer implements BlockEntityRenderer<RubberDuckBlockEn
         if (duck.getLevel() == null) {
             return;
         }
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         BlockState state = duck.getBlockState();
         float time = (float) DrawingClock.ticks(partialTick);
         float beat = (duck.getBlockPos().hashCode() & 0xFF) * BEAT_SPREAD;

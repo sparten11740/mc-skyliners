@@ -83,9 +83,11 @@ feature as a player meets it, and its Building section says which classes do wha
   block, in a block with a full collision shape, draws black aboard anything assembled under smooth lighting: such a
   model sets `ambientocclusion: false`, as the sprinkler's does. Compare aboard against the ground when looking at one.
 - **Cost.** Nothing scans the world every tick without a bound. Loaded block entities are tracked with `Loaded<T>`,
-  heavy work is spread over ticks, and renderers leave out what the camera cannot see. Anything loaded for good costs
-  for good: a ship with nobody near is let go (`ParkedShips`), and Sable's physics shows in a profile only as
-  "unspecified", so `/sable paused true` is how to tell its share.
+  heavy work is spread over ticks, and renderers leave out what the camera cannot see: Sable draws an assembled ship's
+  block entities every frame unless `Sight` or the renderer says otherwise. A stream of particles goes as one message a
+  tick that the client draws them from, not a packet each. Anything loaded for good costs for good: a ship with nobody
+  near is let go (`ParkedShips`), and Sable's physics shows in a profile only as "unspecified", so `/sable paused true`
+  is how to tell its share.
 - **Players.** Some players are young children who cannot read yet, so every cue also gets a picture, a colour or a
   sound, never text alone. An experimental behaviour goes behind a config switch that defaults to off.
 

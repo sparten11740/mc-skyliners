@@ -34,6 +34,9 @@ public class ScoreboardRenderer implements BlockEntityRenderer<ScoreboardBlockEn
 
     @Override
     public void render(ScoreboardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         Direction facing = board.getBlockState().getValue(ScoreboardBlock.FACING);
         Font font = Minecraft.getInstance().font;
         pose.pushPose();

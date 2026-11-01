@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 public class LookoutGlassRenderer implements BlockEntityRenderer<LookoutGlassBlockEntity> {
     @Override
     public void render(LookoutGlassBlockEntity glass, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        if (!LookoutView.lookingThrough(glass)) {
+        if (Sight.ahead(pose.last()) && !LookoutView.lookingThrough(glass)) {
             RubberDuckRenderer.draw(Minecraft.getInstance().getBlockRenderer(), glass.getBlockState(), pose, buffers, light, overlay);
         }
     }

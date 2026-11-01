@@ -25,6 +25,9 @@ public class TransponderRenderer implements BlockEntityRenderer<TransponderBlock
 
     @Override
     public void render(TransponderBlockEntity transponder, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         Direction face = transponder.getBlockState().getValue(TransponderBlock.FACING);
         pose.pushPose();
         // Onto the module's top, x to the right of whoever its face looks at and y away from them.

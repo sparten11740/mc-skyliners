@@ -82,6 +82,9 @@ public class DiscoBallRenderer implements BlockEntityRenderer<DiscoBallBlockEnti
         if (ball.getLevel() == null) {
             return;
         }
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         float power = ball.power(partialTick);
         float ticks = (float) DrawingClock.ticks(partialTick);
         pose.pushPose();

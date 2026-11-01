@@ -35,6 +35,9 @@ public class ShipsPlaqueRenderer implements BlockEntityRenderer<ShipsPlaqueBlock
         if (!plaque.christened()) {
             return;
         }
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         Direction facing = plaque.getBlockState().getValue(ShipsPlaqueBlock.FACING);
         pose.pushPose();
         // Onto the face, x to the viewer's right and y up, z out of it: the plaque stands at the back of its block, so

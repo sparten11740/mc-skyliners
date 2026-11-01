@@ -28,6 +28,9 @@ public class SprinklerRenderer implements BlockEntityRenderer<SprinklerBlockEnti
         if (sprinkler.getLevel() == null || !sprinkler.getBlockState().getValue(SprinklerBlock.SPRAYING)) {
             return;
         }
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
         double angle = sprinkler.jetAngle(partialTick);
         float reach = (float) SprinklerBlockEntity.NOZZLE_REACH;

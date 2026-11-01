@@ -48,6 +48,9 @@ public class RoverPanelRenderer implements BlockEntityRenderer<RoverPanelBlockEn
         if (!(state.getBlock() instanceof RoverPanelBlock) || panel.getLevel() == null) {
             return;
         }
+        if (!Sight.ahead(pose.last())) {
+            return;
+        }
         RoverPanelBlock.Status status = state.getValue(RoverPanelBlock.STATUS);
         pose.pushPose();
         pose.translate(0.5, 0.5, 0.5);
