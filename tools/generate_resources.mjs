@@ -2714,7 +2714,8 @@ function towerInstrumentsLang() {
 // The rocket's wall washer (see WallLightBlock), drawn facing north with its back on the south side of its block: a
 // small dark lamp over a narrow slit of light along its top, and over it on the wall, nearly two blocks wide and tall,
 // its fan of light up the wall, drawn flat just off the wall in the tone's colour, fading as it rises and out to
-// its sides; it glows at full brightness, so it shows as light whatever lights the wall.
+// its sides; it glows at full brightness, so it shows as light whatever lights the wall. It stands over half a pixel
+// off the wall, too little to see and enough that from across a room the two never fight over the same pixels.
 {
   for (const tone of LIGHT_TONES) {
     const glow = { block_light: 15, sky_light: 15 };
@@ -2725,7 +2726,7 @@ function towerInstrumentsLang() {
       elements: [
         { from: [5, 3, 13], to: [11, 6, 16], faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#lamp" }])) },
         { from: [5.5, 6, 13.5], to: [10.5, 6.25, 15.5], shade: false, faces: { up: { texture: "#slit", neoforge_data: glow }, north: { texture: "#slit", neoforge_data: glow } } },
-        { from: [-6, 6.25, 15.9], to: [22, 32, 15.9], shade: false, faces: { north: { uv: [0, 0, 16, 16], texture: "#wash", neoforge_data: glow } } },
+        { from: [-6, 6.25, 15.4], to: [22, 32, 15.4], shade: false, faces: { north: { uv: [0, 0, 16, 16], texture: "#wash", neoforge_data: glow } } },
       ],
     });
   }
@@ -4964,7 +4965,6 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 function ledStripFittings() {
   return ["led_strip", "led_panel", "led_console"];
 }
-function ledStripLang() {
 
 // The invisible limit of the rocket's planetarium (see DomeLimitBlock): no model of its own to draw, and next to no
 // weight, overriding the airframe's quarter as a strip does.
@@ -4976,12 +4976,13 @@ write(`data/${ID}/physics_block_properties/dome_limit.json`, {
   selector: `${ID}:dome_limit`,
   properties: { "sable:mass": 0.05 },
 });
+function ledStripLang() {
   return {
     "block.aerolarge.led_strip": "LED Strip",
     "block.aerolarge.led_panel": "LED Panel",
     "block.aerolarge.led_console": "LED Console",
-  };
     "block.aerolarge.dome_limit": "Dome Limit",
+  };
 }
 
 // The rocket's space posters (see SpacePosterBlock), each so many blocks wide and tall, as SpacePoster has them. Each
@@ -9745,8 +9746,8 @@ FITTINGS.push(...barFittings());
 FITTINGS.push(...robotBartenderFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
-FITTINGS.push(...spacePosterFittings());
 FITTINGS.push("dome_limit");
+FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
