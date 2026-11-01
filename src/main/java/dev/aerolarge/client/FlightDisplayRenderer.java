@@ -123,8 +123,6 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static final int RED = 0xFFE83030;
     private static final int AMBER = 0xFFF0A830;
     private static final int UNLIT = 0xFF30343A;
-    /** Each flight mode's colour, as its picture on the knob has it: VERTICAL blue, ARC orange, GENTLE green. */
-    private static final int[] MODE_COLOURS = {0xFF4C9AFF, FLAME_LIT, GREEN};
 
     /** Only with the camera in front of the screen, which is drawn from the front only, and as far off as ever. */
     @Override
@@ -180,7 +178,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         stability(pose, buffers, controls, now, swing);
         boolean straightUp = controls.mode() == RocketControls.Mode.ARC
             && !RocketControls.arcFlown(rocket.lateral() == AutopilotBlockEntity.Lateral.DESTINATION);
-        int colour = MODE_COLOURS[controls.mode().ordinal()];
+        int colour = controls.mode().colour();
         ScreenDrawing.picture(buffers, matrix, CONTROL_PICTURES.get(controls.mode().getSerializedName()), CONTROLS_APART, CONTROLS_Y, CONTROL,
             TEXT_LIFT, straightUp ? dimmed(colour) : colour);
     }

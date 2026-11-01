@@ -46,23 +46,36 @@ public final class RocketControls {
     /**
      * How she flies: the climb at most, in blocks a second; how far she leans at most climbing (only ARC, which leans
      * toward her pin as she climbs), and cruising, in degrees; how fast across she goes at most cruising, and how fast
-     * she falls back at most before her landing burn, in blocks a second.
+     * she falls back at most before her landing burn, in blocks a second; the pitch of the note the knob sounds turned
+     * to it, the gentle one lowest; and its colour, as its picture on the knob has it: VERTICAL blue, ARC orange,
+     * GENTLE green.
      */
     public enum Mode implements StringRepresentable {
-        VERTICAL(30, 0, 10, 30, 40), ARC(30, 20, 15, 40, 40), GENTLE(12, 0, 5, 12, 20);
+        VERTICAL(30, 0, 10, 30, 40, 1.0F, 0xFF4C9AFF),
+        ARC(30, 20, 15, 40, 40, 1.5F, 0xFFFF9A2A),
+        GENTLE(12, 0, 5, 12, 20, 0.75F, 0xFF46E070);
 
         private final double climb;
         private final double climbingLean;
         private final double cruiseLean;
         private final double across;
         private final double fall;
+        private final float pitch;
+        private final int colour;
 
-        Mode(double climb, double climbingLean, double cruiseLean, double across, double fall) {
+        Mode(double climb, double climbingLean, double cruiseLean, double across, double fall, float pitch, int colour) {
             this.climb = climb;
             this.climbingLean = climbingLean;
             this.cruiseLean = cruiseLean;
             this.across = across;
             this.fall = fall;
+            this.pitch = pitch;
+            this.colour = colour;
+        }
+
+        /** Its colour, as its picture on the knob and the flight displays have it. */
+        public int colour() {
+            return colour;
         }
 
         /** The mode one detent round from this one, back the other way if asked. */
@@ -123,7 +136,7 @@ public final class RocketControls {
     private static final double BOOST_ACROSS = 15;
     /** How much further she leans boosting, in degrees, and how far she ever leans, boosting or not. */
     private static final double BOOST_LEAN = 4;
-    private static final double MOST_LEAN = 20;
+    private static final double LEAN_CAP = 20;
     /** ARC's lean while climbing eases in between these heights over the ground, in blocks: none below, all above. */
     private static final double ARC_FROM = 40;
     private static final double ARC_TO = 140;
@@ -195,13 +208,11 @@ public final class RocketControls {
     private static final float NOTE_VOLUME = 0.7F;
     private static final float ALARM_VOLUME = 1.2F;
     /**
-     * Pitches: the refusal's low bass note; the knob's note for a mode taken up next flight, and for each mode as it is
-     * turned to it, in the modes' order (VERTICAL, ARC, GENTLE), the gentle one lowest; the click of the stability
-     * switch going on and going off, and of the knob's detent.
+     * Pitches: the refusal's low bass note; the knob's note for a mode taken up next flight (each mode's own as it is
+     * turned to it is the mode's); the click of the stability switch going on and going off, and of the knob's detent.
      */
     private static final float REFUSED_PITCH = 0.5F;
     private static final float NOTED_PITCH = 0.5F;
-    private static final float[] MODE_PITCHES = {1.0F, 1.5F, 0.75F};
     private static final float SWITCH_ON_PITCH = 1.2F;
     private static final float SWITCH_OFF_PITCH = 0.8F;
     private static final float DETENT_PITCH = 1.6F;
@@ -330,8 +341,8 @@ public final class RocketControls {
         Mode mode = flies(toPin);
         boolean boosted = boosting(now);
         double ease = Mth.clamp((radio - ARC_FROM) / (ARC_TO - ARC_FROM), 0, 1);
-        double climbingLean = Math.min(MOST_LEAN, mode.climbingLean + (boosted ? BOOST_LEAN : 0)) * (mode.climbingLean > 0 ? ease : 0);
-        double cruiseLean = Math.min(MOST_LEAN, mode.cruiseLean + (boosted ? BOOST_LEAN : 0));
+        double climbingLean = Math.min(LEAN_CAP, mode.climbingLean + (boosted ? BOOST_LEAN : 0)) * (mode.climbingLean > 0 ? ease : 0);
+        double cruiseLean = Math.min(LEAN_CAP, mode.cruiseLean + (boosted ? BOOST_LEAN : 0));
         return new Limits(mode.climb * (boosted ? BOOST_CLIMB : 1), climbingLean, cruiseLean, mode.across + (boosted ? BOOST_ACROSS : 0), mode.fall);
     }
 
@@ -540,7 +551,7 @@ public final class RocketControls {
             return refuse(level, at, player, "arc_switched_off");
         }
         boolean later = now == AutopilotBlockEntity.Phase.DESCENT || now == AutopilotBlockEntity.Phase.LAND;
-        float pitch = later ? NOTED_PITCH : MODE_PITCHES[chosen.ordinal()];
+        float pitch = later ? NOTED_PITCH : chosen.pitch;
         level.playSound(null, at, SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.BLOCKS, NOTE_VOLUME, pitch);
         String said = "message.aerolarge.rocket_controls.mode_" + chosen.getSerializedName() + (later ? "_later" : "");
         player.displayClientMessage(Component.translatable(said), true);
@@ -589,15 +600,22 @@ public final class RocketControls {
         changed |= were;
     }
 
-    /** The mode the knob is turned to, into her pilot's save. */
+    /**
+     * The mode the knob is turned to and the one she flies by, into her pilot's save, so a knob turned as she comes
+     * down still waits for her next flight once the world is loaded again.
+     */
     void save(CompoundTag tag) {
         tag.putString("Mode", chosen.name());
+        tag.putString("FlyingMode", flying.name());
     }
 
-    /** The mode from her pilot's save, VERTICAL for one saved before there were modes. */
+    /**
+     * The modes from her pilot's save: VERTICAL for one saved before there were modes, and the one she flies by the
+     * knob's for one saved before it was kept apart.
+     */
     void load(CompoundTag tag) {
         chosen = Mode.named(tag.getString("Mode"));
-        flying = chosen;
+        flying = tag.contains("FlyingMode") ? Mode.named(tag.getString("FlyingMode")) : chosen;
     }
 
     /** What the clients are shown, in the update sent to them: the mode, the boost's and rest's ends, the stability. */

@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.autopilot.RocketControls;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -62,21 +63,27 @@ public class RocketControlBlockEntity extends BlockEntity {
     }
 
     /**
-     * Her autopilot, if it is there; an unlinked control links itself to the nearest one first, if there is one, on the
-     * server.
+     * Her autopilot, if it is there, on the server; an unlinked control, or one whose autopilot is gone (taken away, or
+     * her rebuilt), links itself to the nearest rocket's first, if there is one.
      */
     @Nullable
     private AutopilotBlockEntity autopilot(ServerLevel level) {
-        if (autopilot == null) {
-            AutopilotBlockEntity nearest = AutopilotBlockEntity.nearest(level, worldPosition);
-            if (nearest != null) {
-                link(nearest.getBlockPos().subtract(worldPosition));
+        if (autopilot != null) {
+            mendLink(level);
+            BlockPos at = worldPosition.offset(autopilot);
+            if (!level.isLoaded(at)) {
+                return null;
             }
-            return nearest;
+            if (level.getBlockEntity(at) instanceof AutopilotBlockEntity found) {
+                return found;
+            }
         }
-        mendLink(level);
-        BlockPos at = worldPosition.offset(autopilot);
-        return level.isLoaded(at) && level.getBlockEntity(at) instanceof AutopilotBlockEntity found ? found : null;
+        AutopilotBlockEntity nearest = AutopilotBlockEntity.nearest(level, worldPosition);
+        if (nearest == null || nearest.craft() != Craft.ROCKET) {
+            return null;
+        }
+        link(nearest.getBlockPos().subtract(worldPosition));
+        return nearest;
     }
 
     /** Once after loading, mends its link to her autopilot if it leads nowhere. */
