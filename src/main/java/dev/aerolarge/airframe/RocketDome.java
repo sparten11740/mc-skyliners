@@ -113,7 +113,7 @@ final class RocketDome implements RocketPiece {
             int x = i % side - out;
             int z = i / side - out;
             if (!layout.isOpen(x, y, z)) {
-                nearest = Math.min(nearest, Math.hypot(Math.max(0, Math.abs(x) - 0.5), Math.max(0, Math.abs(z) - 0.5)));
+                nearest = Math.min(nearest, OrreryBlockEntity.nearAxis(x, z));
             }
         }
         return nearest;

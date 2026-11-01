@@ -79,7 +79,11 @@ record RocketFlightDeck(@Nullable BlockPos head, List<Seat> pilots, List<BlockPo
      */
     private static final int LIFT_EXIT_X = 0;
     private static final int CALL_BUTTON_X = 1;
-    /** The rearmost row the pilots' row may come to: the row in front of the walkway before the lift's doorway. */
+    /**
+     * The rearmost row the control head's row may come to: the row in front of the walkway before the lift's doorway.
+     * Only the capsule's pilots, a row behind the head, sit on that walkway, either side of the lift's way out: in so
+     * small a rocket nothing else stands beside the lift's booth.
+     */
     private static final int LAST_ROW = -RING - 1;
 
     /** A question asked of a block of the cockpit, by its position in the layout. */

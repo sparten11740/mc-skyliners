@@ -61,6 +61,15 @@ public class OrreryBlockEntity extends BlockEntity {
     }
 
     /**
+     * How near a block of a row of her dome comes to her axis, in blocks, from where it is from the axis's column: her
+     * axis runs up the middle of the blocks over x 0, z 0. The same as she is built and on the clients, so both measure
+     * her dome's rows alike for {@link #reachIn}.
+     */
+    public static double nearAxis(int x, int z) {
+        return Math.hypot(Math.max(0, Math.abs(x) - 0.5), Math.max(0, Math.abs(z) - 0.5));
+    }
+
+    /**
      * How far out an orrery's outermost planet circles in a dome, in blocks: no further than the most, inside the hole
      * under the dome, so wide from her axis to its edge, and with all of it inside the dome's lining, so far out from
      * her axis round the sun. The same as she is built and on the clients, which measure the dome for themselves.

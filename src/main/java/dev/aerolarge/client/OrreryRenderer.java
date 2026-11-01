@@ -21,8 +21,11 @@ import org.joml.Vector3f;
  * on the client (see {@link OrreryDome}), and no bigger than it was built to be.
  *
  * <p>None of it is drawn unless the camera is in her cockpit or her dome, where it can be seen: Sable draws an
- * assembled rocket's block entities every frame wherever the camera looks. Everything is drawn in three batches, the
- * solid parts from one sheet, the sky, then all the light added on, as taking another buffer finishes the one before.
+ * assembled rocket's block entities every frame wherever the camera looks. From her cockpit all of it is seen only
+ * through the hole in the ring of ceiling, so none of it is drawn while the hole is behind the camera; from her dome,
+ * the works and the light round the sun are left out while they are behind it. Everything is drawn in three batches,
+ * the solid parts from one sheet, the sky, then all the light added on, as taking another buffer finishes the one
+ * before.
  */
 public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
     /** How far off the orrery and its planetarium are drawn, in blocks: from the cockpit's floor up to the tip. */
@@ -35,6 +38,11 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
     private static final double DEEPEST_UNDER_SUN = 16;
     /** How far over the mount's middle the planetarium's top is, where the rod meets it, in blocks. */
     private static final float ROD_TOP = 0.4F;
+    /**
+     * How far past the hole in the ring of ceiling the oculus ring's flange and band reach, in blocks, for whether the
+     * hole is in view from the cockpit.
+     */
+    private static final float HOLE_MARGIN = 1.5F;
 
     @Override
     public void render(OrreryBlockEntity orrery, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -49,7 +57,7 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
             return;
         }
         OrreryDome dome = OrreryDome.of(orrery, level);
-        if (!dome.holds(eye)) {
+        if (!dome.holds(eye) || !holeInView(dome, pose.last(), eye)) {
             return;
         }
         OrreryClock clock = new OrreryClock(level.getGameTime(), partialTick);
@@ -64,17 +72,33 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
         if (now != null) {
             Vector3f fromSun = new Vector3f(eye).sub(OrreryDome.AXIS, OrreryDome.AXIS - drop, OrreryDome.AXIS);
             OrreryPlanets.solid(now, new OrreryBrush(sheet, sun), fromSun, clock);
-            OrreryWorks.solid(now, new OrreryBrush(sheet, sun), clock, drop + ROD_TOP, cableTop(dome, now, drop));
+            float cables = cableTop(dome, now, drop);
+            float top = Math.max(drop + ROD_TOP, cables) / 2;
+            if (Sight.ahead(sun, 0, top, 0, (float) Math.hypot(now.reach * OrreryBlockEntity.EXTENT, top))) {
+                OrreryWorks.solid(now, new OrreryBrush(sheet, sun), clock, drop + ROD_TOP, cables);
+            }
         }
         if (dome.shaped()) {
             planetarium(dome, level, buffers, sheet, block, clock);
         }
-        if (now != null) {
+        float aroundSun = now == null ? 0 : Math.max(now.reach * (float) OrreryBlockEntity.EXTENT, OrreryPlanets.glowReach(now));
+        if (now != null && Sight.ahead(sun, 0, 0, 0, aroundSun)) {
             VertexConsumer glow = buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE));
             OrreryPlanets.glow(now, new OrreryBrush(glow, sun), OrreryBrush.Facing.of(sun), clock);
             OrreryWorks.tracks(now, new OrreryBrush(glow, sun));
         }
         pose.popPose();
+    }
+
+    /**
+     * Whether the hole in the ring of ceiling, through which alone all of it is seen from her cockpit, can be in front
+     * of the camera; always from her dome, over the ring, or where the dome has no shape.
+     */
+    private static boolean holeInView(OrreryDome dome, PoseStack.Pose block, Vector3f eye) {
+        if (!dome.shaped() || eye.y >= dome.floor()) {
+            return true;
+        }
+        return Sight.ahead(block, OrreryDome.AXIS, dome.floor() + OrreryDome.AXIS, OrreryDome.AXIS, dome.oculus() + HOLE_MARGIN);
     }
 
     /**

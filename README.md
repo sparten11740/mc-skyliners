@@ -2193,7 +2193,8 @@ stand behind the pilots, and a row of launch seats at the back glass looks out, 
 start a row further back; in the smallest rocket, a capsule, the pilots sit a row behind the head either side of the
 aisle, a flight display beside the head in front of each where there is room, and the screens that do not fit within
 their reach are left out. A big rocket keeps the deck at the front, open floor behind it. The lift's door, its call
-button and the walkway round its booth are always kept clear, as are the blocks beside and in front of the control head.
+button and the walkway round its booth are kept clear (but for the capsule's two seats beside the lift's door), as are
+the blocks beside and in front of the control head.
 Rockets built before keep the cockpit they were built with.
 
 At the pilot's right hand stands the large camera display, as in the zeppelin's control car (the server

@@ -25,11 +25,19 @@ final class Globe {
     private final int rings;
     /** Each corner's way out from the middle, ring by ring from the north pole, round from west to east. */
     private final Vector3f[][] corners;
+    /**
+     * Two rings of corners turned as the globe being drawn is, the one drawn from and the one drawn to, kept to be
+     * filled again for every globe rather than made anew each frame; globes are only drawn on the render thread.
+     */
+    private final Vector3f[] turnedAbove;
+    private final Vector3f[] turnedFacing;
 
     private Globe(int round, int rings) {
         this.round = round;
         this.rings = rings;
         this.corners = new Vector3f[rings + 1][round + 1];
+        this.turnedAbove = ring(round);
+        this.turnedFacing = ring(round);
         for (int ring = 0; ring <= rings; ring++) {
             float lat = Mth.HALF_PI - Mth.PI * ring / rings;
             for (int k = 0; k <= round; k++) {
@@ -84,15 +92,15 @@ final class Globe {
      * the light has it.
      */
     void draw(OrreryBrush brush, Vector3f middle, float radius, Matrix3f turn, OrreryBrush.Patch patch, Light light) {
-        Vector3f[] facing = new Vector3f[round + 1];
-        Vector3f[] above = new Vector3f[round + 1];
+        Vector3f[] facing = turnedFacing;
+        Vector3f[] above = turnedAbove;
         float[] colour = new float[3];
         for (int k = 0; k <= round; k++) {
-            above[k] = turn.transform(corners[0][k], new Vector3f());
+            turn.transform(corners[0][k], above[k]);
         }
         for (int ring = 1; ring <= rings; ring++) {
             for (int k = 0; k <= round; k++) {
-                facing[k] = turn.transform(corners[ring][k], new Vector3f());
+                turn.transform(corners[ring][k], facing[k]);
             }
             float v0 = patch.v((ring - 1F) / rings);
             float v1 = patch.v((float) ring / rings);
@@ -108,6 +116,14 @@ final class Globe {
             above = facing;
             facing = done;
         }
+    }
+
+    private static Vector3f[] ring(int round) {
+        Vector3f[] ring = new Vector3f[round + 1];
+        for (int k = 0; k <= round; k++) {
+            ring[k] = new Vector3f();
+        }
+        return ring;
     }
 
     private static void corner(OrreryBrush brush, Vector3f middle, float radius, Vector3f facing, float u, float v, Light light, float[] colour) {

@@ -1,5 +1,6 @@
 package dev.aerolarge.client;
 
+import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
@@ -26,6 +27,8 @@ final class OrreryPlanets {
     /** Saturn's ring: how far out from his middle it reaches from and to, in blocks at the design reach. */
     private static final float RING_INNER = 0.55F;
     private static final float RING_OUTER = 0.85F;
+    /** How far out from his middle Saturn's ring begins at the least, as a share of his size, so it never cuts him. */
+    private static final float RING_CLEAR = 1.15F;
     /** How many faces go round Saturn's ring. */
     private static final int RING_FACES = 48;
     /** How bright the ring is lit where the sun is edge on to it, a share. */
@@ -93,7 +96,7 @@ final class OrreryPlanets {
         if (!Sight.ahead(sheet.pose(), middle.x, middle.y, middle.z, outer)) {
             return;
         }
-        float inner = Math.max(RING_INNER * now.scale, saturn.radius() * 1.15F);
+        float inner = Math.max(RING_INNER * now.scale, saturn.radius() * RING_CLEAR);
         Matrix3f tilt = new Matrix3f().rotateX(OrreryNow.SATURN.tilt());
         Vector3f up = tilt.transform(new Vector3f(0, 1, 0));
         float lit = Math.min(1, RING_NIGHT + Math.abs(up.dot(new Vector3f(middle).negate().normalize())));
@@ -120,6 +123,11 @@ final class OrreryPlanets {
      * The light added over them: the sun's boiling skin, the Earth's air, and round the sun its corona, its glow and
      * its rays, square to the camera.
      */
+    /** How far out from the sun's middle the light round it reaches at most, in blocks: its halo's corners. */
+    static float glowReach(OrreryNow now) {
+        return now.sun * HALO_SIZE * Mth.SQRT_OF_TWO;
+    }
+
     static void glow(OrreryNow now, OrreryBrush glow, OrreryBrush.Facing facing, OrreryClock clock) {
         Matrix3f boiling = new Matrix3f().rotateY(clock.turned(BOILING_DAY));
         Globe.Light skin = new Globe.Glowing(BOILING[0], BOILING[1], BOILING[2], new Vector3f(0, 1, 0), 0);

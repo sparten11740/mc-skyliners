@@ -16,6 +16,13 @@ import org.joml.Vector3f;
  * planet baked into it as it is drawn, or the glow added over the dome.
  */
 record OrreryBrush(VertexConsumer consumer, PoseStack.Pose pose) {
+    /**
+     * A quad facing the camera, corner by corner counter-clockwise as the camera sees it, bottom left, bottom right,
+     * top right, top left: how far to its left and up each is, as shares of its half size, and its picture's u and v
+     * there.
+     */
+    private static final float[][] FACING_CORNERS = {{1, -1, 0, 1}, {-1, -1, 1, 1}, {-1, 1, 1, 0}, {1, 1, 0, 0}};
+
     /** One corner of a quad, where it is, where on its texture and how bright in each colour, each a share. */
     void vertex(float x, float y, float z, float u, float v, float r, float g, float b) {
         consumer.addVertex(pose, x, y, z)
@@ -33,9 +40,7 @@ record OrreryBrush(VertexConsumer consumer, PoseStack.Pose pose) {
     void facingCamera(Facing facing, float x, float y, float z, float half, Patch patch, float r, float g, float b) {
         Vector3f left = facing.left();
         Vector3f up = facing.up();
-        // Counter-clockwise as the camera sees it: bottom left, bottom right, top right, top left.
-        float[][] corners = {{1, -1, 0, 1}, {-1, -1, 1, 1}, {-1, 1, 1, 0}, {1, 1, 0, 0}};
-        for (float[] corner : corners) {
+        for (float[] corner : FACING_CORNERS) {
             vertex(x + (left.x * corner[0] + up.x * corner[1]) * half, y + (left.y * corner[0] + up.y * corner[1]) * half,
                 z + (left.z * corner[0] + up.z * corner[1]) * half, patch.u(corner[2]), patch.v(corner[3]), r, g, b);
         }

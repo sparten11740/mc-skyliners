@@ -277,7 +277,7 @@ final class OrreryDome {
 
     /** How near a block of a row comes to her axis, in blocks, from where it is from the mount's column. */
     private static float nearness(int x, int z) {
-        return (float) Math.hypot(Math.max(0, Math.abs(x) - AXIS), Math.max(0, Math.abs(z) - AXIS));
+        return (float) OrreryBlockEntity.nearAxis(x, z);
     }
 
     /**
