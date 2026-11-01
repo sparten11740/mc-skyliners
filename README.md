@@ -81,6 +81,7 @@ settings are under Mods → Create: Skyliners → Config.
 - [Building](docs/building.md): how the mod is built and which classes do what. `./gradlew build` writes the jar to
   `build/libs/`.
 - [AGENTS.md](AGENTS.md): the rules the code keeps, for contributors.
+- [Backlog](docs/backlog.md): what is still open.
 
 ## License
 

@@ -2,9 +2,10 @@
 
 Create: Skyliners, a NeoForge 1.21.1 mod (Java 21): an A380-style double-deck airliner big enough to build in, assembled
 into a flying body by Sable (Create Aeronautics) and flown from its own cockpit, mostly by its autopilot. `README.md` is
-the short tour, `docs/guide.md` describes every feature as a player meets it, and `docs/building.md` says which classes
-do what. Its mod id, packages and commands are `skyliners`. Up to 0.1.0-alpha.216 it was Aerolarge (`aerolarge`), as the
-plans in `docs/plans` still call it, and its airliner still flies as "Aerolarge three eight zero" on the radio.
+the short tour, `docs/guide.md` describes every feature as a player meets it, `docs/building.md` says which classes do
+what, and `docs/backlog.md` holds what is still open. Its mod id, packages and commands are `skyliners`. Up to
+0.1.0-alpha.216 it was Aerolarge (`aerolarge`), as older commits still call it, and its airliner still flies as
+"Aerolarge three eight zero" on the radio.
 
 ## Build and run
 
