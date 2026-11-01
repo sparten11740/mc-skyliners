@@ -7,8 +7,8 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 description='''
-A double-deck airliner the size of a building: one long hollow hull with a few doors, to build anything in, with
-lifting wings, four engines worked from the cockpit, wheels to roll on and everything glued ready to assemble and fly.
+Giant aircraft laid down whole by a single blueprint: an A380-style airliner, a Hindenburg-sized zeppelin and a retro
+rocket, big enough to walk around in, furnished inside, and flown by their own autopilots with you aboard.
 '''
 
 # Opens a few fields of the creative screen to the tab's section banners, and of the level renderer to the tail
