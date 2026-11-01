@@ -306,6 +306,7 @@ import dev.aerolarge.block.SpeakerBlock;
 import dev.aerolarge.block.TechnoDeckBlock;
 import dev.aerolarge.block.TechnoDeckBlockEntity;
 import dev.aerolarge.block.CocktailTableBlock;
+import dev.aerolarge.block.DomeLimitBlock;
 import dev.aerolarge.block.DrinkTapBlock;
 import dev.aerolarge.block.NeonSignBlock;
 import dev.aerolarge.block.TelegraphBlock;
@@ -561,8 +562,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_EXHAUST = PARTICLES.register("rocket_exhaust", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_CLOUD = PARTICLES.register("rocket_cloud", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_DUST = PARTICLES.register("rocket_dust", () -> new SimpleParticleType(false));
-    /** A "z" rising from the rocket's tardigrade as it sleeps (see entity.Tardigrade). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FOG_PUFF = PARTICLES.register("fog_puff", () -> new SimpleParticleType(false));
+    /** A "z" rising from the rocket's tardigrade as it sleeps (see entity.Tardigrade). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SLEEP_Z = PARTICLES.register("sleep_z", () -> new SimpleParticleType(false));
     /** A glowing spore of the spore drive the rocket's tardigrade jumps through (see entity.Tardigrade). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SPORE = PARTICLES.register("spore", () -> new SimpleParticleType(false));
@@ -1948,6 +1949,13 @@ public final class AerolargeRegistry {
      * console in her cockpit that sets any story or all of them (see {@link dev.aerolarge.airframe.RocketLedStrips}).
      * Placed only by the blueprint, so no items, and they give nothing back.
      */
+    /** The invisible limit of her planetarium's sky, which nobody climbs or flies through. */
+    public static final DeferredBlock<DomeLimitBlock> DOME_LIMIT = BLOCKS.registerBlock(
+        "dome_limit", DomeLimitBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.NONE).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion().replaceable()
+            .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false)
+    );
     public static final DeferredBlock<LedStripBlock> LED_STRIP = BLOCKS.registerBlock(
         "led_strip", LedStripBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion().noLootTable()

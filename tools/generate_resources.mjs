@@ -4965,11 +4965,23 @@ function ledStripFittings() {
   return ["led_strip", "led_panel", "led_console"];
 }
 function ledStripLang() {
+
+// The invisible limit of the rocket's planetarium (see DomeLimitBlock): no model of its own to draw, and next to no
+// weight, overriding the airframe's quarter as a strip does.
+write(`assets/${ID}/blockstates/dome_limit.json`, { variants: { "": { model: `${ID}:block/dome_limit` } } });
+write(`assets/${ID}/models/block/dome_limit.json`, { textures: { particle: `${ID}:block/zeppelin_skin` } });
+cubes.dome_limit = null;
+write(`data/${ID}/physics_block_properties/dome_limit.json`, {
+  priority: 1004,
+  selector: `${ID}:dome_limit`,
+  properties: { "sable:mass": 0.05 },
+});
   return {
     "block.aerolarge.led_strip": "LED Strip",
     "block.aerolarge.led_panel": "LED Panel",
     "block.aerolarge.led_console": "LED Console",
   };
+    "block.aerolarge.dome_limit": "Dome Limit",
 }
 
 // The rocket's space posters (see SpacePosterBlock), each so many blocks wide and tall, as SpacePoster has them. Each
@@ -9734,6 +9746,7 @@ FITTINGS.push(...robotBartenderFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...spacePosterFittings());
+FITTINGS.push("dome_limit");
 FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());

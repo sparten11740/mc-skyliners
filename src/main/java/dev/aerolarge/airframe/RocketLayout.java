@@ -116,7 +116,8 @@ public final class RocketLayout implements Layout {
         RocketWallLights::new,
         RocketPosters::new,
         RocketShaftDecor::new,
-        RocketLedStrips::new);
+        RocketLedStrips::new,
+        RocketDomeLimit::new);
     /** The livery she is built in, one of her own (see {@link Livery#swatches}). */
     private static final Livery BUILT_IN = Livery.MIDNIGHT;
 

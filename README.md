@@ -2271,8 +2271,8 @@ oval windows, a sun and sky dimming from one to the next, set the glass of the w
 to near-black, each with its falling chime, as using a window does; the one it last set them to glows green, whatever
 has been done to a window by hand since.
 
-Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass: a smooth night sky just inside
-its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky
+Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass (nobody gets through its sky,
+which stops you just short of it): a smooth night sky just inside its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky
 Way arching across in clouds of violet, teal and rose with a dark lane of dust along it, stars of every colour and
 brightness, a few dozen of them twinkling, and Orion with his pink nebula, the Plough, Cassiopeia and Cygnus picked out
 in faint gold lines; build against the dome and within a few seconds the sky draws itself in front of what you built.
@@ -2608,7 +2608,8 @@ with the `AirlockDoors` across the doorway's `AirlockDoorBlock`s, which her `Air
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
 `RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of
-them, `RocketPilotSeats` the cockpit's seats, `RocketCockpitLights` the lights over them, and `RocketDome` the dome
+them, `RocketPilotSeats` the cockpit's seats, `RocketCockpitLights` the lights over them, `RocketDomeLimit` the invisible `DomeLimitBlock`s that keep anyone from
+getting behind the planetarium's sky, and `RocketDome` the dome
 over it, its `OrreryBlock`'s `OrreryBlockEntity` drawn by `OrreryRenderer`, which finds the dome round it as
 `OrreryDome` and lines it with the `PlanetariumShell`, rimming the hole under it with the `OculusRing`, whose lamps
 follow her autopilot's phase and launch control's spoken count, and draws the orrery as it stands at the moment

@@ -146,6 +146,7 @@
     "aerolarge:led_strip",
     "aerolarge:led_panel",
     "aerolarge:led_console",
+    "aerolarge:dome_limit",
     "aerolarge:space_poster",
     "aerolarge:shaft_decor",
     "aerolarge:snack_machine",

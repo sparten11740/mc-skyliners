@@ -921,6 +921,7 @@
   "block.aerolarge.led_strip": "LED Strip",
   "block.aerolarge.led_panel": "LED Panel",
   "block.aerolarge.led_console": "LED Console",
+  "block.aerolarge.dome_limit": "Dome Limit",
   "block.aerolarge.flag_halyard": "Flag Halyard",
   "block.aerolarge.flagstaff": "Flagstaff",
   "subtitles.aerolarge.flag_halyard": "Halyard pulley squeaks",

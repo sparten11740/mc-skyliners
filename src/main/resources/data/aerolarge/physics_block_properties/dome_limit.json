@@ -1,0 +1,7 @@
+{
+  "priority": 1004,
+  "selector": "aerolarge:dome_limit",
+  "properties": {
+    "sable:mass": 0.05
+  }
+}
