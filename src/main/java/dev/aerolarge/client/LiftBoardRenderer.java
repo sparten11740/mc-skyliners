@@ -10,7 +10,11 @@ import dev.aerolarge.block.LiftBoardBlock;
 import dev.aerolarge.block.LiftBoardBlockEntity;
 import dev.aerolarge.block.LiftMachineBlockEntity;
 import dev.aerolarge.block.TouchPanel;
+import dev.aerolarge.block.WideScreenBlock;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import net.minecraft.core.Direction;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -42,13 +46,43 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
     private static final int BLINK = 10;
     /** Lifts each layer off the one below it. */
     private static final float LAYER = 0.001F;
+    /**
+     * How far off a board is drawn, in blocks, and how far from its block any of it can reach. Sable draws an assembled
+     * ship's block entities every frame unless told otherwise: past a landing or two a board cannot be read, and with
+     * every floor's icon a buffer of its own, a ship's boards together take longer than anything else she draws.
+     */
+    private static final int VIEW_DISTANCE = 48;
+    private static final float BOARD_REACH = 6;
+    /** How far back of its block's middle the camera must be to see nothing of the board: at the back of the block. */
+    private static final double BEHIND_FACE = -0.5;
+    /** Each floor's icon by name, so that it is not looked up anew on every board every frame. */
+    private static final Map<String, ResourceLocation> ICONS = new HashMap<>();
     private static final int CASING = 0xFF15171B;
     private static final int WHITE = 0xFFF2F6FB;
     private static final ResourceLocation UP = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/lift/up.png");
     private static final ResourceLocation DOWN = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/lift/down.png");
 
+    private static ResourceLocation icon(String name) {
+        return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/lift/" + name + ".png");
+    }
+
+    /** Drawn from the front only: from behind, its casing is all there is to see. */
+    @Override
+    public boolean shouldRender(LiftBoardBlockEntity board, Vec3 camera) {
+        Direction facing = board.getBlockState().getValue(WideScreenBlock.FACING);
+        return Sight.facing(board.getBlockPos(), facing, BEHIND_FACE, camera, getViewDistance());
+    }
+
+    @Override
+    public int getViewDistance() {
+        return VIEW_DISTANCE;
+    }
+
     @Override
     public void render(LiftBoardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (!Sight.ahead(pose.last(), BOARD_REACH)) {
+            return;
+        }
         BlockState state = board.getBlockState();
         pose.pushPose();
         WideScreenFace.onto(pose, state);
@@ -77,9 +111,10 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
         double right = width - LiftBoardBlock.MARGIN;
         LiftMachineBlockEntity.Phase phase = lift.phase();
         boolean going = phase == LiftMachineBlockEntity.Phase.RIDING || phase == LiftMachineBlockEntity.Phase.FETCHING;
-        AutopilotBlockEntity rocket = lift.getLevel() == null ? null : AutopilotBlockEntity.framedBy(lift.getLevel(), lift.getBlockPos(), Craft.ROCKET);
+        boolean gaugeWanted = (going || lift.at() != here) && AerolargeClientConfig.HEIGHT_GAUGE.get();
+        AutopilotBlockEntity rocket = !gaugeWanted || lift.getLevel() == null ? null : AutopilotBlockEntity.framedBy(lift.getLevel(), lift.getBlockPos(), Craft.ROCKET);
         boolean flying = rocket != null && rocket.phase() != AutopilotBlockEntity.Phase.OFF;
-        if (flying && (going || lift.at() != here) && AerolargeClientConfig.HEIGHT_GAUGE.get()) {
+        if (flying) {
             double high = SableClient.toWorld(lift.getLevel(), Vec3.atCenterOf(lift.getBlockPos())).y;
             boolean boosting = rocket.rocketControls().boosting(lift.getLevel().getGameTime());
             HeightGauge.draw(matrix, shapes, buffers, new HeightGauge.Column(left, LiftBoardBlock.MARGIN, right, height - LiftBoardBlock.MARGIN),
@@ -93,7 +128,7 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
         }
         for (int floor = 0; floor < landings.size(); floor++) {
             TouchPanel.Tile button = buttons.get(floor);
-            ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/lift/" + landings.get(floor).icon() + ".png");
+            ResourceLocation icon = ICONS.computeIfAbsent(landings.get(floor).icon(), LiftBoardRenderer::icon);
             ScreenDrawing.picture(buffers, matrix, icon, button.middleX(), button.middleY(), button.side() * ICON, 3 * LAYER, WHITE);
         }
         heading(matrix, buffers, lift, landings.size(), width, height);

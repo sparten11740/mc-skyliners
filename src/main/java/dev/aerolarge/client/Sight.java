@@ -19,6 +19,9 @@ import org.joml.Vector3f;
  * While drawing, the pose takes the block's frame to the camera's, which stands at its origin.
  */
 final class Sight {
+    /** How far from the middle of its block a small block entity draws at most, in blocks. */
+    private static final float NEAR_ITS_BLOCK = 3;
+
     private Sight() {
     }
 
@@ -43,6 +46,16 @@ final class Sight {
         Vector3f inView = pose.pose().transformPosition(x, y, z, new Vector3f());
         RenderSystem.getModelViewMatrix().transformPosition(inView);
         return inView.z < radius;
+    }
+
+    /** Whether anything within so far of the middle of the block a pose is at can be in front of the camera. */
+    static boolean ahead(PoseStack.Pose pose, float radius) {
+        return ahead(pose, 0.5F, 0.5F, 0.5F, radius);
+    }
+
+    /** Whether anything of a block entity that draws little past its own block can be in front of the camera. */
+    static boolean ahead(PoseStack.Pose pose) {
+        return ahead(pose, NEAR_ITS_BLOCK);
     }
 
     /** Where the camera is in the frame a pose draws in. */
