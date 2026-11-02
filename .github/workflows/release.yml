@@ -1,0 +1,120 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.version.outputs.name }}
+      version: ${{ steps.version.outputs.version }}
+      release-type: ${{ steps.version.outputs.release-type }}
+      minecraft: ${{ steps.version.outputs.minecraft }}
+      java: ${{ steps.version.outputs.java }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The release notes are the commits since the previous tag.
+          fetch-depth: 0
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - name: The tag matches the mod version
+        id: version
+        run: |
+          property() { sed -n "s/^$1=//p" gradle.properties; }
+          version="${GITHUB_REF_NAME#v}"
+          expected="$(property mod_version)"
+          if [ "$version" != "$expected" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match mod_version $expected in gradle.properties"
+            exit 1
+          fi
+          case "$version" in
+            *-alpha*) type=alpha ;;
+            *-beta*) type=beta ;;
+            *) type=release ;;
+          esac
+          {
+            echo "name=$(property mod_name)"
+            echo "version=$version"
+            echo "release-type=$type"
+            echo "minecraft=$(property minecraft_version)"
+            echo "java=$(property java_version)"
+          } >> "$GITHUB_OUTPUT"
+      - run: ./gradlew build
+      # Lists the feat and fix commits since the previous tag, or since the previous release's for a release, so that
+      # its notes cover its alphas too. Before the first tag, since the version bump before this one.
+      - name: Collect the jar and release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_TYPE: ${{ steps.version.outputs.release-type }}
+        run: |
+          mkdir dist
+          cp build/libs/skyliners-"$VERSION"+*.jar dist/
+          prereleases=()
+          if [ "$RELEASE_TYPE" = release ]; then
+            prereleases=(--exclude 'v*-*')
+          fi
+          previous="$(git describe --tags --abbrev=0 --match 'v*' "${prereleases[@]}" "$GITHUB_REF_NAME^" \
+            2>/dev/null)" ||
+            previous="$(git log -n 1 --format=%H --grep='^chore(release): bump version to ' "$GITHUB_REF_NAME^")"
+          changes() {
+            git log --no-merges --format=%s "$previous..$GITHUB_REF_NAME" | sed -nE "s/^$1(\([^)]*\))?!?: //p" |
+              awk '{ print "- " toupper(substr($0, 1, 1)) substr($0, 2) }'
+          }
+          section() {
+            local lines
+            lines="$(changes "$2")"
+            if [ -n "$lines" ]; then
+              printf '### %s\n\n%s\n\n' "$1" "$lines"
+            fi
+          }
+          { section New feat; section Fixed fix; } > dist/release-notes.md
+          if ! grep -q '[^[:space:]]' dist/release-notes.md; then
+            echo "Small changes behind the scenes." > dist/release-notes.md
+          fi
+          cat dist/release-notes.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: dist/
+          if-no-files-found: error
+
+  curseforge:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: dist
+      # Create and Create Propulsion: Simulated are required, as in neoforge.mods.toml. Create Aeronautics is optional
+      # there too: without it the aircraft can be built but not assembled and flown.
+      - uses: sparten11740/mod-publish-actions/curseforge/upload@v1
+        with:
+          token: ${{ secrets.CURSEFORGE_TOKEN }}
+          project-id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          file: dist/skyliners-*.jar
+          display-name: ${{ needs.build.outputs.name }} ${{ needs.build.outputs.version }}
+          game-versions: ${{ needs.build.outputs.minecraft }}
+          loaders: neoforge
+          java-versions: ${{ needs.build.outputs.java }}
+          environment: both
+          release-type: ${{ needs.build.outputs.release-type }}
+          changelog-file: dist/release-notes.md
+          dependencies: |
+            create:required
+            create-propulsion-simulated:required
+            create-aeronautics:optional
