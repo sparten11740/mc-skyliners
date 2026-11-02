@@ -120,7 +120,7 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
   `chore(release): bump version to <version>` commit straight after the change. Two jars never share a version.
   Pushing the tag `v<mod_version>` publishes that build: `.github/workflows/release.yml` builds it and uploads it to
   CurseForge as an alpha, beta or release by its version, with Create, Create Propulsion: Simulated and Create
-  Aeronautics as its dependencies. Its notes are the subjects of the `feat` and `fix` commits since the last tag (the
+  Aeronautics as required mods. Its notes are the subjects of the `feat` and `fix` commits since the last tag (the
   last release's, for a release), so those subjects are written for players. It needs the repository's
   `CURSEFORGE_TOKEN` secret and `CURSEFORGE_PROJECT_ID` variable.
 - **Docs.** A change a player can see updates `docs/guide.md` along with it, and `README.md` too where its short tour

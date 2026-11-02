@@ -101,7 +101,8 @@ jobs:
           name: release
           path: dist
       # Create and Create Propulsion: Simulated are required, as in neoforge.mods.toml. Create Aeronautics is optional
-      # there too: without it the aircraft can be built but not assembled and flown.
+      # there, as the aircraft can be built without it, but required here so that the CurseForge app installs it too:
+      # without it none of them can be assembled and flown.
       - uses: sparten11740/mod-publish-actions/curseforge/upload@v1
         with:
           token: ${{ secrets.CURSEFORGE_TOKEN }}
@@ -117,4 +118,4 @@ jobs:
           dependencies: |
             create:required
             create-propulsion-simulated:required
-            create-aeronautics:optional
+            create-aeronautics:required
