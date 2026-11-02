@@ -128,3 +128,9 @@ neoForge.ideSyncTask(generateModMetadata)
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
+
+// The jar carries both licences and the NOTICE, since MIT asks for its notice in every copy. The mod id suffix keeps
+// them from shadowing other mods' files of the same names on a shared classpath.
+tasks.jar {
+    from(files("LICENSE-APACHE", "LICENSE-MIT", "NOTICE")) { rename { "${it}_$modId" } }
+}

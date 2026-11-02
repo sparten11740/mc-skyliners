@@ -92,6 +92,7 @@ settings are under Mods → Create: Skyliners → Config.
 
 ## License
 
-All Rights Reserved.
+Dual licensed under [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT), at your option; see also [NOTICE](NOTICE).
+Unless you say otherwise, a contribution you submit for inclusion is dual licensed the same way, with no further terms.
 
 Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
