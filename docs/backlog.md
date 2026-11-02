@@ -42,3 +42,11 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 - The laser path clearer firing at real terrain while flying at speed.
 - Climbing into an upper bunk in the rocket (the test player drops off the ladder).
 - The rocket's cockpit controls flown at scales other than 2.
+
+## Wall-mounting
+
+The transponder goes on walls and ceilings since 1.0.2. Other console modules a player might want there too, each
+still a floor slab facing the placer: the Jump Light Switch (by the jump door), the Cabin Lights dimmer and Window
+Shades control (light switches), the Handset (an interphone by a door or galley), the Seatbelt Switch, the Drop
+Release (by the drop bay), and on a wall panel the rocket's Launch Key and Abort Handle. The Tower Radar and ATIS
+screens would make wall monitors but need a model of their own.
