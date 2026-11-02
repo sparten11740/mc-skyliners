@@ -1497,10 +1497,11 @@ write(`assets/${ID}/particles/fog_puff.json`, { textures: [`${ID}:fog_puff`] });
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {
-  // How far an engine is heard, in blocks: from the flight deck and the far end of the cabin, and out on the ground
-  // round the runway. Minecraft fixes how far a sound carries as it starts, from how loud it is then, and an engine's
-  // sound starts as it begins to spool up, all but silent; so its reach is set here, not by turning it up.
-  const ENGINE_HEARD = 160;
+  // How far an engine is heard, in blocks: from the flight deck and the far end of the cabin, and by anyone on the
+  // ground a few hundred blocks off as the airliner flies over or past. Minecraft fixes how far a sound carries as it
+  // starts, from how loud it is then, and an engine's sound starts as it begins to spool up, all but silent; so its
+  // reach is set here, not by turning it up.
+  const ENGINE_HEARD = 400;
   const sounds = {
     engine: {
       subtitle: `subtitles.${ID}.engine`,

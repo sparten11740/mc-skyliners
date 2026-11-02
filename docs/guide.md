@@ -94,7 +94,7 @@ While an engine is at rest an iris shuts its intake; it opens as soon as the eng
 turning fan the engine glows a dull red, brighter the harder it runs, until it has spun down and the iris shuts again.
 Behind a running engine burns a blue flame, white-hot at its core and flickering, longer and brighter the harder the
 engine runs; you see it with Fancy or Fabulous graphics, not with Fast (`engineFlames` in the server config, see Flying
-it). Each engine is heard 160 blocks off, spooling up and down with its thrust, quieter aboard, and high up it leaves a
+it). Each engine is heard 400 blocks off, spooling up and down with its thrust, quieter aboard, and high up it leaves a
 contrail. Flying through the cloud layer, the clouds stay outside: while you are inside the hull of an airliner that
 reaches into the clouds, they are not drawn for you, so no slab of cloud cuts through the floor, the walls or the
 seats; out on the wing or the airstairs, or looking through an outside camera, they are back, and from outside the
