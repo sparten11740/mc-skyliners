@@ -1,51 +1,171 @@
 {
   "variants": {
-    "brightness=bright,facing=north": {
+    "brightness=bright,facing=north,mount=floor": {
       "model": "skyliners:block/cabin_lights_bright",
       "y": 0
     },
-    "brightness=dim,facing=north": {
-      "model": "skyliners:block/cabin_lights_dim",
-      "y": 0
-    },
-    "brightness=night,facing=north": {
-      "model": "skyliners:block/cabin_lights_night",
-      "y": 0
-    },
-    "brightness=bright,facing=east": {
+    "brightness=bright,facing=east,mount=floor": {
       "model": "skyliners:block/cabin_lights_bright",
       "y": 90
     },
-    "brightness=dim,facing=east": {
-      "model": "skyliners:block/cabin_lights_dim",
-      "y": 90
-    },
-    "brightness=night,facing=east": {
-      "model": "skyliners:block/cabin_lights_night",
-      "y": 90
-    },
-    "brightness=bright,facing=south": {
+    "brightness=bright,facing=south,mount=floor": {
       "model": "skyliners:block/cabin_lights_bright",
       "y": 180
     },
-    "brightness=dim,facing=south": {
-      "model": "skyliners:block/cabin_lights_dim",
-      "y": 180
-    },
-    "brightness=night,facing=south": {
-      "model": "skyliners:block/cabin_lights_night",
-      "y": 180
-    },
-    "brightness=bright,facing=west": {
+    "brightness=bright,facing=west,mount=floor": {
       "model": "skyliners:block/cabin_lights_bright",
       "y": 270
     },
-    "brightness=dim,facing=west": {
+    "brightness=bright,facing=north,mount=wall": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 90,
+      "y": 0
+    },
+    "brightness=bright,facing=east,mount=wall": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 90,
+      "y": 90
+    },
+    "brightness=bright,facing=south,mount=wall": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 90,
+      "y": 180
+    },
+    "brightness=bright,facing=west,mount=wall": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 90,
+      "y": 270
+    },
+    "brightness=bright,facing=north,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 180,
+      "y": 0
+    },
+    "brightness=bright,facing=east,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 180,
+      "y": 90
+    },
+    "brightness=bright,facing=south,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 180,
+      "y": 180
+    },
+    "brightness=bright,facing=west,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_bright",
+      "x": 180,
+      "y": 270
+    },
+    "brightness=dim,facing=north,mount=floor": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "y": 0
+    },
+    "brightness=dim,facing=east,mount=floor": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "y": 90
+    },
+    "brightness=dim,facing=south,mount=floor": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "y": 180
+    },
+    "brightness=dim,facing=west,mount=floor": {
       "model": "skyliners:block/cabin_lights_dim",
       "y": 270
     },
-    "brightness=night,facing=west": {
+    "brightness=dim,facing=north,mount=wall": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 90,
+      "y": 0
+    },
+    "brightness=dim,facing=east,mount=wall": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 90,
+      "y": 90
+    },
+    "brightness=dim,facing=south,mount=wall": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 90,
+      "y": 180
+    },
+    "brightness=dim,facing=west,mount=wall": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 90,
+      "y": 270
+    },
+    "brightness=dim,facing=north,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 180,
+      "y": 0
+    },
+    "brightness=dim,facing=east,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 180,
+      "y": 90
+    },
+    "brightness=dim,facing=south,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 180,
+      "y": 180
+    },
+    "brightness=dim,facing=west,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_dim",
+      "x": 180,
+      "y": 270
+    },
+    "brightness=night,facing=north,mount=floor": {
       "model": "skyliners:block/cabin_lights_night",
+      "y": 0
+    },
+    "brightness=night,facing=east,mount=floor": {
+      "model": "skyliners:block/cabin_lights_night",
+      "y": 90
+    },
+    "brightness=night,facing=south,mount=floor": {
+      "model": "skyliners:block/cabin_lights_night",
+      "y": 180
+    },
+    "brightness=night,facing=west,mount=floor": {
+      "model": "skyliners:block/cabin_lights_night",
+      "y": 270
+    },
+    "brightness=night,facing=north,mount=wall": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 90,
+      "y": 0
+    },
+    "brightness=night,facing=east,mount=wall": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 90,
+      "y": 90
+    },
+    "brightness=night,facing=south,mount=wall": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 90,
+      "y": 180
+    },
+    "brightness=night,facing=west,mount=wall": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 90,
+      "y": 270
+    },
+    "brightness=night,facing=north,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 180,
+      "y": 0
+    },
+    "brightness=night,facing=east,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 180,
+      "y": 90
+    },
+    "brightness=night,facing=south,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 180,
+      "y": 180
+    },
+    "brightness=night,facing=west,mount=ceiling": {
+      "model": "skyliners:block/cabin_lights_night",
+      "x": 180,
       "y": 270
     }
   }

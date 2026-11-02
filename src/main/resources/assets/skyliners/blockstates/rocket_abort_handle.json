@@ -1,67 +1,227 @@
 {
   "variants": {
-    "facing=north,pulled=false,ready=false": {
+    "facing=north,mount=floor,pulled=false,ready=false": {
       "model": "skyliners:block/rocket_abort_handle_dark_in",
       "y": 0
     },
-    "facing=north,pulled=false,ready=true": {
-      "model": "skyliners:block/rocket_abort_handle_lit_in",
-      "y": 0
-    },
-    "facing=north,pulled=true,ready=false": {
-      "model": "skyliners:block/rocket_abort_handle_dark_out",
-      "y": 0
-    },
-    "facing=north,pulled=true,ready=true": {
-      "model": "skyliners:block/rocket_abort_handle_lit_out",
-      "y": 0
-    },
-    "facing=east,pulled=false,ready=false": {
+    "facing=east,mount=floor,pulled=false,ready=false": {
       "model": "skyliners:block/rocket_abort_handle_dark_in",
       "y": 90
     },
-    "facing=east,pulled=false,ready=true": {
-      "model": "skyliners:block/rocket_abort_handle_lit_in",
-      "y": 90
-    },
-    "facing=east,pulled=true,ready=false": {
-      "model": "skyliners:block/rocket_abort_handle_dark_out",
-      "y": 90
-    },
-    "facing=east,pulled=true,ready=true": {
-      "model": "skyliners:block/rocket_abort_handle_lit_out",
-      "y": 90
-    },
-    "facing=south,pulled=false,ready=false": {
+    "facing=south,mount=floor,pulled=false,ready=false": {
       "model": "skyliners:block/rocket_abort_handle_dark_in",
       "y": 180
     },
-    "facing=south,pulled=false,ready=true": {
-      "model": "skyliners:block/rocket_abort_handle_lit_in",
-      "y": 180
-    },
-    "facing=south,pulled=true,ready=false": {
-      "model": "skyliners:block/rocket_abort_handle_dark_out",
-      "y": 180
-    },
-    "facing=south,pulled=true,ready=true": {
-      "model": "skyliners:block/rocket_abort_handle_lit_out",
-      "y": 180
-    },
-    "facing=west,pulled=false,ready=false": {
+    "facing=west,mount=floor,pulled=false,ready=false": {
       "model": "skyliners:block/rocket_abort_handle_dark_in",
       "y": 270
     },
-    "facing=west,pulled=false,ready=true": {
+    "facing=north,mount=wall,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,pulled=false,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_in",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,mount=floor,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "y": 0
+    },
+    "facing=east,mount=floor,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "y": 90
+    },
+    "facing=south,mount=floor,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "y": 180
+    },
+    "facing=west,mount=floor,pulled=false,ready=true": {
       "model": "skyliners:block/rocket_abort_handle_lit_in",
       "y": 270
     },
-    "facing=west,pulled=true,ready=false": {
+    "facing=north,mount=wall,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,pulled=false,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_in",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,mount=floor,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "y": 0
+    },
+    "facing=east,mount=floor,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "y": 90
+    },
+    "facing=south,mount=floor,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "y": 180
+    },
+    "facing=west,mount=floor,pulled=true,ready=false": {
       "model": "skyliners:block/rocket_abort_handle_dark_out",
       "y": 270
     },
-    "facing=west,pulled=true,ready=true": {
+    "facing=north,mount=wall,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,pulled=true,ready=false": {
+      "model": "skyliners:block/rocket_abort_handle_dark_out",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,mount=floor,pulled=true,ready=true": {
       "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "y": 0
+    },
+    "facing=east,mount=floor,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "y": 90
+    },
+    "facing=south,mount=floor,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "y": 180
+    },
+    "facing=west,mount=floor,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "y": 270
+    },
+    "facing=north,mount=wall,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,pulled=true,ready=true": {
+      "model": "skyliners:block/rocket_abort_handle_lit_out",
+      "x": 180,
       "y": 270
     }
   }

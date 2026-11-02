@@ -249,6 +249,10 @@ flight of stairs, takes the server's count through `ToldTicks`.
 palette holds none: a seat for a passenger (`SableFlight.nearest`), and the jump lights put up by hand round a jump
 switch put up by hand, which `JumpSwitchBlock` works when no ship wired it, each light keeping what the switch turned it
 to as `JumpLightBlock.SWITCHED`.
+`MountedModule` puts a console module up against the block clicked, as a button goes, on a floor, a wall or a ceiling
+(`MOUNT`), and tips its shape as its blockstate tips its model (the generator's `mountedVariants`); `TowerRadarBlock`
+hangs the radar's and the weather screen's monitor on a wall without its stand, its renderers drawing on the screen
+there (`TowerRadarRenderer.surface`).
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

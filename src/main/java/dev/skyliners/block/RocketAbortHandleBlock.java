@@ -22,7 +22,7 @@ public class RocketAbortHandleBlock extends RocketControlBlock {
 
     public RocketAbortHandleBlock(Properties properties) {
         super(properties, ConsoleModule.behindPlate(4.5, 4));
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(READY, false).setValue(PULLED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(READY, false).setValue(PULLED, false).setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -32,7 +32,7 @@ public class RocketAbortHandleBlock extends RocketControlBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, READY, PULLED);
+        builder.add(FACING, READY, PULLED, MountedModule.MOUNT);
     }
 
     @Override

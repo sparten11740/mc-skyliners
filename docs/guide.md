@@ -30,7 +30,11 @@ In creative mode the mouse wheel (pick block) copies what you look at, and that 
 and machines too: the snack machine, the LED strips, a lab's pipes and instruments, a lift's doors and all, and a
 trolley, a basketball or a rover (which gives its remote). What has kinds comes as the one you looked at (a shelf unit
 with its goods, a pallet rack with its load, a lab instrument), drawn so in your hand. Put up by hand, each stands whole
-and works as far as it can alone, and broken it gives itself back, but for blue lav ice, which melts. A lift's parts, an
+and works as far as it can alone, and broken it gives itself back, but for blue lav ice, which melts. The console's
+switches and handsets go against the block you click, as a button does: on a floor or a desk, on a wall looking out from
+it, or hung face down under a ceiling (the Transponder, the Jump Light Switch, the Cabin Lights Dimmer, the Window
+Shades Control, the Captain's Handset, the Seatbelt Switch, the Drop Release and the rocket's Launch Key and Abort
+Handle); the Tower Radar and the Weather Screen hang on a wall without their stand. A lift's parts, an
 LED panel or an LED console put up by hand have nothing to work: a ship wires those as it is built, so they stay still
 and do nothing. LED strips take the colour of the story they are in, or stay white outside a rocket. What only goes up
 with a whole ship gives the nearest thing you can put up yourself: a screen of the curved row on a flight deck the
@@ -1365,7 +1369,8 @@ each floor, the top one first, by the names given to its elevator contact (in Cr
 cabin was last sent to lit up in amber. Touch a floor's row to send the cabin there. Put one on the wall within three
 blocks of the lift's column of contacts, at any landing; one glued into the cabin rides with it and works from inside.
 
-The **Tower Radar** is a monitor on a desk stand whose screen sweeps round like a radar's: north up, range rings, and
+The **Tower Radar** is a monitor on a desk stand, or hung on a wall where you put it against one, whose screen sweeps
+round like a radar's: north up, range rings, and
 every transponder within 2000 blocks a blip in its colour, brightest as the sweep passes it and fading until it comes
 round again, an airliner's with a short line the way it flies. Use it to open the radar's map: the land round the tower,
 rings every 250 blocks round it, every transponder's marker and every other player's face. Drag it, scroll to zoom,

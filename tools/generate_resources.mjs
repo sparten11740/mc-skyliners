@@ -2065,7 +2065,7 @@ const ROCKET_CONTROLS = ["rocket_boost_button", "rocket_stability_switch", "rock
     }
   }
   write(`assets/${ID}/blockstates/rocket_abort_handle.json`, {
-    variants: facingOf([false, true].flatMap((pulled) => [false, true].map((ready) =>
+    variants: mountedVariants([false, true].flatMap((pulled) => [false, true].map((ready) =>
       [`pulled=${pulled},ready=${ready}`, `rocket_abort_handle_${ready ? "lit" : "dark"}_${pulled ? "out" : "in"}`]))),
   });
   write(`assets/${ID}/models/item/rocket_abort_handle.json`, { parent: `${ID}:block/rocket_abort_handle_dark_in` });
@@ -2080,7 +2080,7 @@ const ROCKET_CONTROLS = ["rocket_boost_button", "rocket_stability_switch", "rock
     ]);
   }
   write(`assets/${ID}/blockstates/rocket_launch_key.json`, {
-    variants: facingOf([false, true].map((turned) => [`turned=${turned}`, `rocket_launch_key_${turned ? "on" : "off"}`])),
+    variants: mountedVariants([false, true].map((turned) => [`turned=${turned}`, `rocket_launch_key_${turned ? "on" : "off"}`])),
   });
   write(`assets/${ID}/models/item/rocket_launch_key.json`, { parent: `${ID}:block/rocket_launch_key_off` });
 
@@ -2204,8 +2204,7 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
     variants: Object.fromEntries(signals.map((signal) => [`signal=${signal}`, { model: `${ID}:block/jump_light_${signal}` }])),
   });
   write(`assets/${ID}/blockstates/jump_switch.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
-      signals.map((signal) => [`facing=${facing},signal=${signal}`, { model: `${ID}:block/jump_switch_${signal}`, y }]))),
+    variants: mountedVariants(signals.map((signal) => [`signal=${signal}`, `jump_switch_${signal}`])),
   });
   write(`assets/${ID}/models/item/jump_light.json`, { parent: `${ID}:block/jump_light_red` });
   write(`assets/${ID}/models/item/jump_switch.json`, { parent: `${ID}:block/jump_switch_green` });
@@ -2266,15 +2265,24 @@ function facing(name, model = name) {
     variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${model}`, y }])),
   });
 }
-// A console module that can be put up on a floor, a wall or a ceiling (see Mount): one model, drawn standing on the
-// floor with its face looking up and its viewer at its north side, tipped over onto the wall it looks out from or hung
-// face down under the ceiling, then turned for each facing (see TransponderBlock, and TransponderRenderer, which tips
-// its screen the same way).
-function mountedFacing(name) {
+// A console module that can be put up on a floor, a wall or a ceiling (see MountedModule): each of its looks, a
+// model drawn standing on the floor with its face looking up and its viewer at its north side, tipped over onto the
+// wall it looks out from or hung face down under the ceiling, then turned for each facing (TransponderRenderer tips
+// its screen the same way). The looks are [the properties choosing it, its model].
+function mountedVariants(looks) {
   const tilt = { floor: 0, wall: 90, ceiling: 180 };
+  return Object.fromEntries(looks.flatMap(([key, model]) => Object.entries(tilt).flatMap(([mount, x]) => Object.entries(yRot).map(([facing, y]) =>
+    [[key, `facing=${facing}`, `mount=${mount}`].filter(Boolean).sort().join(","), { model: `${ID}:block/${model}`, ...(x ? { x } : {}), y }]))));
+}
+function mountedFacing(name) {
+  write(`assets/${ID}/blockstates/${name}.json`, { variants: mountedVariants([["", name]]) });
+}
+// A monitor on its stand or hung on a wall (see TowerRadarBlock): its stand's model and its wall model, turned for each
+// facing.
+function monitorFacing(name) {
   write(`assets/${ID}/blockstates/${name}.json`, {
-    variants: Object.fromEntries(Object.entries(tilt).flatMap(([mount, x]) => Object.entries(yRot).map(([facing, y]) =>
-      [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${name}`, ...(x ? { x } : {}), y }]))),
+    variants: Object.fromEntries(["floor", "wall"].flatMap((mount) => Object.entries(yRot).map(([facing, y]) =>
+      [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${name}${mount === "wall" ? "_wall" : ""}`, y }]))),
   });
 }
 // The tones the rocket's lights glow in (see LightTone).
@@ -2429,7 +2437,7 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
     solid([3, 7.5, 6], [5, 9.5, 10], "#receiver"),
     solid([11, 7.5, 6], [13, 9.5, 10], "#receiver"),
   ]);
-  facing("handset");
+  mountedFacing("handset");
   write(`assets/${ID}/models/item/handset.json`, { parent: `${ID}:block/handset` });
   write(`assets/${ID}/models/block/tower_radio.json`, {
     parent: "minecraft:block/orientable",
@@ -2464,7 +2472,15 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
       { from: [0.5, 3, 6], to: [15.5, 15, 10], faces: { north: { texture: "#screen" }, south: casing, east: casing, west: casing, up: casing, down: casing } },
     ],
   });
-  facing("tower_radar");
+  // Hung on a wall, the monitor alone, its back against the wall (TowerRadarBlock.WALL_SCREEN_BACK).
+  write(`assets/${ID}/models/block/tower_radar_wall.json`, {
+    parent: "minecraft:block/block",
+    textures: { casing: `${ID}:block/tower_radar_casing`, screen: `${ID}:block/tower_radar_screen`, particle: `${ID}:block/tower_radar_casing` },
+    elements: [
+      { from: [0.5, 3, 12], to: [15.5, 15, 16], faces: { north: { texture: "#screen" }, south: casing, east: casing, west: casing, up: casing, down: casing } },
+    ],
+  });
+  monitorFacing("tower_radar");
   write(`assets/${ID}/models/item/tower_radar.json`, { parent: `${ID}:block/tower_radar` });
   write(`assets/${ID}/models/item/launch_pad_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/launch_pad_blueprint` } });
   write(`assets/${ID}/models/item/control_tower_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/control_tower_blueprint` } });
@@ -2518,7 +2534,8 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   write(`assets/${ID}/models/item/wind_sock.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/wind_sock` } });
   // The weather screen: the radar screen's monitor and stand; its report is drawn on it by AtisScreenRenderer.
   write(`assets/${ID}/models/block/atis_screen.json`, { parent: `${ID}:block/tower_radar` });
-  facing("atis_screen");
+  write(`assets/${ID}/models/block/atis_screen_wall.json`, { parent: `${ID}:block/tower_radar_wall` });
+  monitorFacing("atis_screen");
   write(`assets/${ID}/models/item/atis_screen.json`, { parent: `${ID}:block/atis_screen` });
   for (const name of ["wind_sock", "atis_screen"]) {
     dropsItself(name);
@@ -2633,8 +2650,7 @@ function towerInstrumentsLang() {
         : { model: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}` }])))),
   });
   write(`assets/${ID}/blockstates/seatbelt_switch.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((on) =>
-      [`facing=${facing},powered=${on}`, { model: `${ID}:block/seatbelt_switch${on ? "_on" : ""}`, y }]))),
+    variants: mountedVariants([false, true].map((on) => [`powered=${on}`, `seatbelt_switch${on ? "_on" : ""}`])),
   });
   write(`assets/${ID}/models/item/seatbelt_sign.json`, { parent: `${ID}:block/seatbelt_sign_on` });
   write(`assets/${ID}/models/item/seatbelt_switch.json`, { parent: `${ID}:block/seatbelt_switch_on` });
@@ -3433,8 +3449,7 @@ for (const armed of [false, true]) {
   ]);
 }
 write(`assets/${ID}/blockstates/drop_release.json`, {
-  variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((armed) =>
-    [`armed=${armed},facing=${facing}`, { model: `${ID}:block/drop_release_${armed ? "armed" : "safe"}`, y }]))),
+  variants: mountedVariants([false, true].map((armed) => [`armed=${armed}`, `drop_release_${armed ? "armed" : "safe"}`])),
 });
 write(`assets/${ID}/models/item/drop_release.json`, { parent: `${ID}:block/drop_release_safe` });
 for (const name of ["drop_bay", "drop_release"]) {
@@ -4830,8 +4845,7 @@ const DUTY_FREE_LANG = {
     ]);
   }
   write(`assets/${ID}/blockstates/cabin_lights.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["bright", "dim", "night"].map((level) =>
-      [`brightness=${level},facing=${facing}`, { model: `${ID}:block/cabin_lights_${level}`, y }]))),
+    variants: mountedVariants(["bright", "dim", "night"].map((level) => [`brightness=${level}`, `cabin_lights_${level}`])),
   });
   write(`assets/${ID}/models/item/cabin_lights.json`, { parent: `${ID}:block/cabin_lights_bright` });
   for (const shaded of [false, true]) {
@@ -4841,8 +4855,7 @@ const DUTY_FREE_LANG = {
     ]);
   }
   write(`assets/${ID}/blockstates/window_shades.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((shaded) =>
-      [`facing=${facing},shaded=${shaded}`, { model: `${ID}:block/window_shades_${shaded ? "closed" : "open"}`, y }]))),
+    variants: mountedVariants([false, true].map((shaded) => [`shaded=${shaded}`, `window_shades_${shaded ? "closed" : "open"}`])),
   });
   write(`assets/${ID}/models/item/window_shades.json`, { parent: `${ID}:block/window_shades_open` });
   for (const name of ["cabin_lights", "window_shades"]) {

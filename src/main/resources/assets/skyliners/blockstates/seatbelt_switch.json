@@ -1,35 +1,115 @@
 {
   "variants": {
-    "facing=north,powered=false": {
+    "facing=north,mount=floor,powered=false": {
       "model": "skyliners:block/seatbelt_switch",
       "y": 0
     },
-    "facing=north,powered=true": {
-      "model": "skyliners:block/seatbelt_switch_on",
-      "y": 0
-    },
-    "facing=east,powered=false": {
+    "facing=east,mount=floor,powered=false": {
       "model": "skyliners:block/seatbelt_switch",
       "y": 90
     },
-    "facing=east,powered=true": {
-      "model": "skyliners:block/seatbelt_switch_on",
-      "y": 90
-    },
-    "facing=south,powered=false": {
+    "facing=south,mount=floor,powered=false": {
       "model": "skyliners:block/seatbelt_switch",
       "y": 180
     },
-    "facing=south,powered=true": {
-      "model": "skyliners:block/seatbelt_switch_on",
-      "y": 180
-    },
-    "facing=west,powered=false": {
+    "facing=west,mount=floor,powered=false": {
       "model": "skyliners:block/seatbelt_switch",
       "y": 270
     },
-    "facing=west,powered=true": {
+    "facing=north,mount=wall,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,powered=false": {
+      "model": "skyliners:block/seatbelt_switch",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,mount=floor,powered=true": {
       "model": "skyliners:block/seatbelt_switch_on",
+      "y": 0
+    },
+    "facing=east,mount=floor,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "y": 90
+    },
+    "facing=south,mount=floor,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "y": 180
+    },
+    "facing=west,mount=floor,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "y": 270
+    },
+    "facing=north,mount=wall,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,powered=true": {
+      "model": "skyliners:block/seatbelt_switch_on",
+      "x": 180,
       "y": 270
     }
   }

@@ -1,35 +1,115 @@
 {
   "variants": {
-    "facing=north,shaded=false": {
+    "facing=north,mount=floor,shaded=false": {
       "model": "skyliners:block/window_shades_open",
       "y": 0
     },
-    "facing=north,shaded=true": {
-      "model": "skyliners:block/window_shades_closed",
-      "y": 0
-    },
-    "facing=east,shaded=false": {
+    "facing=east,mount=floor,shaded=false": {
       "model": "skyliners:block/window_shades_open",
       "y": 90
     },
-    "facing=east,shaded=true": {
-      "model": "skyliners:block/window_shades_closed",
-      "y": 90
-    },
-    "facing=south,shaded=false": {
+    "facing=south,mount=floor,shaded=false": {
       "model": "skyliners:block/window_shades_open",
       "y": 180
     },
-    "facing=south,shaded=true": {
-      "model": "skyliners:block/window_shades_closed",
-      "y": 180
-    },
-    "facing=west,shaded=false": {
+    "facing=west,mount=floor,shaded=false": {
       "model": "skyliners:block/window_shades_open",
       "y": 270
     },
-    "facing=west,shaded=true": {
+    "facing=north,mount=wall,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,shaded=false": {
+      "model": "skyliners:block/window_shades_open",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,mount=floor,shaded=true": {
       "model": "skyliners:block/window_shades_closed",
+      "y": 0
+    },
+    "facing=east,mount=floor,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "y": 90
+    },
+    "facing=south,mount=floor,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "y": 180
+    },
+    "facing=west,mount=floor,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "y": 270
+    },
+    "facing=north,mount=wall,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling,shaded=true": {
+      "model": "skyliners:block/window_shades_closed",
+      "x": 180,
       "y": 270
     }
   }

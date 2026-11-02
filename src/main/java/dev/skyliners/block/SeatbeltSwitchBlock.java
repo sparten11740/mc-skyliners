@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,11 +36,11 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
     public static final BooleanProperty ON = BlockStateProperties.POWERED;
     public static final String SIGNS = "signs";
     /** A module of the console with the switch on it. */
-    private static final VoxelShape SHAPE = ConsoleModule.with(1, 3);
+    private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = MountedModule.shapes(ConsoleModule.with(1, 3));
 
     public SeatbeltSwitchBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(ON, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(ON, false).setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -49,18 +50,19 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, ON);
+        builder.add(FACING, ON, MountedModule.MOUNT);
     }
 
     /** Put down by hand, its face looks at whoever puts it down, as it looks at the pilots. */
+    /** Against the block clicked, as a button goes: on a floor, on a wall or under a ceiling (see {@link MountedModule}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return MountedModule.place(context, defaultBlockState());
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return MountedModule.shape(SHAPES, state);
     }
 
     @Override

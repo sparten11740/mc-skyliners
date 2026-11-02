@@ -1,19 +1,35 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,mount=floor": {
       "model": "skyliners:block/tower_radar",
       "y": 0
     },
-    "facing=east": {
+    "facing=east,mount=floor": {
       "model": "skyliners:block/tower_radar",
       "y": 90
     },
-    "facing=south": {
+    "facing=south,mount=floor": {
       "model": "skyliners:block/tower_radar",
       "y": 180
     },
-    "facing=west": {
+    "facing=west,mount=floor": {
       "model": "skyliners:block/tower_radar",
+      "y": 270
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/tower_radar_wall",
+      "y": 0
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/tower_radar_wall",
+      "y": 90
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/tower_radar_wall",
+      "y": 180
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/tower_radar_wall",
       "y": 270
     }
   }

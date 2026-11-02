@@ -2,11 +2,16 @@ package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.radio.Broadcasts;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -17,10 +22,23 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class HandsetBlock extends RadioBlock {
     private static final MapCodec<HandsetBlock> CODEC = simpleCodec(HandsetBlock::new);
     /** A module of the console with the cradle and its receiver on it. */
-    private static final VoxelShape SHAPE = ConsoleModule.with(5, 4);
+    private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = MountedModule.shapes(ConsoleModule.with(5, 4));
 
     public HandsetBlock(Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(MountedModule.MOUNT, Mount.FLOOR));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(MountedModule.MOUNT);
+    }
+
+    /** Against the block clicked, as a button goes: on a floor, on a wall or under a ceiling (see {@link MountedModule}). */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return MountedModule.place(context, defaultBlockState());
     }
 
     @Override
@@ -35,6 +53,6 @@ public class HandsetBlock extends RadioBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return MountedModule.shape(SHAPES, state);
     }
 }

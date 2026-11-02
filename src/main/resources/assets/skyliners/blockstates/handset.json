@@ -1,19 +1,59 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,mount=floor": {
       "model": "skyliners:block/handset",
       "y": 0
     },
-    "facing=east": {
+    "facing=east,mount=floor": {
       "model": "skyliners:block/handset",
       "y": 90
     },
-    "facing=south": {
+    "facing=south,mount=floor": {
       "model": "skyliners:block/handset",
       "y": 180
     },
-    "facing=west": {
+    "facing=west,mount=floor": {
       "model": "skyliners:block/handset",
+      "y": 270
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/handset",
+      "x": 90,
+      "y": 0
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/handset",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/handset",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/handset",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/handset",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/handset",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/handset",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/handset",
+      "x": 180,
       "y": 270
     }
   }

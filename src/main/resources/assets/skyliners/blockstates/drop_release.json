@@ -1,35 +1,115 @@
 {
   "variants": {
-    "armed=false,facing=north": {
+    "armed=false,facing=north,mount=floor": {
       "model": "skyliners:block/drop_release_safe",
       "y": 0
     },
-    "armed=true,facing=north": {
-      "model": "skyliners:block/drop_release_armed",
-      "y": 0
-    },
-    "armed=false,facing=east": {
+    "armed=false,facing=east,mount=floor": {
       "model": "skyliners:block/drop_release_safe",
       "y": 90
     },
-    "armed=true,facing=east": {
-      "model": "skyliners:block/drop_release_armed",
-      "y": 90
-    },
-    "armed=false,facing=south": {
+    "armed=false,facing=south,mount=floor": {
       "model": "skyliners:block/drop_release_safe",
       "y": 180
     },
-    "armed=true,facing=south": {
-      "model": "skyliners:block/drop_release_armed",
-      "y": 180
-    },
-    "armed=false,facing=west": {
+    "armed=false,facing=west,mount=floor": {
       "model": "skyliners:block/drop_release_safe",
       "y": 270
     },
-    "armed=true,facing=west": {
+    "armed=false,facing=north,mount=wall": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 90,
+      "y": 0
+    },
+    "armed=false,facing=east,mount=wall": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 90,
+      "y": 90
+    },
+    "armed=false,facing=south,mount=wall": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 90,
+      "y": 180
+    },
+    "armed=false,facing=west,mount=wall": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 90,
+      "y": 270
+    },
+    "armed=false,facing=north,mount=ceiling": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 180,
+      "y": 0
+    },
+    "armed=false,facing=east,mount=ceiling": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 180,
+      "y": 90
+    },
+    "armed=false,facing=south,mount=ceiling": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 180,
+      "y": 180
+    },
+    "armed=false,facing=west,mount=ceiling": {
+      "model": "skyliners:block/drop_release_safe",
+      "x": 180,
+      "y": 270
+    },
+    "armed=true,facing=north,mount=floor": {
       "model": "skyliners:block/drop_release_armed",
+      "y": 0
+    },
+    "armed=true,facing=east,mount=floor": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 90
+    },
+    "armed=true,facing=south,mount=floor": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 180
+    },
+    "armed=true,facing=west,mount=floor": {
+      "model": "skyliners:block/drop_release_armed",
+      "y": 270
+    },
+    "armed=true,facing=north,mount=wall": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 90,
+      "y": 0
+    },
+    "armed=true,facing=east,mount=wall": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 90,
+      "y": 90
+    },
+    "armed=true,facing=south,mount=wall": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 90,
+      "y": 180
+    },
+    "armed=true,facing=west,mount=wall": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 90,
+      "y": 270
+    },
+    "armed=true,facing=north,mount=ceiling": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 180,
+      "y": 0
+    },
+    "armed=true,facing=east,mount=ceiling": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 180,
+      "y": 90
+    },
+    "armed=true,facing=south,mount=ceiling": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 180,
+      "y": 180
+    },
+    "armed=true,facing=west,mount=ceiling": {
+      "model": "skyliners:block/drop_release_armed",
+      "x": 180,
       "y": 270
     }
   }

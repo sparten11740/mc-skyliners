@@ -31,7 +31,7 @@ public class AtisScreenBlock extends HorizontalDirectionalBlock implements Entit
 
     public AtisScreenBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(TowerRadarBlock.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -41,18 +41,18 @@ public class AtisScreenBlock extends HorizontalDirectionalBlock implements Entit
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, TowerRadarBlock.MOUNT);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return TowerRadarBlock.monitor(context, defaultBlockState());
     }
 
-    /** The radar screen's monitor and stand. */
+    /** The radar screen's monitor, on its stand or hung on a wall. */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return TowerRadarBlock.SHAPES.get(state.getValue(FACING));
+        return TowerRadarBlock.monitorShape(state);
     }
 
     @Nullable

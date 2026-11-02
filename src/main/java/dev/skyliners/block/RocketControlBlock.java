@@ -32,12 +32,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the laser switch's does.
  */
 public abstract class RocketControlBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private final Map<Direction, VoxelShape> shapes;
+    private final Map<Mount, Map<Direction, VoxelShape>> shapes;
 
     /** Its shape drawn facing north, the pilots at its north side (see {@link ConsoleModule#behindPlate}). */
     protected RocketControlBlock(Properties properties, VoxelShape north) {
         super(properties);
-        this.shapes = TurnedShapes.of(north);
+        this.shapes = MountedModule.shapes(north);
     }
 
     /** The control on her console it works. */
@@ -63,15 +63,20 @@ public abstract class RocketControlBlock extends HorizontalDirectionalBlock impl
     void changed(ServerLevel level, BlockPos pos, BlockState was, BlockState now) {
     }
 
-    /** Put down by hand, its face looks at whoever puts it down, as it looks at the pilots. */
+    /**
+     * Put down by hand, its face looks at whoever puts it down, as it looks at the pilots; one that can be put up on a
+     * wall or under a ceiling (see {@link MountedModule}) goes against the block clicked, as a button does.
+     */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        BlockState state = defaultBlockState();
+        return state.hasProperty(MountedModule.MOUNT) ? MountedModule.place(context, state)
+            : state.setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return shapes.get(state.getValue(FACING));
+        return MountedModule.shape(shapes, state);
     }
 
     @Override

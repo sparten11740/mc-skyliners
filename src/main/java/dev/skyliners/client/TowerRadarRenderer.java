@@ -3,6 +3,7 @@ package dev.skyliners.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.skyliners.block.Mount;
 import dev.skyliners.block.TowerRadarBlock;
 import dev.skyliners.block.TowerRadarBlockEntity;
 import dev.skyliners.radar.Contact;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -24,8 +26,12 @@ import org.joml.Matrix4f;
  * Drawn only with the camera in front of the screen.
  */
 public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEntity> {
-    /** How far in front of the block's middle the screen's face is, in blocks, and the drawing just off it. */
-    static final float SURFACE = 2 / 16F + 0.003F;
+    /**
+     * How far in front of the block's middle the screen's face is on its stand, in blocks, and the drawing just off it;
+     * on a wall it is so many pixels further back (see {@link TowerRadarBlock#WALL_SCREEN_BACK}).
+     */
+    private static final float SURFACE = 2 / 16F + 0.003F;
+    private static final float ON_WALL_BACK = (TowerRadarBlock.WALL_SCREEN_BACK - 6) / 16F;
     /** The scope's middle (and the glass's), how far up from the block's middle, and its radius, in blocks. */
     static final float MIDDLE_Y = 1 / 16F;
     private static final float RADIUS = 5.5F / 16;
@@ -53,10 +59,15 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
     private static final int SWEEP = 0xFF46E070;
     private static final int TRAIL_COLOUR = 0x2E46E070;
 
+    /** How far in front of the block's middle a monitor's screen face is, in blocks: on its stand, or on a wall. */
+    static float surface(BlockState monitor) {
+        return monitor.getValue(TowerRadarBlock.MOUNT) == Mount.WALL ? SURFACE - ON_WALL_BACK : SURFACE;
+    }
+
     @Override
     public boolean shouldRender(TowerRadarBlockEntity radar, Vec3 camera) {
         Direction screen = radar.getBlockState().getValue(TowerRadarBlock.FACING);
-        return Sight.facing(radar.getBlockPos(), screen, SURFACE, camera, getViewDistance());
+        return Sight.facing(radar.getBlockPos(), screen, surface(radar.getBlockState()), camera, getViewDistance());
     }
 
     @Override
@@ -70,7 +81,7 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
         // Onto the screen's face, x to the viewer's right and y up, from the scope's middle.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-screen.toYRot()));
-        pose.translate(0, MIDDLE_Y, SURFACE);
+        pose.translate(0, MIDDLE_Y, surface(radar.getBlockState()));
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, -GLASS_HALF_WIDTH, -GLASS_HALF_HEIGHT, GLASS_HALF_WIDTH, GLASS_HALF_HEIGHT, 0, GLASS);

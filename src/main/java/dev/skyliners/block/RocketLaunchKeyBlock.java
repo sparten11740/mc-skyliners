@@ -29,7 +29,7 @@ public class RocketLaunchKeyBlock extends RocketControlBlock {
 
     public RocketLaunchKeyBlock(Properties properties) {
         super(properties, ConsoleModule.behindPlate(2.5, 5));
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(TURNED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(TURNED, false).setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -39,7 +39,7 @@ public class RocketLaunchKeyBlock extends RocketControlBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, TURNED);
+        builder.add(FACING, TURNED, MountedModule.MOUNT);
     }
 
     @Override

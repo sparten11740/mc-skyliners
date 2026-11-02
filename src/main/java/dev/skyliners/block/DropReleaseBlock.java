@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,11 +33,11 @@ public class DropReleaseBlock extends HorizontalDirectionalBlock implements Enti
     private static final MapCodec<DropReleaseBlock> CODEC = simpleCodec(DropReleaseBlock::new);
     public static final BooleanProperty ARMED = BooleanProperty.create("armed");
     /** A module of the console with the release's guarded switch on it. */
-    private static final VoxelShape SHAPE = ConsoleModule.with(3, 4);
+    private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = MountedModule.shapes(ConsoleModule.with(3, 4));
 
     public DropReleaseBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(ARMED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(ARMED, false).setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -46,17 +47,18 @@ public class DropReleaseBlock extends HorizontalDirectionalBlock implements Enti
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, ARMED);
+        builder.add(FACING, ARMED, MountedModule.MOUNT);
     }
 
+    /** Against the block clicked, as a button goes: on a floor, on a wall or under a ceiling (see {@link MountedModule}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return MountedModule.place(context, defaultBlockState());
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return MountedModule.shape(SHAPES, state);
     }
 
     @Override

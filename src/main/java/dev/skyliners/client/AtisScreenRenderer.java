@@ -79,7 +79,7 @@ public class AtisScreenRenderer implements BlockEntityRenderer<AtisScreenBlockEn
     @Override
     public boolean shouldRender(AtisScreenBlockEntity screen, Vec3 camera) {
         Direction facing = screen.getBlockState().getValue(AtisScreenBlock.FACING);
-        return Sight.facing(screen.getBlockPos(), facing, TowerRadarRenderer.SURFACE, camera, getViewDistance());
+        return Sight.facing(screen.getBlockPos(), facing, TowerRadarRenderer.surface(screen.getBlockState()), camera, getViewDistance());
     }
 
     @Override
@@ -96,7 +96,7 @@ public class AtisScreenRenderer implements BlockEntityRenderer<AtisScreenBlockEn
         // Onto the screen's face, x to the viewer's right and y up, from the glass's middle.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-        pose.translate(0, TowerRadarRenderer.MIDDLE_Y, TowerRadarRenderer.SURFACE);
+        pose.translate(0, TowerRadarRenderer.MIDDLE_Y, TowerRadarRenderer.surface(screen.getBlockState()));
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, GLASS);

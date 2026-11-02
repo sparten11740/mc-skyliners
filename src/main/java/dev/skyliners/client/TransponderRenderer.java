@@ -3,7 +3,7 @@ package dev.skyliners.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import dev.skyliners.block.Mount;
+import dev.skyliners.block.MountedModule;
 import dev.skyliners.block.TransponderBlock;
 import dev.skyliners.block.TransponderBlockEntity;
 import net.minecraft.client.renderer.LightTexture;
@@ -39,7 +39,7 @@ public class TransponderRenderer implements BlockEntityRenderer<TransponderBlock
         // and y away from them.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-face.toYRot() - 180));
-        pose.mulPose(Axis.XP.rotationDegrees(-tilt(state.getValue(TransponderBlock.MOUNT))));
+        pose.mulPose(Axis.XP.rotationDegrees(-MountedModule.tilt(state.getValue(TransponderBlock.MOUNT))));
         pose.translate(0, TOP - 0.5, 0);
         pose.mulPose(Axis.YP.rotationDegrees(180));
         pose.mulPose(Axis.XP.rotationDegrees(-90));
@@ -54,17 +54,6 @@ public class TransponderRenderer implements BlockEntityRenderer<TransponderBlock
         pose.popPose();
     }
 
-    /**
-     * How far its model is tipped over about the east-west line, in degrees, as tools/generate_resources.mjs tips it:
-     * onto a wall or under a ceiling.
-     */
-    private static float tilt(Mount mount) {
-        return switch (mount) {
-            case FLOOR -> 0;
-            case WALL -> 90;
-            case CEILING -> 180;
-        };
-    }
 
     private static void vertex(VertexConsumer consumer, Matrix4f matrix, float x, float y, int colour, float u, float v) {
         consumer.addVertex(matrix, x, y, 0).setColor(colour).setUv(u, v).setLight(LightTexture.FULL_BRIGHT);

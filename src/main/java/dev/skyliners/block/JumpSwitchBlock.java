@@ -2,6 +2,7 @@ package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.compat.SableFlight;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -38,7 +39,7 @@ public class JumpSwitchBlock extends HorizontalDirectionalBlock implements Entit
     public static final EnumProperty<JumpLightBlock.Signal> SIGNAL = JumpLightBlock.SIGNAL;
     public static final String LIGHTS = "lights";
     /** A module of the console with the selector knob on it. */
-    private static final VoxelShape SHAPE = ConsoleModule.with(2, 2);
+    private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = MountedModule.shapes(ConsoleModule.with(2, 2));
     /**
      * How far a jump switch put up by hand reaches the jump lights put up by hand round it, in blocks: across a hold to
      * its door, or from a cockpit to the door behind it, but not to another ship's lights across a hangar.
@@ -47,7 +48,8 @@ public class JumpSwitchBlock extends HorizontalDirectionalBlock implements Entit
 
     public JumpSwitchBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(SIGNAL, JumpLightBlock.Signal.OFF));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(SIGNAL, JumpLightBlock.Signal.OFF)
+            .setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -57,18 +59,19 @@ public class JumpSwitchBlock extends HorizontalDirectionalBlock implements Entit
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, SIGNAL);
+        builder.add(FACING, SIGNAL, MountedModule.MOUNT);
     }
 
     /** Put down by hand, its face looks at whoever puts it down, as it looks at the pilots. */
+    /** Against the block clicked, as a button goes: on a floor, on a wall or under a ceiling (see {@link MountedModule}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return MountedModule.place(context, defaultBlockState());
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return MountedModule.shape(SHAPES, state);
     }
 
     @Override

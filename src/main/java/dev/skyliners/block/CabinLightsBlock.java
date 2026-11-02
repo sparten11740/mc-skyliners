@@ -24,7 +24,7 @@ public class CabinLightsBlock extends CabinControlBlock {
     public CabinLightsBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(Brightness.PROPERTY, Brightness.BRIGHT)
-            .setValue(Brightness.ALARM, false));
+            .setValue(Brightness.ALARM, false).setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -34,7 +34,7 @@ public class CabinLightsBlock extends CabinControlBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, Brightness.PROPERTY, Brightness.ALARM);
+        builder.add(FACING, Brightness.PROPERTY, Brightness.ALARM, MountedModule.MOUNT);
     }
 
     @Override

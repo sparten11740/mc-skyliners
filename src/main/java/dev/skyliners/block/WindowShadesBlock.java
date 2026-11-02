@@ -21,7 +21,7 @@ public class WindowShadesBlock extends CabinControlBlock {
 
     public WindowShadesBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(SHADED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(SHADED, false).setValue(MountedModule.MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -31,7 +31,7 @@ public class WindowShadesBlock extends CabinControlBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, SHADED);
+        builder.add(FACING, SHADED, MountedModule.MOUNT);
     }
 
     @Override

@@ -1,7 +1,9 @@
 package dev.skyliners.block;
 
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -29,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public abstract class CabinControlBlock extends HorizontalDirectionalBlock implements EntityBlock {
     /** A module of the console with a knob or a switch on it. */
-    private static final VoxelShape SHAPE = ConsoleModule.with(2, 3);
+    private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = MountedModule.shapes(ConsoleModule.with(2, 3));
 
     protected CabinControlBlock(Properties properties) {
         super(properties);
@@ -53,14 +55,15 @@ public abstract class CabinControlBlock extends HorizontalDirectionalBlock imple
         return null;
     }
 
+    /** Against the block clicked, as a button goes: on a floor, on a wall or under a ceiling (see {@link MountedModule}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return MountedModule.place(context, defaultBlockState());
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return MountedModule.shape(SHAPES, state);
     }
 
     @Override

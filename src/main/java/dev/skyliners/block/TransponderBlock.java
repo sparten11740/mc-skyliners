@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import dev.skyliners.radar.Transponders;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -39,8 +40,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public class TransponderBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<TransponderBlock> CODEC = simpleCodec(TransponderBlock::new);
-    /** How the transponder is put up; one saved before it had a mount stood on a floor or a desk, as all did then. */
-    public static final EnumProperty<Mount> MOUNT = Mount.property(Mount.CEILING, Mount.WALL, Mount.FLOOR);
+    /** How the transponder is put up (see {@link MountedModule}). */
+    public static final EnumProperty<Mount> MOUNT = MountedModule.MOUNT;
+    /** The console module's slab, wherever it is put up: its knobs are too small to catch on. */
+    private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = MountedModule.shapes(ConsoleModule.SLAB);
 
     public TransponderBlock(Properties properties) {
         super(properties);
@@ -57,30 +60,15 @@ public class TransponderBlock extends HorizontalDirectionalBlock implements Enti
         builder.add(FACING, MOUNT);
     }
 
-    /**
-     * Against the block clicked, as a button goes (see {@link Mounting}): on top of it, on its side or under it, facing
-     * whoever puts it there. Where nothing would hold it, it stands where it is put as it always could, on a console
-     * module or a desk whose top is not whole.
-     */
+    /** Against the block clicked, as a button goes (see {@link MountedModule#place}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction placer = context.getHorizontalDirection().getOpposite();
-        Direction toward = Mounting.support(context, MOUNT.getPossibleValues());
-        if (toward == null) {
-            return defaultBlockState().setValue(FACING, placer);
-        }
-        Mount mount = Mount.against(toward);
-        return defaultBlockState().setValue(MOUNT, mount).setValue(FACING, mount == Mount.WALL ? toward.getOpposite() : placer);
+        return MountedModule.place(context, defaultBlockState());
     }
 
-    /** The console module's slab, wherever it is put up: its knobs are too small to catch on. */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(MOUNT)) {
-            case WALL -> ConsoleModule.ON_WALL.get(state.getValue(FACING));
-            case CEILING -> ConsoleModule.UNDER_CEILING;
-            case FLOOR -> ConsoleModule.SLAB;
-        };
+        return MountedModule.shape(SHAPES, state);
     }
 
     /** Used, it opens its panel, to pick its picture and colour. */
