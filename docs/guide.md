@@ -1338,12 +1338,14 @@ A **Transponder** shows wherever it is on every autopilot's map (see Autopilot) 
 and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: eleven pictures (a control
 tower, an airliner, home, a star, a flag, a heart, treasure, a forest, a harbour, a mine and an airship) and twelve
 colours, each a button showing what it picks, with the marker as the maps will show it on the left; it shows its picture
-in its colour on its own little screen, too. One standing on the ground shows on the maps from anywhere, however far
+in its colour on its own little screen, too. Put up by hand it goes against the block you click, as a button does: on a
+floor or a desk, its knobs toward you; on a wall, looking out from it; or hung face down under a ceiling, its picture
+the right way up as you look up at it. One standing on the ground shows on the maps from anywhere, however far
 off; one aboard an assembled airliner flies with it, and shows where the airliner is while it is loaded, which it is
 while anyone is near it. The control tower's transponder shows the tower as an orange tower, and every airliner built
 from 0.1.0-alpha.48 on has one on the flight deck (on newer airliners on the centre console behind the seats), showing
 it as a white airliner (an older airliner can be given one: a Transponder is crafted from iron, a glass pane, redstone
-and a compass, and goes on a console or a desk anywhere). On its own autopilot's map an airliner's transponder is left
+and a compass, and goes on a console, a desk or a wall). On its own autopilot's map an airliner's transponder is left
 out, the airliner being its gold arrow there.
 
 A **Motion Sensor** (craftable from quartz, an observer and redstone) is the sensor over an automatic door: a white

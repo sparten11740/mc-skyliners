@@ -1,5 +1,7 @@
 package dev.skyliners.block;
 
+import java.util.Map;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -15,6 +17,13 @@ final class ConsoleModule {
     static final int HEIGHT = 6;
     /** The slab alone, for a control that lies flat on it. */
     static final VoxelShape SLAB = Block.box(0, 0, 0, 16, HEIGHT, 16);
+    /**
+     * The slab tipped over onto a wall, for a module put up there, by the way its face looks: its back against the side
+     * of its block away from that way.
+     */
+    static final Map<Direction, VoxelShape> ON_WALL = TurnedShapes.of(Block.box(0, 0, 16 - HEIGHT, 16, 16, 16));
+    /** The slab hung under a ceiling, its face looking down, for a module put up there. */
+    static final VoxelShape UNDER_CEILING = Block.box(0, 16 - HEIGHT, 0, 16, 16, 16);
     /**
      * Where a control stands behind its picture plate, on a module whose plate takes the half nearest the pilots (as
      * the rocket's controls do): the middle of the module across, this many pixels from its pilots' edge.

@@ -2264,6 +2264,17 @@ function facing(name, model = name) {
     variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${model}`, y }])),
   });
 }
+// A console module that can be put up on a floor, a wall or a ceiling (see Mount): one model, drawn standing on the
+// floor with its face looking up and its viewer at its north side, tipped over onto the wall it looks out from or hung
+// face down under the ceiling, then turned for each facing (see TransponderBlock, and TransponderRenderer, which tips
+// its screen the same way).
+function mountedFacing(name) {
+  const tilt = { floor: 0, wall: 90, ceiling: 180 };
+  write(`assets/${ID}/blockstates/${name}.json`, {
+    variants: Object.fromEntries(Object.entries(tilt).flatMap(([mount, x]) => Object.entries(yRot).map(([facing, y]) =>
+      [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${name}`, ...(x ? { x } : {}), y }]))),
+  });
+}
 // The tones the rocket's lights glow in (see LightTone).
 const LIGHT_TONES = ["warm", "cool", "pink"];
 // The wall washer and the floor light, the halo light put on a wall or the ground: broken, each gives back the Halo
@@ -2431,15 +2442,15 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
 }
 
 // The control tower. The transponder: a module of the centre console, its panel facing whoever it looks at, with two
-// code knobs at the front of it (its picture is drawn on the panel's screen, see TransponderRenderer). The radar
-// screen: a monitor on a desk stand, drawn facing north, its screen's face on its north side (the scope is drawn on
-// it, see TowerRadarRenderer).
+// code knobs at the front of it (its picture is drawn on the panel's screen, see TransponderRenderer), standing on a
+// floor or put up on a wall or a ceiling. The radar screen: a monitor on a desk stand, drawn facing north, its screen's
+// face on its north side (the scope is drawn on it, see TowerRadarRenderer).
 {
   consoleModule("transponder", { panel: `${ID}:block/transponder_top`, knob: `${ID}:block/thrust_lever_knob` }, "#panel", true, [
     solid([3.5, CONSOLE_HEIGHT, 1.5], [5.5, 7.5, 3.5], "#knob"),
     solid([10.5, CONSOLE_HEIGHT, 1.5], [12.5, 7.5, 3.5], "#knob"),
   ]);
-  facing("transponder");
+  mountedFacing("transponder");
   write(`assets/${ID}/models/item/transponder.json`, { parent: `${ID}:block/transponder` });
   const casing = { texture: "#casing" };
   write(`assets/${ID}/models/block/tower_radar.json`, {
