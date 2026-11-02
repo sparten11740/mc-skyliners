@@ -3,6 +3,7 @@ package dev.skyliners.compat;
 import dev.skyliners.Aboard;
 import dev.skyliners.Skyliners;
 import dev.skyliners.block.AirstairStepBlock;
+import dev.skyliners.block.Nearby;
 import dev.skyliners.block.RoverPlatformBlock;
 import dev.skyliners.block.SlideStepBlock;
 import dev.ryanhcode.sable.Sable;
@@ -32,6 +33,7 @@ import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -54,7 +56,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -465,54 +466,16 @@ public final class SableFlight {
 
     /**
      * The nearest block to a point among the level's own blocks, within the ranges across and up and down of the block
-     * the point is in, that is in a candidate state and the test accepts; null for none.
+     * the point is in, that is in a candidate state and the test accepts; null for none. Of two as near, the one {@link
+     * Nearby#blocks} finds first.
      */
     @Nullable
     private static BlockPos closest(Level level, Vec3 point, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
-        BlockPos centre = BlockPos.containing(point);
-        int minX = centre.getX() - across;
-        int maxX = centre.getX() + across;
-        int minY = centre.getY() - upDown;
-        int maxY = centre.getY() + upDown;
-        int minZ = centre.getZ() - across;
-        int maxZ = centre.getZ() + across;
-        BlockPos closest = null;
-        double distance = Double.MAX_VALUE;
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++) {
-            for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
-                // Never load a chunk just to look into it.
-                LevelChunk chunk = level.getChunkSource().getChunk(chunkX, chunkZ, false);
-                if (chunk == null) {
-                    continue;
-                }
-                for (int sectionY = minY >> 4; sectionY <= maxY >> 4; sectionY++) {
-                    int index = chunk.getSectionIndexFromSectionY(sectionY);
-                    if (index < 0 || index >= chunk.getSectionsCount()) {
-                        continue;
-                    }
-                    LevelChunkSection section = chunk.getSection(index);
-                    if (section.hasOnlyAir() || !section.maybeHas(candidate)) {
-                        continue;
-                    }
-                    for (int x = Math.max(minX, chunkX << 4); x <= Math.min(maxX, (chunkX << 4) + 15); x++) {
-                        for (int y = Math.max(minY, sectionY << 4); y <= Math.min(maxY, (sectionY << 4) + 15); y++) {
-                            for (int z = Math.max(minZ, chunkZ << 4); z <= Math.min(maxZ, (chunkZ << 4) + 15); z++) {
-                                if (!candidate.test(section.getBlockState(x & 15, y & 15, z & 15))) {
-                                    continue;
-                                }
-                                double away = pos.set(x, y, z).distToCenterSqr(point);
-                                if (away < distance && test.test(pos)) {
-                                    closest = pos.immutable();
-                                    distance = away;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return closest;
+        return Nearby.blocks(level, BlockPos.containing(point), across, upDown, candidate).stream()
+            .sorted(Comparator.comparingDouble(pos -> pos.distToCenterSqr(point)))
+            .filter(test)
+            .findFirst()
+            .orElse(null);
     }
 
     /**

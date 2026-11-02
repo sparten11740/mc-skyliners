@@ -245,6 +245,10 @@ waters what grows round it; and the `IrrigationValveBlock` that sets them off.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.
+`Nearby` finds the blocks of a kind round a spot among the chunks loaded, passing over every section of the level whose
+palette holds none: a seat for a passenger (`SableFlight.nearest`), and the jump lights put up by hand round a jump
+switch put up by hand, which `JumpSwitchBlock` works when no ship wired it, each light keeping what the switch turned it
+to as `JumpLightBlock.SWITCHED`.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

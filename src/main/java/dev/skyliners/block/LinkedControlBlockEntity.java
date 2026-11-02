@@ -63,6 +63,11 @@ public class LinkedControlBlockEntity extends BlockEntity implements Control {
         }
     }
 
+    /** Whether a ship wired it to any relays as the ship was built: one put up by hand has none. */
+    public boolean wired() {
+        return !links().isEmpty();
+    }
+
     /** Every link it has, for mending them: where each leads, from the control. */
     protected List<BlockPos> links() {
         return groups.values().stream().flatMap(List::stream).toList();

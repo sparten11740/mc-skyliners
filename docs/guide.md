@@ -1152,7 +1152,11 @@ packed parachutes behind its front under a red and white parachute sign, the sig
 found without reading. Use a rack to put a parachute on (or take one into your inventory if your chest slot is taken), then jump while
 falling to open it; it opens by itself if you are still falling free close to the ground. Under the canopy you sink
 gently, drift the way you walk, take no fall damage, and it packs itself away when you land. The jump lights' tile on
-the systems screen cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell).
+the systems screen cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell). A
+Jump Light Switch put up by hand works the Jump Lights put up by hand within 16 blocks of it the same way, aboard the
+same ship or both on the ground, so that a ship or a drop zone of your own can have them too. It leaves a light with a
+relay beside it to the switch wired to it, as an airliner's are, and a light still shows the redstone reaching it when
+that is brighter.
 
 Open one of the hull's doors in flight (20 blocks or more above the ground, at 20 blocks a second or more; the
 cockpit door, the WC's and the crew room's are not among them) and the cabin decompresses with a bang: the air roars

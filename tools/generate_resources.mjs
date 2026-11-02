@@ -2198,6 +2198,8 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
       solid([7.75, 7.5, 5], [8.25, 8, 8.5], "#pointer", { origin: [8, 7.5, 5], axis: "y", angle: { off: 0, red: 45, green: -45 }[signal] }),
     ]);
   }
+  // A jump light looks as what it shows; what a jump switch put up by hand set it to (switched, see JumpLightBlock)
+  // changes nothing of its look, so its variants leave it out.
   write(`assets/${ID}/blockstates/jump_light.json`, {
     variants: Object.fromEntries(signals.map((signal) => [`signal=${signal}`, { model: `${ID}:block/jump_light_${signal}` }])),
   });
