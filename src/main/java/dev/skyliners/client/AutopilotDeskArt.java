@@ -41,9 +41,10 @@ import org.joml.Matrix4f;
  * the airliner in green at the height set and faintly at the height now, a dotted climb or descent between them.
  * Pointed at, the speedometer, the fan and the sky show a ghost of what a touch there would set, before it is touched.
  * Small windows give the numbers, for those who read them. Each control is a touch panel's tile (see {@link
- * TouchPanelArt}): the one pointed at brightens, the on/off key while the autopilot flies and the turn flown are
- * picked, and the rest are dimmed while the autopilot is off, when touching them sets nothing. The settings screen
- * draws its controls the same way, with the same scales (see {@link AutopilotSettingsScreen}).
+ * TouchPanelArt}): the one pointed at brightens, but for those that show a ghost, the on/off key while the autopilot
+ * flies and the turn flown are picked, and the rest are dimmed while the autopilot is off, when touching them sets
+ * nothing. The settings screen draws its controls the same way, with the same scales (see {@link
+ * AutopilotSettingsScreen}).
  */
 final class AutopilotDeskArt {
     /** Each layer lifted off the one below, in blocks. */
@@ -234,9 +235,12 @@ final class AutopilotDeskArt {
         /**
          * A control's key on its tile, as every touch panel's are (see {@link TouchPanelArt}), in a colour: brightened
          * while the pointer rests on it, picked while what it sets is on, and dimmed while touching it does nothing.
+         * The speedometer, the fan and the sky never brighten: pointed at, they show a ghost of what a touch would set,
+         * which already shows they are pointed at.
          */
         void key(VertexConsumer shapes, Matrix4f matrix, Function function, int colour, boolean picked, boolean works) {
-            TouchPanelArt.tile(shapes, matrix, keys.get(function).tile(), colour, new TouchPanelArt.Look(function == looked, picked, works), KEY_LAYER);
+            boolean lit = function == looked && !SET_ALONG.contains(function);
+            TouchPanelArt.tile(shapes, matrix, keys.get(function).tile(), colour, new TouchPanelArt.Look(lit, picked, works), KEY_LAYER);
         }
 
         /**

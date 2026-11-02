@@ -494,7 +494,8 @@ set: a radius of about 625 blocks at the cruising speed, more the faster (set fa
 it comes round a new circle beside it). At the right, the sky from the side, over the ground: the airliner in green at
 the height set, faintly at the height it flies now, a dotted climb or descent between them, heights up its side; touch
 the sky where you want the airliner to fly (from 40 blocks above the runway to 30 below the top of the world, in steps
-of 10). Pointed at, the speedometer, the dial and the sky show a ghost of what a touch there would set, with its
+of 10). Pointed at, the speedometer, the dial and the sky show a ghost of what a touch there would set, rather than
+brightening as the keys do, with its
 number, before you touch; and small windows give the speed, heading and height set. A touch on the speedometer or the
 sky sounds a note, higher the faster or higher it sets; a way to fly whooshes. A pin lamp in the dial's corner lights
 while it flies to a pin (see below). While the autopilot is off the controls are dimmed and only thud, and the on/off

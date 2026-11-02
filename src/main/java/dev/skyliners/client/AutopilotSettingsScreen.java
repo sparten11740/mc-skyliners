@@ -739,7 +739,8 @@ public class AutopilotSettingsScreen extends Screen {
     /**
      * A control set by where it is clicked or dragged to, as the flight deck's are touched: a step at a time by the
      * arrow keys or the scroll wheel, sounding a note higher the more it sets. Pointed at, it shows a ghost of what a
-     * click there would set.
+     * click there would set, and only that: its tile does not light up as a button's does, the ghost already showing
+     * it is pointed at.
      */
     private abstract class Gauge extends AbstractWidget {
         private final Typed setting;
@@ -858,7 +859,7 @@ public class AutopilotSettingsScreen extends Screen {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, isHovered() ? Look.HOT : Look.IDLE, false);
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, Look.IDLE, false);
             PanelArt.drawDisc(graphics, middleX(), middleY(), DIAL_RADIUS + 2, GLASS);
             int amber = limits.amberFrom();
             int red = limits.redFrom();
@@ -1160,7 +1161,7 @@ public class AutopilotSettingsScreen extends Screen {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.GREEN, isHovered() ? Look.HOT : Look.IDLE, false);
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.GREEN, Look.IDLE, false);
             int x0 = getX() + SKY_FRAME;
             int x1 = getRight() - SKY_FRAME;
             drawSky(graphics, x0, x1);
