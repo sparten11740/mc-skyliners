@@ -28,6 +28,13 @@ final class AirstairSteps {
      * of the ground anyway, and the airliner might come to rest on the plate.
      */
     private static final double FOOT_CLEARANCE = 0.05;
+    /**
+     * How far the flight's feet run down at most (see {@code AirstairFlight#feet}), in blocks, how finely the ground
+     * under them is looked for, and how far under a point it is looked for, so a point on its top counts as on it.
+     */
+    static final float LEGS_LONGEST = 1.5F;
+    private static final float LEGS_STEP = 1 / 32F;
+    private static final double ON_GROUND = 1e-3;
     /** What stands in the stairs' way, in the world or aboard: anything solid but their own steps. */
     static final Predicate<BlockState> IN_THE_WAY =
         state -> !state.isAir() && !state.canBeReplaced() && !(state.getBlock() instanceof AirstairStepBlock);
@@ -59,6 +66,45 @@ final class AirstairSteps {
             }
         }
         return rise;
+    }
+
+    /**
+     * How far the feet of a flight down {@code length} blocks run down from the foot of its stringers to the ground in
+     * the world, in blocks, at most {@link #LEGS_LONGEST}: the further of its two sides', so both stand on it. The foot
+     * of a stringer stands back up the flight from its end, the outer edge of its bottom step's underside.
+     */
+    static float legs(ServerLevel level, StepAt steps, int width, int length) {
+        float longest = 0;
+        for (int column : new int[]{0, width - 1}) {
+            BlockPos bottom = steps.at(length, column);
+            BlockPos next = steps.at(length + 1, column);
+            if (bottom == null || next == null) {
+                return 0;
+            }
+            Vec3 underside = Vec3.atBottomCenterOf(bottom);
+            Vec3 out = Vec3.atBottomCenterOf(next).add(0, 1, 0).subtract(underside);
+            Vec3 foot = underside.add(out.scale(0.5 - AirstairFlight.FOOT_BACK)).add(0, AirstairFlight.FOOT_LIFT, 0);
+            longest = Math.max(longest, downToGround(level, SableFlight.toWorld(level, foot)));
+        }
+        return longest;
+    }
+
+    /** How far straight down from a point in the world the ground lies, looked for as far as the legs reach. */
+    private static float downToGround(ServerLevel level, Vec3 from) {
+        for (float down = 0; down < LEGS_LONGEST; down += LEGS_STEP) {
+            if (onGround(level, from.add(0, -down, 0))) {
+                return down;
+            }
+        }
+        return LEGS_LONGEST;
+    }
+
+    /** Whether a point in the world lies on or in the ground: a solid block there whose top is not under it. */
+    private static boolean onGround(ServerLevel level, Vec3 point) {
+        double under = point.y - ON_GROUND;
+        BlockPos at = BlockPos.containing(point.x, under, point.z);
+        BlockState ground = level.getBlockState(at);
+        return IN_THE_WAY.test(ground) && under <= at.getY() + ground.getCollisionShape(level, at).max(Direction.Axis.Y);
     }
 
     /** Whether anything stands where a row of steps would go, or in the room over it. */

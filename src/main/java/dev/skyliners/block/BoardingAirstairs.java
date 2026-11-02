@@ -56,6 +56,8 @@ final class BoardingAirstairs {
     /** The chime of stairs or doors waiting for someone to step clear: how loud, and its pitch. */
     static final float WAITING_VOLUME = 1.0F;
     static final float WAITING_PITCH = 0.7F;
+    /** The feet's legs not measured yet. */
+    private static final float UNMEASURED = -1;
 
     /** The block entity that keeps a flight, where it is: its button. */
     interface Keeper {
@@ -112,6 +114,11 @@ final class BoardingAirstairs {
     private int lastTicks;
     /** How many blocks down the stairs reach this time. */
     private int length;
+    /**
+     * How far the flight's feet run down to the ground once it is out, in blocks, measured as it sets out; below 0 not
+     * measured yet, as for stairs built down or saved before they had feet, measured on the next tick.
+     */
+    private float legs = UNMEASURED;
     /** Folding is held up by someone on the stairs; the chime has sounded. */
     private boolean held;
     private int cooldown;
@@ -167,9 +174,10 @@ final class BoardingAirstairs {
         }
         float lerped = Mth.lerp(partialTick, lastTicks, ticks);
         if (bay == null) {
-            return new AirstairFlight.Motion(lerped, length, rise, sections, width, 0, 1, hatchOpen, true);
+            return new AirstairFlight.Motion(lerped, length, rise, sections, width, 0, 1, hatchOpen, true, Math.max(0, legs));
         }
-        return new AirstairFlight.Motion(lerped, length, rise, sections, width, bay.hatchInset(), bay.mouth(), hatchOpen, false, sillGap());
+        return new AirstairFlight.Motion(lerped, length, rise, sections, width, bay.hatchInset(), bay.mouth(), hatchOpen, false, sillGap(),
+            Math.max(0, legs));
     }
 
     /**
@@ -220,6 +228,7 @@ final class BoardingAirstairs {
                 return;
             }
             length = reach;
+            legs = AirstairSteps.legs(level, this::step, width, length);
             openHatch(level);
             sound(level, SkylinersRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
         }
@@ -255,6 +264,10 @@ final class BoardingAirstairs {
     /** Once a tick, on the server: the stairs a tick further on their way, waiting while someone is on them. */
     void tick(ServerLevel level) {
         lastTicks = ticks;
+        if (deploying && legs < 0) {
+            legs = AirstairSteps.legs(level, this::step, width, length);
+            button.sync();
+        }
         if (held) {
             waitForClear(level);
             return;
@@ -411,6 +424,7 @@ final class BoardingAirstairs {
         tag.putBoolean("Deploying", deploying);
         tag.putInt("Ticks", ticks);
         tag.putInt("Length", length);
+        tag.putFloat("Legs", legs);
         tag.putBoolean("Held", held);
         tag.putBoolean("Laid", laid);
         tag.putBoolean("Foot", foot);
@@ -443,6 +457,7 @@ final class BoardingAirstairs {
         stairs.ticks = before == null ? told : ToldTicks.count(button.getLevel(), before.ticks, told, stairs.deploying);
         stairs.lastTicks = before != null && stairs.ticks == before.ticks ? before.lastTicks : stairs.ticks;
         stairs.length = Math.clamp(tag.getInt("Length"), 0, rise);
+        stairs.legs = tag.contains("Legs") ? Math.min(tag.getFloat("Legs"), AirstairSteps.LEGS_LONGEST) : UNMEASURED;
         stairs.held = tag.getBoolean("Held");
         stairs.laid = tag.getBoolean("Laid");
         stairs.foot = tag.getBoolean("Foot");

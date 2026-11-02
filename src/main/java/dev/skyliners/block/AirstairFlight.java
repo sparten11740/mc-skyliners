@@ -58,6 +58,19 @@ public final class AirstairFlight {
     private static final float ROOT_TWO = (float) Math.sqrt(2);
     /** How far the stringers' top edges stand over the nosings, upright. */
     private static final float STRINGER_TOP = STRINGER_RISE * ROOT_TWO;
+    /**
+     * Where the foot of a stringer stands at the bottom of a flight run out to its length: so far up from the ground it
+     * was laid for, and so far back from the flight's end toward the door, in blocks. Its legs run down from there.
+     */
+    static final float FOOT_LIFT = 0.5F + STRINGER_TOP - STRINGER_DEPTH / ROOT_TWO;
+    static final float FOOT_BACK = STRINGER_DEPTH / ROOT_TWO;
+    /**
+     * A foot's leg, as wide as its stringer: how deep it is along the flight; and the rubber pad it stands on, how far
+     * it spreads round the leg and how thick it is.
+     */
+    private static final float LEG_DEPTH = 2 * PX;
+    private static final float PAD_SPREAD = PX;
+    private static final float PAD_THICKNESS = PX;
     /** The top platform's beams, under the top tread: as deep as the stringers' upright cut. */
     private static final float BEAM_DEPTH = 9 * PX;
     /** A tread's plate, and the nosing along its front: its depth and how thick it is. */
@@ -116,14 +129,15 @@ public final class AirstairFlight {
      * they reach down ({@code length}), how many they are built to reach ({@code rise}), in how many sections and how
      * many blocks wide; how far in from the door's face the hull's skin over the bay's mouth lies, and how deep the
      * mouth is; whether the hatch is off the mouth; whether they hang in a zeppelin's belly rather than in a door; how
-     * far the floor's edge at the door stands back from its face, in blocks, the gap the bridge plate spans.
+     * far the floor's edge at the door stands back from its face, in blocks, the gap the bridge plate spans; and how
+     * far the legs of the flight's feet run down to the ground once it is out, in blocks.
      */
     public record Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
-                         boolean belly, float sillGap) {
+                         boolean belly, float sillGap, float legs) {
         /** Airstairs whose top tread meets their sill: an airliner's or a zeppelin's. */
         public Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
-                      boolean belly) {
-            this(ticks, length, rise, sections, width, hatchInset, mouth, hatchOpen, belly, 0);
+                      boolean belly, float legs) {
+            this(ticks, length, rise, sections, width, hatchInset, mouth, hatchOpen, belly, 0, legs);
         }
     }
 
@@ -184,6 +198,9 @@ public final class AirstairFlight {
         }
         if (!motion.belly() && motion.sillGap() >= LIP_LEAST) {
             lip(nest, Math.min(motion.sillGap(), LIP_LONGEST), motion.width(), up, sink);
+        }
+        if (motion.legs() > 0 && up > 0) {
+            feet(nest, motion.sections() - 1, offset, treads, motion.width(), motion.legs() * up, sink);
         }
         AirstairMachinery.draw(motion, nest, pose.slid(), offset, treads, sink);
     }
@@ -256,6 +273,29 @@ public final class AirstairFlight {
         float tilt = ease(clamp((swing - 0.3F) / 0.7F));
         float slid = clear + stowed * (1 - slide);
         return new Pose(SLOPE * (1 - tilt), slid - clear * tilt, lowered * (1 - lift), slid);
+    }
+
+    /**
+     * The flight's feet, under the foot of each stringer of its bottom section, run out this many treads: a leg as wide
+     * as the stringer, from inside the stringer down so far, and the rubber pad it stands on. The stringers stand back
+     * from the ground the flight was laid for, and an airframe can stand a little higher once assembled, so it is the
+     * legs that stand the stairs on the ground; they run down as the handrails rise, and back up as they fall.
+     */
+    private static void feet(Matrix4f nest, int section, float offset, int treads, int width, float down, Sink sink) {
+        Matrix4f pose = new Matrix4f(nest).translate(0, -offset / 2, offset / 2);
+        float inset = section * NEST_INSET;
+        float shrink = section * PX / 4;
+        float depth = STRINGER_DEPTH - 2 * shrink;
+        // The bottom tread's stringers' lowest corner, at the flight's end: its underside meets the end's cut there.
+        float u = treads / 2F - depth / ROOT_TWO;
+        float y = (1 - treads) / 2F + (STRINGER_RISE - shrink) * ROOT_TWO - depth / ROOT_TWO;
+        float ground = y - down;
+        for (float side : new float[]{inset, width - inset - STRINGER_WIDTH}) {
+            sink.box(pose, new Vector3f(side, ground + PAD_THICKNESS, u - LEG_DEPTH), new Vector3f(side + STRINGER_WIDTH, y + LEG_DEPTH, u),
+                Part.STRINGER);
+            sink.box(pose, new Vector3f(side - PAD_SPREAD, ground, u - LEG_DEPTH - PAD_SPREAD),
+                new Vector3f(side + STRINGER_WIDTH + PAD_SPREAD, ground + PAD_THICKNESS, u + PAD_SPREAD), Part.TRACK);
+        }
     }
 
     /**

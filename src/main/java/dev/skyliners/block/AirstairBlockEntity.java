@@ -62,6 +62,8 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
     private static final float LATCH_VOLUME = 1.0F;
     /** The latch clunks higher coming free than going home. */
     private static final float UNLATCH_PITCH = 1.25F;
+    /** The feet's legs not measured yet. */
+    private static final float UNMEASURED = -1;
 
     /** How many blocks the flight comes down from the sill to the wheels' ground, and in how many sections. */
     private int rise;
@@ -76,6 +78,11 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
     private int lastTicks;
     /** How many blocks down the stairs reach this time. */
     private int length;
+    /**
+     * How far the flight's feet run down to the ground once it is out, in blocks, measured as it sets out; below 0 not
+     * measured yet, as for stairs built down or saved before they had feet, measured on the next tick.
+     */
+    private float legs = UNMEASURED;
     /** Folding is held up by someone on the stairs; the chime has sounded. */
     private boolean held;
     private int cooldown;
@@ -109,6 +116,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         this.hatchInset = hatchInset;
         this.hatch = List.copyOf(hatch);
         this.length = length;
+        legs = UNMEASURED;
         deploying = length > 0;
         ticks = deploying ? AirstairFlight.OUT : 0;
         lastTicks = ticks;
@@ -219,6 +227,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
                 return;
             }
             length = reach;
+            legs = AirstairSteps.legs(level, this::step, AirstairFlight.WIDTH, length);
             openHatch(level);
             sound(level, SkylinersRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
         }
@@ -267,6 +276,10 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
             return;
         }
         lastTicks = ticks;
+        if (deploying && legs < 0) {
+            legs = AirstairSteps.legs(level, this::step, AirstairFlight.WIDTH, length);
+            sync();
+        }
         if (deploying && level.getGameTime() % WATCH_TICKS == 0 && moving(level)) {
             fold(level);
         }
@@ -329,7 +342,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
             return null;
         }
         return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, AirstairFlight.WIDTH, hatchInset, mouth(),
-            hatchOpen, false);
+            hatchOpen, false, Math.max(0, legs));
     }
 
     /** How far down the stairs could come this time: blocks clear all the way from the door, up to their whole rise. */
@@ -528,6 +541,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         tag.putBoolean("Deploying", deploying);
         tag.putInt("Ticks", ticks);
         tag.putInt("Length", length);
+        tag.putFloat("Legs", legs);
         tag.putBoolean("Held", held);
         tag.putBoolean("Laid", laid);
         tag.putBoolean("Foot", foot);
@@ -559,6 +573,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         lastTicks = count == ticks ? lastTicks : count;
         ticks = count;
         length = Math.clamp(tag.getInt("Length"), 0, rise);
+        legs = tag.contains("Legs") ? Math.min(tag.getFloat("Legs"), AirstairSteps.LEGS_LONGEST) : UNMEASURED;
         held = tag.getBoolean("Held");
         laid = tag.getBoolean("Laid");
         foot = tag.getBoolean("Foot");

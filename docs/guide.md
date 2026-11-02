@@ -1258,8 +1258,9 @@ The Airstair Controller set into the hull just aft of the door brings them out: 
 folded flight rolls out of its bay on a yellow carriage along two steel rails, a telescopic ram either side lifts its
 head to the sill on a hinge tube and a third, in the middle, tips it down to its slope, its lower sections run out
 down to the ground on two cables paying out from drums on the hinge and the handrails rise, to the hum of their
-hydraulics and the clunk of their latches, in under five seconds. They reach as far down as the ground lets them, so on
-uneven ground, or over something in the way, they end
+hydraulics and the clunk of their latches, in under five seconds; as the handrails rise, a leg slides down from the foot
+of each stringer and stands the flight on the ground on a rubber pad. They reach as far down as the ground lets them, so
+on uneven ground, or over something in the way, they end
 where it meets them, and they are walked up and down like any stairs; the airliner never comes to rest on them, so
 let down onto the ground they do not tilt it. An assembled airliner rides higher on its
 suspension than the stairs' steps reach, so there they also lay an unseen plate at the foot of the flight, half way
