@@ -1450,7 +1450,8 @@ stripes runs round the deck, and a mast at each corner carries a floodlight and 
 chevrons and lamps comes in from the front to where her airstairs land; the deck behind her, where her rover comes down,
 is left open. On the side away from the trench stands the service tower, a white steel lattice with red bands, as tall
 as she is under a lightning mast with a flashing beacon, a ladder up its core, and a platform and an arm reaching toward
-her at her entry floor and at her cockpit, stopping a few blocks short of her skin.
+her at her entry floor and at her cockpit, railed along both its sides and across its end, stopping a few blocks short
+of her skin.
 
 ### Flying it
 

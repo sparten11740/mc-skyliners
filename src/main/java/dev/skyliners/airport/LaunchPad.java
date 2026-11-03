@@ -93,7 +93,10 @@ public final class LaunchPad implements Layout {
     private static final int TOWER_MAST = 12;
     /** How many blocks an arm of the tower stops short of her skin: more than she drifts lifting off. */
     private static final int ARM_GAP = 5;
-    /** How far either side of its middle an arm's floor reaches, in blocks. */
+    /**
+     * How far either side of its middle an arm's walkway reaches, in blocks; its floor runs on a block further each way,
+     * under its railings.
+     */
     private static final int ARM_HALF = 1;
     /** The masts at the deck's corners: how far in from the hazard band they stand, how tall, how long their arms. */
     private static final int MAST_IN = 2;
@@ -385,8 +388,9 @@ public final class LaunchPad implements Layout {
         }
     }
 
+    /** A row of an arm across its length: its floor, and a railing standing on the floor's edge at either side. */
     private void armColumn(int x, int y) {
-        for (int z = -ARM_HALF; z <= ARM_HALF; z++) {
+        for (int z = -ARM_HALF - 1; z <= ARM_HALF + 1; z++) {
             set(x, y, z, PLATFORM);
         }
         set(x, y + 1, ARM_HALF + 1, RAILING);
