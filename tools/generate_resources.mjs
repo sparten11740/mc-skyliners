@@ -4911,21 +4911,25 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // room's wall. Every block takes its share of the glass from one texture over the whole window. Each model is NeoForge's
 // composite of two parts: the glass, drawn translucent, and the rest cut out, so the clear hole in the inner face, cut
 // out, never hides the steel behind it as a translucent face would wherever it is drawn first. Modelled looking north,
-// turned for the other ways. A piece of hers gives back glass. Set into a wall by hand (wall=matched), its frame is
-// marked to look like the wall beside it (see OvalWindowWall), keeping the weave where no wall is found, and the whole
-// window, taken away, gives back the window itself from the middle of its bottom row. In the hand: its icon.
+// turned for the other ways. A piece of hers gives back glass. Set into a wall by hand (wall=matched), both its parts
+// are marked as set by hand: it fills its whole block, its frame on the block's outer side and its glass standing out
+// of it, and its frame looks like the wall beside it (see OvalWindowWall), keeping the weave where no wall is found;
+// the whole window, taken away, gives back the window itself from the middle of its bottom row. In the hand: its icon.
 {
   const variants = {};
   const edge = `${ID}:block/zeppelin_skin`;
   // A window block's model: its glass and the rest, from its textures, the wall round its oval inside tinted or not.
-  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint, matchesWall = false) => ({
+  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint, setByHand = false) => ({
     loader: "neoforge:composite",
     textures: { particle: glass },
     children: {
-      glass: { loader: `${ID}:oval_window`, part: "glass", render_type: "minecraft:translucent", column, row, textures: { glass, particle: glass } },
+      glass: {
+        loader: `${ID}:oval_window`, part: "glass", render_type: "minecraft:translucent", column, row, ...(setByHand ? { set_by_hand: true } : {}),
+        textures: { glass, particle: glass },
+      },
       frame: {
         loader: `${ID}:oval_window`, part: "frame", render_type: "minecraft:cutout_mipped", column, row, ...(insideTint === undefined ? {} : { inside_tint: insideTint }),
-        ...(matchesWall ? { matches_wall: true } : {}), textures: { ...rest, particle: glass },
+        ...(setByHand ? { set_by_hand: true } : {}), textures: { ...rest, particle: glass },
       },
     },
   });

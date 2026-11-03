@@ -10,6 +10,7 @@
       "render_type": "minecraft:translucent",
       "column": 0,
       "row": 0,
+      "set_by_hand": true,
       "textures": {
         "glass": "skyliners:block/oval_window_glass_dim2",
         "particle": "skyliners:block/oval_window_glass_dim2"
@@ -21,7 +22,7 @@
       "render_type": "minecraft:cutout_mipped",
       "column": 0,
       "row": 0,
-      "matches_wall": true,
+      "set_by_hand": true,
       "textures": {
         "frame": "skyliners:block/oval_window_0_0_frame",
         "inside": "skyliners:block/oval_window_0_0_inside",

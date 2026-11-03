@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.mojang.math.Transformation;
 import dev.skyliners.Skyliners;
 import dev.skyliners.block.OvalWindowBlock;
+import dev.skyliners.block.OvalWindowPieceBlock;
 import dev.skyliners.client.ModelQuads.Corner;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,62 +29,70 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
- * The model of a piece of the rocket's oval window ({@link OvalWindowBlock}): the inner half of its block, baked once
- * as the models load, each piece drawing its share of the whole window. Outside, the glass is a thin dome bulging out
- * of the skin over the whole oval, steepest at its foot as a bubble's, seated in a steel collar that slopes down from
- * it to the skin, the dark gasket at its inner edge; inside, the same glass is seen as a bowl at the back of an oval
- * recess lined round with the collar's steel, through a hole in the inner face with a steel lip round it. The dome,
- * the collar, the lining and the lip are smooth rings of faces round the oval, never a texture's pixels, so the
- * window's outline is clean near and far. The cover's weave round the oval, outside and in, and its edges are tinted
- * as the cover is, in the ship's livery (see {@code ZeppelinPaint}); the glass and the steel are not. Its JSON names
- * the loader, the piece and the textures: the glass over the whole window as seen from outside, the frame over the
- * piece (the weave, cut away under the collar), its inner face (cut away under the lip), the collar's steel, the lip's,
- * the recess's lining and the edges: {@code {"loader": "skyliners:oval_window", "part": "frame", "column": 0, "row": 0,
- * "textures": {"glass": ..., "frame": ..., "inside": ..., "rim": ..., "lip": ..., "reveal": ..., "edge": ...,
- * "particle": ...}}}. Its part is {@code "glass"}, the dome alone, which needs only the glass's texture, or
- * {@code "frame"}, all the rest: a window block's model is NeoForge's composite of the two, the glass drawn translucent
- * and the rest cut out, so the clear hole in the inner face never hides the steel behind it, as a translucent face
- * drawn before what lies behind it would.
+ * The model of a piece of the rocket's oval window ({@link OvalWindowBlock}): the inner half of its block, or the whole
+ * block for a window set by hand, baked once as the models load, each piece drawing its share of the whole window.
+ * Outside, the glass is a thin dome bulging out of the skin over the whole oval, steepest at its foot as a bubble's,
+ * seated in a steel collar that slopes down from it to the skin, the dark gasket at its inner edge; inside, the same
+ * glass is seen as a bowl at the back of an oval recess lined round with the collar's steel, through a hole in the
+ * inner face with a steel lip round it. The dome, the collar, the lining and the lip are smooth rings of faces round
+ * the oval, never a texture's pixels, so the window's outline is clean near and far. The cover's weave round the oval,
+ * outside and in, and its edges are tinted as the cover is, in the ship's livery (see {@code ZeppelinPaint}); the glass
+ * and the steel are not. Its JSON names the loader, the piece, whether the window is set by hand and the textures: the
+ * glass over the whole window as seen from outside, the frame over the piece (the weave, cut away under the collar),
+ * its inner face (cut away under the lip), the collar's steel, the lip's, the recess's lining and the edges: {@code
+ * {"loader": "skyliners:oval_window", "part": "frame", "column": 0, "row": 0, "set_by_hand": true, "textures":
+ * {"glass": ..., "frame": ..., "inside": ..., "rim": ..., "lip": ..., "reveal": ..., "edge": ..., "particle": ...}}}.
+ * Its part is {@code "glass"}, the dome alone, which needs only the glass's texture, or {@code "frame"}, all the rest:
+ * a window block's model is NeoForge's composite of the two, the glass drawn translucent and the rest cut out, so the
+ * clear hole in the inner face never hides the steel behind it, as a translucent face drawn before what lies behind it
+ * would.
  *
  * <p>It is drawn looking north, then turned the way its block state says. Its inner face is lit as a block's side is
- * and culled against what stands against it; the window's outer edges are always drawn, so no crack opens where the
- * round skin beside it is cut deeper than the window. The rings each get the shade for the way they really face at
- * each corner, as the cabin archway's curve does (see {@link CabinArchModel}), so the glass and the steel brighten and
- * darken smoothly round the oval. A ring's face is drawn by the piece its middle lies in.
+ * and culled against what stands against it; the outer edges of hers are always drawn, so no crack opens where the
+ * round skin beside it is cut deeper than the window. A window set by hand fills its blocks, its frame on their outer
+ * face and its recess running back through them, so it lies flush with the wall on both sides, the glass and the collar
+ * standing out of it as hers stand out of her skin: its frame and its edges are lit and culled as its inner face is.
+ * The rings each get the shade for the way they really face at each corner, as the cabin archway's curve does (see
+ * {@link CabinArchModel}), so the glass and the steel brighten and darken smoothly round the oval. A ring's face is
+ * drawn by the piece its middle lies in.
  *
- * <p>With {@code "matches_wall": true}, the frame of a window set by hand, it can draw the faces of the wall, floor or
- * roof beside the window in place of the weave, the inner face's wall and the edges, on the very pixels their textures
- * leave them (see {@link OvalWindowWall}).
+ * <p>With {@code "set_by_hand": true}, the frame of a window set by hand can draw the faces of the wall, floor or roof
+ * beside the window in place of the weave, the inner face's wall and the edges, on the very pixels their textures leave
+ * them (see {@link OvalWindowWall}).
  */
 public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "oval_window");
     public static final IGeometryLoader<OvalWindowModel> READER = (json, context) -> read(json);
     /** How many pixels a block is across. */
     private static final float BLOCK = 16;
-    /** How far in from its outer side the skin's cut runs through the block, in pixels: the piece lies behind it. */
+    /**
+     * How far in from its outer side the skin's cut runs through the block, in pixels: her pieces lie behind it, and
+     * the frame of one set by hand on the block's outer side.
+     */
     private static final float SKIN = BLOCK / 2;
     /** The whole window's width and height, in pixels. */
     private static final float WIDE = OvalWindowBlock.COLUMNS * BLOCK;
     private static final float TALL = OvalWindowBlock.ROWS * BLOCK;
-    /** The oval's half width and half height, in pixels, as tools/generate_textures.mjs draws its glass. */
-    private static final float OVAL_WIDE = 21;
-    private static final float OVAL_TALL = 29;
+    /** The oval's half width and half height, in pixels, as the block measures them (see OvalWindowPieceBlock). */
+    private static final float OVAL_WIDE = OvalWindowPieceBlock.OVAL_WIDE;
+    private static final float OVAL_TALL = OvalWindowPieceBlock.OVAL_TALL;
     /**
      * The collar: how far out from the oval's edge it reaches, how far its inner edge, where the glass sits, stands out
-     * of the skin, and how far its outer edge stands off the weave it lies on, in pixels.
+     * of the skin (as the block measures it), and how far its outer edge stands off the weave it lies on, in pixels.
      */
     private static final float RIM = 2.6F;
-    private static final float COLLAR = 0.8F;
+    private static final float COLLAR = OvalWindowPieceBlock.COLLAR;
     private static final float COLLAR_FOOT = 0.1F;
     /** How far out from the oval's edge the recess's lining runs, and how wide the lip round the hole is, in pixels. */
     private static final float HOLE = 1.2F;
     private static final float LIP = 1.7F;
     /**
      * How far the dome bulges out of the collar at its middle, in pixels, and how its height falls toward its foot: as
-     * this power of the share of the way still to go to its edge, steep at the foot for below 1, as a bubble's.
+     * this power of the share of the way still to go to its edge, steep at the foot for below 1, as a bubble's (as the
+     * block measures them).
      */
-    private static final float BULGE = 6;
-    private static final float PROFILE = 0.6F;
+    private static final float BULGE = OvalWindowPieceBlock.BULGE;
+    private static final float PROFILE = OvalWindowPieceBlock.PROFILE;
     /** The least share of the way to the edge its slope is worked out at, so it stays finite at the very foot. */
     private static final float STEEPEST = 0.05F;
     /** How far out the dome's rings lie, as shares of the way from its middle to its edge: closer toward its foot. */
@@ -110,9 +119,10 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
      */
     private final int insideTint;
     /**
-     * Whether it is the frame of a window set by hand, which looks like the wall it is set into (see OvalWindowWall).
+     * Whether it is a piece of a window set by hand, which fills its block and whose frame looks like the wall it is set
+     * into (see OvalWindowWall).
      */
-    private final boolean matchesWall;
+    private final boolean setByHand;
 
     /**
      * A point of the window: how far right of its middle and below it, as seen from outside, and how deep into the
@@ -121,18 +131,18 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private record Point(float right, float down, float depth) {
     }
 
-    private OvalWindowModel(int column, int row, boolean glassPart, int insideTint, boolean matchesWall) {
+    private OvalWindowModel(int column, int row, boolean glassPart, int insideTint, boolean setByHand) {
         this.column = column;
         this.row = row;
         this.glassPart = glassPart;
         this.insideTint = insideTint;
-        this.matchesWall = matchesWall;
+        this.setByHand = setByHand;
     }
 
     private static OvalWindowModel read(JsonObject json) {
         return new OvalWindowModel(GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"),
             "glass".equals(GsonHelper.getAsString(json, "part")), GsonHelper.getAsInt(json, "inside_tint", COVER_TINT),
-            GsonHelper.getAsBoolean(json, "matches_wall", false));
+            GsonHelper.getAsBoolean(json, "set_by_hand", false));
     }
 
     /**
@@ -143,7 +153,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter,
                            ModelState modelState, ItemOverrides overrides) {
         BakedModel weave = super.bake(context, baker, spriteGetter, modelState, overrides);
-        if (glassPart || !matchesWall) {
+        if (glassPart || !setByHand) {
             return weave;
         }
         Transformation turn = modelState.getRotation().blockCenterToCorner();
@@ -168,11 +178,16 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             return;
         }
         addSteel(owner, modelBuilder, spriteGetter, turn);
-        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), turn);
+        TextureAtlasSprite frame = spriteGetter.apply(owner.getMaterial("frame"));
+        if (setByHand) {
+            side(modelBuilder, Direction.NORTH, frame, COVER_TINT, true, turn);
+        } else {
+            flat(modelBuilder, frame, turn);
+        }
         side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), insideTint, true, turn);
         TextureAtlasSprite edge = spriteGetter.apply(owner.getMaterial("edge"));
         for (Direction side : outerEdges()) {
-            side(modelBuilder, side, edge, COVER_TINT, false, turn);
+            side(modelBuilder, side, edge, COVER_TINT, setByHand, turn);
         }
     }
 
@@ -189,26 +204,24 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     /**
-     * Where a wall the window is set into shows on the piece, turned the way it looks: the frame outside, on the pixels
-     * the weave's texture leaves, its shade baked in as the weave's is; the inner face, on the pixels the wall's
-     * texture there leaves, hidden by a block against it; and the window's outer edges, hidden by the wall beside them.
+     * Where a wall the window is set into shows on the piece, turned the way it looks: the frame on its outer face, on
+     * the pixels the weave's texture leaves; the inner face, on the pixels the wall's texture there leaves, both hidden
+     * by a block against them; and the window's outer edges, hidden by the wall beside them.
      */
     private List<OvalWindowWall.Patch> wallPatches(IGeometryBakingContext owner, Function<Material, TextureAtlasSprite> spriteGetter,
                                                    Transformation turn) {
         List<OvalWindowWall.Patch> patches = new ArrayList<>();
-        float skin = (SKIN - OVER) / BLOCK;
         SpriteContents frame = spriteGetter.apply(owner.getMaterial("frame")).contents();
         SpriteContents inside = spriteGetter.apply(owner.getMaterial("inside")).contents();
         for (int y = 0; y < frame.height(); y++) {
-            shownRow(patches, frame, y, Direction.NORTH, skin, true);
+            shownRow(patches, frame, y, Direction.NORTH, 0);
         }
         for (int y = 0; y < inside.height(); y++) {
-            shownRow(patches, inside, y, Direction.SOUTH, 1, false);
+            shownRow(patches, inside, y, Direction.SOUTH, 1);
         }
         for (Direction side : outerEdges()) {
             float depth = side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : 0;
-            patches.add(side.getAxis() == Direction.Axis.X ? new OvalWindowWall.Patch(side, depth, skin, 0, 1, 1, false, true)
-                : new OvalWindowWall.Patch(side, depth, 0, skin, 1, 1, false, true));
+            patches.add(new OvalWindowWall.Patch(side, depth, 0, 0, 1, 1, false, true));
         }
         return patches.stream().map(patch -> patch.turned(turn)).toList();
     }
@@ -216,9 +229,9 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     /**
      * The runs of pixels a flat face's texture leaves along one of its rows, each a stretch of that face looking north
      * or south, its texture laid as on the frame and the inner face: across from the block's east side, down from its
-     * top. The flat inner face is hidden by a block against it; the frame round the collar has its shade baked in.
+     * top. Each is lit as a block's side is and hidden by a block against it.
      */
-    private static void shownRow(List<OvalWindowWall.Patch> into, SpriteContents texture, int y, Direction side, float depth, boolean frame) {
+    private static void shownRow(List<OvalWindowWall.Patch> into, SpriteContents texture, int y, Direction side, float depth) {
         int wide = texture.width();
         float top = 1 - (float) y / texture.height();
         float bottom = 1 - (float) (y + 1) / texture.height();
@@ -228,7 +241,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
                 continue;
             }
             if (x > from) {
-                into.add(new OvalWindowWall.Patch(side, depth, 1 - (float) x / wide, bottom, 1 - (float) from / wide, top, frame, !frame));
+                into.add(new OvalWindowWall.Patch(side, depth, 1 - (float) x / wide, bottom, 1 - (float) from / wide, top, false, true));
             }
             from = x + 1;
         }
@@ -259,9 +272,17 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     /** A point of the dome, so far out from its middle as a share of the way to its edge and so far round. */
-    private static Point domePoint(float out, double angle) {
+    private Point domePoint(float out, double angle) {
         float height = BULGE * (float) Math.pow(1 - out * out, PROFILE);
-        return new Point(OVAL_WIDE * out * (float) Math.cos(angle), OVAL_TALL * out * (float) Math.sin(angle), SKIN - COLLAR - height);
+        return new Point(OVAL_WIDE * out * (float) Math.cos(angle), OVAL_TALL * out * (float) Math.sin(angle), skin() - COLLAR - height);
+    }
+
+    /**
+     * How far in from the block's outer side the frame lies, the glass's collar on it, in pixels: at the skin's cut in
+     * hers, on the block's outer side in a window set by hand.
+     */
+    private float skin() {
+        return setByHand ? 0 : SKIN;
     }
 
     /** The way the dome faces outward at a point of it, looking north. */
@@ -277,12 +298,12 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private void collarFace(IModelBuilder<?> builder, TextureAtlasSprite rim, int step, Transformation turn) {
         double from = angle(step);
         double to = angle(step + 1);
-        float foot = SKIN - OVER - COLLAR_FOOT;
-        Point[] points = {round(0, from, SKIN - COLLAR), round(RIM, from, foot), round(RIM, to, foot), round(0, to, SKIN - COLLAR)};
+        float foot = skin() - OVER - COLLAR_FOOT;
+        Point[] points = {round(0, from, skin() - COLLAR), round(RIM, from, foot), round(RIM, to, foot), round(0, to, skin() - COLLAR)};
         if (!mine(points)) {
             return;
         }
-        float fall = (foot - (SKIN - COLLAR)) / RIM;
+        float fall = (foot - (skin() - COLLAR)) / RIM;
         Vector3f[] normals = new Vector3f[QUAD];
         for (int k = 0; k < QUAD; k++) {
             Vector3f out = outward(k == 0 || k == 1 ? from : to, k == 0 || k == 3 ? 0 : RIM);
@@ -299,11 +320,12 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         double from = angle(step);
         double to = angle(step + 1);
         float[][] dark = {{0, DARKEST}, {0, 1}, {1, 1}, {1, DARKEST}};
-        Point[] gasket = {round(0, from, SKIN - COLLAR), round(0, from, SKIN), round(0, to, SKIN), round(0, to, SKIN - COLLAR)};
+        float skin = skin();
+        Point[] gasket = {round(0, from, skin - COLLAR), round(0, from, skin), round(0, to, skin), round(0, to, skin - COLLAR)};
         ringFace(builder, reveal, gasket, inward(from, 0), inward(to, 0), dark, turn);
-        Point[] back = {round(0, from, SKIN), round(HOLE, from, SKIN), round(HOLE, to, SKIN), round(0, to, SKIN)};
+        Point[] back = {round(0, from, skin), round(HOLE, from, skin), round(HOLE, to, skin), round(0, to, skin)};
         ringFace(builder, reveal, back, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), dark, turn);
-        Point[] lining = {round(HOLE, from, BLOCK), round(HOLE, from, SKIN), round(HOLE, to, SKIN), round(HOLE, to, BLOCK)};
+        Point[] lining = {round(HOLE, from, BLOCK), round(HOLE, from, skin), round(HOLE, to, skin), round(HOLE, to, BLOCK)};
         ringFace(builder, reveal, lining, inward(from, HOLE), inward(to, HOLE), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
         Point[] lipFace = {round(HOLE, from, BLOCK + OVER), round(HOLE + LIP, from, BLOCK + OVER), round(HOLE + LIP, to, BLOCK + OVER),
             round(HOLE, to, BLOCK + OVER)};
@@ -377,7 +399,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         return new Vector3f(across, up, point.depth()).div(BLOCK);
     }
 
-    /** The frame: the cover's weave over the skin round the oval, across the whole piece just in front of the skin. */
+    /** Her frame: the cover's weave over the skin round the oval, across the whole piece just in front of the skin. */
     private static void flat(IModelBuilder<?> builder, TextureAtlasSprite sprite, Transformation turn) {
         float z = (SKIN - OVER) / BLOCK;
         Vector3f[] corners = {new Vector3f(1, 1, z), new Vector3f(1, 0, z), new Vector3f(0, 0, z), new Vector3f(0, 1, z)};
@@ -408,15 +430,15 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
 
     /**
      * One of the piece's flat sides, lit as a block's side is and tinted as given: its inner face, with the hole the
-     * dome is seen through, mirrored so the oval reads whole from inside, culled against what stands against it; or an
-     * edge of the window, always drawn, out from the inner face to the frame's own depth, so no hairline opens between
-     * them.
+     * dome is seen through, mirrored so the oval reads whole from inside, culled against what stands against it; the
+     * frame on the outer face of a window set by hand, culled so; or an edge of the window, out from the inner face to
+     * the frame's own depth, so no hairline opens between them, always drawn on hers and culled on one set by hand.
      */
-    private static void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, int tint, boolean culled, Transformation turn) {
+    private void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, int tint, boolean culled, Transformation turn) {
         float[] bounds = new float[Direction.values().length];
         bounds[FaceInfo.Constants.MIN_X] = 0;
         bounds[FaceInfo.Constants.MIN_Y] = 0;
-        bounds[FaceInfo.Constants.MIN_Z] = (culled ? SKIN : SKIN - OVER) / BLOCK;
+        bounds[FaceInfo.Constants.MIN_Z] = setByHand ? 0 : (SKIN - OVER) / BLOCK;
         bounds[FaceInfo.Constants.MAX_X] = 1;
         bounds[FaceInfo.Constants.MAX_Y] = 1;
         bounds[FaceInfo.Constants.MAX_Z] = 1;

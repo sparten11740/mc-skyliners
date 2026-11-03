@@ -1940,7 +1940,11 @@ The same window is the Oval Window, in the creative tab under Rocket (it can be 
 other, with the mouse wheel in creative mode gives one), to set by hand into any wall, floor or roof. It fills the
 opening three blocks wide and four long that the spot clicked is in, whichever block of it is clicked: standing in a
 wall, or lying flat in a floor or a roof, whichever fits the opening best (looking steeply up or down tips a tie toward
-lying flat), its dome toward whoever sets it and, lying flat, its top away from them. Round its oval, outside and in, it
+lying flat), its dome toward whoever sets it and, lying flat, its top away from them. It fills its blocks, flush with
+the wall, floor or roof on both sides: its dome stands out of the face toward whoever set it, in its steel collar, as
+hers stands out of her skin, and on the other side its steel-lined recess runs back through the whole block to the
+glass. The glass is as solid as the wall round it: nobody puts a head through the dome, and lying in a floor it is
+walked over, dome and all. Round its oval, outside and in, it
 looks like the wall, floor or roof beside it, whatever that is built of: stone, planks, bricks, glass or grass, a
 striped wall's stripes running on through its corners, while a sill or a lintel of something else stays out of it;
 standing on its own with no wall beside it, it keeps her silver weave. It dims as hers do, and it comes away whole:

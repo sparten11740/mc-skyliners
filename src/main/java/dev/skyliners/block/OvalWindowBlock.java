@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -32,7 +33,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *
  * <p>It is also set into any wall by hand, from its item or picked from one in creative mode, and then looks out toward
  * whoever sets it, as a painting does ({@link Wall#MATCHED}); the same item lays it in a floor or a roof (see
- * {@link FlatOvalWindowBlock}).
+ * {@link FlatOvalWindowBlock}). Set by hand, each piece fills its whole block, flush with the wall on both sides, its
+ * glass standing out of the wall's face in its collar as hers stands out of her skin.
  */
 public class OvalWindowBlock extends OvalWindowPieceBlock {
     private static final MapCodec<OvalWindowBlock> CODEC = simpleCodec(OvalWindowBlock::new);
@@ -62,7 +64,7 @@ public class OvalWindowBlock extends OvalWindowPieceBlock {
             return name().toLowerCase(Locale.ROOT);
         }
     }
-    /** The pieces' shapes, the inner half of the block, by the way they look out. */
+    /** Her pieces' shapes, the inner half of the block, by the way they look out. */
     private static final VoxelShape LOOKING_NORTH = Block.box(0, 0, 8, 16, 16, 16);
     private static final VoxelShape LOOKING_SOUTH = Block.box(0, 0, 0, 16, 16, 8);
     private static final VoxelShape LOOKING_EAST = Block.box(0, 0, 0, 8, 16, 16);
@@ -133,13 +135,23 @@ public class OvalWindowBlock extends OvalWindowPieceBlock {
         return state.setValue(FACING, mirror.mirror(state.getValue(FACING))).setValue(COLUMN, COLUMNS - 1 - state.getValue(COLUMN));
     }
 
+    /** Hers the inner half of the block; one set by hand the whole block. */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (setByHand(state)) {
+            return Shapes.block();
+        }
         return switch (state.getValue(FACING)) {
             case SOUTH -> LOOKING_SOUTH;
             case EAST -> LOOKING_EAST;
             case WEST -> LOOKING_WEST;
             default -> LOOKING_NORTH;
         };
+    }
+
+    /** One set by hand is solid over the glass standing out of it too. */
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return setByHand(state) ? solidWithDome(this, state) : getShape(state, level, pos, context);
     }
 }

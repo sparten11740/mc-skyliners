@@ -18,16 +18,17 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The oval window lying flat in a floor or a roof, as the Oval Window sets it there by hand (see
  * {@link OvalWindowBlock#getStateForPlacement}): a skylight looking up out of a roof, or a window in a floor looking
  * down at what is under it, or either the other way up. FACING is the way it looks out, its glass bulging that way, up
- * or down, toward whoever set it; ALONG is the way its top row lies from its middle, away from them. Each piece is the
- * half of its block away from the way it looks out, so a window looking up out of a floor leaves a dip half a block
- * deep to step into over it, and one looking down out of a ceiling sits flush with it underneath. It looks like the
- * floor or roof it is set into, is only ever whole and gives back an Oval Window, as one set into a wall does (see
+ * or down, toward whoever set it; ALONG is the way its top row lies from its middle, away from them. Each piece fills
+ * its whole block, flush with the floor or roof on both sides, its glass standing out of it in its collar, and is
+ * solid over the glass too, so a window in a floor is walked over, dome and all. It looks like the floor or roof it is
+ * set into, is only ever whole and gives back an Oval Window, as one set into a wall does (see
  * {@link OvalWindowPieceBlock}).
  */
 public class FlatOvalWindowBlock extends OvalWindowPieceBlock {
@@ -36,9 +37,6 @@ public class FlatOvalWindowBlock extends OvalWindowPieceBlock {
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
     /** The way its top row lies from its middle. */
     public static final DirectionProperty ALONG = DirectionProperty.create("along", Direction.Plane.HORIZONTAL);
-    /** The pieces' shapes, the half of the block away from the way they look out. */
-    private static final VoxelShape LOOKING_UP = Block.box(0, 0, 0, 16, 8, 16);
-    private static final VoxelShape LOOKING_DOWN = Block.box(0, 8, 0, 16, 16, 16);
 
     public FlatOvalWindowBlock(Properties properties) {
         super(properties);
@@ -104,6 +102,11 @@ public class FlatOvalWindowBlock extends OvalWindowPieceBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(FACING) == Direction.UP ? LOOKING_UP : LOOKING_DOWN;
+        return Shapes.block();
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return solidWithDome(this, state);
     }
 }

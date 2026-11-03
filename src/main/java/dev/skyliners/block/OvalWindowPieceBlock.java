@@ -1,6 +1,9 @@
 package dev.skyliners.block;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,12 +23,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A piece of a big oval window, three blocks wide and four tall, each block a piece of it by its column from the left
  * as seen from outside and its row from the top: in a wall or the rocket's skin ({@link OvalWindowBlock}), or lying
- * flat in a floor or a roof ({@link FlatOvalWindowBlock}). Each piece is the inner half of its block, its glass bulging
- * out of the outer half (see {@code client.OvalWindowModel}). Its glass dims electrically: using any piece of it
+ * flat in a floor or a roof ({@link FlatOvalWindowBlock}). On the rocket each piece is the inner half of its block, its
+ * glass bulging out of the outer half; set by hand, it fills its whole block, flush with the wall on both sides, its
+ * glass bulging out of the wall's face, and is solid over its glass as through its block (see
+ * {@code client.OvalWindowModel}). Its glass dims electrically: using any piece of it
  * darkens the whole window's glass a step, from clear through light, medium and dark and back to clear, with a chime
  * that falls as it darkens. Only the glass darkens: its frame and the wall round it, and the light it lets in, stay as
  * they are.
@@ -51,6 +58,27 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     /** The piece that gives back the window when one set by hand is taken away: the middle of its bottom row. */
     private static final int KEEPER_COLUMN = COLUMNS / 2;
     private static final int KEEPER_ROW = ROWS - 1;
+    /** How many pixels a block is across. */
+    private static final int BLOCK = 16;
+    /**
+     * The glass's dome, as {@code client.OvalWindowModel} bakes it and tools/generate_textures.mjs draws it: the oval's
+     * half width and half height, how far the collar's inner edge, where the glass sits, stands out of the wall, and how
+     * far the dome bulges out of the collar at its middle, in pixels.
+     */
+    public static final float OVAL_WIDE = 21;
+    public static final float OVAL_TALL = 29;
+    public static final float COLLAR = 0.8F;
+    public static final float BULGE = 6;
+    /** How the dome's height falls toward its foot: as this power of the share of the way still to go to its edge. */
+    public static final float PROFILE = 0.6F;
+    /** How wide the squares are that the solid steps over a dome are laid out in, in pixels. */
+    private static final int DOME_STEP = 2;
+    /** The solid steps over each piece's share of its dome, by the way it looks out, its top and its place. */
+    private static final Map<Dome, VoxelShape> DOMES = new ConcurrentHashMap<>();
+
+    /** A piece's share of its window's dome: the way it looks out, its top, its column and its row. */
+    private record Dome(Direction out, Direction up, int column, int row) {
+    }
 
     protected OvalWindowPieceBlock(Properties properties) {
         super(properties);
@@ -67,10 +95,80 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
 
     /** The way toward a piece's window's first column, its left as seen from outside. */
     public Direction left(BlockState piece) {
-        Direction out = out(piece);
-        Direction up = up(piece);
+        return left(out(piece), up(piece));
+    }
+
+    /** The way toward a window's left as seen from outside, from the way it looks out and the way toward its top. */
+    private static Direction left(Direction out, Direction up) {
         return Direction.getNearest(out.getStepY() * up.getStepZ() - out.getStepZ() * up.getStepY(),
             out.getStepZ() * up.getStepX() - out.getStepX() * up.getStepZ(), out.getStepX() * up.getStepY() - out.getStepY() * up.getStepX());
+    }
+
+    /**
+     * How far the glass stands out of the wall at a point of the window, so far right of its middle and below it as seen
+     * from outside, in pixels: none past the oval's edge.
+     */
+    private static double domeHeight(double right, double down) {
+        double within = 1 - (right / OVAL_WIDE) * (right / OVAL_WIDE) - (down / OVAL_TALL) * (down / OVAL_TALL);
+        return within <= 0 ? 0 : COLLAR + BULGE * Math.pow(within, PROFILE);
+    }
+
+    /**
+     * A piece of a window set by hand, solid all through its block and over its share of the dome that stands out of
+     * it, so nobody pokes their head into the glass: in steps DOME_STEP pixels square, each as high as the glass over
+     * it at its highest, to the next whole pixel.
+     */
+    protected static VoxelShape solidWithDome(OvalWindowPieceBlock window, BlockState piece) {
+        return DOMES.computeIfAbsent(new Dome(window.out(piece), window.up(piece), piece.getValue(COLUMN), piece.getValue(ROW)),
+            OvalWindowPieceBlock::solidOver);
+    }
+
+    /** A piece's block and the steps over its share of the dome. */
+    private static VoxelShape solidOver(Dome dome) {
+        Direction[] ways = {left(dome.out(), dome.up()).getOpposite(), dome.up().getOpposite(), dome.out()};
+        int squares = BLOCK / DOME_STEP;
+        List<VoxelShape> steps = new ArrayList<>();
+        for (int square = 0; square < squares * squares; square++) {
+            int across = square % squares * DOME_STEP;
+            int down = square / squares * DOME_STEP;
+            double height = Math.ceil(highestOver(dome.column() * BLOCK + across, dome.row() * BLOCK + down));
+            if (height > 0) {
+                steps.add(box(ways, new double[]{across, down, BLOCK}, new double[]{across + DOME_STEP, down + DOME_STEP, BLOCK + height}));
+            }
+        }
+        return Shapes.or(Shapes.block(), steps.toArray(VoxelShape[]::new));
+    }
+
+    /**
+     * How far the glass stands out of the wall at its highest over a square of the window DOME_STEP pixels across, from
+     * its top left corner so far right of the window's left side and below its top as seen from outside, in pixels: where
+     * the square comes nearest the oval's middle.
+     */
+    private static double highestOver(double fromLeft, double fromTop) {
+        double right = nearestZero(fromLeft - COLUMNS * BLOCK / 2.0, fromLeft + DOME_STEP - COLUMNS * BLOCK / 2.0);
+        double down = nearestZero(fromTop - ROWS * BLOCK / 2.0, fromTop + DOME_STEP - ROWS * BLOCK / 2.0);
+        return domeHeight(right, down);
+    }
+
+    /** Of the numbers from one to another, the one nearest nought. */
+    private static double nearestZero(double from, double to) {
+        return Math.max(from, Math.min(to, 0));
+    }
+
+    /**
+     * A box in the block from its stretches along three ways square to one another, each in pixels from the side of the
+     * block that way faces away from.
+     */
+    private static VoxelShape box(Direction[] ways, double[] from, double[] to) {
+        double[] min = new double[Direction.Axis.values().length];
+        double[] max = new double[Direction.Axis.values().length];
+        for (int i = 0; i < ways.length; i++) {
+            int axis = ways[i].getAxis().ordinal();
+            boolean positive = ways[i].getAxisDirection() == Direction.AxisDirection.POSITIVE;
+            min[axis] = positive ? from[i] : BLOCK - to[i];
+            max[axis] = positive ? to[i] : BLOCK - from[i];
+        }
+        return Block.box(min[0], min[1], min[2], max[0], max[1], max[2]);
     }
 
     /** Where a piece of the window a piece of this kind is part of is, by its column and row. */
