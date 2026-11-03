@@ -30,9 +30,11 @@ import org.slf4j.Logger;
  * face shining down and a little ahead within a wide angle, so the land under a ship and ahead of her is lit as a
  * landing light lights a runway. Veil's light fades over its reach by the cube of what is left of it, so each reaches
  * {@link #PAST} times as far as the ground ahead of it and is brightened to make up for it: the ground is as bright
- * under a ship flying high as under one coming in to land, and what stands nearer, treetops and roofs, brighter still,
- * as under a real light. The ground is looked for along each light once a tick; the frames in between reach part of
- * the way from where it was at the one to where it is at the other.
+ * under a ship flying high as under one coming in to land, and what stands nearer, treetops and roofs, a little
+ * brighter still, as under a real light, but never so bright as to wash out to white whoever stands under a light on
+ * a mast. The ground is looked for along each light once a tick; the frames in between reach part of the way from
+ * where it was at the one to where it is at the other. A light standing on the ground, on a mast at the launch pad or
+ * on a ship not yet flown, fades away by day, when the sun lights the ground better than it.
  *
  * <p>Only the {@link #MOST_LIGHTS} nearest the camera within {@link #SEEN} are lit, each with ground within
  * {@link #REACH} of it. A light among an assembled airliner's blocks is placed anew every frame, as Sable draws the
@@ -58,8 +60,11 @@ public final class Floodlights {
     private static final float SPREAD = (float) Math.toRadians(36);
     /** How far off the ground may be, at most, along a light, for it to light it, in blocks. */
     private static final double REACH = 192;
-    /** How far a light reaches past the ground, as a share of the way to it. */
-    private static final double PAST = 1.5;
+    /**
+     * How far a light reaches past the ground, as a share of the way to it: far enough that what stands under it is
+     * hardly brighter than the ground, the light fading over a long way.
+     */
+    private static final double PAST = 3;
     /** How bright a light is on the ground straight under it, and its warm white. */
     private static final float BRIGHTNESS = 1.3F;
     private static final float RED = 1.0F;
@@ -67,6 +72,8 @@ public final class Floodlights {
     private static final float BLUE = 0.8F;
     /** How much brighter a light is made, for what of it is left on the ground: the cube of the share it fades over. */
     private static final float GAIN = (float) Math.pow(PAST / (PAST - 1), 3);
+    /** How much daylight the game's sky gives at night, as a share of noon's: its darkening never falls under it. */
+    private static final float NIGHT_SKY = 0.2F;
     /**
      * Where no light is drawn, how wide its drawn pool on the ground is, for each block to the ground, a share; and how
      * much higher over the ground it is drawn for each block it is from the camera, in blocks, so that far off it does
@@ -222,19 +229,25 @@ public final class Floodlights {
         look(level, light, lit);
         double ground = Double.isNaN(lit.before) ? lit.now : Mth.lerp(partialTick, lit.before, lit.now);
         boolean lighting = !Double.isNaN(ground);
-        VeilLights.shine(lit.light, lighting ? (float) (ground * PAST) : 1, RED, GREEN, BLUE, lighting ? BRIGHTNESS * GAIN : 0);
         Vec3 lens = lens(light);
+        SableClient.Placing placing = SableClient.placing(lens, partialTick);
+        float share = placing == null ? night(level, partialTick) : 1;
+        VeilLights.shine(lit.light, lighting ? (float) (ground * PAST) : 1, RED, GREEN, BLUE, lighting ? BRIGHTNESS * GAIN * share : 0);
         Vec3 aim = light.aim();
         set(LENS_AT, lens);
         set(ACROSS, new Vec3(-aim.z, 0, aim.x).normalize());
         set(OUT, aim);
-        SableClient.Placing placing = SableClient.placing(lens, partialTick);
         if (placing != null) {
             placing.transform().transformPosition(LENS_AT);
             placing.turn().transform(ACROSS);
             placing.turn().transform(OUT);
         }
         VeilLights.place(lit.light, LENS_AT, ACROSS, OUT);
+    }
+
+    /** How dark it is, as a share: none at noon, all of it at night, the sky darkening between them. */
+    private static float night(ClientLevel level, float partialTick) {
+        return Mth.clamp((1 - level.getSkyDarken(partialTick)) / (1 - NIGHT_SKY), 0, 1);
     }
 
     /** Looks once a game tick for how far the ground is along a light, keeping how far it was at the tick before. */

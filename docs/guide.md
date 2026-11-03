@@ -1446,12 +1446,12 @@ of it touches her above the deck.
 A round steel grate as wide as she is lies under her, solid underfoot, over a flame pit: a steel deflector sloping down
 into a trench that runs to one side of the deck, lit from its floor, a railing along it. Its depth is six rows, or as
 many as the world has under the deck on a superflat world. Round the grate the concrete is scorched, a band of hazard
-stripes runs round the deck, and a mast at each corner carries a floodlight and a red light. A painted walkway with
-chevrons and lamps comes in from the front to where her airstairs land; the deck behind her, where her rover comes down,
-is left open. On the side away from the trench stands the service tower, a white steel lattice with red bands, as tall
-as she is under a lightning mast with a flashing beacon, a ladder up its core, and a platform and an arm reaching toward
-her at her entry floor and at her cockpit, railed along both its sides and across its end, stopping a few blocks short
-of her skin.
+stripes runs round the deck, and a mast at each corner carries a floodlight, lighting the pad by night, and a red light.
+A painted walkway with chevrons and lamps comes in from the front to where her airstairs land; the deck behind her,
+where her rover comes down, is left open. On the side away from the trench stands the service tower, a white steel
+lattice with red bands, as tall as she is under a lightning mast with a flashing beacon, a ladder up its core, and a
+platform and an arm reaching toward her at her entry floor and at her cockpit, railed along both its sides and across
+its end, stopping a few blocks short of her skin.
 
 ### Flying it
 
@@ -1524,8 +1524,9 @@ up, and stay on by day and night, throwing their light down and a little ahead o
 those aboard see where she is going and those below see her coming, and by day into the shade of her hull, where her
 great shadow lies over the land. It is real light, through Veil (which comes with Sable), as the cabin's night lights
 are; the client config's `floodlightLight` turns it off and draws a pool of light on the ground under each lamp
-instead, as there always is with Iris installed. The server config's `floodlights` leaves them off zeppelins built
-from then on.
+instead, as there always is with Iris installed. On a zeppelin that has not flown yet, standing on the ground, the
+light fades away by day, when the sun lights the land better than it, and comes back as night falls. The server
+config's `floodlights` leaves them off zeppelins built from then on.
 
 By day, flying, she casts her great shadow on the land under her, hull and fins, from where the sun is: right under her
 and sharp-edged at noon, thrown off and drawn out long, its edges soft, as the sun sinks, fading away near sunrise and
