@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -281,21 +283,35 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         return super.playerWillDestroy(level, pos, state, player);
     }
 
+    /**
+     * Using a piece dims its whole window. The game sends whoever used it that piece's new look at once, but the rest of
+     * the window's only at the end of the server's tick, so under lag the piece pressed would darken alone for a moment,
+     * its share of the dome a dark patch in the glass: they are sent the whole window at once with it.
+     */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide) {
-            dim(level, pos, state);
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        List<BlockPos> window = dim(level, pos, state);
+        if (player instanceof ServerPlayer user) {
+            window.forEach(at -> user.connection.send(new ClientboundBlockUpdatePacket(level, at)));
+        }
+        return InteractionResult.CONSUME;
     }
 
-    /** Dims the whole window the piece is part of a step darker, or clears it from its darkest, with its chime. */
-    private void dim(Level level, BlockPos pos, BlockState state) {
+    /**
+     * Dims the whole window the piece is part of a step darker, or clears it from its darkest, with its chime; gives
+     * back where its pieces are.
+     */
+    private List<BlockPos> dim(Level level, BlockPos pos, BlockState state) {
         int dim = (state.getValue(DIM) + 1) % (DARKEST + 1);
-        for (BlockPos at : JoinedBlocks.from(level, pos, COLUMNS * ROWS, this::sameWindow)) {
+        List<BlockPos> window = JoinedBlocks.from(level, pos, COLUMNS * ROWS, this::sameWindow);
+        for (BlockPos at : window) {
             level.setBlock(at, level.getBlockState(at).setValue(DIM, dim), Block.UPDATE_ALL);
         }
         level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 0.5F, chimePitch(dim));
+        return window;
     }
 
     /** The pitch of the chime a window's glass makes as it dims to a darkness, falling as it darkens. */
