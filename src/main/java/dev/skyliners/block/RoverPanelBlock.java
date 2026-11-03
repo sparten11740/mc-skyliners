@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -144,5 +145,11 @@ public class RoverPanelBlock extends HorizontalDirectionalBlock implements Entit
     @Override
     public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
         return BUTTONS.at(TouchPanel.touched(state.getValue(FACING), pos, hit));
+    }
+
+    /** Picked, the Rover Remote it hands out, as the rover gives: the panel itself only goes up with her bay. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(SkylinersRegistry.ROVER_REMOTE.get());
     }
 }

@@ -8,8 +8,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -41,8 +43,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * door and level with the deck of the platform it folds down into, the rover rolling out through it carried along by
  * its bay; once the door lies flat, the bay lays the rest of the platform out of her for anyone who walks out after it
  * (see {@link RoverPlatformBlock}). Shut, each part is a quarter of its block just inside the skin's cut through the
- * block's middle, so the door sits flush with the skin beside it. Only the blueprint places it, so it has no item and
- * drops nothing.
+ * block's middle, so the door sits flush with the skin beside it. Only the blueprint places it, so it has no item of
+ * its own and drops nothing.
  */
 public class RoverHatchBlock extends BaseEntityBlock {
     private static final MapCodec<RoverHatchBlock> CODEC = simpleCodec(RoverHatchBlock::new);
@@ -134,6 +136,12 @@ public class RoverHatchBlock extends BaseEntityBlock {
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
         return state.setValue(FACING, mirror.mirror(state.getValue(FACING))).setValue(COLUMN, COLUMNS - 1 - state.getValue(COLUMN));
+    }
+
+    /** Picked, the airliner door that can be put up by hand, as a hull door gives: this one only goes up in her bay. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(SkylinersRegistry.AIRLINER_DOOR_ITEM.get());
     }
 
     /** Only the middle of the sill keeps the bay's block entity. */

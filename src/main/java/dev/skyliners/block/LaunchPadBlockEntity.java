@@ -16,7 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The hub in the middle of a launch pad's grate (see {@code airport.LaunchPad}): it knows how far the pad reaches and
  * which way it faces, so that a rocket's blueprint used anywhere on the pad sets her down right over it, and, on the
- * clients, so that the blueprint's preview shows her there. Digging the hub up leaves a pad that is only concrete.
+ * clients, so that the blueprint's preview shows her there. Digging the hub up leaves a pad that is only concrete, and
+ * a hub put up by hand is a pad of its own block alone (see {@link LaunchPadHubBlock}).
  */
 public class LaunchPadBlockEntity extends BlockEntity {
     private static final Loaded<LaunchPadBlockEntity> LOADED = new Loaded<>(LaunchPadBlockEntity.class, true);
@@ -24,7 +25,7 @@ public class LaunchPadBlockEntity extends BlockEntity {
     private static final int ROWS_UNDER = 7;
     private static final int ROWS_OVER = 3;
 
-    /** How far out the deck reaches each way from here, in blocks; none until the blueprint lays it. */
+    /** How far out the deck reaches each way from here, in blocks: none for a hub put up by hand, or not laid yet. */
     private int half;
     /** The way from the pad's front to its back, which a rocket's tail points on it, her door to the front. */
     private Direction along = Direction.SOUTH;
@@ -54,7 +55,10 @@ public class LaunchPadBlockEntity extends BlockEntity {
         return Math.abs(from.getX()) <= half && Math.abs(from.getZ()) <= half && from.getY() >= -ROWS_UNDER && from.getY() <= ROWS_OVER;
     }
 
-    /** Set as the blueprint lays it: how far out the deck reaches, and the way from its front to its back. */
+    /**
+     * Set as the blueprint lays it, or as it is put up by hand: how far out the deck reaches, and the way from its
+     * front to its back.
+     */
     public void laid(int half, Direction along) {
         this.half = half;
         this.along = along;

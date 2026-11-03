@@ -20,11 +20,11 @@ building.
 
 The blueprints are in the Create: Skyliners creative tab, with no recipe. The tab sorts everything under banners,
 each with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and the rocket's,
-her lift among them; the flight deck; the rocket's cockpit; doors and stairs; the zeppelin's control car; crew kit;
-skydiving and drops; gadgets; zeppelin extras; seats; floors and walls; signs and washrooms; duty free; the hold; the
-garden; the lab; galley and coffee; the bar; the gym hall; the pool; the club; the den; lights; decorations; the control
-tower; and the terminal. Each of the rocket's room fittings stands with what is like it: the snack machine in the
-galley, the lab's machines in the lab, the LED strips and their console with the lights.
+her lift and her launch pad's hub among them; the flight deck; the rocket's cockpit; doors and stairs; the zeppelin's
+control car; crew kit; skydiving and drops; gadgets; zeppelin extras; seats; floors and walls; signs and washrooms;
+duty free; the hold; the garden; the lab; galley and coffee; the bar; the gym hall; the pool; the club; the den; lights;
+decorations; the control tower; and the terminal. Each of the rocket's room fittings stands with what is like it: the
+snack machine in the galley, the lab's machines in the lab, the LED strips and their console with the lights.
 
 In creative mode the mouse wheel (pick block) copies what you look at, and that holds for the mod's furniture, fittings
 and machines too: the snack machine, the LED strips, a lab's pipes and instruments, a lift's doors and all, and a
@@ -39,7 +39,10 @@ LED panel or an LED console put up by hand have nothing to work: a ship wires th
 and do nothing. LED strips take the colour of the story they are in, or stay white outside a rocket. What only goes up
 with a whole ship gives the nearest thing you can put up yourself: a screen of the curved row on a flight deck the
 flight display, flight map or camera display it shows, the autopilot's screen its control head, a hull or cockpit door
-the Airliner Door.
+the Airliner Door, and so do the rocket's airlock doors and her rover bay's door; her rover bay's panel gives the Rover
+Remote it hands out, as the rover does, an engine's thrust relay the Thrust Lever whose signal it passes on, and a
+launch pad's grate the Zeppelin Catwalk it is drawn as. The pad's hub, the yellow cross at its middle, comes as itself
+(see The launch pad).
 
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
@@ -1442,6 +1445,11 @@ cross of its hub, her four fins' feet on their four yellow plates, her door to t
 from. Held and aimed at the pad, the blueprint shows her there first, a ghost at her full height, whichever part of the
 deck you are looking at. Her lift-off, her landing back where she rose and her assembly leave the pad as it was: nothing
 of it touches her above the deck.
+
+The **Launch Pad Hub** (in the creative tab under Rocket) is that yellow cross on its own, to mark a spot for her
+anywhere: put it down, and the Rocket Blueprint used on the hub itself sets her down with her axis over it and her door
+toward where you stood putting it down, the ghost showing her there first. Taken down, it gives itself back; the pad
+it is dug out of is only concrete after that, the blueprint then laying her down there as anywhere else.
 
 A round steel grate as wide as she is lies under her, solid underfoot, over a flame pit: a steel deflector sloping down
 into a trench that runs to one side of the deck, lit from its floor, a railing along it. Its depth is six rows, or as

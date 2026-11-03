@@ -147,13 +147,15 @@ for (const [name, renderType] of Object.entries(cubes)) {
 }
 
 // A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
-// through, and the hub in its middle. Only the blueprint places them, so neither has an item or drops anything. They
-// are ground, not airframe (see GROUND).
+// through, which only the blueprint places, so it has no item and drops nothing (picked, it gives the catwalk), and the
+// hub in its middle, which also goes up by hand and gives itself back. They are ground, not airframe (see GROUND).
 {
   write(`assets/${ID}/blockstates/launch_pad_grate.json`, { variants: { "": { model: `${ID}:block/launch_pad_grate` } } });
   write(`assets/${ID}/models/block/launch_pad_grate.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/zeppelin_catwalk` }, render_type: "minecraft:cutout" });
   write(`assets/${ID}/blockstates/launch_pad_hub.json`, { variants: { "": { model: `${ID}:block/launch_pad_hub` } } });
   write(`assets/${ID}/models/block/launch_pad_hub.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/launch_pad_hub` } });
+  write(`assets/${ID}/models/item/launch_pad_hub.json`, { parent: `${ID}:block/launch_pad_hub` });
+  dropsItself("launch_pad_hub");
   cubes.launch_pad_grate = null;
   cubes.launch_pad_hub = null;
 }

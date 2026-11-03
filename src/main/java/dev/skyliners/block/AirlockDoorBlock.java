@@ -1,10 +1,13 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.skyliners.SkylinersRegistry;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -88,5 +91,11 @@ public class AirlockDoorBlock extends HorizontalDirectionalBlock {
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    /** Picked, the airliner door that can be put up by hand, as a hull door gives: these only go up in her doorway. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(SkylinersRegistry.AIRLINER_DOOR_ITEM.get());
     }
 }

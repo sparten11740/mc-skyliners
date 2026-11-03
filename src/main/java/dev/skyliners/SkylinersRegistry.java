@@ -2447,9 +2447,9 @@ public final class SkylinersRegistry {
     );
 
     /**
-     * What a launch pad lays over its flame pit: a steel grate to look through, not hull, and at its very middle the
-     * hub that knows the pad (see {@link LaunchPadBlockEntity}). Placed only by the blueprint, so no items, and they
-     * give nothing back.
+     * What a launch pad lays over its flame pit: a steel grate to look through, not hull, which only the blueprint
+     * places and which gives back nothing (picked, the zeppelin's catwalk it is drawn as), and at its very middle the
+     * hub that knows the pad (see {@link LaunchPadBlockEntity}), which also goes up by hand, to mark a rocket's spot.
      */
     public static final DeferredBlock<LaunchPadGrateBlock> LAUNCH_PAD_GRATE = BLOCKS.registerBlock(
         "launch_pad_grate", LaunchPadGrateBlock::new, metal(MapColor.METAL).noOcclusion().isViewBlocking((state, level, pos) -> false)
@@ -2457,6 +2457,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<LaunchPadHubBlock> LAUNCH_PAD_HUB = BLOCKS.registerBlock(
         "launch_pad_hub", LaunchPadHubBlock::new, metal(MapColor.COLOR_YELLOW)
     );
+    public static final DeferredItem<BlockItem> LAUNCH_PAD_HUB_ITEM = ITEMS.registerSimpleBlockItem(LAUNCH_PAD_HUB);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchPadBlockEntity>> LAUNCH_PAD_HUB_ENTITY =
         BLOCK_ENTITIES.register("launch_pad_hub", () -> BlockEntityType.Builder.of(LaunchPadBlockEntity::new, LAUNCH_PAD_HUB.get()).build(null));
 
@@ -2624,7 +2625,8 @@ public final class SkylinersRegistry {
             ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM
         )),
         new TabSection("rocket", List.of(
-            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, OVAL_WINDOW_ITEM, LIFT_MACHINE_ITEM, LIFT_DOOR_ITEM, LIFT_BOARD_ITEM, LIFT_CALL_BUTTON_ITEM
+            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, OVAL_WINDOW_ITEM, LIFT_MACHINE_ITEM, LIFT_DOOR_ITEM, LIFT_BOARD_ITEM, LIFT_CALL_BUTTON_ITEM,
+            LAUNCH_PAD_HUB_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,
