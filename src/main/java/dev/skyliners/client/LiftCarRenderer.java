@@ -2,6 +2,8 @@ package dev.skyliners.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import dev.skyliners.block.LiftMachineBlockEntity;
 import dev.skyliners.entity.LiftCar;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -9,13 +11,15 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 
 /**
  * Draws a ship's lift car (see {@link LiftCar}): a steel platform filling the glass shaft, its floor ribbed against
- * slipping, a slim post at each corner up to a frame round its roof, a handrail across its back and a lit panel in its
- * ceiling, so it reads as a car riding the shaft as it passes each story's glass. It is drawn in the ship's frame, as
- * Sable draws what lives among her blocks.
+ * slipping, a slim post at each corner up to a frame round its roof, a handrail across its back, away from the shaft's
+ * doors however the ship was turned as she was built, and a lit panel in its ceiling, so it reads as a car riding the
+ * shaft as it passes each story's glass. It is drawn in the ship's frame, as Sable draws what lives among her blocks.
  */
 public class LiftCarRenderer extends EntityRenderer<LiftCar> {
     /** Half the car's width, the floor's thickness and the car's height inside, in blocks. */
@@ -51,6 +55,8 @@ public class LiftCarRenderer extends EntityRenderer<LiftCar> {
     @Override
     public void render(LiftCar car, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
+        pose.pushPose();
+        pose.mulPose(Axis.YP.rotationDegrees(-back(car).toYRot()));
         PoseStack.Pose last = pose.last();
         FlatQuads.box(consumer, last, light, FLOOR_STEEL, -HALF, -FLOOR, -HALF, HALF, 0, HALF);
         float step = 2 * HALF / RIBS;
@@ -66,7 +72,20 @@ public class LiftCarRenderer extends EntityRenderer<LiftCar> {
         roof(consumer, last, light);
         FlatQuads.box(consumer, last, light, POST_STEEL, -HALF + POST, RAIL_UP - RAIL, HALF - 3 * POST, HALF - POST, RAIL_UP + RAIL, HALF - POST);
         FlatQuads.box(consumer, last, LightTexture.FULL_BRIGHT, LAMP, -LIGHT_HALF, HEIGHT - 0.06F, -LIGHT_HALF, LIGHT_HALF, HEIGHT - 0.04F, LIGHT_HALF);
+        pose.popPose();
         super.render(car, yaw, partialTick, pose, buffers, light);
+    }
+
+    /**
+     * The side of the car away from the shaft's doors, where its handrail runs, in the ship's frame: the doors' side
+     * as its machine knows it, turned with her; south, as she is laid out, until the machine is known.
+     */
+    private static Direction back(LiftCar car) {
+        if (!(car.level().getBlockEntity(car.machine()) instanceof LiftMachineBlockEntity lift) || lift.landings().isEmpty()) {
+            return Direction.SOUTH;
+        }
+        BlockPos door = lift.landings().getFirst().door();
+        return Direction.getNearest(door.getX(), 0, door.getZ()).getOpposite();
     }
 
     /** The frame round the car's roof and the ceiling inside it. */
