@@ -337,6 +337,7 @@ import dev.skyliners.item.RunwayBlueprintItem;
 import dev.skyliners.item.LaserPointerItem;
 import dev.skyliners.item.MailSackItem;
 import dev.skyliners.item.MocktailItem;
+import dev.skyliners.item.OvalWindowItem;
 import dev.skyliners.item.PaperPlaneItem;
 import dev.skyliners.item.ParachuteItem;
 import dev.skyliners.item.PilotCapItem;
@@ -1168,7 +1169,7 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
-    public static final DeferredItem<BlockItem> OVAL_WINDOW_ITEM = ITEMS.registerSimpleBlockItem(OVAL_WINDOW);
+    public static final DeferredItem<OvalWindowItem> OVAL_WINDOW_ITEM = ITEMS.register("oval_window", () -> new OvalWindowItem(new Item.Properties()));
     public static final DeferredItem<BlockItem> SHAFT_DECOR_ITEM = ITEMS.registerSimpleBlockItem(SHAFT_DECOR);
     /**
      * What hangs under the rocket's ceiling girders, themed to each room: banners, a chain hoist, pots and pans, fairy

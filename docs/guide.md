@@ -1953,12 +1953,12 @@ wall, or lying flat in a floor or a roof, whichever fits the opening best (looki
 lying flat), its dome toward whoever sets it and, lying flat, its top away from them. It fills its blocks, flush with
 the wall, floor or roof on both sides: its dome stands out of the face toward whoever set it, in its steel collar, as
 hers stands out of her skin, and on the other side its steel-lined recess runs back through the whole block to the
-glass. The glass is as solid as the wall round it: nobody puts a head through the dome, and lying in a floor it is
-walked over, dome and all. Round its oval, outside and in, it
-looks like the wall, floor or roof beside it, whatever that is built of: stone, planks, bricks, glass or grass, a
-striped wall's stripes running on through its corners, while a sill or a lintel of something else stays out of it;
-standing on its own with no wall beside it, it keeps her silver weave. It dims as hers do, and it comes away whole:
-break any part of it and the whole window goes, giving back one Oval Window.
+glass. Standing in a wall its glass is as solid as the wall round it, so nobody puts a head through the dome, and lying
+in a floor it is walked over, dome and all; hung in a ceiling, its dome keeps nobody from walking under it. Round its
+oval, outside and in, it looks like the wall, floor or roof beside it, whatever that is built of: stone, planks, bricks,
+glass or grass, a striped wall's stripes running on through its corners, while a sill or a lintel of something else
+stays out of it; standing on its own with no wall beside it, it keeps her silver weave. It dims as hers do, and it comes
+away whole: break any part of it and the whole window goes, giving back one Oval Window.
 
 Her front door, three blocks wide and three tall over her entry floor, across the flat of her front, has the
 airliner's integral airstairs (see Airstairs), three blocks wide to match it: open treads with yellow nosings between

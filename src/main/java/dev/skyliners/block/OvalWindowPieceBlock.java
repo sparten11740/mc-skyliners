@@ -24,7 +24,6 @@ import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -201,7 +200,8 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
 
     /**
      * How well a window would fit with the piece on the spot clicked: how many of the blocks round its edge in its wall
-     * stand there already, or -1 where any of its pieces has no room.
+     * stand there already, or -1 where any of its pieces has no room, or has someone standing in its block. Whoever
+     * stands where only its dome will reach is pushed aside by it, as it stands out of the wall toward them.
      */
     private int fit(BlockPlaceContext context, BlockState piece) {
         Level level = context.getLevel();
@@ -209,7 +209,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         for (int i = 0; i < COLUMNS * ROWS; i++) {
             BlockPos at = pieceAt(context.getClickedPos(), piece, i % COLUMNS, i / COLUMNS);
             if (level.isOutsideBuildHeight(at) || !level.getWorldBorder().isWithinBounds(at) || !level.getBlockState(at).canBeReplaced(context)
-                || !level.isUnobstructed(piece, at, CollisionContext.empty())) {
+                || !level.isUnobstructed(null, Shapes.block().move(at.getX(), at.getY(), at.getZ()))) {
                 return -1;
             }
             walled += walled(level, at, piece.setValue(COLUMN, i % COLUMNS).setValue(ROW, i / COLUMNS));

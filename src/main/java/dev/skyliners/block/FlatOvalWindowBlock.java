@@ -26,8 +26,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * {@link OvalWindowBlock#getStateForPlacement}): a skylight looking up out of a roof, or a window in a floor looking
  * down at what is under it, or either the other way up. FACING is the way it looks out, its glass bulging that way, up
  * or down, toward whoever set it; ALONG is the way its top row lies from its middle, away from them. Each piece fills
- * its whole block, flush with the floor or roof on both sides, its glass standing out of it in its collar, and is
- * solid over the glass too, so a window in a floor is walked over, dome and all. It looks like the floor or roof it is
+ * its whole block, flush with the floor or roof on both sides, its glass standing out of it in its collar; in a floor
+ * it is solid over the glass too, so it is walked over, dome and all. It looks like the floor or roof it is
  * set into, is only ever whole and gives back an Oval Window, as one set into a wall does (see
  * {@link OvalWindowPieceBlock}).
  */
@@ -105,8 +105,12 @@ public class FlatOvalWindowBlock extends OvalWindowPieceBlock {
         return Shapes.block();
     }
 
+    /**
+     * Solid over its dome too in a floor, to be walked over, but only through its block in a ceiling, so its dome,
+     * hanging into a room two blocks high, keeps nobody from walking under it.
+     */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return solidWithDome(this, state);
+        return state.getValue(FACING) == Direction.UP ? solidWithDome(this, state) : Shapes.block();
     }
 }
