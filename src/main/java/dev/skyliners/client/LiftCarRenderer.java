@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.skyliners.block.LiftMachineBlockEntity;
 import dev.skyliners.entity.LiftCar;
+import java.util.List;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -86,10 +87,14 @@ public class LiftCarRenderer extends EntityRenderer<LiftCar> {
      * as its machine knows it, turned with her; south, as she is laid out, until the machine is known.
      */
     private static Direction back(LiftCar car) {
-        if (!(car.level().getBlockEntity(car.machine()) instanceof LiftMachineBlockEntity lift) || lift.landings().isEmpty()) {
+        if (!(car.level().getBlockEntity(car.machine()) instanceof LiftMachineBlockEntity lift)) {
             return Direction.SOUTH;
         }
-        BlockPos door = lift.landings().getFirst().door();
+        List<LiftMachineBlockEntity.Landing> landings = lift.landings();
+        if (landings.isEmpty()) {
+            return Direction.SOUTH;
+        }
+        BlockPos door = landings.getFirst().door();
         return Direction.getNearest(door.getX(), 0, door.getZ()).getOpposite();
     }
 
