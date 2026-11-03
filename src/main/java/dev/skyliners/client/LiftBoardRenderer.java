@@ -52,6 +52,12 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
      */
     private static final double STRIP = 0.31;
     private static final double FIGURE = 0.17;
+    /**
+     * How far the strip reaches past its button's left, right and top edges onto the casing, in blocks. Drawn in front
+     * of the button, a strip ending on its edges let the button's colour show along them from an angle; this covers the
+     * button as it stands out while looked at too (see {@link TouchPanelArt}).
+     */
+    private static final double STRIP_BLEED = 0.01;
     /** How tall the font's figures are, in font pixels. */
     private static final double FIGURE_PIXELS = 7;
     /** How often the arrow blinks, in ticks a blink. */
@@ -140,7 +146,8 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
             TouchPanelArt.tile(shapes, matrix, buttons.get(floor).inset(GAP), landings.get(floor).colour(),
                 TouchPanelArt.Look.of(floor, looked, here, floor == lift.at()), LAYER);
             TouchPanel.Tile button = buttons.get(floor);
-            ScreenDrawing.rect(shapes, matrix, button.left() + GAP, stripBottom(button), button.right() - GAP, button.top() - GAP, 4 * LAYER, STRIP_COLOUR);
+            ScreenDrawing.rect(shapes, matrix, button.left() + GAP - STRIP_BLEED, stripBottom(button), button.right() - GAP + STRIP_BLEED,
+                button.top() - GAP + STRIP_BLEED, 4 * LAYER, STRIP_COLOUR);
         }
         for (int floor = 0; floor < landings.size(); floor++) {
             TouchPanel.Tile button = buttons.get(floor);
