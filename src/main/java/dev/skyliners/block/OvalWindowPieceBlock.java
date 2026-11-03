@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -32,11 +33,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * as seen from outside and its row from the top: in a wall or the rocket's skin ({@link OvalWindowBlock}), or lying
  * flat in a floor or a roof ({@link FlatOvalWindowBlock}). On the rocket each piece is the inner half of its block, its
  * glass bulging out of the outer half; set by hand, it fills its whole block, flush with the wall on both sides, its
- * glass bulging out of the wall's face, and is solid over its glass as through its block (see
- * {@code client.OvalWindowModel}). Its glass dims electrically: using any piece of it
- * darkens the whole window's glass a step, from clear through light, medium and dark and back to clear, with a chime
- * that falls as it darkens. Only the glass darkens: its frame and the wall round it, and the light it lets in, stay as
- * they are.
+ * glass bulging out of the wall's face, and is solid over its glass as through its block (see {@code
+ * client.OvalWindowModel}). Its glass dims electrically: using any piece of it darkens the whole window's glass a step,
+ * from clear through light, medium and dark and back to clear, with a chime that falls as it darkens; a window dimmer
+ * (see {@link WindowDimmerBlock}) or the rocket's cockpit console sets every window of a story at once (see {@link
+ * #dimWithin}). Only the glass darkens: its frame and the wall round it, and the light it lets in, stay as they are.
  *
  * <p>A window set by hand fills the opening that the spot is in, wherever in it the spot is, whichever way it fits the
  * opening best: standing in a wall, or lying in a floor or a roof (see {@link OvalWindowBlock#getStateForPlacement}).
@@ -53,9 +54,10 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     /** How dark its glass is: 0 clear, up to {@link #DARKEST}. */
     public static final int DARKEST = 3;
     public static final IntegerProperty DIM = IntegerProperty.create("dim", 0, DARKEST);
-    /** The chime's pitch when clear, and how far it falls with each step darker. */
+    /** The chime's pitch when clear, and how far it falls with each step darker; and how loud it is. */
     private static final float CLEAR_PITCH = 1.5F;
     private static final float PITCH_STEP = 0.25F;
+    private static final float CHIME_VOLUME = 0.5F;
     /** The piece that gives back the window when one set by hand is taken away: the middle of its bottom row. */
     private static final int KEEPER_COLUMN = COLUMNS / 2;
     private static final int KEEPER_ROW = ROWS - 1;
@@ -308,8 +310,37 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         for (BlockPos at : window) {
             level.setBlock(at, level.getBlockState(at).setValue(DIM, dim), Block.UPDATE_ALL);
         }
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 0.5F, chimePitch(dim));
+        chime(level, pos, dim);
         return window;
+    }
+
+    /**
+     * Sets every piece of oval window in a box to a darkness, on the server, as a story's window dimmer and the
+     * rocket's cockpit console set a story's windows: only where the box is loaded, and only the pieces not that dark
+     * already.
+     */
+    public static void dimWithin(Level level, BoundingBox box, int dim) {
+        for (BlockPos at : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+            dimPiece(level, at.immutable(), dim);
+        }
+    }
+
+    private static void dimPiece(Level level, BlockPos at, int dim) {
+        if (!level.isLoaded(at)) {
+            return;
+        }
+        BlockState state = level.getBlockState(at);
+        if (state.getBlock() instanceof OvalWindowPieceBlock && state.getValue(DIM) != dim) {
+            level.setBlock(at, state.setValue(DIM, dim), Block.UPDATE_ALL);
+        }
+    }
+
+    /**
+     * The chime a window's glass makes as it dims to a darkness, heard by everyone near a place: wherever it is dimmed
+     * from, using a window or touching a panel's oval window.
+     */
+    public static void chime(Level level, BlockPos pos, int dim) {
+        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, CHIME_VOLUME, chimePitch(dim));
     }
 
     /** The pitch of the chime a window's glass makes as it dims to a darkness, falling as it darkens. */

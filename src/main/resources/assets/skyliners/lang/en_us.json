@@ -926,6 +926,7 @@
   "block.skyliners.led_panel": "LED Panel",
   "block.skyliners.led_console": "LED Console",
   "block.skyliners.dome_limit": "Dome Limit",
+  "block.skyliners.window_dimmer": "Window Dimmer",
   "block.skyliners.flag_halyard": "Flag Halyard",
   "block.skyliners.flagstaff": "Flagstaff",
   "subtitles.skyliners.flag_halyard": "Halyard pulley squeaks",

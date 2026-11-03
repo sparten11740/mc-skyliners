@@ -127,6 +127,7 @@ import dev.skyliners.client.TrolleyRenderer;
 import dev.skyliners.client.UpShipScene;
 import dev.skyliners.client.VeilLights;
 import dev.skyliners.client.WindSockRenderer;
+import dev.skyliners.client.WindowDimmerRenderer;
 import dev.skyliners.client.ZeppelinEngineSounds;
 import dev.skyliners.client.ZeppelinPaint;
 import dev.skyliners.entity.LiftCar;
@@ -362,6 +363,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.LIVERY_SELECTOR_ENTITY.get(), context -> new LiverySelectorRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_BOARD_ENTITY.get(), context -> new LiftBoardRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.ROVER_PANEL_ENTITY.get(), context -> new RoverPanelRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.WINDOW_DIMMER_ENTITY.get(), context -> new WindowDimmerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());

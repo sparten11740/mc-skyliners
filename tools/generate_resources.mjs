@@ -5117,6 +5117,18 @@ function ledStripFittings() {
   return ["led_strip", "led_panel", "led_console"];
 }
 
+// The window dimmer by each of the rocket's lift doors (see WindowDimmerBlock): the LED panel's slim screen of dark
+// glass, its model and all, its four oval windows drawn by its renderer (see WindowDimmerRenderer), so in the hand it
+// is a picture of its own. It gives itself back; fitted into her, so breakable, and light as the rest of her is (see
+// FITTINGS).
+wideScreen("window_dimmer", "led_panel");
+function windowDimmerFittings() {
+  return ["window_dimmer"];
+}
+function windowDimmerLang() {
+  return { "block.skyliners.window_dimmer": "Window Dimmer" };
+}
+
 // The invisible limit of the rocket's planetarium (see DomeLimitBlock): no model of its own to draw, and next to no
 // weight, overriding the airframe's quarter as a strip does.
 write(`assets/${ID}/blockstates/dome_limit.json`, { variants: { "": { model: `${ID}:block/dome_limit` } } });
@@ -9917,6 +9929,7 @@ FITTINGS.push(...barFittings());
 FITTINGS.push(...robotBartenderFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
+FITTINGS.push(...windowDimmerFittings());
 FITTINGS.push("dome_limit");
 FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...shaftDecorFittings());
@@ -10723,6 +10736,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...zeppelinLang(),
   ...zeppelinControlsLang(),
   ...ledStripLang(),
+  ...windowDimmerLang(),
   ...shipsColoursLang(),
   ...christeningLang(),
   ...flankScreenLang(),

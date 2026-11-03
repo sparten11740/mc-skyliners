@@ -10,6 +10,8 @@ import dev.skyliners.block.LedSetting;
 import dev.skyliners.block.LedStripBlock;
 import dev.skyliners.block.OvalWindowBlock;
 import dev.skyliners.block.TouchPanel;
+import dev.skyliners.block.WindowDimmerBlock;
+import dev.skyliners.block.WindowDimmerBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -24,11 +26,12 @@ import org.joml.Matrix4f;
  * silhouette laid on her side, her foot at the left, each story a band glowing as its strips do, and beside it the
  * whole-rocket button, a little rocket standing up with every story's band lit, and at the end of its bottom row an
  * oval window in a steel rim for each darkness of her windows' glass, the sky and the sun through it dimming from tile
- * to tile. Every tile lights up as every touch
- * panel's does (see {@link TouchPanelArt}): the one the crosshair rests on as looked at, and what is set now as picked:
- * the colour, the brightness and the mode (on the console those every story picked agrees on), and on the console the
- * stories picked, with the whole-rocket button once that is all of them, and the darkness it last set their windows to
- * if they agree. Everything is in blocks on the face, at full brightness.
+ * to tile; and a story's window dimmer, the same four windows, bigger, two over two. Every tile lights up as every
+ * touch panel's does (see {@link TouchPanelArt}): the one the crosshair rests on as looked at, and what is set now as
+ * picked: the colour, the brightness and the mode (on the console those every story picked agrees on), and on the
+ * console the stories picked, with the whole-rocket button once that is all of them, and the darkness it last set their
+ * windows to if they agree, as on a dimmer the darkness it last set. Everything is in blocks on the face, at full
+ * brightness.
  */
 final class LedControlsArt {
     private static final int CASING = 0xFF15171C;
@@ -65,9 +68,10 @@ final class LedControlsArt {
     private static final double BAND_HALF = 0.15;
     private static final double BAND_GAP = 0.006;
     /**
-     * A window's tile: how big the oval is, from its middle to its rim's edge across, as a share of the button's
-     * shorter side; how much taller than wide, as her windows are; and how far in its glass starts and how big its sun
-     * is, each a share of the oval, and where the sun sits from the middle of the glass.
+     * A window's tile: how big the oval is, from its middle to its rim's edge across, as a share of the button's width,
+     * or of its height over how much taller the oval is where that is less, so a squarer button still holds it whole;
+     * how much taller than wide, as her windows are; and how far in its glass starts and how big its sun is, each a
+     * share of the oval, and where the sun sits from the middle of the glass.
      */
     private static final float WINDOW_SIZE = 0.4F;
     private static final float WINDOW_TALL = 4F / 3;
@@ -119,11 +123,26 @@ final class LedControlsArt {
         }
     }
 
-    /** A darkness's window on its button: an oval in a steel rim, the sky and the sun through its glass. */
+    /**
+     * A window dimmer's face, a block square (see {@link WindowDimmerBlock}): its four buttons, the console's windows'
+     * own, from clear to darkest, the darkness it last set picked (or none, {@link WindowDimmerBlockEntity#UNSET}),
+     * the player looking at one of them (or none, -1).
+     */
+    static void windowDimmer(Matrix4f matrix, VertexConsumer shapes, int set, int looked) {
+        background(matrix, shapes, 1);
+        for (int dim = 0; dim <= OvalWindowBlock.DARKEST; dim++) {
+            window(matrix, shapes, button(WindowDimmerBlock.TILES, dim), dim, look(dim, looked, dim == set));
+        }
+    }
+
+    /**
+     * A darkness's window on its button: an oval in a steel rim, the sky and the sun through its glass, as big as the
+     * button holds it.
+     */
     private static void window(Matrix4f matrix, VertexConsumer shapes, TouchPanel.Tile button, int dim, TouchPanelArt.Look look) {
         TouchPanelArt.tile(shapes, matrix, button, TILE, look, 2 * LAYER);
         Matrix4f oval = new Matrix4f(matrix).translate((float) button.middleX(), (float) button.middleY(), 0).scale(1, WINDOW_TALL, 1);
-        double size = WINDOW_SIZE * button.side();
+        double size = WINDOW_SIZE * Math.min(button.width(), button.height() / WINDOW_TALL);
         float light = WINDOW_LIGHT[dim];
         ScreenDrawing.disc(shapes, oval, 0, 0, size, ROUND, 4 * LAYER, HULL);
         ScreenDrawing.disc(shapes, oval, 0, 0, size * WINDOW_GLASS, ROUND, 5 * LAYER, 0xFF000000 | LedLights.scaled(WINDOW_SKY, light));

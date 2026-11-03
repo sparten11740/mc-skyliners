@@ -88,8 +88,8 @@ public final class RocketLayout implements Layout {
     private static final int[][] FINS = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     /**
      * The features laid once the body stands, in this order (see {@link RocketPiece}): the pool before the greenhouse
-     * under it, whose trees and vines keep clear of the pool's channel hanging into it, and the LED strips last, to
-     * fill in round everything else.
+     * under it, whose trees and vines keep clear of the pool's channel hanging into it, the LED strips after the rest,
+     * to fill in round everything else, and the window dimmers after them, over their panels by the lift doors.
      */
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
         RocketLadder::new,
@@ -117,6 +117,7 @@ public final class RocketLayout implements Layout {
         RocketPosters::new,
         RocketShaftDecor::new,
         RocketLedStrips::new,
+        RocketWindowDimmers::new,
         RocketDomeLimit::new);
     /** The livery she is built in, one of her own (see {@link Livery#swatches}). */
     private static final Livery BUILT_IN = Livery.MIDNIGHT;

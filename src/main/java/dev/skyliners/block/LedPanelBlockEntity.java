@@ -161,27 +161,16 @@ public class LedPanelBlockEntity extends BlockEntity {
 
     /**
      * Sets every piece of oval window in the story to the darkness last asked for, looking through the box round its
-     * strips and a little past it, out to her skin. Only when asked, a story at a time, and only where it is loaded.
+     * strips and a little past it, out to her skin (see {@link OvalWindowPieceBlock#dimWithin}). Only when asked, a
+     * story at a time, and only where it is loaded.
      */
     private void darkenWindows() {
         BoundingBox box = box();
         if (box == null || level == null) {
             return;
         }
-        for (BlockPos at : BlockPos.betweenClosed(box.minX() - WINDOW_REACH, box.minY(), box.minZ() - WINDOW_REACH, box.maxX() + WINDOW_REACH, box.maxY(),
-            box.maxZ() + WINDOW_REACH)) {
-            darken(at.immutable());
-        }
-    }
-
-    private void darken(BlockPos at) {
-        if (!level.isLoaded(at)) {
-            return;
-        }
-        BlockState state = level.getBlockState(at);
-        if (state.getBlock() instanceof OvalWindowPieceBlock && state.getValue(OvalWindowPieceBlock.DIM) != windows) {
-            level.setBlock(at, state.setValue(OvalWindowPieceBlock.DIM, windows), Block.UPDATE_ALL);
-        }
+        OvalWindowPieceBlock.dimWithin(level, new BoundingBox(box.minX() - WINDOW_REACH, box.minY(), box.minZ() - WINDOW_REACH,
+            box.maxX() + WINDOW_REACH, box.maxY(), box.maxZ() + WINDOW_REACH), windows);
     }
 
     private void lightStrip(BlockPos at, int brightness) {

@@ -205,6 +205,10 @@ shaft (`RocketLayout.shaftWall`).
 and times their
 modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConsoleRenderer` draw them through
 `LedControlsArt`, which lights their tiles through `TouchPanelArt`.
+`RocketWindowDimmers`, laid after them, puts a `WindowDimmerBlock` over each story's LED panel, another touch panel,
+whose `WindowDimmerBlockEntity` keeps the box round its story's oval windows (round itself, put up by hand) and sets
+them through `OvalWindowPieceBlock.dimWithin`, as the console does through each story's `LedPanelBlockEntity`; on the
+client `WindowDimmerRenderer` draws its four buttons through `LedControlsArt`, the console's oval windows grown.
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a

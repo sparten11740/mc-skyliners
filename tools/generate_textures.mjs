@@ -7764,6 +7764,30 @@ rocketControlTextures();
     if (y >= 9 && y <= 10 && x >= 2 && x <= 13 && x % 2 === 0) return swatch(x - 2 + 3, 12);
     return GLOSS;
   }, 0);
+  // A story's window dimmer: its four oval windows two over two in their steel rims, clear and light over medium and
+  // dark, the sky through each dimming as LedControlsArt draws it (WINDOW_SKY scaled by WINDOW_LIGHT), the sun high on
+  // the right of each.
+  const DIMMER_SKY = [0x8c, 0xcb, 0xf0];
+  const DIMMER_SUN = [0xff, 0xf1, 0xb8];
+  const DIMMER_RIM = [0x8f, 0x96, 0xa1];
+  const DIMMER_LIGHT = [1, 0.55, 0.3, 0.1];
+  const dimmerWindow = (x, y) => {
+    const column = x < 8 ? 0 : 1;
+    const row = y < 8 ? 0 : 1;
+    const dx = x + 0.5 - (column === 0 ? 5 : 11);
+    const dy = y + 0.5 - (row === 0 ? 4.5 : 11.5);
+    const out = Math.hypot(dx / 2.1, dy / 2.6);
+    if (out > 1) return null;
+    const light = DIMMER_LIGHT[row * 2 + column];
+    if (out > 0.62) return DIMMER_RIM;
+    const sun = dx > 0 && dy < 0;
+    return (sun ? DIMMER_SUN : DIMMER_SKY).map((value) => Math.round(value * light));
+  };
+  texture(itemOutput, "window_dimmer", (x, y) => {
+    if (x < 1 || x > 14 || y < 1 || y > 14) return CLEAR;
+    if (x === 1 || x === 14 || y === 1 || y === 14) return CASING;
+    return dimmerWindow(x, y) ?? GLOSS;
+  }, 0);
   texture(itemOutput, "lift_board", (x, y) => {
     if (x < 3 || x > 12) return CLEAR;
     if (x === 3 || x === 12 || y === 0 || y === 15) return CASING;

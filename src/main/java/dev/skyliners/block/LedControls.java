@@ -223,8 +223,7 @@ public final class LedControls {
                 1 + CLICK_STEP * mode.mode().ordinal());
             case Story story -> level.playSound(null, pos, SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.BLOCKS, VOLUME, 1);
             case WholeRocket whole -> level.playSound(null, pos, SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.BLOCKS, VOLUME, 1.5F);
-            case Windows windows -> level.playSound(null, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, VOLUME,
-                OvalWindowPieceBlock.chimePitch(windows.dim()));
+            case Windows windows -> OvalWindowPieceBlock.chime(level, pos, windows.dim());
         }
     }
 

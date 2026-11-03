@@ -146,6 +146,7 @@
     "skyliners:led_strip",
     "skyliners:led_panel",
     "skyliners:led_console",
+    "skyliners:window_dimmer",
     "skyliners:dome_limit",
     "skyliners:space_poster",
     "skyliners:shaft_decor",

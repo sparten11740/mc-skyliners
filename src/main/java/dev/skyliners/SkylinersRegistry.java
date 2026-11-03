@@ -287,6 +287,8 @@ import dev.skyliners.block.WcSignBlock;
 import dev.skyliners.block.WcSignBlockEntity;
 import dev.skyliners.block.WindSockBlock;
 import dev.skyliners.block.WindSockBlockEntity;
+import dev.skyliners.block.WindowDimmerBlock;
+import dev.skyliners.block.WindowDimmerBlockEntity;
 import dev.skyliners.block.WindowShadesBlock;
 import dev.skyliners.block.CockpitDisplayBlock;
 import dev.skyliners.block.CockpitDisplayBlockEntity;
@@ -1976,6 +1978,12 @@ public final class SkylinersRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedConsoleBlockEntity>> LED_CONSOLE_ENTITY =
         BLOCK_ENTITIES.register("led_console", () -> BlockEntityType.Builder.of(LedConsoleBlockEntity::new, LED_CONSOLE.get()).build(null));
+    /** The window dimmer by each of the rocket's lift doors, setting every oval window of its story at once. */
+    public static final DeferredBlock<WindowDimmerBlock> WINDOW_DIMMER = BLOCKS.registerBlock(
+        "window_dimmer", WindowDimmerBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WindowDimmerBlockEntity>> WINDOW_DIMMER_ENTITY =
+        BLOCK_ENTITIES.register("window_dimmer", () -> BlockEntityType.Builder.of(WindowDimmerBlockEntity::new, WINDOW_DIMMER.get()).build(null));
     /**
      * The snack machine in the rocket's cafeteria, on her observation deck's mezzanine (see
      * {@link dev.skyliners.airframe.RocketObservationDeck}), and the whirr of its spiral turning and the clunk of a snack
@@ -2597,6 +2605,7 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> LED_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LED_STRIP);
     public static final DeferredItem<BlockItem> LED_PANEL_ITEM = ITEMS.registerSimpleBlockItem(LED_PANEL);
     public static final DeferredItem<BlockItem> LED_CONSOLE_ITEM = ITEMS.registerSimpleBlockItem(LED_CONSOLE);
+    public static final DeferredItem<BlockItem> WINDOW_DIMMER_ITEM = ITEMS.registerSimpleBlockItem(WINDOW_DIMMER);
     public static final DeferredItem<BlockItem> LIFT_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(LIFT_MACHINE);
     public static final DeferredItem<BlockItem> LIFT_DOOR_ITEM = ITEMS.registerSimpleBlockItem(LIFT_DOOR);
     public static final DeferredItem<BlockItem> LIFT_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIFT_BOARD);
@@ -2626,8 +2635,8 @@ public final class SkylinersRegistry {
             ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM
         )),
         new TabSection("rocket", List.of(
-            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, OVAL_WINDOW_ITEM, LIFT_MACHINE_ITEM, LIFT_DOOR_ITEM, LIFT_BOARD_ITEM, LIFT_CALL_BUTTON_ITEM,
-            LAUNCH_PAD_HUB_ITEM
+            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, OVAL_WINDOW_ITEM, WINDOW_DIMMER_ITEM, LIFT_MACHINE_ITEM, LIFT_DOOR_ITEM, LIFT_BOARD_ITEM,
+            LIFT_CALL_BUTTON_ITEM, LAUNCH_PAD_HUB_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

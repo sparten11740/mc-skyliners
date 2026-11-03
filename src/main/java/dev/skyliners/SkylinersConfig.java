@@ -50,6 +50,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.IntValue ROCKET_CEILING;
     public static final ModConfigSpec.BooleanValue LED_STRIPS;
     public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
+    public static final ModConfigSpec.BooleanValue ROCKET_WINDOW_DIMMERS;
     public static final ModConfigSpec.BooleanValue ROCKET_ROVER;
     public static final ModConfigSpec.BooleanValue ROCKET_AIRSTAIRS;
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
@@ -485,6 +486,12 @@ public final class SkylinersConfig {
                 "her bunk room, a black hole in her lab and a quasar on her observation deck. Rockets already built keep theirs."
             )
             .define("posters", true);
+        ROCKET_WINDOW_DIMMERS = builder
+            .comment(
+                "Whether a rocket is built with a window dimmer by each story's lift door: four oval windows on it, clear, light,",
+                "medium and dark, set the glass of every oval window of the story at once. Rockets already built keep theirs."
+            )
+            .define("windowDimmers", true);
         ROCKET_ROVER = builder
             .comment(
                 "Whether a rocket is built with a rover bay on her cargo story: a door in her skin folding down into a platform,",

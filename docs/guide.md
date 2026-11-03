@@ -18,13 +18,14 @@ building.
 
 ## In game
 
-The blueprints are in the Create: Skyliners creative tab, with no recipe. The tab sorts everything under banners,
-each with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and the rocket's,
-her lift and her launch pad's hub among them; the flight deck; the rocket's cockpit; doors and stairs; the zeppelin's
-control car; crew kit; skydiving and drops; gadgets; zeppelin extras; seats; floors and walls; signs and washrooms;
-duty free; the hold; the garden; the lab; galley and coffee; the bar; the gym hall; the pool; the club; the den; lights;
+The blueprints are in the Create: Skyliners creative tab, with no recipe. The tab sorts everything under banners, each
+with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and the rocket's, her
+lift and her launch pad's hub among them; the flight deck; the rocket's cockpit; doors and stairs; the zeppelin's
+control car; crew kit; skydiving and drops; gadgets; zeppelin extras; seats; floors and walls; signs and washrooms; duty
+free; the hold; the garden; the lab; galley and coffee; the bar; the gym hall; the pool; the club; the den; lights;
 decorations; the control tower; and the terminal. Each of the rocket's room fittings stands with what is like it: the
-snack machine in the galley, the lab's machines in the lab, the LED strips and their console with the lights.
+snack machine in the galley, the lab's machines in the lab, the LED strips and their console with the lights, and her
+window dimmer beside her oval window.
 
 In creative mode the mouse wheel (pick block) copies what you look at, and that holds for the mod's furniture, fittings
 and machines too: the snack machine, the LED strips, a lab's pipes and instruments, a lift's doors and all, and a
@@ -36,7 +37,8 @@ it, or hung face down under a ceiling (the Transponder, the Jump Light Switch, t
 Shades Control, the Captain's Handset, the Seatbelt Switch, the Drop Release and the rocket's Launch Key and Abort
 Handle); the Tower Radar and the Weather Screen hang on a wall without their stand. A lift's parts, an
 LED panel or an LED console put up by hand have nothing to work: a ship wires those as it is built, so they stay still
-and do nothing. LED strips take the colour of the story they are in, or stay white outside a rocket. What only goes up
+and do nothing. LED strips take the colour of the story they are in, or stay white outside a rocket. A Window Dimmer
+put up by hand sets the oval windows round it, about a room's worth. What only goes up
 with a whole ship gives the nearest thing you can put up yourself: a screen of the curved row on a flight deck the
 flight display, flight map or camera display it shows, the autopilot's screen its control head, a hull or cockpit door
 the Airliner Door, and so do the rocket's airlock doors and her rover bay's door; her rover bay's panel gives the Rover
@@ -1960,6 +1962,19 @@ glass or grass, a striped wall's stripes running on through its corners, while a
 stays out of it; standing on its own with no wall beside it, it keeps her silver weave. It dims as hers do, and it comes
 away whole: break any part of it and the whole window goes, giving back one Oval Window.
 
+Every story with oval windows has a window dimmer to set all of them at once: a slim panel of the same dark glass as
+the LED panel beside its lift door, just over it, so the room's lights and its windows are set from one place by the
+door everyone comes in by (where a story has no LED panel there, the dimmer is at eye height in its place). On it are
+four big buttons, the same little oval windows in steel rims as on the cockpit's LED console (see below), the sky and
+the sun through each dimming from one to the next: clear and light over medium and dark. Touch one and every window of
+the story takes it at once, with the falling chime a window makes. The one it last set them to is bordered in white,
+whatever has been done to a window since by hand or from the cockpit; before it is first touched, that is the
+darkness the story's windows were built with, clear but dark in the techno club. The one you look at brightens. The
+observation deck, with its band of glass, has no oval windows and so no dimmer. The server config's
+`rocket.windowDimmers` leaves them out. The Window Dimmer is in the creative tab under Rocket, beside the Oval Window:
+put up by hand, on a wall or under a ceiling as a screen goes, it sets every oval window within sixteen blocks of it
+across and four rows over or under it, about a room's worth.
+
 Her front door, three blocks wide and three tall over her entry floor, across the flat of her front, has the
 airliner's integral airstairs (see Airstairs), three blocks wide to match it: open treads with yellow nosings between
 aluminium stringers, a handrail along either side, the top tread level with the sill. Stowed, they lie folded in a bay
@@ -2203,8 +2218,8 @@ the bunk room warm fairy lights are strung across the glass over head height, st
 greenhouse ivy climbs the corners and trails across the top; at the pool a red and white life ring hangs on a chrome
 hook; in the club pink and cyan neon tubes glow from the floor to the ceiling; and in the lab a whiteboard shows a
 molecule of balls and sticks, an arrow and a graph climbing past a dashed line, a sticky note with a water bear on it in
-its corner. They go only where nothing else stands, a poster, the lift's call button or its LED panel, and never in
-front of
+its corner. They go only where nothing else stands, a poster, the lift's call button, its LED panel or its window
+dimmer, and never in front of
 the lift's doorway; nothing bumps into them, so the walkway round the shaft stays clear; and a story she is too small
 to have has none. Shaft Decoration is in the creative tab under Decorations: used on the side of a block, it puts up
 a velvet curtain tied back against it. Any piece picked with the pick-block key puts up that piece, and a piece broken
@@ -2328,7 +2343,7 @@ alike. The next band touched after that starts a new pick, so setting one story 
 for several stories, a change climbs her a story at a time from the lowest up. At the end of its bottom row four little
 oval windows, a sun and sky dimming from one to the next, set the glass of the windows on the stories picked, from clear
 to near-black, each with its falling chime, as using a window does; the one it last set them to is bordered in white,
-whatever has been done to a window by hand since.
+whatever has been done to a window since, by hand or from its story's window dimmer.
 
 Over the cockpit her nose is a dome, a planetarium over the ring of ceiling on the glass (nobody gets through its sky,
 which stops you just short of it): a smooth night sky just inside its lining, as bright by day as by night, deep navy darkening to black at the tip, where the pole star shines, the Milky
