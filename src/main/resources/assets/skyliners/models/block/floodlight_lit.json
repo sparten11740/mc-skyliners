@@ -99,7 +99,11 @@
           "texture": "#drum"
         },
         "down": {
-          "texture": "#lens"
+          "texture": "#lens",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
         }
       }
     },

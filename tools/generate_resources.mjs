@@ -1064,8 +1064,8 @@ cubes.propeller = null;
   dropsItself("carrier_lever");
   cubes.carrier_lever = null;
   // The floodlights under the zeppelin (see FloodlightBlock): a flat black lamp on a brass plate hung from the top of
-  // its block, its wide lens underneath, dark glass or, lit, glowing, and a hood down its back edge, so it reads which
-  // way, drawn facing north, it throws its light.
+  // its block, its wide lens underneath, dark glass or, lit, glowing at full brightness whatever the light round it,
+  // and a hood down its back edge, so it reads which way, drawn facing north, it throws its light.
   for (const lit of [false, true]) {
     write(`assets/${ID}/models/block/floodlight${lit ? "_lit" : ""}.json`, {
       parent: "minecraft:block/block",
@@ -1075,7 +1075,7 @@ cubes.propeller = null;
         solid([2, 12, 2], [14, 15, 14], "#drum"),
         { from: [3, 11, 3], to: [13, 12, 13], faces: {
           north: { texture: "#drum" }, south: { texture: "#drum" }, east: { texture: "#drum" }, west: { texture: "#drum" },
-          up: { texture: "#drum" }, down: { texture: "#lens" },
+          up: { texture: "#drum" }, down: { texture: "#lens", ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) },
         } },
         solid([2, 9, 13], [14, 12, 14], "#drum"),
       ],
