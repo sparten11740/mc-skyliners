@@ -185,9 +185,10 @@ public final class Floodlights {
             SableClient.View seen = SableClient.view(lens(light), light.aim(), new Vec3(0, 1, 0), partialTick);
             Vec3 from = seen != null ? seen.eye() : lens(light);
             Vec3 ground = SearchlightBeams.ground(level, from, seen != null ? seen.forward() : light.aim(), REACH);
-            if (ground != null) {
+            float share = seen == null ? night(level, partialTick) : 1;
+            if (ground != null && share > 0) {
                 Vec3 lifted = ground.add(0, ground.distanceTo(camera) * POOL_LIFT, 0);
-                SearchlightBeams.pool(consumer, pose, camera, lifted, (float) ground.distanceTo(from) * POOL);
+                SearchlightBeams.pool(consumer, pose, camera, lifted, (float) ground.distanceTo(from) * POOL, share);
             }
         }
         buffers.endBatch(RenderType.lightning());
@@ -245,8 +246,14 @@ public final class Floodlights {
         VeilLights.place(lit.light, LENS_AT, ACROSS, OUT);
     }
 
-    /** How dark it is, as a share: none at noon, all of it at night, the sky darkening between them. */
+    /**
+     * How dark it is, as a share: none at noon, all of it at night, the sky darkening between them; all of it where the
+     * sky never turns, as in the End or the Nether, so a light standing there is always lit.
+     */
     private static float night(ClientLevel level, float partialTick) {
+        if (level.dimensionType().hasFixedTime()) {
+            return 1;
+        }
         return Mth.clamp((1 - level.getSkyDarken(partialTick)) / (1 - NIGHT_SKY), 0, 1);
     }
 

@@ -135,16 +135,22 @@ public final class SearchlightBeams {
 
     /** A disc of light lying on the ground round where a beam meets it, brightest in its middle. */
     static void pool(VertexConsumer consumer, Matrix4f pose, Vec3 camera, Vec3 ground, float radius) {
+        pool(consumer, pose, camera, ground, radius, 1);
+    }
+
+    /** A disc of light lying on the ground, brightest in its middle, as bright there as given, a share of its glow. */
+    static void pool(VertexConsumer consumer, Matrix4f pose, Vec3 camera, Vec3 ground, float radius, float strength) {
+        int glow = Math.round((GLOW >>> 24) * strength) << 24 | GLOW & 0x00FFFFFF;
         Vec3 middle = ground.add(0, POOL_LIFT, 0);
         Vector3f east = new Vector3f(1, 0, 0);
         Vector3f south = new Vector3f(0, 0, 1);
         for (int k = 0; k < SIDES; k++) {
             double a = 2 * Math.PI * k / SIDES;
             double b = 2 * Math.PI * (k + 1) / SIDES;
-            vertex(consumer, pose, camera, middle, GLOW);
-            vertex(consumer, pose, camera, middle, GLOW);
-            vertex(consumer, pose, camera, ring(middle, east, south, b, radius), GLOW & 0x00FFFFFF);
-            vertex(consumer, pose, camera, ring(middle, east, south, a, radius), GLOW & 0x00FFFFFF);
+            vertex(consumer, pose, camera, middle, glow);
+            vertex(consumer, pose, camera, middle, glow);
+            vertex(consumer, pose, camera, ring(middle, east, south, b, radius), glow & 0x00FFFFFF);
+            vertex(consumer, pose, camera, ring(middle, east, south, a, radius), glow & 0x00FFFFFF);
         }
     }
 
