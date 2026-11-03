@@ -26,6 +26,11 @@ public class LiftCarRenderer extends EntityRenderer<LiftCar> {
     private static final float HALF = 1.45F;
     private static final float FLOOR = 0.15F;
     private static final float HEIGHT = 2.95F;
+    /**
+     * How far the drawn floor stands over the car's own, in blocks: clear of the story's floor that runs on under the
+     * shaft at the lowest landing, whose top it would otherwise flicker against.
+     */
+    private static final float FLOOR_PROUD = 0.01F;
     /** The posts' and frame's half thickness, the handrail's height and its half thickness, in blocks. */
     private static final float POST = 0.06F;
     private static final float RAIL_UP = 1.0F;
@@ -58,11 +63,11 @@ public class LiftCarRenderer extends EntityRenderer<LiftCar> {
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-back(car).toYRot()));
         PoseStack.Pose last = pose.last();
-        FlatQuads.box(consumer, last, light, FLOOR_STEEL, -HALF, -FLOOR, -HALF, HALF, 0, HALF);
+        FlatQuads.box(consumer, last, light, FLOOR_STEEL, -HALF, -FLOOR, -HALF, HALF, FLOOR_PROUD, HALF);
         float step = 2 * HALF / RIBS;
         for (int rib = 0; rib < RIBS; rib++) {
             float at = -HALF + step * (rib + 0.5F);
-            FlatQuads.box(consumer, last, light, RIB_STEEL, -HALF + POST, 0, at - RIB / 2, HALF - POST, 0.02F, at + RIB / 2);
+            FlatQuads.box(consumer, last, light, RIB_STEEL, -HALF + POST, FLOOR_PROUD, at - RIB / 2, HALF - POST, FLOOR_PROUD + 0.02F, at + RIB / 2);
         }
         for (int corner = 0; corner < 4; corner++) {
             float x = (corner & 1) == 0 ? -HALF + POST : HALF - POST;
