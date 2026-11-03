@@ -57,8 +57,6 @@ public final class OvalWindowWall {
     private static final float SLIVER = 1e-4F;
     /** How many corners a quad has. */
     private static final int QUAD = 4;
-    /** Where in a list of quads by side the ones drawn whatever stands against them are. */
-    private static final int UNCULLED = Direction.values().length;
 
     private OvalWindowWall() {
     }
@@ -119,10 +117,10 @@ public final class OvalWindowWall {
      * A stretch of one of a piece's faces that the wall shows on. It records the side the face looks toward, how far
      * along that side's axis the face lies in the block, and the stretch across it, as fractions of the block: a and
      * b run along the other two axes, z and y across a side looking east or west, x and z across one looking up or
-     * down, x and y across one looking north or south. It also records whether its shade is baked in, as on the frame
-     * round the collar, or it is lit as a block's side is, and whether a block standing against it hides it.
+     * down, x and y across one looking north or south. Each is lit as a block's side is, and hidden by a block
+     * standing against it.
      */
-    record Patch(Direction side, float depth, float fromA, float fromB, float toA, float toB, boolean round, boolean culled) {
+    record Patch(Direction side, float depth, float fromA, float fromB, float toA, float toB) {
         /** The same stretch in the block once the piece is turned the way it looks. */
         Patch turned(Transformation turn) {
             Direction.Axis axis = side.getAxis();
@@ -131,7 +129,7 @@ public final class OvalWindowWall {
             Direction turnedSide = Direction.rotate(turn.getMatrix(), side);
             Direction.Axis now = turnedSide.getAxis();
             return new Patch(turnedSide, (float) now.choose(from.x(), from.y(), from.z()), Math.min(a(now, from), a(now, to)),
-                Math.min(b(now, from), b(now, to)), Math.max(a(now, from), a(now, to)), Math.max(b(now, from), b(now, to)), round, culled);
+                Math.min(b(now, from), b(now, to)), Math.max(a(now, from), a(now, to)), Math.max(b(now, from), b(now, to)));
         }
 
         /**
@@ -179,7 +177,7 @@ public final class OvalWindowWall {
                     (atU - sprite.getU0()) / (sprite.getU1() - sprite.getU0()), (atV - sprite.getV0()) / (sprite.getV1() - sprite.getV0()));
             }
             int tint = quad.isTinted() ? WALL_TINT + quad.getTintIndex() : ModelQuads.NO_TINT;
-            return ModelQuads.bake(facingOut(corners), sprite, side, round, tint);
+            return ModelQuads.bake(facingOut(corners), sprite, side, false, tint);
         }
 
         /** The corners in the order that faces them the way the side looks, so the face is drawn from that side. */
@@ -227,7 +225,7 @@ public final class OvalWindowWall {
         private final BakedModel steel;
         /** Where on the piece the wall shows, in the block as the piece is turned. */
         private final List<Patch> patches;
-        /** By the wall's block, its faces on the piece: those drawn against each side (by its index), then the rest. */
+        /** By the wall's block, its faces on the piece, by the side (by its index) each is drawn against. */
         private final Map<BlockState, List<List<BakedQuad>>> faces = new ConcurrentHashMap<>();
 
         Baked(BakedModel weave, BakedModel steel, List<Patch> patches) {
@@ -251,7 +249,7 @@ public final class OvalWindowWall {
                 return originalModel.getQuads(state, side, rand, extraData, renderType);
             }
             List<BakedQuad> steelQuads = steel.getQuads(state, side, rand, extraData, renderType);
-            List<BakedQuad> wallQuads = faces.computeIfAbsent(wall, this::wallFaces).get(side == null ? UNCULLED : side.get3DDataValue());
+            List<BakedQuad> wallQuads = side == null ? List.of() : faces.computeIfAbsent(wall, this::wallFaces).get(side.get3DDataValue());
             if (wallQuads.isEmpty()) {
                 return steelQuads;
             }
@@ -269,9 +267,8 @@ public final class OvalWindowWall {
                 wallSides.add(model.getQuads(wall, side, RandomSource.create(SEED), ModelData.EMPTY, null));
                 bySide.add(new ArrayList<>());
             }
-            bySide.add(new ArrayList<>());
             for (Patch patch : patches) {
-                List<BakedQuad> into = bySide.get(patch.culled() ? patch.side().get3DDataValue() : UNCULLED);
+                List<BakedQuad> into = bySide.get(patch.side().get3DDataValue());
                 wallSides.get(patch.side().get3DDataValue()).stream().map(patch::cut).filter(cut -> cut != null).forEach(into::add);
             }
             return bySide;

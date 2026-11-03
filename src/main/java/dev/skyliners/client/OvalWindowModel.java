@@ -119,8 +119,8 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
      */
     private final int insideTint;
     /**
-     * Whether it is a piece of a window set by hand, which fills its block and whose frame looks like the wall it is set
-     * into (see OvalWindowWall).
+     * Whether it is a piece of a window set by hand, which fills its block and whose frame looks like the wall it is
+     * set into (see OvalWindowWall).
      */
     private final boolean setByHand;
 
@@ -221,7 +221,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         }
         for (Direction side : outerEdges()) {
             float depth = side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : 0;
-            patches.add(new OvalWindowWall.Patch(side, depth, 0, 0, 1, 1, false, true));
+            patches.add(new OvalWindowWall.Patch(side, depth, 0, 0, 1, 1));
         }
         return patches.stream().map(patch -> patch.turned(turn)).toList();
     }
@@ -241,7 +241,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
                 continue;
             }
             if (x > from) {
-                into.add(new OvalWindowWall.Patch(side, depth, 1 - (float) x / wide, bottom, 1 - (float) from / wide, top, false, true));
+                into.add(new OvalWindowWall.Patch(side, depth, 1 - (float) x / wide, bottom, 1 - (float) from / wide, top));
             }
             from = x + 1;
         }

@@ -63,8 +63,8 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     private static final int BLOCK = 16;
     /**
      * The glass's dome, as {@code client.OvalWindowModel} bakes it and tools/generate_textures.mjs draws it: the oval's
-     * half width and half height, how far the collar's inner edge, where the glass sits, stands out of the wall, and how
-     * far the dome bulges out of the collar at its middle, in pixels.
+     * half width and half height, how far the collar's inner edge, where the glass sits, stands out of the wall, and
+     * how far the dome bulges out of the collar at its middle, in pixels.
      */
     public static final float OVAL_WIDE = 21;
     public static final float OVAL_TALL = 29;
@@ -74,12 +74,8 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     public static final float PROFILE = 0.6F;
     /** How wide the squares are that the solid steps over a dome are laid out in, in pixels. */
     private static final int DOME_STEP = 2;
-    /** The solid steps over each piece's share of its dome, by the way it looks out, its top and its place. */
-    private static final Map<Dome, VoxelShape> DOMES = new ConcurrentHashMap<>();
-
-    /** A piece's share of its window's dome: the way it looks out, its top, its column and its row. */
-    private record Dome(Direction out, Direction up, int column, int row) {
-    }
+    /** The solid steps over each piece's share of its dome, by its block state. */
+    private static final Map<BlockState, VoxelShape> DOMES = new ConcurrentHashMap<>();
 
     protected OvalWindowPieceBlock(Properties properties) {
         super(properties);
@@ -106,8 +102,8 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     }
 
     /**
-     * How far the glass stands out of the wall at a point of the window, so far right of its middle and below it as seen
-     * from outside, in pixels: none past the oval's edge.
+     * How far the glass stands out of the wall at a point of the window, so far right of its middle and below it as
+     * seen from outside, in pixels: none past the oval's edge.
      */
     private static double domeHeight(double right, double down) {
         double within = 1 - (right / OVAL_WIDE) * (right / OVAL_WIDE) - (down / OVAL_TALL) * (down / OVAL_TALL);
@@ -120,19 +116,21 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
      * it at its highest, to the next whole pixel.
      */
     protected static VoxelShape solidWithDome(OvalWindowPieceBlock window, BlockState piece) {
-        return DOMES.computeIfAbsent(new Dome(window.out(piece), window.up(piece), piece.getValue(COLUMN), piece.getValue(ROW)),
-            OvalWindowPieceBlock::solidOver);
+        return DOMES.computeIfAbsent(piece, state -> solidOver(window.out(state), window.up(state), state.getValue(COLUMN), state.getValue(ROW)));
     }
 
-    /** A piece's block and the steps over its share of the dome. */
-    private static VoxelShape solidOver(Dome dome) {
-        Direction[] ways = {left(dome.out(), dome.up()).getOpposite(), dome.up().getOpposite(), dome.out()};
+    /**
+     * A piece's block and the steps over its share of the dome, by the way it looks out, the way toward its window's
+     * top, and its column and row.
+     */
+    private static VoxelShape solidOver(Direction out, Direction up, int column, int row) {
+        Direction[] ways = {left(out, up).getOpposite(), up.getOpposite(), out};
         int squares = BLOCK / DOME_STEP;
         List<VoxelShape> steps = new ArrayList<>();
         for (int square = 0; square < squares * squares; square++) {
             int across = square % squares * DOME_STEP;
             int down = square / squares * DOME_STEP;
-            double height = Math.ceil(highestOver(dome.column() * BLOCK + across, dome.row() * BLOCK + down));
+            double height = Math.ceil(highestOver(column * BLOCK + across, row * BLOCK + down));
             if (height > 0) {
                 steps.add(box(ways, new double[]{across, down, BLOCK}, new double[]{across + DOME_STEP, down + DOME_STEP, BLOCK + height}));
             }
@@ -142,8 +140,8 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
 
     /**
      * How far the glass stands out of the wall at its highest over a square of the window DOME_STEP pixels across, from
-     * its top left corner so far right of the window's left side and below its top as seen from outside, in pixels: where
-     * the square comes nearest the oval's middle.
+     * its top left corner so far right of the window's left side and below its top as seen from outside, in pixels:
+     * where the square comes nearest the oval's middle.
      */
     private static double highestOver(double fromLeft, double fromTop) {
         double right = nearestZero(fromLeft - COLUMNS * BLOCK / 2.0, fromLeft + DOME_STEP - COLUMNS * BLOCK / 2.0);
@@ -284,9 +282,9 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     }
 
     /**
-     * Using a piece dims its whole window. The game sends whoever used it that piece's new look at once, but the rest of
-     * the window's only at the end of the server's tick, so under lag the piece pressed would darken alone for a moment,
-     * its share of the dome a dark patch in the glass: they are sent the whole window at once with it.
+     * Using a piece dims its whole window. The game sends whoever used it that piece's new look at once, but the rest
+     * of the window's only at the end of the server's tick, so under lag the piece pressed would darken alone for a
+     * moment, its share of the dome a dark patch in the glass: they are sent the whole window at once with it.
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

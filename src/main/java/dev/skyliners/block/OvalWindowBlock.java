@@ -43,7 +43,9 @@ public class OvalWindowBlock extends OvalWindowPieceBlock {
     /** What the wall round its oval is inside: her cover, or a room's finish. */
     public static final EnumProperty<Wall> WALL = EnumProperty.create("wall", Wall.class);
 
-    /** The wall round a window's oval inside: her cover's weave, painted by her livery, or one of the rooms' finishes. */
+    /**
+     * The wall round a window's oval inside: her cover's weave, painted by her livery, or one of the rooms' finishes.
+     */
     public enum Wall implements StringRepresentable {
         COVER, ENTRY, CARGO, MESS, BUNKS, GREENHOUSE, POOL, CLUB, LAB, LOUNGE, COCKPIT,
         /** Set into a wall by hand: round its oval, outside and in, it looks like the wall beside it. */
