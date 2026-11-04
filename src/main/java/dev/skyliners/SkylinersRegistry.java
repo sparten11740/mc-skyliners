@@ -1741,6 +1741,8 @@ public final class SkylinersRegistry {
         "zeppelin_painting", () -> new SpacePosterItem(SpacePoster.ZEPPELIN, new Item.Properties()));
     public static final DeferredItem<SpacePosterItem> ROCKET_PAINTING = ITEMS.register(
         "rocket_painting", () -> new SpacePosterItem(SpacePoster.ROCKET, new Item.Properties()));
+    public static final DeferredItem<SpacePosterItem> FREIGHTER_PAINTING = ITEMS.register(
+        "freighter_painting", () -> new SpacePosterItem(SpacePoster.FREIGHTER, new Item.Properties()));
     /**
      * The duty-free counter, where the emeralds passengers pay as fares buy toys, snacks and souvenirs, its showcase
      * softly lit; the ding of its shop bell as it opens, and its till ringing up a sale.
@@ -2729,7 +2731,7 @@ public final class SkylinersRegistry {
         )),
         new TabSection("decorations", List.of(
             MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, ORRERY_ITEM, BLACK_HOLE_POSTER, SOLAR_SYSTEM_POSTER, QUASAR_POSTER, EARTHRISE_POSTER,
-            AIRLINER_PAINTING, ZEPPELIN_PAINTING, ROCKET_PAINTING, SHAFT_DECOR_ITEM, GIRDER_DECOR_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM
+            AIRLINER_PAINTING, ZEPPELIN_PAINTING, ROCKET_PAINTING, FREIGHTER_PAINTING, SHAFT_DECOR_ITEM, GIRDER_DECOR_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM
         )),
         new TabSection("control_tower", List.of(
             TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, FLIGHT_STRIP_BOARD_ITEM, ATIS_SCREEN_ITEM, WIND_SOCK_ITEM, MOTION_SENSOR_ITEM,

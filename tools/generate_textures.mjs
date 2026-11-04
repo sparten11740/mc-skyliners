@@ -5367,6 +5367,230 @@ const LIFT_ICONS = {
       return (dusk < 0.3 ? star(x, y) : null) ?? dab(SKY, dusk, x, y, 47);
     });
   }
+
+  // The freighter, five blocks by three, what is to come after the rocket: a battered saucer of a ship coming toward
+  // us and to the left, weathered off-white plate over dark recesses, her two prongs reaching forward, her cockpit out
+  // on a tube at her right side, her gun turret on her crown and a dish beside it, blue engine light behind her and the
+  // stars drawn out into streaks by her speed. She is modelled rather than drawn, and each pixel looks down onto her,
+  // so her plates shade as they would in the light. In her model x runs to her right, z toward her nose and y up, all
+  // in lengths of her saucer's radius.
+  {
+    const W = 80;
+    const H = 48;
+    // Where her saucer's middle lies, in pixels, and how many pixels her saucer's radius spans.
+    const CX = 48;
+    const CY = 19;
+    const SCALE = 21;
+    // How far she is turned from facing us, her nose to the left, and how steeply we look down on her, in radians.
+    const TURN = 0.62;
+    const LOOK = 0.66;
+    // How far forward her prongs reach, how far out their outer edge lies at her middle and at their tips, how far out
+    // the slot between them lies and where it ends going aft.
+    const TIP = 1.62;
+    const PRONG_ROOT = 0.86;
+    const PRONG_TIP = 0.31;
+    const SLOT = 0.16;
+    const SLOT_END = 0.66;
+    // How high her saucer's rim, her saucer's crown, her prongs, her turret and the glass on it stand.
+    const RIM = 0.075;
+    const CROWN = 0.235;
+    const PRONG_TOP = 0.135;
+    const TURRET = 0.3;
+    const BUBBLE = 0.36;
+    // How far out her turret and the glass on it reach.
+    const TURRET_OUT = 0.21;
+    const BUBBLE_OUT = 0.055;
+    // Her cockpit's tube, from where it leaves her saucer to its end, how thick it is, how high its axis runs, how far
+    // along it the wider cockpit begins, how thick that is, and how far along it the cockpit's glass begins.
+    const TUBE_FROM = [0.6, 0.3];
+    const TUBE_TO = [1.28, 1.02];
+    const TUBE_THICK = 0.1;
+    const TUBE_Y = 0.085;
+    const POD_FROM = 0.7;
+    const POD_THICK = 0.17;
+    const GLASS_FROM = 0.93;
+    // Her dish, where it stands, how wide it is and how high.
+    const DISH = [0.42, -0.14];
+    const DISH_OUT = 0.135;
+    const DISH_TOP = 0.3;
+    // The raised plates running out from her crown, each by its bearing from her nose, in radians, and how far out its
+    // edge lies from its middle; and how high they stand over the plates between them.
+    const SPOKES = [[0, 0.125], [0.85, 0.07], [-0.85, 0.07], [1.95, 0.07], [-1.95, 0.07], [Math.PI, 0.09]];
+    const SPOKE_RISE = 0.022;
+    // Where the seams run round her saucer, and how far she is cut into plates round it, to a turn.
+    const RINGS = [0.42, 0.62, 0.82, 1.01];
+    const SECTORS = 18;
+    // How wide a seam is, how much darker it is and how far a plate's shade strays from its neighbour's, as shares of
+    // the ramp; how many of her plates are open machinery, the higher the fewer; and how much of her is rust, likewise.
+    const SEAM = 0.017;
+    const SEAM_DARK = 0.3;
+    const PLATE_STRAY = 0.2;
+    const MACHINERY_FROM = 0.84;
+    const RUST_FROM = 0.8;
+    // The light falling on her, from over her nose and to her right, as a direction.
+    const LIGHT = [0.3, 0.86, 0.42];
+    // How finely a pixel's line of sight is walked through her, and from how far either side of her middle.
+    const WALK = 0.008;
+    const WALK_FROM = 2.4;
+    // Where the stars' streaks run out from, in pixels, behind her; how many there are; and how near and how long they
+    // run from there.
+    const VANISH_X = 58;
+    const VANISH_Y = 10;
+    const STREAKS = 40;
+    const STREAK_NEAR = 16;
+    const STREAK_LONG = [4, 13];
+    // Where the glow behind her lies, in pixels, how far it reaches and how strong it is at its middle.
+    const GLOW_X = 62;
+    const GLOW_Y = 12;
+    const GLOW_REACH = 24;
+    const GLOW_STRONG = 0.5;
+    const HULL = ramp(0xf0ecdf, 0xdcd8cb, 0xc0beb3, 0xa2a29a, 0x82847f, 0x62656a, 0x474a52);
+    const RUST = ramp(0xb1906e, 0x8e6f52, 0x6a5240);
+    const RECESS = hex(0x24262c);
+    const WALL = ramp(0x8a8c8c, 0x6a6c70, 0x4a4d54, 0x303238);
+    const PORT = hex(0x12161e);
+    const GLASS = ramp(0x8cc8e8, 0x3e6a8a, 0x1a2a3e);
+    const SPACE = ramp(0x04050d, 0x070a18, 0x0b1026, 0x121a3a, 0x1c2a56, 0x2c4a86);
+    const STREAK = ramp(0x1c2a56, 0x34497f, 0x6683c4, 0xb4c8f0);
+    const star = starfield("freighter_painting", W, H, 26, 2);
+    reseed("space_poster_freighter_streaks");
+    const streaks = new Map();
+    for (let k = 0; k < STREAKS; k++) {
+      const bearing = random() * Math.PI * 2;
+      const from = STREAK_NEAR + random() * Math.hypot(W, H);
+      const long = STREAK_LONG[0] + random() * (STREAK_LONG[1] - STREAK_LONG[0]);
+      for (let along = 0; along <= long; along += 0.5) {
+        const x = Math.round(VANISH_X + Math.cos(bearing) * (from + along));
+        const y = Math.round(VANISH_Y + Math.sin(bearing) * (from + along));
+        streaks.set(y * W + x, STREAK[Math.round(along / long * (STREAK.length - 1))]);
+      }
+    }
+    // Where along her cockpit's tube a point lies and how far off its axis, or null off it.
+    const tube = (x, z) => {
+      const dx = TUBE_TO[0] - TUBE_FROM[0];
+      const dz = TUBE_TO[1] - TUBE_FROM[1];
+      const long = Math.hypot(dx, dz);
+      const along = ((x - TUBE_FROM[0]) * dx + (z - TUBE_FROM[1]) * dz) / (long * long);
+      if (along < 0 || along > 1) return null;
+      const off = Math.abs((x - TUBE_FROM[0]) * dz - (z - TUBE_FROM[1]) * dx) / long;
+      const thick = along > POD_FROM ? POD_THICK : TUBE_THICK;
+      return off > thick ? null : { along, rise: Math.sqrt(thick * thick - off * off) };
+    };
+    const inProngs = (x, z) => z >= 0 && z <= TIP && Math.abs(x) <= PRONG_ROOT + (PRONG_TIP - PRONG_ROOT) * z / TIP;
+    const inSlot = (x, z) => Math.abs(x) < SLOT && z > SLOT_END;
+    // The raised plate a point lies on, or -1: within its edge of the line out from her crown along its bearing.
+    const spokeAt = (x, z) => {
+      for (let k = 0; k < SPOKES.length; k++) {
+        const [bearing, edge] = SPOKES[k];
+        const out = z * Math.cos(bearing) + x * Math.sin(bearing);
+        if (out > 0 && Math.abs(x * Math.cos(bearing) - z * Math.sin(bearing)) < edge) return k;
+      }
+      return -1;
+    };
+    const saucerTop = (x, z, out) => {
+      if (out < BUBBLE_OUT) return BUBBLE;
+      if (out < TURRET_OUT) return TURRET;
+      if (Math.hypot(x - DISH[0], z - DISH[1]) < DISH_OUT) return DISH_TOP;
+      return RIM + (CROWN - RIM) * (1 - out * out) ** 0.7 + (spokeAt(x, z) >= 0 ? SPOKE_RISE : 0);
+    };
+    // How high her top stands over a point, or null off her.
+    const topOf = (x, z) => {
+      if (inSlot(x, z)) return null;
+      const out = Math.hypot(x, z);
+      const pod = tube(x, z);
+      const heights = [
+        out <= 1 ? saucerTop(x, z, out) : null,
+        inProngs(x, z) && out > 0.7 ? PRONG_TOP + (spokeAt(x, z) === 0 ? SPOKE_RISE : 0) : null,
+        pod ? TUBE_Y + pod.rise : null,
+      ].filter((height) => height !== null);
+      return heights.length ? Math.max(...heights) : null;
+    };
+    // How deep her underside lies under a point: her belly mirrors her back, but for her cockpit's tube out beyond it.
+    const underOf = (x, z, top) => {
+      const pod = tube(x, z);
+      return pod && Math.hypot(x, z) > 1 && !inProngs(x, z) ? TUBE_Y - pod.rise : -Math.min(top, PRONG_TOP);
+    };
+    // How much light falls on the top of her at a point, by the slope there.
+    const lightOn = (x, z, top) => {
+      const reach = 0.014;
+      const slopeX = ((topOf(x + reach, z) ?? top) - (topOf(x - reach, z) ?? top)) / (2 * reach);
+      const slopeZ = ((topOf(x, z + reach) ?? top) - (topOf(x, z - reach) ?? top)) / (2 * reach);
+      const length = Math.hypot(slopeX, 1, slopeZ);
+      return unit((-slopeX * LIGHT[0] + LIGHT[1] - slopeZ * LIGHT[2]) / length);
+    };
+    // A plate of her saucer's top: the raised ones run clean and pale; between them each has its own wear, a seam round
+    // or across it is darker, the odd one is open machinery and the odd patch is rust.
+    const plate = (x, z, px, py, light) => {
+      const out = Math.hypot(x, z);
+      const across = ((Math.atan2(x, z) / (Math.PI * 2) + 1) % 1) * SECTORS;
+      const ring = RINGS.findIndex((seam) => out < seam);
+      const dull = 0.5 * (1 - light);
+      if (spokeAt(x, z) >= 0) return dab(HULL, dull - 0.04, px, py, 77);
+      if (lattice(ring, Math.floor(across), 72) > MACHINERY_FROM) return dab(WALL, 0.45 + noise(x * 16, z * 16, 74) * 0.6, px, py, 76);
+      const onSeam = RINGS.some((seam) => Math.abs(out - seam) < SEAM) || Math.abs(across - Math.round(across)) * (Math.PI * 2 / SECTORS) * out < SEAM * 0.6;
+      const wear = (lattice(ring, Math.floor(across), 71) - 0.5) * PLATE_STRAY;
+      if (noise(x * 9, z * 9, 73) > RUST_FROM) return dab(RUST, dull + 0.2 + wear, px, py, 75);
+      return dab(HULL, dull + 0.17 + wear + (onSeam ? SEAM_DARK : 0), px, py, 77);
+    };
+    // Her top where a line of sight comes down on it.
+    const onTop = (x, z, top, px, py) => {
+      const out = Math.hypot(x, z);
+      const light = lightOn(x, z, top);
+      const pod = tube(x, z);
+      if (pod && top === TUBE_Y + pod.rise) {
+        if (pod.along > GLASS_FROM) return dab(GLASS, 0.5 - pod.rise * 2, px, py, 79);
+        if (pod.along > POD_FROM && Math.round(pod.along * 28) % 3 === 0) return RECESS;
+        return dab(HULL, 0.7 - light * 0.75, px, py, 81);
+      }
+      if (out < BUBBLE_OUT) return dab(GLASS, 0.75 - light * 0.8, px, py, 83);
+      if (out < TURRET_OUT) return dab(HULL, 0.8 - light * 0.75, px, py, 85);
+      if (Math.hypot(x - DISH[0], z - DISH[1]) < DISH_OUT) {
+        return Math.hypot(x - DISH[0], z - DISH[1]) < DISH_OUT * 0.35 ? RECESS : dab(HULL, 0.5 - light * 0.5, px, py, 87);
+      }
+      if (out > 1 || (inProngs(x, z) && out > 0.97)) {
+        const bay = Math.abs(Math.abs(x) - (PRONG_TIP + SLOT) / 2) < 0.045 && z > 1.05 && z < 1.3;
+        return bay ? RECESS : dab(HULL, 0.5 * (1 - light) + 0.12 + noise(x * 7, z * 7, 89) * 0.2, px, py, 91);
+      }
+      return plate(x, z, px, py, light);
+    };
+    // Her side where a line of sight meets it: her saucer's rim, her prongs' flanks with their row of round ports and
+    // their square open ends, or the slot between them.
+    const onSide = (x, y, z, px, py) => {
+      const out = Math.hypot(x, z);
+      if (z >= TIP - WALK * 3) return Math.abs(y) < PRONG_TOP * 0.55 && Math.abs(Math.abs(x) - (PRONG_TIP + SLOT) / 2) < 0.07 ? PORT : WALL[1];
+      if (out > 0.99 && z > 0.25) {
+        const port = Math.hypot(((z * 5.2) % 1 + 1) % 1 - 0.5, y * 7) < 0.34;
+        return port ? PORT : dab(WALL, 0.55, px, py, 93);
+      }
+      const facing = out > 0.5 ? (x * LIGHT[0] + z * LIGHT[2]) / out : 0;
+      const louvre = Math.round(Math.atan2(x, z) * 19) % 2 === 0 && Math.abs(y) < RIM * 0.5;
+      return louvre ? PORT : dab(WALL, 0.75 - facing * 0.9, px, py, 95);
+    };
+    // What a line of sight sees of her at a pixel, or null past her: it is walked down from over her until it is inside
+    // her, on her top if it came in through that and otherwise on her side.
+    const ship = (px, py) => {
+      const across = (px + 0.5 - CX) / SCALE;
+      const down = (py + 0.5 - CY) / SCALE;
+      for (let near = WALK_FROM; near > -WALK_FROM; near -= WALK) {
+        const toward = down * Math.sin(LOOK) + near * Math.cos(LOOK);
+        const y = near * Math.sin(LOOK) - down * Math.cos(LOOK);
+        const x = -across * Math.cos(TURN) - toward * Math.sin(TURN);
+        const z = toward * Math.cos(TURN) - across * Math.sin(TURN);
+        const top = topOf(x, z);
+        if (top !== null && y <= top && y >= underOf(x, z, top)) {
+          return top - y < WALK * 3 ? onTop(x, z, top, px, py) : onSide(x, y, z, px, py);
+        }
+      }
+      return null;
+    };
+    painting("freighter", 5, 3, (x, y) => {
+      const body = ship(x, y);
+      if (body) return body;
+      const glow = GLOW_STRONG * Math.max(0, 1 - Math.hypot(x - GLOW_X, y - GLOW_Y) / GLOW_REACH) ** 2;
+      const light = 0.14 + (y / H) * 0.14 + glow;
+      return streaks.get(y * W + x) ?? star(x, y) ?? dab(SPACE, light, x, y, 97);
+    });
+  }
 }
 
 // The rocket's rover (see RoverModel), its bay's panel (see RoverPanelBlock) and its remote (see RoverRemoteItem).

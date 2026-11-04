@@ -13,19 +13,26 @@ import net.minecraft.world.level.block.state.BlockState;
  * Paintings of the rocket's sister ships on her entry story, the first room anyone boarding sees (see
  * {@link SpacePoster}), on the outside of the glass lift shaft: the airliner on her right of it and the zeppelin on her
  * left, just over eye height, a clear row of glass over and under each and nothing else on those faces of the shaft.
+ * And by her pool, on her right of the shaft, the freighter to come after them, as a teaser: her cargo bay's racks
+ * would stand in front of it.
  * Each hangs whole or not at all, in open air with the shaft behind it: at a scale where something stands in the way
- * there it hangs in her cargo bay instead, and failing that she goes without. Every block touches the shaft face to
- * face, so it is assembled with her.
+ * on her entry story a sister ship hangs in her cargo bay instead, and failing that she goes without. Every block
+ * touches the shaft face to face, so it is assembled with her.
  */
 final class RocketPaintings implements RocketPiece {
     /** How many rows over the floor a painting's lowest row is, in blocks: a clear row of glass under it. */
     private static final int UP = 3;
-    /** The stories a painting may hang on, the first it fits on taken, from the entry story up. */
+    /** The stories a sister ship's painting may hang on, the first it fits on taken, from the entry story up. */
     private static final List<Integer> STORIES = List.of(RocketEntry.STORY, RocketCargoHold.STORY);
-    /** Which painting hangs on which face of the shaft. */
-    private static final Map<Direction, SpacePoster> BY_FACE = Map.of(
-        Direction.EAST, SpacePoster.AIRLINER,
-        Direction.WEST, SpacePoster.ZEPPELIN);
+    /** Which painting hangs on which face of the shaft, and on which stories, the first it fits on taken. */
+    private static final List<Hung> HUNG = List.of(
+        new Hung(SpacePoster.AIRLINER, Direction.EAST, STORIES),
+        new Hung(SpacePoster.ZEPPELIN, Direction.WEST, STORIES),
+        new Hung(SpacePoster.FREIGHTER, Direction.EAST, List.of(RocketPool.STORY)));
+
+    /** A painting, the face of the shaft it hangs on, and the stories it may hang on. */
+    private record Hung(SpacePoster painting, Direction face, List<Integer> stories) {
+    }
 
     private final RocketLayout layout;
 
@@ -40,14 +47,14 @@ final class RocketPaintings implements RocketPiece {
 
     @Override
     public void build() {
-        BY_FACE.forEach(this::hang);
+        HUNG.forEach(this::hang);
     }
 
     /** Hangs a painting on a face of the shaft on the first story it fits on and can be seen on, if any. */
-    private void hang(Direction face, SpacePoster painting) {
+    private void hang(Hung hung) {
         List<Integer> floors = layout.floors();
-        for (int story : STORIES) {
-            if (story < floors.size() && hangOver(painting, face, floors.get(story))) {
+        for (int story : hung.stories()) {
+            if (story < floors.size() && hangOver(hung.painting(), hung.face(), floors.get(story))) {
                 return;
             }
         }

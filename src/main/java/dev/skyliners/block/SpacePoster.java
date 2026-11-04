@@ -9,7 +9,8 @@ import net.minecraft.util.StringRepresentable;
  * down it; and Earthrise, the Earth over the Moon with the rocket standing there. And the fleet's paintings, in gilt
  * frames rather than a poster's steel ones, each ship aboard the other two (see {@code RocketPaintings},
  * {@code ZeppelinPaintings} and {@code CabinPaintings}): the airliner climbing through a sunset, the zeppelin over
- * mountains at dawn and the rocket lifting off at night. Kept in a block's state by name.
+ * mountains at dawn and the rocket lifting off at night; and a teaser of the ship to come after them, a battered saucer
+ * freighter with the stars streaking past her. Kept in a block's state by name.
  */
 public enum SpacePoster implements StringRepresentable {
     BLACK_HOLE("black_hole", 4, 3),
@@ -18,7 +19,8 @@ public enum SpacePoster implements StringRepresentable {
     EARTHRISE("earthrise", 4, 3),
     AIRLINER("airliner", 5, 3),
     ZEPPELIN("zeppelin", 5, 3),
-    ROCKET("rocket", 5, 3);
+    ROCKET("rocket", 5, 3),
+    FREIGHTER("freighter", 5, 3);
 
     private final String name;
     private final int columns;

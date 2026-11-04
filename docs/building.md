@@ -211,9 +211,10 @@ them through `OvalWindowPieceBlock.dimWithin`, as the console does through each 
 client `WindowDimmerRenderer` draws its four buttons through `LedControlsArt`, the console's oval windows grown.
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
-`RocketPaintings` hangs the fleet's paintings, more pictures on that block, on her entry story; `ZeppelinPaintings` at
-the head of the zeppelin's dining room, on a panelled wall of its own; and `CabinPaintings` high on two of the
-airliner's bulkheads, last of its fit-out and only where the bulkhead carries on past every side of the picture.
+`RocketPaintings` hangs the fleet's paintings, more pictures on that block, on her entry story and by her pool;
+`ZeppelinPaintings` at the head of the zeppelin's dining room, on a panelled wall of its own; and `CabinPaintings` high
+on three of the airliner's bulkheads, last of its fit-out and only where the bulkhead carries on past every side of the
+picture.
 `airframe.fleetPaintings` switches all three.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face

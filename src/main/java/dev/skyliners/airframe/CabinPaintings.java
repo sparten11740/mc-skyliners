@@ -14,11 +14,12 @@ import net.minecraft.world.level.block.state.BlockState;
  * Paintings of the airliner's sister ships in the furnished airliner (see {@link SpacePoster}), each high on a bulkhead
  * over its archway, looked at from a long way down the cabin: the rocket in the forward door hall over the way into
  * business class, straight ahead coming out of the flight deck, and the zeppelin across the moon pool over the way out
- * of it, straight ahead coming in from business class, the overhead WC sign hanging just under it. The panels beside
- * the archways are too narrow and low for a margin round a picture, so each hangs in the middle of the cabin at the
- * lowest row where the bulkhead carries on past every side of it, never up against the hull, a ceiling or an archway.
- * Each goes in open cabin space, whole or not at all, so where it does not fit at the airliner's scale it is left out;
- * and a bulkhead the cabin dividers found no place for carries none (see {@link CabinDividers}).
+ * of it, straight ahead coming in from business class, the overhead WC sign hanging just under it; and the freighter
+ * to come after them, a teaser, over the way into the lounge, straight ahead coming out of the gym hall. The panels
+ * beside the archways are too narrow and low for a margin round a picture, so each hangs in the middle of the cabin
+ * at the lowest row where the bulkhead carries on past every side of it, never up against the hull, a ceiling or an
+ * archway. Each goes in open cabin space, whole or not at all, so where it does not fit at the airliner's scale it is
+ * left out; and a bulkhead the cabin dividers found no place for carries none (see {@link CabinDividers}).
  */
 final class CabinPaintings {
     /** How far outside its room a bulkhead may stand, in metres. */
@@ -40,6 +41,7 @@ final class CabinPaintings {
         }
         hang(SpacePoster.ROCKET, divider(CabinFitOut.BUSINESS, -1));
         hang(SpacePoster.ZEPPELIN, divider(CabinFitOut.POOL, 1));
+        hang(SpacePoster.FREIGHTER, divider(CabinFitOut.LOUNGE, -1));
     }
 
     /** The first divider's station from the middle of a room one way along the cabin; -1 if there is none near it. */

@@ -109,6 +109,21 @@
               }
             }
           ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:freighter_painting",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "freighter",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
         }
       ],
       "conditions": [

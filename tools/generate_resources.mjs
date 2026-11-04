@@ -5156,10 +5156,10 @@ function ledStripLang() {
 // the poster's nearest piece.
 const SPACE_POSTERS = {
   black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4], earthrise: [4, 3],
-  airliner: [5, 3], zeppelin: [5, 3], rocket: [5, 3],
+  airliner: [5, 3], zeppelin: [5, 3], rocket: [5, 3], freighter: [5, 3],
 };
 // Those that are the fleet's paintings, and the item that puts each picture up, named for what it is.
-const FLEET_PAINTINGS = new Set(["airliner", "zeppelin", "rocket"]);
+const FLEET_PAINTINGS = new Set(["airliner", "zeppelin", "rocket", "freighter"]);
 const spacePosterItem = (poster) => `${poster}_${FLEET_PAINTINGS.has(poster) ? "painting" : "poster"}`;
 {
   const back = `${ID}:block/space_poster_back`;
@@ -5237,6 +5237,7 @@ function spacePosterLang() {
     "item.skyliners.airliner_painting": "Airliner Painting",
     "item.skyliners.zeppelin_painting": "Zeppelin Painting",
     "item.skyliners.rocket_painting": "Rocket Painting",
+    "item.skyliners.freighter_painting": "Freighter Painting",
   };
 }
 

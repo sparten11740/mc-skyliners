@@ -117,6 +117,7 @@ public class SpacePosterBlock extends HorizontalDirectionalBlock {
             case AIRLINER -> SkylinersRegistry.AIRLINER_PAINTING.get();
             case ZEPPELIN -> SkylinersRegistry.ZEPPELIN_PAINTING.get();
             case ROCKET -> SkylinersRegistry.ROCKET_PAINTING.get();
+            case FREIGHTER -> SkylinersRegistry.FREIGHTER_PAINTING.get();
         });
     }
 
