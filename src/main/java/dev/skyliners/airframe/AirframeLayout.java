@@ -2346,11 +2346,11 @@ public final class AirframeLayout implements Layout {
     }
 
     /**
-     * Control jets for the autopilot, standing in for control surfaces (and beside them, where it flies with its
-     * experimental ones, see {@link #controlSurfaces}): jets on top of and under the outer tailplane to pitch it
-     * (pushing the tail down lifts the nose), and on top of and under the outer wings to roll it, at a few stations
-     * along each so they can hold the airliner against its engines. Each is a thruster pointing up or down with its own
-     * relay right behind it.
+     * Control jets for the autopilot, beside its control surfaces (see {@link #controlSurfaces}) and standing in for
+     * them when they are switched off or the airliner flies too slowly: jets on top of and under the outer tailplane
+     * to pitch it (pushing the tail down lifts the nose), and on top of and under the outer wings to roll it, at a few
+     * stations along each so they can hold the airliner against its engines. Each is a thruster pointing up or down
+     * with its own relay right behind it.
      */
     private void controlJets() {
         if (palette.engine().isEmpty()) {

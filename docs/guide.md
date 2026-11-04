@@ -663,8 +663,8 @@ under the debug screen and while you look through an outside camera; turn it off
 While you wear the helmet and look out through your own eyes, its visor also tints the view a touch toward its gold,
 darkens it faintly toward the edges and catches a little light along its top.
 
-The airliner has no control surfaces that move, so the autopilot flies with thrusters: besides the engines there are
-control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
+Besides the engines the autopilot flies with control jets, on top of and under the outer tailplane (to pitch it) and
+the outer wings (to roll it), and once the airliner flies fast enough, with control surfaces. It turns by
 banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
 hard along the nose, so it learns the pitch that holds the height at its speed as it flies, and the push the nose
 needs to stay at that pitch, so it settles on the height set rather than a few blocks off it. It eases the engines'
@@ -672,8 +672,9 @@ split as it swings toward a heading, so it rolls out onto it without rocking to 
 tailplane pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It
 needs Sable (Create Aeronautics) to read where the airliner is.
 
-As an experiment, `controlSurfaces` in the server config (off by default) has the autopilot pitch and roll the
-airliner with control surfaces instead, the jets kept for safety. Sable pushes each wing block along the way it faces,
+`controlSurfaces` in the server config (on by default) has the autopilot pitch and roll the airliner with control
+surfaces rather than the jets, which stay for safety. A config saved while it was off by default keeps saying off
+until it is changed. Sable pushes each wing block along the way it faces,
 as hard as it goes through the air (and as thick as the air is), whatever angle the air meets it at; turned upside
 down, a block pushes the other way, and drags just as before. So the surfaces are the wings' own lifting blocks,
 turned over in flight: ailerons over the whole outer half of each wing, front to back (turned over on the right wing,

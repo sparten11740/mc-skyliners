@@ -199,13 +199,13 @@ public final class SkylinersConfig {
             .defineInRange("cruiseSpeed", 50.0, 5.0, 300.0);
         CONTROL_SURFACES = builder
             .comment(
-                "Experimental: whether the autopilot rolls and pitches the airliner with control surfaces, turning the wing blocks of the",
+                "Whether the autopilot rolls and pitches the airliner with control surfaces, turning the wing blocks of the",
                 "outer wings' trailing edges (ailerons) and of the tailplane over, rather than with the control jets. The jets stay for",
                 "safety: they do it all at take-off and landing speeds and whenever the airliner is past the attitude the autopilot keeps",
                 "it within, and they add whatever more the surfaces cannot give. Only airliners built since the surfaces came in have them;",
                 "older ones fly on their jets either way."
             )
-            .define("controlSurfaces", false);
+            .define("controlSurfaces", true);
         builder.pop();
 
         builder.push("radio");

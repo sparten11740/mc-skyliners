@@ -74,8 +74,8 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * The autopilot: flies the assembled airliner by setting its thrusters. The four engines push it along and, split
  * left against right, help turn it; jets on the tailplane pitch it, standing in for elevators, and jets at the wingtips
  * bank it, standing in for ailerons. It reads where the airliner is and how it moves from Sable each tick. With
- * {@code controlSurfaces} on in the server config, an experiment, it pitches and rolls with control surfaces instead,
- * once the airliner flies fast enough, and the jets only add what the surfaces cannot give (see
+ * {@code controlSurfaces} on in the server config, as it is by default, it pitches and rolls with control surfaces
+ * instead, once the airliner flies fast enough, and the jets only add what the surfaces cannot give (see
  * {@link ControlSurfaces}).
  *
  * <p>Engaged on the ground it takes off: the roll at full thrust up to rotation speed, holding the runway heading with

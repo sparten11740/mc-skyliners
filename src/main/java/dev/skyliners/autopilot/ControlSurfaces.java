@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The autopilot's control surfaces, an experiment switched on by {@code controlSurfaces} in the server config: ailerons
+ * The autopilot's control surfaces, on unless {@code controlSurfaces} in the server config turns them off: ailerons
  * over the outer wings, and the tailplane as an elevator, made of the wings' own lifting blocks. Sable pushes every
  * lifting block along the way it faces, as hard as it goes through the air and as thick as the air is, whatever angle
  * the air meets it at, and holds it back most against the air coming at its face. Turned over, from facing up to facing

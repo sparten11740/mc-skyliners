@@ -10569,7 +10569,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "skyliners.configuration.climbHeight": "Climb Height",
   "skyliners.configuration.rotateSpeed": "Rotate Speed",
   "skyliners.configuration.cruiseSpeed": "Cruise Speed",
-  "skyliners.configuration.controlSurfaces": "Control Surfaces (Experimental)",
+  "skyliners.configuration.controlSurfaces": "Control Surfaces",
   "skyliners.configuration.radio": "Radio",
   "skyliners.configuration.atcChatter": "Air Traffic Control",
   "skyliners.configuration.atcVolume": "Air Traffic Control Volume",
