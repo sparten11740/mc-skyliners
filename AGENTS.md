@@ -10,7 +10,8 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
 ## Build and run
 
 - `./gradlew build` writes `build/libs/skyliners-<mod_version>+1.21.1-neoforge.jar`. There are no unit tests: the build
-  is the automated check, and behaviour is checked in game (see Testing in the dev client). GitHub Actions
+  is the automated check, and behaviour is checked in game, by `node tools/playtest.mjs` for what has gone wrong before
+  (see Testing in the dev client). It needs the game, so GitHub Actions cannot run it. GitHub Actions
   (`.github/workflows/build.yml`) builds every push to `main` and every pull request, and fails when
   `generate_resources.mjs` would write anything other than what is committed.
 - `./gradlew runClient -PquickPlayWorld=<save>` loads straight into `run/saves/<save>`. Create, Sable, Create
@@ -127,9 +128,16 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
   mentions it.
 - **Verify in game** what the build cannot show: rendering, layout and fit-out (walk a freshly built airliner, looking
   for floating or misplaced blocks), and flight behaviour (in flight). Say plainly what was not verified.
+- **Play-test script.** A bug found in play gets a check in `tools/playtest.mjs` along with its fix, where one can catch
+  it, written as a player would find the fault and seen to fail without the fix. Run the script before a build is handed
+  out, and `--all` before a release.
 
 ## Testing in the dev client
 
+- `node tools/playtest.mjs` plays what has gone wrong before, in a flat world of its own, with real keys and clicks, and
+  says what held: that each ship's stairs can be walked up from the ground, and so on (`--list` shows them all). With no
+  dev client running it starts one from the code as it stands, and it exits 1 if any check failed. Anything against the
+  clock in a check goes in one Blockpilot script; read a reply with `--json`.
 - Close the client with its window so the world saves. Killing the process loses everything since the last autosave
   (five minutes). `run/options.txt` should have `pauseOnLostFocus:false`, or the world pauses whenever the window
   loses focus.

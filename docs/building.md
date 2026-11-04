@@ -284,3 +284,7 @@ through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to 3000
 it a little, and the script lays it over the carrier's hiss with the odd crackle, between the squelch's click as the
 button is pressed and the burst of noise as it is let go; other aircraft are the same voice pitched up or down. Its
 settings and every line said are in `RADIO` and `ATC`.
+
+`tools/playtest.mjs` plays what has gone wrong before in a flat world of its own through Blockpilot, each check as a player
+would find the fault: walking up each ship's stairs from the ground, the mouse wheel on every kind of block in the rocket
+and so on (`--list`). A bug found in play gets a check there along with its fix.
