@@ -81,7 +81,7 @@ final class RocketPosters implements RocketPiece {
             int row = piece / poster.columns();
             int along = column - poster.columns() / 2;
             BlockPos at = new BlockPos(face.getStepX() * out + right.getStepX() * along, top - row, face.getStepZ() * out + right.getStepZ() * along);
-            if (!fits(at, face)) {
+            if (!fits(layout, at, face)) {
                 return null;
             }
             pieces.put(at, SkylinersRegistry.SPACE_POSTER.get().piece(poster, face, column, row));
@@ -108,8 +108,8 @@ final class RocketPosters implements RocketPiece {
         return true;
     }
 
-    /** Whether a block of a poster looking out one way can hang at a position: open air inside her, glass behind it. */
-    private boolean fits(BlockPos at, Direction face) {
+    /** Whether a block of a picture looking out one way can hang at a position: open air inside her, glass behind it. */
+    static boolean fits(RocketLayout layout, BlockPos at, Direction face) {
         BlockPos behind = at.relative(face.getOpposite());
         return layout.isOpen(at.getX(), at.getY(), at.getZ()) && layout.inside(at.getX(), at.getY(), at.getZ())
             && !layout.isOpen(behind.getX(), behind.getY(), behind.getZ());

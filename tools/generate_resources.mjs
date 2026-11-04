@@ -5148,12 +5148,19 @@ function ledStripLang() {
   };
 }
 
-// The rocket's space posters (see SpacePosterBlock), each so many blocks wide and tall, as SpacePoster has them. Each
-// block of a poster is a sheet of board a pixel thick, a quarter pixel clear of the back of its block, its piece of the
-// picture on its front and plain board behind it and round its edges, drawn evenly lit whichever way it faces.
+// The rocket's space posters and the fleet's paintings (see SpacePosterBlock), each so many blocks wide and tall, as
+// SpacePoster has them. Each block of a poster is a sheet of board a pixel thick, a quarter pixel clear of the back of
+// its block, its piece of the picture on its front and plain board behind it and round its edges, drawn evenly lit
+// whichever way it faces.
 // Modelled facing north, turned for the other ways; a state past the edge of its poster, which nothing places, shows
 // the poster's nearest piece.
-const SPACE_POSTERS = { black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4], earthrise: [4, 3] };
+const SPACE_POSTERS = {
+  black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4], earthrise: [4, 3],
+  airliner: [5, 3], zeppelin: [5, 3], rocket: [5, 3],
+};
+// Those that are the fleet's paintings, and the item that puts each picture up, named for what it is.
+const FLEET_PAINTINGS = new Set(["airliner", "zeppelin", "rocket"]);
+const spacePosterItem = (poster) => `${poster}_${FLEET_PAINTINGS.has(poster) ? "painting" : "poster"}`;
 {
   const back = `${ID}:block/space_poster_back`;
   const mostColumns = Math.max(...Object.values(SPACE_POSTERS).map(([columns]) => columns));
@@ -5197,7 +5204,8 @@ const SPACE_POSTERS = { black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4]
   // Each poster rolled up, to put up by hand (see SpacePosterItem), its icon its own picture; a poster taken down gives
   // it back from its top left piece alone, so once whatever piece is broken.
   for (const poster of Object.keys(SPACE_POSTERS)) {
-    write(`assets/${ID}/models/item/${poster}_poster.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${poster}_poster` } });
+    const item = spacePosterItem(poster);
+    write(`assets/${ID}/models/item/${item}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${item}` } });
   }
   write(`data/${ID}/loot_table/blocks/space_poster.json`, {
     type: "minecraft:block",
@@ -5206,7 +5214,7 @@ const SPACE_POSTERS = { black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4]
       bonus_rolls: 0.0,
       entries: Object.keys(SPACE_POSTERS).map((poster) => ({
         type: "minecraft:item",
-        name: `${ID}:${poster}_poster`,
+        name: `${ID}:${spacePosterItem(poster)}`,
         conditions: [{ condition: "minecraft:block_state_property", block: `${ID}:space_poster`, properties: { poster, column: "0", row: "0" } }],
       })),
       conditions: [{ condition: "minecraft:survives_explosion" }],
@@ -5214,8 +5222,8 @@ const SPACE_POSTERS = { black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4]
     random_sequence: `${ID}:blocks/space_poster`,
   });
 }
-// The posters are hung on the rocket rather than built into her: light like the rest, but no part of her frame, and
-// breakable.
+// The posters and paintings are hung on a ship rather than built into her: light like the rest, but no part of her
+// frame, and breakable.
 function spacePosterFittings() {
   return ["space_poster"];
 }
@@ -5226,6 +5234,9 @@ function spacePosterLang() {
     "item.skyliners.solar_system_poster": "Solar System Poster",
     "item.skyliners.quasar_poster": "Quasar Poster",
     "item.skyliners.earthrise_poster": "Earthrise Poster",
+    "item.skyliners.airliner_painting": "Airliner Painting",
+    "item.skyliners.zeppelin_painting": "Zeppelin Painting",
+    "item.skyliners.rocket_painting": "Rocket Painting",
   };
 }
 

@@ -388,6 +388,8 @@ public final class AirframeLayout implements Layout {
         if (furnished) {
             new HoldFitOut(layout).apply();
             new DuckHunt(layout).apply();
+            // Once every room stands, so they only go on bulkhead that is still bare.
+            new CabinPaintings(layout).apply();
         }
         // The airstairs' bay, behind the hull's skin, which the shell pass then cuts as ever: shut, the hatch is skin.
         layout.stairBay();

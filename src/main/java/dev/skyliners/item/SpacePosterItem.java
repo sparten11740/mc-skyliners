@@ -3,7 +3,6 @@ package dev.skyliners.item;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.SpacePoster;
 import dev.skyliners.block.SpacePosterBlock;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,7 +41,7 @@ public class SpacePosterItem extends Item {
             return InteractionResult.FAIL;
         }
         Level level = context.getLevel();
-        Map<BlockPos, BlockState> pieces = pieces(middle, facing);
+        Map<BlockPos, BlockState> pieces = SkylinersRegistry.SPACE_POSTER.get().pieces(poster, middle, facing);
         boolean allowed = player == null || pieces.keySet().stream().allMatch(at -> player.mayUseItemAt(at, facing, stack));
         if (!allowed || !pieces.keySet().stream().allMatch(at -> fits(level, at, facing))) {
             return InteractionResult.FAIL;
@@ -54,23 +53,6 @@ public class SpacePosterItem extends Item {
         }
         stack.shrink(1);
         return InteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    /**
-     * Where each block of the poster goes, put up facing one way round its middle block, and the piece of it each is,
-     * from its top left: on an even width the middle block is the right one of the two middle columns, and on an even
-     * height the lower one of the two middle rows.
-     */
-    private Map<BlockPos, BlockState> pieces(BlockPos middle, Direction facing) {
-        Direction right = SpacePosterBlock.right(facing);
-        Map<BlockPos, BlockState> pieces = new LinkedHashMap<>();
-        for (int piece = 0; piece < poster.columns() * poster.rows(); piece++) {
-            int column = piece % poster.columns();
-            int row = piece / poster.columns();
-            BlockPos at = middle.relative(right, column - poster.columns() / 2).above(poster.rows() / 2 - row);
-            pieces.put(at, SkylinersRegistry.SPACE_POSTER.get().piece(poster, facing, column, row));
-        }
-        return pieces;
     }
 
     /** Whether a block of a poster facing one way can go up at a position: open air there and a sturdy face behind. */

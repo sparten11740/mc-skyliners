@@ -64,6 +64,51 @@
               }
             }
           ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:airliner_painting",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "airliner",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:zeppelin_painting",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "zeppelin",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "skyliners:rocket_painting",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "skyliners:space_poster",
+              "properties": {
+                "poster": "rocket",
+                "column": "0",
+                "row": "0"
+              }
+            }
+          ]
         }
       ],
       "conditions": [

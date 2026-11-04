@@ -29,6 +29,8 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 
 ## The airliner
 
+- The rocket's painting is left out at scale 2.5, where the zeppelin's still hangs; scales 2, 3 and 4 have both. Why has
+  not been looked into.
 - A "gear down" voice callout. The voices are made with Windows' speech synthesis, so it waits for a Windows machine.
 
 ## The rocket

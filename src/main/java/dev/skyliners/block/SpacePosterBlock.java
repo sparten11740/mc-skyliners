@@ -3,6 +3,7 @@ package dev.skyliners.block;
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -32,7 +33,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * and nothing collides with it, so it is walked past as a picture is. The rocket hangs them on her glass lift shaft
  * (see {@code RocketPosters}): blocks, not paintings, as a painting is an entity, which would be left behind when she
  * is assembled; and a poster rolled up is put up by hand (see {@code SpacePosterItem}). Taking any piece away takes
- * the whole poster down, with a painting's tearing sound, and it is given back rolled up from its top left piece.
+ * the whole poster down, with a painting's tearing sound, and it is given back rolled up from its top left piece. The
+ * fleet's paintings are more pictures on this same block (see {@link SpacePoster}).
  */
 public class SpacePosterBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<SpacePosterBlock> CODEC = simpleCodec(SpacePosterBlock::new);
@@ -77,6 +79,23 @@ public class SpacePosterBlock extends HorizontalDirectionalBlock {
         return defaultBlockState().setValue(FACING, facing).setValue(POSTER, poster).setValue(COLUMN, column).setValue(ROW, row);
     }
 
+    /**
+     * Where each block of a poster goes, put up facing one way round its middle block, and the piece of it each is,
+     * from its top left: on an even width the middle block is the right one of the two middle columns, and on an even
+     * height the lower one of the two middle rows.
+     */
+    public Map<BlockPos, BlockState> pieces(SpacePoster poster, BlockPos middle, Direction facing) {
+        Direction right = right(facing);
+        Map<BlockPos, BlockState> pieces = new LinkedHashMap<>();
+        for (int piece = 0; piece < poster.columns() * poster.rows(); piece++) {
+            int column = piece % poster.columns();
+            int row = piece / poster.columns();
+            BlockPos at = middle.relative(right, column - poster.columns() / 2).above(poster.rows() / 2 - row);
+            pieces.put(at, piece(poster, facing, column, row));
+        }
+        return pieces;
+    }
+
     /** The viewer's right, looking at a poster facing this way: the way its columns run. */
     public static Direction right(Direction facing) {
         return facing.getCounterClockWise();
@@ -95,6 +114,9 @@ public class SpacePosterBlock extends HorizontalDirectionalBlock {
             case SOLAR_SYSTEM -> SkylinersRegistry.SOLAR_SYSTEM_POSTER.get();
             case QUASAR -> SkylinersRegistry.QUASAR_POSTER.get();
             case EARTHRISE -> SkylinersRegistry.EARTHRISE_POSTER.get();
+            case AIRLINER -> SkylinersRegistry.AIRLINER_PAINTING.get();
+            case ZEPPELIN -> SkylinersRegistry.ZEPPELIN_PAINTING.get();
+            case ROCKET -> SkylinersRegistry.ROCKET_PAINTING.get();
         });
     }
 

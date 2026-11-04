@@ -10,6 +10,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.DoubleValue SCALE;
     public static final ModConfigSpec.IntValue BLOCKS_PER_TICK;
     public static final ModConfigSpec.EnumValue<ShellStyle> SHELL_STYLE;
+    public static final ModConfigSpec.BooleanValue FLEET_PAINTINGS;
     public static final ModConfigSpec.ConfigValue<String> WING_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENGINE_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ASSEMBLER_BLOCK;
@@ -103,6 +104,13 @@ public final class SkylinersConfig {
                 "into each other without a step, and also rounds off the inside of the nose's skin. Read when a blueprint is used."
             )
             .defineEnum("shellStyle", ShellStyle.SNAPPED);
+        FLEET_PAINTINGS = builder
+            .comment(
+                "Whether each ship is built with paintings of the other two: the rocket and the zeppelin high in a furnished airliner's",
+                "forward door hall and pool hall, the airliner and the rocket in a furnished zeppelin's dining room, and the airliner",
+                "and the zeppelin on a rocket's entry story. Ships already built keep theirs."
+            )
+            .define("fleetPaintings", true);
         builder.pop();
 
         builder.push("flight");

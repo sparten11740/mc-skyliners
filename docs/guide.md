@@ -1107,6 +1107,26 @@ with a chrome grab rail curving up over each end of it. A Pool Ladder is climbed
 standing off the wall with a ribbed steel tread between them every half block, the rails of its top piece curling
 over into grab handles down onto the floor beyond its top, as a pool ladder's do over the coping.
 
+### The fleet's paintings
+
+Each ship carries paintings of the other two, in gilt frames, with no words on them: the airliner climbing through a
+sunset over gold-lit cloud, two contrails drawn out behind her; the zeppelin riding a pale dawn over violet mountains,
+the lamps along her back lit; and the rocket lifting off at night under a crescent moon on a cyan flame, the smoke
+rolling out from under her and the tower at her side. Each hangs with a clear margin round it. The furnished airliner
+hangs them high over two of its archways: the rocket in the forward door hall, straight ahead as you come out of the
+flight deck, and the zeppelin across the pool, straight ahead as you come through from business class; at other scales
+an airliner may have room for only one of them, or neither. The furnished zeppelin, at either size, closes the middle of
+its dining room's front with a panelled wall, the airliner and the rocket on it looking down the room over the tables.
+The rocket hangs the airliner and the zeppelin on her entry story, where you come aboard, either side of the lift shaft;
+in a rocket built larger than the default one or both may hang in her cargo bay instead, and a smaller one goes without.
+They fly with the ship as a part of her.
+
+Nothing bumps into one; break any part of a painting and the whole of it comes down and is given back. The Airliner,
+Zeppelin and Rocket Painting are in the creative tab, each showing its picture, and go up on any wall as a space poster
+does: used on the side of a block, a painting goes up against it, its middle in front of the block used, if every block
+of it has open air to go in and a solid face behind it. The server config's `airframe.fleetPaintings` leaves them out of
+ships built from then on; ships already built keep theirs.
+
 ### The high dive
 
 The springboard sticking out from the moon pool's diving tower, a slim blue-gripped board on a coiled spring, throws
@@ -1590,7 +1610,8 @@ the lower deck the boarding hall at the front has bamboo in planters along its w
 stainless worktops and stowage, a coffee machine on its middle worktop; and aft of the stairs lie the sleeping cabins,
 bunks along both walls, each blanket a different soft colour and every reading light on. On the upper deck, blue
 armchairs stand along both promenades facing out of the slanting windows; the dining room at the front has tables set
-for four, two red armchairs down either side; and aft on the port side the lounge has a bar with stools before its back
+for four, two red armchairs down either side, and paintings of the airliner and the rocket at its head (see The fleet's
+paintings); and aft on the port side the lounge has a bar with stools before its back
 bar, the coffee machine on the bar, and bean bags beyond it. Everything works as it does aboard the airliner: sit in the
 chairs, stools and bean bags, brew a coffee, switch a bunk's reading light on and off.
 
@@ -2201,7 +2222,8 @@ with fewer stories, has only the posters for the stories it has. Nothing bumps i
 and the whole of it comes down, and is given back rolled up. Rolled up, the four are in the creative tab, each showing
 its picture, and go up on any wall: used on the side of a block, a poster goes up against it, its middle in front of
 the block used, if every block of it has open air to go in and a solid face behind it. The server config's
-`rocket.posters` leaves them out of the rocket.
+`rocket.posters` leaves them out of the rocket. Her entry story has paintings of her sister ships as well (see The
+fleet's paintings).
 
 Each room dresses the outside of the lift shaft's glass as well, with no words anywhere (`rocket.rooms` leaves it bare
 with the rooms). On the observation deck, her chillout lounge, deep blue velvet curtains hang from the ceiling to the

@@ -4634,37 +4634,39 @@ const LIFT_ICONS = {
   // A poster's icon, as its item shows it rolled up: the picture inside its frame shrunk to fit the icon's frame, each
   // pixel the picture at its middle, so its colours stay as flat as the poster's. Its short side is rounded up, so a
   // picture's middle row is not missed between two of the icon's.
-  const icon = (name, width, height, paint) => {
+  const icon = (item, width, height, paint, frameLight = FRAME_LIGHT, frameShade = FRAME_SHADE) => {
     const fit = (SIZE - 2) / Math.max(width - 2, height - 2);
     const across = Math.ceil((width - 2) * fit);
     const down = Math.ceil((height - 2) * fit);
     const left = Math.floor((SIZE - across - 2) / 2);
     const top = Math.floor((SIZE - down - 2) / 2);
-    texture(itemOutput, `${name}_poster`, (x, y) => {
+    texture(itemOutput, item, (x, y) => {
       const u = x - left - 1;
       const v = y - top - 1;
       if (u < -1 || v < -1 || u > across || v > down) return CLEAR;
-      if (u === -1 || v === -1) return u === across || v === down ? FRAME_SHADE : FRAME_LIGHT;
-      if (u === across || v === down) return FRAME_SHADE;
+      if (u === -1 || v === -1) return u === across || v === down ? frameShade : frameLight;
+      if (u === across || v === down) return frameShade;
       return paint(1 + Math.floor((u + 0.5) * (width - 2) / across), 1 + Math.floor((v + 0.5) * (height - 2) / down));
     }, 0);
   };
-  // A poster so many blocks wide and tall: painted whole at 16 pixels a block, framed, and cut into its blocks; and its
-  // icon.
-  const poster = (name, columns, rows, paint) => {
-    const width = columns * SIZE;
-    const height = rows * SIZE;
-    const framed = (x, y) => {
-      if (x === 0 || y === 0) return x === width - 1 || y === height - 1 ? FRAME_SHADE : FRAME_LIGHT;
-      if (x === width - 1 || y === height - 1) return FRAME_SHADE;
-      return paint(x, y);
-    };
+  // A picture painted whole at 16 pixels a block, its frame and all, cut into its blocks.
+  const cut = (name, columns, rows, framed) => {
     for (let column = 0; column < columns; column++) {
       for (let row = 0; row < rows; row++) {
         texture(blockOutput, `space_poster_${name}_${column}_${row}`, (x, y) => framed(column * SIZE + x, row * SIZE + y), 0);
       }
     }
-    icon(name, width, height, paint);
+  };
+  // A poster so many blocks wide and tall, in its thin steel frame, and its icon.
+  const poster = (name, columns, rows, paint) => {
+    const width = columns * SIZE;
+    const height = rows * SIZE;
+    cut(name, columns, rows, (x, y) => {
+      if (x === 0 || y === 0) return x === width - 1 || y === height - 1 ? FRAME_SHADE : FRAME_LIGHT;
+      if (x === width - 1 || y === height - 1) return FRAME_SHADE;
+      return paint(x, y);
+    });
+    icon(`${name}_poster`, width, height, paint);
   };
   texture(blockOutput, "space_poster_back", () => [0x9a, 0x9e, 0xa4], 3);
 
@@ -5024,6 +5026,345 @@ const LIFT_ICONS = {
       if (r <= 1) return earthAt(u, v, x, y);
       if (r <= 1 + 1.1 / EARTH && u + 0.1 * v > TERMINATOR + 0.1) return AIR;
       return star(x, y) ?? shade(SKY, py / H, x, y);
+    });
+  }
+
+  // The fleet's paintings, each ship hung aboard the other two (see SpacePoster): oils rather than a science
+  // illustration's flat colours, in a walnut moulding round a gilt slip, and as without words as the posters. The
+  // airliner climbs out through a sunset over gold-lit cloud, her back catching the sun, her two rows of windows, her
+  // blue fin and her cheatline as she flies them, two contrails drawn out behind her. The zeppelin rides a pale dawn
+  // over violet mountains and dark hills, silver with her rings showing, the row of lamps along her back lit, her
+  // control car under her bow and her engine cars under her flank. The rocket lifts off at night in her midnight blue,
+  // her portholes and gold stars on her, from a pad lit by her own cyan flame and the smoke rolling out from under her,
+  // the tower at her side.
+  const WALNUT = hex(0x3a2414);
+  const GILT = hex(0xd6a846);
+  const GILT_SHADE = hex(0x8c6824);
+  // How far a brush's dab strays from the shade it was meant to be, as a share of its whole ramp of colours.
+  const BRUSH = 0.2;
+  const painting = (name, columns, rows, paint) => {
+    const width = columns * SIZE;
+    const height = rows * SIZE;
+    cut(name, columns, rows, (x, y) => {
+      const fromEdge = Math.min(x, y, width - 1 - x, height - 1 - y);
+      if (fromEdge === 0) return WALNUT;
+      if (fromEdge === 1) return x === width - 2 || y === height - 2 ? GILT_SHADE : GILT;
+      return paint(x, y);
+    });
+    icon(`${name}_painting`, width, height, paint, GILT, WALNUT);
+  };
+  // A dab of paint: the step of a ramp for a shade, strayed along long level brushstrokes rather than dithered.
+  const dab = (colours, t, x, y, salt) => colours[Math.round(unit(t + (noise(x * 0.14, y * 0.55, salt) - 0.5) * BRUSH) * (colours.length - 1))];
+  // Whether a point lies inside a shape drawn as its corners in turn.
+  const within = (corners, s, v) => {
+    let inside = false;
+    for (let i = 0, j = corners.length - 1; i < corners.length; j = i++) {
+      const [si, vi] = corners[i];
+      const [sj, vj] = corners[j];
+      if (vi > v !== vj > v && s < sj + (si - sj) * (v - vj) / (vi - vj)) inside = !inside;
+    }
+    return inside;
+  };
+
+  // The airliner, five blocks by three, climbing away to the right. She is drawn along her own length, s toward her
+  // nose from her middle and v down from her axis, turned up by her climb.
+  {
+    const H = 48;
+    // Her middle, in pixels.
+    const CX = 41;
+    const CY = 19;
+    // How steeply she climbs, in radians.
+    const CLIMB = 0.13;
+    // How far her nose's rounding begins and her nose's tip lie from her middle, where her tail begins to narrow and
+    // her tail's end, how deep she is either side of her axis, and how far her tail sweeps up over its length, in
+    // pixels.
+    const NOSE_FROM = 22;
+    const NOSE_TIP = 29;
+    const TAIL_FROM = -14;
+    const TAIL_END = -30;
+    const DEEP = 4.6;
+    const SWEEP = 3.2;
+    const SKY = ramp(0x2c2f6c, 0x47407f, 0x6e5290, 0xa2608e, 0xd47678, 0xee9468, 0xf8b46c, 0xfcd48e);
+    const CLOUD = ramp(0xcf8a8a, 0xeaa98e, 0xf8cca4, 0xfee8c8, 0xfff8ea);
+    const SKIN = ramp(0xfff4e0, 0xe8e6e2, 0xc2c8d2, 0x98a2b4, 0x737d92);
+    const WINDOW = hex(0x2a3c58);
+    const COCKPIT = hex(0x1c2636);
+    const CHEATLINE = hex(0x2f5bc0);
+    const FIN = ramp(0x3f6fd8, 0x2a52b4, 0x1a3684);
+    const WING = ramp(0xf6efe2, 0xd4d4d6, 0xa4aab8);
+    const FAR_WING = hex(0x8a7f98);
+    const NACELLE = ramp(0xf4f0e8, 0xb8bec8, 0x7c8596);
+    const INTAKE = hex(0x20242c);
+    const TRAIL = hex(0xfff2dc);
+    const NEAR_WING = [[8, 3], [-6, 3.8], [-21, 14], [-18.5, 14]];
+    const OTHER_WING = [[1, -3.6], [-6, -3.6], [-16, -9.5], [-14, -9.5]];
+    const FIN_SHAPE = [[-17, -3.6], [-25.5, -2.6], [-32.5, -13.5], [-27.5, -13.5]];
+    const TAILPLANE = [[-23, -1.4], [-28, -1.8], [-34, 2.4], [-31.5, 2.4]];
+    // Her near wing's engines: where each one's middle is, and half its length and depth, in pixels.
+    const ENGINES = [[0.5, 8.4], [-8.5, 12]];
+    const ENGINE_LONG = 3.6;
+    const ENGINE_DEEP = 1.6;
+    const axis = (s) => (s < TAIL_FROM ? -((TAIL_FROM - s) / (TAIL_FROM - TAIL_END)) * SWEEP : 0);
+    const depth = (s) => {
+      if (s > NOSE_TIP || s < TAIL_END) return 0;
+      if (s > NOSE_FROM) return DEEP * Math.sqrt(1 - ((s - NOSE_FROM) / (NOSE_TIP - NOSE_FROM)) ** 2);
+      return s < TAIL_FROM ? DEEP * (1 - ((TAIL_FROM - s) / (TAIL_FROM - TAIL_END)) * 0.72) : DEEP;
+    };
+    // What of her body is at a point: her cockpit, a window, her cheatline, or her skin shaded round her.
+    const body = (s, v, x, y) => {
+      const half = depth(s);
+      const across = v - axis(s);
+      if (half === 0 || Math.abs(across) > half) return null;
+      if (s > 23.5 && s < 27.2 && across > -2.6 && across < -0.7) return COCKPIT;
+      const inWindows = s > -19 && s < 21 && Math.floor(s + 40) % 2 === 0;
+      if (inWindows && (Math.abs(across + 1.9) < 0.5 || Math.abs(across - 0.8) < 0.5)) return WINDOW;
+      if (s < 21 && across > 1.6 && across < 2.9) return CHEATLINE;
+      return dab(SKIN, 0.5 + across / half * 0.5, x, y, 41);
+    };
+    const engine = (s, v) => {
+      for (const [middle, level] of ENGINES) {
+        const along = (s - middle) / ENGINE_LONG;
+        if (Math.abs(along) <= 1 && Math.abs(v - level) <= ENGINE_DEEP * Math.sqrt(1 - along * along * 0.6)) {
+          if (along > 0.72) return INTAKE;
+          return NACELLE[Math.round(unit((v - level + ENGINE_DEEP) / (ENGINE_DEEP * 2)) * 2)];
+        }
+      }
+      return null;
+    };
+    // A contrail's strength at a point, drawn out behind an engine and fading as it goes, or 0.
+    const trail = (s, v) => {
+      let strength = 0;
+      for (const [middle, level] of ENGINES) {
+        const behind = middle - ENGINE_LONG - s;
+        if (behind > 1 && Math.abs(v - level) <= 0.5) strength = Math.max(strength, 1.3 - behind / 34);
+      }
+      return strength;
+    };
+    const sky = (x, y) => {
+      const height = (y + 0.5) / H;
+      const sun = Math.exp(-(((x - 66) / 26) ** 2 + ((y - 37) / 15) ** 2));
+      const billow = noise(x * 0.085 + 3, y * 0.24, 7) + noise(x * 0.2, y * 0.5, 9) * 0.32;
+      const cloud = billow + (height - 0.68) * 1.7;
+      if (cloud > 0.82) return dab(CLOUD, 0.25 + (cloud - 0.82) * 1.5 + sun * 0.4 - (height - 0.7) * 0.4, x, y, 3);
+      return dab(SKY, height ** 1.1 + sun * 0.2, x, y, 5);
+    };
+    painting("airliner", 5, 3, (x, y) => {
+      const dx = x + 0.5 - CX;
+      const dy = y + 0.5 - CY;
+      const s = dx * Math.cos(CLIMB) - dy * Math.sin(CLIMB);
+      const v = dx * Math.sin(CLIMB) + dy * Math.cos(CLIMB);
+      const nacelle = engine(s, v);
+      if (nacelle) return nacelle;
+      if (within(NEAR_WING, s, v)) return WING[Math.round(unit((8 - s - v * 0.4) / 13) * 2)];
+      if (within(TAILPLANE, s, v)) return WING[1];
+      const skin = body(s, v, x, y);
+      if (skin) return skin;
+      if (within(FIN_SHAPE, s, v)) return FIN[Math.round(unit((-s - 17 - (v + 13.5) * 0.4) / 12) * 2)];
+      if (within(OTHER_WING, s, v)) return FAR_WING;
+      const streak = trail(s, v);
+      if (streak > threshold(x, y)) return TRAIL;
+      return sky(x, y);
+    });
+  }
+
+  // The zeppelin, five blocks by three, nose to the left, seen from a little under her.
+  {
+    const H = 48;
+    // The columns of her nose and her tail, the row of her axis and how deep she is either side of it, in pixels.
+    const NOSE = 5;
+    const TAIL = 70;
+    const SPINE = 17;
+    const DEEP = 8;
+    // How far along her she is at her deepest, as a share of her length.
+    const DEEPEST = 0.34;
+    const SKY = ramp(0x4a7cb0, 0x6c9cc4, 0x9cbcd0, 0xd0d4cc, 0xf2d8b6, 0xf8c8a0);
+    const FAR_HILLS = ramp(0x8f8fb6, 0x77759e);
+    const NEAR_HILLS = ramp(0x4a5e62, 0x33484a, 0x24383a);
+    const SILVER = ramp(0xfbf8ee, 0xe2e4e4, 0xc2c8ce, 0x9aa2ae, 0x747e8e, 0x586274);
+    // How much darker a ring of her frame shows, as a share of that ramp, and how many columns apart they stand.
+    const RING = 0.13;
+    const RING_SPACING = 6;
+    const FIN = ramp(0x8a94a4, 0x5c6678);
+    const FIN_TIP = hex(0xc4382c);
+    const BAND = hex(0xc4382c);
+    const LAMP = hex(0xfff2b4);
+    const CAR = ramp(0x8c95a2, 0x5a6476);
+    const CAR_WINDOW = hex(0xfff0c0);
+    const SHADOW = hex(0x2c3442);
+    const PROPELLER = hex(0xd8dce0);
+    // Her control car: its first and last columns, and its last row, the one above that being its windows'.
+    const CAR_FROM = 13;
+    const CAR_TO = 21;
+    const CAR_LOW = 28;
+    // Her fins' shapes and her engine cars' first columns, in pixels.
+    const TOP_FIN = [[TAIL - 17, SPINE - 4], [TAIL - 8, SPINE - 1], [TAIL + 1, SPINE], [TAIL + 2, SPINE - 9], [TAIL - 5, SPINE - 9]];
+    const LOW_FIN = [[TAIL - 17, SPINE + 4], [TAIL - 8, SPINE + 1], [TAIL + 1, SPINE], [TAIL + 2, SPINE + 9], [TAIL - 5, SPINE + 9]];
+    const ENGINE_CARS = [40, 51];
+    const half = (x) => {
+      const along = (x - NOSE) / (TAIL - NOSE);
+      if (along < 0 || along > 1) return 0;
+      if (along < DEEPEST) return DEEP * Math.sqrt(1 - (1 - along / DEEPEST) ** 2);
+      return DEEP * (1 - ((along - DEEPEST) / (1 - DEEPEST)) ** 2 * 0.94);
+    };
+    // A range of hills' top at a column: the higher a row's number, the lower it stands.
+    const ridge = (x, base, rise, grain, salt) => base - noise(x * grain, salt, salt) * rise - noise(x * grain * 2.7, salt, salt + 1) * rise * 0.35;
+    const land = (x, y) => {
+      if (y >= ridge(x, H + 1, 13, 0.1, 21)) return dab(NEAR_HILLS, (y - 34) / 13, x, y, 22);
+      if (y >= ridge(x, H - 5, 11, 0.075, 23)) return dab(FAR_HILLS, (y - 30) / 10, x, y, 24);
+      return null;
+    };
+    const hull = (x, y) => {
+      const reach = half(x);
+      const across = y + 0.5 - SPINE;
+      if (reach === 0 || Math.abs(across) > reach) return null;
+      const down = across / reach;
+      if (Math.abs(across + reach) < 0.8 && x % 3 === 0) return LAMP;
+      if (x > 20 && x < 38 && down > 0.58 && down < 0.86) return BAND;
+      const ring = (x + 1) % RING_SPACING === 0 ? RING : 0;
+      return dab(SILVER, 0.2 + (down + 0.55) * 0.5 + ring, x, y, 25);
+    };
+    const car = (x, y) => {
+      const keel = Math.ceil(SPINE + half(x));
+      if (x >= CAR_FROM && x <= CAR_TO && y >= keel && y <= CAR_LOW) {
+        return y === CAR_LOW - 1 && x > CAR_FROM && x < CAR_TO && x % 2 === 0 ? CAR_WINDOW : CAR[y === CAR_LOW ? 1 : 0];
+      }
+      for (const left of ENGINE_CARS) {
+        const row = Math.ceil(SPINE + half(left + 2)) + 2;
+        if (x >= left && x <= left + 3 && y >= row && y <= row + 1) return CAR[y - row];
+        if (x === left + 1 && y >= row - 2 && y < row) return SHADOW;
+        if (x === left + 4 && y >= row - 1 && y <= row + 2) return PROPELLER;
+      }
+      return null;
+    };
+    painting("zeppelin", 5, 3, (x, y) => {
+      const px = x + 0.5;
+      const py = y + 0.5;
+      const silver = hull(x, y);
+      if (silver) return silver;
+      const below = car(x, y);
+      if (below) return below;
+      if (within(TOP_FIN, px, py) || within(LOW_FIN, px, py)) return px > TAIL ? FIN_TIP : FIN[py > SPINE ? 1 : 0];
+      return land(x, y) ?? dab(SKY, (py / H) ** 0.9 * 1.15, x, y, 26);
+    });
+  }
+
+  // The rocket, five blocks by three, lifting off at night: the sky shading up from a burning horizon under a low
+  // moon, the smoke in puffs rolling out across the pad from under her, lit by her flame near her.
+  {
+    const W = 80;
+    const H = 48;
+    // The column of her axis, the rows of her nose's tip, of where her nose meets her body, of her foot and of the
+    // horizon, and how far her body reaches out from her axis, in pixels.
+    const AXIS = 30;
+    const TIP = 3;
+    const SHOULDER = 11;
+    const FOOT = 33;
+    const HORIZON = 41;
+    const WIDE = 5;
+    const SKY = ramp(0x05071a, 0x0a0e2c, 0x141742, 0x2a2058, 0x54306c, 0x8c4470, 0xd0664e, 0xf49a4c);
+    const HULL = ramp(0x6880cc, 0x4458a4, 0x2e3c7c, 0x1e2a5e, 0x141c44);
+    const FINS = ramp(0x4a60ac, 0x263468, 0x18224e);
+    const BAND = hex(0x080a14);
+    const BAND_GLASS = hex(0x7c9cc8);
+    const PORTHOLE = hex(0xe6e6d8);
+    const STAR_GOLD = hex(0xeec25a);
+    const FLAME = ramp(0xffffff, 0xc8fbff, 0x5ae8f4, 0x2098c8);
+    const SMOKE = ramp(0xfff8e6, 0xf6dcb4, 0xd8b8a0, 0xa8908c, 0x78707e, 0x4e4c66);
+    const STEEL = ramp(0xc8ccd4, 0x8a92a4, 0x565c78);
+    const TOWER_TOP = hex(0xc4382c);
+    const GROUND = ramp(0x2a2438, 0x1a1828);
+    const MOON = ramp(0xfff6d8, 0xe6dcc0);
+    // Her fins' shapes, drawn out from her axis.
+    const NEAR_FIN = [[-1.2, 24], [1.2, 24], [1.5, 38], [-1.5, 38]];
+    const LEFT_FIN = [[-4.5, 20], [-4.5, 32], [-11, 38], [-12, 33]];
+    const RIGHT_FIN = [[4.5, 20], [4.5, 32], [11, 38], [12, 33]];
+    // Her tower: its first and last columns, the row it rises to, how many rows its red top takes, and the row of the
+    // arm reaching over to her.
+    const TOWER_LEFT = 42;
+    const TOWER_RIGHT = 48;
+    const TOWER_FROM = 5;
+    const TOWER_TOP_ROWS = 3;
+    const ARM = 13;
+    // The moon's middle and radius, in pixels, and how far across it the shadow that makes it a crescent lies.
+    const MOON_X = 66;
+    const MOON_Y = 11;
+    const MOON_SIZE = 5;
+    const MOON_SHADOW = 2.6;
+    // Her portholes and gold stars, across her from -1 to 1 and in rows; and the smoke's puffs: each one's middle out
+    // from her and row, and its radius, in pixels.
+    const PORTHOLES = [[-0.5, 14], [0.5, 18], [-0.5, 22], [0.5, 26], [-0.5, 30]];
+    const STARS = [[0.3, 16], [-0.3, 20], [0.3, 24]];
+    const PUFFS = [
+      [-26, 44, 5.5], [-18, 42, 6], [-10, 41, 5.5], [-3, 43, 5], [5, 41, 5.5], [13, 42, 6], [21, 43, 5.5], [30, 44, 6],
+      [39, 45, 5.5], [47, 45, 5.5], [-22, 47, 5], [-8, 47, 5.5], [6, 47, 5.5], [20, 47, 5.5], [34, 48, 5.5], [46, 48, 5],
+    ];
+    const star = starfield("rocket_painting", W, H, 34, 3);
+    const radius = (y) => {
+      if (y < TIP || y > FOOT) return 0;
+      if (y < SHOULDER) return WIDE * (1 - (1 - (y - TIP) / (SHOULDER - TIP)) ** 2) ** 0.75;
+      return WIDE * (1 - (y - SHOULDER) / (FOOT - SHOULDER) * 0.12);
+    };
+    const near = (spots, u, y, r, size) => spots.some(([across, row]) => Math.abs(y - row) + Math.abs(u - across) * r <= size);
+    const hull = (x, y, px, py) => {
+      const r = radius(py);
+      const u = (px - AXIS) / (r || 1);
+      if (r === 0 || Math.abs(u) > 1) return null;
+      if (y === 7 || y === 10) return Math.abs(u) < 0.5 && y === 10 ? BAND_GLASS : BAND;
+      if (near(PORTHOLES, u, y, r, 1)) return PORTHOLE;
+      if (near(STARS, u, y, r, 0.5)) return STAR_GOLD;
+      return dab(HULL, 0.05 + (u + 1) * 0.46, x, y, 31);
+    };
+    // How bright her flame is at a point, from where it leaves her down into the smoke, or 0 outside it.
+    const flame = (px, py) => {
+      const down = (py - FOOT) / (HORIZON + 2 - FOOT);
+      if (down < 0 || down > 1) return 0;
+      const wide = 3 - down * 1.2;
+      return Math.abs(px - AXIS) <= wide ? 1 - Math.abs(px - AXIS) / wide * 0.65 - down * 0.2 : 0;
+    };
+    // What of the smoke is at a point: the nearest puff to the viewer that holds it, lit from over it and near her
+    // flame, the later puffs lying in front; or nothing.
+    const smoke = (x, y, px, py) => {
+      for (let k = PUFFS.length - 1; k >= 0; k--) {
+        const [out, row, size] = PUFFS[k];
+        const across = px - AXIS - out;
+        const down = py - row;
+        if (Math.hypot(across, down) <= size) {
+          const glow = Math.exp(-(((px - AXIS) / 12) ** 2));
+          return dab(SMOKE, 0.5 + (down - across * 0.3) / size * 0.42 - glow * 0.45, x, y, 33 + k);
+        }
+      }
+      return null;
+    };
+    const tower = (x, y) => {
+      if (x === TOWER_LEFT && y === ARM) return STEEL[0];
+      if (x < TOWER_LEFT || x > TOWER_RIGHT || y < TOWER_FROM) return null;
+      if (y < TOWER_FROM + TOWER_TOP_ROWS) return TOWER_TOP;
+      if (x === TOWER_LEFT || x === TOWER_RIGHT) return STEEL[x === TOWER_LEFT ? 0 : 1];
+      return (x + y) % 4 === 0 || (x - y + H) % 4 === 0 ? STEEL[2] : null;
+    };
+    const moon = (px, py) => {
+      const lit = Math.hypot(px - MOON_X, py - MOON_Y) <= MOON_SIZE;
+      return lit && Math.hypot(px - MOON_X - MOON_SHADOW, py - MOON_Y) > MOON_SIZE ? MOON[py < MOON_Y ? 0 : 1] : null;
+    };
+    painting("rocket", 5, 3, (x, y) => {
+      const px = x + 0.5;
+      const py = y + 0.5;
+      const lit = flame(px, py);
+      const puff = lit > 0 && py < HORIZON ? null : smoke(x, y, px, py);
+      if (puff) return puff;
+      if (lit > 0) return shade(FLAME, 1 - lit, x, y);
+      const body = hull(x, y, px, py);
+      if (body) return body;
+      if (within(NEAR_FIN, px - AXIS, py)) return FINS[2];
+      if (within(LEFT_FIN, px - AXIS, py) || within(RIGHT_FIN, px - AXIS, py)) return FINS[px < AXIS ? 0 : 1];
+      if (y === ARM && x > AXIS + WIDE - 1 && x < TOWER_LEFT) return STEEL[1];
+      const frame = tower(x, y);
+      if (frame) return frame;
+      if (py >= HORIZON) return GROUND[y % 2];
+      const crescent = moon(px, py);
+      if (crescent) return crescent;
+      const dusk = (py / HORIZON) ** 2.4;
+      return (dusk < 0.3 ? star(x, y) : null) ?? dab(SKY, dusk, x, y, 47);
     });
   }
 }
