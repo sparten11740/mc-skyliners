@@ -741,6 +741,13 @@ const CHECKS = {
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };
 
+// Whether a child process is still running, or nothing here can tell. This script blocks Node's event loop, so a child
+// that has exited is never reaped: it stays a zombie, which still answers a signal, and only ps tells the two apart.
+function alive(pid) {
+  const { stdout } = spawnSync("ps", ["-o", "stat=", "-p", String(pid)], { encoding: "utf8" });
+  return stdout === null || (stdout.trim() !== "" && !stdout.trim().startsWith("Z"));
+}
+
 // Whether the game answers; starts it if not and it was asked to. Whether it was started here.
 function reachGame() {
   const answers = () => existsSync(LAUNCHER) && spawnSync(LAUNCHER, ["--json", "status"], { encoding: "utf8" }).status !== 2;
@@ -751,9 +758,13 @@ function reachGame() {
   if (process.platform === "darwin") {
     spawn("caffeinate", ["-u", "-t", "3600"], { detached: true, stdio: "ignore" }).unref();
   }
-  spawn("bash", ["./gradlew", "runClient", "--console=plain"], { cwd: ROOT, detached: true, stdio: "ignore" }).unref();
+  const gradle = spawn("bash", ["./gradlew", "runClient", "--console=plain"], { cwd: ROOT, detached: true, stdio: "ignore" });
+  gradle.unref();
   for (let waited = 0; waited < GAME_UP_SECONDS; waited += 5) {
     spawnSync("sleep", ["5"]);
+    if (!alive(gradle.pid)) {
+      throw new GameGone("the dev client closed as it started: see run/logs/latest.log and any run/hs_err_pid*.log");
+    }
     if (existsSync(LAUNCHER) && spawnSync(LAUNCHER, ["--json", "--wait-ready", "5", "status"], { encoding: "utf8" }).status === 0) {
       return true;
     }
