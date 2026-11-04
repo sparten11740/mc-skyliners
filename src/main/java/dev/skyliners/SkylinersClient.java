@@ -7,6 +7,7 @@ import dev.skyliners.block.CabinSeatBlock;
 import dev.skyliners.block.CurtainBlock;
 import dev.skyliners.block.DiscoBallBlockEntity;
 import dev.skyliners.block.EngineCoreBlockEntity;
+import dev.skyliners.block.FogMachineBlockEntity;
 import dev.skyliners.block.LookoutGlassBlockEntity;
 import dev.skyliners.block.PassengerScreenBlockEntity;
 import dev.skyliners.block.PropellerBlockEntity;
@@ -52,6 +53,7 @@ import dev.skyliners.client.FlightDisplayRenderer;
 import dev.skyliners.client.FlightMapRenderer;
 import dev.skyliners.client.FlightStripBoardRenderer;
 import dev.skyliners.client.Floodlights;
+import dev.skyliners.client.FogMachineSounds;
 import dev.skyliners.client.GearBayRenderer;
 import dev.skyliners.client.HelmRenderer;
 import dev.skyliners.client.HelmetBreathing;
@@ -289,6 +291,7 @@ public final class SkylinersClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(BeanBagBlock::itemTint, SkylinersRegistry.BEAN_BAG_ITEM.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PropellerBlockEntity.clientTicker = ZeppelinEngineSounds::tick;
+        FogMachineBlockEntity.clientHiss = FogMachineSounds::hiss;
         LiftCar.clientTicker = LiftSounds::tick;
         // The rocket's lab: her tardigrade's model and its renderer.
         modEventBus.addListener((EntityRenderersEvent.RegisterLayerDefinitions event) -> event.registerLayerDefinition(TardigradeModel.LAYER,

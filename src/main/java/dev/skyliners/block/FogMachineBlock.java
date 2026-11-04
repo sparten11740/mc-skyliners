@@ -119,8 +119,9 @@ public class FogMachineBlock extends BaseEntityBlock {
     }
 
     /**
-     * Pumps fog when ready, with its hiss; while it pumps or heats up, only a click, or its next step at once where
-     * that was lost, as when the rocket was assembled in the middle of one.
+     * Pumps fog when ready, each client starting its hiss as it sees that (see {@link FogMachineBlockEntity}); while it
+     * pumps or heats up, only a click, or its next step at once where that was lost, as when the rocket was assembled
+     * in the middle of one.
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
@@ -133,7 +134,6 @@ public class FogMachineBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         server.setBlock(pos, state.setValue(FOG, Fog.FOGGING), Block.UPDATE_ALL);
-        server.playSound(null, pos, SkylinersRegistry.FOG_HISS.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         server.scheduleTick(pos, this, FOG_TICKS);
         return InteractionResult.SUCCESS;
     }

@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,10 +16,14 @@ import net.minecraft.world.phys.Vec3;
  * the way it points and slowing as it spreads, and a big puff of fog rolling after it (see the client's
  * {@code BlastPuffParticle}), fanned out over the floor, which drifts out across the room, slides along its walls and
  * hangs there for about twenty seconds, slowly rising: a hundred big puffs to a press fill the room as thousands of
- * small ones would, for next to nothing. On the server it sees that the machine stops pumping and heats up in time,
- * even where its scheduled next step was lost (see {@link LostTicks}).
+ * small ones would, for next to nothing. Each client also starts its hiss as it sees a pump begin, through
+ * {@link #clientHiss}, which the client sets, so this class stays safe to load on a dedicated server. On the server it
+ * sees that the machine stops pumping and heats up in time, even where its scheduled next step was lost (see
+ * {@link LostTicks}).
  */
 public class FogMachineBlockEntity extends BlockEntity {
+    /** Set by the client: plays a machine's hiss, for as long as the machine is there, as this client sees it start. */
+    public static Consumer<FogMachineBlockEntity> clientHiss = machine -> { };
     /** Where its nozzle's mouth is, in pixels in the model drawn facing north: across, up and along. */
     private static final double NOZZLE_X = 8;
     private static final double NOZZLE_Y = 3.5;
@@ -40,13 +45,24 @@ public class FogMachineBlockEntity extends BlockEntity {
     /** How fast the rolling fog rises, in blocks a tick: hardly at all, so it hangs round the dancers' knees and up. */
     private static final double RISE = 0.008;
 
+    /**
+     * Whether this client has seen it not pumping since its last hiss: only then is a pump one it has seen begin. One
+     * already under way as its chunk comes in, or as it is carried into a ship's plot, goes unheard.
+     */
+    private boolean seenIdle;
+
     public FogMachineBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.FOG_MACHINE_ENTITY.get(), pos, state);
     }
 
     static void clientTick(Level level, BlockPos pos, BlockState state, FogMachineBlockEntity machine) {
         if (state.getValue(FogMachineBlock.FOG) != FogMachineBlock.Fog.FOGGING) {
+            machine.seenIdle = true;
             return;
+        }
+        if (machine.seenIdle) {
+            machine.seenIdle = false;
+            clientHiss.accept(machine);
         }
         RandomSource random = level.getRandom();
         Direction facing = state.getValue(FogMachineBlock.FACING);
