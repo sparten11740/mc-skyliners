@@ -26,6 +26,7 @@ import dev.skyliners.block.SetTransponder;
 import dev.skyliners.autopilot.UnstickAirliner;
 import dev.skyliners.block.VillagesBelow;
 import dev.skyliners.cabin.AirPocketPayload;
+import dev.skyliners.cabin.CurtainParting;
 import dev.skyliners.cabin.DecompressionPush;
 import dev.skyliners.cabin.Headroom;
 import dev.skyliners.cabin.HighDive;
@@ -109,6 +110,7 @@ public final class Skyliners {
         NeoForge.EVENT_BUS.addListener(SafetyCanopy::loggedOut);
         NeoForge.EVENT_BUS.addListener(HighDive::onTick);
         NeoForge.EVENT_BUS.addListener(Headroom::onTick);
+        NeoForge.EVENT_BUS.addListener(CurtainParting::onTick);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);

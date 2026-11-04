@@ -2,6 +2,8 @@ package dev.skyliners.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
+import dev.skyliners.cabin.CurtainParting;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +18,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -46,7 +50,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * each end with a band round its foot. Pieces side by side and one above another join into one curtain, hung from a
  * steel rail along its top; using any piece draws the whole curtain open or shut, a column at a time away from the one
  * used, and using a dye on it dyes all of it. It is only cloth, open or shut: everyone and everything walks, rolls and
- * flies straight through it, and it keeps no light out.
+ * flies straight through it, and it keeps no light out. Shut, it parts round whoever walks through it and falls shut
+ * behind them (see {@link CurtainParting}).
  *
  * <p>FACING is the way its front faces, toward whoever hung it, and the curtain hangs across that way: in the plane
  * through the middle of its block, square to FACING. LEFT and RIGHT say it carries on into the neighbour to the left
@@ -134,6 +139,18 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
             stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(COLOR, state.getValue(COLOR)));
         }
         return stack;
+    }
+
+    /**
+     * Someone in a piece of curtain, on the server: it parts for them. Anything living does: a ball or a trolley only
+     * goes through. Called for a ship's blocks too, by Sable, with the piece's position among them, and in a position
+     * the game goes on to change, so what is kept of it is a copy.
+     */
+    @Override
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (level instanceof ServerLevel server && entity instanceof LivingEntity && !entity.isSpectator()) {
+            CurtainParting.walkedInto(server, pos.immutable(), state);
+        }
     }
 
     /** The way to a curtain's left, in its plane, seen looking the way it faces. */
@@ -249,6 +266,7 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide) {
             List<BlockPos> curtain = pieces(level, pos);
+            forgetParted(level, curtain);
             if (curtain.stream().noneMatch(at -> level.getBlockTicks().hasScheduledTick(at, this))) {
                 boolean open = !state.getValue(OPEN);
                 Direction.Axis along = leftOf(state.getValue(FACING)).getAxis();
@@ -272,6 +290,13 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /** A curtain drawn by hand is its drawer's to shut: {@link CurtainParting} no longer shuts what it parted of it. */
+    private static void forgetParted(Level level, List<BlockPos> curtain) {
+        if (level instanceof ServerLevel server) {
+            CurtainParting.forget(server, curtain);
+        }
     }
 
     /**
@@ -311,9 +336,29 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
         return column.get(0);
     }
 
-    /** Draws every piece of a column open or shut. */
-    private static void draw(Level level, List<BlockPos> column, boolean open) {
-        for (BlockPos at : column) {
+    /** The pieces of the columns through a position and so many either side of it, as far as the curtain goes. */
+    public static List<BlockPos> columnsAround(Level level, BlockPos pos, int reach) {
+        List<BlockPos> pieces = new ArrayList<>(column(level, pos));
+        Direction left = leftOf(level.getBlockState(pos).getValue(FACING));
+        pieces.addAll(columnsAlong(level, pos, left, reach));
+        pieces.addAll(columnsAlong(level, pos, left.getOpposite(), reach));
+        return pieces;
+    }
+
+    /** The pieces of so many columns one way along a curtain from a position, stopping where it ends. */
+    private static List<BlockPos> columnsAlong(Level level, BlockPos pos, Direction way, int reach) {
+        List<BlockPos> pieces = new ArrayList<>();
+        BlockPos at = pos;
+        for (int step = 0; step < reach && carriesOn(level.getBlockState(at), way, level.getBlockState(at.relative(way))); step++) {
+            at = at.relative(way);
+            pieces.addAll(column(level, at));
+        }
+        return pieces;
+    }
+
+    /** Draws every piece given open or shut. */
+    public static void draw(Level level, List<BlockPos> pieces, boolean open) {
+        for (BlockPos at : pieces) {
             BlockState piece = level.getBlockState(at);
             if (piece.getValue(OPEN) != open) {
                 level.setBlock(at, piece.setValue(OPEN, open), Block.UPDATE_CLIENTS);
@@ -322,7 +367,7 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     }
 
     /** The swish of a curtain drawn along its rail, the rings clinking: once for the whole curtain. */
-    static void swish(Level level, BlockPos pos) {
+    public static void swish(Level level, BlockPos pos) {
         level.playSound(null, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.8F, 1.3F);
         level.playSound(null, pos, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 0.3F, 1.6F);
     }

@@ -761,11 +761,13 @@ A Cabin Curtain hangs in pleats across the way you face; curtains put up beside,
 into one curtain on a steel rail. Use any piece to draw the whole curtain open or shut, a column at a time away from
 the piece used, with a swish; drawn open, only its gathered ends and its rail show, and those are what to use. Use a
 dye on it to dye all of it, for one dye, and taken down it keeps its colour. It is only cloth: players, villagers,
-trolleys and basketballs pass straight through it, open or shut, and it keeps no light out. A Cabin Partition is a
-plain cream bulkhead panel to build walls with, a Cabin Arch a white archway in one, a Bulkhead Sign a
-backlit sign set into one, and an Exit Sign a green running man heading out through a doorway: on a wall it is a
-thin plate, under a ceiling it hangs on two short rods and on the floor it stands on a short post, both of those lit
-on both faces, facing you. All five can be crafted.
+trolleys and basketballs pass straight through it, open or shut, and it keeps no light out. Shut, it parts with a swish
+round anyone walking through, just the columns round them, and falls shut behind them a moment after they have gone;
+a curtain drawn open stays open. Balls and trolleys go through without parting it, and `curtainsPart` in the server
+config turns the parting off. A Cabin Partition is a plain cream bulkhead panel to build walls with, a Cabin Arch a
+white archway in one, a Bulkhead Sign a backlit sign set into one, and an Exit Sign a green running man heading out
+through a doorway: on a wall it is a thin plate, under a ceiling it hangs on two short rods and on the floor it stands
+on a short post, both of those lit on both faces, facing you. All five can be crafted.
 A Cabin Arch puts up a whole archway like the airliner's: a round white arch over an opening three blocks
 wide, on white jambs three blocks tall either side of it, smooth white panelling round the opening with a moulding
 along its edge, a bead and a groove behind it, the arch, its moulding and the panelling's edge all running smoothly

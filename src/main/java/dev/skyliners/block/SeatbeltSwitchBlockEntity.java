@@ -2,12 +2,14 @@ package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.CabinAnnouncements;
+import dev.skyliners.cabin.CurtainParting;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -66,11 +68,15 @@ public class SeatbeltSwitchBlockEntity extends LinkedControlBlockEntity {
         }
     }
 
-    /** Starts opening every curtain aboard, with one swish at the first still drawn shut; nothing if none is. */
+    /**
+     * Starts opening every curtain aboard, with one swish at the first still drawn shut; nothing if none is. What
+     * someone has just parted stays open with the rest.
+     */
     private void openCurtains() {
-        if (level == null) {
+        if (!(level instanceof ServerLevel server)) {
             return;
         }
+        CurtainParting.forget(server, curtains.stream().map(worldPosition::offset).toList());
         for (BlockPos offset : curtains) {
             BlockPos at = worldPosition.offset(offset);
             if (level.isLoaded(at) && isShut(level.getBlockState(at))) {

@@ -11,6 +11,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.IntValue BLOCKS_PER_TICK;
     public static final ModConfigSpec.EnumValue<ShellStyle> SHELL_STYLE;
     public static final ModConfigSpec.BooleanValue FLEET_PAINTINGS;
+    public static final ModConfigSpec.BooleanValue CURTAINS_PART;
     public static final ModConfigSpec.ConfigValue<String> WING_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENGINE_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ASSEMBLER_BLOCK;
@@ -222,6 +223,12 @@ public final class SkylinersConfig {
         builder.pop();
 
         builder.push("cabin");
+        CURTAINS_PART = builder
+            .comment(
+                "Whether a shut curtain parts round whoever walks through it and falls shut behind them.",
+                "Off, it stays as it hangs, and they pass through it just the same."
+            )
+            .define("curtainsPart", true);
         TURBULENCE = builder
             .comment(
                 "Whether airliners in flight now and then run into rough air, shaking everyone aboard and throwing about whoever is not seated.",

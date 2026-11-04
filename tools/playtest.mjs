@@ -114,6 +114,15 @@ const LEANING_LEAST = 6;
 const LEANING_STANDS = [[2, 1], [4, 3]];
 const LEANING_STILL_TICKS = 200;
 const LEANING_WHIRRS = 2;
+// A curtain to walk through: how many blocks across and high, wider than anyone parts; how far off to start, in blocks;
+// how long the walk key is held to have the player's middle in it, and how long after they have gone it should be shut
+// by, in ticks; and how long a ship is given to assemble and settle, in ticks.
+const CURTAIN_ACROSS = 7;
+const CURTAIN_UP = 3;
+const CURTAIN_RUN_UP = 2;
+const CURTAIN_WALK_TICKS = 9;
+const CURTAIN_SHUTS_TICKS = 60;
+const CURTAIN_ASSEMBLED_TICKS = 60;
 // The way a flight climbs, by the way its steps face, on the ground and as a player's yaw.
 const CLIMBS = { south: [0, 1, 0], west: [-1, 0, 90], north: [0, -1, 180], east: [1, 0, -90] };
 // Blocks in the rocket nothing can be aimed at, so the mouse wheel never meets them: drawn by nothing, or water.
@@ -558,6 +567,105 @@ function waitForLean(rocket) {
   return false;
 }
 
+// A curtain's piece as a command puts it up: one of a wall of them, facing north, joined to the rest.
+function curtainPiece(across, up, open) {
+  const joined = { left: across > 0, right: across < CURTAIN_ACROSS - 1, down: up > 0, up: up < CURTAIN_UP - 1 };
+  const props = Object.entries(joined).map(([name, value]) => `${name}=${value}`).join(",");
+  return `skyliners:cabin_curtain[facing=north,open=${open},${props}]`;
+}
+
+// Hangs a curtain at the site, wider than anyone parts, and gives the column to walk through.
+function hangCurtain(site, open) {
+  for (let across = 0; across < CURTAIN_ACROSS; across++) {
+    for (let up = 0; up < CURTAIN_UP; up++) {
+      must(`server setblock ${site.x + across} ${ground + up} ${site.z} ${curtainPiece(across, up, open)}`);
+    }
+  }
+  return site.x + Math.floor(CURTAIN_ACROSS / 2);
+}
+
+function takeDownCurtain(site) {
+  must(`server fill ${site.x} ${ground} ${site.z} ${site.x + CURTAIN_ACROSS - 1} ${ground + CURTAIN_UP - 1} ${site.z} air`);
+}
+
+const curtainOpen = (x, y, z) => read([x, y, z], [x, y, z]).get(key(x, y, z))?.includes("open=true") ?? false;
+
+// Walks at a curtain from the south in survival mode, and stops with the player's middle in it.
+function walkInto(x, z) {
+  must(`server gamemode survival @p; server tp @p ${x + 0.5} ${ground} ${z + CURTAIN_RUN_UP + 0.5}; turn 180 0; wait 20t`);
+  must(`move forward ${CURTAIN_WALK_TICKS}t`);
+}
+
+// On the ground: it parts round whoever walks through and nowhere else, with a swish, and shuts behind them; drawn open
+// by hand it stays open. Aboard an airliner too, where its blocks and the player are in different frames.
+function checkCurtainParts() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  creative();
+  must(`server tp @p ${site.x} ${ground} ${site.z + CURTAIN_RUN_UP}; wait ${CHUNKS_TICKS}t`);
+  const middle = hangCurtain(site, false);
+  const since = now();
+  walkInto(middle, site.z);
+  const at = must("status").pos.map(round).join(",");
+  expect(curtainOpen(middle, ground, site.z), "curtain: it parts as someone walks through it", `standing at ${at}`);
+  expect(!curtainOpen(site.x, ground, site.z), "curtain: it stays shut away from them");
+  const swishes = must(`sounds since=${since} match=*wool.place* limit=20`).count;
+  expect(swishes >= 1, "curtain: it swishes as it parts", `${swishes} swishes`);
+  must(`move forward ${CURTAIN_WALK_TICKS}t; wait ${CURTAIN_SHUTS_TICKS}t`);
+  expect(!curtainOpen(middle, ground, site.z), "curtain: it shuts again behind them");
+  creative();
+  takeDownCurtain(site);
+  const openMiddle = hangCurtain(site, true);
+  walkInto(openMiddle, site.z);
+  must(`move forward ${CURTAIN_WALK_TICKS}t; wait ${CURTAIN_SHUTS_TICKS}t`);
+  expect(curtainOpen(openMiddle, ground, site.z), "curtain: one drawn open by hand stays open after someone walks through");
+  creative();
+  takeDownCurtain(site);
+  checkCurtainSwitchedOff(site);
+  creative();
+  checkCurtainPartsAboard();
+}
+
+function checkCurtainSwitchedOff(site) {
+  must("config skyliners server cabin.curtainsPart false");
+  try {
+    const middle = hangCurtain(site, false);
+    walkInto(middle, site.z);
+    expect(!curtainOpen(middle, ground, site.z), "curtain: with its switch off, it stays as it hangs");
+  } finally {
+    send("?config reset");
+  }
+}
+
+// Walks through a curtain of a furnished airliner assembled and standing still, its blocks in Sable's plot.
+function checkCurtainPartsAboard() {
+  layDown("furnished");
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  must(`wait ${CURTAIN_ASSEMBLED_TICKS}t; skyliners:autopilot off; wait ${CURTAIN_ASSEMBLED_TICKS}t`);
+  const pieces = must("sable:find here skyliners:cabin_curtain 400 side=server").rows;
+  const low = Math.min(...pieces.map((row) => row.at[1]));
+  const lowest = pieces.filter((row) => row.at[1] === low);
+  const piece = lowest[Math.floor(lowest.length / 2)];
+  const at = piece.at.join(",");
+  const { props } = must(`block ${at}`);
+  const { facing } = props;
+  const [dx, dz, yaw] = CLIMBS[facing];
+  must(`sable:tp ${piece.at[0] + dx * CURTAIN_RUN_UP},${piece.at[1]},${piece.at[2] + dz * CURTAIN_RUN_UP}; wait 10t`);
+  const shut = Object.entries({ ...props, open: "false" }).map(([name, value]) => `${name}=${value}`).join(",");
+  if (props.open !== "false") {
+    must(`server setblock ${piece.at.join(" ")} skyliners:cabin_curtain[${shut}]; wait 5t`);
+  }
+  const turned = must("sable:info here brief").yaw;
+  survival();
+  must(`turn ${round(yaw + 180 + turned)} 0; wait 10t; move forward ${CURTAIN_WALK_TICKS}t`);
+  const parted = must(`block ${at}`).props.open === "true";
+  expect(parted, "curtain: aboard an assembled airliner, it parts too", `at ${at}, player at ${must("status").pos.map(round).join(",")}`);
+  must(`move forward ${CURTAIN_WALK_TICKS}t; wait ${CURTAIN_SHUTS_TICKS}t`);
+  expect(must(`block ${at}`).props.open === "false", "curtain: aboard, it shuts again behind them");
+  creative();
+  must(`server tp @p 0 ${ground} 0`);
+}
+
 function checkControlSurfacesDefault() {
   const setting = must("config skyliners server autopilot.controlSurfaces");
   expect(setting.default === true, "control surfaces: on by default", `default ${setting.default}`);
@@ -727,6 +835,7 @@ function shutAirlockDoor(blocks, at) {
 }
 
 const CHECKS = {
+  "curtain-parts": { run: checkCurtainParts, about: "a curtain parts as someone walks through it and shuts behind them" },
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
   "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },

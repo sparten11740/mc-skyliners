@@ -10698,6 +10698,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "skyliners.configuration.landAhead": "Land Ahead",
   "skyliners.configuration.landAheadChunks": "Land Ahead Distance",
   "skyliners.configuration.cabin": "Cabin",
+  "skyliners.configuration.curtainsPart": "Curtains Part",
   "skyliners.configuration.turbulence": "Turbulence",
   "skyliners.configuration.decompression": "Decompression",
   "skyliners.configuration.villagerPassengers": "Villager Passengers",
