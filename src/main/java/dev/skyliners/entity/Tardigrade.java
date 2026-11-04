@@ -1,6 +1,7 @@
 package dev.skyliners.entity;
 
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.cabin.TurbulencePayload;
 import dev.skyliners.compat.SableFlight;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -43,6 +45,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The rocket's tardigrade: a water bear the size of an elephant, kept in a glass tank in her lab (see
@@ -62,8 +65,10 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
  * sucks in with a slurp, the thing flying to its mouth, chews it with bits of it falling, and burps; it burps after
  * every meal. And now and then, resting awake, it jumps away through the spore drive, as its cousin on the starship
  * does: glowing as spores swirl in round it with a rising hum, gone in a burst of them with a whump, and back where it
- * was a few seconds later in another, whooshing in. A babycino sets the drive off at once. Nothing hurts it, but a
- * player attacking it startles it into a jump straight away, and then it stays away a minute or two.
+ * was a few seconds later in another, whooshing in. A babycino sets the drive off at once. An ice cream does more: it
+ * goes down in a gulp, the creature swells up and lets out a massive burp that shakes the ship for everyone on her, and
+ * then it stretches out long and thin and is gone to hyperspace in a streak of light. Nothing hurts it, but a player
+ * attacking it startles it into a jump straight away, and then it stays away a minute or two.
  *
  * <p>Left without its keeper a while, as when its tank is broken, it goes; one never kept, as one summoned, stays.
  */
@@ -185,6 +190,41 @@ public class Tardigrade extends PathfinderMob {
     /** What the client is told as it burps, and as it jumps away or comes back. */
     private static final byte BURPED = 82;
     private static final byte JUMPED = 83;
+    /**
+     * An ice cream: how long it swells after the gulp before its massive burp, how long after the burp it starts to
+     * stretch out, and how long it takes to stretch out and be gone, as long as the drive's hum takes to its whump, all
+     * in ticks.
+     */
+    private static final int SWELL_TICKS = 30;
+    private static final int STRETCH_AFTER = 30;
+    private static final int STRETCH_TICKS = CHARGE_TICKS;
+    /**
+     * Its massive burp: how far off it is heard, as a sound's volume, and the pitches of its two voices; the rumble of
+     * the ship shaking under it, its volume and pitch.
+     */
+    private static final float BIG_BURP_VOLUME = 4.0F;
+    private static final float BIG_BURP_PITCH = 0.5F;
+    private static final float BIG_BURP_SECOND_PITCH = 0.62F;
+    private static final float RUMBLE_VOLUME = 1.5F;
+    private static final float RUMBLE_PITCH = 0.5F;
+    /** How many puffs leave its mouth as it lets it out, how fast, in blocks a tick, and how many bits of ice cream. */
+    private static final int BIG_BURP_PUFFS = 70;
+    private static final double BIG_BURP_SPEED = 0.3;
+    private static final int BIG_BURP_BITS = 14;
+    /**
+     * The shake it sends through the ship: how far from it it is felt, in blocks, about the whole of a default rocket;
+     * how hard, as rough air's strength (1 being the roughest of clear skies); and how long, in ticks.
+     */
+    private static final double SHAKE_REACH = 128;
+    private static final float SHAKE_STRENGTH = 2.0F;
+    private static final int SHAKE_TICKS = 40;
+    /** How many streaks of light it leaves going to hyperspace, how fast they fly ahead, in blocks a tick. */
+    private static final int STREAKS = 60;
+    private static final double STREAK_SPEED = 1.5;
+    /** What the client is told as it gulps an ice cream, lets out its massive burp and goes to hyperspace. */
+    private static final byte GULPED = 84;
+    private static final byte BIG_BURPED = 85;
+    private static final byte STREAKED = 86;
 
     private static final EntityDataAccessor<Boolean> CURLED = SynchedEntityData.defineId(Tardigrade.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ASLEEP = SynchedEntityData.defineId(Tardigrade.class, EntityDataSerializers.BOOLEAN);
@@ -192,9 +232,9 @@ public class Tardigrade extends PathfinderMob {
     private static final EntityDataAccessor<ItemStack> EATEN = SynchedEntityData.defineId(Tardigrade.class, EntityDataSerializers.ITEM_STACK);
     private static final EntityDataAccessor<Integer> JUMP = SynchedEntityData.defineId(Tardigrade.class, EntityDataSerializers.INT);
 
-    /** Where it is in a jump through the spore drive: here, charging up to go, or away. */
+    /** Where it is in a jump: here, charging up to go, away, or stretching out to go to hyperspace. */
     public enum Jump {
-        HERE, CHARGING, AWAY
+        HERE, CHARGING, AWAY, STRETCHING
     }
 
     /**
@@ -244,6 +284,9 @@ public class Tardigrade extends PathfinderMob {
     private int burpIn;
     /** How long is left of its charging up or of its time away, in ticks. */
     private int jumpTicks;
+    /** After an ice cream: how long until its massive burp, and from then until it stretches out, in ticks. */
+    private int bigBurpIn;
+    private int stretchIn;
     /**
      * On the client: how far it has curled up, now and a tick ago, from 0 to 1, and how long it still munches and
      * wriggles.
@@ -258,6 +301,11 @@ public class Tardigrade extends PathfinderMob {
     /** On the client: how far it has charged up to jump, now and a tick ago, from 0 to 1. */
     private float charge;
     private float chargeBefore;
+    /** On the client: how far it has stretched out for hyperspace, now and a tick ago, from 0 to 1. */
+    private float stretch;
+    private float stretchBefore;
+    /** On the client: how long it swells yet before its massive burp, in ticks. */
+    private int swellShown;
 
     public Tardigrade(EntityType<? extends Tardigrade> type, Level level) {
         super(type, level);
@@ -378,6 +426,16 @@ public class Tardigrade extends PathfinderMob {
         return Mth.lerp(partialTick, chargeBefore, charge);
     }
 
+    /** How far it has stretched out for hyperspace this frame, from 0 to 1, on the client. */
+    public float stretch(float partialTick) {
+        return Mth.lerp(partialTick, stretchBefore, stretch);
+    }
+
+    /** How far it has swollen toward its massive burp this frame, from 0 to 1, on the client. */
+    public float swell(float partialTick) {
+        return swellShown == 0 ? 0 : 1 - Math.max(0, swellShown - partialTick) / SWELL_TICKS;
+    }
+
     /** Whether it is asleep, on either side. */
     public boolean isAsleep() {
         return entityData.get(ASLEEP);
@@ -451,6 +509,7 @@ public class Tardigrade extends PathfinderMob {
         playSound(sound, VOLUME, curled ? 1.0F : 0.85F);
         munching = 0;
         burpIn = 0;
+        settleIceCream();
         called = null;
         coming = null;
         forgetMeal();
@@ -499,15 +558,16 @@ public class Tardigrade extends PathfinderMob {
         return nearest;
     }
 
-    /** Whether something held is what it eats: moss, or a babycino, which it never refuses (see {@link #chew}). */
+    /** Whether something held is what it eats: moss, a babycino or an ice cream, never refused (see {@link #chew}). */
     public static boolean eats(ItemStack stack) {
-        return stack.is(Items.MOSS_BLOCK) || stack.is(Items.MOSS_CARPET) || stack.is(SkylinersRegistry.BABYCINO.get());
+        return stack.is(Items.MOSS_BLOCK) || stack.is(Items.MOSS_CARPET) || stack.is(SkylinersRegistry.BABYCINO.get())
+            || stack.is(SkylinersRegistry.ICE_CREAM.get());
     }
 
     /**
      * Fed straight from the hand, as through the open hatch, or touched with an empty one: it munches the moss or
-     * gulps the babycino, or wriggles (or wakes, asleep), where it is. In its tun, or away through the spore drive, it
-     * heeds neither.
+     * gulps the babycino or the ice cream, or wriggles (or wakes, asleep), where it is. In its tun, or away through the
+     * spore drive, it heeds neither.
      */
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
@@ -531,12 +591,17 @@ public class Tardigrade extends PathfinderMob {
     /**
      * Chews what it was fed or has swallowed, on the server: a bite at once and every so often, the client shown it and
      * bits of it falling from its mouth, and a burp once it is done. A babycino it does not chew: it goes straight to
-     * its spore drive (see {@link #gulpAndJump}).
+     * its spore drive (see {@link #gulpAndJump}). Nor an ice cream, which goes straight to its belly (see
+     * {@link #gulpAndSwell}).
      */
     private void chew(ItemStack eaten) {
         entityData.set(EATEN, eaten);
         if (eaten.is(SkylinersRegistry.BABYCINO.get())) {
             gulpAndJump();
+            return;
+        }
+        if (eaten.is(SkylinersRegistry.ICE_CREAM.get())) {
+            gulpAndSwell();
             return;
         }
         munching = MUNCH_TICKS;
@@ -552,8 +617,75 @@ public class Tardigrade extends PathfinderMob {
         munching = 0;
         burpIn = 0;
         burpOnReturn = true;
+        settleIceCream();
         playSound(SoundEvents.GENERIC_DRINK, VOLUME, 0.8F);
         chargeUp();
+    }
+
+    /**
+     * Its keepers' bigger secret: an ice cream goes down in one gulp, however it was busy, and it swells up with it,
+     * toward a massive burp (see {@link #bigBurp}).
+     */
+    private void gulpAndSwell() {
+        munching = 0;
+        burpIn = 0;
+        burpOnReturn = false;
+        stretchIn = 0;
+        bigBurpIn = SWELL_TICKS;
+        playSound(SoundEvents.GENERIC_EAT, VOLUME, 0.8F);
+        level().broadcastEntityEvent(this, GULPED);
+    }
+
+    /** Whether an ice cream is still going down: from the gulp until it stretches out for hyperspace. */
+    private boolean iceCreamGoingDown() {
+        return bigBurpIn > 0 || stretchIn > 0;
+    }
+
+    /** Leaves off an ice cream going down, as when it curls up or is startled away. */
+    private void settleIceCream() {
+        bigBurpIn = 0;
+        stretchIn = 0;
+    }
+
+    /** One tick of an ice cream going down, on the server: on to its massive burp, and from that on to hyperspace. */
+    private void iceCreamDown() {
+        if (bigBurpIn > 0 && --bigBurpIn == 0) {
+            bigBurp();
+            stretchIn = STRETCH_AFTER;
+        } else if (stretchIn > 0 && --stretchIn == 0) {
+            stretchOut();
+        }
+    }
+
+    /**
+     * Its massive burp, on the server: its burp's voice an octave down with another over it, the ship's rumble under
+     * them, the client shown a great cloud from its mouth, and the ship shaken for everyone on her.
+     */
+    private void bigBurp() {
+        playSound(SkylinersRegistry.TARDIGRADE_BURP.get(), BIG_BURP_VOLUME, BIG_BURP_PITCH);
+        playSound(SkylinersRegistry.TARDIGRADE_BURP.get(), BIG_BURP_VOLUME, BIG_BURP_SECOND_PITCH);
+        playSound(SoundEvents.GENERIC_EXPLODE.value(), RUMBLE_VOLUME, RUMBLE_PITCH);
+        level().broadcastEntityEvent(this, BIG_BURPED);
+        shakeShip();
+    }
+
+    /** Shakes the view of everyone near it, as rough air does: players are in the world, it among her blocks. */
+    private void shakeShip() {
+        Vec3 here = SableFlight.toWorld(level(), position());
+        for (Player player : level().players()) {
+            if (player instanceof ServerPlayer near && near.position().distanceTo(here) < SHAKE_REACH) {
+                PacketDistributor.sendToPlayer(near, new TurbulencePayload(SHAKE_STRENGTH, SHAKE_TICKS));
+            }
+        }
+    }
+
+    /** Starts stretching out for hyperspace, on the server, with the drive's rising hum. */
+    private void stretchOut() {
+        munching = 0;
+        burpIn = 0;
+        setJump(Jump.STRETCHING);
+        jumpTicks = STRETCH_TICKS;
+        playSound(SkylinersRegistry.TARDIGRADE_JUMP.get(), VOLUME, 1.0F);
     }
 
     /** Burps after its meal, on the server, the client shown a puff from its mouth. */
@@ -575,6 +707,9 @@ public class Tardigrade extends PathfinderMob {
             case WIGGLING -> wiggleShown = WIGGLE_TICKS;
             case BURPED -> burpPuff();
             case JUMPED -> sporeBurst();
+            case GULPED -> swellShown = SWELL_TICKS;
+            case BIG_BURPED -> bigBurpCloud();
+            case STREAKED -> hyperspaceStreaks();
             default -> super.handleEntityEvent(id);
         }
     }
@@ -597,6 +732,7 @@ public class Tardigrade extends PathfinderMob {
         if (burpIn > 0 && --burpIn == 0) {
             burp();
         }
+        iceCreamDown();
         if (munching > 0) {
             if (munching % BITE_EVERY == 0) {
                 Vec3 mouth = mouth();
@@ -624,6 +760,9 @@ public class Tardigrade extends PathfinderMob {
         if (jump() == Jump.CHARGING) {
             sporeSwirl();
         }
+        stretchBefore = stretch;
+        stretch = Mth.approach(stretch, jump() == Jump.STRETCHING ? 1 : 0, 1.0F / STRETCH_TICKS);
+        swellShown = Math.max(0, swellShown - 1);
         wiggleShown = Math.max(0, wiggleShown - 1);
         if (munchShown > 0) {
             munchShown--;
@@ -656,6 +795,33 @@ public class Tardigrade extends PathfinderMob {
                 (random.nextDouble() - 0.3) * BURP_SPEED, ahead.z * BURP_SPEED + (random.nextDouble() - 0.5) * BURP_SPEED);
         }
         wiggleShown = WIGGLE_TICKS / 2;
+    }
+
+    /** A great cloud from its mouth as it lets out its massive burp, on the client, bits of the ice cream in it. */
+    private void bigBurpCloud() {
+        swellShown = 0;
+        wiggleShown = WIGGLE_TICKS;
+        Vec3 mouth = mouth();
+        Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
+        for (int puff = 0; puff < BIG_BURP_PUFFS; puff++) {
+            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED,
+                (random.nextDouble() - 0.3) * BIG_BURP_SPEED, ahead.z * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED);
+        }
+        ItemParticleOption eaten = new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(SkylinersRegistry.ICE_CREAM.get()));
+        for (int bit = 0; bit < BIG_BURP_BITS; bit++) {
+            level().addParticle(eaten, mouth.x, mouth.y, mouth.z, ahead.x * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED,
+                random.nextDouble() * BIG_BURP_SPEED, ahead.z * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED);
+        }
+    }
+
+    /** Streaks of light flying on ahead from all along it as it goes to hyperspace, on the client. */
+    private void hyperspaceStreaks() {
+        Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
+        for (int streak = 0; streak < STREAKS; streak++) {
+            Vec3 at = position().add(ahead.scale((random.nextDouble() - 0.5) * MOUTH_AHEAD * 2))
+                .add((random.nextDouble() - 0.5) * MOUTH_AHEAD, random.nextDouble() * MOUTH_AHEAD, (random.nextDouble() - 0.5) * MOUTH_AHEAD);
+            level().addParticle(ParticleTypes.END_ROD, at.x, at.y, at.z, ahead.x * STREAK_SPEED, ahead.y * STREAK_SPEED, ahead.z * STREAK_SPEED);
+        }
     }
 
     /** Spores swirling in round it as it charges up to jump, on the client, from all round toward its middle. */
@@ -693,11 +859,12 @@ public class Tardigrade extends PathfinderMob {
             }
             case CHARGING -> {
                 if (--jumpTicks <= 0) {
-                    setJump(Jump.AWAY);
-                    jumpTicks = fleeing ? FLED_FROM + random.nextInt(FLED_TO - FLED_FROM) : AWAY_FROM + random.nextInt(AWAY_TO - AWAY_FROM);
-                    fleeing = false;
-                    setInvisible(true);
-                    level().broadcastEntityEvent(this, JUMPED);
+                    goAway(JUMPED);
+                }
+            }
+            case STRETCHING -> {
+                if (--jumpTicks <= 0) {
+                    goAway(STREAKED);
                 }
             }
             case AWAY -> {
@@ -709,6 +876,15 @@ public class Tardigrade extends PathfinderMob {
                 }
             }
         }
+    }
+
+    /** Gone, on the server, for as long as it stays away, the client shown it go as this says. */
+    private void goAway(byte shown) {
+        setJump(Jump.AWAY);
+        jumpTicks = fleeing ? FLED_FROM + random.nextInt(FLED_TO - FLED_FROM) : AWAY_FROM + random.nextInt(AWAY_TO - AWAY_FROM);
+        fleeing = false;
+        setInvisible(true);
+        level().broadcastEntityEvent(this, shown);
     }
 
     /**
@@ -724,6 +900,7 @@ public class Tardigrade extends PathfinderMob {
         if (jump() == Jump.HERE) {
             munching = 0;
             burpIn = 0;
+            settleIceCream();
             playSound(SkylinersRegistry.TARDIGRADE_MRRP.get(), VOLUME, YELP_PITCH);
             chargeUp();
         }
@@ -749,8 +926,8 @@ public class Tardigrade extends PathfinderMob {
 
     /** Whether it may jump: kept in its tank, resting awake, with nothing to eat or do and standing still. */
     private boolean mayJump() {
-        return from != null && !isCurled() && !isAsleep() && munching == 0 && burpIn == 0 && meal == null && called == null && coming == null
-            && turning == 0 && walked == 0;
+        return from != null && !isCurled() && !isAsleep() && munching == 0 && burpIn == 0 && !iceCreamGoingDown() && meal == null && called == null
+            && coming == null && turning == 0 && walked == 0;
     }
 
     /**
@@ -1151,7 +1328,7 @@ public class Tardigrade extends PathfinderMob {
 
         @Override
         public void tick() {
-            if (creature.munching > 0) {
+            if (creature.munching > 0 || creature.iceCreamGoingDown()) {
                 creature.halt();
                 lookAtHatch();
                 return;

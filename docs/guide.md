@@ -2278,7 +2278,9 @@ meal. And now and then, resting awake, it jumps away through the spore drive, as
 it glows spore blue as glowing spores swirl in round it with a rising hum, vanishes in a burst of them with a deep
 whump, and a few seconds later is back where it was in another, whooshing in. Its keepers have a secret: a babycino
 from the coffee machine, fed or thrown to it, is gone in a gulp and sets its drive off at once, and it burps when it is
-back. Nothing hurts it, but get at it past the glass of its tank and hit it, by hand or with a sword or an arrow, and
+back. An ice cream, fed or thrown to it, goes further: gone in a gulp, it swells the creature up until it lets out a
+massive burp, a deep double bellow and a great cloud with bits of ice cream in it, that shakes the view of everyone on
+the rocket; then it stretches out long and thin and is gone to hyperspace in a streak of light. Nothing hurts it, but get at it past the glass of its tank and hit it, by hand or with a sword or an arrow, and
 with a startled yelp it jumps away at once and stays gone a minute or two, the screen over its hatch showing stars
 streaming past for as long as it is away on any jump. In the tank's glass on her right is a
 feeding hatch at chest height,
