@@ -101,6 +101,19 @@ const BARTENDER_RUN_UP = 6;
 const BARTENDER_PASSES = 6;
 const BARTENDER_PASS_TICKS = 40;
 const BARTENDER_WHIRR_APART = 40;
+// A rocket leaning over as she flies to a pin: how high and fast, in blocks and blocks a second; how far off the pin is
+// each way, in blocks; how long she is given to lean, in ticks, and how far, as her pitch and roll added up, in
+// degrees; where to stand from the bartender, in blocks, and for how long, in ticks; and how many whirrs that may bring
+// in all.
+// With the fault, and the limit on whirrs, it brought four or five at each of these places in that time.
+const LEANING_HEIGHT = 200;
+const LEANING_SPEED = 30;
+const LEANING_PIN = 900;
+const LEANING_WITHIN_TICKS = 2000;
+const LEANING_LEAST = 6;
+const LEANING_STANDS = [[2, 1], [4, 3]];
+const LEANING_STILL_TICKS = 200;
+const LEANING_WHIRRS = 2;
 // The way a flight climbs, by the way its steps face, on the ground and as a player's yaw.
 const CLIMBS = { south: [0, 1, 0], west: [-1, 0, 90], north: [0, -1, 180], east: [1, 0, -90] };
 // Blocks in the rocket nothing can be aimed at, so the mouse wheel never meets them: drawn by nothing, or water.
@@ -496,6 +509,55 @@ function checkBartendersAreNoRacket() {
   must(`server fill ${fromX} ${ground} ${fromZ} ${toX} ${ground + 1} ${toZ} air`);
 }
 
+// Stands still at the bar of a rocket leaning over as she flies to a pin. A bartender working out where a player is by
+// inverting her matrix had them jumping ten blocks from tick to tick once she leaned, out of its reach and back, each
+// return someone new to whirr at. She has to get there by flying: one flying straight up, or turned round by a command,
+// never showed it.
+function checkBartenderOnALeaningRocket() {
+  const site = layDown("rocket");
+  const [bartender] = must("find skyliners:robot_bartender 128 1").rows;
+  const [x, y, z] = bartender.at_abs;
+  must(`fly off; server tp @p ${x + 0.5} ${y} ${z + 3.5}; wait 20t`);
+  must(`skyliners:autopilot fly altitude=${ground + LEANING_HEIGHT} speed=${LEANING_SPEED} pin=${site.x + LEANING_PIN},${site.z + LEANING_PIN}`, BUILD_SECONDS);
+  const rocket = findRocketFlying();
+  const leaning = waitForLean(rocket);
+  expect(leaning, "bartender: the rocket leans over as she flies to the pin");
+  if (!leaning) {
+    return;
+  }
+  const { at } = must(`sable:find ${rocket} skyliners:robot_bartender 1 side=server`).rows[0];
+  let whirrs = 0;
+  for (const [back, side] of LEANING_STANDS) {
+    const since = must(`sable:tp ${at[0] - back},${at[1]},${at[2] + side}; wait 40t; messages limit=1`).tick;
+    whirrs += must(`wait ${LEANING_STILL_TICKS}t; sounds since=${since} match=*bartender_servo* limit=1000`).count;
+  }
+  expect(whirrs <= LEANING_WHIRRS, "bartender: standing still at the bar of a leaning rocket, it does not keep whirring", `${whirrs} whirrs, at most ${LEANING_WHIRRS} wanted`);
+  must(`server tp @p 0 ${ground} 0`);
+  creative();
+}
+
+// The rocket that has just been assembled, the one sub-level with a bartender aboard; other ships may be flying yet.
+function findRocketFlying() {
+  for (let waited = 0; waited <= BUILD_SECONDS * 20; waited += LOOK_EVERY) {
+    const ids = must(`wait ${LOOK_EVERY}t; sable:list`).rows.map((row) => row.id);
+    const rocket = ids.find((id) => must(`sable:find ${id} skyliners:robot_bartender 1 side=server`).rows.length > 0);
+    if (rocket) {
+      return rocket;
+    }
+  }
+  throw new Error("she never assembled");
+}
+
+function waitForLean(rocket) {
+  for (let waited = 0; waited <= LEANING_WITHIN_TICKS; waited += LOOK_EVERY) {
+    const { pitch, roll } = must(`wait ${LOOK_EVERY}t; sable:info ${rocket} brief side=server`);
+    if (Math.abs(pitch) + Math.abs(roll) >= LEANING_LEAST) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function checkControlSurfacesDefault() {
   const setting = must("config skyliners server autopilot.controlSurfaces");
   expect(setting.default === true, "control surfaces: on by default", `default ${setting.default}`);
@@ -665,6 +727,7 @@ function shutAirlockDoor(blocks, at) {
 }
 
 const CHECKS = {
+  "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
   "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },
   "airstairs-leave-no-steps": { run: checkNoStepsLeftBehind, about: "taking off from a new build leaves no steps behind and takes no ground along" },

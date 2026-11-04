@@ -22,8 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4d;
-import org.joml.Vector3d;
 
 /**
  * Draws the robot bartender moving (see {@link RobotBartenderBlock}): its pedestal and torso are its block's own model,
@@ -305,7 +303,10 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
      * Each tick of a bartender on the client: its head turns toward the nearest player within {@link #LOOK_RANGE}
      * blocks, or ahead with nobody near, or down at the glass as it pours and sets the drink down; and its servo whirrs
      * as it turns to someone new. The players are in the world, the bartender among an airliner's blocks once it flies,
-     * so each player is found among its blocks first.
+     * so each player is found among its blocks first, by Sable's own inverse of how they lie. The inverse of that as a
+     * matrix will not do: those blocks lie twenty million blocks out, where the rounding on a ship leaning in flight
+     * moves a player standing still by ten blocks from tick to tick, in and out of reach, each return someone new to
+     * whirr at.
      */
     public static void look(RobotBartenderBlockEntity bartender) {
         Level level = bartender.getLevel();
@@ -315,9 +316,7 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         BlockPos pos = bartender.getBlockPos();
         Direction facing = bartender.getBlockState().getValue(RobotBartenderBlock.FACING);
         Vec3 neck = Vec3.atLowerCornerOf(pos).add(fromModel(facing, new Vec3(NECK_X / 16 - 0.5, NECK_Y / 16, NECK_Z / 16 - 0.5)).add(0.5, 0, 0.5));
-        SableClient.Placing placing = SableClient.placing(neck, 1);
-        Matrix4d toBlocks = placing == null ? null : new Matrix4d(placing.transform()).invert();
-        Player nearest = nearest(level, neck, toBlocks);
+        Player nearest = nearest(level, pos, neck);
         float age = level.getGameTime() - bartender.servedAt();
         if (age >= POURING && age < LET_GO) {
             bartender.turnHead(0, WATCH_GLASS);
@@ -328,7 +327,7 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
             bartender.turnHead(0, 0);
             return;
         }
-        Vec3 way = toModel(facing, amongBlocks(toBlocks, nearest.getEyePosition()).subtract(neck));
+        Vec3 way = toModel(facing, SableClient.toPlot(level, pos, nearest.getEyePosition(), false).subtract(neck));
         float yaw = Mth.clamp((float) Math.toDegrees(Math.atan2(-way.x, -way.z)), -MOST_TURN, MOST_TURN);
         float pitch = Mth.clamp((float) Math.toDegrees(Math.atan2(way.y, Math.hypot(way.x, way.z))), -MOST_TILT, MOST_TILT);
         UUID player = nearest.getUUID();
@@ -356,29 +355,17 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
 
     /** The nearest player, not a spectator, whose eyes are in reach of the neck, both among the airliner's blocks. */
     @Nullable
-    private static Player nearest(Level level, Vec3 neck, @Nullable Matrix4d toBlocks) {
+    private static Player nearest(Level level, BlockPos pos, Vec3 neck) {
         Player nearest = null;
         double best = LOOK_RANGE * LOOK_RANGE;
         for (Player player : level.players()) {
-            double distance = amongBlocks(toBlocks, player.getEyePosition()).distanceToSqr(neck);
+            double distance = SableClient.toPlot(level, pos, player.getEyePosition(), false).distanceToSqr(neck);
             if (!player.isSpectator() && distance < best) {
                 nearest = player;
                 best = distance;
             }
         }
         return nearest;
-    }
-
-    /**
-     * A point in the world among an airliner's blocks, by the transform taking the world into them (the inverse of its
-     * placing's); the point itself off one.
-     */
-    private static Vec3 amongBlocks(@Nullable Matrix4d toBlocks, Vec3 point) {
-        if (toBlocks == null) {
-            return point;
-        }
-        Vector3d among = toBlocks.transformPosition(new Vector3d(point.x, point.y, point.z));
-        return new Vec3(among.x, among.y, among.z);
     }
 
     /** A way in the bartender's model, drawn facing north, turned the way it faces among the blocks. */

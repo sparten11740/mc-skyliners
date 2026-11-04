@@ -276,7 +276,9 @@ public final class SableClient {
 
     /**
      * How an assembled airliner lies as it is drawn: the transform taking a position among its blocks into the world,
-     * and its turn, which takes a direction among its blocks into the world.
+     * and its turn, which takes a direction among its blocks into the world. Only ever forward: its blocks lie twenty
+     * million blocks out, and the inverse of this transform rounds by ten blocks once the airliner leans. To go from
+     * the world to its blocks, use {@link SableClient#toPlot}.
      */
     public record Placing(Matrix4d transform, Quaterniond turn) {
     }

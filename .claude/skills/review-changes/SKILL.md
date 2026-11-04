@@ -45,7 +45,9 @@ Run these and treat any failure as a finding:
 - **Moving things:** these print nothing, or each hit is justified in the report:
   `git grep -nE 'getGameTime\(\)[^;]*[pP]artial' -- src/main/java`, which is the snap-back under server lag, and
   `git grep -nE 'float [a-zA-Z]+ = [^;]*(getGameTime\(\)|getBlockPos\(\)\.get[XZ])' -- src/main/java`, which is a time or
-  plot coordinate in a float (a difference of two whole times is fine). In the diff, also look for `sync()` or
+  plot coordinate in a float (a difference of two whole times is fine). `git grep -n '\.invert(' -- src/main/java` is
+  an inverted transform: from the world into a plot, 20 million blocks out, that rounds by ten blocks on a leaning ship,
+  so it goes through `SableClient.toPlot` or `SableFlight.toPlot`. In the diff, also look for `sync()` or
   `sendBlockUpdated` on a path that runs every tick while something moves, and for a client's count overwritten from
   saved data without `ToldTicks`.
 - **Models on their textures:** with `tools/` or a model in the change set, run this; it prints nothing when every
