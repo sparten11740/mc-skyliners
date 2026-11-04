@@ -2184,7 +2184,8 @@ round a low table; at the back right two Cocktail Tables with stools; at the fro
 of lockers, a Space Helmet in each; and round the wall over head height hang neon signs: a martini glass over the back
 bar, music notes over the window behind the deck, a lightning bolt by the bar's end, lips over the booth, a planet over
 the tables and a rocket over the coats. The Robot Bartender is a chrome and white android two blocks tall on a pedestal
-glowing cyan round its foot, polishing a glass, its head turning with a servo's whirr toward whoever comes near and its
+glowing cyan round its foot, polishing a glass, its head turning with a servo's whirr toward whoever comes near (a crowd
+of them turn together, one whirr every couple of seconds standing for them all) and its
 cyan visor blinking now and then (craftable, and put down it faces you, so it can stand behind any bar). Use it and it
 greets you in its robot voice and opens its shop of mocktails, none with any alcohol in it, each shown in its own glass
 with its price in emeralds: an emerald buys two Nebula Fizzes, violet-blue and sparkling, for a minute of Night Vision,

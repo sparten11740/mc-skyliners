@@ -91,6 +91,16 @@ const SHAKE_STAND_OFF = 20;
 const STILL_DECIBELS = 40;
 const SHAKEN_DECIBELS = 32;
 const SHAKEN_FRAMES = 4;
+// A crowd of bartenders, 256 of them, to load the limit on their whirrs: it stands in for whatever set off a racket of
+// them in play, which was never found, as that rocket had only the one bartender. How many across, how high over them
+// to fly and how far short of them to start, in blocks; how many flights across them and how long each is, in ticks;
+// and how far apart one whirr should be from the next at least, in ticks, as the renderer has it.
+const BARTENDERS_ACROSS = 16;
+const BARTENDER_FLY_UP = 3;
+const BARTENDER_RUN_UP = 6;
+const BARTENDER_PASSES = 6;
+const BARTENDER_PASS_TICKS = 40;
+const BARTENDER_WHIRR_APART = 40;
 // The way a flight climbs, by the way its steps face, on the ground and as a player's yaw.
 const CLIMBS = { south: [0, 1, 0], west: [-1, 0, 90], north: [0, -1, 180], east: [1, 0, -90] };
 // Blocks in the rocket nothing can be aimed at, so the mouse wheel never meets them: drawn by nothing, or water.
@@ -464,6 +474,28 @@ function checkTardigradeIceCream() {
   expect(Boolean(heard("*tardigrade_burp*", thrown, BURP_WITHIN_TICKS)), "tardigrade: thrown into its tank, an ice cream does the same");
 }
 
+// Flies back and forth over a crowd of bartenders, every one of which turns to look as the player comes into its reach.
+function checkBartendersAreNoRacket() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  const [fromX, toX] = [site.x, site.x + BARTENDERS_ACROSS - 1];
+  const [fromZ, toZ] = [site.z, site.z + BARTENDERS_ACROSS - 1];
+  creative();
+  must(`server tp @p ${fromX - BARTENDER_RUN_UP} ${ground + BARTENDER_FLY_UP} ${fromZ + BARTENDERS_ACROSS / 2}; turn -90 0; wait ${CHUNKS_TICKS}t`);
+  must(`server fill ${fromX} ${ground} ${fromZ} ${toX} ${ground} ${toZ} skyliners:robot_bartender[facing=north]`);
+  must(`server fill ${fromX} ${ground + 1} ${fromZ} ${toX} ${ground + 1} ${toZ} skyliners:robot_bartender[facing=north,half=upper]`);
+  must("wait 40t");
+  const since = now();
+  for (let pass = 0; pass < BARTENDER_PASSES; pass++) {
+    must(`turn ${pass % 2 ? 90 : -90} 0; move forward ${BARTENDER_PASS_TICKS}t`);
+  }
+  const reply = must(`sounds since=${since} match=*bartender_servo* limit=1000`);
+  const within = reply.tick - since;
+  const allowed = Math.ceil(within / BARTENDER_WHIRR_APART) + 1;
+  expect(reply.count >= 1, "bartenders: a crowd of them still whirrs", `${reply.count} whirrs`);
+  expect(reply.count <= allowed, "bartenders: a crowd of them is no racket", `${reply.count} whirrs in ${within} ticks, at most ${allowed} wanted`);
+  must(`server fill ${fromX} ${ground} ${fromZ} ${toX} ${ground + 1} ${toZ} air`);
+}
+
 function checkControlSurfacesDefault() {
   const setting = must("config skyliners server autopilot.controlSurfaces");
   expect(setting.default === true, "control surfaces: on by default", `default ${setting.default}`);
@@ -633,6 +665,7 @@ function shutAirlockDoor(blocks, at) {
 }
 
 const CHECKS = {
+  "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },
   "airstairs-leave-no-steps": { run: checkNoStepsLeftBehind, about: "taking off from a new build leaves no steps behind and takes no ground along" },
   "zeppelin-stairs": { run: checkZeppelinStairs, about: "a zeppelin's stairs can be walked up from the ground" },

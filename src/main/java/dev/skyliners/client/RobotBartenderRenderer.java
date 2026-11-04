@@ -63,6 +63,8 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
     /** How far its head has to come round to someone new for its servo to whirr, in degrees, and how quietly. */
     private static final float WHIRR_TURN = 20;
     private static final float WHIRR_VOLUME = 0.6F;
+    /** How long after one whirr on this client the next may begin, in ticks, whichever bartenders they come from. */
+    private static final int WHIRR_APART = 40;
     /** How often it blinks, in ticks; how long a blink lasts; and every how many blinks it blinks twice. */
     private static final int BLINK_PERIOD = 90;
     private static final int BLINK_TICKS = 3;
@@ -117,6 +119,9 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
     private static final float MIDDLE = 1.2F;
 
     private final BlockRenderDispatcher blocks;
+
+    /** When the last whirr on this client began, by the drawing clock. */
+    private static long lastWhirr = -WHIRR_APART;
 
     public RobotBartenderRenderer(BlockEntityRendererProvider.Context context) {
         this.blocks = context.getBlockRenderDispatcher();
@@ -328,12 +333,25 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         float pitch = Mth.clamp((float) Math.toDegrees(Math.atan2(way.y, Math.hypot(way.x, way.z))), -MOST_TILT, MOST_TILT);
         UUID player = nearest.getUUID();
         if (!player.equals(bartender.lookingAt()) && Math.abs(yaw - bartender.headYaw(1)) > WHIRR_TURN) {
-            // Heard where the bartender is in the world: aboard an airliner in flight its block is in Sable's plot.
-            Vec3 heard = SableClient.toWorld(level, neck);
-            level.playLocalSound(heard.x, heard.y, heard.z, SkylinersRegistry.BARTENDER_SERVO.get(), SoundSource.BLOCKS, WHIRR_VOLUME, 1.0F, false);
+            whirr(level, neck);
         }
         bartender.lookAt(player);
         bartender.turnHead(yaw, pitch);
+    }
+
+    /**
+     * A servo's whirr, unless one began too lately on this client, from this bartender or another: a crowd of them all
+     * turn as someone walks among them, and one whirr now and then stands for them all. Heard where the bartender is in
+     * the world: aboard an airliner in flight its block is in Sable's plot.
+     */
+    private static void whirr(Level level, Vec3 neck) {
+        long now = DrawingClock.wholeTicks();
+        if (now - lastWhirr < WHIRR_APART) {
+            return;
+        }
+        lastWhirr = now;
+        Vec3 heard = SableClient.toWorld(level, neck);
+        level.playLocalSound(heard.x, heard.y, heard.z, SkylinersRegistry.BARTENDER_SERVO.get(), SoundSource.BLOCKS, WHIRR_VOLUME, 1.0F, false);
     }
 
     /** The nearest player, not a spectator, whose eyes are in reach of the neck, both among the airliner's blocks. */
