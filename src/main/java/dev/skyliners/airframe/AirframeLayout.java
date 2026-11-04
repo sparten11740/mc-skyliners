@@ -2859,9 +2859,10 @@ public final class AirframeLayout implements Layout {
 
     /**
      * How far down the stairs can be laid as built: blocks down from the sill, each a block further out, as far as
-     * nothing of the airliner stands in their way, at most to the row over the ground, where the controller stops them
-     * too. Laid into the ground row, they would take the place of the ground's own blocks, and the glue reaching down
-     * to them would glue the ground under the whole airliner to it, to be carried off when it is assembled.
+     * nothing of the airliner stands in their way, at most to the row over the ground row. Laid into the ground row,
+     * they could take the place of the ground's own blocks, and the glue reaching down to them would glue the ground
+     * under the whole airliner to it, to be carried off when it is assembled. The controller runs them on down from
+     * there, as far as it finds the ground lets them, once they stand (see {@link AirstairBlockEntity}).
      */
     private int laidStairs(HullDoor served, int rise) {
         for (int down = 1; down < rise; down++) {

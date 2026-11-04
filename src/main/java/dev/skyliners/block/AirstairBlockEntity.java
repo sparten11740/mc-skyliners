@@ -277,8 +277,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         }
         lastTicks = ticks;
         if (deploying && legs < 0) {
-            legs = AirstairSteps.legs(level, this::step, AirstairFlight.WIDTH, length);
-            sync();
+            standOnGround(level);
         }
         if (deploying && level.getGameTime() % WATCH_TICKS == 0 && moving(level)) {
             fold(level);
@@ -345,6 +344,23 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
             hatchOpen, false, Math.max(0, legs));
     }
 
+    /**
+     * Stands stairs built down or saved before on the ground, now the world can be looked at. The airframe's layout
+     * cannot see it, so it lays them only to the row over the wheels' row, their first tread a block and a half over
+     * the ground, which nobody reaches even with a jump: they run on down as far as the ground lets them, as they do
+     * when the controller brings them down itself, and their legs are measured from there.
+     */
+    private void standOnGround(ServerLevel level) {
+        int reach = reach(level);
+        if (laid && ticks == AirstairFlight.OUT && reach > length) {
+            length = reach;
+            lay(level);
+        }
+        legs = AirstairSteps.legs(level, this::step, AirstairFlight.WIDTH, length);
+        setChanged();
+        sync();
+    }
+
     /** How far down the stairs could come this time: blocks clear all the way from the door, up to their whole rise. */
     private int reach(ServerLevel level) {
         return AirstairSteps.reach(level, this::step, AirstairFlight.WIDTH, rise, cell -> false);
@@ -387,9 +403,13 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         return length + (foot ? 1 : 0);
     }
 
-    /** Takes the steps up, and the guards with them; only the steps' own blocks, whatever stands in their place. */
+    /**
+     * Takes the steps up, and the guards with them; only the steps' own blocks, whatever stands in their place. And any
+     * it left standing in the world as it was assembled with them down: those laid once it stood are not glued to it.
+     */
     private void takeUp(ServerLevel level) {
         AirstairSteps.takeUp(level, this::step, AirstairFlight.WIDTH, laidDown());
+        AirstairSteps.takeUpLeftBehind(level, this::step, AirstairFlight.WIDTH, laidDown());
         laid = false;
         foot = false;
     }
