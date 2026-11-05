@@ -37,22 +37,22 @@ import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The self-destruct, on the server: the alarm through an airliner whose button is armed, and the airliner blowing up
+ * The self-destruct, on the server: the alarm through a ship whose button is armed, and the ship blowing up
  * once its countdown runs out, or at once when the button is pressed again. The alarm is for everyone aboard, wherever
  * they are: the siren and the countdown's beeps follow each of them about (as the door alarm does), and each of them
  * sees the seconds left counted down on their screen (see {@link SelfDestructAlarmPayload}).
  *
- * <p>The airliner blows up once its level's tick is over, never while its block entities tick, since its blocks go with
+ * <p>The ship blows up once its level's tick is over, never while its block entities tick, since its blocks go with
  * it. Everyone aboard first puts on a parachute, whatever they wore on their chest going into their inventory, and is
  * got out of their seat, so they fall clear; the parachute opens by itself as soon as they fall free, and they float
  * down under it. A fall too short for it to open never hurts them. Anything else alive aboard (a villager passenger, a
- * pet) is put out into the world and floats down slowly. Then the airliner is taken away through Sable, all of it at
+ * pet) is put out into the world and floats down slowly. Then the ship is taken away through Sable, all of it at
  * once with everything loose aboard (items on its floors, trolleys, balls, paper planes, frames and pictures) and
  * nothing dropped, and in its place it blows up in a huge fireball (see {@link Blast}). Nothing round it is touched: no
  * block is broken, nothing set alight, nobody hurt.
  */
 public final class SelfDestruct {
-    /** How long after the blast a first landing does no harm, in ticks: time for a fall from a parked airliner. */
+    /** How long after the blast a first landing does no harm, in ticks: time for a fall from a parked ship. */
     private static final int PROTECTION = 60 * SharedConstants.TICKS_PER_SECOND;
     /**
      * How long after the blast the parachutes open by themselves, once their wearers fall free, and the latest they are
@@ -68,24 +68,27 @@ public final class SelfDestruct {
     private static final float BEEP_LOW = 0.7F;
     private static final float BEEP_HIGH = 2.0F;
     /**
-     * How many columns of the airliner are looked down for a block, and the most spots the fireball bursts from: spots
-     * on its blocks all over it, so the fire takes the airliner's own shape, wings, tail and all.
+     * How many columns of the ship are looked down for a block, and the most spots the fireball bursts from: spots
+     * on its blocks all over it, so the fire takes the ship's own shape, wings, tail and all.
      */
     private static final int SPOT_TRIES = 64;
     private static final int SPOTS = 24;
-    /** The A380's wingspan in metres, the widest of it, by which the blast is sized to the airliner as it was built. */
+    /**
+     * The A380's wingspan in metres, the widest of it, by which the blast is sized to a ship as it was built, by the
+     * longest way it measures: across for an airliner, up for a rocket as tall as the airliner is long.
+     */
     private static final double WINGSPAN = 79.8;
-    /** The blast's size at the smallest and the largest, in blocks per metre, whatever the airliner measures. */
+    /** The blast's size at the smallest and the largest, in blocks per metre, whatever the ship measures. */
     private static final double SMALLEST = 0.5;
     private static final double LARGEST = 4;
 
-    /** The buttons pressed to blow their airliner up this tick, by level: blown up once the level's tick is over. */
+    /** The buttons pressed to blow their ship up this tick, by level: blown up once the level's tick is over. */
     private static final Map<ServerLevel, List<SelfDestructButtonBlockEntity>> PRESSED = new HashMap<>();
     /**
-     * Whoever was aboard an airliner as it blew up, by their id, and the game time until which landing never hurts.
+     * Whoever was aboard a ship as it blew up, by their id, and the game time until which landing never hurts.
      */
     private static final Map<UUID, Long> PROTECTED = new HashMap<>();
-    /** Whoever bailed out of an airliner as it blew up, by their id, and the game time it blew up: their parachutes open. */
+    /** Whoever bailed out of a ship as it blew up, by their id, and the game time it blew up: their parachutes open. */
     private static final Map<UUID, Long> OPENING = new HashMap<>();
 
     private SelfDestruct() {
@@ -129,7 +132,7 @@ public final class SelfDestruct {
         }
     }
 
-    /** Pressed while armed, or the countdown run out: the button's airliner blows up once the level's tick is over. */
+    /** Pressed while armed, or the countdown run out: the button's ship blows up once the level's tick is over. */
     public static void detonate(ServerLevel level, SelfDestructButtonBlockEntity button) {
         List<SelfDestructButtonBlockEntity> pressed = PRESSED.computeIfAbsent(level, ignored -> new ArrayList<>());
         if (!pressed.contains(button)) {
@@ -137,7 +140,7 @@ public final class SelfDestruct {
         }
     }
 
-    /** Once a level's tick is over: the airliners pressed to blow up do, and the blasts already going on go on. */
+    /** Once a level's tick is over: the ships pressed to blow up do, and the blasts already going on go on. */
     public static void tick(ServerLevel level) {
         List<SelfDestructButtonBlockEntity> pressed = PRESSED.remove(level);
         if (pressed != null) {
@@ -150,7 +153,7 @@ public final class SelfDestruct {
     }
 
     /**
-     * Opens the parachute of a player who bailed out as an airliner blew up at the given game time, once they fall free
+     * Opens the parachute of a player who bailed out as a ship blew up at the given game time, once they fall free
      * in this level; whether that is done with, opened or too long ago to try any more.
      */
     private static boolean opened(ServerLevel level, UUID id, long blewUp) {
@@ -190,7 +193,7 @@ public final class SelfDestruct {
     }
 
     /**
-     * Blows the button's airliner up, if it still may: everyone off it, the airliner taken away, and its blast in its
+     * Blows the button's ship up, if it still may: everyone off it, the ship taken away, and its blast in its
      * place, round the spots its blocks were.
      */
     private static void blowUp(ServerLevel level, SelfDestructButtonBlockEntity button) {
@@ -207,23 +210,26 @@ public final class SelfDestruct {
         silence(button);
         Aboard.players(button).forEach(SelfDestruct::bailOut);
         others.forEach(SelfDestruct::floatDown);
-        // Sable would put whatever else is aboard out into the world, to fall out of the sky: it goes with the airliner.
+        // Sable would put whatever else is aboard out into the world, to fall out of the sky: it goes with the ship.
         level.getEntities((Entity) null, AABB.of(blocks), entity -> !(entity instanceof LivingEntity)).forEach(Entity::discard);
         if (SableFlight.remove(button)) {
-            double size = Mth.clamp(Math.max(blocks.getXSpan(), blocks.getZSpan()) / WINGSPAN, SMALLEST, LARGEST);
+            double size = Mth.clamp(Math.max(blocks.getYSpan(), Math.max(blocks.getXSpan(), blocks.getZSpan())) / WINGSPAN, SMALLEST, LARGEST);
             Blast.start(level, centre, spots, size);
         }
     }
 
     /**
-     * Spots on the airliner's blocks, where it is in the world: the top block of each of a few columns of the box round
-     * it picked at random, so its fuselage, wings and tail all burn.
+     * Spots on the ship's blocks, where it is in the world: the top block of each of a few columns of the box round it
+     * picked at random, so an airliner's fuselage, wings and tail all burn. A ship taller than it is wide is looked
+     * down from a height picked at random too, so a rocket burns all the way up, not only at her nose and her fins'
+     * tops.
      */
     private static List<Vec3> burning(ServerLevel level, BoundingBox blocks) {
         List<Vec3> spots = new ArrayList<>();
         RandomSource random = level.getRandom();
         for (int i = 0; i < SPOT_TRIES && spots.size() < SPOTS; i++) {
-            BlockPos top = top(level, blocks, blocks.minX() + random.nextInt(blocks.getXSpan()), blocks.minZ() + random.nextInt(blocks.getZSpan()));
+            int from = blocks.getYSpan() > Math.max(blocks.getXSpan(), blocks.getZSpan()) ? blocks.minY() + random.nextInt(blocks.getYSpan()) : blocks.maxY();
+            BlockPos top = top(level, blocks, blocks.minX() + random.nextInt(blocks.getXSpan()), from, blocks.minZ() + random.nextInt(blocks.getZSpan()));
             if (top != null) {
                 spots.add(SableFlight.toWorld(level, Vec3.atCenterOf(top)));
             }
@@ -231,10 +237,10 @@ public final class SelfDestruct {
         return spots;
     }
 
-    /** The highest block of the airliner in a column of its box; null if the column is empty. */
+    /** The highest block of the ship in a column of its box, from a height down; null if there is none. */
     @Nullable
-    private static BlockPos top(ServerLevel level, BoundingBox blocks, int x, int z) {
-        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, blocks.maxY(), z);
+    private static BlockPos top(ServerLevel level, BoundingBox blocks, int x, int from, int z) {
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, from, z);
         for (; at.getY() >= blocks.minY(); at.move(0, -1, 0)) {
             if (!level.getBlockState(at).isAir()) {
                 return at.immutable();
@@ -244,7 +250,7 @@ public final class SelfDestruct {
     }
 
     /**
-     * Everything alive aboard that is not a player: whatever lives among the airliner's blocks, in its plot (a villager
+     * Everything alive aboard that is not a player: whatever lives among the ship's blocks, in its plot (a villager
      * in its seat), and whatever rides it in the world round it.
      */
     private static List<LivingEntity> othersAboard(ServerLevel level, BlockEntity button, BoundingBox blocks, Vec3 centre) {
@@ -257,7 +263,7 @@ public final class SelfDestruct {
     }
 
     /**
-     * A player aboard as the airliner blows up: out of their seat, where they sat in the world, brought to a stop there
+     * A player aboard as the ship blows up: out of their seat, where they sat in the world, brought to a stop there
      * (see {@link #stop}), a parachute on, and a first landing that does not hurt.
      */
     private static void bailOut(ServerPlayer player) {
@@ -292,9 +298,9 @@ public final class SelfDestruct {
     }
 
     /**
-     * Brings someone thrown clear of the airliner to a stop where it blew up. Carried on at its speed, which Sable keeps
+     * Brings someone thrown clear of the ship to a stop where it blew up. Carried on at its speed, which Sable keeps
      * on whatever leaves it, they sailed on some 400 blocks ahead of the fireball, which stays where it blew up: from a
-     * flight deck at cruise, the airliner only vanished. A player's own client moves them, so it is told to stop them
+     * flight deck at cruise, the ship only vanished. A player's own client moves them, so it is told to stop them
      * too (see {@link ThrownClearPayload}).
      */
     private static void stop(LivingEntity entity) {

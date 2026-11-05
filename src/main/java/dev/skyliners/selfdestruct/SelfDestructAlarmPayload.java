@@ -8,8 +8,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Sent to everyone aboard an airliner whose self-destruct button is armed: how many ticks are left before it blows
- * up, for their screen to count the seconds down; none (0) once it is disarmed or the airliner has blown up.
+ * Sent to everyone aboard a ship whose self-destruct button is armed: how many ticks are left before it blows
+ * up, for their screen to count the seconds down; none (0) once it is disarmed or the ship has blown up.
  */
 public record SelfDestructAlarmPayload(int ticks) implements CustomPacketPayload {
     public static final SelfDestructAlarmPayload NONE = new SelfDestructAlarmPayload(0);

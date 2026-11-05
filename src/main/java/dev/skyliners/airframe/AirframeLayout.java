@@ -43,6 +43,7 @@ import dev.skyliners.block.InstrumentPanelBlock;
 import dev.skyliners.block.Joining;
 import dev.skyliners.block.JumpSwitchBlock;
 import dev.skyliners.block.LinkedControlBlockEntity;
+import dev.skyliners.block.Mount;
 import dev.skyliners.block.NavLightBlock;
 import dev.skyliners.block.ParachuteRackBlock;
 import dev.skyliners.block.ParkingBrakeBlock;
@@ -51,8 +52,6 @@ import dev.skyliners.block.PlugDoorBlock;
 import dev.skyliners.block.SeatbeltSignBlock;
 import dev.skyliners.block.SeatbeltSwitchBlock;
 import dev.skyliners.block.SeatbeltSwitchBlockEntity;
-import dev.skyliners.block.SelfDestructButtonBlock;
-import dev.skyliners.block.SelfDestructButtonBlockEntity;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.block.SlideControlBlock;
@@ -2109,13 +2108,8 @@ public final class AirframeLayout implements Layout {
 
     /** Puts the self-destruct button up at the spot, facing the way whoever presses it faces, linked to the autopilot. */
     private void selfDestructButtonAt(BlockPos at, Direction facing, BlockPos autopilot) {
-        set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.SELF_DESTRUCT_BUTTON.get().defaultBlockState()
-            .setValue(SelfDestructButtonBlock.FACING, facing));
-        fittings.put(at, (blockEntity, rotation) -> {
-            if (blockEntity instanceof SelfDestructButtonBlockEntity linked) {
-                linked.configure(autopilot.subtract(at).rotate(rotation));
-            }
-        });
+        set(at.getX(), at.getY(), at.getZ(), SelfDestructFitting.button(Mount.WALL, facing));
+        fittings.put(at, SelfDestructFitting.linkedTo(at, autopilot));
     }
 
     /**

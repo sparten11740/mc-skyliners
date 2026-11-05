@@ -1272,7 +1272,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         flyOnceAboardFor = player.getUUID();
         flyOnceAboardSeat = null;
         setChanged();
-        if (SableFlight.assemble(server, worldPosition, ZeppelinAssembly.blocks(server, worldPosition, frame), frame)) {
+        if (assembleThroughSable(server)) {
             return Component.translatable(craft == Craft.ROCKET ? "message.skyliners.autopilot.assembling_rocket"
                 : "message.skyliners.autopilot.assembling_zeppelin");
         }
@@ -1283,13 +1283,26 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Assembles the airliner standing parked as blocks with its Physics Assembler, as {@link #assembleToFly} does but
-     * to fly nowhere: for the self-destruct button, which arms once it is aboard the assembled airliner. Whether it
-     * started: not with the airliner assembled already, assembling, or without a Physics Assembler.
+     * Assembles a zeppelin or a rocket standing as blocks, through Sable from the blocks in its frame (see
+     * {@link ZeppelinAssembly}); whether it started.
+     */
+    private boolean assembleThroughSable(ServerLevel server) {
+        BoundingBox frame = frame();
+        return frame != null && SableFlight.installed()
+            && SableFlight.assemble(server, worldPosition, ZeppelinAssembly.blocks(server, worldPosition, frame), frame);
+    }
+
+    /**
+     * Assembles the ship standing parked as blocks as {@link #assembleToFly} does, with its Physics Assembler or
+     * through Sable, but to fly nowhere: for the self-destruct button, which arms once it is aboard the assembled ship.
+     * Whether it started: not with the ship assembled already, assembling, or an airliner without a Physics Assembler.
      */
     public boolean startAssembly(ServerPlayer player) {
         if (!(level instanceof ServerLevel server) || SableFlight.read(this, nose()) != null || assembling()) {
             return false;
+        }
+        if (assembledThroughSable()) {
+            return assembleThroughSable(server);
         }
         BlockPos at = assemblerAt(server);
         return at != null && PhysicsAssembler.assemble(server, at, player) == null;

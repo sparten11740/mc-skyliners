@@ -147,6 +147,15 @@ record RocketFlightDeck(@Nullable BlockPos head, List<Seat> pilots, List<BlockPo
     }
 
     /** Every seat of the plan: the pilots', the jump seats and the launch seats. */
+    /**
+     * Where the self-destruct button stands (see {@link RocketSelfDestruct}): on the floor on the commander's side, in
+     * line with the left wing and just behind it; null without that wing.
+     */
+    @Nullable
+    BlockPos selfDestruct() {
+        return ledConsole == null ? null : ledConsole.south(LEFT_WING_LENGTH);
+    }
+
     List<Seat> seats() {
         return Stream.of(pilots, jumpSeats, launchSeats).flatMap(List::stream).toList();
     }

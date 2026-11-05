@@ -29,11 +29,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The self-destruct button, on the flight deck's back wall: a big red button on a yellow-and-black striped plate under
+ * The self-destruct button, on a ship's flight deck: a big red button on a yellow-and-black striped plate under
  * a striped flip cover, so that it reads as the button not to press without a word. It takes three presses on purpose
  * to set off (see {@link SelfDestructButtonBlockEntity}): the first flips the cover up (OPEN), the second arms it, the
- * button lit and flashing red (ARMED) while the alarm wails through the airliner, and a third while it is armed blows
- * the airliner up. Sneak and use it with an empty hand to snap the cover shut and disarm it. Put up by hand, it takes
+ * button lit and flashing red (ARMED) while the alarm wails through the ship, and a third while it is armed blows
+ * the ship up. Sneak and use it with an empty hand to snap the cover shut and disarm it. Put up by hand, it takes
  * the shape that fits where it goes (MOUNT): against the side of a block, the plate on the wall; on the floor, the
  * plate tilted toward whoever put it there on top of a pedestal console, a column of the flight deck's console casing
  * on a hazard-striped plinth. FACING is the way whoever looks at it faces, toward the wall or across the pedestal.

@@ -345,14 +345,18 @@ free, and they float down under it, steering it the way they walk; a fall too sh
 either. A villager passenger or a pet aboard floats down slowly. Nothing round the airliner is
 touched: the explosion breaks no blocks, sets nothing alight and hurts nobody.
 
-The button only works on an airliner of this mod's, built from its blueprint, and only blows up the airliner it is
-part of, never another mod's vehicle, even with an autopilot put aboard by hand; anywhere else, arming it only gives a
-dull thud. Armed on an airliner still standing parked as blocks, it first has its Physics Assembler put it together,
-as Take Off does, with a hum, and arms a moment later, once it has. Turn it off with `selfDestruct` in the server
-config: the button then only thuds, and airliners built while it is off have none. A Self-Destruct Button can be
-crafted and put up on a wall of an airliner in your own builds, facing you, or stood on its floor, where it sits on
-top of a pedestal console on a hazard-striped plinth, its plate tilted toward you; it works the airliner of the nearest
-autopilot within 24 blocks, once that airliner is assembled.
+The rocket has the same button, on its pedestal in her cockpit on the commander's side, just behind the LED console and
+facing back toward the lift (see The rocket), and it works just the same, in the air or standing on the pad. She goes up by her height as the
+airliner does by its wingspan, fire bursting out all the way up her, and everyone aboard falls clear under a parachute,
+from the edge of space too. A rocket built before she had it can be given one by hand, as below.
+
+The button only works on a ship of this mod's, built from its blueprint, and only blows up the ship it is part of, never
+another mod's vehicle, even with an autopilot put aboard by hand; anywhere else, arming it only gives a dull thud. Armed
+on a ship still standing parked as blocks, it first has it put together, as Take Off does, with a hum, and arms a moment
+later, once it has. Turn it off with `selfDestruct` in the server config: the button then only thuds, and airliners and
+rockets built while it is off have none. A Self-Destruct Button can be crafted and put up on a wall of a ship in your own
+builds, facing you, or stood on its floor, where it sits on top of a pedestal console on a hazard-striped plinth, its
+plate tilted toward you; it works the ship of the nearest autopilot within 24 blocks, once that ship is assembled.
 
 ### The upper deck
 
@@ -2326,7 +2330,8 @@ and between the two the airliner's autopilot screen, its moving map drawing wher
 pin, with only her own buttons beside it, lit while she flies: on and off, height and climb (touch the map to zoom, a
 button to open the autopilot's settings); the panel's dark casing runs on from them to the glass as a
 glareshield. The commander has the LED console at the left hand and the pilot the livery selector, with the large camera
-display over it, at the right (see below), both standing on the floor facing in. Where there is room, two jump seats
+display over it, at the right (see below), both standing on the floor facing in. Just behind the LED console, facing
+back toward the lift, stands the self-destruct button on its pedestal (see Self-destruct). Where there is room, two jump seats
 stand behind the pilots, and a row of launch seats at the back glass looks out, without sticks (the server config's
 `rocket.rooms` leaves every seat out with her rooms). Where the nose narrows too soon, the two consoles at the sides
 start a row further back; in the smallest rocket, a capsule, the pilots sit a row behind the head either side of the

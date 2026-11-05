@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Sent to each player near an airliner blowing up (see {@link Blast}): how hard their view shakes, from 0 to 1, by how
+ * Sent to each player near a ship blowing up (see {@link Blast}): how hard their view shakes, from 0 to 1, by how
  * near they are, and how bright the white flash is for them, from 0 to 1, by how near and whether they saw it.
  */
 public record BlastPayload(float shake, float flash) implements CustomPacketPayload {

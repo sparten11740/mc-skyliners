@@ -26,14 +26,14 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * An airliner blowing up as its self-destruct button sets it off: the blast of Ultrasplosive's nuke (the Fat Man, from
- * the mod of that name, which need not be installed: its blast is copied here), scaled down to the airliner. It is made
+ * A ship blowing up as its self-destruct button sets it off: the blast of Ultrasplosive's nuke (the Fat Man, from
+ * the mod of that name, which need not be installed: its blast is copied here), scaled down to the ship. It is made
  * only of particles, sounds and what each player near it sees and feels, so nothing round it is touched: no block
  * broken, nothing set alight, nobody hurt or thrown. In the order it plays out:
  * <ul>
  * <li>a white flash and a shake of the view for every player near (see {@link BlastPayload}), harder the nearer, the
  * flash brighter for those who saw it go;</li>
- * <li>the fireball: fire bursting from spots all over the airliner's blocks where it was, so it takes the airliner's
+ * <li>the fireball: fire bursting from spots all over the ship's blocks where it was, so it takes the ship's
  * shape, and a bigger ball of it in the middle, each puff white-hot and cooling through red to soot, sparks and
  * lava spitting out of it, and burning embers thrown out of it, falling as they cool;</li>
  * <li>the blast wave: a ring of pale dust racing out from it, along the ground where the ground is near, or else
@@ -44,14 +44,14 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * </ul>
  * Each puff is one of a few thousand big, slow particles (see {@link dev.skyliners.client.BlastPuffParticle}), each
  * tick's sent to every player near as one bundle. Lengths are in metres of the real airliner, scaled by the blocks to
- * a metre the airliner was built at; times are in ticks.
+ * a metre the ship was built at; times are in ticks.
  */
 public final class Blast {
-    /** The most blasts going on at once in a level, so a row of airliners blown up together costs no more than this. */
+    /** The most blasts going on at once in a level, so a row of ships blown up together costs no more than this. */
     private static final int MOST = 4;
     /** How far from the blast its particles are sent, in blocks: about as far as a client draws them. */
     private static final double VIEW_DISTANCE = 512;
-    /** How long the fire bursts out of the airliner, and how far round each spot of it the fire reaches at the full. */
+    /** How long the fire bursts out of the ship, and how far round each spot of it the fire reaches at the full. */
     private static final int FIREBALL_TICKS = 30;
     private static final double SPOT_FIRE = 5;
     /** The ball of fire in the middle: its radius as it starts and at the full. */
@@ -135,11 +135,11 @@ public final class Blast {
 
     private static final Map<ServerLevel, List<Blast>> GOING_ON = new HashMap<>();
 
-    /** Where the blast is: the middle of the airliner, in the world, as it blew up. */
+    /** Where the blast is: the middle of the ship, in the world, as it blew up. */
     private final Vec3 centre;
-    /** Spots on the airliner's blocks, where they were in the world: where its fire bursts from. */
+    /** Spots on the ship's blocks, where they were in the world: where its fire bursts from. */
     private final List<Vec3> spots;
-    /** The airliner's size as it was built, in blocks to a metre. */
+    /** The ship's size as it was built, in blocks to a metre. */
     private final double size;
     /** The sounds still to reach their listeners. */
     private final List<Heard> heard = new ArrayList<>();
@@ -160,7 +160,7 @@ public final class Blast {
     }
 
     /**
-     * An airliner of this size, in blocks to a metre, blows up round the middle given, its fire bursting from the spots
+     * A ship of this size, in blocks to a metre, blows up round the middle given, its fire bursting from the spots
      * given: the flash and the shake for everyone near at once, the rest over the next ten seconds.
      */
     public static void start(ServerLevel level, Vec3 centre, List<Vec3> spots, double size) {
@@ -334,7 +334,7 @@ public final class Blast {
         }
     }
 
-    /** A burning ember thrown out of the airliner from one of its spots, mostly outward and up, to fall as it cools. */
+    /** A burning ember thrown out of the ship from one of its spots, mostly outward and up, to fall as it cools. */
     private void ember(RandomSource random) {
         Vec3 spot = spots.get(random.nextInt(spots.size()));
         Vec3 way = direction(random);

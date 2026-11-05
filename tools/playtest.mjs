@@ -138,6 +138,15 @@ const LEAVES_UP = 8;
 const HOP_REST_WITHIN = 1;
 const HOP_UP_TICKS = 1500;
 const HOP_DOWN_TICKS = 1800;
+// A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
+// how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
+// her resting place she is flying as it is pressed, in blocks; and how long whoever bailed out is given to float down,
+// in ticks, and how close to the ground they count as down, in blocks.
+const DESTRUCT_ARMED_TICKS = 400;
+const DESTRUCT_SETTLE_TICKS = 30;
+const DESTRUCT_HEIGHT = 120;
+const DESTRUCT_FALL_TICKS = 4000;
+const DESTRUCT_DOWN_WITHIN = 2;
 // The way a flight climbs, by the way its steps face, on the ground and as a player's yaw.
 const CLIMBS = { south: [0, 1, 0], west: [-1, 0, 90], north: [0, -1, 180], east: [1, 0, -90] };
 // Blocks in the rocket nothing can be aimed at, so the mouse wheel never meets them: drawn by nothing, or water.
@@ -641,6 +650,75 @@ function checkRocketSwitchesOffWhereSheRests() {
   must(`server gamerule doFireTick true; server tp @p ${site.x} ${ground} ${site.z}`);
 }
 
+// Lifts the cover of a self-destruct button and arms it, at the place given; the tick it was armed at.
+function armButton(at) {
+  emptyHands();
+  must(`use ${at}`);
+  const since = now();
+  must(`wait 10t; use ${at}`);
+  return since;
+}
+
+// Whether a sub-level is still held by the server.
+const stillThere = (id) => must("sable:list 2048 side=server").rows.some((row) => row.id === id);
+
+// Whether the player wears the parachute everyone aboard is given.
+function wearsParachute() {
+  const [reply] = send("server clear @p skyliners:parachute 0");
+  return reply.ok !== false;
+}
+
+// A rocket standing on the ground: the button is there as she is built, arming it puts her together, and a third press
+// blows her up.
+function checkRocketSelfDestructOnTheGround() {
+  layDown("rocket");
+  const [found] = must("find skyliners:self_destruct_button 128 1").rows;
+  expect(found, "rocket: she is built with a self-destruct button");
+  if (!found) {
+    return;
+  }
+  const [x, y, z] = found.at_abs;
+  must(`fly off; server tp @p ${x + 1.5} ${y} ${z + 0.5}; wait 20t`);
+  const since = armButton(`${x},${y},${z}`);
+  expect(heard("*self_destruct_siren*", since, DESTRUCT_ARMED_TICKS), "rocket: standing as blocks, arming the button puts her together and sounds the alarm");
+  const rocket = findRocketFlying();
+  const { at } = must(`sable:find ${rocket} skyliners:self_destruct_button 1 side=server`).rows[0];
+  const pressed = must(`wait ${DESTRUCT_SETTLE_TICKS}t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  expect(heard("*self_destruct_blast*", pressed, DESTRUCT_ARMED_TICKS), "rocket: pressed again, she blows up");
+  expect(!stillThere(rocket), "rocket: blown up on the ground, she is gone");
+  expect(wearsParachute(), "rocket: whoever stood aboard is given a parachute");
+  must(`server tp @p 0 ${ground} 0`);
+  creative();
+}
+
+// A rocket in flight: the countdown runs out, her engines fall silent with her, and whoever stood aboard floats down
+// unhurt under their parachute.
+function checkRocketSelfDestructInFlight() {
+  layDown("rocket");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + DESTRUCT_HEIGHT}`, BUILD_SECONDS);
+  const rocket = findRocketFlying();
+  const climbing = waitForRocket((report) => report.phase === "cruise" || report.phase === "descent", HOP_UP_TICKS);
+  expect(climbing, "rocket: she climbs to where the self-destruct is to be pressed");
+  const { at } = must(`sable:find ${rocket} skyliners:self_destruct_button 1 side=server`).rows[0];
+  survival();
+  must(`sable:tp ${at.join(",")}; wait 20t; move left 4t; wait 10t`);
+  const since = armButton(at.join(","));
+  expect(heard("*self_destruct_blast*", since, DESTRUCT_ARMED_TICKS), "rocket: in flight, the countdown runs out and she blows up");
+  expect(!stillThere(rocket), "rocket: blown up in flight, she is gone");
+  expect(wearsParachute(), "rocket: whoever stood aboard her in flight is given a parachute");
+  expect(must("wait 40t; sounds playing match=*rocket_roar*").count === 0, "rocket: her roar stops with her");
+  let status = must("status");
+  for (let waited = 0; waited <= DESTRUCT_FALL_TICKS && status.pos[1] > ground + DESTRUCT_DOWN_WITHIN; waited += LOOK_EVERY) {
+    status = must(`wait ${LOOK_EVERY}t; status`);
+  }
+  expect(status.pos[1] <= ground + DESTRUCT_DOWN_WITHIN, "rocket: whoever bailed out reaches the ground", `at height ${round(status.pos[1])}, ground ${ground}`);
+  expect(String(status.hp).startsWith("20"), "rocket: whoever bailed out lands unhurt", `health ${status.hp}`);
+  must(`server tp @p 0 ${ground} 0`);
+  creative();
+}
+
 // A curtain's piece as a command puts it up: one of a wall of them, facing north, joined to the rest.
 function curtainPiece(across, up, open) {
   const joined = { left: across > 0, right: across < CURTAIN_ACROSS - 1, down: up > 0, up: up < CURTAIN_UP - 1 };
@@ -921,6 +999,8 @@ const CHECKS = {
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
+  "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },
+  "rocket-self-destruct-flight": { run: checkRocketSelfDestructInFlight, about: "a rocket blows up in flight, her roar stops, and whoever was aboard floats down unhurt", slow: true },
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };

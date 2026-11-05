@@ -283,9 +283,10 @@ public final class SkylinersConfig {
         SELF_DESTRUCT = builder
             .comment(
                 "Whether the self-destruct button on the flight deck works: a big red button under a striped cover, opened, armed and",
-                "pressed again within ten seconds, gives everyone aboard a parachute and blows the assembled airliner up in a huge",
-                "explosion of fire and smoke. The airliner is gone, but nothing round it is harmed: no block is broken and nobody is",
-                "hurt. Off, the button only thuds. Only airliners built while it is on have the button; one placed by hand works too."
+                "pressed again within ten seconds, gives everyone aboard a parachute and blows the assembled ship up in a huge",
+                "explosion of fire and smoke. The ship is gone, but nothing round it is harmed: no block is broken and nobody is",
+                "hurt. Off, the button only thuds. Only airliners and rockets built while it is on have the button; one placed by",
+                "hand works too."
             )
             .define("selfDestruct", true);
         builder.pop();

@@ -27,23 +27,23 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The self-destruct button's workings. It belongs to the airliner whose autopilot it is linked to (as an offset turned
+ * The self-destruct button's workings. It belongs to the ship whose autopilot it is linked to (as an offset turned
  * with the button, see {@link Turning}; a button put up by hand links itself to the nearest autopilot within the
- * flight deck's reach), and works only while that airliner is assembled with the button among its own blocks, so it
- * never blows up another mod's flying body or a builder's airliner standing in the world. Pressed:
+ * flight deck's reach), and works only while that ship is assembled with the button among its own blocks, so it
+ * never blows up another mod's flying body or a builder's ship standing in the world. Pressed:
  * <ol>
  * <li>with its cover shut, the cover flips up with a clack;</li>
  * <li>with the cover up, the button arms: it lights up and flashes red, faster and faster, and everyone aboard hears
  * the alarm's siren and a beep every second, rising in pitch, and sees the seconds left counted down on their screen
- * (see {@link SelfDestruct#alarm}), for {@link #WINDOW} ticks, and when the time is up the airliner blows up (see
+ * (see {@link SelfDestruct#alarm}), for {@link #WINDOW} ticks, and when the time is up the ship blows up (see
  * {@link SelfDestruct#detonate});</li>
- * <li>pressed again while armed, the airliner blows up at once.</li>
+ * <li>pressed again while armed, the ship blows up at once.</li>
  * </ol>
- * Sneaking and using it snaps the cover shut and disarms it, so the airliner does not blow up. Not on an assembled
- * airliner, or with the self-destruct switched off in the server config, arming it only thuds.
+ * Sneaking and using it snaps the cover shut and disarms it, so the ship does not blow up. Not on an assembled
+ * ship, or with the self-destruct switched off in the server config, arming it only thuds.
  */
 public class SelfDestructButtonBlockEntity extends BlockEntity {
-    /** How long the countdown runs before the airliner blows up, in ticks: ten seconds, as long as the siren wails. */
+    /** How long the countdown runs before the ship blows up, in ticks: ten seconds, as long as the siren wails. */
     public static final int WINDOW = 10 * SharedConstants.TICKS_PER_SECOND;
     /** How often the countdown beeps, in ticks: every second, and twice a second over the last {@link #HURRY}. */
     private static final int BEEP = SharedConstants.TICKS_PER_SECOND;
@@ -61,10 +61,10 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     private static final int PRESS_GAP = 6;
     /** How long it stays armed before a press sets it off, in ticks: a quick double press never arms and fires it. */
     private static final int SETTLE = SharedConstants.TICKS_PER_SECOND;
-    /** How long it waits for a parked airliner to assemble, once pressed to arm on one, in ticks: ten seconds. */
+    /** How long it waits for a parked ship to assemble, once pressed to arm on one, in ticks: ten seconds. */
     private static final int ASSEMBLY_WAIT = 10 * SharedConstants.TICKS_PER_SECOND;
     /**
-     * The longest it waits, once a parked airliner it was pressed to arm on has assembled, for whoever pressed it to be
+     * The longest it waits, once a parked ship it was pressed to arm on has assembled, for whoever pressed it to be
      * aboard before arming, in ticks: three seconds. Sable counts someone standing in it as riding it only once they
      * have moved on its blocks, a few ticks after it assembles, and the siren and the warning that everyone will get a
      * parachute go only to those riding it; someone who has stepped off by then does not hold it up.
@@ -82,20 +82,20 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     /** The game time it was last pressed at, whether the press counted or not; not saved. */
     private long lastPress = Long.MIN_VALUE / 2;
     /**
-     * Who pressed it to arm on a parked airliner, which it then assembles, and when: it arms for them once among the
-     * assembled airliner's blocks. Saved, so it goes along into those blocks as the airliner assembles.
+     * Who pressed it to arm on a parked ship, which it then assembles, and when: it arms for them once among the
+     * assembled ship's blocks. Saved, so it goes along into those blocks as the ship assembles.
      */
     @Nullable
     private UUID armFor;
     private long armAskedAt;
-    /** The game time it first found the airliner it was asked to arm on assembled, or -1 before then; not saved. */
+    /** The game time it first found the ship it was asked to arm on assembled, or -1 before then; not saved. */
     private long assembledAt = -1;
 
     public SelfDestructButtonBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.SELF_DESTRUCT_BUTTON_ENTITY.get(), pos, state);
     }
 
-    /** Links the button to its airliner's autopilot, as an offset from the button. */
+    /** Links the button to its ship's autopilot, as an offset from the button. */
     public void configure(BlockPos offset) {
         autopilot = offset;
         setChanged();
@@ -107,7 +107,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * The autopilot of the airliner the button belongs to, if it is there; on the server, an unlinked button links
+     * The autopilot of the ship the button belongs to, if it is there; on the server, an unlinked button links
      * itself to the nearest one first, if there is one.
      */
     @Nullable
@@ -126,9 +126,9 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * Whether the button may blow its airliner up: the self-destruct is switched on, and the button and its autopilot
-     * are both among the blocks of one assembled airliner built from its blueprint, so it is one of this mod's
-     * airliners and nothing else, not another mod's flying body with an autopilot put aboard by hand.
+     * Whether the button may blow its ship up: the self-destruct is switched on, and the button and its autopilot
+     * are both among the blocks of one assembled ship built from its blueprint, so it is one of this mod's
+     * ships and nothing else, not another mod's flying body with an autopilot put aboard by hand.
      */
     public boolean mayBlowUp() {
         AutopilotBlockEntity linked = SkylinersConfig.SELF_DESTRUCT.get() ? autopilot() : null;
@@ -138,7 +138,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     /**
      * Pressed by a player, on the server: sneaking, it shuts; else a step on, as the cover and the button stand. A
      * press too soon after the last ({@link #PRESS_GAP}), or one setting it off too soon after it armed
-     * ({@link #SETTLE}), does nothing, so it takes three separate presses to blow the airliner up.
+     * ({@link #SETTLE}), does nothing, so it takes three separate presses to blow the ship up.
      */
     void press(ServerLevel level, Player player) {
         BlockState state = getBlockState();
@@ -163,9 +163,9 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * The cover up, the button pressed: armed, with the alarm through the airliner; on an airliner standing parked as
+     * The cover up, the button pressed: armed, with the alarm through the ship; on a ship standing parked as
      * blocks, assembled first and armed once it is (see {@link #assembleFirst}); else a thud and why not. While the
-     * airliner assembles for it, pressed again, it only waits.
+     * ship assembles for it, pressed again, it only waits.
      */
     private void arm(ServerLevel level, Player player) {
         if (armFor != null) {
@@ -179,16 +179,16 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * On an airliner of this mod's standing parked as blocks, with the self-destruct switched on: its Physics Assembler
-     * assembles it, as Take Off does, with a hum while it does, and the button arms for whoever pressed it once it is
-     * among the assembled airliner's blocks (see {@link #armOnceAssembled}); whether that started.
+     * On a ship of this mod's standing parked as blocks, with the self-destruct switched on: it is assembled, as
+     * Take Off does, with a hum while it is, and the button arms for whoever pressed it once it is
+     * among the assembled ship's blocks (see {@link #armOnceAssembled}); whether that started.
      */
     private boolean assembleFirst(ServerLevel level, Player player) {
         AutopilotBlockEntity linked = SkylinersConfig.SELF_DESTRUCT.get() ? autopilot() : null;
         if (linked == null || !linked.built() || !(player instanceof ServerPlayer asker)) {
             return false;
         }
-        // Noted before it assembles, so the button takes it along into the new airliner's blocks.
+        // Noted before it assembles, so the button takes it along into the new ship's blocks.
         armFor = player.getUUID();
         armAskedAt = level.getGameTime();
         assembledAt = -1;
@@ -204,7 +204,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * Asked to arm on a parked airliner: arms for whoever asked once it has assembled and they are aboard it (or have
+     * Asked to arm on a parked ship: arms for whoever asked once it has assembled and they are aboard it (or have
      * not come aboard within {@link #BOARDING_WAIT}), or gives up after a while.
      */
     private void armOnceAssembled(ServerLevel level) {
@@ -223,7 +223,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         }
     }
 
-    /** Armed: the button lit and flashing, the alarm through the airliner, for whoever pressed it to hear why. */
+    /** Armed: the button lit and flashing, the alarm through the ship, for whoever pressed it to hear why. */
     private void armNow(ServerLevel level, Player player) {
         armedUntil = level.getGameTime() + WINDOW;
         level.setBlock(worldPosition, getBlockState().setValue(SelfDestructButtonBlock.ARMED, true), Block.UPDATE_ALL);
@@ -232,7 +232,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         player.displayClientMessage(Component.translatable("message.skyliners.self_destruct.armed", WINDOW / SharedConstants.TICKS_PER_SECOND), true);
     }
 
-    /** Pressed again while armed: the airliner blows up once this tick is over; or, no longer one, a thud. */
+    /** Pressed again while armed: the ship blows up once this tick is over; or, no longer one, a thud. */
     private void fire(ServerLevel level, Player player) {
         if (!mayBlowUp()) {
             disarm(level, false);
@@ -275,8 +275,8 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * Each tick, on the server: asked to arm on a parked airliner, whether it has assembled yet; while armed, the
-     * countdown's beeps, until the time is up and the airliner blows up.
+     * Each tick, on the server: asked to arm on a parked ship, whether it has assembled yet; while armed, the
+     * countdown's beeps, until the time is up and the ship blows up.
      */
     void tick() {
         if (!(level instanceof ServerLevel server)) {
@@ -299,7 +299,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * The countdown run out: the airliner blows up once this tick is over, as when the button is pressed again; or,
+     * The countdown run out: the ship blows up once this tick is over, as when the button is pressed again; or,
      * no longer one it may blow up, the button disarms.
      */
     private void timeUp(ServerLevel level) {
@@ -331,7 +331,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     }
 
     /**
-     * The link to the autopilot, and an arming asked on a parked airliner, from the save; the arming's end only ever
+     * The link to the autopilot, and an arming asked on a parked ship, from the save; the arming's end only ever
      * from the server's update.
      */
     @Override

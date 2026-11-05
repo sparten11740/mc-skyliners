@@ -7,8 +7,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Sent to each player thrown clear of an airliner as it blows up (see {@link SelfDestruct}): their client stops them
- * where it blew up, letting go of the airliner's speed it carried them at, as their client is what moves them.
+ * Sent to each player thrown clear of a ship as it blows up (see {@link SelfDestruct}): their client stops them
+ * where it blew up, letting go of the ship's speed it carried them at, as their client is what moves them.
  */
 public record ThrownClearPayload() implements CustomPacketPayload {
     public static final ThrownClearPayload INSTANCE = new ThrownClearPayload();
