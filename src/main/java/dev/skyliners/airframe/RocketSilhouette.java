@@ -51,6 +51,11 @@ public final class RocketSilhouette {
         return (headOverFeet - 1) / RocketShape.NOSE_BASE;
     }
 
+    /** How far the middle of each of her fins' feet stands from her axis, in blocks ahead or aside, at a scale. */
+    public static double footOut(double scale) {
+        return (RocketShape.FIN_FOOT + RocketShape.FIN_TIP) / 2 * RocketShape.DIAGONAL * scale;
+    }
+
     /** How tall one built at a scale stands, in rows. */
     public static int rows(double scale) {
         return RocketLayout.heightRows(scale);

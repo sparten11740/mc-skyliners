@@ -123,6 +123,21 @@ const CURTAIN_RUN_UP = 2;
 const CURTAIN_WALK_TICKS = 9;
 const CURTAIN_SHUTS_TICKS = 60;
 const CURTAIN_ASSEMBLED_TICKS = 60;
+// A rocket coming back down where she rose, the ground changed under her while she was away: how far out to stand from
+// her control head, in blocks; how far above her resting place she is sent, in blocks; how far round her control head
+// the ground is dug away, in blocks, short of her fins' feet, and the world's bottom it is dug down to; how far round
+// the leaves reach and how high over the ground they hang, in blocks; how far off the height she is left standing at
+// may be from where she came to rest, in blocks; and how long she is given to fly up and to be switched off again, in
+// ticks.
+const HOP_STAND_OFF = 60;
+const HOP_HEIGHT = 70;
+const HOLLOW_ACROSS = 4;
+const WORLD_BOTTOM = -64;
+const LEAVES_ACROSS = 40;
+const LEAVES_UP = 8;
+const HOP_REST_WITHIN = 1;
+const HOP_UP_TICKS = 1500;
+const HOP_DOWN_TICKS = 1800;
 // The way a flight climbs, by the way its steps face, on the ground and as a player's yaw.
 const CLIMBS = { south: [0, 1, 0], west: [-1, 0, 90], north: [0, -1, 180], east: [1, 0, -90] };
 // Blocks in the rocket nothing can be aimed at, so the mouse wheel never meets them: drawn by nothing, or water.
@@ -567,6 +582,65 @@ function waitForLean(rocket) {
   return false;
 }
 
+// What a rocket's autopilot is doing; undefined while there is no report, as for a moment while she assembles.
+function rocketReport() {
+  const [reply] = send("skyliners:rocket");
+  return reply.ok === false ? undefined : reply;
+}
+
+// Waits for a rocket's report to pass a test, looking once a second; the report, or undefined if it never did.
+function waitForRocket(test, within) {
+  for (let waited = 0; waited <= within; waited += LOOK_EVERY) {
+    must(`wait ${LOOK_EVERY}t`);
+    const report = rocketReport();
+    if (report && test(report)) {
+      return report;
+    }
+  }
+  return undefined;
+}
+
+// Sends a rocket up and back down where she rose, changes the ground under her once she is clear of it, and says
+// whether she switches herself off where she comes to rest. Standing on her fins with the ground lower under her
+// middle, as over a launch pad's flame trench, or held up by what the ground reading cannot see, she read as still in
+// the air: her engines burnt on and neither she nor her pilot could switch them off.
+function hopChanging(head, what, change) {
+  must(`skyliners:autopilot fly altitude=${head[1] + HOP_HEIGHT}`, BUILD_SECONDS);
+  const clear = waitForRocket((report) => report.phase !== "off" && report.phase !== "takeoff", HOP_UP_TICKS);
+  expect(clear, `rocket: she flies up, to come back ${what}`);
+  if (!clear) {
+    return undefined;
+  }
+  must(change);
+  const off = waitForRocket((report) => report.phase === "off", HOP_DOWN_TICKS);
+  const last = off ?? rocketReport();
+  expect(off, `rocket: coming down ${what}, she switches herself off`, `phase ${last?.phase}, at height ${last?.altitude}, climbing at ${last?.climb}`);
+  if (off) {
+    expect(off.thrust === 0, `rocket: coming down ${what}, her engines are let go`, `thrust ${off.thrust}`);
+  }
+  return off;
+}
+
+// Flies a rocket down over a hollow under her control head and then onto a sheet of leaves, which the ground reading
+// looks through, seeing each time that she switches off where she comes to rest.
+function checkRocketSwitchesOffWhereSheRests() {
+  const site = layDown("rocket");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`server gamerule doFireTick false; server tp @p ${head[0] + HOP_STAND_OFF} ${ground + 2} ${head[2]}`);
+  const [x, , z] = head;
+  const hollow = `server fill ${x - HOLLOW_ACROSS} ${WORLD_BOTTOM} ${z - HOLLOW_ACROSS} ${x + HOLLOW_ACROSS} ${ground - 1} ${z + HOLLOW_ACROSS} air`;
+  const overHollow = hopChanging(head, "with the ground dug away under her middle", hollow);
+  if (overHollow) {
+    expect(Math.abs(overHollow.altitude - (head[1] + 0.5)) <= HOP_REST_WITHIN, "rocket: she stands on her fins beside the hollow, not down in it", `control head at ${overHollow.altitude}`);
+  }
+  const leaves = `server fill ${x - LEAVES_ACROSS} ${ground + LEAVES_UP} ${z - LEAVES_ACROSS} ${x + LEAVES_ACROSS} ${ground + LEAVES_UP} ${z + LEAVES_ACROSS} oak_leaves[persistent=true]`;
+  const onLeaves = hopChanging(head, "onto a sheet of leaves", leaves);
+  if (onLeaves) {
+    expect(onLeaves.altitude > head[1] + LEAVES_UP - HOP_REST_WITHIN, "rocket: she rests on the leaves, not through them", `control head at ${onLeaves.altitude}`);
+  }
+  must(`server gamerule doFireTick true; server tp @p ${site.x} ${ground} ${site.z}`);
+}
+
 // A curtain's piece as a command puts it up: one of a wall of them, facing north, joined to the rest.
 function curtainPiece(across, up, open) {
   const joined = { left: across > 0, right: across < CURTAIN_ACROSS - 1, down: up > 0, up: up < CURTAIN_UP - 1 };
@@ -847,6 +921,7 @@ const CHECKS = {
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
+  "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };
 

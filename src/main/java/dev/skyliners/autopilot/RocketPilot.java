@@ -2,6 +2,7 @@ package dev.skyliners.autopilot;
 
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.airframe.RocketSilhouette;
 import dev.skyliners.airframe.Thrusters;
 import dev.skyliners.block.Relays;
 import dev.skyliners.block.Turning;
@@ -19,7 +20,10 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -51,6 +55,13 @@ public final class RocketPilot {
     private static final double DOWN = 1;
     /** How many ticks it rests on the ground, hardly moving, before its engines are let go and it switches off. */
     private static final int SETTLED_TICKS = 20;
+    /**
+     * How long it may be neither falling nor rising, told to come down, before its engines are let go wherever it is,
+     * in ticks: far longer than it takes to pass the top of a climb or start down from a hover. Something the ground
+     * reading does not see holds it up, the top of a tree or another ship. Should nothing hold it after all, it starts
+     * to fall, and its engines catch it again.
+     */
+    private static final int HELD_UP_TICKS = 40;
     /** How much of gravity it falls at most, as a share: its engines always hold up the rest of its weight. */
     static final double FASTEST_FALL = 0.6;
     /**
@@ -229,6 +240,8 @@ public final class RocketPilot {
     private double lastFront;
     private double lastRight;
     private int settled;
+    /** How long it has been neither falling nor rising, told to come down, in ticks. */
+    private int stoppedFor;
     /** How long it has cruised near enough over where it is going without settling there, in ticks. */
     private int circled;
     /** What it last set, for its report: the share of full thrust, each jet's signal and the climb it wanted. */
@@ -241,6 +254,34 @@ public final class RocketPilot {
     private double lastRadio;
     /** What the controls on its centre console are set to, and the limits it flies by for them. */
     private final RocketControls controls = new RocketControls();
+
+    /**
+     * How high the lowest of its four fins' feet is above the ground under it, in blocks, each followed out into the
+     * world from among its blocks. It stands on them, so with a launch pad's flame trench or any other hollow under its
+     * control head it is down all the same. As high as can be with no frame to find them by, for one not built from
+     * its blueprint.
+     */
+    static double feetOverGround(Level level, @Nullable BoundingBox frame, int footBelow) {
+        if (frame == null) {
+            return Double.MAX_VALUE;
+        }
+        double out = RocketSilhouette.footOut(RocketSilhouette.scaleOf(footBelow));
+        double x = (frame.minX() + frame.maxX() + 1) / 2.0;
+        double z = (frame.minZ() + frame.maxZ() + 1) / 2.0;
+        double lowest = Double.MAX_VALUE;
+        for (int across : new int[]{-1, 1}) {
+            for (int along : new int[]{-1, 1}) {
+                lowest = Math.min(lowest, footOverGround(level, new Vec3(x + across * out, frame.minY(), z + along * out)));
+            }
+        }
+        return lowest;
+    }
+
+    /** How high the underside of a foot, given in its plot, is above the ground under it, in blocks. */
+    private static double footOverGround(Level level, Vec3 foot) {
+        Vec3 at = SableFlight.toWorld(level, foot);
+        return at.y - level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
+    }
 
     /** Holds her countdown before it begins for as long as something says so (see {@link #HOLDS}). */
     public static void holdCountdownWhile(BiPredicate<ServerLevel, BlockPos> hold) {
@@ -309,6 +350,7 @@ public final class RocketPilot {
     void begin(SableFlight.State state) {
         counted = 0;
         settled = 0;
+        stoppedFor = 0;
         circled = 0;
         rose = state.position();
         lastFront = 0;
@@ -347,7 +389,7 @@ public final class RocketPilot {
         jets(level, origin, attitude, lean(phase, state, toGo, radio, limits, now));
         // Down on its fins and no longer falling, it lets its engines go at once: held up even a little, it would skate
         // across the ground on them.
-        boolean resting = phase == AutopilotBlockEntity.Phase.LAND && radio < TOUCHING && state.velocity().y > -STILL;
+        boolean resting = resting(phase, state, radio);
         if (resting) {
             rest(level, origin);
         }
@@ -356,6 +398,18 @@ public final class RocketPilot {
             return AutopilotBlockEntity.Phase.OFF;
         }
         return next(phase, highest, state, radio, mass, holding && !orders.toPin() ? null : toGo);
+    }
+
+    /**
+     * Whether it rests, told to come down: close over the ground and no longer falling, or a while neither falling nor
+     * rising wherever it is (see {@link #HELD_UP_TICKS}). Only no longer falling is not enough up there: it is still
+     * rising as it starts down from its climb, and would have its engines let go at the top of it.
+     */
+    private boolean resting(AutopilotBlockEntity.Phase phase, SableFlight.State state, double radio) {
+        boolean landing = phase == AutopilotBlockEntity.Phase.LAND;
+        double climb = state.velocity().y;
+        stoppedFor = (landing || phase == AutopilotBlockEntity.Phase.DESCENT) && Math.abs(climb) < STILL ? stoppedFor + 1 : 0;
+        return landing && radio < TOUCHING && climb > -STILL || stoppedFor >= HELD_UP_TICKS;
     }
 
     /**
@@ -668,6 +722,7 @@ public final class RocketPilot {
         holding = false;
         counted = 0;
         settled = 0;
+        stoppedFor = 0;
         circled = 0;
         lastShare = 0;
         lastClimb = 0;
