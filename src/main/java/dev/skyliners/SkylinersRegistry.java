@@ -823,6 +823,18 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_HYDRAULICS = sound("ramp_hydraulics");
     /** Her boarding ramp's foot lip coming down onto the ground with a thud, its latch clicking home. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_THUD = sound("ramp_thud");
+    /** Her engines' hum as heard inside her hull, a seamless loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_ENGINE_IDLE = sound("freighter_engine_idle");
+    /** Her engines' roar as heard outside, up to 160 blocks off, a seamless loop crossfaded over the hum by thrust. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_ENGINE_ROAR = sound("freighter_engine_roar");
+    /** Her lift jets blasting as she lifts off and lands, a seamless loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_LIFT_JETS = sound("freighter_lift_jets");
+    /** Her lift jets lighting: a deep thump and their roar surging in. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_IGNITION = sound("freighter_ignition");
+    /** Her main engines spooling up, their whine rising. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_SPOOL = sound("freighter_spool");
+    /** Her going past at speed, and the long rolling thunder after her. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_FLYBY = sound("freighter_flyby");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );

@@ -701,6 +701,60 @@
       }
     ]
   },
+  "freighter_engine_idle": {
+    "subtitle": "subtitles.skyliners.freighter_engine_idle",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_engine_idle",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "freighter_engine_roar": {
+    "subtitle": "subtitles.skyliners.freighter_engine_roar",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_engine_roar",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "freighter_lift_jets": {
+    "subtitle": "subtitles.skyliners.freighter_lift_jets",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_lift_jets",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "freighter_ignition": {
+    "subtitle": "subtitles.skyliners.freighter_ignition",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_ignition",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "freighter_spool": {
+    "subtitle": "subtitles.skyliners.freighter_spool",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_spool",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "freighter_flyby": {
+    "subtitle": "subtitles.skyliners.freighter_flyby",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_flyby",
+        "attenuation_distance": 160
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

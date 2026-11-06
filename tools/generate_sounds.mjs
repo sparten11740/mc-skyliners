@@ -4282,6 +4282,262 @@ const RAMP = {
   writeSound("ramp_thud", hullEcho(dry, RAMP.echo), 0.9);
 }
 
+// The freighter's engines (see the plan's "Her engines, impressive and loud"), her show piece outside, each sound with
+// a random sequence of its own. Under them all runs her drone, a deep 41 hertz thrum, its second and third harmonics
+// throbbing three times a second, driven into a growl; and over it her turbines' whine at 1.1 kilohertz. Her idle, a
+// seamless four-second loop heard inside her hull: the drone, a band of air round 400 hertz moving through her ducts,
+// and the whine faint over them. Her roar, the seamless six-second loop heard up to 160 blocks off, crossfaded over her
+// idle by her thrust and never pitched: the drone heavier, with a sub an octave under it; a deep rumble of exhaust,
+// brown noise low-passed near 320 hertz and slowly surging, crackling with her plasma; the roar's body round 420 hertz;
+// the exhaust's hiss, a band from 1.2 to 4 kilohertz; and two whines three hertz apart, beating. Every tone turns a
+// whole number of times round its loop and the noise is crossfaded round it, so neither loop has a seam. Her lift jets,
+// a seamless four-second loop as she lifts off and lands: the rocket's roar cut off at 900 hertz, some ten crackles a
+// second, fluttering nine times a second; and their lighting, a crack, a deep thump sweeping up from 25 to 50 hertz and
+// their roar surging in as its low-pass opens, her drone rising into tune under it, written to the loop's scale so it
+// hands over to it. Her mains spooling up: the whine climbing from 250 hertz to the roar's, its beat quickening, the
+// drone and the air's rush rising under it. And her pass at speed: her roar rushing in and going by, its whine falling
+// through the pass, the ground's reflection sweeping a comb through it, a gust of air as she goes over, then a long
+// rolling thunder dying away, echoing back off the land. Tune them here.
+const FREIGHTER_ENGINES = {
+  // The idle's, the roar's and the lift jets' loops, and how much longer their noise is rendered to crossfade, in
+  // seconds.
+  idleLoop: 4,
+  roarLoop: 6,
+  jetLoop: 4,
+  crossfade: 0.5,
+  // The drone and its harmonics' throb, the turbines' whine and the beat between the roar's two whines, in hertz; and
+  // how hard the drone is driven into its growl.
+  drone: 41,
+  throb: 3,
+  whine: 1100,
+  whineBeat: 3,
+  growl: 1.8,
+  // The idle's band of air, in hertz, and its parts' shares, by root mean square.
+  idleBand: 400,
+  idleShares: { drone: 1, band: 0.6, whine: 0.06 },
+  // The roar: its rumble's low-pass, its body's band and its exhaust's band, in hertz; its crackles a second; and its
+  // parts' shares, by root mean square beside the rumble's.
+  rumbleCutoff: 320,
+  body: 420,
+  exhaust: [1200, 4000],
+  crackles: 25,
+  roarShares: { body: 0.6, exhaust: 0.32, crackle: 0.22, drone: 0.75, sub: 0.4, whine: 0.1 },
+  // Past this, as a multiple of a sound's root mean square, its peaks are rounded off, so it stays loud once levelled:
+  // a little harder than the rocket's, for her to sound as loud as she is meant to from outside.
+  soft: 2.5,
+  // The lift jets: their low-pass, in hertz; their crackles a second; their hiss, in decibels under the rumble, and
+  // their crackle's share; and their flutter's rate, in hertz, and depth, as a share.
+  jetCutoff: 900,
+  jetCrackles: 10,
+  jetHissUnder: 14,
+  jetCrackleShare: 0.5,
+  jetFlutter: 9,
+  jetFlutterDepth: 0.3,
+  // Her lift jets lighting: how long, and when their roar is full, in seconds.
+  ignitionSeconds: 2.6,
+  ignitionFull: 1.3,
+  // Her mains spooling up: how long, in seconds, and the whine's pitch it starts from, in hertz.
+  spoolSeconds: 3,
+  spoolFrom: 250,
+  // Her pass: how long, and when she is nearest, in seconds; how far her whine is raised coming and lowered going, as
+  // a share; the longest and shortest delay of the ground's reflection, in seconds; the land's echoes, each so many
+  // seconds late, so loud and so dull, in hertz; and how loud the rolling thunder after her is, beside her roar.
+  flybySeconds: 3.8,
+  flybyPass: 1.3,
+  doppler: 0.07,
+  reflection: [0.0006, 0.007],
+  echoes: [[0.42, 0.35, 700], [0.95, 0.2, 400]],
+  thunder: 10,
+  // The peak each is written at, and the highest the lighting may reach written to the lift jets' scale, short of
+  // what the encoder's ripple would clip.
+  level: 0.85,
+  loudest: 0.9,
+};
+
+/** Her drone at a phase of its fundamental and of its throb, in turns: driven into a growl, from -1 to 1. */
+function freighterDrone(phase, throbPhase) {
+  const harmonic = (n) => Math.sin(2 * Math.PI * n * phase);
+  const throb = Math.sin(2 * Math.PI * throbPhase);
+  const mixed = harmonic(1) + 0.55 * (0.6 + 0.4 * throb) * harmonic(2) + 0.4 * (0.6 - 0.4 * throb) * harmonic(3)
+    + 0.15 * harmonic(4) + 0.08 * harmonic(5);
+  return Math.tanh(FREIGHTER_ENGINES.growl * mixed) / Math.tanh(FREIGHTER_ENGINES.growl);
+}
+
+/** Her two turbines' whines at their phases, in turns, beating against each other, their octaves faint over them. */
+function freighterWhines(phase, otherPhase) {
+  const turn = 2 * Math.PI;
+  return Math.sin(turn * phase) + Math.sin(turn * otherPhase) + 0.25 * (Math.sin(2 * turn * phase) + Math.sin(2 * turn * otherPhase));
+}
+
+/** Samples scaled to a root mean square of one. */
+function levelled(samples) {
+  const own = rms(samples);
+  return samples.map((sample) => sample / own);
+}
+
+/** Rounds off peaks past FREIGHTER_ENGINES.soft, samples levelled to a root mean square of one. */
+function roundedOff(samples) {
+  const { soft } = FREIGHTER_ENGINES;
+  return samples.map((sample) => soft * Math.tanh(sample / soft));
+}
+{
+  const E = FREIGHTER_ENGINES;
+  const idleRandom = ownRandom(0x46496430);
+  const length = Math.round(E.idleLoop * RATE);
+  const band = levelled(seamlessNoise(resonance(whiteNoise(E.idleLoop + E.crossfade, idleRandom), E.idleBand, 1.5), E.idleLoop, E.crossfade));
+  const drone = levelled(Float64Array.from({ length }, (_, i) => freighterDrone((E.drone * i) / RATE, (E.throb * i) / RATE)));
+  const idle = drone.map((sample, i) => {
+    const t = i / RATE;
+    const throb = 1 + 0.12 * Math.sin(2 * Math.PI * E.throb * t);
+    return E.idleShares.drone * sample + E.idleShares.band * throb * band[i] + E.idleShares.whine * Math.SQRT2 * Math.sin(2 * Math.PI * E.whine * t);
+  });
+  writeSound("freighter_engine_idle", idle, 0.7);
+}
+{
+  const E = FREIGHTER_ENGINES;
+  const roarRandom = ownRandom(0x46526f61);
+  const rendered = E.roarLoop + E.crossfade;
+  const roar = rocketRoar(rendered, roarRandom, () => E.rumbleCutoff, () => E.crackles);
+  const white = whiteNoise(rendered, roarRandom);
+  const body = levelled(resonance(white, E.body, 1.2));
+  const exhaust = levelled(lowPassed(highPassed(white, E.exhaust[0]), E.exhaust[1]));
+  const [rumble, crackle] = [levelled(roar.rumble), levelled(roar.crackle)];
+  const shares = E.roarShares;
+  const noise = seamlessNoise(rumble.map((sample, i) => sample + shares.body * body[i] + shares.exhaust * exhaust[i] + shares.crackle * crackle[i]),
+    E.roarLoop, E.crossfade);
+  const length = noise.length;
+  const drone = levelled(Float64Array.from({ length }, (_, i) => freighterDrone((E.drone * i) / RATE, (E.throb * i) / RATE)));
+  const sub = levelled(Float64Array.from({ length }, (_, i) => Math.sin((Math.PI * E.drone * i) / RATE)));
+  const whines = levelled(Float64Array.from({ length }, (_, i) => freighterWhines((E.whine * i) / RATE, ((E.whine + E.whineBeat) * i) / RATE)));
+  const mixed = noise.map((sample, i) => sample + shares.drone * drone[i] + shares.sub * sub[i] + shares.whine * whines[i]);
+  writeSound("freighter_engine_roar", roundedOff(levelled(mixed)), E.level);
+}
+{
+  const E = FREIGHTER_ENGINES;
+  const jetRandom = ownRandom(0x464a6574);
+  const jets = rocketRoar(E.jetLoop + E.crossfade, jetRandom, () => E.jetCutoff, () => E.jetCrackles);
+  // Levelled once from the steady jets, and the same levels for their lighting: the rumble's root mean square one.
+  const gain = {
+    rumble: 1 / rms(jets.rumble),
+    hiss: 10 ** (-E.jetHissUnder / 20) / rms(jets.hiss),
+    crackle: E.jetCrackleShare / rms(jets.crackle),
+  };
+  const mix = (parts, rumbleAt, hissAt, crackleAt) => parts.rumble.map((sample, i) => {
+    const t = i / RATE;
+    return rumbleAt(t) * gain.rumble * sample + hissAt(t) * gain.hiss * parts.hiss[i] + crackleAt(t) * gain.crackle * parts.crackle[i];
+  });
+  const steady = seamlessNoise(mix(jets, () => 1, () => 1, () => 1), E.jetLoop, E.crossfade);
+  const loop = roundedOff(steady.map((sample, i) => sample * (1 + E.jetFlutterDepth * Math.sin((2 * Math.PI * E.jetFlutter * i) / RATE))));
+  writeSound("freighter_lift_jets", loop, E.level);
+
+  // Their lighting: the crack of them catching, the thump, and their roar swelling in under it as its low-pass opens.
+  const lightRandom = ownRandom(0x46496769);
+  const seconds = E.ignitionSeconds;
+  const swell = (t) => gearRamp(t, 0.02, E.ignitionFull) * Math.min(1, (seconds - t) / 0.3);
+  const lighting = rocketRoar(seconds, lightRandom, (t) => 150 + (E.jetCutoff - 150) * gearRamp(t, 0.05, E.ignitionFull), (t) => E.jetCrackles * gearRamp(t, 0.2, 1));
+  const lit = mix(lighting, swell, (t) => swell(t) * gearRamp(t, 0.3, E.ignitionFull), swell);
+  let thump = 0;
+  let fireball = 0;
+  let drone = 0;
+  let rushLow = 0;
+  let rushBand = 0;
+  for (let i = 0; i < lit.length; i++) {
+    const t = i / RATE;
+    const white = lightRandom() * 2 - 1;
+    const crack = t < 0.012 ? 4 * white * Math.exp(-t / 0.003) : 0;
+    thump += (25 + 25 * gearRamp(t, 0, 0.35)) / RATE;
+    const whump = Math.min(1, t / 0.01) * Math.exp(-t / 0.45) * Math.tanh(1.5 * (Math.sin(2 * Math.PI * thump) + 0.4 * Math.sin(4 * Math.PI * thump)));
+    fireball += 0.03 * (white - fireball);
+    drone += (E.drone * (0.5 + 0.5 * gearRamp(t, 0, E.ignitionFull))) / RATE;
+    // The surge: a band of the noise sweeping up from 200 to 1,500 hertz as the jets take hold, a state variable filter.
+    const tune = 2 * Math.sin((Math.PI * (200 + 1300 * gearRamp(t, 0.05, E.ignitionFull))) / RATE);
+    rushLow += tune * rushBand;
+    rushBand += tune * (white - rushLow - 0.7 * rushBand);
+    lit[i] += crack + 3 * whump + 10 * fireball * Math.exp(-t / 0.25) + swell(t) * (0.6 * freighterDrone(drone, E.throb * t) + 0.5 * rushBand);
+  }
+  const roundedLit = roundedOff(lit);
+  writeSound("freighter_ignition", roundedLit, Math.min(E.loudest, (peakOf(roundedLit) * E.level) / peakOf(loop)));
+}
+{
+  const E = FREIGHTER_ENGINES;
+  const spoolRandom = ownRandom(0x46537030);
+  const seconds = E.spoolSeconds;
+  const spool = new Float64Array(Math.round(seconds * RATE));
+  let [phase, otherPhase, drone, airLow, airBand] = [0, 0, 0, 0, 0];
+  for (let i = 0; i < spool.length; i++) {
+    const t = i / RATE;
+    // How far it has spooled, from 0 to 1: quick at first and settling, as a turbine winds up.
+    const spun = (1 - Math.exp(-t / 0.8)) / (1 - Math.exp(-seconds / 0.8));
+    const pitch = E.spoolFrom * (E.whine / E.spoolFrom) ** spun;
+    phase += pitch / RATE;
+    otherPhase += (pitch * (1 + E.whineBeat / E.whine)) / RATE;
+    drone += (E.drone * (0.4 + 0.6 * spun)) / RATE;
+    const tune = 2 * Math.sin((Math.PI * (300 + 1200 * spun)) / RATE);
+    airLow += tune * airBand;
+    airBand += tune * (spoolRandom() * 2 - 1 - airLow - 0.8 * airBand);
+    const envelope = gearRamp(t, 0, 0.4) * Math.min(1, (seconds - t) / 0.25) * (0.3 + 0.7 * spun);
+    spool[i] = envelope * (0.35 * freighterWhines(phase, otherPhase) + 0.7 * spun * freighterDrone(drone, E.throb * t) + 0.6 * airBand);
+  }
+  writeSound("freighter_spool", spool, 0.8);
+}
+{
+  const E = FREIGHTER_ENGINES;
+  const passRandom = ownRandom(0x46506173);
+  const seconds = E.flybySeconds;
+  const pass = E.flybyPass;
+  // How near she is, from nothing far off to one overhead, t seconds in: closing fast and going away slower.
+  const nearness = (t) => 1 / (1 + ((t - pass) / (t < pass ? 0.35 : 0.6)) ** 2);
+  // How much her pitch is raised coming and lowered going, as she passes.
+  const shift = (t) => 1 - E.doppler * Math.tanh((t - pass) / 0.25);
+  const roar = rocketRoar(seconds, passRandom, (t) => 180 + 1000 * nearness(t), (t) => 30 * nearness(t));
+  const [rumble, hiss, crackle] = [levelled(roar.rumble), levelled(roar.hiss), levelled(roar.crackle)];
+  const exhaust = levelled(lowPassed(highPassed(whiteNoise(seconds, passRandom), E.exhaust[0]), E.exhaust[1]));
+  const dry = new Float64Array(rumble.length);
+  let [drone, phase, otherPhase, gustLow, gustBand, brown, thunder, swellTo, swelling] = [0, 0, 0, 0, 0, 0, 0, 1, 1];
+  for (let i = 0; i < dry.length; i++) {
+    const t = i / RATE;
+    const near = nearness(t);
+    drone += (E.drone * shift(t)) / RATE;
+    phase += (E.whine * shift(t)) / RATE;
+    otherPhase += ((E.whine + E.whineBeat) * shift(t)) / RATE;
+    // The gust as she goes over: a band of noise falling from 2,500 to 400 hertz through the pass.
+    const white = passRandom() * 2 - 1;
+    const tune = 2 * Math.sin((Math.PI * (400 + 2100 * (1 - gearRamp(t, pass - 0.3, pass + 0.5)))) / RATE);
+    gustLow += tune * gustBand;
+    gustBand += tune * (white - gustLow - 0.6 * gustBand);
+    // The rolling thunder after she has gone: low brown noise swelling and easing at random, dying away.
+    brown = (brown + 0.02 * white) * 0.997;
+    thunder += 0.012 * (brown - thunder);
+    if (i % Math.round(0.25 * RATE) === 0) {
+      swellTo = 0.5 + passRandom();
+    }
+    swelling += 0.0002 * (swellTo - swelling);
+    const rolling = gearRamp(t, pass - 0.2, pass + 0.5) * Math.exp(-Math.max(0, t - pass) / 1.3) * swelling;
+    dry[i] = near ** 0.8 * (rumble[i] + 0.55 * freighterDrone(drone, E.throb * t) + 0.25 * crackle[i])
+      + near ** 1.6 * (0.35 * hiss[i] + 0.35 * exhaust[i] + 0.12 * freighterWhines(phase, otherPhase))
+      + 1.2 * near * gustBand + E.thunder * rolling * thunder;
+  }
+  // The ground's reflection, a little later than her sound and sweeping as she nears and goes: a comb through it.
+  const [shortest, longest] = E.reflection;
+  const reflected = dry.map((sample, i) => {
+    const delay = (shortest + (longest - shortest) * (1 - nearness(i / RATE))) * RATE;
+    const back = i - delay;
+    const whole = Math.floor(back);
+    return back < 0 ? sample : sample + 0.6 * (dry[whole] + (back - whole) * (dry[whole + 1] - dry[whole]));
+  });
+  // The land's echoes, later, quieter and duller.
+  const flyby = reflected.slice();
+  for (const [late, loud, dull] of E.echoes) {
+    const echo = lowPassed(reflected, dull);
+    const gap = Math.round(late * RATE);
+    for (let i = gap; i < flyby.length; i++) {
+      flyby[i] += loud * echo[i - gap];
+    }
+  }
+  const faded = flyby.map((sample, i) => sample * Math.min(1, (flyby.length - i) / (0.4 * RATE)));
+  writeSound("freighter_flyby", roundedOff(levelled(faded)), E.level);
+}
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

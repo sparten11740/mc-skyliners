@@ -1495,6 +1495,8 @@ function rocketSoundsLang() {
 // subtitle and, where it differs from the game's own, how far it is heard (heard, in blocks, the volume falling off
 // evenly to nothing there), whether it is streamed as music and long loops are rather than loaded whole (stream), and
 // the pitches its takes are played at, picked one at random each time (takes).
+// How far her engines' roar carries, in blocks: as far as the rocket's, out across the ground round her.
+const FREIGHTER_HEARD = 160;
 const FREIGHTER_SOUNDS = {
   // The club's song, 96 seconds long.
   club_band: { subtitle: "Swing band plays", stream: true },
@@ -1502,6 +1504,15 @@ const FREIGHTER_SOUNDS = {
   ramp_steam: { subtitle: "Ramp vents steam", heard: 32 },
   ramp_hydraulics: { subtitle: "Ramp hydraulics whine", heard: 32 },
   ramp_thud: { subtitle: "Ramp thuds down", heard: 32 },
+  // Her engines: their hum inside her hull, heard all through her; their roar, the show piece, heard up to
+  // FREIGHTER_HEARD blocks off with her lift jets lighting, her mains spooling up and her pass at speed; her lift
+  // jets themselves, as she lifts off and lands, nearer.
+  freighter_engine_idle: { subtitle: "Freighter engines hum", heard: 32 },
+  freighter_engine_roar: { subtitle: "Freighter engines roar", heard: FREIGHTER_HEARD },
+  freighter_lift_jets: { subtitle: "Lift jets blast", heard: 96 },
+  freighter_ignition: { subtitle: "Lift jets ignite", heard: FREIGHTER_HEARD },
+  freighter_spool: { subtitle: "Main engines spool up", heard: FREIGHTER_HEARD },
+  freighter_flyby: { subtitle: "Freighter thunders past", heard: FREIGHTER_HEARD },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {
