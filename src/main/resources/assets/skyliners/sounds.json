@@ -665,6 +665,15 @@
       }
     ]
   },
+  "club_band": {
+    "subtitle": "subtitles.skyliners.club_band",
+    "sounds": [
+      {
+        "name": "skyliners:club_band",
+        "stream": true
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

@@ -812,6 +812,11 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_BOOST_READY = sound("rocket_boost_ready");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_SCRUB = sound("rocket_scrub");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_STABILITY_ALARM = sound("rocket_stability_alarm");
+
+    // The freighter's sounds (see tools/generate_sounds.mjs and docs/plans/2026-11-06-freighter.md), ready for her
+    // features to play as they are built.
+    /** The club's song, "Long Haul Swing", a 96-second minor swing looped while anyone is in her club. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> CLUB_BAND = sound("club_band");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );

@@ -3777,6 +3777,433 @@ if (speaker) {
   }
 }
 
+// The freighter's sounds (see docs/plans/2026-11-06-freighter.md), each from a random sequence of its own so no sound
+// above changes. All of them are synthesised here from scratch: nothing is recorded or resampled, and none imitates a
+// film's sounds, its music or its creatures' voices.
+
+/** A MIDI note's pitch, in hertz, middle C being 60. */
+function noteHertz(note) {
+  return 440 * 2 ** ((note - 69) / 12);
+}
+
+/** A note's name, as "C#5" or "Bb4", as a MIDI note, middle C being C4 and 60. */
+function noteNumber(name) {
+  const [, letter, accidental, octave] = name.match(/^([A-G])(#|b)?(-?\d)$/);
+  const shift = accidental === "#" ? 1 : accidental === "b" ? -1 : 0;
+  return 12 * (Number(octave) + 1) + { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[letter] + shift;
+}
+
+/**
+ * Adds a voice into a loop from a time for so many seconds, both in seconds, wrapping round from the loop's end to its
+ * head, so a note struck near the end rings on into the start: voice(t) is its sample t seconds in.
+ */
+function addRound(track, start, seconds, voice) {
+  const from = Math.round(start * RATE);
+  const count = Math.round(seconds * RATE);
+  for (let i = 0; i < count; i++) {
+    track[(from + i) % track.length] += voice(i / RATE);
+  }
+}
+
+/** Adds samples into a loop from a time in seconds, wrapping round from its end to its head. */
+function mixRound(track, start, part) {
+  const from = Math.round(start * RATE);
+  part.forEach((sample, i) => (track[(from + i) % track.length] += sample));
+}
+
+/**
+ * What a band-limited oscillator adds round a jump in its wave so the jump does not alias into a hiss of false notes:
+ * phase is how far past the jump it is, in turns, and step how far it moves a sample, in turns.
+ */
+function polyBlep(phase, step) {
+  if (phase < step) {
+    const x = phase / step;
+    return x + x - x * x - 1;
+  }
+  if (phase > 1 - step) {
+    const x = (phase - 1) / step;
+    return x * x + x + x + 1;
+  }
+  return 0;
+}
+
+/** A band-limited sawtooth, from -1 to 1, at a phase in turns moving step turns a sample. */
+function sawAt(phase, step) {
+  return 2 * phase - 1 - polyBlep(phase, step);
+}
+
+/** A band-limited pulse wave at a phase in turns moving step turns a sample, high for the share of a turn given. */
+function pulseAt(phase, step, duty) {
+  const high = phase < duty ? 1 : -1;
+  return high + polyBlep(phase, step) - polyBlep((phase - duty + 1) % 1, step) - (2 * duty - 1);
+}
+
+/**
+ * The samples through a two-pole band-pass whose middle moves as it goes, centreAt(t) hertz t seconds in, its peak's
+ * gain one, as resonance()'s is: a wah pedal's, a mouth's formant or a whine's band.
+ */
+function sweptResonance(input, centreAt, q) {
+  const out = new Float64Array(input.length);
+  let [x1, x2, y1, y2] = [0, 0, 0, 0];
+  for (let i = 0; i < input.length; i++) {
+    const w = (2 * Math.PI * centreAt(i / RATE)) / RATE;
+    const alpha = Math.sin(w) / (2 * q);
+    const y = (alpha * input[i] - alpha * x2 + 2 * Math.cos(w) * y1 - (1 - alpha) * y2) / (1 + alpha);
+    [x2, x1, y2, y1] = [x1, input[i], y1, y];
+    out[i] = y;
+  }
+  return out;
+}
+
+/** The samples through a two-pole high-pass at the cutoff given, in hertz, its q a Butterworth's. */
+function highPassed(input, cutoff) {
+  const out = new Float64Array(input.length);
+  const w = (2 * Math.PI * cutoff) / RATE;
+  const alpha = Math.sin(w) / (2 * Math.SQRT1_2);
+  const cos = Math.cos(w);
+  const [b0, b1, a0, a1, a2] = [(1 + cos) / 2, -(1 + cos), 1 + alpha, -2 * cos, 1 - alpha];
+  let [x1, x2, y1, y2] = [0, 0, 0, 0];
+  for (let i = 0; i < input.length; i++) {
+    const y = (b0 * input[i] + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2) / a0;
+    [x2, x1, y2, y1] = [x1, input[i], y1, y];
+    out[i] = y;
+  }
+  return out;
+}
+
+/** So many seconds of white noise, from -1 to 1, from the random sequence given. */
+function whiteNoise(seconds, own) {
+  return Float64Array.from({ length: Math.round(seconds * RATE) }, () => own() * 2 - 1);
+}
+
+// The club's song, "Long Haul Swing" (the plan's appendix writes it out note by note), looped as the techno room's
+// track is while anyone is in the club: an up-tempo minor swing of our own at 160 beats a minute, its eighths swung to
+// 0.64 of the beat, in D minor with an F major bridge, a 32-bar AABA played twice, 64 bars and 96 seconds. A reedy horn
+// leads, doubled a fourth below, over a kalimba comping on two and four, a wah bass walking quarters, a glass bell on
+// each downbeat, a ride cymbal, brushes and a feathered kick. In the second chorus the kalimba takes the tune an octave
+// up while the horn holds the bell's notes an octave down under it, the horn comes back in the bridge in full fourths,
+// and in the last eight bars both play the tune in octaves, ending on a triplet fill of the brushes back into the top.
+// The players lay back a hair behind the beat and never strike two notes quite alike. Every note is written round the
+// loop, so nothing is cut at its seam. Tune it here.
+const CLUB_BAND = {
+  // Beats a minute, and where the swung "and" of each beat falls, as a share of the beat.
+  tempo: 160,
+  swing: 0.64,
+  // How hard each part plays: a note of the horn's lead, a key of a kalimba chord, a note of the kalimba's tune, a
+  // string of the bass, a strike of the bell, of the ride, of the brushes' slap and of the kick, and the brushes' swish.
+  touch: { horn: 0.3, comp: 0.075, kalimba: 0.2, bass: 0.34, bell: 0.09, ride: 0.07, slap: 0.12, kick: 0.15, swish: 0.03 },
+  // The horn's double a fourth below, as a share of its lead, in the first chorus and in the second chorus's bridge;
+  // and the horn holding the bell's notes under the kalimba's tune, as a share of its lead.
+  fourth: 0.3,
+  fullFourth: 0.75,
+  held: 0.6,
+  // The horn: its pulse's duty; how flat each note is scooped up from, in cents, and over how long, in seconds; its
+  // vibrato's rate, in hertz, and depth, in cents, and when it comes in and is full, in seconds into a note; and its
+  // breath, as a share.
+  duty: 0.3,
+  scoopCents: 40,
+  scoopSeconds: 0.03,
+  vibratoRate: 5.5,
+  vibratoCents: 12,
+  vibratoFrom: 0.18,
+  vibratoFull: 0.4,
+  breath: 0.05,
+  // The kalimba: how far sharp each key is struck, in cents, and its tine's inharmonic partial, as a multiple of its
+  // pitch, and how fast that dies, in seconds.
+  kalimbaDropCents: 20,
+  kalimbaPartial: 5.4,
+  kalimbaPartialDies: 0.04,
+  // The wah bass's sweep over each note, in hertz: from, up to and back down to.
+  wah: [300, 900, 400],
+  // The bell's modulator, as a multiple of its pitch; its index at the strike, falling to nothing over so many seconds;
+  // and how long it rings, in seconds.
+  bellRatio: 3.5,
+  bellIndex: 2,
+  bellBrightFor: 0.6,
+  bellRings: 1.2,
+  // How hard the mix is driven into a soft saturation, and the peak it is written at.
+  drive: 0.9,
+  level: 0.8,
+};
+// The chords, each with its bass's root, its tones above the root in semitones, and the kalimba's voicing, as MIDI.
+const CLUB_CHORDS = {
+  Dm6: { root: 38, tones: [0, 3, 7, 9], voicing: [62, 65, 69, 71] },
+  Bb7: { root: 34, tones: [0, 4, 7, 10], voicing: [62, 65, 68, 70] },
+  Gm6: { root: 43, tones: [0, 3, 7, 9], voicing: [62, 64, 67, 70] },
+  A7: { root: 33, tones: [0, 4, 7, 10], voicing: [61, 64, 67, 69] },
+  A7b9: { root: 33, tones: [0, 4, 7, 10], voicing: [61, 64, 67, 70] },
+  Em7b5: { root: 40, tones: [0, 3, 6, 10], voicing: [62, 64, 67, 70] },
+  F6: { root: 41, tones: [0, 4, 7, 9], voicing: [60, 62, 65, 69] },
+  D7: { root: 38, tones: [0, 4, 7, 10], voicing: [60, 62, 66, 69] },
+  Gm7: { root: 43, tones: [0, 3, 7, 10], voicing: [62, 65, 67, 70] },
+  C7: { root: 36, tones: [0, 4, 7, 10], voicing: [60, 64, 67, 70] },
+  Bbmaj7: { root: 34, tones: [0, 4, 7, 11], voicing: [58, 62, 65, 69] },
+};
+// Each bar's chords of an A section and of the bridge, as the chord and the beat it comes in on, from 0; and the bell's
+// notes over them, as a note and its beat.
+const CLUB_A = {
+  chords: [[["Dm6", 0]], [["Bb7", 0]], [["Gm6", 0]], [["A7", 0]], [["Dm6", 0]], [["Bb7", 0]], [["Em7b5", 0], ["A7b9", 2]], [["Dm6", 0]]],
+  bell: [[["A5", 0]], [["Ab5", 0]], [["G5", 0]], [["G5", 0]], [["F5", 0]], [["D5", 0]], [["D5", 0], ["C#5", 2]], [["D5", 0]]],
+};
+const CLUB_BRIDGE = {
+  chords: [[["F6", 0]], [["D7", 0]], [["Gm7", 0]], [["C7", 0]], [["F6", 0]], [["Bbmaj7", 0]], [["Em7b5", 0]], [["A7b9", 0]]],
+  bell: [[["A5", 0]], [["C6", 0]], [["Bb5", 0]], [["Bb5", 0]], [["A5", 0]], [["A5", 0]], [["G5", 0]], [["G5", 0]]],
+};
+// The tune of a chorus, as the bars that play each line and its notes, each "name@beat/length" in beats from the bar's
+// start.
+const CLUB_TUNE = [
+  [[1, 5, 9, 13, 25, 29], "A4@0.5/0.5 B4@1/0.5 D5@1.5/1 F5@2.5/0.5 E5@3/1"],
+  [[2, 10, 26], "D5@0/0.5 C5@0.5/0.5 Ab4@1/1 F4@2/1"],
+  [[3, 11, 27], "G4@0.5/0.5 Bb4@1/0.5 D5@1.5/1 E5@2.5/0.5 D5@3/1"],
+  [[4, 12, 28], "C#5@0/0.5 E5@0.5/0.5 G5@1/0.5 Bb5@1.5/1 A5@2.5/0.5 G5@3/0.5 E5@3.5/0.5"],
+  [[6, 14, 30], "D5@0/0.5 F5@0.5/0.5 Ab5@1/1 G5@2/0.5 F5@2.5/0.5 D5@3/1"],
+  [[7, 31], "Bb4@0/0.5 D5@0.5/0.5 G5@1/1 E5@2/0.5 C#5@2.5/0.5 Bb4@3/0.5 G4@3.5/0.5"],
+  [[8, 32], "A4@0/0.5 D5@0.5/2"],
+  [[15], "G5@0/0.5 F5@0.5/0.5 E5@1/0.5 D5@1.5/0.5 C#5@2/0.5 E5@2.5/0.5 A5@3/1"],
+  [[16], "F5@0/0.5 D5@0.5/1.5 C5@3/0.5 E5@3.5/0.5"],
+  [[17], "F5@0/2 D5@2/1 C5@3/1"],
+  [[18], "F#5@0/1.5 A5@1.5/0.5 F#5@2/0.5 D5@2.5/1.5"],
+  [[19], "G5@0/2 F5@2/1 D5@3/1"],
+  [[20], "E5@0/1.5 G5@1.5/0.5 Bb5@2/1 A5@3/0.5 G5@3.5/0.5"],
+  [[21], "A5@0/2 F5@2/1 C5@3/1"],
+  [[22], "D5@0/1.5 F5@1.5/0.5 A5@2/2"],
+  [[23], "G5@0/1 Bb5@1/0.5 G5@1.5/0.5 E5@2/1 D5@3/1"],
+  [[24], "C#5@0/1 E5@1/0.5 G5@1.5/0.5 Bb5@2/1"],
+];
+{
+  const band = ownRandom(0x4c6f6e67);
+  const { touch } = CLUB_BAND;
+  const beat = 60 / CLUB_BAND.tempo;
+  const bars = 64;
+  const length = Math.round(bars * 4 * beat * RATE);
+  const music = new Float64Array(length);
+  // Where a beat of the song falls once swung, in beats from its start: the "and" of each beat comes late.
+  const swung = (at) => {
+    const whole = Math.floor(at);
+    const part = at - whole;
+    return whole + (part < 0.5 ? (part * CLUB_BAND.swing) / 0.5 : CLUB_BAND.swing + ((part - 0.5) * (1 - CLUB_BAND.swing)) / 0.5);
+  };
+  // How late a player plays, up to so many beats: never early, so nothing on the first beat sounds before it.
+  const late = (beats) => band() * beats;
+  // How hard a player strikes a note, as a share of the part's touch: a little different every time.
+  const struck = (part) => part * (0.88 + 0.24 * band());
+  // A bar of the song, from 0, as its section's bar: its chords and bell, and whether it is in the second chorus.
+  const section = (bar) => {
+    const inChorus = bar % 32;
+    return { ...(inChorus >= 16 && inChorus < 24 ? CLUB_BRIDGE : CLUB_A), barOf: inChorus % 8, inChorus, second: bar >= 32 };
+  };
+  const chordAt = (bar, at) => {
+    const { chords, barOf } = section(bar % bars);
+    return CLUB_CHORDS[chords[barOf].findLast(([, from]) => from <= at)[0]];
+  };
+
+  // A note of the horn from a beat for so many beats, at a MIDI note and level: a pulse through a low-pass opening as
+  // it is blown, scooped up into tune, its vibrato coming in late, over a breath of air.
+  const hornNote = (at, beats, note, level) => {
+    const frequency = noteHertz(note);
+    const sounding = beats * beat * (beats < 1 ? 0.9 : 0.96) + 0.06;
+    let phase = 0;
+    let filtered = 0;
+    let lastNoise = 0;
+    addRound(music, (at + late(0.03)) * beat, sounding, (t) => {
+      const scoop = -CLUB_BAND.scoopCents * Math.max(0, 1 - t / CLUB_BAND.scoopSeconds);
+      const vibratoIn = Math.max(0, Math.min(1, (t - CLUB_BAND.vibratoFrom) / (CLUB_BAND.vibratoFull - CLUB_BAND.vibratoFrom)));
+      const cents = scoop + vibratoIn * CLUB_BAND.vibratoCents * Math.sin(2 * Math.PI * CLUB_BAND.vibratoRate * t);
+      const step = (frequency * 2 ** (cents / 1200)) / RATE;
+      phase = (phase + step) % 1;
+      const opening = Math.min(1, t / 0.025) * (0.45 + 0.55 * Math.exp(-t / 0.25));
+      const cutoff = Math.min(9000, frequency * (1.5 + 5 * opening));
+      filtered += (1 - Math.exp((-2 * Math.PI * cutoff) / RATE)) * (pulseAt(phase, step, CLUB_BAND.duty) - filtered);
+      const noise = band() * 2 - 1;
+      const breath = (noise - lastNoise) * CLUB_BAND.breath * (1 + 2 * Math.exp(-t / 0.04));
+      lastNoise = noise;
+      const envelope = Math.min(1, t / 0.012) * (0.85 + 0.15 * Math.exp(-t / 0.2)) * Math.min(1, (sounding - t) / 0.06);
+      return level * envelope * (filtered + breath);
+    });
+  };
+  // A key of the kalimba from a beat, at a MIDI note and level: a sine struck a little sharp and dropping into tune, the
+  // tine's inharmonic partial dying fast over it, and the click of the thumb.
+  const kalimbaKey = (at, note, level) => {
+    const frequency = noteHertz(note);
+    let phase = 0;
+    addRound(music, (at + late(0.015)) * beat, 0.9, (t) => {
+      const cents = CLUB_BAND.kalimbaDropCents * Math.exp(-t / 0.02);
+      phase += (2 * Math.PI * frequency * 2 ** (cents / 1200)) / RATE;
+      const partial = Math.exp(-t / CLUB_BAND.kalimbaPartialDies) * 0.35 * Math.sin(CLUB_BAND.kalimbaPartial * phase);
+      const thumb = t < 0.003 ? 0.4 * (band() * 2 - 1) * (1 - t / 0.003) : 0;
+      const envelope = Math.min(1, t / 0.001) * Math.exp(-t / 0.35) * Math.min(1, (0.9 - t) / 0.05);
+      return level * (envelope * (Math.sin(phase) + partial) + thumb);
+    });
+  };
+  // A chord of the kalimba from a beat, its keys a few milliseconds apart under the thumbs.
+  const kalimbaChord = (at, chord) => {
+    const level = struck(touch.comp);
+    chord.voicing.forEach((note, k) => kalimbaKey(at + k * 0.012, note, level));
+  };
+  // A string of the wah bass from a beat, a beat long, at a MIDI note: a sawtooth an octave over it through a wah
+  // swept up and back over the note, and a sine at the note itself, an octave under the saw.
+  const bassNote = (at, note) => {
+    const frequency = noteHertz(note);
+    const sounding = beat * 0.92;
+    const level = struck(touch.bass);
+    const saw = new Float64Array(Math.round(sounding * RATE));
+    let phase = 0;
+    for (let i = 0; i < saw.length; i++) {
+      phase = (phase + (2 * frequency) / RATE) % 1;
+      saw[i] = sawAt(phase, (2 * frequency) / RATE);
+    }
+    const [from, top, to] = CLUB_BAND.wah;
+    const wah = sweptResonance(saw, (t) => (t < 0.3 * sounding ? from + (top - from) * (t / (0.3 * sounding)) : top + (to - top) * ((t - 0.3 * sounding) / (0.7 * sounding))), 4);
+    const part = wah.map((sample, i) => {
+      const t = i / RATE;
+      const envelope = Math.min(1, t / 0.004) * Math.exp(-t / 0.5) * Math.min(1, (sounding - t) / 0.02);
+      return level * envelope * (1.6 * sample + 0.25 * saw[i] + 0.8 * Math.sin(2 * Math.PI * frequency * t));
+    });
+    mixRound(music, (at + late(0.012)) * beat, part);
+  };
+  // A strike of the glass bell from a beat, at a MIDI note: a frequency-modulated tone, bright as it is struck and
+  // mellowing as it rings.
+  const bellNote = (at, note) => {
+    const frequency = noteHertz(note);
+    const level = struck(touch.bell);
+    addRound(music, at * beat, CLUB_BAND.bellRings * 1.5, (t) => {
+      const index = CLUB_BAND.bellIndex * Math.max(0, 1 - t / CLUB_BAND.bellBrightFor);
+      const envelope = Math.min(1, t / 0.002) * Math.exp((-3 * t) / CLUB_BAND.bellRings);
+      return level * envelope * Math.sin(2 * Math.PI * frequency * t + index * Math.sin(2 * Math.PI * CLUB_BAND.bellRatio * frequency * t));
+    });
+  };
+  // A strike of the ride cymbal from a beat: noise ringing at its two bright modes, its bell's two notes over them, a
+  // ping dying fast and a wash dying slowly.
+  const rideHit = (at, level) => {
+    const noise = whiteNoise(0.8, band);
+    const low = resonance(noise, 5200, 8);
+    const high = resonance(noise, 7900, 8);
+    const part = noise.map((_, i) => {
+      const t = i / RATE;
+      const ping = Math.exp(-t / 0.04);
+      const wash = Math.exp(-t / 0.35) * Math.min(1, (0.8 - t) / 0.05);
+      const bellTone = 0.25 * Math.sin(2 * Math.PI * 3100 * t) + 0.18 * Math.sin(2 * Math.PI * 4700 * t);
+      return level * (wash * (2.2 * low[i] + 1.6 * high[i]) + ping * (bellTone + 0.3 * noise[i]));
+    });
+    mixRound(music, (at + late(0.01)) * beat, part);
+  };
+  // The brushes slapped on the snare from a beat: 0.12 seconds of bright noise on the drum's 190 hertz body.
+  const slap = (at, level) => {
+    const noise = highPassed(whiteNoise(0.15, band), 1500);
+    const part = noise.map((sample, i) => {
+      const t = i / RATE;
+      return level * (Math.min(1, t / 0.003) * Math.max(0, 1 - t / 0.12) ** 1.5 * sample + 0.6 * Math.exp(-t / 0.05) * Math.sin(2 * Math.PI * 190 * t));
+    });
+    mixRound(music, (at + late(0.01)) * beat, part);
+  };
+  // The kick, feathered under every beat: a soft thunk at 50 hertz.
+  const kick = (at) => {
+    const part = new Float64Array(Math.round(0.5 * RATE));
+    thunk(part, 0, 50, struck(touch.kick), band);
+    mixRound(music, at * beat, part);
+  };
+
+  // The tune's notes in each bar of a chorus, from 1, as written.
+  const tuneBars = {};
+  for (const [lines, notes] of CLUB_TUNE) {
+    const parsed = notes.split(" ").map((written) => {
+      const [, name, at, beats] = written.match(/^(.+)@([\d.]+)\/([\d.]+)$/);
+      return { note: noteNumber(name), at: Number(at), beats: Number(beats) };
+    });
+    lines.forEach((line) => (tuneBars[line] = parsed));
+  }
+  // The tune of a bar, from 0: each note's swung start and length in beats from the song's start, and its MIDI note.
+  const tuneOf = (bar) => tuneBars[(bar % 32) + 1].map(({ note, at, beats }) => ({
+    note, at: bar * 4 + swung(at), beats: swung(at + beats) - swung(at),
+  }));
+  // Who plays the tune and the bell's notes in a bar: the horn leads the first chorus; in the second the kalimba takes
+  // the A sections an octave up over the horn holding the bell's notes, the horn the bridge in full fourths, and both
+  // the last A in octaves.
+  const playTune = (bar) => {
+    const { inChorus, second, bell, barOf } = section(bar);
+    const bridge = inChorus >= 16 && inChorus < 24;
+    const kalimbaLeads = second && !bridge;
+    const hornLeads = !second || bridge || inChorus >= 24;
+    for (const { note, at, beats } of tuneOf(bar)) {
+      const level = struck(touch.horn);
+      if (hornLeads) {
+        hornNote(at, beats, note, level);
+        hornNote(at, beats, note - 5, level * (second && bridge ? CLUB_BAND.fullFourth : CLUB_BAND.fourth));
+      }
+      if (kalimbaLeads) {
+        kalimbaKey(at, note + 12, struck(touch.kalimba));
+      }
+    }
+    if (kalimbaLeads && !hornLeads) {
+      const held = bell[barOf];
+      const until = (k) => (k + 1 < held.length ? held[k + 1][1] : 4);
+      held.forEach(([name, from], k) => hornNote(bar * 4 + from, until(k) - from, noteNumber(name) - 12, CLUB_BAND.held * touch.horn));
+    }
+  };
+  // The bass's walk through a bar, from the root it starts on, as four MIDI notes and the root the next bar starts on:
+  // the root on one, chord tones on two and three, climbing or falling whichever way ends nearer the next root, and a
+  // semitone from the next root on four. Roots are taken in whichever octave lies nearest, within the bass's range.
+  const [lowestRoot, highestRoot, highestNote] = [31, 47, 50];
+  const nearestRoot = (pitchClass, near) => [pitchClass % 12 + 24, pitchClass % 12 + 36, pitchClass % 12 + 48]
+    .filter((root) => root >= lowestRoot && root <= highestRoot)
+    .reduce((best, root) => (Math.abs(root - near) < Math.abs(best - near) ? root : best));
+  const approach = (from, nextRoot) => {
+    const side = from > nextRoot ? 1 : -1;
+    return nextRoot + side === from ? nextRoot - side : nextRoot + side;
+  };
+  const walkOf = (bar, root) => {
+    const { chords, barOf } = section(bar % bars);
+    const [first, second] = chords[barOf].map(([name]) => CLUB_CHORDS[name]);
+    const last = bar === bars - 1;
+    const nextFrom = (near) => (last ? CLUB_CHORDS.Dm6.root : nearestRoot(chordAt(bar + 1, 0).root, near));
+    if (second) {
+      const tone = root + first.tones[1] <= highestNote ? root + first.tones[1] : root + first.tones[1] - 12;
+      const changed = nearestRoot(second.root, tone);
+      const next = nextFrom(changed);
+      return { notes: [root, tone, changed, approach(changed, next)], next };
+    }
+    const climbing = [root, root + first.tones[1], root + first.tones[2]];
+    const falling = [root, root + first.tones[3] - 12, root + first.tones[2] - 12];
+    const ends = (line) => (line[2] > highestNote || line[2] < lowestRoot - 3 ? Infinity : Math.abs(nextFrom(line[2]) - line[2]));
+    const line = ends(falling) < ends(climbing) || (ends(falling) === ends(climbing) && bar % 2 === 1) ? falling : climbing;
+    const next = nextFrom(line[2]);
+    return { notes: [...line, approach(line[2], next)], next };
+  };
+  // The band behind the tune in a bar: the kalimba comping, the bell on the downbeat and the drums.
+  const playBand = (bar) => {
+    const at = bar * 4;
+    const { barOf, bell } = section(bar);
+    [1, 3].forEach((q) => kalimbaChord(at + q, chordAt(bar, q)));
+    if ((bar + 1) % 2 === 0) {
+      kalimbaChord(at + swung(3.5), chordAt(bar + 1, 0));
+    }
+    bell[barOf].forEach(([name, from]) => bellNote(at + from, noteNumber(name)));
+    [0, 1, 2, 3].forEach((q) => kick(at + q));
+    [0, 1, 1.5, 2, 3, 3.5].forEach((q) => rideHit(at + swung(q), struck(touch.ride) * (q === 1 || q === 3 ? 1.3 : 1)));
+    [1, 3].forEach((q) => slap(at + q, struck(touch.slap)));
+  };
+  let root = CLUB_CHORDS.Dm6.root;
+  for (let bar = 0; bar < bars; bar++) {
+    playTune(bar);
+    playBand(bar);
+    const walk = walkOf(bar, root);
+    walk.notes.forEach((note, q) => bassNote(bar * 4 + q, note));
+    root = walk.next;
+  }
+  // The triplet fill of the brushes over the last two beats, swelling back into the top.
+  for (let k = 0; k < 6; k++) {
+    slap((bars - 1) * 4 + 2 + k / 3, touch.slap * (0.5 + 0.12 * k));
+  }
+  // The brushes' swish, stirred round the drum once a beat: bright noise swelling and easing, crossfaded round the loop.
+  const fade = 0.5;
+  const swish = seamlessNoise(lowPassed(highPassed(whiteNoise(length / RATE + fade, band), 2000), 7000), length / RATE, fade);
+  swish.forEach((sample, i) => {
+    const along = ((i / RATE) / beat) % 1;
+    music[i] += touch.swish * (0.35 + 0.65 * Math.sin(Math.PI * along) ** 2) * sample;
+  });
+  writeSound("club_band", music.map((sample) => Math.tanh(CLUB_BAND.drive * sample)), CLUB_BAND.level);
+}
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

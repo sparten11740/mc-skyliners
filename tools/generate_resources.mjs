@@ -1490,6 +1490,27 @@ function rocketSounds() {
 function rocketSoundsLang() {
   return Object.fromEntries(Object.entries({ ...ROCKET_SUBTITLES, ...LAUNCH_SUBTITLES }).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
 }
+
+// The freighter's sounds (see tools/generate_sounds.mjs and docs/plans/2026-11-06-freighter.md), each with its
+// subtitle and, where it differs from the game's own, how far it is heard (heard, in blocks, the volume falling off
+// evenly to nothing there), whether it is streamed as music and long loops are rather than loaded whole (stream), and
+// the pitches its takes are played at, picked one at random each time (takes).
+const FREIGHTER_SOUNDS = {
+  // The club's song, 96 seconds long.
+  club_band: { subtitle: "Swing band plays", stream: true },
+};
+function freighterSounds() {
+  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {
+    if (aboard) {
+      return [name, heardAboard(name)];
+    }
+    const sound = { name: `${ID}:${name}`, ...(stream ? { stream } : {}), ...(heard ? { attenuation_distance: heard } : {}) };
+    return [name, { subtitle: `subtitles.${ID}.${name}`, sounds: takes ? takes.map((pitch) => ({ ...sound, pitch })) : [sound] }];
+  }));
+}
+function freighterSoundsLang() {
+  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { subtitle }]) => [`subtitles.${ID}.${name}`, subtitle]));
+}
 // A rocket's exhaust plume, the clouds round her lift-off and her shockwave's dust share the blast's soft cloud picture
 // (see the client's BlastPuffParticle), each kind tinting it.
 for (const kind of ["exhaust", "cloud", "dust"]) {
@@ -1516,6 +1537,7 @@ write(`assets/${ID}/particles/fog_puff.json`, { textures: [`${ID}:fog_puff`] });
   }
   Object.assign(sounds, atcSounds());
   Object.assign(sounds, rocketSounds());
+  Object.assign(sounds, freighterSounds());
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
@@ -10317,6 +10339,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...VOICE_LANG,
   ...atcLang(),
   ...rocketSoundsLang(),
+  ...freighterSoundsLang(),
   "message.skyliners.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.skyliners.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.skyliners.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",

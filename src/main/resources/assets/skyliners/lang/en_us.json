@@ -146,6 +146,7 @@
   "subtitles.skyliners.launch_main_engine_cutoff": "Launch control: Main engine cut-off",
   "subtitles.skyliners.launch_landing_burn": "Launch control: Landing burn",
   "subtitles.skyliners.launch_boost": "Launch control: Boost!",
+  "subtitles.skyliners.club_band": "Swing band plays",
   "message.skyliners.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.skyliners.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.skyliners.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",
