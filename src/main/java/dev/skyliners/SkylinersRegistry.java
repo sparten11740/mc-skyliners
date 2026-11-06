@@ -86,6 +86,7 @@ import dev.skyliners.block.DropReleaseBlockEntity;
 import dev.skyliners.block.DutyFreeCounterBlock;
 import dev.skyliners.block.EngineCoreBlock;
 import dev.skyliners.block.EngineCoreBlockEntity;
+import dev.skyliners.block.EngineGrilleBlock;
 import dev.skyliners.block.ExitSignBlock;
 import dev.skyliners.block.FairingBlock;
 import dev.skyliners.block.FlagHalyardBlock;
@@ -1258,6 +1259,11 @@ public final class SkylinersRegistry {
             .isValidSpawn(SkylinersRegistry::never)
     );
     public static final DeferredItem<BlockItem> PADDED_BULKHEAD_ITEM = ITEMS.registerSimpleBlockItem(PADDED_BULKHEAD);
+    /** The freighter's engine grille across her stern, glowing with her engines (see {@link EngineGrilleBlock}). */
+    public static final DeferredBlock<EngineGrilleBlock> ENGINE_GRILLE = BLOCKS.registerBlock(
+        "engine_grille", EngineGrilleBlock::new, metal(MapColor.COLOR_GRAY).lightLevel(EngineGrilleBlock::light)
+    );
+    public static final DeferredItem<BlockItem> ENGINE_GRILLE_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_GRILLE);
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
@@ -2747,7 +2753,8 @@ public final class SkylinersRegistry {
             LIFT_CALL_BUTTON_ITEM, LAUNCH_PAD_HUB_ITEM
         )),
         new TabSection("freighter", List.of(
-            PADDED_BULKHEAD_ITEM
+            PADDED_BULKHEAD_ITEM,
+            ENGINE_GRILLE_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

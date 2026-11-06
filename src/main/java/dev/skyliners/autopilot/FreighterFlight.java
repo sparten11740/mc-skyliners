@@ -42,6 +42,8 @@ public final class FreighterFlight extends StandingFlight {
     /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
     private final ShownShare lift = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
+    /** Her engine grille glowing with her engines. */
+    private final EngineGlow glow = new EngineGlow();
     /**
      * Where her disc's middle is from her control head, so many blocks to its right and ahead of it, on the clients as
      * on the server; unknown for one built before it was kept, until her pilot's wiring gives it.
@@ -233,6 +235,7 @@ public final class FreighterFlight extends StandingFlight {
         if (liftShown || mainsShown) {
             autopilot.changed();
         }
+        glow.tick(level, autopilot.getBlockPos(), pilot.wiring().grille(), lift.shown(), mains.shown(), now);
         watchArrival(autopilot, flight, radio);
     }
 

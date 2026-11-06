@@ -269,10 +269,12 @@ than her control head out in her cockpit's pod, and her height over the ground f
 (`Legs`, which the rocket's fins share). `FreighterFlight` shows the clients how hard her lift thrusters and her
 mains fire, two `ShownShare`s, and where her disc's middle is from her control head, from which `FreighterRoar` plays
 her engines' roar at her stern, her lift jets' blast under her belly, their thump and her mains' spooling up as they
-light, her hum aboard, the ground shaking near her and her thunder going by. Her jets fire inside her, so she never
-runs them at a third of full or more, where Create Propulsion sets fire to whatever stands in a thruster's exhaust.
-She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out the air inside
-their hulls, their features `ShipPiece`s.
+light, her hum aboard, the ground shaking near her and her thunder going by; and `EngineGlow` lights her
+`EngineGrilleBlock`s across her stern from the same shares, laid in place of her skin round her mains and wired to her
+head with her thrusters, changing them seldom, as each change redraws her round them. Her jets fire inside her, so
+she never runs them at a third of full or more, where Create Propulsion sets fire to whatever stands in a thruster's
+exhaust. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out the
+air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

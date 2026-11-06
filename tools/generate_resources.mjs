@@ -147,6 +147,31 @@ for (const [name, renderType] of Object.entries(cubes)) {
   });
 }
 
+// The freighter's engine grille (see EngineGrilleBlock): a cube of its own texture for each of its glows, dark, idling and
+// at full, the glowing ones lit full whatever the light round them, as the cabin light glows at night; its item shows it
+// at full.
+{
+  const GLOWS = ["", "_idle", "_full"];
+  const glowing = Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, {
+    texture: "#all", cullface: face, neoforge_data: { block_light: 15, sky_light: 15 },
+  }]));
+  write(`assets/${ID}/models/block/engine_grille.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/engine_grille` } });
+  for (const suffix of GLOWS.slice(1)) {
+    write(`assets/${ID}/models/block/engine_grille${suffix}.json`, {
+      parent: "minecraft:block/block",
+      ambientocclusion: false,
+      textures: { all: `${ID}:block/engine_grille${suffix}`, particle: `${ID}:block/engine_grille${suffix}` },
+      elements: [{ from: [0, 0, 0], to: [16, 16, 16], shade: false, faces: glowing }],
+    });
+  }
+  write(`assets/${ID}/blockstates/engine_grille.json`, {
+    variants: Object.fromEntries(GLOWS.map((suffix, glow) => [`glow=${glow}`, { model: `${ID}:block/engine_grille${suffix}` }])),
+  });
+  write(`assets/${ID}/models/item/engine_grille.json`, { parent: `${ID}:block/engine_grille_full` });
+  dropsItself("engine_grille");
+  cubes.engine_grille = null;
+}
+
 // A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
 // through, which only the blueprint places, so it has no item and drops nothing (picked, it gives the catwalk), and the
 // hub in its middle, which also goes up by hand and gives itself back. They are ground, not airframe (see GROUND).
@@ -10166,6 +10191,7 @@ shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:qu
 shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);
 shaped("lift_glass", [" G ", "GTG", " G "], { G: "minecraft:glass", T: "minecraft:tinted_glass" }, 4);
 shaped("padded_bulkhead", ["WWW", "WIW", "WWW"], { W: "minecraft:white_wool", I: "minecraft:iron_ingot" }, 8);
+shaped("engine_grille", ["BBB", "GGG", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 6);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10730,6 +10756,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.skyliners.freighter_too_high": "The freighter would reach past the build height here; build her lower down.",
   "commands.skyliners.build_freighter": "Building a freighter of %s blocks, %s of them over blocks that were in the way",
   "block.skyliners.padded_bulkhead": "Padded Bulkhead",
+  "block.skyliners.engine_grille": "Engine Grille",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.skyliners.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.skyliners.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",

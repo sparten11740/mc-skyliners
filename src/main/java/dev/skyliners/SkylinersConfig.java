@@ -67,6 +67,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_BOOST;
     public static final ModConfigSpec.BooleanValue ROCKET_STABILITY_SWITCH;
     public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -609,6 +610,16 @@ public final class SkylinersConfig {
                 "refusal note, and she flies it straight up as ever."
             )
             .define("arcAscent", true);
+        builder.pop();
+
+        builder.push("freighter");
+        FREIGHTER_ENGINE_GRILLE = builder
+            .comment(
+                "Whether the freighter is built with her engine grille across her stern round her main engines, glowing deep blue",
+                "while her thrusters hold her up and bright cyan while her mains push her ahead, seen by day and by night.",
+                "Without it, her stern is plain hull, her engines' plumes still showing."
+            )
+            .define("engineGrille", true);
         builder.pop();
 
         SPEC = builder.build();

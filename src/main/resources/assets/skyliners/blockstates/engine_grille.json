@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "glow=0": {
+      "model": "skyliners:block/engine_grille"
+    },
+    "glow=1": {
+      "model": "skyliners:block/engine_grille_idle"
+    },
+    "glow=2": {
+      "model": "skyliners:block/engine_grille_full"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package dev.skyliners.airframe;
 
+import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.FreighterFlight;
@@ -81,6 +82,15 @@ public final class FreighterLayout extends HullLayout {
      * stern, so far out either side and so far astern. Each pushes toward her middle line, its exhaust outward; her
      * pilot never runs them hard enough to burn anyone standing in it (see {@link FreighterPilot#JET_SETTING}).
      */
+    /**
+     * Her engine grille across her stern's rim band, round her mains: so many degrees of bearing either side of
+     * straight astern, looked along every so many degrees so no block of the band is missed, and from so many rows over
+     * her deck to so many.
+     */
+    private static final int GRILLE_REACH = 30;
+    private static final double GRILLE_STEP = 0.5;
+    private static final int GRILLE_LOWEST_ROW = 1;
+    private static final int GRILLE_HIGHEST_ROW = 3;
     private static final double NOSE_JET_OUT = 4.5;
     private static final double NOSE_JET_AHEAD = 19;
     private static final double TAIL_JET_OUT = 0.8;
@@ -111,6 +121,8 @@ public final class FreighterLayout extends HullLayout {
     private final List<BlockPos> retros = new ArrayList<>();
     private final BlockPos[] jets = new BlockPos[4];
     private final List<BlockPos> feet = new ArrayList<>();
+    /** Her engine grille's blocks, for her autopilot to light. */
+    private final List<BlockPos> grille = new ArrayList<>();
     /** Where the autopilot's control head stands in her cockpit; null before it is laid. */
     @Nullable
     private BlockPos head;
@@ -155,6 +167,7 @@ public final class FreighterLayout extends HullLayout {
         layout.roomWalls();
         layout.legs();
         layout.engines();
+        layout.engineGrille();
         layout.cockpit();
         layout.countAir();
         return layout;
@@ -444,6 +457,44 @@ public final class FreighterLayout extends HullLayout {
         return null;
     }
 
+    /**
+     * Her engine grille (see {@link dev.skyliners.block.EngineGrilleBlock}) in place of the outermost skin across her
+     * stern's rim band round her mains, dark as she is built; none with the server config's
+     * {@code freighter.engineGrille} off.
+     */
+    private void engineGrille() {
+        if (!SkylinersConfig.FREIGHTER_ENGINE_GRILLE.get()) {
+            return;
+        }
+        BlockState dark = SkylinersRegistry.ENGINE_GRILLE.get().defaultBlockState();
+        for (double bearing = 180 - GRILLE_REACH; bearing <= 180 + GRILLE_REACH; bearing += GRILLE_STEP) {
+            for (int row = GRILLE_LOWEST_ROW; row <= GRILLE_HIGHEST_ROW; row++) {
+                BlockPos cell = outermostSkin(bearing, deck + row);
+                if (cell != null && !grille.contains(cell)) {
+                    set(cell.getX(), cell.getY(), cell.getZ(), dark);
+                    grille.add(cell);
+                }
+            }
+        }
+    }
+
+    /**
+     * The outermost block of her skin at a bearing and a row, walking in from past her rim; null if the first block it
+     * meets is not skin. Unlike {@link #mainThruster}'s walk, it stops at that first block, skin or not.
+     */
+    @Nullable
+    private BlockPos outermostSkin(double bearing, int y) {
+        double[] way = way(bearing);
+        for (int k = back + 1; k > bulkhead; k--) {
+            int x = (int) Math.round(way[0] * k);
+            int z = (int) Math.round(way[1] * k);
+            if (!isOpen(x, y, z)) {
+                return skin(stateAt(x, y, z)) ? new BlockPos(x, y, z) : null;
+            }
+        }
+        return null;
+    }
+
     /** A main engine in the outermost block of her rim at a bearing, pushing her ahead, its plume behind her. */
     @Nullable
     private BlockPos mainThruster(BlockState engine, int bearing) {
@@ -545,7 +596,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterPilot.Jets jetRelays = new FreighterPilot.Jets(offset(at, jets[0], rotation), offset(at, jets[1], rotation),
             offset(at, jets[2], rotation), offset(at, jets[3], rotation));
         FreighterPilot.Wiring wiring = new FreighterPilot.Wiring(turned, offsets(at, mains, rotation), offsets(at, retros, rotation),
-            jetRelays, offsets(at, feet, rotation), -at.getX(), at.getZ(), Math.round(LIFT_OUT * scale));
+            jetRelays, offsets(at, feet, rotation), offsets(at, grille, rotation), -at.getX(), at.getZ(), Math.round(LIFT_OUT * scale));
         autopilot.wire(FreighterFlight.class, at.getY()).configure(wiring);
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-side, 0, front), new BlockPos(side, top, back)), rotation);
         autopilot.frame(frame.get(0), frame.get(1));

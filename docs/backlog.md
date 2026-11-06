@@ -37,6 +37,12 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 
 - A carpet ring round each lift doorway, and lamps over the lab's counters.
 
+## The freighter
+
+- Her mains read as black holes in her engine grille while they idle without a plume: a nozzle rim of their own.
+- Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
+- An engine grille set by hand stays dark: a redstone signal could light it (dark, idling, full), for other builds.
+
 ## Not yet checked
 
 - By ear: the greenhouse's and the pool's sounds (measured and heard playing in game, but nobody has judged them by

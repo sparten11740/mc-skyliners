@@ -4267,6 +4267,21 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const shade = Math.min(u, 8 - u, v, 8 - v);
     return shade >= 2 ? [0xe2, 0xdc, 0xcc] : [0xcc, 0xc6, 0xb6];
   }, 3);
+  // The freighter's engine grille (see EngineGrilleBlock): steel slats across a dark frame, the gaps between them dark
+  // at rest, glowing blue as her engines idle, and blazing blue-white, the slats lit by it, as her mains push her.
+  const GRILLE_GLOWS = [
+    { name: "engine_grille", slat: [0x50, 0x54, 0x5c], gap: [0x18, 0x1c, 0x24], core: [0x22, 0x26, 0x30] },
+    { name: "engine_grille_idle", slat: [0x30, 0x38, 0x48], gap: [0x16, 0x3a, 0x90], core: [0x2a, 0x62, 0xd0] },
+    { name: "engine_grille_full", slat: [0x3c, 0x50, 0x70], gap: [0x3c, 0xb4, 0xff], core: [0xd8, 0xf8, 0xff] },
+  ];
+  for (const { name, slat, gap, core } of GRILLE_GLOWS) {
+    texture(blockOutput, name, (x, y) => {
+      if (x === 0 || x === 15) return [0x3a, 0x3e, 0x46];
+      const row = y % 4;
+      if (row === 0 || row === 1) return row === 0 ? slat : slat.map((c) => Math.round(c * 0.8));
+      return row === 2 ? core : gap;
+    }, 1);
+  }
   texture(blockOutput, "club_wall", (x, y) => {
     const u = x % 4;
     const v = y % 4;

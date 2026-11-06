@@ -225,13 +225,13 @@ public final class FreighterPilot {
 
     /**
      * Her thrusters as she is built, as offsets from her control head: her lift clusters' relays in the order of
-     * {@link #CLUSTER_SIDES}, her mains' and her retros', her jets, and the blocks her legs' feet stand on; where her
-     * disc's middle is from her head, so many blocks to her right and ahead; and how far ahead or astern and to either
-     * side of it her lift clusters' middles stand, in blocks.
+     * {@link #CLUSTER_SIDES}, her mains' and her retros', her jets, the blocks her legs' feet stand on, and her engine
+     * grille's blocks (see {@link EngineGlow}); where her disc's middle is from her head, so many blocks to her right
+     * and ahead; and how far ahead or astern and to either side of it her lift clusters' middles stand, in blocks.
      */
     public record Wiring(List<List<BlockPos>> clusters, List<BlockPos> mains, List<BlockPos> retros, Jets jets,
-                         List<BlockPos> feet, double middleRight, double middleAhead, double clustersOut) {
-        static final Wiring NONE = new Wiring(List.of(), List.of(), List.of(), Jets.NONE, List.of(), 0, 0, 0);
+                         List<BlockPos> feet, List<BlockPos> grille, double middleRight, double middleAhead, double clustersOut) {
+        static final Wiring NONE = new Wiring(List.of(), List.of(), List.of(), Jets.NONE, List.of(), List.of(), 0, 0, 0);
     }
 
     /**
@@ -380,7 +380,8 @@ public final class FreighterPilot {
     void turn(Rotation turn) {
         configure(new Wiring(wiring.clusters().stream().map(cluster -> Turning.turn(cluster, turn)).toList(),
             Turning.turn(wiring.mains(), turn), Turning.turn(wiring.retros(), turn), wiring.jets().turned(turn),
-            Turning.turn(wiring.feet(), turn), wiring.middleRight(), wiring.middleAhead(), wiring.clustersOut()));
+            Turning.turn(wiring.feet(), turn), Turning.turn(wiring.grille(), turn), wiring.middleRight(), wiring.middleAhead(),
+            wiring.clustersOut()));
     }
 
     /** How high the lowest of her legs' feet stands over the ground, in blocks; as high as can be with none wired. */
@@ -839,6 +840,7 @@ public final class FreighterPilot {
         tag.put("Retros", Relays.write(wiring.retros()));
         tag.put("Jets", wiring.jets().save());
         tag.put("Feet", Relays.write(wiring.feet()));
+        tag.put("Grille", Relays.write(wiring.grille()));
         tag.putDouble("MiddleRight", wiring.middleRight());
         tag.putDouble("MiddleAhead", wiring.middleAhead());
         tag.putDouble("ClustersOut", wiring.clustersOut());
@@ -854,7 +856,8 @@ public final class FreighterPilot {
         }
         configure(new Wiring(clusters, Turning.turn(Relays.read(tag.getList("Mains", Tag.TAG_INT_ARRAY)), turn),
             Turning.turn(Relays.read(tag.getList("Retros", Tag.TAG_INT_ARRAY)), turn), Jets.load(tag.getCompound("Jets"), turn),
-            Turning.turn(Relays.read(tag.getList("Feet", Tag.TAG_INT_ARRAY)), turn), tag.getDouble("MiddleRight"),
+            Turning.turn(Relays.read(tag.getList("Feet", Tag.TAG_INT_ARRAY)), turn),
+            Turning.turn(Relays.read(tag.getList("Grille", Tag.TAG_INT_ARRAY)), turn), tag.getDouble("MiddleRight"),
             tag.getDouble("MiddleAhead"), tag.getDouble("ClustersOut")));
         learnt.load(tag);
     }

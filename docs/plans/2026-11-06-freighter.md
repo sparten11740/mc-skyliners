@@ -729,6 +729,11 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   by herself and was parked. The pair caught a whine that would have played on first sight of a freighter already
   flying; writing the play-test check for it showed her mains flickering on and off as she hovers, which would have
   replayed it every few seconds: mains that only trim her hover are now shown as nothing.
+- Her engine grille: 99 blocks across her stern's rim band round her mains, deep blue while her thrusters hold her up,
+  bright cyan while her mains push, dark once she is down, full-bright by night. Profiled over 90 s of lift-off, a push
+  and a landing: five changes of 99 blocks, no server tick over 50 ms. The same profile shows her thrusters' own block
+  updates at 58 a second (one main 8.75 a second) and some 860 particle packets a second from Create Propulsion's
+  plumes reaching the client: next to cut.
 
 ### For Jan to look at
 
