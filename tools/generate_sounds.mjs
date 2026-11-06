@@ -803,9 +803,10 @@ function gearAirflow(samples, level) {
 }
 /**
  * The hydraulic pumps working the legs from one time to another, in seconds: a moaning tone rising from one pitch to
- * another as the pressure builds, with its harmonics and a slight waver, and the hiss of the oil through the valves.
+ * another as the pressure builds, with its harmonics and a slight waver, and the hiss of the oil through the valves,
+ * from the gear's noise or the one given.
  */
-function gearHydraulics(samples, from, to, startHz, endHz, gain) {
+function gearHydraulics(samples, from, to, startHz, endHz, gain, noise = gearNoise) {
   let phase = 0;
   let previous = 0;
   const span = to - from;
@@ -815,7 +816,7 @@ function gearHydraulics(samples, from, to, startHz, endHz, gain) {
     const hz = startHz + (endHz - startHz) * Math.min(1, t / (0.6 * span));
     phase += (2 * Math.PI * hz * (1 + 0.004 * Math.sin(2 * Math.PI * 3.1 * t))) / RATE;
     const tone = Math.sin(phase) + 0.45 * Math.sin(2 * phase) + 0.25 * Math.sin(3 * phase) + 0.12 * Math.sin(5 * phase);
-    const white = gearNoise() * 2 - 1;
+    const white = noise() * 2 - 1;
     const hiss = white - previous;
     previous = white;
     samples[i] += gain * envelope * (0.5 * tone + 0.12 * hiss);
@@ -4202,6 +4203,83 @@ const CLUB_TUNE = [
     music[i] += touch.swish * (0.35 + 0.65 * Math.sin(Math.PI * along) ** 2) * sample;
   });
   writeSound("club_band", music.map((sample) => Math.tanh(CLUB_BAND.drive * sample)), CLUB_BAND.level);
+}
+
+// The freighter's boarding ramp (see the plan's "The boarding ramp"), each sound with a random sequence of its own,
+// some four seconds together as she lowers it, the airstairs' latch clunking first: a burst of steam as the latches
+// let go, hissing away; the plate swinging down on its rams, the hydraulic pump's whine rising as they take its
+// weight, its motor humming under it, the plate's mass rumbling and the hinge creaking twice; and the foot lip
+// unfolding onto the ground with a heavy thud and its latch clicking home, under her belly's echo. Raising it plays
+// them the other way round, the steam last as it seals. Tune them here.
+const RAMP = {
+  // The steam: how long it lasts and how long it takes to die away, in seconds, and its high-pass, in hertz.
+  steamSeconds: 0.7,
+  steamDies: 0.6,
+  steamCutoff: 2000,
+  // The swing, as long as the plate takes (ticks 10 to 80), and the echo after it, in seconds; the pump's whine from
+  // and to, in hertz, and the motor's hum, as a share of its pitch.
+  swingSeconds: 3.5,
+  swingTail: 0.4,
+  pumpFrom: 140,
+  pumpTo: 210,
+  motorShare: 1 / 3,
+  // The foot's thud, in hertz; its latch's click, in hertz, and when it clicks, in seconds after the thud.
+  thudHz: 45,
+  latchHz: 900,
+  latchAt: 0.12,
+  // How much of the echo under her belly is mixed in.
+  echo: 0.15,
+};
+{
+  const steam = ownRandom(0x52616d53);
+  const white = whiteNoise(RAMP.steamSeconds, steam);
+  const hiss = highPassed(highPassed(white, RAMP.steamCutoff), RAMP.steamCutoff);
+  const body = resonance(white, 900, 0.8);
+  let flutter = 0;
+  const samples = hiss.map((sample, i) => {
+    const t = i / RATE;
+    flutter += 0.002 * (steam() * 2 - 1 - flutter);
+    const burst = Math.min(1, t / 0.004) * Math.exp(-t / 0.05);
+    const dying = Math.min(1, t / 0.004) * Math.max(0, 1 - t / RAMP.steamDies) ** 2;
+    return (0.6 * burst + dying) * (1 + 8 * flutter) * (sample + 0.35 * Math.exp(-t / 0.15) * body[i]);
+  });
+  writeSound("ramp_steam", samples, 0.7);
+}
+{
+  const ram = ownRandom(0x52616d48);
+  const swing = RAMP.swingSeconds;
+  const dry = new Float64Array(Math.round((swing + RAMP.swingTail) * RATE));
+  gearHydraulics(dry, 0, swing, RAMP.pumpFrom, RAMP.pumpTo, 1, ram);
+  // The pump's motor humming under the whine at a third of its pitch, and the plate's mass rumbling as it swings,
+  // most of all halfway down.
+  let phase = 0;
+  let motor = 0;
+  let brown = 0;
+  let rumble = 0;
+  for (let i = 0; i < Math.round(swing * RATE); i++) {
+    const t = i / RATE;
+    const running = gearRamp(t, 0, 0.35) * (1 - gearRamp(t, swing - 0.5, swing));
+    const step = (RAMP.motorShare * (RAMP.pumpFrom + (RAMP.pumpTo - RAMP.pumpFrom) * Math.min(1, t / (0.6 * swing)))) / RATE;
+    phase = (phase + step) % 1;
+    motor += 0.08 * (sawAt(phase, step) - motor);
+    brown = (brown + 0.02 * (ram() * 2 - 1)) * 0.996;
+    rumble += 0.02 * (brown - rumble);
+    dry[i] += running * 0.25 * motor + 3 * Math.sin((Math.PI * t) / swing) * rumble;
+  }
+  girderGroan(dry, 0.9, ram, 25);
+  girderGroan(dry, 2.4, ram, 20);
+  writeSound("ramp_hydraulics", hullEcho(dry, RAMP.echo), 0.8);
+}
+{
+  const foot = ownRandom(0x52616d54);
+  const dry = new Float64Array(Math.round(1.2 * RATE));
+  thunk(dry, 0, RAMP.thudHz, 1, foot);
+  thunk(dry, 0.07, RAMP.thudHz * 1.4, 0.35, foot);
+  gearRing(dry, 0.002, 310, 0.25);
+  gearRing(dry, 0.002, 770, 0.12);
+  click(dry, RAMP.latchAt, RAMP.latchHz, 0.5, foot);
+  click(dry, RAMP.latchAt + 0.015, RAMP.latchHz * 1.6, 0.25, foot);
+  writeSound("ramp_thud", hullEcho(dry, RAMP.echo), 0.9);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

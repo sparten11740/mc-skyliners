@@ -674,6 +674,33 @@
       }
     ]
   },
+  "ramp_steam": {
+    "subtitle": "subtitles.skyliners.ramp_steam",
+    "sounds": [
+      {
+        "name": "skyliners:ramp_steam",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "ramp_hydraulics": {
+    "subtitle": "subtitles.skyliners.ramp_hydraulics",
+    "sounds": [
+      {
+        "name": "skyliners:ramp_hydraulics",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "ramp_thud": {
+    "subtitle": "subtitles.skyliners.ramp_thud",
+    "sounds": [
+      {
+        "name": "skyliners:ramp_thud",
+        "attenuation_distance": 32
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

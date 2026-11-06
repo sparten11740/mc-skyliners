@@ -1498,12 +1498,13 @@ function rocketSoundsLang() {
 const FREIGHTER_SOUNDS = {
   // The club's song, 96 seconds long.
   club_band: { subtitle: "Swing band plays", stream: true },
+  // Her boarding ramp coming down from her belly, heard by those waiting for it on the ground round her.
+  ramp_steam: { subtitle: "Ramp vents steam", heard: 32 },
+  ramp_hydraulics: { subtitle: "Ramp hydraulics whine", heard: 32 },
+  ramp_thud: { subtitle: "Ramp thuds down", heard: 32 },
 };
 function freighterSounds() {
-  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {
-    if (aboard) {
-      return [name, heardAboard(name)];
-    }
+  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {
     const sound = { name: `${ID}:${name}`, ...(stream ? { stream } : {}), ...(heard ? { attenuation_distance: heard } : {}) };
     return [name, { subtitle: `subtitles.${ID}.${name}`, sounds: takes ? takes.map((pitch) => ({ ...sound, pitch })) : [sound] }];
   }));

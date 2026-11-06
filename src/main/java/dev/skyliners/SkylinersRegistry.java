@@ -817,6 +817,12 @@ public final class SkylinersRegistry {
     // features to play as they are built.
     /** The club's song, "Long Haul Swing", a 96-second minor swing looped while anyone is in her club. */
     public static final DeferredHolder<SoundEvent, SoundEvent> CLUB_BAND = sound("club_band");
+    /** Her boarding ramp's latches letting go in a burst of steam, and its seal hissing shut. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_STEAM = sound("ramp_steam");
+    /** Her boarding ramp's plate swinging down on its rams, the hydraulic pump whining. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_HYDRAULICS = sound("ramp_hydraulics");
+    /** Her boarding ramp's foot lip coming down onto the ground with a thud, its latch clicking home. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_THUD = sound("ramp_thud");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );
