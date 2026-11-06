@@ -2,6 +2,7 @@ package dev.skyliners.client;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.RocketFlight;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
@@ -192,7 +193,7 @@ public final class OculusRing {
         switch (phase) {
             case OFF -> shade(colour, CYAN, IDLE);
             case TAKEOFF -> {
-                if (autopilot.rocketThrust() > 0) {
+                if (RocketFlight.thrustOf(autopilot) > 0) {
                     shade(colour, WHITE, chased(lamp, clock));
                 } else {
                     counting(lamp, clock, colour);

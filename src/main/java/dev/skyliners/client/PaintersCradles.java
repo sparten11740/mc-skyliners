@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.skyliners.airframe.Livery;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.LiveryBoardBlock;
 import javax.annotation.Nullable;
@@ -55,7 +56,7 @@ final class PaintersCradles {
         double share = start < 0 ? 1 : (DrawingClock.gameTime(partialTick) - start) / Livery.REPAINT_TICKS;
         if (share >= 0 && share < 1) {
             VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
-            cradles(from, autopilot, share * Livery.sweep(autopilot.zeppelinSize()), pose, consumer);
+            cradles(from, autopilot, share * Livery.sweep(ZeppelinFlight.sizeOf(autopilot)), pose, consumer);
         }
     }
 
@@ -74,8 +75,8 @@ final class PaintersCradles {
         double tip = Math.max(project(box.minX(), box.minZ(), nose), project(box.maxX() + 1, box.maxZ() + 1, nose));
         double middle = (project(box.minX(), box.minZ(), starboard) + project(box.maxX() + 1, box.maxZ() + 1, starboard)) / 2;
         double along = tip - reached;
-        double radius = autopilot.zeppelinSize().radiusAt(reached);
-        double y = box.minY() + autopilot.zeppelinSize().axis() - HANG_BELOW;
+        double radius = ZeppelinFlight.sizeOf(autopilot).radiusAt(reached);
+        double y = box.minY() + ZeppelinFlight.sizeOf(autopilot).axis() - HANG_BELOW;
         for (int side = -1; side <= 1; side += 2) {
             double across = middle + side * (radius + HANG_OUT + CRADLE_DEPTH / 2);
             double x = along * nose.getStepX() + across * starboard.getStepX();

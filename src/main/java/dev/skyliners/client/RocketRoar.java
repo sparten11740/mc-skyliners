@@ -3,6 +3,7 @@ package dev.skyliners.client;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.RocketFlight;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
@@ -180,7 +181,7 @@ public final class RocketRoar {
 
         /** Each tick of hers: her ignition or her cut-off as her engines light or stop, and her roar kept up. */
         void tick(Minecraft minecraft, AutopilotBlockEntity rocket, long now) {
-            float thrust = rocket.rocketThrust();
+            float thrust = RocketFlight.thrustOf(rocket);
             boolean inside = SableClient.isAboard(minecraft.player, rocket);
             if (heard == 0 && thrust > 0 && rocket.phase() == AutopilotBlockEntity.Phase.TAKEOFF) {
                 litAt = now;
@@ -193,7 +194,7 @@ public final class RocketRoar {
                 stopping(minecraft, rocket, inside, now);
             }
             heard = thrust;
-            boolean boosting = thrust > 0 && rocket.rocketControls().boosting(now);
+            boolean boosting = thrust > 0 && RocketFlight.controlsOf(rocket).boosting(now);
             boost(minecraft, rocket, boosting, inside, now);
             // Lighting, the loop waits a moment, then rises in under the ignition as that falls away; stopping, it dies
             // away into the cut-off, falling in pitch.
@@ -223,7 +224,7 @@ public final class RocketRoar {
             if (boosting && !boosted) {
                 once(minecraft, rocket, SkylinersRegistry.ROCKET_BOOST, SkylinersRegistry.ROCKET_BOOST_ABOARD, BOOST_VOLUME, inside);
                 if (inside) {
-                    CameraShake.turbulence(BOOST_SHAKE, rocket.rocketControls().boostLeft(now));
+                    CameraShake.turbulence(BOOST_SHAKE, RocketFlight.controlsOf(rocket).boostLeft(now));
                 }
             }
             if (boosted && !boosting) {

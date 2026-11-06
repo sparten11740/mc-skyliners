@@ -3,6 +3,7 @@ package dev.skyliners.christening;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.airframe.Livery;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.FlagHalyardBlockEntity;
 import dev.skyliners.block.ShipsPlaqueBlockEntity;
@@ -86,7 +87,7 @@ public final class Christening {
         BoundingBox box = zeppelin.frame();
         Direction nose = zeppelin.getBlockState().getValue(AutopilotBlock.FACING);
         Livery.Spot spot = Livery.Spot.of(struck, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
-            zeppelin.zeppelinSize());
+            ZeppelinFlight.sizeOf(zeppelin));
         if (spot.along() > NOSE_REACH) {
             return Outcome.NOT_HER_NOSE;
         }

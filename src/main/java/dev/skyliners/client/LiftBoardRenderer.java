@@ -6,6 +6,7 @@ import dev.skyliners.Skyliners;
 import dev.skyliners.SkylinersClientConfig;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.RocketFlight;
 import dev.skyliners.block.LiftBoardBlock;
 import dev.skyliners.block.LiftBoardBlockEntity;
 import dev.skyliners.block.LiftMachineBlockEntity;
@@ -136,7 +137,7 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
         boolean flying = rocket != null && rocket.phase() != AutopilotBlockEntity.Phase.OFF;
         if (flying) {
             double high = SableClient.toWorld(lift.getLevel(), Vec3.atCenterOf(lift.getBlockPos())).y;
-            boolean boosting = rocket.rocketControls().boosting(lift.getLevel().getGameTime());
+            boolean boosting = RocketFlight.controlsOf(rocket).boosting(lift.getLevel().getGameTime());
             HeightGauge.draw(matrix, shapes, buffers, new HeightGauge.Column(left, LiftBoardBlock.MARGIN, right, height - LiftBoardBlock.MARGIN),
                 lift.getLevel(), high, boosting);
             return;

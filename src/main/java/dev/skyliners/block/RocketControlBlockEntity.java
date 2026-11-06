@@ -4,6 +4,7 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
 import dev.skyliners.autopilot.RocketControls;
+import dev.skyliners.autopilot.RocketFlight;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -110,16 +111,16 @@ public class RocketControlBlockEntity extends BlockEntity {
     }
 
     /**
-     * Asks her autopilot to work its control for a player, which answers them (see
-     * {@link AutopilotBlockEntity#rocketControl}); linked to none, a low note and why. It blinks as its block has it,
-     * and shows what it does at once. Whether it was taken.
+     * Asks her autopilot to work its control for a player, which answers them (see {@link RocketFlight#control});
+     * linked to none, a low note and why. It blinks as its block has it, and shows what it does at once. Whether it was
+     * taken.
      */
     boolean ask(ServerLevel level, ServerPlayer player) {
         if (!(getBlockState().getBlock() instanceof RocketControlBlock block)) {
             return false;
         }
         AutopilotBlockEntity linked = autopilot(level);
-        boolean taken = linked != null && linked.rocketControl(block.control(), player);
+        boolean taken = linked != null && RocketFlight.control(linked, block.control(), player);
         if (linked == null) {
             level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, UNLINKED_VOLUME, UNLINKED_PITCH);
             player.displayClientMessage(Component.translatable("message.skyliners.rocket_controls.no_autopilot"), true);
@@ -145,7 +146,8 @@ public class RocketControlBlockEntity extends BlockEntity {
             return;
         }
         AutopilotBlockEntity linked = autopilot(level);
-        RocketControls.Panel panel = linked != null ? linked.rocketPanel() : RocketControls.Panel.NONE;
+        RocketFlight rocket = linked != null ? linked.flight(RocketFlight.class) : null;
+        RocketControls.Panel panel = rocket != null ? rocket.panel(linked) : RocketControls.Panel.NONE;
         BlockState shown = block.shown(state, panel, level.getGameTime() < blinkUntil);
         if (shown != state) {
             level.setBlock(worldPosition, shown, Block.UPDATE_CLIENTS);

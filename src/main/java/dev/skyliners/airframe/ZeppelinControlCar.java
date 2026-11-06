@@ -4,6 +4,7 @@ import static dev.skyliners.airframe.ZeppelinShape.*;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.BurnerLeverBlock;
@@ -32,7 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * wall under the windows; the elevator wheel and the burner lever along the port wall, looking out of its windows;
  * and the flight map on the back wall, by the ladder up into the hull. The control head is wired when the zeppelin is
  * built to every gas cell's burners, every engine's relays and the hand controls, and to the box round the zeppelin's
- * blocks (see {@link AutopilotBlockEntity#configureZeppelin}).
+ * blocks (see {@link ZeppelinFlight#configure}).
  */
 final class ZeppelinControlCar {
     /** How far either side of the middle the flight display and the transponder stand, in blocks. */
@@ -137,10 +138,11 @@ final class ZeppelinControlCar {
         for (int cell = 0; cell < relays.size(); cell++) {
             cells.add(new ZeppelinPilot.Cell(offsets(at, relays.get(cell), rotation), middle - cellMiddle(cell) * layout.scale(), layout.cellGas().get(cell)));
         }
-        autopilot.configureZeppelin(cells, engines(at, layout.aheadRelays(), rotation), engines(at, layout.asternRelays(), rotation),
-            height - at.getY(), middle - at.getZ(), at.getY(), layout.hullSize());
+        ZeppelinFlight zeppelin = autopilot.wire(ZeppelinFlight.class, at.getY());
+        zeppelin.configure(cells, engines(at, layout.aheadRelays(), rotation), engines(at, layout.asternRelays(), rotation), height - at.getY(),
+            middle - at.getZ(), layout.hullSize());
         List<BlockPos> hand = offsets(at, List.of(controls.rudder(), controls.elevator(), controls.port(), controls.starboard(), controls.lever()), rotation);
-        autopilot.wireZeppelinControls(hand.get(0), hand.get(1), hand.get(2), hand.get(3), hand.get(4));
+        zeppelin.wireControls(hand.get(0), hand.get(1), hand.get(2), hand.get(3), hand.get(4));
         List<BlockPos> frame = offsets(at, layout.frameCorners(), rotation);
         autopilot.frame(frame.get(0), frame.get(1));
         autopilot.paint(layout.livery());

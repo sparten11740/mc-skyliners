@@ -123,8 +123,11 @@ her and steers her along it, `Skywriting` handing her pilot the course (a `Cours
 with its line on the list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner,
 engine and hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws
 turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to
-show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through
-the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
+show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, for
+the autopilot's block entity, which knows each kind of craft only through its `CraftFlight`, made by its `Craft`
+(`AirlinerFlight`, whose flying stays the block entity's own, `ZeppelinFlight` and `RocketFlight`): what the craft is
+wired to, how it is flown each tick, how it lands, switches off, saves and is shown to the clients, so a new kind of
+craft is a new class and a constant there, the block entity left as it is; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled, until `ParkedShips` lets it go, parked with nobody near, noting where it stands to load the land under it when someone comes back, as Sable would not.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned
 by `RocketFlightDeck` (where each seat, screen and console goes), its skin by the same `SurfaceCut`

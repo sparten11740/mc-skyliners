@@ -14,9 +14,11 @@ import dev.skyliners.airframe.ZeppelinOptions;
 import dev.skyliners.airframe.ZeppelinSize;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.RocketFlight;
 import dev.skyliners.autopilot.RocketPilot;
 import dev.skyliners.autopilot.SetAutopilot;
 import dev.skyliners.autopilot.ZeppelinAssembly;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.compat.SableFlight;
@@ -134,7 +136,8 @@ public final class BlockpilotCommands {
     private static Result zeppelin() throws CommandException {
         ServerPlayer player = player();
         AutopilotBlockEntity autopilot = nearest(player);
-        ZeppelinPilot.Report report = autopilot == null ? null : autopilot.zeppelinReport();
+        ZeppelinFlight zeppelin = autopilot == null ? null : autopilot.flight(ZeppelinFlight.class);
+        ZeppelinPilot.Report report = zeppelin == null ? null : zeppelin.report();
         if (report == null) {
             return Result.error("no_zeppelin");
         }
@@ -161,7 +164,8 @@ public final class BlockpilotCommands {
     private static Result rocket() throws CommandException {
         ServerPlayer player = player();
         AutopilotBlockEntity autopilot = nearest(player);
-        RocketPilot.Report report = autopilot == null ? null : autopilot.rocketReport();
+        RocketFlight rocket = autopilot == null ? null : autopilot.flight(RocketFlight.class);
+        RocketPilot.Report report = rocket == null ? null : rocket.report();
         if (report == null) {
             return Result.error("no_rocket");
         }

@@ -2,6 +2,7 @@ package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.autopilot.ZeppelinPilot;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -73,7 +74,9 @@ public class TrimWinchBlockEntity extends BlockEntity {
             return;
         }
         AutopilotBlockEntity autopilot = AutopilotBlockEntity.zeppelinFraming(level, worldPosition);
-        ZeppelinPilot.Report report = autopilot == null || autopilot.phase() == AutopilotBlockEntity.Phase.OFF ? null : autopilot.zeppelinReport();
+        boolean flown = autopilot != null && autopilot.phase() != AutopilotBlockEntity.Phase.OFF;
+        ZeppelinFlight zeppelin = flown ? autopilot.flight(ZeppelinFlight.class) : null;
+        ZeppelinPilot.Report report = zeppelin == null ? null : zeppelin.report();
         double target = report == null ? byHand(level) : byAutopilot(level, report);
         if (level.getGameTime() % STEP_TICKS == 0) {
             roll(level, Long.signum(Math.round(target) - car));

@@ -5,6 +5,7 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.airframe.RocketSilhouette;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.RocketFlight;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
@@ -57,7 +58,7 @@ public final class RocketExhaust {
             return;
         }
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(level)) {
-            if (autopilot.craft() == Craft.ROCKET && autopilot.built() && autopilot.rocketThrust() > 0) {
+            if (autopilot.craft() == Craft.ROCKET && autopilot.built() && RocketFlight.thrustOf(autopilot) > 0) {
                 plume(level, autopilot);
             }
         }
@@ -79,8 +80,8 @@ public final class RocketExhaust {
         Vec3 ahead = SableClient.toWorld(level, footAmongBlocks.add(0, 0, 1)).subtract(foot);
         double scale = RocketSilhouette.scaleOf(rocket.getBlockPos().getY() - frame.minY());
         double across = RocketSilhouette.body(RocketSilhouette.height() / 2) * scale * ACROSS;
-        boolean boosting = rocket.rocketControls().boosting(level.getGameTime());
-        int puffs = (int) Math.round(Math.max(LEAST_PUFFS, PUFFS * Mth.clamp(rocket.rocketThrust(), 0, 1)) * (boosting ? BOOST_PUFFS : 1));
+        boolean boosting = RocketFlight.controlsOf(rocket).boosting(level.getGameTime());
+        int puffs = (int) Math.round(Math.max(LEAST_PUFFS, PUFFS * Mth.clamp(RocketFlight.thrustOf(rocket), 0, 1)) * (boosting ? BOOST_PUFFS : 1));
         RandomSource random = level.getRandom();
         if (boosting) {
             core(level, foot, back.scale(SPEED * scale * CORE_SPEED), right, ahead, across * CORE_ACROSS);

@@ -3,6 +3,7 @@ package dev.skyliners.airframe;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.RocketFlight;
 import dev.skyliners.autopilot.RocketPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.AutopilotScreenBlock;
@@ -782,8 +783,8 @@ public final class RocketLayout extends HullLayout {
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = bells.stream().map(relays -> offsets(at, relays, rotation)).toList();
-        autopilot.configureRocket(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), at.getY(), storyRows(scale),
-            rooms);
+        RocketFlight rocket = autopilot.wire(RocketFlight.class, at.getY());
+        rocket.configure(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), storyRows(scale), rooms);
         autopilot.paint(BUILT_IN);
         int reach = reach();
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-reach, 0, -reach), new BlockPos(reach, height, reach)), rotation);

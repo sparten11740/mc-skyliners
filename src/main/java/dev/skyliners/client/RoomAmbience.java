@@ -5,6 +5,7 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.airframe.RocketSilhouette;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.RocketFlight;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -152,7 +153,7 @@ public final class RoomAmbience {
     @Nullable
     private static Room roomOf(LocalPlayer player) {
         AutopilotBlockEntity autopilot = rocketAround(player);
-        if (autopilot == null || !autopilot.rocketRooms()) {
+        if (autopilot == null || !RocketFlight.roomsOf(autopilot)) {
             return null;
         }
         int story = storyOf(player, autopilot);
@@ -187,7 +188,7 @@ public final class RoomAmbience {
      * fins.
      */
     private static boolean within(AutopilotBlockEntity autopilot, BoundingBox frame, LocalPlayer player) {
-        int[] floors = autopilot.rocketStories();
+        int[] floors = RocketFlight.storiesOf(autopilot);
         if (floors.length == 0 || !frame.isInside(player.blockPosition())) {
             return false;
         }
@@ -203,7 +204,7 @@ public final class RoomAmbience {
      * it holds as she leans; in water, as in her pool's channel sunk into its floor, from the water's top.
      */
     private static int storyOf(LocalPlayer player, AutopilotBlockEntity autopilot) {
-        int[] floors = autopilot.rocketStories();
+        int[] floors = RocketFlight.storiesOf(autopilot);
         Level level = autopilot.getLevel();
         if (floors.length < 2 || level == null) {
             return -1;

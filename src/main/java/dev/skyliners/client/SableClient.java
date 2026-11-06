@@ -1,6 +1,7 @@
 package dev.skyliners.client;
 
 import dev.skyliners.Aboard;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.airframe.ZeppelinSize;
@@ -463,7 +464,7 @@ public final class SableClient {
             Vec3 origin = nose.getAxis() == Direction.Axis.Z
                 ? new Vec3(centreline.x, bounds.minY(), tip)
                 : new Vec3(tip, bounds.minY(), centreline.z);
-            return new Frame(origin, nose, autopilot.craft(), autopilot.zeppelinSize());
+            return new Frame(origin, nose, autopilot.craft(), ZeppelinFlight.sizeOf(autopilot));
         }
 
         @Nullable

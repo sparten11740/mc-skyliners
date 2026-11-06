@@ -7,6 +7,8 @@ import dev.skyliners.airframe.RocketSilhouette;
 import dev.skyliners.airframe.ZeppelinSize;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.RocketFlight;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.OvalWindowBlock;
 import java.util.ArrayList;
@@ -182,11 +184,11 @@ public final class ZeppelinPaint {
         }
         long start = autopilot.repaintStart();
         double share = start < 0 ? 1 : Math.min(1, (DrawingClock.gameTime(0) - start) / Livery.REPAINT_TICKS);
-        double reached = share >= 1 ? Double.MAX_VALUE : share * sweep(craft, box, autopilot.zeppelinSize());
+        double reached = share >= 1 ? Double.MAX_VALUE : share * sweep(craft, box, ZeppelinFlight.sizeOf(autopilot));
         Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
-        List<PaintOverlay> overlays = craft == Craft.ZEPPELIN ? overlays(level, box, autopilot.zeppelinSize()) : List.of();
+        List<PaintOverlay> overlays = craft == Craft.ZEPPELIN ? overlays(level, box, ZeppelinFlight.sizeOf(autopilot)) : List.of();
         return new Painted(craft, box, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
-            autopilot.zeppelinSize(), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays, stories(autopilot));
+            ZeppelinFlight.sizeOf(autopilot), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays, stories(autopilot));
     }
 
     /**
@@ -194,7 +196,7 @@ public final class ZeppelinPaint {
      * kept them, as one is built at the configured scale.
      */
     private static int[] stories(AutopilotBlockEntity autopilot) {
-        int[] kept = autopilot.rocketStories();
+        int[] kept = RocketFlight.storiesOf(autopilot);
         return kept.length > 0 ? kept : RocketSilhouette.stories(SkylinersConfig.SCALE.get());
     }
 

@@ -6,6 +6,7 @@ import dev.skyliners.airframe.Livery;
 import dev.skyliners.airframe.ZeppelinSize;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.block.LiveryBoardBlock;
 import dev.skyliners.block.LiverySelectorBlock;
 import dev.skyliners.block.LiverySelectorBlockEntity;
@@ -66,7 +67,7 @@ public class LiverySelectorRenderer implements BlockEntityRenderer<LiverySelecto
         double height = WideScreenFace.height(state);
         ScreenDrawing.rect(shapes, matrix, 0, 0, width, height, 0, FRAME_WOOD);
         ScreenDrawing.rect(shapes, matrix, FRAME, FRAME, width - FRAME, height - FRAME, LAYER, BOARD);
-        ZeppelinSize size = autopilot != null ? autopilot.zeppelinSize() : ZeppelinSize.FULL;
+        ZeppelinSize size = autopilot != null ? ZeppelinFlight.sizeOf(autopilot) : ZeppelinSize.FULL;
         Craft craft = autopilot != null ? autopilot.craft() : Craft.ZEPPELIN;
         TouchPanel.Layout pictures = LiverySelectorBlock.pictures(height);
         int worn = Livery.swatchPlace(craft, autopilot != null ? autopilot.livery() : null);

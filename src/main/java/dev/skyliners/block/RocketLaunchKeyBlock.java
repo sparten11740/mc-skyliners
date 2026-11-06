@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
  * A rocket's launch key, at the commander's inboard hand on the centre console: a key in its lock behind its plate's
  * picture of a rocket over her flame, amber while it stands off and green once turned. Turned on the ground with her
  * autopilot off, she flies what her screen last set; turned back during her countdown, she scrubs; once she has lifted
- * off it is stuck on and only thuds (see the autopilot's {@code rocketControl}). It stands turned (TURNED) for as long
- * as her autopilot flies her, and drops back off with a click as she lands.
+ * off it is stuck on and only thuds (see {@link dev.skyliners.autopilot.RocketFlight#control}). It stands turned
+ * (TURNED) for as long as her autopilot flies her, and drops back off with a click as she lands.
  */
 public class RocketLaunchKeyBlock extends RocketControlBlock {
     private static final MapCodec<RocketLaunchKeyBlock> CODEC = simpleCodec(RocketLaunchKeyBlock::new);

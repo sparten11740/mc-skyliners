@@ -7,6 +7,7 @@ import dev.skyliners.Skyliners;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
 import dev.skyliners.autopilot.RocketControls;
+import dev.skyliners.autopilot.RocketFlight;
 import dev.skyliners.block.FlightDisplayBlock;
 import dev.skyliners.block.FlightDisplayBlockEntity;
 import dev.skyliners.client.PanelArt.Pictures;
@@ -166,7 +167,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static void rocketControls(PoseStack pose, MultiBufferSource buffers, AutopilotBlockEntity rocket, SableClient.Attitude attitude, long now,
                                        float swing) {
         Matrix4f matrix = pose.last().pose();
-        RocketControls controls = rocket.rocketControls();
+        RocketControls controls = RocketFlight.controlsOf(rocket);
         VertexConsumer fill = ScreenDrawing.shapes(buffers);
         if (controls.cooling(now)) {
             restRing(fill, matrix, controls.rested(now));
