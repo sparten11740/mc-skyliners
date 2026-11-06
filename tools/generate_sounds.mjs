@@ -3403,20 +3403,21 @@ async function kokoro() {
 }
 
 /**
- * Says every line with Kokoro in VOICE as the kind of line given (VOICE.callout or VOICE.announcement), each stretch
- * between its pauses on its own with the quiet round it trimmed and the pause put between, and plays it through the
- * loudspeakers and that kind's levelling into a WAV at the generator's rate in the scratch folder.
+ * Says every line with Kokoro in VOICE, or the voice given (its Kokoro voice, pause and loudspeakers, as VOICE has
+ * them), as the kind of line given (VOICE.callout or VOICE.announcement), each stretch between its pauses on its own
+ * with the quiet round it trimmed and the pause put between, and plays it through the loudspeakers and that kind's
+ * levelling into a WAV at the generator's rate in the scratch folder.
  */
-async function say(speaker, lines, kind) {
+async function say(speaker, lines, kind, voice = VOICE) {
   for (const [name, text] of Object.entries(lines)) {
     let rate = RATE;
     const parts = [];
     for (const part of text.split("|")) {
-      const spoken = await speaker.generate(part.trim(), { voice: VOICE.voice, speed: kind.pace });
+      const spoken = await speaker.generate(part.trim(), { voice: voice.voice, speed: kind.pace });
       rate = spoken.sampling_rate;
       parts.push(trim(Float64Array.from(spoken.audio), rate));
     }
-    const pause = Math.round((VOICE.pause / 1000) * rate);
+    const pause = Math.round((voice.pause / 1000) * rate);
     const joined = new Float64Array(parts.reduce((sum, p) => sum + p.length, 0) + pause * (parts.length - 1));
     let at = 0;
     for (const p of parts) {
@@ -3427,7 +3428,7 @@ async function say(speaker, lines, kind) {
     joined.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
     const said = join(scratch, `${name}.said.wav`);
     writeWav(said, Array.from(joined, (s) => (s / peak) * 0.5), rate);
-    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", [...VOICE.loudspeakers, ...kind.levelling].join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", join(scratch, `${name}.voiced.wav`)]);
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", [...voice.loudspeakers, ...kind.levelling].join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", join(scratch, `${name}.voiced.wav`)]);
   }
 }
 
@@ -3739,9 +3740,11 @@ const BARTENDER_LINES = {
 };
 /** The longest a line may run, its chirp and all, in seconds: a quick word over the bar. */
 const BARTENDER_LONGEST = 2.5;
-/** The chirp before a greeting, at a peak of one. */
-function bartenderChirp() {
-  const { chirp, chirpLength, chirpGap } = BARTENDER_VOICE;
+/**
+ * A chirp of quick tones at a peak of one, as the settings given have it (its tones, in hertz, each one's length and
+ * the gap after it, in seconds): the bartender's before a greeting, the freighter's computer's before each line.
+ */
+function toneChirp({ chirp, chirpLength, chirpGap }) {
   const tone = Math.round(chirpLength * RATE);
   const step = tone + Math.round(chirpGap * RATE);
   const samples = new Float64Array(step * chirp.length);
@@ -3769,7 +3772,7 @@ if (speaker) {
       writeVoiced(name, voice, BARTENDER_VOICE, BARTENDER_LONGEST);
       continue;
     }
-    const chirp = bartenderChirp();
+    const chirp = toneChirp(BARTENDER_VOICE);
     const samples = new Float64Array(chirp.length + voice.length);
     const level = BARTENDER_VOICE.chirpLevel * peakOf(voice);
     chirp.forEach((sample, i) => (samples[i] = sample * level));
@@ -5147,6 +5150,57 @@ function hiddenHatch(times, own) {
 }
 writeSound("hidden_hatch_open", hiddenHatch(HIDDEN_HATCH.opening, ownRandom(0x48486f70)), 0.7);
 writeSound("hidden_hatch_close", hiddenHatch(HIDDEN_HATCH.closing, ownRandom(0x4848636c)), 0.7);
+
+// The freighter's computer (see the plan's "Sound"), said as the flight deck's lines are (see say): an American
+// woman's voice, Kokoro's Bella, which no other voice in the mod uses, so it is never taken for the flight deck's or
+// launch control's, heard through a small speaker in her cockpit, its narrow band, its boxy, bright middle and the
+// cockpit's short reflections, compressed as a ship's announcements are; and before each line a two-tone blip,
+// falling. Magpie, the name she answers to on the radio, is spoken as her own. Tune it here.
+const COMPUTER = {
+  voice: "af_bella",
+  pace: 1,
+  // The pause a "|" in a line makes, in milliseconds: the beat of a countdown.
+  pause: 380,
+  // FFmpeg's filters for the cockpit's speaker, in order, and for levelling the line after them.
+  loudspeakers: [
+    "highpass=f=320:poles=2",
+    "lowpass=f=5200:poles=2",
+    "equalizer=f=1900:t=q:w=1.4:g=4",
+    "aecho=0.9:0.6:4|9:0.25|0.12",
+  ],
+  levelling: ["acompressor=threshold=-26dB:ratio=3:attack=3:release=90:makeup=8dB"],
+  // The blip: its tones, falling, in hertz, each so long and the gap after it, in seconds, and how loud beside the
+  // voice's peak.
+  chirp: [1568, 1175],
+  chirpLength: 0.07,
+  chirpGap: 0.03,
+  chirpLevel: 0.35,
+  // The peak it is written at, as the other voices'.
+  level: 0.85,
+};
+const COMPUTER_LINES = {
+  freighter_computer_jump_charged: "Jump drive charged.",
+  freighter_computer_jump_fault: "Jump drive fault.",
+  freighter_computer_ramp_lowering: "Ramp lowering.",
+  freighter_computer_turret_ready: "Turret ready.",
+  freighter_computer_jump_countdown: "Jump in three, | two, | one.",
+  freighter_computer_magpie_ready: "Magpie ready.",
+};
+/** The longest a line may run, its blip and all, in seconds; and the countdown, a beat a number. */
+const COMPUTER_LONGEST = 2.5;
+const COMPUTER_COUNTDOWN_LONGEST = 4;
+if (speaker) {
+  await say(speaker, COMPUTER_LINES, COMPUTER, COMPUTER);
+  for (const name of Object.keys(COMPUTER_LINES)) {
+    const voice = trim(readWav(join(scratch, `${name}.voiced.wav`)));
+    const chirp = toneChirp(COMPUTER);
+    const samples = new Float64Array(chirp.length + voice.length);
+    const level = COMPUTER.chirpLevel * peakOf(voice);
+    chirp.forEach((sample, i) => (samples[i] = sample * level));
+    samples.set(voice, chirp.length);
+    writeVoiced(name, samples, COMPUTER, name === "freighter_computer_jump_countdown" ? COMPUTER_COUNTDOWN_LONGEST : COMPUTER_LONGEST);
+  }
+}
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a

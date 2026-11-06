@@ -873,6 +873,18 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> HIDDEN_HATCH_OPEN = sound("hidden_hatch_open");
     /** A hidden compartment's hatch sliding shut, sealing and latching. */
     public static final DeferredHolder<SoundEvent, SoundEvent> HIDDEN_HATCH_CLOSE = sound("hidden_hatch_close");
+    /** Her computer, after its falling blip: "Jump drive charged." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_CHARGED = sound("freighter_computer_jump_charged");
+    /** Her computer, after its falling blip: "Jump drive fault." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_FAULT = sound("freighter_computer_jump_fault");
+    /** Her computer, after its falling blip: "Ramp lowering." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_RAMP_LOWERING = sound("freighter_computer_ramp_lowering");
+    /** Her computer, after its falling blip: "Turret ready." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_TURRET_READY = sound("freighter_computer_turret_ready");
+    /** Her computer, after its falling blip, counting down to a jump: "Jump in three, two, one." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_COUNTDOWN = sound("freighter_computer_jump_countdown");
+    /** Her computer, after its falling blip, saying her name: "Magpie ready." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_MAGPIE_READY = sound("freighter_computer_magpie_ready");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );

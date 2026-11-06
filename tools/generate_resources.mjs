@@ -1493,8 +1493,9 @@ function rocketSoundsLang() {
 
 // The freighter's sounds (see tools/generate_sounds.mjs and docs/plans/2026-11-06-freighter.md), each with its
 // subtitle and, where it differs from the game's own, how far it is heard (heard, in blocks, the volume falling off
-// evenly to nothing there), whether it is streamed as music and long loops are rather than loaded whole (stream), and
-// the pitches its takes are played at, picked one at random each time (takes).
+// evenly to nothing there), whether it is streamed as music and long loops are rather than loaded whole (stream), the
+// pitches its takes are played at, picked one at random each time (takes), and whether it is played to each listener
+// aboard as the flight deck's voice is (aboard, see heardAboard).
 // How far her engines' roar carries, in blocks: as far as the rocket's, out across the ground round her.
 const FREIGHTER_HEARD = 160;
 // The pitches the Spookie's two takes of each sound are played at, so it never says one twice quite alike.
@@ -1539,9 +1540,19 @@ const FREIGHTER_SOUNDS = {
   radar_dish_whirr: { subtitle: "Radar dish whirrs", heard: 24 },
   hidden_hatch_open: { subtitle: "Hidden hatch slides open" },
   hidden_hatch_close: { subtitle: "Hidden hatch slides shut" },
+  // Her computer's voice, each line subtitled with what it says.
+  freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
+  freighter_computer_jump_fault: { subtitle: "Computer: Jump drive fault", aboard: true },
+  freighter_computer_ramp_lowering: { subtitle: "Computer: Ramp lowering", aboard: true },
+  freighter_computer_turret_ready: { subtitle: "Computer: Turret ready", aboard: true },
+  freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
+  freighter_computer_magpie_ready: { subtitle: "Computer: Magpie ready", aboard: true },
 };
 function freighterSounds() {
-  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {
+  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {
+    if (aboard) {
+      return [name, heardAboard(name)];
+    }
     const sound = { name: `${ID}:${name}`, ...(stream ? { stream } : {}), ...(heard ? { attenuation_distance: heard } : {}) };
     return [name, { subtitle: `subtitles.${ID}.${name}`, sounds: takes ? takes.map((pitch) => ({ ...sound, pitch })) : [sound] }];
   }));
