@@ -825,6 +825,66 @@
       }
     ]
   },
+  "spookie_greet": {
+    "subtitle": "subtitles.skyliners.spookie_greet",
+    "sounds": [
+      {
+        "name": "skyliners:spookie_greet",
+        "attenuation_distance": 24,
+        "pitch": 0.95
+      },
+      {
+        "name": "skyliners:spookie_greet",
+        "attenuation_distance": 24,
+        "pitch": 1.05
+      }
+    ]
+  },
+  "spookie_happy": {
+    "subtitle": "subtitles.skyliners.spookie_happy",
+    "sounds": [
+      {
+        "name": "skyliners:spookie_happy",
+        "attenuation_distance": 24,
+        "pitch": 0.95
+      },
+      {
+        "name": "skyliners:spookie_happy",
+        "attenuation_distance": 24,
+        "pitch": 1.05
+      }
+    ]
+  },
+  "spookie_alarm": {
+    "subtitle": "subtitles.skyliners.spookie_alarm",
+    "sounds": [
+      {
+        "name": "skyliners:spookie_alarm",
+        "attenuation_distance": 24,
+        "pitch": 0.95
+      },
+      {
+        "name": "skyliners:spookie_alarm",
+        "attenuation_distance": 24,
+        "pitch": 1.05
+      }
+    ]
+  },
+  "spookie_roar": {
+    "subtitle": "subtitles.skyliners.spookie_roar",
+    "sounds": [
+      {
+        "name": "skyliners:spookie_roar",
+        "attenuation_distance": 48,
+        "pitch": 0.95
+      },
+      {
+        "name": "skyliners:spookie_roar",
+        "attenuation_distance": 48,
+        "pitch": 1.05
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

@@ -4878,6 +4878,131 @@ const JUMP_DRIVE = {
   writeSound("jump_drive_jump", lowPassed(jump.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.8);
 }
 
+// The Spookie's voice (see the plan's "The Spookie"), each sound with a random sequence of its own: a big creature's
+// throat, a pulse through the three formants of its mouth gliding between "oo" and "ah", wandering a little in pitch,
+// with a breath of air through them. Its greeting: a "hoo-HOO", the first hoot rising from 140 to 190 hertz and the
+// second, louder, from 190 to 240, and a chuff, two puffs of breath through its nose. Its happy purr: a low "uhh" at
+// 120 hertz rolled 24 times a second, rising into a hoot. Its alarm: three pairs of honks through its nose, each pair a
+// minor third apart and higher than the last. Its roar: a 65 hertz bellow with a subharmonic under it, its mouth
+// sweeping a didgeridoo's wah from 400 hertz up to 1,100 and back to 600, driven hard. Hoots, chuffs, a purr and a
+// bellow, its own, and never a growling moan. Tune them here.
+const SPOOKIE = {
+  // Its mouth's three formants for "oo" and for "ah", in hertz, and each one's sharpness and loudness.
+  oo: [300, 870, 2240],
+  ah: [730, 1090, 2440],
+  formantQ: [5, 7, 9],
+  formantGain: [1, 0.55, 0.3],
+  // Its throat's pulse, as the share of each turn it is open; the tilt of its spectrum, a low-pass in hertz; how far
+  // its pitch wanders, as a share; and its breath, as a share of its voice.
+  pulseOpen: 0.25,
+  tilt: 500,
+  wander: 0.6,
+  breath: 0.12,
+  // Its nose's resonance as it honks, in hertz, and how loud beside its mouth's.
+  nasalHz: 1100,
+  nasal: 1.4,
+  // The roar: its pitch, in hertz; its wah from, up to and back down to, in hertz; and how hard it is driven.
+  roarHz: 65,
+  wah: [400, 1100, 600],
+  roarDrive: 2.5,
+};
+
+/**
+ * The Spookie's voice for so many seconds, from a random sequence of its own: its throat's pulse at pitchAt(t) hertz,
+ * wandering a little, through its mouth's formants gliding from "oo" to "ah" as openAt(t) goes from 0 to 1, as loud as
+ * loudAt(t), with breath; and through its nose too, as loud as nasalAt(t).
+ */
+function spookieVoice(seconds, own, pitchAt, openAt, loudAt, nasalAt = () => 0) {
+  const S = SPOOKIE;
+  const source = new Float64Array(Math.round(seconds * RATE));
+  let phase = 0;
+  let wander = 0;
+  for (let i = 0; i < source.length; i++) {
+    const t = i / RATE;
+    wander += 0.001 * (own() * 2 - 1 - wander);
+    const step = (pitchAt(t) * (1 + S.wander * wander)) / RATE;
+    phase = (phase + step) % 1;
+    source[i] = loudAt(t) * (pulseAt(phase, step, S.pulseOpen) + S.breath * (own() * 2 - 1));
+  }
+  const throat = lowPassed(source, S.tilt);
+  const mouth = S.oo.map((oo, k) => sweptResonance(throat, (t) => oo + (S.ah[k] - oo) * openAt(t), S.formantQ[k]));
+  const nose = resonance(throat, S.nasalHz, 6);
+  return throat.map((_, i) => mouth.reduce((sum, formant, k) => sum + S.formantGain[k] * formant[i], 0) + S.nasal * nasalAt(i / RATE) * nose[i]);
+}
+
+/** How loud a sound is t seconds in that sounds from one time to another, in seconds, swelling in and dying away. */
+function spoken(t, from, to) {
+  return t < from || t > to ? 0 : Math.min(1, (t - from) / 0.04) * Math.min(1, (to - t) / 0.08);
+}
+{
+  const greetRandom = ownRandom(0x53706b47);
+  const seconds = 1.4;
+  const hoots = [[0.05, 0.38, 140, 190, 0.7], [0.45, 0.95, 190, 240, 1]];
+  const hootOf = (t) => hoots.find(([, to]) => t <= to) ?? hoots[1];
+  const greet = spookieVoice(seconds, greetRandom, (t) => {
+    const [from, to, low, high] = hootOf(t);
+    return low + (high - low) * Math.max(0, Math.min(1, (t - from) / (to - from)));
+  }, (t) => 0.1 + 0.25 * Math.sin(Math.PI * Math.max(0, Math.min(1, (t - 0.45) / 0.5))), (t) => {
+    const [from, to, , , loud] = hootOf(t);
+    return loud * spoken(t, from, to);
+  });
+  // The chuff: two puffs of breath through its nose.
+  const puffs = resonance(whiteNoise(seconds, greetRandom), 900, 2);
+  greet.forEach((_, i) => {
+    const t = i / RATE;
+    const puff = [1.05, 1.17].reduce((sum, at) => sum + (t >= at ? Math.min(1, (t - at) / 0.005) * Math.exp(-(t - at) / 0.035) : 0), 0);
+    greet[i] += 1.5 * puff * puffs[i];
+  });
+  writeSound("spookie_greet", greet, 0.8);
+}
+{
+  const happyRandom = ownRandom(0x53706b48);
+  const seconds = 1.5;
+  const purring = 0.8;
+  const happy = spookieVoice(seconds, happyRandom, (t) => 120 + 140 * gearRamp(t, purring, 1.25),
+    (t) => 0.3 - 0.2 * gearRamp(t, purring, 1.1),
+    (t) => spoken(t, 0.02, seconds - 0.05) * (t < purring ? 0.55 + 0.45 * Math.max(0, Math.sin(2 * Math.PI * 24 * t)) : 0.7 + 0.3 * gearRamp(t, purring, 1.1)));
+  writeSound("spookie_happy", happy, 0.75);
+}
+{
+  const alarmRandom = ownRandom(0x53706b41);
+  const seconds = 1.45;
+  const honk = 0.12;
+  // Each honk's start, in seconds, and pitch, in hertz: three pairs, each a minor third apart, each pair higher.
+  const honks = [0, 1, 2].flatMap((pair) => {
+    const high = 240 * 1.05 ** pair;
+    const at = 0.03 + pair * 0.47;
+    return [[at, high], [at + honk + 0.05, high / 2 ** (3 / 12)]];
+  });
+  const honkOf = (t) => honks.findLast(([at]) => at <= t) ?? honks[0];
+  const alarm = spookieVoice(seconds, alarmRandom, (t) => honkOf(t)[1] * (1 + 0.04 * Math.min(1, (t - honkOf(t)[0]) / honk)), () => 0.55,
+    (t) => spoken(t, honkOf(t)[0], honkOf(t)[0] + honk), () => 1);
+  writeSound("spookie_alarm", alarm.map((sample) => Math.tanh(1.5 * sample)), 0.8);
+}
+{
+  const roarRandom = ownRandom(0x53706b52);
+  const S = SPOOKIE;
+  const seconds = 2;
+  const [from, top, to] = S.wah;
+  const wahAt = (t) => (t < 0.8 ? from + (top - from) * gearRamp(t, 0.1, 0.8) : top + (to - top) * gearRamp(t, 0.8, 1.7));
+  const loudAt = (t) => Math.min(1, t / 0.15) * Math.min(1, (seconds - t) / 0.5) * (1 + 0.08 * Math.sin(2 * Math.PI * 5 * t));
+  // Its throat: the bellow's pulse and, under it, a subharmonic an octave down, so every other pulse comes harder.
+  const source = new Float64Array(Math.round(seconds * RATE));
+  let phase = 0;
+  for (let i = 0; i < source.length; i++) {
+    const t = i / RATE;
+    const step = S.roarHz / RATE;
+    phase = (phase + step) % 2;
+    const pulse = pulseAt(phase % 1, step, S.pulseOpen) * (phase < 1 ? 1 : 0.6);
+    source[i] = loudAt(t) * (pulse + 0.25 * (roarRandom() * 2 - 1));
+  }
+  const throat = lowPassed(source, 900);
+  const wah = sweptResonance(throat, wahAt, 6);
+  const brass = resonance(throat, 2300, 5);
+  const roar = throat.map((sample, i) => Math.tanh(S.roarDrive * (3 * wah[i] + 0.5 * brass[i] + 0.3 * sample)));
+  writeSound("spookie_roar", lowPassed(roar, 8000), 0.85);
+}
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

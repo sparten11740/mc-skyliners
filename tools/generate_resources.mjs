@@ -1497,6 +1497,8 @@ function rocketSoundsLang() {
 // the pitches its takes are played at, picked one at random each time (takes).
 // How far her engines' roar carries, in blocks: as far as the rocket's, out across the ground round her.
 const FREIGHTER_HEARD = 160;
+// The pitches the Spookie's two takes of each sound are played at, so it never says one twice quite alike.
+const SPOOKIE_TAKES = [0.95, 1.05];
 const FREIGHTER_SOUNDS = {
   // The club's song, 96 seconds long.
   club_band: { subtitle: "Swing band plays", stream: true },
@@ -1523,6 +1525,11 @@ const FREIGHTER_SOUNDS = {
   jump_drive_sputter: { subtitle: "Jump drive sputters", heard: 48 },
   jump_drive_thump: { subtitle: "Jump drive thumped back to life", heard: 48 },
   jump_drive_jump: { subtitle: "Jump drive jumps", heard: 64 },
+  // The Spookie's voice, each in two takes a little higher and lower, its roar carrying through her.
+  spookie_greet: { subtitle: "Spookie hoots hello", heard: 24, takes: SPOOKIE_TAKES },
+  spookie_happy: { subtitle: "Spookie purrs happily", heard: 24, takes: SPOOKIE_TAKES },
+  spookie_alarm: { subtitle: "Spookie honks in alarm", heard: 24, takes: SPOOKIE_TAKES },
+  spookie_roar: { subtitle: "Spookie bellows", heard: 48, takes: SPOOKIE_TAKES },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {
