@@ -54,6 +54,7 @@ import dev.skyliners.client.FlightMapRenderer;
 import dev.skyliners.client.FlightStripBoardRenderer;
 import dev.skyliners.client.Floodlights;
 import dev.skyliners.client.FogMachineSounds;
+import dev.skyliners.client.FreighterRoar;
 import dev.skyliners.client.GearBayRenderer;
 import dev.skyliners.client.HelmRenderer;
 import dev.skyliners.client.HelmetBreathing;
@@ -271,6 +272,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(SkyTrails::stage);
         // A rocket's engines heard as they fire: her roar, its ignition and cut-off, and her touchdown.
         NeoForge.EVENT_BUS.addListener(RocketRoar::tick);
+        NeoForge.EVENT_BUS.addListener(FreighterRoar::tick);
         NeoForge.EVENT_BUS.addListener(RocketExhaust::tick);
         // The space helmet's air, breathed in it aboard a rocket in space.
         NeoForge.EVENT_BUS.addListener(HelmetBreathing::tick);

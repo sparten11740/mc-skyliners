@@ -2592,7 +2592,11 @@ she turns toward it while it is far, speeds up, brakes on her retros as she near
 the last of the way, hovering over it or, set to land there, coming straight down onto it. Told to land, or switched
 off in the air, she comes straight down where she is first, as the rocket does, sinking fast to ten blocks over the
 ground and gently from there, her thrusters running down evenly once her legs touch so she never skates, and switches
-herself off with a bell. Stand clear under her as she lifts off and lands, and behind her mains or ahead of her
+herself off with a bell. She is heard from far off: a deep thump as her lift thrusters light, her mains' whine
+spooling up, her engines' roar from her stern rising with her thrust, her lift jets blasting under her loudest close
+over the ground, which shakes under anyone standing near, and a long rolling thunder as she goes by fast; aboard, all
+of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand clear under her as she lifts
+off and lands, and behind her mains or ahead of her
 retros as they fire: Create Propulsion's thrusters set alight whoever stands in their exhaust. Her jets, inside her,
 never fire hard enough to. Her autopilot screen and the settings screen show her in pictures of her own: a saucer
 lifting off on a blue glow, landing, climbing and turning.

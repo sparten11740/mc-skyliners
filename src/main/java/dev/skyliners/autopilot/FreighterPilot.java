@@ -356,6 +356,16 @@ public final class FreighterPilot {
         return liftThrusters > 0;
     }
 
+    /** What she is wired to. */
+    Wiring wiring() {
+        return wiring;
+    }
+
+    /** How hard her mains were last set to push together, as a share of their full push; 0 with none. */
+    double mainsShare() {
+        return wiring.mains().isEmpty() ? 0 : (double) mainsTotal / (FULL * wiring.mains().size());
+    }
+
     /** Every relay she works, for mending her links (see {@link Turning#mend}). */
     List<BlockPos> links() {
         List<BlockPos> links = new ArrayList<>();

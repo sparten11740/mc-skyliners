@@ -720,7 +720,22 @@ of noise on a 190 Hz body), a feathered kick on every beat (`thunk` at 50 Hz, 0.
 
 What was done while Jan slept, in order, and what is left for him to look at. Versions handed out are named here.
 
+- M2 committed after the pair programmer's second review: d06edf73 (the shared autopilot pieces, `StandingFlight`
+  among them, the rocket's play-test checks all holding) and cd630624 (she flies, built a fifth bigger).
+- 7879ec03: the jump drive's and the Spookie's words made our own, as the pair's sound review asked.
+- M3a, her engines heard: `ShownShare` and `EngineRoar` lifted out of the rocket's sounds (her roar checked unchanged
+  in game and by the self-destruct check), then `FreighterRoar`. Heard in game: aboard, her thump at lift-off and her
+  hum; from the ground, her roar from her stern and her lift jets under her belly. Left alone hovering, she came down
+  by herself and was parked. The pair caught a whine that would have played on first sight of a freighter already
+  flying; writing the play-test check for it showed her mains flickering on and off as she hovers, which would have
+  replayed it every few seconds: mains that only trim her hover are now shown as nothing.
+
 ### For Jan to look at
 
 - Nobody has listened to the freighter's 35 new sounds (synthesised; levels, spectra and loop seams checked only).
 - The Spookie keeps Jan's name; the rights panel's alternative, "Woodwose", is a lang-only change if wanted.
+- The club's song, "Long Haul Swing" (`club_band`), wants a check by ear against the film's cantina tune: its notes
+  and rhythm are our own (D minor, an F major bridge, 32 bars at 160 swung), but no machine can judge how close its
+  feel is. The robots' trill wants a listen too, to be sure it is no sliding whistle like the film's robot's.
+- Two leftovers of mine to clear, refused to me as irreversible: `git stash drop` of "freighter-m2-flight (before the
+  pilot abstraction)", superseded by cd630624, and `git worktree remove --force` of the scratch worktree `wt-a`.

@@ -138,6 +138,19 @@ const LEAVES_UP = 8;
 const HOP_REST_WITHIN = 1;
 const HOP_UP_TICKS = 1500;
 const HOP_DOWN_TICKS = 1800;
+// The freighter's flight: how far above her control head she is sent, in blocks, past the 40 her autopilot sends her up
+// at the least; how long she is given to get there and
+// to come down by herself with nobody aboard, in ticks; how near the height set she must hover, in blocks, and how far
+// she may lean, in degrees; how long she is watched hovering, in ticks; and how far off the player goes and how long
+// for, in blocks and ticks, past where this client keeps her, to see her again as someone walking up to her would.
+const FREIGHTER_CLIMB = 50;
+const FREIGHTER_UP_TICKS = 900;
+const FREIGHTER_DOWN_TICKS = 2400;
+const FREIGHTER_HOLD_WITHIN = 1.5;
+const FREIGHTER_LEVEL_WITHIN = 2;
+const FREIGHTER_WATCH_TICKS = 200;
+const FREIGHTER_AWAY = 400;
+const FREIGHTER_AWAY_TICKS = 60;
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
 // her resting place she is flying as it is pressed, in blocks; and how long whoever bailed out is given to float down,
@@ -597,17 +610,24 @@ function rocketReport() {
   return reply.ok === false ? undefined : reply;
 }
 
-// Waits for a rocket's report to pass a test, looking once a second; the report, or undefined if it never did.
-function waitForRocket(test, within) {
+function freighterReport() {
+  const [reply] = send("skyliners:freighter");
+  return reply.ok === false ? undefined : reply;
+}
+
+// Waits for a ship's report to pass a test, looking once a second; the report, or undefined if it never did.
+function waitForReport(read, test, within) {
   for (let waited = 0; waited <= within; waited += LOOK_EVERY) {
     must(`wait ${LOOK_EVERY}t`);
-    const report = rocketReport();
+    const report = read();
     if (report && test(report)) {
       return report;
     }
   }
   return undefined;
 }
+
+const waitForRocket = (test, within) => waitForReport(rocketReport, test, within);
 
 // Sends a rocket up and back down where she rose, changes the ground under her once she is clear of it, and says
 // whether she switches herself off where she comes to rest. Standing on her fins with the ground lower under her
@@ -690,6 +710,43 @@ function checkRocketSelfDestructOnTheGround() {
   expect(wearsParachute(), "rocket: whoever stood aboard is given a parachute");
   must(`server tp @p 0 ${ground} 0`);
   creative();
+}
+
+// The freighter, watched from the ground: she lifts straight off her legs and climbs to the height set, hovers there
+// level, roars from outside, and is not heard spooling up as she merely holds her spot, nor as someone comes back to
+// her; then, nobody aboard, she comes down by herself and switches off on her legs. Hovering, her mains flickered on
+// and off holding her spot, and their whine spooled up every few seconds.
+function checkFreighterFlight() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + FREIGHTER_CLIMB;
+  must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - height) < FREIGHTER_HOLD_WITHIN,
+    FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off her legs and climbs to the height set", up ? `at ${up.altitude}` : "");
+  if (!up) {
+    return;
+  }
+  const since = now();
+  must(`wait ${FREIGHTER_WATCH_TICKS}t`);
+  const hover = freighterReport();
+  expect(Math.abs(hover.altitude - height) < FREIGHTER_HOLD_WITHIN, "freighter: she hovers at it", `at ${hover.altitude}, set ${height}`);
+  const lean = Math.max(Math.abs(hover.tilt_front), Math.abs(hover.tilt_right));
+  expect(lean < FREIGHTER_LEVEL_WITHIN, "freighter: she hovers level", `leaning ${lean} degrees`);
+  expect(playing("skyliners:freighter_engine_roar") > 0, "freighter: her engines roar, heard from the ground");
+  must(`server tp @p ${site.x + FREIGHTER_AWAY} ${ground} ${site.z}; wait ${FREIGHTER_AWAY_TICKS}t`);
+  const back = now();
+  must(`server tp @p ${site.x} ${ground} ${site.z}; wait ${FREIGHTER_AWAY_TICKS}t`);
+  const lit = ["skyliners:freighter_spool", "skyliners:freighter_ignition"].filter((sound) => heard(sound, back, 0));
+  expect(lit.length === 0, "freighter: walking back up to her hovering, no engine is heard lighting", lit.join(", "));
+  expect(!heard("skyliners:freighter_spool", since, 0), "freighter: hovering all that while, her mains are never heard spooling up");
+  expect(playing("skyliners:freighter_engine_roar") > 0, "freighter: walking back up to her, her roar is heard again");
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: nobody aboard, she comes down by herself and switches off", down ? `at ${down.altitude}` : "");
+  if (down) {
+    expect(Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: she stands on her legs again",
+      `control head at ${down.altitude}, built at ${head[1]}`);
+  }
 }
 
 // A rocket in flight: the countdown runs out, her engines fall silent with her, and whoever stood aboard floats down
@@ -1002,6 +1059,7 @@ const CHECKS = {
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },
   "rocket-self-destruct-flight": { run: checkRocketSelfDestructInFlight, about: "a rocket blows up in flight, her roar stops, and whoever was aboard floats down unhurt", slow: true },
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
+  "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };
 

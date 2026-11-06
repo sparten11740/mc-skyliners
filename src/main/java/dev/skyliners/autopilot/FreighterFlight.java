@@ -1,25 +1,54 @@
 package dev.skyliners.autopilot;
 
+import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.compat.SableFlight;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The freighter in her autopilot's hands (see {@link StandingFlight}): she lifts straight off her legs and comes
  * straight down onto them, flown by {@link FreighterPilot}; she lands by herself once nobody has been aboard a while;
- * and she can climb to space as the rocket does.
+ * and she can climb to space as the rocket does. How hard her lift thrusters and her mains fire is shown to the
+ * clients, who play her engines' roar by it (see the client's FreighterRoar), and where her disc's middle is among her
+ * blocks goes with her, for them to place it.
  */
 public final class FreighterFlight extends StandingFlight {
     /** Engaged on the ground she rises this far above it, in blocks. */
     private static final int CLIMB = 40;
     /** Engaged on the ground she cruises at this speed, in blocks a second. */
     private static final double CRUISE = 20;
+    /**
+     * How many steps of her lift's and her mains' shares of full the clients are shown, and how often at most a change
+     * of step is sent, in ticks: enough for her roar to follow them, few enough that a hover wobbling between two
+     * steps sends nothing.
+     */
+    private static final int SHOWN_STEPS = 10;
+    private static final int SHOWN_EVERY = 10;
+    /**
+     * Her mains' share of full under which they only trim her hover, flickering between nothing and a step as she holds
+     * her spot: shown as nothing, so they are not heard spooling up over and over, nor sent each time.
+     */
+    private static final double MAINS_SHOWN_FROM = 0.05;
 
     private final FreighterPilot pilot = new FreighterPilot();
+    /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
+    private final ShownShare lift = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
+    private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
+    /**
+     * Where her disc's middle is from her control head, so many blocks to its right and ahead of it, on the clients as
+     * on the server; unknown for one built before it was kept, until her pilot's wiring gives it.
+     */
+    private double middleRight;
+    private double middleAhead;
+    private boolean middleKnown;
 
     @Override
     public Craft craft() {
@@ -32,6 +61,61 @@ public final class FreighterFlight extends StandingFlight {
      */
     public void configure(FreighterPilot.Wiring wiring) {
         pilot.configure(wiring);
+        knowMiddle(wiring);
+    }
+
+    /** Where her disc's middle is, from what her pilot is wired to. */
+    private void knowMiddle(FreighterPilot.Wiring wiring) {
+        middleRight = wiring.middleRight();
+        middleAhead = wiring.middleAhead();
+        middleKnown = !wiring.clusters().isEmpty();
+    }
+
+    /** How hard the lift thrusters of the freighter an autopilot flies fire, as it shows it; none for another craft. */
+    public static float liftOf(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? 0 : freighter.lift.shown();
+    }
+
+    /** How hard the mains of the freighter an autopilot flies fire, as it shows it; none for any other craft. */
+    public static float mainsOf(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? 0 : freighter.mains.shown();
+    }
+
+    /**
+     * Where the disc's middle of the freighter an autopilot flies is among her blocks, level with her control head;
+     * null for any other craft, or while it is unknown.
+     */
+    @Nullable
+    public static Vec3 middleOf(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        if (freighter == null || !freighter.middleKnown) {
+            return null;
+        }
+        Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
+        Vec3 ahead = Vec3.atLowerCornerOf(nose.getNormal()).scale(freighter.middleAhead);
+        Vec3 right = Vec3.atLowerCornerOf(nose.getClockWise().getNormal()).scale(freighter.middleRight);
+        return Vec3.atCenterOf(autopilot.getBlockPos()).add(ahead).add(right);
+    }
+
+    /**
+     * Where the stern of the freighter an autopilot flies is among her blocks: astern of her middle in the last row of
+     * her frame, where her mains are; her middle without a frame; null where {@link #middleOf} is.
+     */
+    @Nullable
+    public static Vec3 sternOf(AutopilotBlockEntity autopilot) {
+        Vec3 middle = middleOf(autopilot);
+        BoundingBox frame = autopilot.frame();
+        if (middle == null || frame == null) {
+            return middle;
+        }
+        Direction astern = autopilot.getBlockState().getValue(AutopilotBlock.FACING).getOpposite();
+        Direction.Axis axis = astern.getAxis();
+        boolean positive = astern.getAxisDirection() == Direction.AxisDirection.POSITIVE;
+        int last = positive ? axis.choose(frame.maxX(), frame.maxY(), frame.maxZ()) : axis.choose(frame.minX(), frame.minY(), frame.minZ());
+        double edge = last + 0.5;
+        return axis == Direction.Axis.X ? new Vec3(edge, middle.y, middle.z) : new Vec3(middle.x, middle.y, edge);
     }
 
     /** What her pilot is doing, for play-testing. */
@@ -82,6 +166,36 @@ public final class FreighterFlight extends StandingFlight {
     @Override
     void load(CompoundTag tag, Rotation turn) {
         pilot.load(tag.getCompound("Freighter"), turn);
+        if (!middleKnown) {
+            knowMiddle(pilot.wiring());
+        }
+    }
+
+    @Override
+    void saveShared(CompoundTag tag) {
+        if (middleKnown) {
+            tag.putDouble("FreighterMiddleRight", middleRight);
+            tag.putDouble("FreighterMiddleAhead", middleAhead);
+        }
+    }
+
+    @Override
+    void loadShared(CompoundTag tag) {
+        middleKnown = tag.contains("FreighterMiddleRight") && tag.contains("FreighterMiddleAhead");
+        middleRight = tag.getDouble("FreighterMiddleRight");
+        middleAhead = tag.getDouble("FreighterMiddleAhead");
+    }
+
+    @Override
+    void saveShown(CompoundTag tag) {
+        lift.save(tag, "FreighterLift");
+        mains.save(tag, "FreighterMains");
+    }
+
+    @Override
+    void loadShown(CompoundTag tag) {
+        lift.load(tag, "FreighterLift");
+        mains.load(tag, "FreighterMains");
     }
 
     @Override
@@ -111,6 +225,13 @@ public final class FreighterFlight extends StandingFlight {
             } else {
                 autopilot.advance(next, AutopilotBlockEntity.Phase.DESCENT);
             }
+        }
+        long now = level.getGameTime();
+        boolean liftShown = lift.take(pilot.report().lift(), now);
+        double mainsShare = pilot.mainsShare();
+        boolean mainsShown = mains.take(mainsShare < MAINS_SHOWN_FROM ? 0 : mainsShare, now);
+        if (liftShown || mainsShown) {
+            autopilot.changed();
         }
         watchArrival(autopilot, flight, radio);
     }

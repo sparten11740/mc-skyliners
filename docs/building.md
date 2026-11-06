@@ -224,11 +224,11 @@ picture.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.
-`RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
-from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown, her roar's thunder close by and the
-shockwave's boom, and shakes the view aboard as they light and on the ground near her; `LaunchCallouts` has launch
-control call her milestones on the same radio, waiting its turn on the flight deck's
-`Airtime`.
+`RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire
+(a `ShownShare`, a share sent in steps and not too often), from which `RocketRoar` plays their roar, ignition, cut-off
+and her touchdown, her roar's thunder close by and the shockwave's boom, and shakes the view aboard as they light and
+on the ground near her, its loops and shakes made of `EngineRoar`'s parts, as the freighter's are; `LaunchCallouts`
+has launch control call her milestones on the same radio, waiting its turn on the flight deck's `Airtime`.
 `RocketCockpitControls`, a piece laid after her seats, sets her centre console's controls round her control head,
 each a `RocketControlBlock` (`RocketBoostButtonBlock`, `RocketStabilitySwitchBlock`, `RocketModeKnobBlock`,
 `RocketAbortHandleBlock` and `RocketLaunchKeyBlock`) linked to the head through a `Fitting`, whose
@@ -266,10 +266,13 @@ lift from the mass Sable weighs and a trim it learns, split over her four cluste
 her centre of mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the
 heading she wants, round a circle or onto a pin with the zeppelin's `Steering`, flying by how her middle moves rather
 than her control head out in her cockpit's pod, and her height over the ground from the lowest of her legs' feet
-(`Legs`, which the rocket's fins share). Her jets fire inside her, so she never runs them at a third of full or more,
-where Create Propulsion sets fire to whatever stands in a thruster's exhaust. She and the rocket are both
-`HullLayout`s, which keeps their blocks, fittings and glazing and works out the air inside their
-hulls, their features `ShipPiece`s.
+(`Legs`, which the rocket's fins share). `FreighterFlight` shows the clients how hard her lift thrusters and her
+mains fire, two `ShownShare`s, and where her disc's middle is from her control head, from which `FreighterRoar` plays
+her engines' roar at her stern, her lift jets' blast under her belly, their thump and her mains' spooling up as they
+light, her hum aboard, the ground shaking near her and her thunder going by. Her jets fire inside her, so she never
+runs them at a third of full or more, where Create Propulsion sets fire to whatever stands in a thruster's exhaust.
+She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out the air inside
+their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.
