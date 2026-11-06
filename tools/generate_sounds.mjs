@@ -4685,6 +4685,199 @@ const LASER_CROSSBOW = {
   writeSound("laser_crossbow_reload", reload, 0.75);
 }
 
+/** The samples through a two-pole low-pass whose cutoff moves as it goes, cutoffAt(t) hertz t seconds in. */
+function sweptLowPassed(input, cutoffAt) {
+  const out = new Float64Array(input.length);
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < input.length; i++) {
+    const tune = 2 * Math.sin((Math.PI * Math.min(cutoffAt(i / RATE), RATE / 6)) / RATE);
+    low += tune * band;
+    band += tune * (input[i] - low - Math.SQRT2 * band);
+    out[i] = low;
+  }
+  return out;
+}
+
+/** A stack of band-limited sawtooths at a share apart from a middle pitch, pitchAt(t) hertz t seconds in, averaged. */
+function sawStack(seconds, pitchAt, tunings) {
+  const samples = new Float64Array(Math.round(seconds * RATE));
+  const phases = tunings.map(() => 0);
+  for (let i = 0; i < samples.length; i++) {
+    const pitch = pitchAt(i / RATE);
+    for (let k = 0; k < tunings.length; k++) {
+      const step = (pitch * tunings[k]) / RATE;
+      phases[k] = (phases[k] + step) % 1;
+      samples[i] += sawAt(phases[k], step) / tunings.length;
+    }
+  }
+  return samples;
+}
+
+// The freighter's jump drive (see the plan's "Flight" and "Ideas of our own"), each sound with a random sequence of its
+// own. Its spool-up, three seconds: three sawtooths a little apart sweeping up from 80 hertz to 2.4 kilohertz, beating
+// faster as they rise, brightening, over a sub-bass swelling under them and a shimmer of air at the top. Its sputter as
+// it fails, two seconds: its whine cut in and out six to twelve times a second, dropping in jerks each time it comes
+// back, three backfires popping, sparks crackling off it and its motor's buzz sagging from 400 to 120 hertz under it:
+// an electrical fault stuttering, never a smooth wind-down. Its thump as someone punches its panel: a fist on the
+// plate, the panel ringing, a loose rattle, a clunk as something drops into place, and the whine catching and rising
+// from 200 to 900 hertz. And the jump itself: a rush of air swelling, the whine shooting from 300 hertz to 6
+// kilohertz in under half a second, 50 milliseconds of silence, then the techno room's falling boom from 90 to 30
+// hertz with a blast and a rush of air going away behind it. Tune them here.
+const JUMP_DRIVE = {
+  // The spool: how long, in seconds; the saws' sweep from and to, in hertz, and how far apart they are tuned, as a
+  // share; and the sub's pitch from and to, in hertz.
+  spoolSeconds: 3,
+  sweepFrom: 80,
+  sweepTo: 2400,
+  detune: 0.007,
+  subFrom: 36,
+  subTo: 48,
+  // The sputter: how long, in seconds; the whine's pitch from, in hertz, and what is left of it at each jerk, as a
+  // share; how many times a second it cuts in and out, least and most; when its backfires pop, in seconds; how many
+  // sparks fly; and its motor's glide from and to, in hertz.
+  sputterSeconds: 2,
+  sputterFrom: 1600,
+  jerk: 0.85,
+  cutsLeast: 6,
+  cutsMost: 12,
+  backfires: [0.35, 0.95, 1.5],
+  sparks: 24,
+  glideFrom: 400,
+  glideTo: 120,
+  // The thump: how long, in seconds; the fist's thunk and the panel's ring, in hertz; when the rattle, the clunk and the
+  // whine catching come, in seconds; and the whine's pitch from and to, in hertz.
+  thumpSeconds: 1.8,
+  fistHz: 70,
+  panelHz: 330,
+  rattleAt: 0.08,
+  clunkAt: 0.36,
+  catchAt: 0.45,
+  catchFrom: 200,
+  catchTo: 900,
+  // The jump: how long; when the whine shoots up, how long it takes, and the silence after it, in seconds; and the
+  // whine's pitch from and to and the boom's, in hertz.
+  jumpSeconds: 2.5,
+  shootAt: 0.3,
+  shooting: 0.4,
+  silence: 0.05,
+  shootFrom: 300,
+  shootTo: 6000,
+  boomFrom: 90,
+  boomTo: 30,
+};
+{
+  const J = JUMP_DRIVE;
+  const spoolRandom = ownRandom(0x4a445370);
+  const pitchAt = (t) => J.sweepFrom * (J.sweepTo / J.sweepFrom) ** (t / J.spoolSeconds);
+  const saws = sweptLowPassed(sawStack(J.spoolSeconds, pitchAt, [1, 1 + J.detune, 1 - J.detune]), (t) => 5 * pitchAt(t));
+  const shimmer = highPassed(whiteNoise(J.spoolSeconds, spoolRandom), 3000);
+  let sub = 0;
+  const spool = saws.map((sample, i) => {
+    const t = i / RATE;
+    const along = t / J.spoolSeconds;
+    sub += (J.subFrom + (J.subTo - J.subFrom) * along) / RATE;
+    const envelope = Math.min(1, t / 0.2, (J.spoolSeconds - t) / 0.03);
+    return envelope * ((0.5 + 0.5 * along) * sample + 0.9 * along ** 2 * Math.sin(2 * Math.PI * sub) + 0.08 * along ** 3 * shimmer[i]);
+  });
+  writeSound("jump_drive_spool", spool, 0.8);
+}
+{
+  const J = JUMP_DRIVE;
+  const sputterRandom = ownRandom(0x4a445375);
+  const n = Math.round(J.sputterSeconds * RATE);
+  // The whine's cuts: each stretch on or off a sixth to a twelfth of a second, its pitch dropping a jerk each time it
+  // comes back.
+  const gate = new Float64Array(n);
+  const stepped = new Float64Array(n);
+  let [at, on, pitch] = [0, true, J.sputterFrom];
+  while (at < n) {
+    const stretch = Math.round(RATE / (J.cutsLeast + (J.cutsMost - J.cutsLeast) * sputterRandom()));
+    gate.fill(on ? 1 : 0, at, Math.min(n, at + stretch));
+    stepped.fill(pitch, at, Math.min(n, at + stretch));
+    pitch *= on ? 1 : J.jerk;
+    on = !on;
+    at += stretch;
+  }
+  const whine = lowPassed(sawStack(J.sputterSeconds, (t) => stepped[Math.min(n - 1, Math.round(t * RATE))], [1, 1.006]), 4000);
+  let smoothed = 0;
+  let glide = 0;
+  let buzz = 0;
+  const sputter = whine.map((sample, i) => {
+    const t = i / RATE;
+    smoothed += 0.05 * (gate[i] - smoothed);
+    const step = (J.glideFrom * (J.glideTo / J.glideFrom) ** (t / J.sputterSeconds)) / RATE;
+    glide = (glide + step) % 1;
+    buzz += 0.1 * (pulseAt(glide, step, 0.3) - buzz);
+    const fading = Math.min(1, (J.sputterSeconds - t) / 0.15);
+    return fading * (0.5 * smoothed * (1 - 0.4 * t / J.sputterSeconds) * sample + 0.3 * (1 - 0.5 * t / J.sputterSeconds) * buzz);
+  });
+  J.backfires.forEach((when) => thunk(sputter, when, 55, 0.9, sputterRandom));
+  for (let k = 0; k < J.sparks; k++) {
+    click(sputter, sputterRandom() * (J.sputterSeconds - 0.2), 4000 + 2000 * sputterRandom(), 0.15 + 0.3 * sputterRandom(), sputterRandom);
+  }
+  writeSound("jump_drive_sputter", sputter, 0.8);
+}
+{
+  const J = JUMP_DRIVE;
+  const thumpRandom = ownRandom(0x4a445468);
+  const thump = new Float64Array(Math.round(J.thumpSeconds * RATE));
+  thunk(thump, 0, J.fistHz, 1, thumpRandom);
+  gong(thump, 0, J.panelHz, 0.25, 0.35);
+  for (let k = 0; k < 4; k++) {
+    click(thump, J.rattleAt + k * 0.045 + 0.015 * thumpRandom(), 1800 + 900 * thumpRandom(), 0.4, thumpRandom);
+  }
+  thunk(thump, J.clunkAt, 110, 0.6, thumpRandom);
+  gearRing(thump, J.clunkAt + 0.002, 520, 0.2);
+  // The whine catching: flickering twice as it takes, then rising into tune and holding.
+  const caught = J.thumpSeconds - J.catchAt;
+  const pitchAt = (t) => J.catchFrom * (J.catchTo / J.catchFrom) ** Math.min(1, t / 0.8);
+  const whine = lowPassed(sawStack(caught, pitchAt, [1, 1.006]), 3500);
+  whine.forEach((sample, i) => {
+    const t = i / RATE;
+    const flicker = t < 0.12 ? Math.max(0, Math.sin(2 * Math.PI * 16 * t)) : 1;
+    thump[Math.round(J.catchAt * RATE) + i] += 0.4 * flicker * Math.min(1, t / 0.3) * Math.min(1, (caught - t) / 0.2) * sample;
+  });
+  writeSound("jump_drive_thump", thump, 0.85);
+}
+{
+  const J = JUMP_DRIVE;
+  const jumpRandom = ownRandom(0x4a444a6d);
+  const jump = new Float64Array(Math.round(J.jumpSeconds * RATE));
+  const shot = J.shootAt + J.shooting;
+  const boomAt = shot + J.silence;
+  // The rush of air swelling up to the shot, a band of noise rising from 300 hertz to 3 kilohertz.
+  const rush = sweptResonance(whiteNoise(J.jumpSeconds, jumpRandom), (t) => 300 + 2700 * Math.min(1, t / shot), 1.2);
+  let phase = 0;
+  let boom = 0;
+  let brown = 0;
+  let blast = 0;
+  for (let i = 0; i < Math.round(shot * RATE); i++) {
+    const t = i / RATE;
+    const shooting = Math.max(0, Math.min(1, (t - J.shootAt) / J.shooting));
+    phase += (J.shootFrom * (J.shootTo / J.shootFrom) ** shooting) / RATE;
+    const whine = t >= J.shootAt ? (0.3 + 0.7 * shooting) * (Math.sin(2 * Math.PI * phase) + 0.3 * Math.sin(4 * Math.PI * phase)) : 0;
+    jump[i] = (2.5 * (t / shot) ** 2 * rush[i] + 0.35 * whine) * Math.min(1, (shot - t) / 0.004);
+  }
+  // The boom after the silence: a sub falling from 90 to 30 hertz as the techno room's drop does, a blast of low noise
+  // and a crack as it lands, and a rush of air going away behind it, falling from 2 kilohertz.
+  const away = sweptResonance(whiteNoise(J.jumpSeconds, jumpRandom), (t) => 200 + 1800 * Math.exp(-Math.max(0, t - boomAt) / 0.4), 1);
+  for (let i = Math.round(boomAt * RATE); i < jump.length; i++) {
+    const t = i / RATE - boomAt;
+    boom += (J.boomTo + (J.boomFrom - J.boomTo) * Math.exp(-t * 2.2)) / RATE;
+    const white = jumpRandom() * 2 - 1;
+    brown = (brown + 0.02 * white) * 0.996;
+    blast += 0.05 * (brown - blast);
+    const crack = t < 0.01 ? white * (1 - t / 0.01) : 0;
+    const ending = Math.min(1, (J.jumpSeconds - boomAt - t) / 0.2);
+    jump[i] = ending * (1.6 * Math.exp(-t * 0.9) * Math.min(1, t * 400) * Math.sin(2 * Math.PI * boom) + 12 * Math.exp(-t / 0.3) * blast
+      + 0.6 * crack + 1.2 * Math.exp(-t / 0.5) * away[i]);
+  }
+  // Driven a little into saturation for weight, and its sharpest edges smoothed, so the encoder does not ring past
+  // full scale.
+  writeSound("jump_drive_jump", lowPassed(jump.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.8);
+}
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

@@ -789,6 +789,42 @@
       }
     ]
   },
+  "jump_drive_spool": {
+    "subtitle": "subtitles.skyliners.jump_drive_spool",
+    "sounds": [
+      {
+        "name": "skyliners:jump_drive_spool",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "jump_drive_sputter": {
+    "subtitle": "subtitles.skyliners.jump_drive_sputter",
+    "sounds": [
+      {
+        "name": "skyliners:jump_drive_sputter",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "jump_drive_thump": {
+    "subtitle": "subtitles.skyliners.jump_drive_thump",
+    "sounds": [
+      {
+        "name": "skyliners:jump_drive_thump",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "jump_drive_jump": {
+    "subtitle": "subtitles.skyliners.jump_drive_jump",
+    "sounds": [
+      {
+        "name": "skyliners:jump_drive_jump",
+        "attenuation_distance": 64
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [
