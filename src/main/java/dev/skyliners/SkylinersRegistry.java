@@ -835,6 +835,14 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_SPOOL = sound("freighter_spool");
     /** Her going past at speed, and the long rolling thunder after her. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_FLYBY = sound("freighter_flyby");
+    /** A ball turret firing both barrels: two electric cracks, never a "pew". */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_SHOT = sound("ball_turret_shot");
+    /** A ball turret's servo while its gunner swings it, a seamless loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_SERVO = sound("ball_turret_servo");
+    /** The laser crossbow fired: its coil twanging and a crackling bolt. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_SHOT = sound("laser_crossbow_shot");
+    /** The laser crossbow cocked and charged: a ratchet, a rising whine and its latch. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_RELOAD = sound("laser_crossbow_reload");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );

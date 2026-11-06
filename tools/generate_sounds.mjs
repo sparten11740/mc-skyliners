@@ -4538,6 +4538,153 @@ function roundedOff(samples) {
   writeSound("freighter_flyby", roundedOff(levelled(faded)), E.level);
 }
 
+// The freighter's ball turrets (see the plan's "Turrets"), each sound with a random sequence of its own. A shot: both
+// barrels firing, 60 milliseconds apart, each a heavy thunk at 60 hertz, an electric crack of noise ringing at 3.2
+// kilohertz and crushed to a few bits, and the capacitor's buzz recharging at 110 hertz, its pitch rising: a
+// discharge's crack, never a falling "pew". Its servo, a seamless second-long loop played while the gunner swings it:
+// the robot bartender's servo an octave and a half down, its gear's whine over it, wobbling a little, over the rumble
+// of the turret's ring on its rollers ticking round. Tune them here.
+const BALL_TURRET = {
+  // The shot: when each barrel fires, in seconds, and how much higher the second is; the thunk's pitch, the crack's
+  // ring and the capacitor's buzz from and to, in hertz; how long it buzzes, in seconds; and the levels the crack is
+  // crushed to.
+  barrels: [0, 0.06],
+  secondPitch: 1.06,
+  thunkHz: 60,
+  crackHz: 3200,
+  buzzFrom: 110,
+  buzzTo: 170,
+  buzzSeconds: 0.15,
+  crushedTo: 12,
+  shotSeconds: 0.45,
+  // The servo: its loop, in seconds; its motor's pitch, in hertz, the bartender's settling pitch an octave and a half
+  // down, a whole number of turns round the loop; the harmonic its gear whines at; its wobble and the ring's rollers
+  // ticking, in hertz, each a whole number of turns round it.
+  servoLoop: 1,
+  servoHz: 134,
+  gearHarmonic: 9,
+  wobble: 6,
+  rollers: 23,
+};
+{
+  const shotRandom = ownRandom(0x42546f74);
+  const T = BALL_TURRET;
+  const shot = new Float64Array(Math.round(T.shotSeconds * RATE));
+  T.barrels.forEach((at, barrel) => {
+    const pitch = barrel === 0 ? 1 : T.secondPitch;
+    thunk(shot, at, T.thunkHz * pitch, 1, shotRandom);
+    const crack = resonance(Float64Array.from({ length: Math.round(0.03 * RATE) }, (_, i) => (shotRandom() * 2 - 1) * Math.exp(-i / (0.006 * RATE))), T.crackHz * pitch, 2);
+    let held = 0;
+    crack.forEach((sample, i) => {
+      held = i % 3 === 0 ? Math.round(sample * 6 * T.crushedTo) / T.crushedTo : held;
+      shot[Math.round(at * RATE) + i] += held;
+    });
+    let phase = 0;
+    for (let i = 0; i < Math.round(T.buzzSeconds * RATE); i++) {
+      const t = i / RATE;
+      const step = (pitch * (T.buzzFrom + (T.buzzTo - T.buzzFrom) * (t / T.buzzSeconds))) / RATE;
+      phase = (phase + step) % 1;
+      shot[Math.round((at + 0.004) * RATE) + i] += 0.3 * Math.exp(-t / 0.06) * Math.min(1, t / 0.003) * pulseAt(phase, step, 0.5);
+    }
+  });
+  writeSound("ball_turret_shot", lowPassed(shot, 9000), 0.85);
+}
+{
+  const servoRandom = ownRandom(0x42547376);
+  const T = BALL_TURRET;
+  const length = Math.round(T.servoLoop * RATE);
+  const fade = 0.3;
+  let brown = 0;
+  let low = 0;
+  const rumble = levelled(seamlessNoise(Float64Array.from({ length: Math.round((T.servoLoop + fade) * RATE) }, () => {
+    brown = (brown + 0.02 * (servoRandom() * 2 - 1)) * 0.996;
+    low += 0.02 * (brown - low);
+    return low;
+  }), T.servoLoop, fade));
+  const servo = rumble.map((sample, i) => {
+    const t = i / RATE;
+    const phase = 2 * Math.PI * T.servoHz * t + 0.08 * Math.sin(2 * Math.PI * T.wobble * t);
+    let motor = 0;
+    for (let n = 1; n <= 5; n++) {
+      motor += Math.sin(n * phase) / n;
+    }
+    const ticking = 0.6 + 0.4 * Math.max(0, Math.sin(2 * Math.PI * T.rollers * t)) ** 4;
+    return 0.45 * motor + 0.2 * Math.sin(T.gearHarmonic * phase) + 0.35 * ticking * sample;
+  });
+  writeSound("ball_turret_servo", servo, 0.5);
+}
+
+// The laser crossbow (see the plan's "The laser crossbow"), each sound with a random sequence of its own. Its shot:
+// the glowing coil it has for a string twanging as it is let go, a plucked string at 98 hertz; the bolt crackling off
+// it, noise round 2.5 kilohertz chopped by a 220 hertz square, swelling for 80 milliseconds; and the soft thump of the
+// stock in the shoulder. Its reload: twelve ratchet clicks quickening as it is cocked, the coil's charge whining up
+// from 300 hertz to 2.4 kilohertz over 0.6 seconds, and the latch clacking home as it is ready. Tune them here.
+const LASER_CROSSBOW = {
+  // The shot: the string's pitch, in hertz, and how much of it is left each time round, some 20 decibels lost a
+  // second; the bolt's ring and chop, in hertz, and how long it swells, in seconds.
+  stringHz: 98,
+  stringRings: 0.975,
+  boltHz: 2500,
+  chopHz: 220,
+  boltSwells: 0.08,
+  shotSeconds: 0.7,
+  // The reload: its clicks, the first and the last gap between them, in seconds; the charge whine from and to, in
+  // hertz, when it starts and how long it rises, in seconds; and when the latch clacks.
+  clicks: 12,
+  firstGap: 0.07,
+  lastGap: 0.025,
+  chargeFrom: 300,
+  chargeTo: 2400,
+  chargeAt: 0.45,
+  charging: 0.6,
+  latchAt: 1.12,
+  reloadSeconds: 1.4,
+};
+{
+  const shotRandom = ownRandom(0x4c435368);
+  const C = LASER_CROSSBOW;
+  const shot = new Float64Array(Math.round(C.shotSeconds * RATE));
+  // The coil twanging: a Karplus-Strong string, a burst of noise round a delay line a period of its pitch long, each
+  // turn averaged with its neighbour and losing a little.
+  const period = Math.round(RATE / C.stringHz);
+  const string = Float64Array.from({ length: shot.length }, (_, i) => (i < period ? shotRandom() * 2 - 1 : 0));
+  for (let i = period + 1; i < string.length; i++) {
+    string[i] = C.stringRings * 0.5 * (string[i - period] + string[i - period - 1]);
+  }
+  const bolt = resonance(whiteNoise(C.shotSeconds, shotRandom), C.boltHz, 1.5);
+  shot.forEach((_, i) => {
+    const t = i / RATE;
+    const chop = (C.chopHz * t) % 1 < 0.5 ? 1 : 0.15;
+    const swell = t < C.boltSwells ? t / C.boltSwells : Math.exp(-(t - C.boltSwells) / 0.03);
+    shot[i] = 0.5 * string[i] * Math.min(1, t / 0.002, (C.shotSeconds - t) / 0.1) + 5 * swell * chop * bolt[i];
+  });
+  thunk(shot, 0, 80, 0.4, shotRandom);
+  writeSound("laser_crossbow_shot", shot, 0.8);
+}
+{
+  const reloadRandom = ownRandom(0x4c43526c);
+  const C = LASER_CROSSBOW;
+  const reload = new Float64Array(Math.round(C.reloadSeconds * RATE));
+  let at = 0;
+  for (let k = 0; k < C.clicks; k++) {
+    click(reload, at, 2600 + 600 * reloadRandom(), 0.5, reloadRandom);
+    click(reload, at + 0.006, 1300, 0.25, reloadRandom);
+    at += C.firstGap * (C.lastGap / C.firstGap) ** (k / (C.clicks - 1));
+  }
+  let phase = 0;
+  for (let i = Math.round(C.chargeAt * RATE); i < Math.round(C.latchAt * RATE); i++) {
+    const t = i / RATE - C.chargeAt;
+    const rising = Math.min(1, t / C.charging);
+    phase += (C.chargeFrom * (C.chargeTo / C.chargeFrom) ** rising) / RATE;
+    const tone = Math.sin(2 * Math.PI * phase) + 0.3 * Math.sin(4 * Math.PI * phase) + 0.12 * Math.sin(6 * Math.PI * phase);
+    const envelope = Math.min(1, t / 0.05) * (0.4 + 0.6 * rising) * Math.min(1, (C.latchAt - C.chargeAt - t) / 0.03);
+    reload[i] += 0.3 * envelope * tone * (1 + 0.15 * Math.sin(2 * Math.PI * 31 * t));
+  }
+  click(reload, C.latchAt, 2000, 0.8, reloadRandom);
+  thunk(reload, C.latchAt + 0.004, 150, 0.35, reloadRandom);
+  writeSound("laser_crossbow_reload", reload, 0.75);
+}
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

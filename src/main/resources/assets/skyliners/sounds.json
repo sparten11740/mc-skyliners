@@ -755,6 +755,40 @@
       }
     ]
   },
+  "ball_turret_shot": {
+    "subtitle": "subtitles.skyliners.ball_turret_shot",
+    "sounds": [
+      {
+        "name": "skyliners:ball_turret_shot",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "ball_turret_servo": {
+    "subtitle": "subtitles.skyliners.ball_turret_servo",
+    "sounds": [
+      {
+        "name": "skyliners:ball_turret_servo"
+      }
+    ]
+  },
+  "laser_crossbow_shot": {
+    "subtitle": "subtitles.skyliners.laser_crossbow_shot",
+    "sounds": [
+      {
+        "name": "skyliners:laser_crossbow_shot",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "laser_crossbow_reload": {
+    "subtitle": "subtitles.skyliners.laser_crossbow_reload",
+    "sounds": [
+      {
+        "name": "skyliners:laser_crossbow_reload"
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

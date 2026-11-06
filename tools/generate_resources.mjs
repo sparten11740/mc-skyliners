@@ -1513,6 +1513,11 @@ const FREIGHTER_SOUNDS = {
   freighter_ignition: { subtitle: "Lift jets ignite", heard: FREIGHTER_HEARD },
   freighter_spool: { subtitle: "Main engines spool up", heard: FREIGHTER_HEARD },
   freighter_flyby: { subtitle: "Freighter thunders past", heard: FREIGHTER_HEARD },
+  // Her ball turrets firing, heard well off as guns are, and turning; and the laser crossbow fired and charged.
+  ball_turret_shot: { subtitle: "Turret fires", heard: 64 },
+  ball_turret_servo: { subtitle: "Turret turns" },
+  laser_crossbow_shot: { subtitle: "Laser crossbow fires", heard: 32 },
+  laser_crossbow_reload: { subtitle: "Laser crossbow charges" },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {
