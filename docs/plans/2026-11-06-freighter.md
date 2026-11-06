@@ -23,6 +23,13 @@ them, and where they disagreed the lead decided, saying so in the table.
 11. Her space: about half the rocket's, on one deck.
 12. A thorough plan before implementation; ideas of our own, from the original and from this mod's style.
 
+Added by Jan on 2026-11-06, once work had begun:
+
+13. Dimmable windows, as the rocket has, though not necessarily her big oval ones.
+14. Cockpit glass with smooth joins: no edgy bits or gaps standing out.
+15. Thrusters that are very impressive, and loud from outside.
+16. Droids aboard, beeping.
+
 ## Ground rules
 
 - **Main.** Everything lands on `main`, atomic commits with Conventional Commits subjects, each reviewed with
@@ -165,6 +172,12 @@ liveries tint it unchanged.
   a `skyliners:freighter` query to sample her flight.
 
 ### The cockpit
+
+Jan's ask 14: the canopy's glass must join her hull and its own struts smoothly, with no edgy bits or gaps. So the pod's
+cone and front are drawn as smooth surfaces (a cone over a cylinder, its front a flat disc), cut in the snapped style so
+glass and cover sit flush; the struts are cover cut to the same surface, never whole blocks standing proud; no pane is
+left out behind another where that opens a gap; and the canopy is photographed close up from outside and from each seat
+until nothing stands out, before the milestone is called done.
 
 Close to the original's in arrangement, built from this mod's own family of controls (never the film's panel art):
 the curved, padded tube with a rib every two blocks, an LED strip chasing toward the cockpit as the ramp opens; in the
@@ -336,9 +349,59 @@ stoop; its own creature, not the famous one:
   thumps it with a clang and roars in triumph; howls with its paws over its head when the self-destruct is armed;
   cheers a turret hit; warbles when clicked; gulps and chuffs when fed a cookie, sweet berries or honey; turns away when
   hit. At the holo table it slams the table when it loses and throws its arms up when it wins.
+- **Walking:** its keeper hands it routes through `ShipWalker`, a small shared helper (a route of plot points, its
+  rests, turning toward a player, put back on its route when lost) that the robots use too.
 - **Drawn** by `SpookieModel` (a hierarchical code model, as `TardigradeModel`) and `SpookieRenderer`, a fur layer an
   inflated shell with ragged edges. About 0.8 by 2.6 blocks, its eyes at 2.2: her corridors are at least 3 blocks tall.
 - It never follows players ashore in this plan (a could, behind `freighter.spookieAshore`).
+
+## Her windows, dimmable
+
+Jan's ask 13. The original has few windows, so hers are where a ship would have them, all one dimmable glass: her
+cockpit's canopy, her turrets' domes, a ring of round viewports in the lens over the lounge and over the club (looking
+up at the sky, or at the stars in space), and a viewport aft in engineering onto her engines' glow.
+
+- **The glass:** a dimmable skin glass of her own, cut to her surface in the snapped style as her cover is (a
+  `ShellBlock` with the shape property), with a `DIM` property in four steps from clear through light and medium to
+  dark, its tint by step, as the rocket's oval windows' glass darkens; it needs no block entity.
+- **Dimming:** the rocket's `WindowDimmerBlock` (a touch panel of four buttons, clear to dark, the sky and the sun
+  through each) works on any glass that can be dimmed: `OvalWindowPieceBlock.dimWithin` is generalised into a shared
+  `Dimming.within(level, box, step)` that dims every dimmable block in the box, her glass and the oval windows alike,
+  so the rocket's dimmers behave as before. One by her cockpit's door dims the canopy, one in each room with viewports
+  dims its own; using a pane of glass by hand dims it a step, with the falling chime, as an oval window does.
+- **Switched off** with `freighter.windowDimmers`; her glass stays clear then.
+
+## Her engines, impressive and loud
+
+Jan's ask 15. Her thrusters are the show piece outside:
+
+- **Her main engines:** a strip of blue glow along her stern's rim band (a light strip of her own, brighter with thrust)
+  and Create Propulsion's plasma plumes from her six mains, long at full thrust; her lift thrusters' plumes show as she
+  lifts off and lands and hide in cruise (their plume type set as they fire, sparingly, since a plume's every puff is
+  sent to every player near).
+- **Lifting off and landing:** a ring of dust and leaves blown out over the ground under her (`RocketDustRing`'s way,
+  scaled to her), grass flattened in a shimmer of heat, and the view shaking near her and aboard as her thrusters light
+  (`CameraShake`), as the rocket's does.
+- **Heard from outside:** her engines' roar (`freighter_engine_roar`) heard up to 160 blocks off, rising with her
+  thrust, a deep thump as her lift thrusters light, a rising whine as her mains spool up and a long rolling thunder as
+  she goes by at speed; inside the hull it is muffled to her idle hum (`freighter_engine_idle`), as the rocket's roar is
+  inside her. Played on the client from the thrust her autopilot shows (`FreighterRoar`, as `RocketRoar`).
+
+## Robots aboard
+
+Jan's ask 16. "Droid" is a registered trademark, so in game they are robots, and their looks and voices are their own
+(no domed barrel on wheels, no gold man). They live among her blocks as the Spookie does, walking routes their docks
+hand them, and beep in chirps and trills of their own synthesis (never the famous warbles):
+
+- **The deck bot:** a knee-high boxy robot on two wheels with a single round lens and a tool arm, trundling round the
+  ring corridor, stopping to scan a wall panel, beeping a little two-note greeting at whoever it passes.
+- **The repair drone:** a hovering ball with a ring of thrusters and a pair of folding arms, tending the jump drive in
+  engineering, welding in a shower of sparks, and darting to the thump plate when the drive fails.
+- **The cargo bot:** a low flat-bed robot in the hold that carries a crate between the racks.
+- Each has its dock (a charging cradle in the wall, its keeper), a config switch (`freighter.robots`), its renderer
+  culled with `Sight`, and its beeps (`robot_chirp`, `robot_trill`, `robot_alarm`, `robot_happy`) heard within 16
+  blocks. Clicking one makes it answer with a trill and a little spin. They share the Spookie's route-walking
+  (`ShipWalker`, see The Spookie), so neither is written twice.
 
 ## The small tardigrade
 
@@ -451,28 +514,31 @@ they belong to, not at the end.
    Spikes S1 (60 s hover: height within ±0.5, tilt under 1°, a knock settled in 3 s, at most two relay changes a second
    a cluster), S2 (a weight on one quadrant, level within 1° in 10 s), S8 (Sable's angular velocity against
    differencing), each thruster's NBT read to see it follows its own relay.
-3. **Flying.** Speed, yaw, bank and steering (S3: 20 b/s and a 180° turn, speed ±2, heading ±2°, height ±2; a
-   coast-down for drag; 2 km at 40 b/s, on a dedicated server where one can be run); take-off, `PadSearch` (a ticket
-   on the 64-block circle round the pin before it looks), descent and touchdown (S4: flat and on a 2-block slope with a
-   player standing aboard, and once with nobody aboard; touchdown at most 1.5 b/s, bounce under 0.3, slide under 0.5,
-   off within 3 s); switched off in the air; space (S6: holding y 1,050, the welcome played); her autopilot screen's
-   pictures; S9: the rocket's tardigrade hatch set aboard by hand, its tardigrade living among her blocks through a
-   yawing flight at 20 b/s and a `ParkedShips` unload and reload; a play-test check that she takes off and lands.
-4. **The cockpit's dress and the jump drive:** the tube's ribs, the canopy's struts, the overhead toggles, the console
-   modules, the Jump Lever and the drive (spool, streaks, speed in space, failing and thumping), her cameras and camera
-   display, the livery selector and her liveries, her silhouette and repaint, the self-destruct, the dice.
+3. **Flying.** Her engines' show (the glow strip, plumes, dust ring, shaking and roar: Jan's ask 15), speed, yaw, bank
+   and steering (S3: 20 b/s and a 180° turn, speed ±2, heading ±2°, height ±2; a coast-down for drag; 2 km at 40 b/s, on
+   a dedicated server where one can be run); take-off, `PadSearch` (a ticket on the 64-block circle round the pin before
+   it looks), descent and touchdown (S4: flat and on a 2-block slope with a player standing aboard, and once with nobody
+   aboard; touchdown at most 1.5 b/s, bounce under 0.3, slide under 0.5, off within 3 s); switched off in the air; space
+   (S6: holding y 1,050, the welcome played); her autopilot screen's pictures; S9: the rocket's tardigrade hatch set
+   aboard by hand, its tardigrade living among her blocks through a yawing flight at 20 b/s and a `ParkedShips` unload
+   and reload; a play-test check that she takes off and lands.
+4. **The cockpit's dress and the jump drive:** the canopy made smooth (Jan's ask 14), its dimmable glass and dimmer, the
+   tube's ribs, the overhead toggles, the console modules, the Jump Lever and the drive (spool, streaks, speed in space,
+   failing and thumping), her cameras and camera display, the livery selector and her liveries, her silhouette and
+   repaint, the self-destruct, the dice.
 5. **The ramp,** a hand-laid deck of `RampDeckBlock`s walked first (cold start, `load server 200`, aboard once
    assembled), then the ramp, its panel, the call button, the take-off hold; play-test checks that her ramp is walked
    up from the ground and holds her take-off. Her legs stay fixed.
-6. **Her rooms,** finishes first, then the ring corridor and entry hall, lounge (with the Holo Game Table's watch
-   mode), engineering (the jump drive's core and its thump plate), cargo hold (hidden compartments), crew quarters and
-   med bay, the Spacers' Club (bar, bandstand and song), galley; paintings, wall lights, LED strips, picture plates.
+6. **Her rooms,** finishes first, the dimmable viewports and their dimmers (Jan's ask 13), then the ring corridor and
+   entry hall, lounge (with the Holo Game Table's watch mode), engineering (the jump drive's core and its thump plate),
+   cargo hold (hidden compartments), crew quarters and med bay, the Spacers' Club (bar, bandstand and song), galley;
+   paintings, wall lights, LED strips, picture plates.
 7. **Turrets,** first a spike: a seated player through a 12°/s yaw and a 5° bank, the server's reading of the look
    logged against the client's; then the ladder and domes, the guns, `GunnerTrigger`, the sight, the bolts' style; then
    the training drones and the gunnery board.
-8. **Creatures:** the tardigrade's size and the small one's tank; the Spookie (model, keeper, routes, the co-pilot's
-   seat, its greeting) and every reaction the earlier milestones left for it (the thump, the record's roar, the
-   self-destruct's howl, the holo table).
+8. **Creatures:** the tardigrade's size and the small one's tank; `ShipWalker`; the Spookie (model, keeper, routes,
+   the co-pilot's seat, its greeting) and every reaction the earlier milestones left for it (the thump, the record's
+   roar, the self-destruct's howl, the holo table); the robots and their beeps.
 9. **The laser crossbow** and its rack.
 10. **Shoulds,** in this order: the radar dish, hand flying, the jump (S7: 3 km at y 1,100 with a player and a villager
     aboard, both still aboard, no "moved too quickly", no tick over 200 ms, kept loaded, a clean save and reload, again
@@ -521,6 +587,10 @@ they belong to, not at the end.
 | 33 | The belly gun's arc | 10° to 85° down; her own blocks stop bolts in sparks | plan's review |
 | 34 | Her legs | Fixed until the shoulds; folding legs need bays planned against the rooms over them | plan's review |
 | 35 | Her name on the radio | Magpie, spoken by her computer (Kokoro) and painted on her; no air traffic control lines (Windows-only) | plan's review |
+| 36 | Her windows (ask 13) | One dimmable skin glass of hers in the canopy, the domes and round viewports over the lounge, the club and aft in engineering; the rocket's window dimmer works it through a shared `Dimming` | lead |
+| 37 | Her canopy (ask 14) | Glass and struts both cut to one smooth cone and front, flush; photographed close up from outside and every seat before done | lead |
+| 38 | Her engines' show (ask 15) | A blue glow strip, plasma plumes on the mains, lift plumes only lifting off and landing, a dust ring, shaking, and a roar heard 160 blocks off | lead |
+| 39 | Droids (ask 16) | Robots, since "droid" is a trademark: a deck bot, a repair drone and a cargo bot of our own design, beeping in our own chirps, walking routes as the Spookie does | lead, by the rights panel's list |
 
 ## Appendix: the club's song
 
