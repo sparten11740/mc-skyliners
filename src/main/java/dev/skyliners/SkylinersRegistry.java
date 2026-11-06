@@ -3,6 +3,7 @@ package dev.skyliners;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.airframe.AirframeLayout;
+import dev.skyliners.airframe.FreighterLayout;
 import dev.skyliners.airframe.RocketLayout;
 import dev.skyliners.airframe.ZeppelinLayout;
 import dev.skyliners.airframe.ZeppelinOptions;
@@ -421,6 +422,7 @@ public final class SkylinersRegistry {
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
     private static final float ROCKET_MODEL_MIDDLE = 8;
+    private static final float FREIGHTER_MODEL_MIDDLE = 7;
 
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Skyliners.MOD_ID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Skyliners.MOD_ID);
@@ -1168,6 +1170,15 @@ public final class SkylinersRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.3F).sound(SoundType.WOOL).noCollission().noOcclusion()
             .lightLevel(ShaftDecorBlock::glow).pushReaction(PushReaction.DESTROY).isValidSpawn(SkylinersRegistry::never)
     );
+    /**
+     * The freighter's walls inside: off-white quilted padding over grey ribs, the battered padding of a working ship,
+     * soft to bump into and quick to take down.
+     */
+    public static final DeferredBlock<Block> PADDED_BULKHEAD = BLOCKS.registerSimpleBlock(
+        "padded_bulkhead", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).strength(1.0F, 6.0F).sound(SoundType.WOOL)
+            .isValidSpawn(SkylinersRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> PADDED_BULKHEAD_ITEM = ITEMS.registerSimpleBlockItem(PADDED_BULKHEAD);
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
@@ -1699,7 +1710,7 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> PAPER_PLANE_WHOOSH = sound("paper_plane_whoosh");
     /** A laser pointer to shine about the cabin, which dazzles whoever it catches in the face. */
     public static final DeferredItem<LaserPointerItem> LASER_POINTER = ITEMS.register("laser_pointer", () -> new LaserPointerItem(new Item.Properties().stacksTo(1)));
-    /** Souvenirs: a pilot's cap to wear, and models of the airliner, the zeppelin and the rocket on their stands. */
+    /** Souvenirs: a pilot's cap to wear, and models of the airliner, the zeppelin, the rocket and the freighter. */
     public static final DeferredItem<PilotCapItem> PILOT_CAP = ITEMS.register("pilot_cap", () -> new PilotCapItem(new Item.Properties().stacksTo(1)));
     public static final DeferredBlock<SouvenirModelBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
         "model_airliner", SouvenirModelBlock::new,
@@ -1716,6 +1727,11 @@ public final class SkylinersRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_ROCKET_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ROCKET);
+    public static final DeferredBlock<SouvenirModelBlock> MODEL_FREIGHTER = BLOCKS.registerBlock(
+        "model_freighter", SouvenirModelBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> MODEL_FREIGHTER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_FREIGHTER);
 
     /**
      * The space posters on the rocket's lift shaft (see {@link SpacePosterBlock}), each a few blocks of thin board that
@@ -2458,6 +2474,11 @@ public final class SkylinersRegistry {
         "rocket_blueprint", () -> new RocketBlueprintItem(RocketLayout::create, () -> MODEL_ROCKET.get().defaultBlockState(), ROCKET_MODEL_MIDDLE,
             "item.skyliners.rocket_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
+    /** The freighter, a battered saucer on her legs, her prongs toward whoever builds her. */
+    public static final DeferredItem<AirframeBlueprintItem> FREIGHTER_BLUEPRINT = ITEMS.register(
+        "freighter_blueprint", () -> new AirframeBlueprintItem(FreighterLayout::create, () -> MODEL_FREIGHTER.get().defaultBlockState(),
+            FREIGHTER_MODEL_MIDDLE, "item.skyliners.freighter_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
     public static final DeferredItem<LaunchPadBlueprintItem> LAUNCH_PAD_BLUEPRINT = ITEMS.register(
         "launch_pad_blueprint", () -> new LaunchPadBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
@@ -2632,8 +2653,8 @@ public final class SkylinersRegistry {
     public static final List<TabSection> TAB_SECTIONS = List.of(
         new TabSection("blueprints", List.of(
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT, FESTIVE_ZEPPELIN_BLUEPRINT,
-            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, ROCKET_BLUEPRINT, LAUNCH_PAD_BLUEPRINT, CONTROL_TOWER_BLUEPRINT,
-            RUNWAY_BLUEPRINT
+            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, ROCKET_BLUEPRINT, LAUNCH_PAD_BLUEPRINT, FREIGHTER_BLUEPRINT,
+            CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT
         )),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM,
@@ -2645,6 +2666,9 @@ public final class SkylinersRegistry {
         new TabSection("rocket", List.of(
             STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, OVAL_WINDOW_ITEM, WINDOW_DIMMER_ITEM, LIFT_MACHINE_ITEM, LIFT_DOOR_ITEM, LIFT_BOARD_ITEM,
             LIFT_CALL_BUTTON_ITEM, LAUNCH_PAD_HUB_ITEM
+        )),
+        new TabSection("freighter", List.of(
+            PADDED_BULKHEAD_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,
@@ -2730,7 +2754,7 @@ public final class SkylinersRegistry {
             FLOODLIGHT_ITEM, NAV_LIGHT_ITEM, LED_STRIP_ITEM, LED_PANEL_ITEM, LED_CONSOLE_ITEM
         )),
         new TabSection("decorations", List.of(
-            MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, ORRERY_ITEM, BLACK_HOLE_POSTER, SOLAR_SYSTEM_POSTER, QUASAR_POSTER, EARTHRISE_POSTER,
+            MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, MODEL_FREIGHTER_ITEM, ORRERY_ITEM, BLACK_HOLE_POSTER, SOLAR_SYSTEM_POSTER, QUASAR_POSTER, EARTHRISE_POSTER,
             AIRLINER_PAINTING, ZEPPELIN_PAINTING, ROCKET_PAINTING, FREIGHTER_PAINTING, SHAFT_DECOR_ITEM, GIRDER_DECOR_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM
         )),
         new TabSection("control_tower", List.of(

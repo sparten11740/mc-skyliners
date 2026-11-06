@@ -252,6 +252,12 @@ player's client, where `MicroscopeScreen` shows the slide.
 sequence (`RocketRoom.scatter`): `GardenBedBlock`s, farmland in a frame that joins the beds beside it; `GrowLightBlock`s
 hung on light cables; `SprinklerBlock`s, whose `SprinklerBlockEntity` (found by the valve among those loaded) sprays and
 waters what grows round it; and the `IrrigationValveBlock` that sets them off.
+The freighter is drawn in `FreighterShape`'s metres, her hull the union of her parts' solids, and cut into blocks by
+`FreighterLayout`, always at scale 2, round one deck: her skin cut by `SurfaceCut` and glazed round her cockpit's cone
+and her domes, her outer bulkhead, her core, ring corridor and room walls of `PADDED_BULKHEAD`, the passages out past
+the bulkhead to her cockpit and along her prongs walled off from the void beside them, and her landing legs. She and
+the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out the air inside their
+hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

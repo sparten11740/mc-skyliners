@@ -860,6 +860,15 @@ function padFromTheSide(x, y) {
   const arm = y === 6 && x >= 8 && x <= 9;
   return deck || rocket || nose || fins || tower || arm;
 }
+// The freighter from above, prongs up: her round disc, the loading gap between her two prongs, her cockpit's tube and
+// pod out on her right, and her top turret's ring in the middle.
+function freighterFromAbove(x, y) {
+  const r = Math.hypot(x - 7.5, y - 8.5);
+  const disc = r <= 5 && !(r <= 1 && r > 0.4) && !(Math.abs(x - 7.5) <= 0.5 && y <= 6);
+  const prongs = y >= 2 && y <= 5 && ((x >= 5 && x <= 6) || (x >= 9 && x <= 10));
+  const cockpit = x >= 11 && x <= 12 && y >= 3 && y <= 6;
+  return disc || prongs || cockpit;
+}
 function towerFromTheSide(x, y) {
   const mast = x === 10 && y === 3;
   const roof = y === 4 && x >= 4 && x <= 11;
@@ -877,6 +886,7 @@ blueprint("half_furnished_zeppelin_blueprint", true, halfZeppelinFromTheSide);
 blueprint("half_festive_zeppelin_blueprint", true, halfZeppelinFromTheSide, [0xe0, 0x2a, 0x32]);
 blueprint("rocket_blueprint", false, rocketFromTheSide);
 blueprint("launch_pad_blueprint", false, padFromTheSide);
+blueprint("freighter_blueprint", false, freighterFromAbove);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 
@@ -4176,6 +4186,18 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 1);
   texture(blockOutput, "techno_deck_side", (x, y) => (y === 3 ? [0x2b, 0xe6, 0xff] : CAB), 1);
   texture(blockOutput, "dance_floor", (x, y) => (x === 0 || y === 0 ? [0x30, 0x30, 0x3a] : [0x10, 0x10, 0x16]), 1);
+  // The freighter's padded bulkhead: off-white quilting, each pad sewn into a diamond with a button at its middle, a
+  // grey rib standing up along its left edge, scuffed here and there.
+  texture(blockOutput, "padded_bulkhead", (x, y) => {
+    if (x === 0) return [0x7c, 0x80, 0x86];
+    if (x === 1) return [0x5c, 0x60, 0x66];
+    const u = (x + y) % 8;
+    const v = (x - y + 16) % 8;
+    if (u === 0 || v === 0) return [0xa8, 0xa2, 0x94];
+    if (u === 4 && v === 4) return [0x96, 0x90, 0x82];
+    const shade = Math.min(u, 8 - u, v, 8 - v);
+    return shade >= 2 ? [0xe2, 0xdc, 0xcc] : [0xcc, 0xc6, 0xb6];
+  }, 3);
   texture(blockOutput, "club_wall", (x, y) => {
     const u = x % 4;
     const v = y % 4;

@@ -4,6 +4,7 @@ import dev.skyliners.Skyliners;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.airframe.AirframeBuild;
 import dev.skyliners.airframe.AirframeLayout;
+import dev.skyliners.airframe.FreighterLayout;
 import dev.skyliners.airframe.Layout;
 import dev.skyliners.airframe.Livery;
 import dev.skyliners.airframe.RocketLayout;
@@ -115,7 +116,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("layout", (context, args) -> layout(args))
             .onServer()
             .group("skyliners")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket", "launch_pad")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket", "launch_pad", "freighter")
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe out without building it: how many blocks it has and a fingerprint of them, the same however they are laid out")
             .field("blocks", "its blocks, the air inside its hull among them")
@@ -124,7 +125,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("skyliners")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket", "freighter")
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("skyliners:build zeppelin"));
@@ -278,6 +279,7 @@ public final class BlockpilotCommands {
             case "festive_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE.sized(size));
             case "rocket" -> RocketLayout.create();
             case "launch_pad" -> LaunchPad.create(Integer.MAX_VALUE);
+            case "freighter" -> FreighterLayout.create();
             case "furnished" -> AirframeLayout.create(SkylinersConfig.SCALE.get(), true);
             default -> AirframeLayout.create(SkylinersConfig.SCALE.get(), false);
         };

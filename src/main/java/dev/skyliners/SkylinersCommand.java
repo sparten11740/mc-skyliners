@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.skyliners.airframe.AirframeBuild;
 import dev.skyliners.airframe.AirframeLayout;
+import dev.skyliners.airframe.FreighterLayout;
 import dev.skyliners.airframe.Layout;
 import dev.skyliners.airframe.RocketLayout;
 import dev.skyliners.airport.LaunchPad;
@@ -22,9 +23,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 
 /**
- * {@code /skyliners build <pos> <north|east|south|west> [furnished|zeppelin [furnished]]}: builds an airliner, or a
- * zeppelin, for server operators without a blueprint in hand, its nose tip at pos and its tail stretching away the
- * given way. Unlike the blueprint it builds through whatever is in the way, and reports how much that was.
+ * {@code /skyliners build <pos> <north|east|south|west> [furnished|zeppelin [furnished]|rocket|freighter|launch_pad]}:
+ * builds an airliner, a zeppelin, a rocket, a freighter or a launch pad, for server operators without a blueprint in
+ * hand, its nose tip at pos and its tail stretching away the given way. Unlike the blueprint it builds through
+ * whatever is in the way, and reports how much that was.
  */
 final class SkylinersCommand {
     private SkylinersCommand() {
@@ -41,6 +43,7 @@ final class SkylinersCommand {
                         .then(sized(Commands.literal("furnished"), along, ZeppelinOptions.FURNISHED))
                         .then(sized(Commands.literal("festive"), along, ZeppelinOptions.FESTIVE)))
                     .then(Commands.literal("rocket").executes(context -> build(context, along, RocketLayout.create(), "commands.skyliners.build_rocket")))
+                    .then(Commands.literal("freighter").executes(context -> build(context, along, FreighterLayout.create(), "commands.skyliners.build_freighter")))
                     .then(Commands.literal("launch_pad").executes(context -> buildLaunchPad(context, along)))));
         }
         dispatcher.register(Commands.literal(Skyliners.MOD_ID).requires(source -> source.hasPermission(2)).then(build));

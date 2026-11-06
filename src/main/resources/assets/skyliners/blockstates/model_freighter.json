@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/model_freighter",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/model_freighter",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/model_freighter",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/model_freighter",
+      "y": 270
+    }
+  }
+}

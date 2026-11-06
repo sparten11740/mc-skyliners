@@ -1167,7 +1167,8 @@ from the height it left at, hundreds of blocks.
 A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use it to put it on, or put it in the
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
 or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter. A Model Zeppelin, a silver
-cigar on its stand with its fins and its car, is in the creative tab.
+cigar on its stand with its fins and its car, and a Model Freighter, a grey saucer with her prongs and her cockpit pod
+on a stand of her own, are in the creative tab.
 
 A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
@@ -2567,6 +2568,25 @@ where the server shows less), and is paired with a rover by using it on the rove
 tip turning from red to green. The panel and the remote answer every touch in words over the hotbar and with a note of
 their own: a bright chime as the rover sets off down or a remote is handed over, a lower one as it comes home, a soft
 pling when there is nothing to do and a deep note for wait.
+
+### The freighter
+
+A battered saucer freighter, still being built: for now her bare hull. The Freighter Blueprint, under Blueprints in the
+creative tab, lays her down just past where it is used, her two prongs toward you, and operators can build one with
+`/skyliners build <pos> <north|east|south|west> freighter`. She is always built at the same size, whatever the server
+config's scale: a disc 50 blocks across, a low dome over and under a short upright rim, with two flat prongs reaching
+forward either side of a loading gap, 70 blocks long in all from their tips to her stern, standing on five landing
+legs, a strut down to a square foot plate each, her belly a couple of blocks off the ground. Her cockpit is a pod out
+on a tube at her front right edge, its cone glazed between eight spokes and a ring of struts; a glass dome stands on
+her top and another under her belly, where her ball turrets will go.
+
+Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
+bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three
+tall in the corridor's wall, out to her outer bulkhead, where her hull grows too low to stand in. Past the bulkhead the
+wedge out to her rim is closed off, but where a passage crosses it: the way from her front right room through the tube
+to the cockpit, four blocks tall, and from her bow room along each prong, a crawlway two blocks tall at its tip. Her
+walls inside are the Padded Bulkhead, off-white quilting over grey ribs, in the creative tab under Freighter (it can be
+crafted from white wool round an iron ingot). The Model Freighter, a souvenir on its stand, is under Decorations.
 
 ### Settings
 

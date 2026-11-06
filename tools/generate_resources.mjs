@@ -120,6 +120,7 @@ const cubes = {
   flight_deck_stripe: null,
   dance_floor: null,
   club_wall: null,
+  padded_bulkhead: null,
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
@@ -4795,6 +4796,35 @@ function laserPointerLang() {
   dropsItself("model_rocket");
   cubes.model_rocket = null;
 }
+// The souvenir model freighter, prongs north: a grey saucer stepping in to her top and her belly, her two prongs
+// reaching ahead either side of the loading gap, her cockpit's tube and pod out on her right, her top turret's dome
+// and her radar dish, on a slim stand of light cable, as the zeppelin's is (the blueprint's preview leaves it out).
+{
+  const hull = "#hull";
+  const model = {
+    parent: "minecraft:block/block",
+    textures: { hull: `${ID}:block/zeppelin_fabric`, glass: `${ID}:block/cockpit_glass`, stand: `${ID}:block/light_cable`, particle: `${ID}:block/zeppelin_fabric` },
+    elements: [
+      solid([3, 6, 4], [13, 8, 12], hull),
+      solid([4, 6, 3], [12, 8, 13], hull),
+      solid([4.5, 8, 4.5], [11.5, 8.5, 11.5], hull),
+      solid([5.5, 5.5, 5.5], [10.5, 6, 10.5], hull),
+      solid([4.5, 6.25, 0], [7, 7.75, 4], hull),
+      solid([9, 6.25, 0], [11.5, 7.75, 4], hull),
+      solid([12, 6.5, 1.5], [13.5, 8, 4.5], hull),
+      solid([12.25, 6.75, 0.75], [13.25, 7.75, 1.5], "#glass"),
+      solid([7.25, 8.5, 7.25], [8.75, 9.25, 8.75], "#glass"),
+      solid([10, 8.5, 5], [11, 9.5, 6], hull),
+      solid([7.5, 0, 7.5], [8.5, 5.5, 8.5], "#stand"),
+      solid([5.5, 0, 5.5], [10.5, 0.5, 10.5], "#stand"),
+    ],
+  };
+  write(`assets/${ID}/models/block/model_freighter.json`, model);
+  facing("model_freighter");
+  write(`assets/${ID}/models/item/model_freighter.json`, { parent: `${ID}:block/model_freighter` });
+  dropsItself("model_freighter");
+  cubes.model_freighter = null;
+}
 // The duty-free counter, drawn facing north: a cabinet ten pixels tall, and on it a glass showcase with the goods on
 // show inside, lying on the cabinet's top; the glass is see-through, so the whole counter is drawn translucent.
 {
@@ -4827,6 +4857,7 @@ const DUTY_FREE_LANG = {
   "block.skyliners.model_airliner": "Model Airliner",
   "block.skyliners.model_zeppelin": "Model Zeppelin",
   "block.skyliners.model_rocket": "Model Rocket",
+  "block.skyliners.model_freighter": "Model Freighter",
   "item.skyliners.pilot_helmet": "Pilot Helmet",
   "item.skyliners.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
   "subtitles.skyliners.hud_on": "Pilot HUD beeps on",
@@ -8631,7 +8662,7 @@ function crewLockerLang() {
 }
 
 for (const name of ["airliner_blueprint", "furnished_airliner_blueprint", "zeppelin_blueprint", "furnished_zeppelin_blueprint", "festive_zeppelin_blueprint",
-  "half_zeppelin_blueprint", "half_furnished_zeppelin_blueprint", "half_festive_zeppelin_blueprint", "rocket_blueprint"]) {
+  "half_zeppelin_blueprint", "half_furnished_zeppelin_blueprint", "half_festive_zeppelin_blueprint", "rocket_blueprint", "freighter_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
 
@@ -9912,7 +9943,7 @@ const GROUND = ["launch_pad_grate", "launch_pad_hub", "landing_target", "tower_r
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "floor_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "model_rocket", "model_freighter", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...roverFittings());
@@ -10063,6 +10094,7 @@ shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft
 shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
 shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);
 shaped("lift_glass", [" G ", "GTG", " G "], { G: "minecraft:glass", T: "minecraft:tinted_glass" }, 4);
+shaped("padded_bulkhead", ["WWW", "WIW", "WWW"], { W: "minecraft:white_wool", I: "minecraft:iron_ingot" }, 8);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10213,6 +10245,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "itemGroup.skyliners.blueprints": "Blueprints",
   "itemGroup.skyliners.airframe": "Airliner Airframe",
   "itemGroup.skyliners.rocket": "Rocket",
+  "itemGroup.skyliners.freighter": "Freighter",
   "itemGroup.skyliners.flight_deck": "Flight Deck",
   "itemGroup.skyliners.rocket_cockpit": "Rocket Cockpit",
   "itemGroup.skyliners.doors": "Doors and Stairs",
@@ -10613,6 +10646,13 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.skyliners.rocket_building": "Building the rocket… %s%%",
   "message.skyliners.rocket_built": "The rocket is ready. Use the autopilot in its cockpit, at the top, to fly it.",
   "message.skyliners.rocket_too_high": "The rocket would reach past the build height here; build it lower down.",
+  "item.skyliners.freighter_blueprint": "Freighter Blueprint",
+  "item.skyliners.freighter_blueprint.tooltip": "A battered saucer freighter on her legs, one deck round a core, flown on her thrusters",
+  "message.skyliners.freighter_building": "Building the freighter… %s%%",
+  "message.skyliners.freighter_built": "The freighter is ready.",
+  "message.skyliners.freighter_too_high": "The freighter would reach past the build height here; build her lower down.",
+  "commands.skyliners.build_freighter": "Building a freighter of %s blocks, %s of them over blocks that were in the way",
+  "block.skyliners.padded_bulkhead": "Padded Bulkhead",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.skyliners.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.skyliners.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",
