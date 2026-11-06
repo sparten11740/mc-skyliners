@@ -5052,6 +5052,102 @@ writeSound("robot_trill", robotBeep(ROBOT.trill), 0.6);
 writeSound("robot_alarm", robotBeep(ROBOT.alarm, ROBOT.alarmRing, ROBOT.alarmSquare), 0.65);
 writeSound("robot_happy", robotBeep(ROBOT.happy), 0.6);
 
+// The freighter's radar dish turning on her top (see the plan's "Ideas of our own"), with a random sequence of its own:
+// a seamless loop one turn of the dish long, played faster while her autopilot flies. Its 60 hertz motor humming with
+// a whine at its ninth harmonic, the rumble of its gear train, and once a turn its bearing squeaking and its mount
+// creaking. Every tone turns a whole number of times round the loop, and the noise and the creak are wrapped round it.
+// Tune it here.
+const RADAR_DISH = {
+  // One turn of the dish, in seconds; its motor, in hertz, and the harmonic its gears whine at.
+  turn: 4,
+  motorHz: 60,
+  whineHarmonic: 9,
+  // The bearing's squeak: when in the turn, how long, in seconds, and its pitch and stick-slip, in hertz.
+  squeakAt: 1.1,
+  squeaking: 0.18,
+  squeakHz: 1900,
+  slipHz: 85,
+  // The mount's creak, when in the turn, in seconds.
+  creakAt: 2.7,
+};
+{
+  const R = RADAR_DISH;
+  const dishRandom = ownRandom(0x52646172);
+  const fade = 0.3;
+  let brown = 0;
+  let gears = 0;
+  const train = levelled(seamlessNoise(Float64Array.from({ length: Math.round((R.turn + fade) * RATE) }, () => {
+    brown = (brown + 0.02 * (dishRandom() * 2 - 1)) * 0.995;
+    gears += 0.05 * (brown - gears);
+    return gears;
+  }), R.turn, fade));
+  const whirr = train.map((sample, i) => {
+    const t = i / RATE;
+    const phase = 2 * Math.PI * R.motorHz * t;
+    const hum = Math.sin(phase) + 0.5 * Math.sin(2 * phase) + 0.25 * Math.sin(3 * phase);
+    const whine = Math.sin(R.whineHarmonic * phase) * (0.8 + 0.2 * Math.sin((2 * Math.PI * 2 * t) / R.turn));
+    return 0.35 * hum + 0.12 * whine + 0.25 * sample;
+  });
+  // The squeak: a high note stuck and slipping some 85 times a second, wavering, swelling in and out.
+  addRound(whirr, R.squeakAt, R.squeaking, (t) => {
+    const slip = (0.5 + 0.5 * Math.sin(2 * Math.PI * R.slipHz * t)) ** 2;
+    const pitch = R.squeakHz * (1 + 0.04 * Math.sin(2 * Math.PI * 7 * t));
+    return 0.18 * Math.sin(Math.PI * t / R.squeaking) * slip * Math.sin(2 * Math.PI * pitch * t);
+  });
+  const creak = new Float64Array(Math.round(1.4 * RATE));
+  girderGroan(creak, 0, dishRandom, 12);
+  mixRound(whirr, R.creakAt, creak);
+  writeSound("radar_dish_whirr", whirr, 0.5);
+}
+
+// The hidden compartments under her grates (see the plan's "Ideas of our own"), each sound with a random sequence of
+// its own. Opening: two latch clicks at 2.2 kilohertz, 0.3 seconds of pneumatic hiss, the plate sliding away, a band of
+// noise round 600 hertz gritty with the dirt in its runners, and a soft thud as it seats. Closing: the other way round,
+// the plate sliding back and thudding home, the seal hissing and the latches clicking shut. Tune them here.
+const HIDDEN_HATCH = {
+  // The latches' pitch, in hertz, and the gap between them, in seconds.
+  latchHz: 2200,
+  latchGap: 0.06,
+  // The hiss, how long, in seconds, and its high-pass, in hertz.
+  hissing: 0.3,
+  hissCutoff: 2500,
+  // The slide, how long, in seconds, and its band, in hertz.
+  sliding: 0.6,
+  slideHz: 600,
+  // The thud as it seats, in hertz.
+  seatHz: 90,
+  // When each part comes, opening and closing, in seconds; and how long each sound is.
+  opening: { latches: 0, hiss: 0.1, slide: 0.42, seat: 1.02 },
+  closing: { slide: 0, seat: 0.6, hiss: 0.68, latches: 1.02 },
+  seconds: 1.3,
+};
+
+/** A hidden compartment's hatch opening or closing, its parts at the times given, from a random sequence of its own. */
+function hiddenHatch(times, own) {
+  const H = HIDDEN_HATCH;
+  const samples = new Float64Array(Math.round(H.seconds * RATE));
+  [0, H.latchGap].forEach((gap, k) => {
+    click(samples, times.latches + gap, H.latchHz * (1 + 0.05 * k), 1, own);
+    thunk(samples, times.latches + gap, 180, 0.15, own);
+  });
+  const hiss = highPassed(whiteNoise(H.hissing, own), H.hissCutoff);
+  hiss.forEach((sample, i) => {
+    const t = i / RATE;
+    samples[Math.round(times.hiss * RATE) + i] += 1.2 * Math.min(1, t / 0.005) * Math.exp(-t / 0.12) * Math.min(1, (H.hissing - t) / 0.03) * sample;
+  });
+  const slide = resonance(whiteNoise(H.sliding, own), H.slideHz, 2);
+  let grit = 0;
+  slide.forEach((sample, i) => {
+    const t = i / RATE;
+    grit += 0.01 * (own() * 2 - 1 - grit);
+    samples[Math.round(times.slide * RATE) + i] += 3 * Math.sin((Math.PI * t) / H.sliding) * (1 + 10 * grit) * sample;
+  });
+  thunk(samples, times.seat, H.seatHz, 0.5, own);
+  return lowPassed(samples, 9000);
+}
+writeSound("hidden_hatch_open", hiddenHatch(HIDDEN_HATCH.opening, ownRandom(0x48486f70)), 0.7);
+writeSound("hidden_hatch_close", hiddenHatch(HIDDEN_HATCH.closing, ownRandom(0x4848636c)), 0.7);
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

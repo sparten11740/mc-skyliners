@@ -1535,6 +1535,10 @@ const FREIGHTER_SOUNDS = {
   robot_trill: { subtitle: "Robot trills" },
   robot_alarm: { subtitle: "Robot beeps in alarm" },
   robot_happy: { subtitle: "Robot beeps happily" },
+  // Her radar dish turning on her top, heard on her hull and round her; and her hidden compartments' hatches.
+  radar_dish_whirr: { subtitle: "Radar dish whirrs", heard: 24 },
+  hidden_hatch_open: { subtitle: "Hidden hatch slides open" },
+  hidden_hatch_close: { subtitle: "Hidden hatch slides shut" },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {

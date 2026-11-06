@@ -867,6 +867,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ROBOT_ALARM = sound("robot_alarm");
     /** A robot's happy beeps, climbing an arpeggio. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ROBOT_HAPPY = sound("robot_happy");
+    /** Her radar dish turning, a seamless loop one turn of it long, its bearing squeaking once a turn. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RADAR_DISH_WHIRR = sound("radar_dish_whirr");
+    /** A hidden compartment's hatch unlatching, hissing and sliding open. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> HIDDEN_HATCH_OPEN = sound("hidden_hatch_open");
+    /** A hidden compartment's hatch sliding shut, sealing and latching. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> HIDDEN_HATCH_CLOSE = sound("hidden_hatch_close");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );

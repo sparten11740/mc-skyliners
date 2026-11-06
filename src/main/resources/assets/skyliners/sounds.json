@@ -917,6 +917,31 @@
       }
     ]
   },
+  "radar_dish_whirr": {
+    "subtitle": "subtitles.skyliners.radar_dish_whirr",
+    "sounds": [
+      {
+        "name": "skyliners:radar_dish_whirr",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "hidden_hatch_open": {
+    "subtitle": "subtitles.skyliners.hidden_hatch_open",
+    "sounds": [
+      {
+        "name": "skyliners:hidden_hatch_open"
+      }
+    ]
+  },
+  "hidden_hatch_close": {
+    "subtitle": "subtitles.skyliners.hidden_hatch_close",
+    "sounds": [
+      {
+        "name": "skyliners:hidden_hatch_close"
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [
