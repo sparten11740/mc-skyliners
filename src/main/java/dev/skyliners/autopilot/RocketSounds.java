@@ -69,9 +69,8 @@ final class RocketSounds {
     private final Airtime airtime;
     /** How long her countdown has waited for the flight deck to fall quiet, in ticks. */
     private int held;
-    /** Her engines' thrust as the clients were last shown it, a share of full, 0 at rest; and when it was sent. */
-    private float shown;
-    private long shownAt = NEVER;
+    /** Her engines' thrust as the clients are shown it, a share of full, 0 at rest. */
+    private final ShownShare shown = new ShownShare(THRUST_STEPS, THRUST_EVERY);
     /** Whether her engines fired last tick, and whether "Touchdown." has been said since her landing burn began. */
     private boolean lit;
     private boolean landed;
@@ -148,7 +147,7 @@ final class RocketSounds {
         }
         landed = landed && phase == AutopilotBlockEntity.Phase.LAND;
         lit = firing;
-        return show(report.thrust(), level.getGameTime());
+        return shown.take(report.thrust(), level.getGameTime());
     }
 
     /**
@@ -179,34 +178,18 @@ final class RocketSounds {
         }
     }
 
-    /**
-     * Whether the clients are to be shown her engines' thrust afresh, a share of full: at once as they light or stop,
-     * otherwise once it is a step off what they were shown, and not too often.
-     */
-    private boolean show(double thrust, long now) {
-        int steps = thrust <= 0 ? 0 : Math.max(1, (int) Math.round(thrust * THRUST_STEPS));
-        int was = Math.round(shown * THRUST_STEPS);
-        boolean lighting = (steps > 0) != (was > 0);
-        if (steps == was || !lighting && now - shownAt < THRUST_EVERY) {
-            return false;
-        }
-        shown = (float) steps / THRUST_STEPS;
-        shownAt = now;
-        return true;
-    }
-
     /** How hard her engines fire as the clients are shown it, a share of full thrust; 0 at rest. */
     float thrust() {
-        return shown;
+        return shown.shown();
     }
 
     /** Her engines' thrust, in the update sent to the clients. */
     void saveShown(CompoundTag tag) {
-        tag.putFloat("RocketThrust", shown);
+        shown.save(tag, "RocketThrust");
     }
 
     /** Her engines' thrust from the update the server sent; never in a save, which leaves her at rest. */
     void loadShown(CompoundTag tag) {
-        shown = Mth.clamp(tag.getFloat("RocketThrust"), 0, 1);
+        shown.load(tag, "RocketThrust");
     }
 }
