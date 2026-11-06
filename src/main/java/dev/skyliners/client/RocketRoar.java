@@ -9,15 +9,12 @@ import java.util.WeakHashMap;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -49,12 +46,9 @@ public final class RocketRoar {
     private static final float MOST_VOLUME = 1.0F;
     private static final float LEAST_PITCH = 0.8F;
     private static final float MOST_PITCH = 1.1F;
-    private static final float CUT_PITCH = 0.7F;
     /** How loud the ignition and the touchdown are, as shares of full; the cut-off is as loud as the roar it ends. */
     private static final float IGNITION_VOLUME = 1.0F;
     private static final float TOUCHDOWN_VOLUME = 1.0F;
-    /** How loud all of it is heard aboard her, through her hull, as a share of how loud it is outside. */
-    private static final float ABOARD_SHARE = 0.7F;
     /**
      * How the loop hands over to the ignition and the cut-off, which tools/generate_sounds.mjs shapes to it (its
      * ROCKET.handoverAt, handover and fadeOut), in ticks: lighting, it waits {@link #IGNITION_LEAD} before it rises in
@@ -71,12 +65,6 @@ public final class RocketRoar {
     private static final float LIFT_OFF_SHAKE = 0.8F;
     private static final int LIFT_OFF_SHAKE_TICKS = 60;
     /**
-     * How fast the loop swells or fades otherwise, as the listener boards her or leaves her, or first hears her, a share
-     * of full a tick; and how fast its pitch follows her thrust, a share a tick.
-     */
-    private static final float FADE = 0.1F;
-    private static final float PITCH_RATE = 0.01F;
-    /**
      * Her roar close by: as a share of her roar, how loud its thunder beside it is while her exhaust is up to
      * {@link #NEAR_LOW} blocks over the ground, fading out by {@link #NEAR_HIGH}; how far it carries is set with the
      * sound (see tools/generate_resources.mjs).
@@ -87,12 +75,10 @@ public final class RocketRoar {
     /**
      * The ground shaking under those standing near her while her engines fire low over it, as a share of the roughest
      * clear air (see {@link CameraShake#turbulence}): this hard right by her exhaust, easing off to nothing this far
-     * from it, in blocks; and for how many ticks it is kept up each tick, as long as the shake takes to die away
-     * (CameraShake's TURBULENCE_FADE_TICKS), so it holds at full while renewed and fades once she has climbed away.
+     * from it, in blocks.
      */
     private static final float GROUND_SHAKE = 0.9F;
     private static final double SHAKE_FELT = 80;
-    private static final int SHAKE_KEPT = 20;
     /** How loud her shockwave's boom is, as a share of full, heard from beyond its reach and right by her. */
     private static final float FAR_BOOM = 0.35F;
     private static final float NEAR_BOOM = 1.0F;
@@ -106,8 +92,6 @@ public final class RocketRoar {
     private static final float BOOST_VOLUME = 1.0F;
     private static final float BOOST_CUTOUT_VOLUME = 0.8F;
     private static final float BOOST_SHAKE = 0.6F;
-    /** Her thrust before her engines are first heard. */
-    private static final float UNHEARD = -1;
     /** Long before any game time: never. */
     private static final long NEVER = Long.MIN_VALUE / 2;
 
@@ -117,17 +101,8 @@ public final class RocketRoar {
     /** Once a tick: every rocket loaded on this client heard as her engines fire. */
     public static void tick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        ClientLevel level = minecraft.level;
-        if (level == null || minecraft.player == null) {
-            ROCKETS.clear();
-            return;
-        }
-        ROCKETS.keySet().removeIf(rocket -> rocket.isRemoved() || rocket.getLevel() != level);
-        for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(level)) {
-            if (autopilot.craft() == Craft.ROCKET && autopilot.built()) {
-                ROCKETS.computeIfAbsent(autopilot, rocket -> new Engines()).tick(minecraft, autopilot, level.getGameTime());
-            }
-        }
+        EngineRoar.forEach(ROCKETS, Craft.ROCKET, Engines::new,
+            (rocket, engines) -> engines.tick(minecraft, rocket, rocket.getLevel().getGameTime()));
     }
 
     /**
@@ -155,24 +130,18 @@ public final class RocketRoar {
      */
     private static void once(Minecraft minecraft, AutopilotBlockEntity rocket, Supplier<SoundEvent> outside, Supplier<SoundEvent> aboard,
                              float volume, boolean inside) {
-        if (inside) {
-            minecraft.getSoundManager().play(new SimpleSoundInstance(aboard.get().getLocation(), SoundSource.BLOCKS, volume * ABOARD_SHARE, 1.0F,
-                RandomSource.create(), false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
-            return;
-        }
-        Vec3 at = exhaust(rocket);
-        minecraft.getSoundManager().play(new SimpleSoundInstance(outside.get(), SoundSource.BLOCKS, volume, 1.0F, RandomSource.create(), at.x, at.y, at.z));
+        EngineRoar.once(minecraft, exhaust(rocket), outside.get(), aboard.get(), volume, inside, EngineRoar.ABOARD_SHARE);
     }
 
     /** What one rocket's engines were last heard doing: her thrust, her roar outside and aboard, and their moments. */
     private static final class Engines {
-        private float heard = UNHEARD;
+        private float heard = EngineRoar.UNHEARD;
         @Nullable
-        private Roar outside;
+        private EngineRoar outside;
         @Nullable
-        private Roar aboard;
+        private EngineRoar aboard;
         @Nullable
-        private Roar near;
+        private EngineRoar near;
         /** When her engines last lit at lift-off, and the game time before which no cut-off is heard again. */
         private long litAt = NEVER;
         private long quietUntil = NEVER;
@@ -201,18 +170,21 @@ public final class RocketRoar {
             boolean stopped = thrust <= 0;
             float share = Mth.clamp(thrust, 0, 1);
             float volume = stopped || now - litAt < IGNITION_LEAD ? 0 : boosting ? MOST_VOLUME : Mth.lerp(share, LEAST_VOLUME, MOST_VOLUME);
-            float pitch = stopped ? CUT_PITCH : Mth.lerp(share, LEAST_PITCH, MOST_PITCH) + (boosting ? BOOST_PITCH : 0);
-            float step = stopped ? 1F / CUTOFF_FADE : now - litAt < IGNITION_LEAD + IGNITION_RISE ? 1F / IGNITION_RISE : FADE;
-            float pitchStep = stopped ? (MOST_PITCH - CUT_PITCH) / CUTOFF_FADE : PITCH_RATE;
-            Vec3 exhaust = SableClient.toWorld(minecraft.level, exhaust(rocket));
-            float low = lowness(minecraft.level, exhaust);
-            outside = keep(minecraft, rocket, outside, SkylinersRegistry.ROCKET_ROAR.get(), false, inside ? 0 : volume, pitch, step, pitchStep);
-            near = keep(minecraft, rocket, near, SkylinersRegistry.ROCKET_ROAR_NEAR.get(), false, inside ? 0 : volume * NEAR_SHARE * low, pitch, step,
+            float pitch = stopped ? EngineRoar.CUT_PITCH : Mth.lerp(share, LEAST_PITCH, MOST_PITCH) + (boosting ? BOOST_PITCH : 0);
+            float step = stopped ? 1F / CUTOFF_FADE : now - litAt < IGNITION_LEAD + IGNITION_RISE ? 1F / IGNITION_RISE : EngineRoar.FADE;
+            float pitchStep = stopped ? (MOST_PITCH - EngineRoar.CUT_PITCH) / CUTOFF_FADE : EngineRoar.PITCH_RATE;
+            Vec3 at = exhaust(rocket);
+            Vec3 exhaust = SableClient.toWorld(minecraft.level, at);
+            float low = EngineRoar.lowness(minecraft.level, exhaust, NEAR_LOW, NEAR_HIGH);
+            outside = EngineRoar.keep(minecraft, rocket, outside, SkylinersRegistry.ROCKET_ROAR.get(), at, false, inside ? 0 : volume, pitch, step,
                 pitchStep);
-            aboard = keep(minecraft, rocket, aboard, SkylinersRegistry.ROCKET_ROAR_ABOARD.get(), true, inside ? volume * ABOARD_SHARE : 0, pitch, step,
+            float nearVolume = inside ? 0 : volume * NEAR_SHARE * low;
+            near = EngineRoar.keep(minecraft, rocket, near, SkylinersRegistry.ROCKET_ROAR_NEAR.get(), at, false, nearVolume, pitch, step, pitchStep);
+            float aboardVolume = inside ? volume * EngineRoar.ABOARD_SHARE : 0;
+            aboard = EngineRoar.keep(minecraft, rocket, aboard, SkylinersRegistry.ROCKET_ROAR_ABOARD.get(), at, true, aboardVolume, pitch, step,
                 pitchStep);
             if (!inside && !stopped) {
-                shakeGround(minecraft, exhaust, low);
+                EngineRoar.shakeGround(minecraft, exhaust, low, GROUND_SHAKE, SHAKE_FELT);
             }
         }
 
@@ -233,21 +205,6 @@ public final class RocketRoar {
             boosted = boosting;
         }
 
-        /** How low over the ground her exhaust is, for her roar's thunder close by: 1 near it, 0 high over it. */
-        private static float lowness(ClientLevel level, Vec3 exhaust) {
-            double ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(exhaust.x), Mth.floor(exhaust.z));
-            return (float) Mth.clamp(1 - (exhaust.y - ground - NEAR_LOW) / (NEAR_HIGH - NEAR_LOW), 0, 1);
-        }
-
-        /** The ground shaking under this player standing near her as her engines fire low over it. */
-        private static void shakeGround(Minecraft minecraft, Vec3 exhaust, float low) {
-            double off = minecraft.player.position().distanceTo(exhaust);
-            float near = (float) Mth.clamp(1 - off / SHAKE_FELT, 0, 1);
-            if (near * low > 0) {
-                CameraShake.turbulence(GROUND_SHAKE * near * low, SHAKE_KEPT);
-            }
-        }
-
         /** Her engines stopping: their cut-off, and down on her fins in her landing burn, her touchdown with it. */
         private void stopping(Minecraft minecraft, AutopilotBlockEntity rocket, boolean inside, long now) {
             if (now < quietUntil) {
@@ -259,78 +216,6 @@ public final class RocketRoar {
             }
             float roaring = Mth.lerp(Mth.clamp(heard, 0, 1), LEAST_VOLUME, MOST_VOLUME);
             once(minecraft, rocket, SkylinersRegistry.ROCKET_CUTOFF, SkylinersRegistry.ROCKET_CUTOFF_ABOARD, roaring, inside);
-        }
-
-        /**
-         * A roar kept going toward how loud and how high it should be, at so much a tick: begun once it should be
-         * heard, let go once it has died away.
-         */
-        @Nullable
-        private static Roar keep(Minecraft minecraft, AutopilotBlockEntity rocket, @Nullable Roar roar, SoundEvent sound, boolean aboard, float volume,
-                                 float pitch, float step, float pitchStep) {
-            Roar kept = roar != null && roar.isStopped() ? null : roar;
-            if (kept == null && volume > 0) {
-                kept = new Roar(rocket, sound, aboard, pitch);
-                minecraft.getSoundManager().play(kept);
-            }
-            if (kept != null) {
-                kept.toward(volume, pitch, step, pitchStep);
-            }
-            return kept;
-        }
-    }
-
-    /**
-     * One of her roars, looped, going toward how loud and how high it should be: outside, where her exhaust leaves
-     * among her blocks, her roar and its thunder close by; aboard, as it is heard through her hull, round the listener.
-     */
-    private static final class Roar extends AbstractTickableSoundInstance {
-        private final AutopilotBlockEntity rocket;
-        private float wanted;
-        private float wantedPitch;
-        private float step;
-        private float pitchStep;
-
-        Roar(AutopilotBlockEntity rocket, SoundEvent sound, boolean aboard, float pitch) {
-            super(sound, SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
-            this.rocket = rocket;
-            looping = true;
-            delay = 0;
-            volume = 0;
-            this.pitch = pitch;
-            wantedPitch = pitch;
-            relative = aboard;
-            attenuation = aboard ? Attenuation.NONE : Attenuation.LINEAR;
-            Vec3 at = aboard ? Vec3.ZERO : exhaust(rocket);
-            x = at.x;
-            y = at.y;
-            z = at.z;
-        }
-
-        @Override
-        public boolean canStartSilent() {
-            return true;
-        }
-
-        /** How loud and how high it should be, and how far it may go toward each a tick. */
-        void toward(float volume, float pitch, float step, float pitchStep) {
-            wanted = volume;
-            wantedPitch = pitch;
-            this.step = step;
-            this.pitchStep = pitchStep;
-        }
-
-        @Override
-        public void tick() {
-            if (rocket.isRemoved()) {
-                stop();
-                return;
-            }
-            volume = volume < wanted ? Math.min(wanted, volume + step) : Math.max(wanted, volume - step);
-            pitch = pitch < wantedPitch ? Math.min(wantedPitch, pitch + pitchStep) : Math.max(wantedPitch, pitch - pitchStep);
-            if (wanted <= 0 && volume <= 0) {
-                stop();
-            }
         }
     }
 }
