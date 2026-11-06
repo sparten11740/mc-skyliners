@@ -19,12 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -47,7 +45,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * <p>Sable flies the rocket as one body only as far as its blocks touch, face to face: the floors run out to the skin,
  * the fins are two blocks thick where they run between the four ways, and the shaft stands on the floors.
  */
-public final class RocketLayout implements Layout {
+public final class RocketLayout extends HullLayout {
     /**
      * How many rows of open air the engines need under them, at least: Create Propulsion looks ten blocks behind a
      * thruster's nozzle for what stands in its exhaust, and the rocket's own fins and the ground count.
@@ -136,9 +134,6 @@ public final class RocketLayout implements Layout {
     private final int noseFoot;
     /** How high the bottom stands, in metres, as the surface is measured. */
     private final double base;
-    /** Every block of the rocket that is not the air inside its body, by position from the axis at the ground. */
-    private final Map<BlockPos, BlockState> cells = new HashMap<>();
-    private final Map<BlockPos, Fitting> fittings = new HashMap<>();
     /** Each story's floor row, from the entry story up. */
     private final List<Integer> floors = new ArrayList<>();
     /** Each engine bell's thrusters' relays, the middle bell first. */
@@ -146,8 +141,6 @@ public final class RocketLayout implements Layout {
     /** The side jets' relays near the nose and near the bottom, by the way each pushes it. */
     private final Map<Direction, BlockPos> topJets = new HashMap<>();
     private final Map<Direction, BlockPos> bottomJets = new HashMap<>();
-    /** How many blocks of air {@link #inOrder} hands over, found once everything else stands. */
-    private int air = -1;
     /** Where the autopilot's control head stands in the cockpit; null before it is laid. */
     @Nullable
     private BlockPos head;
@@ -307,7 +300,7 @@ public final class RocketLayout implements Layout {
     @Nullable
     private BlockState finished(BlockPos at, BlockState state) {
         if (state.is(SkylinersRegistry.CABIN_FLOOR.get())) {
-            return inside(at) ? finishedFloor(at.getY()) : null;
+            return withinSurface(at) ? finishedFloor(at.getY()) : null;
         }
         RocketFinish finish = at.getY() == domeFloor() ? RocketFinish.COCKPIT : finishAt(at.getY());
         if (finish != null && state.getBlock() instanceof OvalWindowBlock) {
@@ -329,11 +322,6 @@ public final class RocketLayout implements Layout {
             }
         }
         return seen ? panel : null;
-    }
-
-    /** Whether a block lies inside her body, not out past her skin, as the step before her door does. */
-    private boolean inside(BlockPos at) {
-        return surface.depth(at.getX(), at.getY() + 0.5, at.getZ()) < 0;
     }
 
     /**
@@ -372,58 +360,6 @@ public final class RocketLayout implements Layout {
             story++;
         }
         return RocketFinish.ofStory(story);
-    }
-
-    /**
-     * Whether a room sees a block of her cover: on a side, the block there in her body and open or not filling its
-     * place (an LED strip, a light, a stool), and not her skin's own glass; on no side given, on any side.
-     */
-    private boolean seenFromInside(BlockPos at, @Nullable Direction side) {
-        if (side == null) {
-            for (Direction any : Direction.values()) {
-                if (seenFromInside(at, any)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        BlockPos next = at.relative(side);
-        if (surface.depth(next.getX(), next.getY() + 0.5, next.getZ()) >= 0) {
-            return false;
-        }
-        if (isOpen(next.getX(), next.getY(), next.getZ())) {
-            return true;
-        }
-        BlockState there = stateAt(next.getX(), next.getY(), next.getZ());
-        return !there.canOcclude() && !skin(there);
-    }
-
-    /** Whether a block is her skin: her cover, cut to her curve or whole, or a window in it. */
-    static boolean skin(BlockState state) {
-        return state.getBlock() instanceof ShellBlock || state.getBlock() instanceof OvalWindowBlock;
-    }
-
-    void set(int x, int y, int z, BlockState state) {
-        cells.put(new BlockPos(x, y, z), state);
-    }
-
-    BlockState stateAt(int x, int y, int z) {
-        return cells.getOrDefault(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
-    }
-
-    /** Whether nothing of the rocket stands at the block yet: inside the body, its open air. */
-    boolean isOpen(int x, int y, int z) {
-        return !cells.containsKey(new BlockPos(x, y, z));
-    }
-
-    /** Whether a block's middle lies inside the body, a skin's thickness in from its surface. */
-    boolean inside(int x, int y, int z) {
-        return surface.depth(x, y + 0.5, z) < -1;
-    }
-
-    /** Whether a block's middle lies at least so many blocks in from the body's surface. */
-    boolean inFrom(int x, int y, int z, double blocks) {
-        return surface.depth(x, y + 0.5, z) < -blocks;
     }
 
     /** Whether her stories are furnished as her rooms. */
@@ -534,35 +470,6 @@ public final class RocketLayout implements Layout {
      */
     private boolean behindGlass(int x, int y, int z, int shape) {
         return shape == ShellGeometry.WHOLE && cockpitGlass(y) && !touchesSky(x, y, z);
-    }
-
-    /** Whether a block has the sky beside it on any side. */
-    private boolean touchesSky(int x, int y, int z) {
-        for (Direction side : Direction.values()) {
-            if (sky(x + side.getStepX(), y + side.getStepY(), z + side.getStepZ())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * A block of her skin turned to glass, as the observation deck's band is: cut to her surface as the cover there
-     * was, so it sits flush with the cover over and under it; or left out where it is a whole block behind others,
-     * touching the sky on no side, so the glass is one pane thick, as round the cockpit (see {@link #behindGlass}).
-     */
-    void glaze(int x, int y, int z, BlockState glass) {
-        int shape = SurfaceCut.shape(surface, x - 0.5, y, z - 0.5);
-        if (shape == ShellGeometry.WHOLE && !touchesSky(x, y, z)) {
-            cells.remove(new BlockPos(x, y, z));
-            return;
-        }
-        set(x, y, z, shape == ShellGeometry.NONE ? glass : ShellBlock.withShape(glass, shape));
-    }
-
-    /** Whether a block lies wholly outside her surface, in the sky. */
-    private boolean sky(int x, int y, int z) {
-        return SurfaceCut.shape(surface, x - 0.5, y, z - 0.5) == ShellGeometry.NONE && surface.depth(x, y + 0.5, z) > 0;
     }
 
     /**
@@ -763,18 +670,6 @@ public final class RocketLayout implements Layout {
     }
 
     /**
-     * A creative thruster at a block pushing the way given, at the configured setting with the flames given, and the
-     * relay that drives it beside it, on its far side from its nozzle; where the relay stands.
-     */
-    private BlockPos thruster(BlockState engine, int x, int y, int z, Direction pushes, EngineFlames flames) {
-        set(x, y, z, AirframePalette.with(engine, "facing", pushes.getSerializedName()));
-        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(flames, 1));
-        BlockPos relay = new BlockPos(x, y, z).relative(pushes);
-        cells.put(relay, SkylinersRegistry.THRUST_RELAY.get().defaultBlockState());
-        return relay;
-    }
-
-    /**
      * The side jets: a ring of four in the skin near the nose and another near the bottom, one at the front, the back
      * and either side of each, each pushing the rocket across toward the side opposite it, its exhaust leaving out of
      * the skin and its relay inside. They show no plume: firing in short bursts all the way up, they are heard puffing
@@ -901,86 +796,26 @@ public final class RocketLayout implements Layout {
         return new RocketPilot.Jets(offset.apply(Direction.NORTH), offset.apply(Direction.EAST), offset.apply(Direction.SOUTH), offset.apply(Direction.WEST));
     }
 
-    /** Positions in the layout as offsets from a block, turned with the rocket. */
-    private static List<BlockPos> offsets(BlockPos from, List<BlockPos> positions, Rotation rotation) {
-        return positions.stream().map(pos -> pos.subtract(from).rotate(rotation)).toList();
+    @Override
+    SurfaceCut.Surface surface() {
+        return surface;
     }
 
-    /** Counts the body's open air, once everything else stands. */
-    private void countAir() {
-        int[] count = {0};
-        forEachAir((x, y, z) -> count[0]++);
-        air = count[0];
-    }
-
-    /** A block position, handed over. */
-    @FunctionalInterface
-    private interface Cell {
-        void at(int x, int y, int z);
-    }
-
-    /** Every block of air inside the body: its own space, wherever nothing else stands. */
-    private void forEachAir(Cell cell) {
+    /** Her body's air: over her flat bottom, under her nose's tip, out to a block past her skin. */
+    @Override
+    Box airBox() {
         int out = (int) Math.ceil(radius) + 1;
-        for (int y = bottom + 1; y < height; y++) {
-            for (int x = -out; x <= out; x++) {
-                airRow(cell, x, y, out);
-            }
-        }
+        return new Box(-out, bottom + 1, -out, out, height - 1, out);
     }
 
-    private void airRow(Cell cell, int x, int y, int out) {
-        for (int z = -out; z <= out; z++) {
-            if (surface.depth(x, y + 0.5, z) < 0 && isOpen(x, y, z)) {
-                cell.at(x, y, z);
-            }
-        }
-    }
-
-    /**
-     * The body's air first, so it is cleared before anything goes in, then everything else bottom to top. Handed over
-     * as every airframe's blocks are, from its front at z 0 back (see {@link Layout}): moved back from its axis by its
-     * reach, so it stands just past where it is built from.
-     */
+    /** Moved back from her axis by her reach, so she stands just past where she is built from. */
     @Override
-    public void inOrder(BiConsumer<BlockPos, BlockState> cell) {
-        BlockState open = Blocks.AIR.defaultBlockState();
-        forEachAir((x, y, z) -> cell.accept(handed(new BlockPos(x, y, z)), open));
-        List<Map.Entry<BlockPos, BlockState>> sorted = new ArrayList<>(cells.entrySet());
-        sorted.sort((a, b) -> Integer.compare(a.getKey().getY(), b.getKey().getY()));
-        sorted.forEach(entry -> cell.accept(handed(entry.getKey()), entry.getValue()));
-    }
-
-    /** A position from the axis as it is handed over, from the front at z 0. */
-    private BlockPos handed(BlockPos fromAxis) {
-        return fromAxis.offset(0, 0, reach());
-    }
-
-    @Override
-    public int size() {
-        return air + cells.size();
-    }
-
-    @Override
-    public Map<BlockPos, Fitting> fittings() {
-        Map<BlockPos, Fitting> handed = new HashMap<>();
-        fittings.forEach((at, fitting) -> handed.put(handed(at), fitting));
-        return handed;
-    }
-
-    /** Too big for the Physics Assembler, it is assembled through Sable instead, and needs no glue. */
-    @Override
-    public boolean glued() {
-        return false;
+    int handedBack() {
+        return reach();
     }
 
     @Override
     public String message(String what) {
         return "message.skyliners.rocket_" + what;
-    }
-
-    /** Sets up the block entity at a layout position once it stands, as the fitting says. */
-    void fit(BlockPos at, Fitting fitting) {
-        fittings.put(at, fitting);
     }
 }
