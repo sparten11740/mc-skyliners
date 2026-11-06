@@ -885,6 +885,38 @@
       }
     ]
   },
+  "robot_chirp": {
+    "subtitle": "subtitles.skyliners.robot_chirp",
+    "sounds": [
+      {
+        "name": "skyliners:robot_chirp"
+      }
+    ]
+  },
+  "robot_trill": {
+    "subtitle": "subtitles.skyliners.robot_trill",
+    "sounds": [
+      {
+        "name": "skyliners:robot_trill"
+      }
+    ]
+  },
+  "robot_alarm": {
+    "subtitle": "subtitles.skyliners.robot_alarm",
+    "sounds": [
+      {
+        "name": "skyliners:robot_alarm"
+      }
+    ]
+  },
+  "robot_happy": {
+    "subtitle": "subtitles.skyliners.robot_happy",
+    "sounds": [
+      {
+        "name": "skyliners:robot_happy"
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

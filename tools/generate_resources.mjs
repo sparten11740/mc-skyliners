@@ -1530,6 +1530,11 @@ const FREIGHTER_SOUNDS = {
   spookie_happy: { subtitle: "Spookie purrs happily", heard: 24, takes: SPOOKIE_TAKES },
   spookie_alarm: { subtitle: "Spookie honks in alarm", heard: 24, takes: SPOOKIE_TAKES },
   spookie_roar: { subtitle: "Spookie bellows", heard: 48, takes: SPOOKIE_TAKES },
+  // Her robots' beeps, heard as far as the game's own sounds are.
+  robot_chirp: { subtitle: "Robot chirps" },
+  robot_trill: { subtitle: "Robot trills" },
+  robot_alarm: { subtitle: "Robot beeps in alarm" },
+  robot_happy: { subtitle: "Robot beeps happily" },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes }]) => {

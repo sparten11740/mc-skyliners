@@ -5003,6 +5003,55 @@ function spoken(t, from, to) {
   writeSound("spookie_roar", lowPassed(roar, 8000), 0.85);
 }
 
+// The freighter's robots (see the plan's "Robots aboard"), pure tones, so they draw on no random sequence: short,
+// bright electronic beeps of their own. Each beep is a blip of a sine and a soft square wave, struck in two
+// milliseconds and dying a little as it sounds, a touch of ring modulation at an uneven ratio giving it a metallic
+// edge, through a small speaker's band. The beeps step from note to note, never gliding: no whistles, swoops or
+// warbles. The deck bot's chirp as it passes someone: two blips stepping up a fourth. A robot's trill as it answers a
+// click: eight quick notes skipping up a pentatonic tune, and a high blip on top. Its alarm: three bursts of a hard,
+// buzzier tritone, two notes swapping fast. Its happy beep: a major arpeggio climbing in five blips and a double blip at
+// the top. Tune them here.
+const ROBOT = {
+  // The square wave's share of a blip, and the ring modulation's share and its ratio to the note, an uneven one.
+  square: 0.25,
+  ring: 0.2,
+  ringRatio: 2.41,
+  // How long a blip rings on once let go, in seconds.
+  release: 0.015,
+  // The small speaker's band, in hertz.
+  speaker: [400, 7000],
+  // Each beep as its blips: a MIDI note, when it starts and how long it sounds, in seconds; and how loud.
+  chirp: [[88, 0, 0.06], [93, 0.09, 0.09]],
+  trill: [[84, 0], [88, 1], [86, 2], [91, 3], [88, 4], [93, 5], [91, 6], [96, 7]].map(([note, k]) => [note, k * 0.057, 0.045]).concat([[100, 0.5, 0.07]]),
+  alarm: [0, 1, 2].flatMap((burst) => [0, 1, 2, 3].map((k) => [k % 2 === 0 ? 95 : 89, burst * 0.28 + k * 0.05, 0.05])),
+  happy: [79, 83, 86, 91, 95].map((note, k) => [note, k * 0.07, 0.055]).concat([[98, 0.37, 0.04], [98, 0.43, 0.06]]),
+  // The alarm's harder ring and square.
+  alarmRing: 0.4,
+  alarmSquare: 0.6,
+};
+
+/** A robot's beep, its blips as ROBOT gives them, the ring modulation's and the square's shares as given. */
+function robotBeep(blips, ring = ROBOT.ring, square = ROBOT.square) {
+  const seconds = Math.max(...blips.map(([, at, length]) => at + length)) + ROBOT.release + 0.02;
+  const beep = new Float64Array(Math.round(seconds * RATE));
+  for (const [note, at, length] of blips) {
+    const frequency = noteHertz(note);
+    const step = frequency / RATE;
+    for (let i = 0; i < Math.round((length + ROBOT.release) * RATE); i++) {
+      const t = i / RATE;
+      const phase = (step * i) % 1;
+      const envelope = Math.min(1, t / 0.002) * (t < length ? 1 - 0.3 * (t / length) : 0.7 * Math.exp(-(t - length) / (ROBOT.release / 4)));
+      const tone = Math.sin(2 * Math.PI * phase) + square * pulseAt(phase, step, 0.5);
+      beep[Math.round(at * RATE) + i] += envelope * tone * (1 - ring + ring * Math.sin(2 * Math.PI * ROBOT.ringRatio * frequency * t));
+    }
+  }
+  return lowPassed(highPassed(beep, ROBOT.speaker[0]), ROBOT.speaker[1]);
+}
+writeSound("robot_chirp", robotBeep(ROBOT.chirp), 0.6);
+writeSound("robot_trill", robotBeep(ROBOT.trill), 0.6);
+writeSound("robot_alarm", robotBeep(ROBOT.alarm, ROBOT.alarmRing, ROBOT.alarmSquare), 0.65);
+writeSound("robot_happy", robotBeep(ROBOT.happy), 0.6);
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a
