@@ -86,8 +86,8 @@ abstract class HullLayout implements Layout {
     }
 
     /**
-     * Whether a room sees a block of the cover: on a side, the block there in the hull and open or not filling its place
-     * (an LED strip, a light, a stool), and not the skin's own glass; on no side given, on any side.
+     * Whether a room sees a block of the cover: on a side, the block there in the hull and open or not filling its
+     * place (an LED strip, a light, a stool), and not the skin's own glass; on no side given, on any side.
      */
     boolean seenFromInside(BlockPos at, @Nullable Direction side) {
         if (side == null) {
@@ -143,8 +143,16 @@ abstract class HullLayout implements Layout {
      * relay that drives it beside it, on its far side from its nozzle; where the relay stands.
      */
     BlockPos thruster(BlockState engine, int x, int y, int z, Direction pushes, EngineFlames flames) {
+        return thruster(engine, x, y, z, pushes, flames, 1);
+    }
+
+    /**
+     * A thruster as {@link #thruster(BlockState, int, int, int, Direction, EngineFlames)} sets one, turned up to a
+     * share of the setting.
+     */
+    BlockPos thruster(BlockState engine, int x, int y, int z, Direction pushes, EngineFlames flames, double setting) {
         set(x, y, z, AirframePalette.with(engine, "facing", pushes.getSerializedName()));
-        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(flames, 1));
+        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(flames, setting));
         BlockPos relay = new BlockPos(x, y, z).relative(pushes);
         cells.put(relay, SkylinersRegistry.THRUST_RELAY.get().defaultBlockState());
         return relay;

@@ -4,16 +4,18 @@ import java.util.function.Function;
 
 /**
  * What an autopilot flies: the airliner, on its wings and jets, the zeppelin, on its hot air and propellers (see
- * {@link ZeppelinPilot}), or the rocket, standing on its engines (see {@link RocketPilot}). Each flies within speeds
- * of its own, in blocks a second: the airliner falls out of the sky below its slowest, while the zeppelin and the
- * rocket can stop and hover. Its speed dial shows green up to where it cruises
- * comfortably, amber faster and red near its fastest. What else it adds to its autopilot is its {@link CraftFlight}.
+ * {@link ZeppelinPilot}), the rocket, standing on its engines (see {@link RocketPilot}), or the freighter, held up and
+ * pushed along on her thrusters (see {@link FreighterPilot}). Each flies within speeds of its own, in blocks a second:
+ * the airliner falls out of the sky below its slowest, while the others can stop and hover. Its speed dial shows green
+ * up to where it cruises comfortably, amber faster and red near its fastest. What else it adds to its autopilot is its
+ * {@link CraftFlight}.
  */
 public enum Craft {
     AIRLINER(AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, 60, 100, AirlinerFlight.class,
         airtime -> new AirlinerFlight()),
     ZEPPELIN(0, 25, 20, 24, ZeppelinFlight.class, airtime -> new ZeppelinFlight()),
-    ROCKET(0, 30, 24, 28, RocketFlight.class, RocketFlight::new);
+    ROCKET(0, 30, 24, 28, RocketFlight.class, RocketFlight::new),
+    FREIGHTER(0, 40, 30, 36, FreighterFlight.class, airtime -> new FreighterFlight());
 
     public final int minSpeed;
     public final int maxSpeed;

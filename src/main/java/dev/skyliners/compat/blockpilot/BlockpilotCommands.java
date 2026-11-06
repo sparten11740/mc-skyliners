@@ -14,6 +14,8 @@ import dev.skyliners.airframe.ZeppelinOptions;
 import dev.skyliners.airframe.ZeppelinSize;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.FreighterFlight;
+import dev.skyliners.autopilot.FreighterPilot;
 import dev.skyliners.autopilot.RocketFlight;
 import dev.skyliners.autopilot.RocketPilot;
 import dev.skyliners.autopilot.SetAutopilot;
@@ -88,6 +90,15 @@ public final class BlockpilotCommands {
             .field("thrust", "the share of full thrust its engines are set to")
             .field("jets", "each side jet's signal, near the nose ahead, right, back and left, then near the bottom")
             .field("mass", "the rocket's mass in Sable's units"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("freighter", (context, args) -> freighter())
+            .onServer()
+            .group("skyliners")
+            .help("what the nearest freighter's autopilot is doing: phase, height, climb, speed ahead and across, heading, tilt, mass, lift, trims, thrusters")
+            .field("phase", "the autopilot's phase")
+            .field("lift", "the share of full lift her lift thrusters are set to")
+            .field("clusters", "each lift cluster's total signal: ahead right, ahead left, astern right, astern left")
+            .field("jets", "each jet's signal: nose right, nose left, tail right, tail left")
+            .field("mass", "the freighter's mass in Sable's units"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -184,6 +195,42 @@ public final class BlockpilotCommands {
             .tag("thrust", round(report.thrust()))
             .tag("trim", round(report.trim()))
             .tag("countdown", report.counted())
+            .tag("jets", report.jets()));
+    }
+
+    private static Result freighter() throws CommandException {
+        ServerPlayer player = player();
+        AutopilotBlockEntity autopilot = nearest(player);
+        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
+        FreighterPilot.Report report = freighter == null ? null : freighter.report();
+        if (report == null) {
+            return Result.error("no_freighter");
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        Fields fields = new Fields().tag("phase", autopilot.phase().name().toLowerCase(Locale.ROOT));
+        if (state != null) {
+            fields.tag("altitude", round(state.position().y)).tag("heading", AutopilotBlockEntity.bearing(state.heading()));
+        }
+        return Result.ok(fields
+            .tag("climb", round(report.climb()))
+            .tag("ahead", round(report.ahead()))
+            .tag("across", round(report.across()))
+            .tag("climb_wanted", round(report.climbWanted()))
+            .tag("ahead_wanted", round(report.aheadWanted()))
+            .tag("across_wanted", round(report.acrossWanted()))
+            .tag("heading_wanted", AutopilotBlockEntity.bearing(report.headingWanted()))
+            .tag("tilt_front", round(report.tiltFront()))
+            .tag("tilt_right", round(report.tiltRight()))
+            .tag("target_altitude", Math.round(autopilot.targetAltitude()))
+            .tag("mass", Math.round(SableFlight.mass(autopilot)))
+            .tag("lift", round(report.lift()))
+            .tag("trim", round(report.trim()))
+            .tag("pitch_trim", round(report.pitchTrim()))
+            .tag("roll_trim", round(report.rollTrim()))
+            .tag("drag", round(report.drag()))
+            .tag("clusters", report.clusters())
+            .tag("mains", report.mains())
+            .tag("retros", report.retros())
             .tag("jets", report.jets()));
     }
 

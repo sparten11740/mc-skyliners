@@ -483,9 +483,9 @@ public final class SkylinersConfig {
             .define("finishes", true);
         ROCKET_CEILING = builder
             .comment(
-                "How high a rocket's autopilot can be set to climb, in world blocks: far over the top of the world, where there is",
-                "only sky and it turns to space as she climbs (black by y 1,200). The airliner and the zeppelin stay under the top",
-                "of the world."
+                "How high a rocket's or a freighter's autopilot can be set to climb, in world blocks: far over the top of the world,",
+                "where there is only sky and it turns to space as she climbs (black by y 1,200). The airliner and the zeppelin stay",
+                "under the top of the world."
             )
             .defineInRange("ceiling", 1400, 100, 4000);
         LED_STRIPS = builder

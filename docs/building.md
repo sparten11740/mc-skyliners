@@ -125,7 +125,8 @@ engine and hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`
 turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to
 show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, for
 the autopilot's block entity, which knows each kind of craft only through its `CraftFlight`, made by its `Craft`
-(`AirlinerFlight`, whose flying stays the block entity's own, `ZeppelinFlight` and `RocketFlight`): what the craft is
+(`AirlinerFlight`, whose flying stays the block entity's own, `ZeppelinFlight`, and `RocketFlight` and `FreighterFlight`,
+both `StandingFlight`s, craft that stand on feet of their own, come straight down onto them and can climb to space): what the craft is
 wired to, how it is flown each tick, how it lands, switches off, saves and is shown to the clients, so a new kind of
 craft is a new class and a constant there, the block entity left as it is; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled, until `ParkedShips` lets it go, parked with nobody near, noting where it stands to load the land under it when someone comes back, as Sable would not.
@@ -256,10 +257,18 @@ sequence (`RocketRoom.scatter`): `GardenBedBlock`s, farmland in a frame that joi
 hung on light cables; `SprinklerBlock`s, whose `SprinklerBlockEntity` (found by the valve among those loaded) sprays and
 waters what grows round it; and the `IrrigationValveBlock` that sets them off.
 The freighter is drawn in `FreighterShape`'s metres, her hull the union of her parts' solids, and cut into blocks by
-`FreighterLayout`, always at scale 2, round one deck: her skin cut by `SurfaceCut` and glazed round her cockpit's cone
+`FreighterLayout`, always at scale 2.4, round one deck: her skin cut by `SurfaceCut` and glazed round her cockpit's cone
 and her domes, her outer bulkhead, her core, ring corridor and room walls of `PADDED_BULKHEAD`, the passages out past
-the bulkhead to her cockpit and along her prongs walled off from the void beside them, and her landing legs. She and
-the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out the air inside their
+the bulkhead to her cockpit and along her prongs walled off from the void beside them, her landing legs, her
+thrusters and her cockpit's control head, seats and autopilot screen, the head wired to her thrusters' relays and her
+legs' feet as a `FreighterPilot.Wiring`. `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her
+lift from the mass Sable weighs and a trim it learns, split over her four clusters by her tilt and by where Sable puts
+her centre of mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the
+heading she wants, round a circle or onto a pin with the zeppelin's `Steering`, flying by how her middle moves rather
+than her control head out in her cockpit's pod, and her height over the ground from the lowest of her legs' feet
+(`Legs`, which the rocket's fins share). Her jets fire inside her, so she never runs them at a third of full or more,
+where Create Propulsion sets fire to whatever stands in a thruster's exhaust. She and the rocket are both
+`HullLayout`s, which keeps their blocks, fittings and glazing and works out the air inside their
 hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

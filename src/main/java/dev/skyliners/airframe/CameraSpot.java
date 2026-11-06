@@ -68,6 +68,8 @@ public interface CameraSpot {
             case AIRLINER -> List.of(OutsideCamera.values());
             case ZEPPELIN -> List.of(ZeppelinCamera.values());
             case ROCKET -> List.of(RocketCamera.values());
+            // Her cameras come with her cockpit's camera display.
+            case FREIGHTER -> List.of();
         };
     }
 
@@ -80,6 +82,7 @@ public interface CameraSpot {
             case AIRLINER -> OutsideCamera.SIDE_VIEW;
             case ZEPPELIN -> ZeppelinCamera.SIDE_VIEW;
             case ROCKET -> RocketCamera.SIDE_VIEW;
+            case FREIGHTER -> List.of();
         };
     }
 
@@ -89,8 +92,14 @@ public interface CameraSpot {
             .orElse(fallback);
     }
 
-    /** How many blocks a metre an airframe of a kind is built at, a zeppelin's hull at its size. */
+    /**
+     * How many blocks a metre an airframe of a kind is built at, a zeppelin's hull at its size, a freighter at hers.
+     */
     static double scale(Craft craft, ZeppelinSize size) {
-        return craft == Craft.ZEPPELIN ? size.scale() : SkylinersConfig.SCALE.get();
+        return switch (craft) {
+            case ZEPPELIN -> size.scale();
+            case FREIGHTER -> FreighterLayout.SCALE;
+            case AIRLINER, ROCKET -> SkylinersConfig.SCALE.get();
+        };
     }
 }

@@ -198,6 +198,19 @@ public final class SableFlight {
     }
 
     /**
+     * Where the centre of mass of the assembled airframe a block entity is part of lies, in the world, as Sable weighs
+     * its blocks; null when it is not part of one, or Sable has not weighed it yet.
+     */
+    @Nullable
+    public static Vec3 centreOfMass(BlockEntity blockEntity) {
+        if (!SABLE || !(blockEntity.getLevel() instanceof ServerLevel level)) {
+            return null;
+        }
+        Vec3 inPlot = Access.centreOfMass(blockEntity);
+        return inPlot == null ? null : toWorld(level, inPlot);
+    }
+
+    /**
      * A body locked to an assembled airframe (see {@link #lock}): whether it is still held, and letting it go. Sable
      * keeps no lock over a save, so whoever made it makes it again when the level is loaded.
      */
@@ -657,6 +670,16 @@ public final class SableFlight {
 
         static double mass(BlockEntity blockEntity) {
             return Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe ? airframe.getMassTracker().getMass() : Double.NaN;
+        }
+
+        /** Its airframe's centre of mass in its plot, as Sable keeps it; null for none. */
+        @Nullable
+        static Vec3 centreOfMass(BlockEntity blockEntity) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe)) {
+                return null;
+            }
+            Vector3dc centre = airframe.getMassTracker().getCenterOfMass();
+            return centre == null ? null : new Vec3(centre.x(), centre.y(), centre.z());
         }
 
         @Nullable

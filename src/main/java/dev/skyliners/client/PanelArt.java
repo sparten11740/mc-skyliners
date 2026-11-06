@@ -122,13 +122,14 @@ final class PanelArt {
      * one's nose, straight on or round a half circle to the left or right, tightly or gently; and its height over the
      * ground, on the pilots' HUD. The zeppelin rises from the ground and settles onto it anywhere, needing no runway,
      * and has no roll-out after landing; so does the rocket, standing upright, which is drawn from above as a ring with
-     * its four fins.
+     * its four fins, and the freighter, a saucer with her prongs.
      */
     record Pictures(Icon emblem, Icon fromAbove, Icon fromTheSide, Icon takeOff, Icon climb, Icon cruise, Icon descend, Icon land, Icon rollOut,
                     Icon landAtPin, Icon straightOn, Icon tightLeft, Icon gentleLeft, Icon gentleRight, Icon tightRight, Icon groundHeight) {
         static final Pictures AIRLINER = drawn("autopilot/", "airliner", "airliner", "roll_out");
         static final Pictures ZEPPELIN = drawn("autopilot/zeppelin_", "zeppelin", "zeppelin_side", "land");
         static final Pictures ROCKET = drawn("autopilot/rocket_", "rocket", "rocket_side", "land");
+        static final Pictures FREIGHTER = drawn("autopilot/freighter_", "freighter", "freighter_side", "land");
 
         /**
          * The pictures named with a prefix (from tools/generate_textures.mjs): but for itself and its emblem, which
@@ -148,6 +149,7 @@ final class PanelArt {
                 case AIRLINER -> AIRLINER;
                 case ZEPPELIN -> ZEPPELIN;
                 case ROCKET -> ROCKET;
+                case FREIGHTER -> FREIGHTER;
             };
         }
 

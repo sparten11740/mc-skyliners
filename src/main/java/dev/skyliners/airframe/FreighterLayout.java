@@ -1,12 +1,25 @@
 package dev.skyliners.airframe;
 
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.FreighterFlight;
+import dev.skyliners.autopilot.FreighterPilot;
+import dev.skyliners.block.AutopilotBlock;
+import dev.skyliners.block.AutopilotScreenBlock;
+import dev.skyliners.block.AutopilotScreenBlockEntity;
+import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.IntPredicate;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
  * The freighter cut into blocks before she is put anywhere (see {@link Layout}), standing on the ground, her prongs to
@@ -25,10 +38,11 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public final class FreighterLayout extends HullLayout {
     /**
-     * The scale she is always built at, whatever the server's, in blocks a metre: smaller, her hull leaves a player too
-     * little headroom over her deck (two rows at scale 1, three at 1.5); larger, her weight outgrows her thrusters.
+     * The scale she is always built at, whatever the server's, in blocks a metre: a fifth bigger than the airliner's
+     * default, as Jan asked, roomy enough for her rooms and her Spookie; smaller, her hull leaves a player too little
+     * headroom over her deck (two rows at scale 1, three at 1.5), and much larger, her weight outgrows her thrusters.
      */
-    static final double SCALE = 2;
+    static final double SCALE = 2.4;
     /** How high over the ground under her legs' feet her deck is walked on, in metres. */
     private static final double DECK = 3.0;
     /** How far out from her axis her outer bulkhead stands, in metres: past it her hull is too low for her rooms. */
@@ -49,6 +63,37 @@ public final class FreighterLayout extends HullLayout {
         List.of(FreighterShape.Part.TUBE, FreighterShape.Part.POD, FreighterShape.Part.PRONG);
     /** How thick the padded walls closing a passage off from the void are, in blocks. */
     private static final double PASSAGE_WALL = 1;
+    /**
+     * Her lift clusters: how far ahead or astern and to either side of her axis each stands, in metres, on her
+     * diagonals a little past half way out, in the order her pilot takes them ({@link FreighterPilot#CLUSTER_SIDES}),
+     * each a plus of five thrusters round its middle, in blocks.
+     */
+    private static final double LIFT_OUT = 4.9;
+    private static final int[][] PLUS = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    /** Her main engines along her stern's rim, at these bearings in degrees, so many rows over her deck. */
+    private static final int[] MAIN_BEARINGS = {165, 171, 177, 183, 189, 195};
+    private static final int MAIN_ROWS_UP = 2;
+    /** Her retros in her prongs' tips, so far out either side of her middle line, in metres. */
+    private static final double RETRO_OUT = 3.4;
+    /**
+     * Her jets, hidden inside her, where they show no plume: her nose's pair in her prongs near their tips, so far out
+     * either side of her middle line and so far ahead of her axis, in metres, and her tail's pair in the void at her
+     * stern, so far out either side and so far astern. Each pushes toward her middle line, its exhaust outward; her
+     * pilot never runs them hard enough to burn anyone standing in it (see {@link FreighterPilot#JET_SETTING}).
+     */
+    private static final double NOSE_JET_OUT = 4.5;
+    private static final double NOSE_JET_AHEAD = 19;
+    private static final double TAIL_JET_OUT = 0.8;
+    private static final double TAIL_JET_ASTERN = 10.8;
+    /**
+     * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
+     * pilots' seats a block behind it, the pilots so far either side of the head, the jump seats so far behind them,
+     * and the autopilot screen so far ahead of the head.
+     */
+    private static final int SEATS_BEHIND = 1;
+    private static final int PILOTS_OUT = 2;
+    private static final int JUMP_BEHIND = 2;
+    private static final int SCREEN_AHEAD = 2;
 
     private final double scale;
     /** Her deck's floor row. */
@@ -60,6 +105,15 @@ public final class FreighterLayout extends HullLayout {
     private final int top;
     /** Her outer bulkhead's radius in blocks. */
     private final double bulkhead;
+    /** Her thrusters' relays as they are laid, her pilot's to drive, and where her legs' feet stand. */
+    private final List<List<BlockPos>> clusters = new ArrayList<>();
+    private final List<BlockPos> mains = new ArrayList<>();
+    private final List<BlockPos> retros = new ArrayList<>();
+    private final BlockPos[] jets = new BlockPos[4];
+    private final List<BlockPos> feet = new ArrayList<>();
+    /** Where the autopilot's control head stands in her cockpit; null before it is laid. */
+    @Nullable
+    private BlockPos head;
 
     /** Her hull's surface in blocks, as her skin is cut by it: her axis runs through the middle of block 0 each way. */
     private final SurfaceCut.Surface surface = new SurfaceCut.Surface() {
@@ -100,6 +154,8 @@ public final class FreighterLayout extends HullLayout {
         layout.corridor();
         layout.roomWalls();
         layout.legs();
+        layout.engines();
+        layout.cockpit();
         layout.countAir();
         return layout;
     }
@@ -326,7 +382,179 @@ public final class FreighterLayout extends HullLayout {
             for (int i = 0; i < 9; i++) {
                 set(x + i % 3 - 1, 0, z + i / 3 - 1, foot);
             }
+            feet.add(new BlockPos(x, 0, z));
         }
+    }
+
+    /**
+     * Her thrusters, each with its relay for her autopilot to drive: four clusters of lift thrusters set into her belly
+     * pushing up, their plumes under her; six mains in her stern's rim pushing her ahead, their plumes behind her; two
+     * retros in her prongs' tips; and her four jets, hidden inside, which show no plume.
+     */
+    private void engines() {
+        Optional<BlockState> engine = AirframePalette.balloon().engine();
+        if (engine.isEmpty()) {
+            return;
+        }
+        int out = (int) Math.round(LIFT_OUT * scale);
+        for (int[] sides : FreighterPilot.CLUSTER_SIDES) {
+            List<BlockPos> relays = new ArrayList<>();
+            for (int[] at : PLUS) {
+                BlockPos relay = liftThruster(engine.get(), sides[1] * out + at[0], -sides[0] * out + at[1]);
+                if (relay != null) {
+                    relays.add(relay);
+                }
+            }
+            clusters.add(relays);
+        }
+        for (int bearing : MAIN_BEARINGS) {
+            BlockPos relay = mainThruster(engine.get(), bearing);
+            if (relay != null) {
+                mains.add(relay);
+            }
+        }
+        for (int side : new int[]{-1, 1}) {
+            BlockPos relay = retro(engine.get(), (int) Math.round(side * RETRO_OUT * scale));
+            if (relay != null) {
+                retros.add(relay);
+            }
+        }
+        int noseX = (int) Math.round(NOSE_JET_OUT * scale);
+        int noseZ = (int) Math.round(-NOSE_JET_AHEAD * scale);
+        int tailX = (int) Math.round(TAIL_JET_OUT * scale);
+        int tailZ = (int) Math.round(TAIL_JET_ASTERN * scale);
+        jets[0] = jet(engine.get(), -noseX, noseZ, Direction.EAST);
+        jets[1] = jet(engine.get(), noseX, noseZ, Direction.WEST);
+        jets[2] = jet(engine.get(), -tailX, tailZ, Direction.EAST);
+        jets[3] = jet(engine.get(), tailX, tailZ, Direction.WEST);
+    }
+
+    /**
+     * A lift thruster in the lowest block of her belly's skin at a column, pushing up, its relay over it, in the
+     * crawlspace or in place of a second block of skin where her belly is two thick there; null if none fits.
+     */
+    @Nullable
+    private BlockPos liftThruster(BlockState engine, int x, int z) {
+        for (int y = 0; y + 1 < deck; y++) {
+            boolean over = isOpen(x, y + 1, z) || skin(stateAt(x, y + 1, z));
+            if (!isOpen(x, y, z) && skin(stateAt(x, y, z)) && over) {
+                return thruster(engine, x, y, z, Direction.UP, EngineFlames.PROPULSION_PLUME, FreighterPilot.LIFT_SETTING);
+            }
+        }
+        return null;
+    }
+
+    /** A main engine in the outermost block of her rim at a bearing, pushing her ahead, its plume behind her. */
+    @Nullable
+    private BlockPos mainThruster(BlockState engine, int bearing) {
+        double[] way = way(bearing);
+        int y = deck + MAIN_ROWS_UP;
+        for (int k = back + 1; k > bulkhead; k--) {
+            int x = (int) Math.round(way[0] * k);
+            int z = (int) Math.round(way[1] * k);
+            if (!isOpen(x, y, z) && skin(stateAt(x, y, z)) && isOpen(x, y, z - 1)) {
+                return thruster(engine, x, y, z, Direction.NORTH, EngineFlames.PROPULSION_PLUME, FreighterPilot.MAIN_SETTING);
+            }
+        }
+        return null;
+    }
+
+    /** A retro in the frontmost block of a prong's tip, so far across, pushing her back, its exhaust out ahead. */
+    @Nullable
+    private BlockPos retro(BlockState engine, int x) {
+        int y = deck + 1;
+        for (int z = front; z < 0; z++) {
+            if (!isOpen(x, y, z) && skin(stateAt(x, y, z)) && isOpen(x, y, z + 1)) {
+                return thruster(engine, x, y, z, Direction.SOUTH, EngineFlames.NONE, FreighterPilot.RETRO_SETTING);
+            }
+        }
+        return null;
+    }
+
+    /** A jet inside her at a column over her deck, pushing the way given, no plume; null where it does not fit. */
+    @Nullable
+    private BlockPos jet(BlockState engine, int x, int z, Direction pushes) {
+        int y = deck + 1;
+        BlockPos relay = new BlockPos(x, y, z).relative(pushes);
+        if (!isOpen(x, y, z) || !isOpen(relay.getX(), y, relay.getZ()) || surface.depth(x, y + 0.5, z) >= 0) {
+            return null;
+        }
+        return thruster(engine, x, y, z, pushes, EngineFlames.NONE, FreighterPilot.JET_SETTING);
+    }
+
+    /**
+     * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its cone,
+     * the pilot's seat on its left and the co-pilot's on its right, a sidestick at each outboard hand, the jump seats
+     * behind them, and the autopilot screen ahead, facing them, linked to the head; the head wired once it stands.
+     */
+    private void cockpit() {
+        int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
+        int y = deck + 1;
+        int z = (int) Math.round(FreighterShape.CONE_FROM * scale) + SEATS_BEHIND;
+        BlockPos at = new BlockPos(x, y, z);
+        head = at;
+        set(x, y, z, SkylinersRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
+        fit(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AutopilotBlockEntity autopilot) {
+                wire(autopilot, at, rotation);
+            }
+        });
+        seat(x - PILOTS_OUT, y, z, PilotSeatBlock.Stick.LEFT);
+        seat(x + PILOTS_OUT, y, z, PilotSeatBlock.Stick.RIGHT);
+        seat(x - PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
+        seat(x + PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
+        autopilotScreen(new BlockPos(x - AutopilotScreenBlock.COLUMNS / 2, y, z - SCREEN_AHEAD));
+    }
+
+    /** A pilot seat facing her bow, both its halves, where both are open. */
+    private void seat(int x, int y, int z, PilotSeatBlock.Stick stick) {
+        if (!isOpen(x, y, z) || !isOpen(x, y + 1, z)) {
+            return;
+        }
+        BlockState seat = SkylinersRegistry.PILOT_SEAT.get().defaultBlockState().setValue(PilotSeatBlock.FACING, Direction.NORTH)
+            .setValue(PilotSeatBlock.STICK, stick);
+        set(x, y, z, seat);
+        set(x, y + 1, z, seat.setValue(PilotSeatBlock.HALF, DoubleBlockHalf.UPPER));
+    }
+
+    /**
+     * The autopilot screen facing the pilots, its first part where given, linked to the control head once it stands.
+     */
+    private void autopilotScreen(BlockPos origin) {
+        BlockState screen = SkylinersRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, Direction.SOUTH);
+        for (int part = 0; part < AutopilotScreenBlock.COLUMNS * AutopilotScreenBlock.ROWS; part++) {
+            // Facing south, the viewer's right is east.
+            BlockPos at = origin.offset(part % AutopilotScreenBlock.COLUMNS, part / AutopilotScreenBlock.COLUMNS, 0);
+            cells.put(at, screen.setValue(AutopilotScreenBlock.PART, part));
+        }
+        BlockPos linked = head.subtract(origin);
+        fit(origin, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AutopilotScreenBlockEntity shown) {
+                shown.configure(linked.rotate(rotation));
+            }
+        });
+    }
+
+    /**
+     * Wires the control head once it stands: her thrusters' relays and her legs' feet as offsets from it, turned as she
+     * was placed, where her disc's middle is from it, how far its block stands above her legs' feet, and the box round
+     * her blocks.
+     */
+    private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
+        List<List<BlockPos>> turned = clusters.stream().map(cluster -> offsets(at, cluster, rotation)).toList();
+        FreighterPilot.Jets jetRelays = new FreighterPilot.Jets(offset(at, jets[0], rotation), offset(at, jets[1], rotation),
+            offset(at, jets[2], rotation), offset(at, jets[3], rotation));
+        FreighterPilot.Wiring wiring = new FreighterPilot.Wiring(turned, offsets(at, mains, rotation), offsets(at, retros, rotation),
+            jetRelays, offsets(at, feet, rotation), -at.getX(), at.getZ(), Math.round(LIFT_OUT * scale));
+        autopilot.wire(FreighterFlight.class, at.getY()).configure(wiring);
+        List<BlockPos> frame = offsets(at, List.of(new BlockPos(-side, 0, front), new BlockPos(side, top, back)), rotation);
+        autopilot.frame(frame.get(0), frame.get(1));
+    }
+
+    /** A position as an offset from a block, turned with her; null for none. */
+    @Nullable
+    private static BlockPos offset(BlockPos from, @Nullable BlockPos to, Rotation rotation) {
+        return to == null ? null : to.subtract(from).rotate(rotation);
     }
 
     /** Whether a circle round her axis, so many blocks across, passes through a column: some corners in, some out. */

@@ -581,7 +581,7 @@ they belong to, not at the end.
 | 27 | Extracting shared code | Just in time, each extraction its own commit right before her first use, rather than all up front | lead |
 | 28 | Her liveries | Tramp (built in), Racer and Navy of her own, with the rocket's silver, polar and midnight | airframe panel |
 | 29 | Touch panels | The ramp, the hold's compartments, the galley, the club's music, the corridor's lights; the rover's panel extracted into `PictureButtonPanel` | mechanisms panel |
-| 30 | Experimental behaviour | Only the jump (teleport) is experimental; it defaults to off | lead (AGENTS.md) |
+| 30 | Experimental behaviour | Only the jump (teleport) is experimental; it defaults to off. The freighter herself is a ship as the others are, with no switch of her own, as the rocket has none; each of her pieces (rooms, ramp, turrets, robots, the Spookie) gets its own switch, on by default, as the rocket's do | lead (AGENTS.md), restated for the pair programmer |
 | 31 | Craft checks | Every place that asks which craft it serves becomes an exhaustive switch before the freighter is added | plan's review |
 | 32 | Take-off holds | The zeppelin's `TakeoffHold` generalised for the rocket's stairs and her ramp, not a third mechanism | plan's review |
 | 33 | The belly gun's arc | 10° to 85° down; her own blocks stop bolts in sparks | plan's review |
@@ -689,4 +689,38 @@ of noise on a 190 Hz body), a feathered kick on every beat (`thunk` at 50 Hz, 0.
 - **S0 (2026-11-06):** the furnished rocket weighs 3,190 to 3,214 in Sable's units at scale 2, far under the panel's
   guess, and settles near hover at 0.14 to 0.16 of full thrust: 25 thrusters × 10,000 × 0.14 ≈ 3,200 × 11, so a
   creative thruster does push 10,000 and gravity is 11. Her thrusters will be sized from her own measured mass.
-- **M1:** `HullLayout` and `ShipPiece` lifted out of the rocket's layout (8dead2d9); her fingerprint unchanged.
+- **M1:** `HullLayout` and `ShipPiece` lifted out of the rocket's layout (8dead2d9); her fingerprint unchanged. The
+  bare hull (024b583a): 1,382 blocks of floor a player reaches, prongs, tube and pod among them, 1,084 with the
+  Spookie's three rows; nothing reaches the void past her bulkhead but her passages.
+- **Jan's asks that evening:** dimmable windows, a smooth canopy, loud and impressive engines, beeping robots (6eaeebe6);
+  the autopilots made open/closed (each craft a `CraftFlight` made by its `Craft`, so a new craft never edits the
+  autopilot); a second model as standing pair programmer reviewing every change set; "make her 20% bigger" (scale 2.4);
+  and "do not finish until I return in the morning; play test, polish, add features".
+- **First hovers (M2, before the refactor):** she lifts off her legs, climbs and holds her height. Weighed bare at 1,393.
+  With her centre of mass fed forward from Sable (it sits about three blocks ahead of her lift clusters' middle and a
+  block to starboard, her pod and prongs) she holds level within ±0.8° and drifts under 0.2 b/s; without it she leant
+  10° nose down and drifted 4.5 b/s. Only 12 of her 20 lift thrusters were laid at first (where her belly's skin is two
+  blocks thick); mended.
+
+- **She flies (M2):** 20% bigger, as Jan asked (scale 2.4: 60 blocks across, 84 long, weighing 2,067 bare). She lifts
+  off her legs after three seconds of spooling up, rises clear, climbs and hovers within half a block of her height
+  and ±0.6° of level; given a pin 230 blocks off she flew there, braked, came straight down and switched herself off
+  on her legs about 6 blocks from it. A 180° turn takes 22 s. She reached only 12 of the 20 b/s set over that short a
+  hop: her mains are tuned for 1.5 b/s² and air drag halves it (M3).
+- **Two faults found flying her:** Sable reads a ship's velocity at its control head, which on her sits some thirty
+  blocks from her middle, out in the cockpit's pod; turning, it swings sideways at 4 b/s, and she fought her own turns
+  with her jets. She now flies by how her middle moves. And Create Propulsion sets fire to whatever stands in a
+  thruster's exhaust once it runs at a third of full or more: her hidden jets fire inside her, so they are never given
+  more than 4 of 15, turned up so they push as hard as before; she holds her heading to about 3° instead of 1°.
+- **Pair review of M2:** the rocket's and the freighter's shared landing, switching off, space and ceiling moved into
+  `StandingFlight`; the pilot's hot path no longer allocates per thruster; her top-down icon redrawn by hand so it
+  reads at 16 pixels, her side icons' domes shaded.
+
+## Night log, 6 to 7 November 2026
+
+What was done while Jan slept, in order, and what is left for him to look at. Versions handed out are named here.
+
+### For Jan to look at
+
+- Nobody has listened to the freighter's 35 new sounds (synthesised; levels, spectra and loop seams checked only).
+- The Spookie keeps Jan's name; the rights panel's alternative, "Woodwose", is a lang-only change if wanted.

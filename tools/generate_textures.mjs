@@ -2092,6 +2092,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const SMALL_AIRLINER = ["..##..", ".####.", "######", "..##..", ".####."];
   const SMALL_ZEPPELIN = ["..##..", ".####.", ".####.", "#.##.#", "..##.."];
   const SMALL_ROCKET = ["..##..", ".####.", ".####.", ".####.", "#.##.#"];
+  // The freighter from above, prongs up: her two prongs, her disc and her cockpit pod out on her right.
+  const SMALL_FREIGHTER = [".#.#..", ".#.##.", "####..", "####..", ".##..."];
   const path = (x, y, points) => points.slice(1).some((point, i) => onSegment(x, y, points[i], point, 1.7));
   const TURN_FROM = 3.5;
   const TURN_MIDDLE = 6.5;
@@ -2121,6 +2123,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   steering("", SMALL_AIRLINER);
   steering("zeppelin_", SMALL_ZEPPELIN);
   steering("rocket_", SMALL_ROCKET);
+  steering("freighter_", SMALL_FREIGHTER);
   // A runway along the bottom, with its centre line.
   const runway = (x, y, from, to) => (y === 14 && x >= from && x <= to ? (x % 3 === 0 ? INK : RUNWAY) : null);
   icon(autopilotOutput, "take_off", (x, y) => (airliner(x, y, 8.5, 6.5, 45, 0.85) ? GREEN : runway(x, y, 0, 8)));
@@ -2302,6 +2305,72 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return flame(x, y, 5.5, 11, 1) ? FLAME : ground(x, y, 1, 15);
   });
   icon(autopilotOutput, "rocket_ground_height", (x, y) => (rocketSide(x, y, 7.5, 5, 0, 0.6) ? INK : heightOverGround(x, y)));
+
+  // The freighter from the side, her prongs to the left, her middle at (cx, cy): a flat lens of a saucer, a low dome on
+  // top, her cockpit's pod bulging ahead under its glass, her legs under her when they are down.
+  // Which part of her a pixel is, "dome" or "hull", or null: the dome is shaded apart so she reads as one ship.
+  const freighterSide = (x, y, cx, cy, size = 1, legs = false) => {
+    const dx = (x - cx) / size;
+    const dy = (cy - y) / size;
+    const lens = Math.abs(dx) <= 6.5 && Math.abs(dy) <= 1.9 * (1 - (dx * dx) / 46) + 0.5;
+    const dome = Math.hypot(dx - 0.5, dy - 1.7) <= 1.1;
+    const pod = Math.hypot(dx + 5.2, dy - 0.4) <= 1.3;
+    const leg = legs && dy < -1 && dy >= -3.5 && (Math.abs(dx + 3.5) <= 0.5 || Math.abs(dx - 3.5) <= 0.5);
+    if (dome) return "dome";
+    return lens || pod || leg ? "hull" : null;
+  };
+  // A saucer in a colour, her dome a shade darker.
+  const shaded = (part, colour, dark) => (part === "dome" ? dark : part ? colour : null);
+  const AMBER_DARK = [0xb0, 0x7c, 0x18];
+  // Her thrusters' blue glow under her as she lifts off or lands.
+  const GLOW = [0x5a, 0xc8, 0xff];
+  const glow = (x, y, cx, top, length) => y >= top && y <= top + length && Math.abs(x - cx) <= 4.5 && (x + y) % 2 === 0;
+  // The freighter from above, nose up, drawn by hand so she reads at sixteen pixels: her disc with its dome, her two
+  // prongs either side of the loading gap, and her cockpit's pod out past her right bow, its glass lit.
+  const FREIGHTER_FROM_ABOVE = [
+    "................",
+    "....##..##......",
+    "....##..##...cc.",
+    "...###..###.cccc",
+    "...###..###.####",
+    "...###..###..##.",
+    "..####..####.#..",
+    "..###########...",
+    "..##########....",
+    ".############...",
+    ".#####pp#####...",
+    ".#####pp#####...",
+    "..##########....",
+    "..##########....",
+    "...########.....",
+    ".....####.......",
+  ];
+  icon(autopilotOutput, "freighter", (x, y) => ({ "#": INK, p: PALE, c: CYAN })[FREIGHTER_FROM_ABOVE[y][x]] ?? null);
+  icon(autopilotOutput, "freighter_side", (x, y) => (freighterSide(x, y, 7.5, 8) ? (y <= 7 ? PALE : INK) : null));
+  // Take off: the green freighter rising straight up on her glow off the ground. Land: the amber one settling on hers.
+  icon(autopilotOutput, "freighter_take_off", (x, y) => {
+    const part = freighterSide(x, y, 7.5, 5.5, 0.85, true);
+    if (part) return shaded(part, GREEN, GREEN_DARK);
+    return glow(x, y, 7.5, 10, 2) ? GLOW : ground(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "freighter_land", (x, y) => {
+    const part = freighterSide(x, y, 7.5, 9, 0.85, true);
+    if (part) return shaded(part, AMBER, AMBER_DARK);
+    return glow(x, y, 7.5, 13, 0) ? GLOW : ground(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "freighter_engage", (x, y) => {
+    const part = freighterSide(x, y, 9, 7.5, 0.85);
+    if (part) return shaded(part, GREEN, GREEN_DARK);
+    return x <= 1 && (y === 4 || y === 7 || y === 8 || y === 11) ? INK : null;
+  });
+  icon(autopilotOutput, "freighter_climb", (x, y) => shaded(freighterSide(x, y, 9.5, 7.5, 0.8), GREEN, GREEN_DARK) ?? (arrow(x, y, 2.5, 8, 15, true) ? INK : null));
+  icon(autopilotOutput, "freighter_descend", (x, y) => shaded(freighterSide(x, y, 9.5, 7.5, 0.8), GREEN, GREEN_DARK) ?? (arrow(x, y, 2.5, 0, 7, false) ? INK : null));
+  icon(autopilotOutput, "freighter_land_at_pin", (x, y) => {
+    const pin = smallPin(x, y);
+    if (pin) return pin;
+    return shaded(freighterSide(x, y, 6.5, 9, 0.6, true), AMBER, AMBER_DARK) ?? ground(x, y, 1, 15);
+  });
+  icon(autopilotOutput, "freighter_ground_height", (x, y) => (freighterSide(x, y, 7.5, 4, 0.6, true) ? INK : heightOverGround(x, y)));
 
   // Air traffic control talking (see AtcHeadset): a pilot's headset, its band over the top, a white ear cup either side
   // and the microphone on its boom round to the mouth, with the radio's green lamp lit in the corner.

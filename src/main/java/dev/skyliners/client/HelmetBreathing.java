@@ -82,10 +82,10 @@ public final class HelmetBreathing {
         }
     }
 
-    /** Whether the player is aboard a rocket at the edge of space or over it. */
+    /** Whether the player is aboard a rocket or a freighter at the edge of space or over it. */
     private static boolean inSpace(LocalPlayer player) {
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(player.level())) {
-            if (autopilot.craft() == Craft.ROCKET && SableClient.isAboard(player, autopilot)) {
+            if ((autopilot.craft() == Craft.ROCKET || autopilot.craft() == Craft.FREIGHTER) && SableClient.isAboard(player, autopilot)) {
                 return EdgeOfSpace.reached(SableClient.toWorld(player.level(), Vec3.atCenterOf(autopilot.getBlockPos())).y);
             }
         }
