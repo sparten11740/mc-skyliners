@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.Rotation;
  * {@link RocketControls}). Her stories' floors and whether they were furnished go with her, for the clients to paint
  * and play her rooms by.
  */
-public final class RocketFlight extends CraftFlight {
+public final class RocketFlight extends StandingFlight {
     /**
      * The pitch her countdown notes start at (1 the note as it is): they rise from it each second, the last before
      * lift-off one whole higher.
@@ -49,10 +49,6 @@ public final class RocketFlight extends CraftFlight {
     private static final RocketControls UNTOUCHED = new RocketControls();
 
     private final RocketPilot pilot = new RocketPilot();
-    /** Her welcoming everyone aboard to space as she climbs past its edge. */
-    private final EdgeOfSpace space = new EdgeOfSpace();
-    /** Her low gravity as she reaches space, until her artificial gravity is announced. */
-    private final SpaceGravity gravity = new SpaceGravity();
     /** Her shockwave as her engines light on the ground, racing out over it. */
     private final RocketLaunchBlast launchBlast = new RocketLaunchBlast();
     /** How far into her countdown it last sounded it, in ticks, so each second is heard once. */
@@ -162,7 +158,7 @@ public final class RocketFlight extends CraftFlight {
         AutopilotBlockEntity.Phase phase = autopilot.phase;
         boolean abortable = phase != AutopilotBlockEntity.Phase.OFF && RocketControls.abortable(phase, pilot.radio());
         boolean on = phase != AutopilotBlockEntity.Phase.OFF;
-        return pilot.controls().panel(level.getGameTime(), phase, pilot.counted(), gravity.light(), abortable, on);
+        return pilot.controls().panel(level.getGameTime(), phase, pilot.counted(), light(), abortable, on);
     }
 
     /**
@@ -192,7 +188,7 @@ public final class RocketFlight extends CraftFlight {
         BlockPos origin = autopilot.getBlockPos();
         SableFlight.State state = SableFlight.read(autopilot, autopilot.nose());
         boolean taken = switch (control) {
-            case BOOST -> pilot.controls().boost(server, origin, player, phase, pilot.counted(), gravity.light());
+            case BOOST -> pilot.controls().boost(server, origin, player, phase, pilot.counted(), light());
             case STABILITY -> pilot.controls().stability(server, origin, player, phase, pilot.radio(), RocketPilot.across(state));
             case MODE -> pilot.controls().turn(server, origin, player, phase);
             case ABORT -> abort(server, autopilot, player, state);
@@ -392,9 +388,7 @@ public final class RocketFlight extends CraftFlight {
     void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         BlockPos origin = autopilot.getBlockPos();
         int wheelsBelow = autopilot.wheelsBelow;
-        double radio = keptAloft(level, autopilot, flight);
-        space.watch(level, autopilot, flight);
-        gravity.tick(level, autopilot, flight);
+        double radio = aloft(level, autopilot, flight);
         RocketPlumes.tick(level, flight, radio, wheelsBelow, pilot.report().thrust());
         RocketGroundFire.tick(level, flight, radio, wheelsBelow, pilot.report().thrust());
         RocketScorch.tick(level, flight, radio, wheelsBelow, pilot.report().thrust());
@@ -458,41 +452,21 @@ public final class RocketFlight extends CraftFlight {
 
     /**
      * Told to land, or switched off in the air: she falls back where she is now, catching herself on a landing burn and
-     * settling there on her fins (see {@link RocketPilot}). Coming down already, falling back or in her landing burn,
-     * she only gives up where she was going for where she is, her phase and the cabin's landing announcement left as
-     * they were: set back to falling in her burn, she would fall faster again and launch control would call the burn
-     * twice.
+     * settling there on her fins (see {@link RocketPilot}).
      */
     @Override
-    Component comeDown(AutopilotBlockEntity autopilot, SableFlight.State state) {
-        if (autopilot.phase != AutopilotBlockEntity.Phase.DESCENT && autopilot.phase != AutopilotBlockEntity.Phase.LAND) {
-            autopilot.announcements.announce(Announcement.LANDING, autopilot);
-            autopilot.phase = AutopilotBlockEntity.Phase.DESCENT;
-        }
+    void landHere(AutopilotBlockEntity autopilot, SableFlight.State state) {
         pilot.landHere(state);
-        autopilot.lateral = AutopilotBlockEntity.Lateral.HEADING;
-        autopilot.landAtPin = false;
-        autopilot.changed();
-        return Component.translatable("message.skyliners.autopilot.coming_down_rocket");
     }
 
-    /**
-     * Her engines are all that hold her up, and she has no controls to be handed to: switched off in the air, coming
-     * down already or not, she comes down where she is first and switches off on her fins. The sky's lowest note says
-     * so to those who cannot read the message: down first.
-     */
     @Override
-    Component offInTheAir(AutopilotBlockEntity autopilot, SableFlight.State state) {
-        comeDown(autopilot, state);
-        autopilot.getLevel().playSound(null, autopilot.getBlockPos(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS,
-            AutopilotBlockEntity.NOTE_VOLUME, AutopilotBlockEntity.NOTE_LOW);
-        return Component.translatable("message.skyliners.autopilot.off_once_down_rocket");
+    String comingDownKey() {
+        return "message.skyliners.autopilot.coming_down_rocket";
     }
 
-    /** Falling back to land, as well as in her landing burn. */
     @Override
-    boolean landing(AutopilotBlockEntity.Phase phase) {
-        return phase == AutopilotBlockEntity.Phase.DESCENT;
+    String offOnceDownKey() {
+        return "message.skyliners.autopilot.off_once_down_rocket";
     }
 
     /** Her landing called off: she holds her height where she climbs back to, until told to land or given a pin. */
@@ -524,21 +498,8 @@ public final class RocketFlight extends CraftFlight {
         return SkylinersConfig.AUTOPILOT_CRUISE_SPEED.get();
     }
 
-    /**
-     * Her own, far over the top of the world, where there is only sky to climb through ({@link
-     * SkylinersConfig#ROCKET_CEILING}).
-     */
     @Override
-    double ceiling(Level level, AutopilotBlockEntity autopilot, double highest) {
-        return SkylinersConfig.ROCKET_CEILING.get();
-    }
-
-    /**
-     * No higher than the lowest of her fins' feet: standing on them, with the ground lower under her control head, she
-     * would seem to be in the air, and could never finish landing or be switched off.
-     */
-    @Override
-    double radio(Level level, AutopilotBlockEntity autopilot, double radio) {
-        return Math.min(radio, RocketPilot.feetOverGround(level, autopilot.frame(), autopilot.wheelsBelow));
+    double feetOverGround(Level level, AutopilotBlockEntity autopilot) {
+        return RocketPilot.feetOverGround(level, autopilot.frame(), autopilot.wheelsBelow);
     }
 }

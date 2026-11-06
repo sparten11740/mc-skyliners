@@ -151,12 +151,6 @@ public final class ZeppelinPilot {
      */
     private static final int UP_SHIP_TICKS = 60 * SharedConstants.TICKS_PER_SECOND;
     private static final double UP_SHIP_RISEN = 1;
-    /**
-     * Circling: how far it turns in toward the middle at most, in degrees, and how many degrees in it turns per
-     * circle's radius it is off the circle, steering back onto it.
-     */
-    private static final double MOST_TURN_IN = 45;
-    private static final double TURN_IN = 90;
     /** How near the height set, in blocks, counts as holding it. */
     private static final double LEVEL_OFF = 8;
     /** How far it has risen off the ground, in blocks, before the engines start on the way up. */
@@ -535,8 +529,9 @@ public final class ZeppelinPilot {
     private static double heading(Orders orders, SableFlight.State state, Vec3 middle, double distance) {
         return switch (orders.lateral()) {
             case HEADING -> orders.heading();
-            case DESTINATION -> distance < OVER_PIN / 2 ? state.heading() : bearingTo(middle, orders.pinX(), orders.pinZ());
-            case ORBIT_LEFT, ORBIT_RIGHT -> round(orders, middle);
+            case DESTINATION -> distance < OVER_PIN / 2 ? state.heading() : Steering.bearingTo(middle, orders.pinX(), orders.pinZ());
+            case ORBIT_LEFT, ORBIT_RIGHT -> Steering.round(orders.lateral() == AutopilotBlockEntity.Lateral.ORBIT_RIGHT, orders.pinX(), orders.pinZ(),
+                orders.radius(), middle);
         };
     }
 
@@ -544,23 +539,6 @@ public final class ZeppelinPilot {
     private Vec3 middle(SableFlight.State state) {
         Vec3 nose = new Vec3(state.nose().x, 0, state.nose().z).normalize();
         return state.position().subtract(nose.scale(middleAft));
-    }
-
-    /**
-     * The heading round a circle: along it, the way it goes round, turned in toward the middle as far as it is
-     * outside the circle and out as far as it is inside, so it steers onto it.
-     */
-    private static double round(Orders orders, Vec3 middle) {
-        double side = orders.lateral() == AutopilotBlockEntity.Lateral.ORBIT_RIGHT ? 1 : -1;
-        double toMiddle = bearingTo(middle, orders.pinX(), orders.pinZ());
-        double off = Math.hypot(orders.pinX() - middle.x, orders.pinZ() - middle.z) - orders.radius();
-        double correction = Mth.clamp(off / orders.radius() * TURN_IN, -MOST_TURN_IN, MOST_TURN_IN);
-        return Mth.wrapDegrees(toMiddle - side * (90 - correction));
-    }
-
-    /** The heading from a point to another, as Minecraft yaw (0 south, 90 west). */
-    private static double bearingTo(Vec3 from, double x, double z) {
-        return Mth.wrapDegrees(Math.toDegrees(Math.atan2(-(x - from.x), z - from.z)));
     }
 
     /**

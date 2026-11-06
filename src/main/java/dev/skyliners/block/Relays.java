@@ -36,14 +36,22 @@ public final class Relays {
      * client redraw the part of the airliner it is in, so relays nothing on a client reads are best left unsent.
      */
     public static void drive(Level level, BlockPos origin, List<BlockPos> offsets, int power, boolean synced) {
-        int signal = Mth.clamp(power, 0, 15);
-        int flags = synced ? Block.UPDATE_ALL : Block.UPDATE_NEIGHBORS;
         for (BlockPos offset : offsets) {
-            BlockPos pos = origin.offset(offset);
-            BlockState state = level.getBlockState(pos);
-            if (isRelay(state) && state.getValue(ThrustRelayBlock.POWER) != signal) {
-                level.setBlock(pos, state.setValue(ThrustRelayBlock.POWER, signal), flags);
-            }
+            drive(level, origin, offset, power, synced);
+        }
+    }
+
+    /**
+     * Sets the one relay at the offset from origin to the signal, as
+     * {@link #drive(Level, BlockPos, List, int, boolean)} sets several: for a pilot setting each of its thrusters apart
+     * every tick.
+     */
+    public static void drive(Level level, BlockPos origin, BlockPos offset, int power, boolean synced) {
+        int signal = Mth.clamp(power, 0, 15);
+        BlockPos pos = origin.offset(offset);
+        BlockState state = level.getBlockState(pos);
+        if (isRelay(state) && state.getValue(ThrustRelayBlock.POWER) != signal) {
+            level.setBlock(pos, state.setValue(ThrustRelayBlock.POWER, signal), synced ? Block.UPDATE_ALL : Block.UPDATE_NEIGHBORS);
         }
     }
 

@@ -22,7 +22,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 
@@ -126,8 +125,6 @@ public final class RocketPilot {
      * and forth several times a second, and each change of a thruster is sent to every client.
      */
     private static final double SIGNAL_HOLD = 0.75;
-    /** How much one creative thruster pushes at the configured setting 99 and full signal, in Sable's units. */
-    private static final double THRUSTER_PUSH = 10_000;
     /** How loud each side jet puffs as its stability snaps back on, every one of them at once, as a share of full. */
     private static final float SNAP_PUFF_VOLUME = 0.5F;
     /**
@@ -271,16 +268,10 @@ public final class RocketPilot {
         double lowest = Double.MAX_VALUE;
         for (int across : new int[]{-1, 1}) {
             for (int along : new int[]{-1, 1}) {
-                lowest = Math.min(lowest, footOverGround(level, new Vec3(x + across * out, frame.minY(), z + along * out)));
+                lowest = Math.min(lowest, Legs.overGround(level, new Vec3(x + across * out, frame.minY(), z + along * out)));
             }
         }
         return lowest;
-    }
-
-    /** How high the underside of a foot, given in its plot, is above the ground under it, in blocks. */
-    private static double footOverGround(Level level, Vec3 foot) {
-        Vec3 at = SableFlight.toWorld(level, foot);
-        return at.y - level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
     }
 
     /** Holds her countdown before it begins for as long as something says so (see {@link #HOLDS}). */
@@ -498,7 +489,7 @@ public final class RocketPilot {
 
     /** How hard all its engines push together at full signal, in Sable's units. */
     private double mostThrust() {
-        return engines * THRUSTER_PUSH * SkylinersConfig.THRUST_SETTING.get() / 99.0;
+        return engines * Thrusters.CREATIVE_PUSH * SkylinersConfig.THRUST_SETTING.get() / 99.0;
     }
 
     /**
@@ -575,7 +566,7 @@ public final class RocketPilot {
         for (List<BlockPos> bell : bells) {
             for (BlockPos relay : bell) {
                 // The signals left over once each has its even share go one more to the first engines.
-                Relays.drive(level, origin, List.of(relay), each + (engine < total - each * engines ? 1 : 0), false);
+                Relays.drive(level, origin, relay, each + (engine < total - each * engines ? 1 : 0), false);
                 engine++;
             }
         }
@@ -663,7 +654,7 @@ public final class RocketPilot {
 
     private static void drive(ServerLevel level, BlockPos origin, @Nullable BlockPos relay, int signal) {
         if (relay != null) {
-            Relays.drive(level, origin, List.of(relay), signal, false);
+            Relays.drive(level, origin, relay, signal, false);
         }
     }
 

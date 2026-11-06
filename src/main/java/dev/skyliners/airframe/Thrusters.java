@@ -21,6 +21,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
  * propellers, show none. Other thrusters have no such settings and keep the values unread.
  */
 public final class Thrusters {
+    /**
+     * How hard one creative thruster pushes at setting 99 and full signal, in Sable's units, its push linear in both.
+     */
+    public static final double CREATIVE_PUSH = 10_000;
+
     private Thrusters() {
     }
 
