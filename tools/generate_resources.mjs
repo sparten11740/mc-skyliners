@@ -1524,7 +1524,7 @@ const FREIGHTER_SOUNDS = {
   // Her jump drive, heard all through her: spooling up, sputtering as it fails, thumped back to life and jumping.
   jump_drive_spool: { subtitle: "Jump drive spools up", heard: 48 },
   jump_drive_sputter: { subtitle: "Jump drive sputters", heard: 48 },
-  jump_drive_thump: { subtitle: "Jump drive thumped back to life", heard: 48 },
+  jump_drive_thump: { subtitle: "Jump drive kicks back in", heard: 48 },
   jump_drive_jump: { subtitle: "Jump drive jumps", heard: 64 },
   // The Spookie's voice, each in two takes a little higher and lower, its roar carrying through her.
   spookie_greet: { subtitle: "Spookie hoots hello", heard: 24, takes: SPOOKIE_TAKES },
