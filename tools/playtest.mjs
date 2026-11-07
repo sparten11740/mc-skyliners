@@ -1716,9 +1716,11 @@ function checkFreighterConsole() {
   for (const [kind, count, rows] of slices) {
     expect(rows.length === count, `freighter: her console has its ${kind.replace("console_", "")}`, `${rows.length} of ${count}`);
   }
-  const all = slices.flatMap(([, , rows]) => rows.map((row) => row.at_abs));
-  const curved = all.filter((at) => send(`server data get block ${at.join(" ")} Facet.Inner`)[0].ok !== false);
-  expect(curved.length === all.length, "freighter: each module is a slice of her half-round console", `${curved.length} of ${all.length}`);
+  const all = slices.flatMap(([kind, , rows]) => rows.map((row) => ({ kind, at: row.at_abs })));
+  const flat = all.filter(({ at }) => !sliceOfRing(at));
+  const named = flat.map(({ kind, at }) => `${kind} at ${at.join(",")}`).join("; ");
+  expect(flat.length === 0, "freighter: each module is a slice of her half-round console",
+    `${all.length - flat.length} of ${all.length}${named ? `, not: ${named}` : ""}`);
   const [boost] = must("find skyliners:console_boost 128 1").rows;
   if (boost) {
     const pressed = now();
@@ -1734,6 +1736,13 @@ function checkFreighterConsole() {
     const after = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
     expect(after !== before && played("*lever.click*", flipped).length > 0, "freighter: a toggle on her console clicks over", `${before} to ${after}`);
   }
+}
+
+// Whether the console module at a block has its slice of the ring, asked twice a second apart: a server still busy
+// with a ship just built may let a question go unanswered.
+function sliceOfRing(at) {
+  const ask = `server data get block ${at.join(" ")} Facet.Inner`;
+  return send(ask)[0].ok !== false || send(`wait 20t; ${ask}`).at(-1).ok !== false;
 }
 
 // Uses a console module on the ground as her pilot would, from her seat.
