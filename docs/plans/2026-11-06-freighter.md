@@ -813,6 +813,12 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   ticks (freighter-tardigrade). And at Jan's ask, her sisters' paintings round her deck: the airliner in her entry
   hall over the ramp's well, the zeppelin in her club past the bar (her lounge's wall has only four blocks between
   the tank and her bulkhead), the rocket over the crew bunks (fleet-on-freighter).
+- Before handing out 1.2.0-alpha.10 (alpha.9 with the galley, the booth's leg room, the small tardigrade and the
+  paintings): the quick play-test suite (82 checks) held but for airstairs-leave-no-steps' airliner rolling away at 0
+  blocks a second once, late in the suite; run alone straight after, it rolled at 40.5 and every check held. Nothing in
+  these changes touches the airliner, so it is a watch item, as freighter-turret's one miss was. The freighter's slow
+  checks were not rerun: nothing in her flight, ramp or turret changed. The jar is
+  build/libs/skyliners-1.2.0-alpha.10+1.21.1-neoforge.jar, a copy kept apart; still not on the desktop, unmounted.
 
 ### For Jan to look at
 
