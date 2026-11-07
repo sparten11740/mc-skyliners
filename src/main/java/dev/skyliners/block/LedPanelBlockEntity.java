@@ -12,6 +12,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
@@ -42,6 +43,15 @@ public class LedPanelBlockEntity extends BlockEntity {
     private BlockPos from;
     @Nullable
     private BlockPos to;
+    /**
+     * For a room shaped as a wedge round a ship's axis, as the freighter's are, whose box overlaps its neighbours': the
+     * axis as an offset from the panel, and the bearings the room lies between, in degrees clockwise from north; null
+     * for a story that is its whole box, as the rocket's are.
+     */
+    @Nullable
+    private BlockPos wedgeAxis;
+    private float wedgeFrom;
+    private float wedgeTo;
     private LedSetting setting = LedSetting.PLAIN;
     /** A change waiting to be made, and the game time it is made at; none while nothing waits. */
     @Nullable
@@ -70,6 +80,42 @@ public class LedPanelBlockEntity extends BlockEntity {
         this.to = to;
         this.setting = setting;
         setChanged();
+    }
+
+    /**
+     * Tells it the room it sets, as the freighter is built: the corners of the box round its strips, from the panel,
+     * the axis the room lies round, from the panel, and the bearings it lies between, in her frame (all turned as she
+     * was placed), and what its strips were laid set to.
+     */
+    public void room(BlockPos from, BlockPos to, BlockPos axis, float bearingFrom, float bearingTo, LedSetting setting) {
+        story(from, to, setting);
+        wedgeAxis = axis;
+        wedgeFrom = bearingFrom;
+        wedgeTo = bearingTo;
+    }
+
+    /**
+     * A room shaped as a wedge round a ship's axis: the strips of it are those whose bearing from the axis, clockwise
+     * from north, lies from one bearing round clockwise up to the other; measured between the blocks' own corners, as
+     * between their middles alike.
+     */
+    public record Wedge(BlockPos axis, float from, float to) {
+        /** Whether a block lies in the wedge. */
+        public boolean contains(BlockPos pos) {
+            double bearing = Math.toDegrees(Math.atan2(pos.getX() - axis.getX(), axis.getZ() - pos.getZ()));
+            return Mth.positiveModulo(bearing - from, 360.0) < Mth.positiveModulo((double) to - from, 360.0);
+        }
+
+        /** A bearing turned by quarter turns clockwise, as a block placed turned is. */
+        public static float turned(float bearing, Rotation turn) {
+            return bearing + 90 * turn.ordinal();
+        }
+    }
+
+    /** The wedge the room's strips lie in, in the level as the panel stands; null for a story that is its whole box. */
+    @Nullable
+    public Wedge wedge() {
+        return wedgeAxis == null ? null : new Wedge(worldPosition.offset(wedgeAxis), wedgeFrom, wedgeTo);
     }
 
     /** What the story's strips are set to now. */
@@ -152,9 +198,10 @@ public class LedPanelBlockEntity extends BlockEntity {
         if (box == null || level == null) {
             return;
         }
+        Wedge wedge = wedge();
         for (int y : new int[]{box.minY(), box.maxY()}) {
             for (BlockPos at : BlockPos.betweenClosed(box.minX(), y, box.minZ(), box.maxX(), y, box.maxZ())) {
-                lightStrip(at.immutable(), brightness);
+                lightStrip(at.immutable(), brightness, wedge);
             }
         }
     }
@@ -173,8 +220,8 @@ public class LedPanelBlockEntity extends BlockEntity {
             box.maxX() + WINDOW_REACH, box.maxY(), box.maxZ() + WINDOW_REACH), windows);
     }
 
-    private void lightStrip(BlockPos at, int brightness) {
-        if (!level.isLoaded(at)) {
+    private void lightStrip(BlockPos at, int brightness, @Nullable Wedge wedge) {
+        if (!level.isLoaded(at) || wedge != null && !wedge.contains(at)) {
             return;
         }
         BlockState state = level.getBlockState(at);
@@ -209,6 +256,11 @@ public class LedPanelBlockEntity extends BlockEntity {
             tag.put("To", NbtUtils.writeBlockPos(to));
             Turning.save(tag, getBlockState());
         }
+        if (wedgeAxis != null) {
+            tag.put("WedgeAxis", NbtUtils.writeBlockPos(wedgeAxis));
+            tag.putFloat("WedgeFrom", wedgeFrom);
+            tag.putFloat("WedgeTo", wedgeTo);
+        }
         tag.put("Setting", setting.save());
         if (waiting != null) {
             tag.put("Waiting", waiting.save());
@@ -225,6 +277,9 @@ public class LedPanelBlockEntity extends BlockEntity {
         Rotation turn = Turning.since(tag, getBlockState());
         from = Turning.turn(NbtUtils.readBlockPos(tag, "From").orElse(null), turn);
         to = Turning.turn(NbtUtils.readBlockPos(tag, "To").orElse(null), turn);
+        wedgeAxis = Turning.turn(NbtUtils.readBlockPos(tag, "WedgeAxis").orElse(null), turn);
+        wedgeFrom = wedgeAxis == null ? 0 : Wedge.turned(tag.getFloat("WedgeFrom"), turn);
+        wedgeTo = wedgeAxis == null ? 0 : Wedge.turned(tag.getFloat("WedgeTo"), turn);
         setting = LedSetting.load(tag.getCompound("Setting"), LedSetting.PLAIN);
         waiting = tag.contains("Waiting", Tag.TAG_COMPOUND) ? LedSetting.load(tag.getCompound("Waiting"), setting) : null;
         waitingUntil = tag.getLong("WaitingUntil");

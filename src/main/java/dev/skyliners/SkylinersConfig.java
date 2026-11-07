@@ -79,6 +79,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROOMS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TARDIGRADE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SPOOKIE;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_LED_STRIPS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -699,6 +700,12 @@ public final class SkylinersConfig {
                 "its rounds of her ring corridor and rooms, greets whoever comes near, purrs when touched or fed, and is never hurt."
             )
             .define("spookie", true);
+        FREIGHTER_LED_STRIPS = builder
+            .comment(
+                "Whether the freighter is built with the rocket's LED strips round each of her rooms, along the foot of its walls,",
+                "each room in a colour and a way of lighting of its own, and an LED panel by each room's doorway to set them."
+            )
+            .define("ledStrips", true);
         builder.pop();
 
         SPEC = builder.build();

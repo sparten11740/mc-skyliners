@@ -2691,10 +2691,16 @@ on you. Nothing pushes it, and it never wanders off her deck. The Spookie's Hamm
 tab; set down by hand it keeps a Spookie of its own, standing beside it. The server config's `freighter.spookie` builds
 her without them.
 
-Her deck is lit by wall washers over head height, small dark lamps each throwing a fan of light up the wall: round
-her ring corridor between its doorways, along the walls between her rooms and on each room's far wall, warm white, pink
-in her club and a cool night blue in her crew quarters, the room through the doorway at her port quarter; the
-bandstand's footlights light its band. The server config's `freighter.lights` builds her without them.
+Each of her rooms has the rocket's LED strips along the foot of its walls, in a colour and a way of its own, so you know
+at once where you are: her cargo hold sunshine yellow, chasing as a warehouse's guide lights do, her entry hall snow
+white, her lounge a warm tangerine, engineering sky blue chasing round the room as power does, her crew quarters a dim
+grape breathing like a night light, and her club pink, pulsing to the beat. An LED panel on the wall just inside each
+room's doorway sets its strips, as the rocket's panels do: touch a colour, a brightness or a way of lighting. The server
+config's `freighter.ledStrips` builds her without them. Her deck is lit by wall washers over head height, small dark
+lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
+her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room
+through the doorway at her port quarter; the bandstand's footlights light its band. The server config's
+`freighter.lights` builds her without them.
 
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning

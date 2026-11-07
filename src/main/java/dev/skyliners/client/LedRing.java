@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -58,24 +59,25 @@ final class LedRing {
         LedRing ring = RINGS.get(panel);
         long now = level.getGameTime();
         if (ring == null || !ring.box.equals(box) || now - ring.found >= RESCAN_TICKS || now < ring.found) {
-            ring = find(panel.getBlockPos(), level, box, now);
+            ring = find(panel.getBlockPos(), level, box, panel.wedge(), now);
             RINGS.put(panel, ring);
         }
         return ring;
     }
 
     /**
-     * The strips along the box's bottom row and its top one, each placed round the ring by its angle round the box's
-     * middle (the rocket's axis), at the ring's length: so many whole bands and gaps round it that they meet up.
+     * The strips along the box's bottom row and its top one, in its wedge for a room shaped as one, each placed round
+     * the ring by its angle round the ship's axis (the box's middle for the rocket's stories, the wedge's axis for the
+     * freighter's rooms), at the ring's length: so many whole bands and gaps round it that they meet up.
      */
-    private static LedRing find(BlockPos panel, Level level, BoundingBox box, long now) {
+    private static LedRing find(BlockPos panel, Level level, BoundingBox box, @Nullable LedPanelBlockEntity.Wedge wedge, long now) {
         List<BlockPos> found = new ArrayList<>();
-        row(level, box, box.minY(), found);
+        row(level, box, box.minY(), wedge, found);
         if (box.maxY() != box.minY()) {
-            row(level, box, box.maxY(), found);
+            row(level, box, box.maxY(), wedge, found);
         }
-        double middleX = (box.minX() + box.maxX() + 1) / 2.0;
-        double middleZ = (box.minZ() + box.maxZ() + 1) / 2.0;
+        double middleX = wedge != null ? wedge.axis().getX() + 0.5 : (box.minX() + box.maxX() + 1) / 2.0;
+        double middleZ = wedge != null ? wedge.axis().getZ() + 0.5 : (box.minZ() + box.maxZ() + 1) / 2.0;
         double radius = found.stream().mapToDouble(at -> Math.hypot(at.getX() + 0.5 - middleX, at.getZ() + 0.5 - middleZ)).average().orElse(1);
         int period = 2 * LedLights.CHASE_BAND;
         double length = Math.max(1, Math.round(2 * Math.PI * radius / period)) * period;
@@ -87,10 +89,11 @@ final class LedRing {
         return new LedRing(box, now, List.copyOf(strips));
     }
 
-    /** The strips along one row of the box, added to the list. */
-    private static void row(Level level, BoundingBox box, int y, List<BlockPos> found) {
+    /** The strips along one row of the box, in its wedge if it has one, added to the list. */
+    private static void row(Level level, BoundingBox box, int y, @Nullable LedPanelBlockEntity.Wedge wedge, List<BlockPos> found) {
         for (BlockPos at : BlockPos.betweenClosed(box.minX(), y, box.minZ(), box.maxX(), y, box.maxZ())) {
-            if (level.getBlockState(at).getBlock() instanceof LedStripBlock) {
+            boolean ours = wedge == null || wedge.contains(at);
+            if (ours && level.getBlockState(at).getBlock() instanceof LedStripBlock) {
                 found.add(at.immutable());
             }
         }

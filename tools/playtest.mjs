@@ -238,6 +238,9 @@ const SPOOKIE_ANSWERS = 60;
 const SPOOKIE_HEALTH = 60;
 const SPOOKIE_WATCHED = 900;
 const SPOOKIE_WALKS = 3;
+// Her LED strips: how many rooms she has, each with its panel, and how many strips she has at least.
+const FREIGHTER_ROOMS = 6;
+const FREIGHTER_STRIPS = 300;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1253,6 +1256,19 @@ function checkFreighterSpookie() {
     `${walked.toFixed(1)} blocks, from y ${from[1]} to ${to[1]}`);
 }
 
+// A freighter's LED strips: each of her rooms has its ring of strips and its panel by the doorway, each set to a colour
+// of its own, so no two rooms look alike.
+function checkFreighterLeds() {
+  ship("freighter");
+  const panels = must(`find skyliners:led_panel 128 ${FREIGHTER_ROOMS + 1}`).rows.map((row) => row.at_abs);
+  const strips = must("find skyliners:led_strip 128 1000").rows.length;
+  expect(panels.length === FREIGHTER_ROOMS && strips >= FREIGHTER_STRIPS, "freighter: each of her rooms has its LED strips and their panel",
+    `${panels.length} panels, ${strips} strips`);
+  const colourOf = (at) => must(`server data get block ${at.join(" ")} Setting.Colour`).rows[0]?.line.split(" ").at(-1);
+  const colours = new Set(panels.map(colourOf));
+  expect(colours.size === panels.length, "freighter: each room's strips are a colour of their own", [...colours].join(", "));
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1629,6 +1645,7 @@ const CHECKS = {
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
+  "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour of its own" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

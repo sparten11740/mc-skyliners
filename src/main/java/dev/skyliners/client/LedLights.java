@@ -34,8 +34,14 @@ import net.neoforged.neoforge.common.NeoForge;
  * mode changes a strip at most a few times a second, never flashing faster than three times a second.
  */
 public final class LedLights {
-    /** A story's strips as last seen: its panel, the box round them and what they are set to. */
-    private record Lit(BlockPos panel, BoundingBox box, LedSetting setting) {
+    /**
+     * A story's strips as last seen: its panel, the box round them, the wedge they lie in for a room shaped as one
+     * (null for a story that is its whole box), and what they are set to.
+     */
+    private record Lit(BlockPos panel, BoundingBox box, @Nullable LedPanelBlockEntity.Wedge wedge, LedSetting setting) {
+        boolean covers(BlockPos pos) {
+            return box.isInside(pos) && (wedge == null || wedge.contains(pos));
+        }
     }
 
     /** How bright a strip's face is meshed at each brightness, as a share of its colour full on. */
@@ -91,7 +97,7 @@ public final class LedLights {
     /** The setting of the story a block lies in, as this client last saw it. */
     private static LedSetting settingAt(BlockPos pos) {
         for (Lit story : lit) {
-            if (story.box().isInside(pos)) {
+            if (story.covers(pos)) {
                 return story.setting();
             }
         }
@@ -110,7 +116,7 @@ public final class LedLights {
         for (LedPanelBlockEntity panel : LedPanelBlockEntity.loaded(level)) {
             BoundingBox box = panel.box();
             if (box != null) {
-                now.add(new Lit(panel.getBlockPos().immutable(), box, panel.setting()));
+                now.add(new Lit(panel.getBlockPos().immutable(), box, panel.wedge(), panel.setting()));
             }
         }
         lit = List.copyOf(now);
