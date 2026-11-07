@@ -234,10 +234,11 @@ const BOLT_LATER_TICKS = 15;
 const BOLT_SHOWN_TICKS = 8;
 const BOLT_NEAR_EYE = 1.5;
 // The laser crossbow aboard a flying freighter: how fast she flies along, in blocks a second, what share of that she
-// must have come up to, and how far down the player looks to fire at her floor, in degrees.
+// must have come up to, and how far up the player looks to fire, in degrees, clear of her controls, which a click
+// would work instead of firing.
 const CROSSBOW_FLIGHT_SPEED = 20;
 const CROSSBOW_FLIGHT_UP_TO = 0.8;
-const CROSSBOW_FLIGHT_AIM_DOWN = 60;
+const CROSSBOW_FLIGHT_AIM_UP = 80;
 // A freighter's lights: how many wall washers she has at least, and how bright her club is before its stage at least,
 // as a block's light.
 const FREIGHTER_LIGHTS = 24;
@@ -1238,14 +1239,14 @@ function checkLaserCrossbow() {
 // Fires the laser crossbow in hand, charged, by a script ending in its use, and looks at its bolt as the player sees
 // it: drawn leaving the crossbow's muzzle in front of them, not where the server had them, and still shown a moment
 // later, not gone in a blink.
-function seesItsBolt(what, fire) {
+function seesItsBolt(what, fire, aimed = "") {
   const before = must("skyliners:bolts").received ?? 0;
   const bolt = must(`${fire}; wait ${BOLT_LOOKED_FOR_TICKS}t; skyliners:bolts`);
   const [right, up, ahead] = (bolt.from_camera ?? "0,0,-99").split(",").map(Number);
   const fromEye = Math.hypot(right, up, ahead);
   expect(bolt.received > before && bolt.from_muzzle === true && ahead > 0 && fromEye <= BOLT_NEAR_EYE,
     `${what}, its bolt is drawn leaving the crossbow's muzzle in front of the player`,
-    `${bolt.received - before} sent, from the muzzle ${bolt.from_muzzle}, from the eye ${right}, ${up}, ${ahead}`);
+    `${bolt.received - before} sent, from the muzzle ${bolt.from_muzzle}, from the eye ${right}, ${up}, ${ahead}${aimed ? `, ${aimed}` : ""}`);
   const later = must(`wait ${BOLT_LATER_TICKS}t; skyliners:bolts`);
   expect(later.shown >= BOLT_SHOWN_TICKS, `${what}, its bolt shows a while, not for a blink`, `shown ${later.shown} ticks`);
 }
@@ -1280,8 +1281,9 @@ function checkLaserCrossbowInFlight() {
   const going = waitForReport(freighterReport, (report) => report.ahead >= CROSSBOW_FLIGHT_SPEED * CROSSBOW_FLIGHT_UP_TO, FREIGHTER_UP_TICKS);
   expect(going, "freighter: she flies along", `at ${freighterReport()?.ahead} blocks a second`);
   must(`sable:tp ${at.join(",")}; wait 20t; server item replace entity @p weapon.mainhand with skyliners:laser_crossbow`);
-  must(`turn 0 ${CROSSBOW_FLIGHT_AIM_DOWN}; use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t`);
-  seesItsBolt("laser crossbow: fired aboard a freighter flying along", "use");
+  const { aim } = must(`turn 0 ${-CROSSBOW_FLIGHT_AIM_UP}; wait 5t; status`);
+  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t`);
+  seesItsBolt("laser crossbow: fired aboard a freighter flying along", "use", `aimed at ${aim ?? "nothing in reach"}`);
   must("skyliners:autopilot land");
 }
 
