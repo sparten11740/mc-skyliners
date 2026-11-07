@@ -819,6 +819,10 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   these changes touches the airliner, so it is a watch item, as freighter-turret's one miss was. The freighter's slow
   checks were not rerun: nothing in her flight, ramp or turret changed. The jar is
   build/libs/skyliners-1.2.0-alpha.10+1.21.1-neoforge.jar, a copy kept apart; still not on the desktop, unmounted.
+- The rough spots after alpha.10, at Jan's word: the tank three wide with its hatch in the middle of its end, closing
+  the gap beside the hatch, a dark steel hood over it and a moss pad on a worktop beside the hatch (babcad5d); and a
+  floor light under each painting, the zeppelin's middle in the club from block light 3 to 10 (99c04cc6). Checked by
+  freighter-tardigrade and fleet-on-freighter.
 
 ### For Jan to look at
 
@@ -838,10 +842,8 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
 - Her ramp refuses where the ground under its foot rises (no adapting foot lip yet), and two freighters with ramps
   in one world were not tried.
 - The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet.
-- The small tardigrade's tank is open at its top under her hull, so its glass's lit top edge reads as a frame hanging
-  in the air over the moss, and its glass is as clear as the rocket's tank's
-  (run/blockpilot/screenshots/2026-11-07_06.38.08.539.png). The zeppelin's painting in the club is dim under its pink
-  washers (run/blockpilot/screenshots/2026-11-07_06.44.55.113.png).
+- The small tardigrade's tank's glass is as clear as the rocket's tank's, so it reads by its hood, kerb and stand
+  more than by its panes (run/blockpilot/screenshots/2026-11-07_07.19.04.062.png).
 - Her rooms are big for their furniture: the lounge's booth and the crew quarters' bunks stand in a lot of floor, and
   the cargo hold's far wall is dark (near her outer bulkhead her hull is too low there for a washer and the row
   of light it throws up the wall). Her bartender
