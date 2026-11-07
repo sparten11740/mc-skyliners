@@ -30,6 +30,7 @@ import dev.skyliners.client.BoardingRampRenderer;
 import dev.skyliners.client.CabinArchModel;
 import dev.skyliners.client.CameraShake;
 import dev.skyliners.client.CannonServo;
+import dev.skyliners.client.CanopyLiningRenderer;
 import dev.skyliners.client.CarriedAboard;
 import dev.skyliners.client.CloudlessCabin;
 import dev.skyliners.client.ClubBand;
@@ -255,7 +256,7 @@ public final class SkylinersClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, SkylinersRegistry.CABIN_CURTAIN.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(ZeppelinPaint::tint,
             SkylinersRegistry.ZEPPELIN_COVER.get(), SkylinersRegistry.ZEPPELIN_FABRIC.get(), SkylinersRegistry.ROCKET_LINED_COVER.get(),
-            SkylinersRegistry.ROCKET_LINING_PANEL.get()));
+            SkylinersRegistry.ROCKET_LINING_PANEL.get(), SkylinersRegistry.CANOPY_FRAME.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(OvalWindowWall::tint,
             SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get()));
@@ -445,6 +446,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.ORRERY_ENTITY.get(), context -> new OrreryRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.SPRINKLER_ENTITY.get(), context -> new SprinklerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
+        event.registerBlockEntityRenderer(SkylinersRegistry.CANOPY_LINING_ENTITY.get(), context -> new CanopyLiningRenderer());
         event.registerEntityRenderer(SkylinersRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);

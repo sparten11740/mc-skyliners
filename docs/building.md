@@ -286,7 +286,12 @@ tilts, turns and moves, and holds each set of thrusters at a signal until it is 
 not set back and forth with every jitter. Her jets fire inside her, so she never runs them at a third of full or more,
 where Create Propulsion sets fire to whatever stands in a thruster's exhaust. Her canopy is `DimmingGlassBlock`, cut to
 her curve as the windscreen is and drawn denser for each darkness, which the rocket's window dimmer sets, as it does her
-oval windows, through the same `OvalWindowPieceBlock.DIM`. Her `DeckRobotBlock`s chirp, trill and beep from their block
+oval windows, through the same `OvalWindowPieceBlock.DIM`. Seen from inside her canopy is smooth: its glass, lined
+(`DimmingGlassBlock.LINED`), and the struts between its panes, made her `CANOPY_FRAME`, are drawn from outside only
+(`ShellModel`'s `outside_only`, a whole block telling which way is out from the cut blocks round it), and the unseen
+`CanopyLiningBlock` near the canopy's tip, whose `CanopyLiningBlockEntity` `FreighterLayout.canopyLining()` tells the
+cone a skin's thickness in from her surface and a pane of her glass to follow, has `CanopyLiningRenderer` draw the
+inside as one cone of tinted glass, darkening with that pane, framed by ribs. Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing

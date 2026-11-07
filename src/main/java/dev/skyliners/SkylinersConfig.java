@@ -69,6 +69,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
@@ -642,6 +643,13 @@ public final class SkylinersConfig {
                 "hand, its four buttons from clear to all but black. Without it, her canopy is plain smoked glass."
             )
             .define("canopyDimmer", true);
+        FREIGHTER_SMOOTH_CANOPY = builder
+            .comment(
+                "Whether the freighter's canopy is seen smooth from inside: one round cone of tinted glass framed by dark ribs,",
+                "dimmed with the dimmer as smoothly as clear, in place of her glass and its frame stepping round her curve block",
+                "by block. Without it, her canopy is drawn block by block from inside as from outside."
+            )
+            .define("smoothCanopy", true);
         FREIGHTER_ROBOTS = builder
             .comment(
                 "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",

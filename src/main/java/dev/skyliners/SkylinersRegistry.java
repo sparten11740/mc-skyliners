@@ -55,6 +55,8 @@ import dev.skyliners.block.CabinSeatBlock;
 import dev.skyliners.block.CabinStairsBlock;
 import dev.skyliners.block.CabinWindowBlock;
 import dev.skyliners.block.CabinWindowShellBlock;
+import dev.skyliners.block.CanopyLiningBlock;
+import dev.skyliners.block.CanopyLiningBlockEntity;
 import dev.skyliners.block.CargoCrateBlock;
 import dev.skyliners.block.CargoCrateBlockEntity;
 import dev.skyliners.block.CargoFloorBlock;
@@ -941,6 +943,22 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<DimmingGlassBlock> DIMMING_GLASS = BLOCKS.registerBlock(
         "dimming_glass", properties -> new DimmingGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
+    /**
+     * The freighter's canopy seen smooth from inside: the frame round her canopy's glass, her cover cut to her curve but
+     * drawn from outside only, as her canopy's glass is, painted by her livery and as light as her cover; and the unseen
+     * block in her cockpit whose renderer draws the canopy's inside as one smooth cone (see {@link CanopyLiningBlock}).
+     * Placed only when she is built, so no items; the frame gives back fabric, the lining nothing.
+     */
+    public static final DeferredBlock<ShellBlock> CANOPY_FRAME = BLOCKS.registerBlock(
+        "canopy_frame", properties -> new ShellBlock(properties, SkylinersRegistry.ZEPPELIN_FABRIC), fabric()
+    );
+    public static final DeferredBlock<CanopyLiningBlock> CANOPY_LINING = BLOCKS.registerBlock(
+        "canopy_lining", CanopyLiningBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.NONE).noCollission().noOcclusion().noLootTable().strength(ONLY_EVER_PLACED, 3600000.0F)
+            .isValidSpawn(SkylinersRegistry::never)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CanopyLiningBlockEntity>> CANOPY_LINING_ENTITY =
+        BLOCK_ENTITIES.register("canopy_lining", () -> BlockEntityType.Builder.of(CanopyLiningBlockEntity::new, CANOPY_LINING.get()).build(null));
 
     /**
      * The hull's lining (see {@link dev.skyliners.block.Lining}): the skin cut to the hull's curve where the airliner's

@@ -246,6 +246,18 @@ const FREIGHTER_ROOMS = 6;
 const FREIGHTER_STRIPS = 300;
 // How many different floors her six rooms have: each its own, her crew quarters keeping her carpet.
 const OWN_FLOORS = 6;
+// Her canopy seen from inside: where on the screen the sky ahead is looked at through it from the pilot's seat, as
+// frame fractions from the top left, between her canopy's ribs; how much darker it must look once her dimmer darkens
+// the canopy, as a share of how bright it was clear; and how long the dimmer and a drawn frame are given, in ticks.
+const CANOPY_SKY = "sky=0.62,0.05,0.72,0.18";
+const CANOPY_DIMMED_SHARE = 0.6;
+const CANOPY_SETTLE = 20;
+// Her canopy's dimmer: how far its face stands out from her wall, in blocks, and where its darkest and its clear button
+// are on it, so far along it toward its side a quarter turn clockwise from the way it faces and up from its foot, in
+// blocks.
+const DIMMER_FACE = 0.12;
+const DIMMER_DARKEST = [0.8, 0.15];
+const DIMMER_CLEAR = [0.2, 0.75];
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -1346,6 +1358,73 @@ function checkFreighterLeds() {
   expect(floors.size >= OWN_FLOORS, "freighter: her rooms have floors of their own", [...floors].join(", "));
 }
 
+// The yaw and pitch that look from an eye at a point, as the turn command takes them, in degrees.
+function aimFrom(eye, point) {
+  const [dx, dy, dz] = [0, 1, 2].map((axis) => point[axis] - eye[axis]);
+  const yaw = (Math.atan2(-dx, dz) * 180) / Math.PI;
+  const pitch = (-Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;
+  return `${round(yaw)} ${round(pitch)}`;
+}
+
+// The ways round, as a block's facing, a unit step along the ground and the yaw that looks that way; and the way a
+// quarter turn clockwise from each, seen from above.
+const WAYS = { north: [0, -1, 180], east: [1, 0, -90], south: [0, 1, 0], west: [-1, 0, 90] };
+const CLOCKWISE = { north: "east", east: "south", south: "west", west: "north" };
+
+// Presses a freighter's canopy dimmer at a point of its face, so far along it toward its side a quarter turn clockwise
+// from the way it faces, seen from above, and up from its foot, standing two blocks out in front of it; its face is
+// against her wall.
+function pressDimmer(dimmer, facing, along, up) {
+  const [x, y, z] = dimmer;
+  const [fx, fz] = WAYS[facing];
+  const [rx, rz] = WAYS[CLOCKWISE[facing]];
+  const eye = [x + 0.5 + fx * 2, y - 1 + EYE_HEIGHT, z + 0.5 + fz * 2];
+  const back = 0.5 - DIMMER_FACE;
+  const point = [x + 0.5 - fx * back + rx * (along - 0.5), y + up, z + 0.5 - fz * back + rz * (along - 0.5)];
+  must(`server tp @p ${eye[0]} ${y - 1} ${eye[2]}; turn ${aimFrom(eye, point)}; wait 5t; use any; wait ${CANOPY_SETTLE}t`);
+}
+
+// How bright the sky ahead looks through a freighter's canopy from her pilot's seat, its luma from 0 to 255: seated,
+// looking the way her nose points and up a little.
+function skyThroughCanopy(seat, nose) {
+  const [, , yaw] = WAYS[nose];
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t; turn ${yaw} -20; wait ${CANOPY_SETTLE}t`);
+  const luma = must(`pixels ${CANOPY_SKY}`).sky.luma;
+  must("key press key.sneak 10t; wait 10t");
+  return luma;
+}
+
+// A freighter's canopy seen from inside: one smooth cone drawn by its lining, not her glass and its struts stepping
+// round her curve, which are drawn from outside only; and dimmed by her dimmer, the view through it darkens with her
+// glass, as smooth.
+function checkFreighterCanopy() {
+  ship("freighter");
+  const linings = must("find skyliners:canopy_lining 128 2").rows;
+  expect(linings.length === 1, "freighter: her canopy has its lining", `${linings.length} linings`);
+  const unlined = must("find skyliners:dimming_glass[lined=false] 128 1").count ?? 0;
+  const lined = must("find skyliners:dimming_glass[lined=true] 128 1").count ?? 0;
+  expect(unlined === 0 && lined > 0, "freighter: her canopy's glass is drawn from outside only, its lining drawing its inside",
+    `${lined} lined, ${unlined} not`);
+  expect((must("find skyliners:canopy_frame 128 1").count ?? 0) > 0, "freighter: the struts between her canopy's panes are its frame");
+  const [dimmer] = must("find skyliners:window_dimmer 128 1").rows;
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  if (!dimmer || !head) {
+    expect(false, "freighter: her cockpit has its dimmer and control head");
+    return;
+  }
+  const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
+  const facing = must(`block ${dimmer.at_abs.join(",")}`).props.facing ?? "east";
+  // Her pilot sits on her left, two blocks from the head.
+  const [lx, lz] = WAYS[CLOCKWISE[CLOCKWISE[CLOCKWISE[nose]]]];
+  const seat = [head.at_abs[0] + 2 * lx, head.at_abs[1], head.at_abs[2] + 2 * lz];
+  const clear = skyThroughCanopy(seat, nose);
+  pressDimmer(dimmer.at_abs, facing, ...DIMMER_DARKEST);
+  const dimmed = skyThroughCanopy(seat, nose);
+  expect(dimmed < clear * CANOPY_DIMMED_SHARE, "freighter: dimmed, the sky ahead through her canopy darkens from her seat",
+    `luma ${round(clear)} clear, ${round(dimmed)} dimmed`);
+  pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
+}
+
 // A freighter's jump drive in engineering: used, it spools up and fires, or sputters until thumped, when it fires; and
 // it shows which by its block, running or sputtering, as its rings do.
 function checkFreighterJumpDrive() {
@@ -1897,6 +1976,7 @@ const CHECKS = {
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
+  "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },

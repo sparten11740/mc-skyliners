@@ -47,6 +47,8 @@
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",
   "block.skyliners.dimming_glass": "Dimming Glass",
+  "block.skyliners.canopy_frame": "Canopy Frame",
+  "block.skyliners.canopy_lining": "Canopy Lining",
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",

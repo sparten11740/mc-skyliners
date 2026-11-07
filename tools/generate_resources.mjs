@@ -150,18 +150,21 @@ for (const [name, renderType] of Object.entries(cubes)) {
 }
 
 // The freighter's dimming glass (see DimmingGlassBlock): her canopy, cut to her hull's curve as the smoked glass is by the
-// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass.
+// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass; and,
+// lined, the same drawn from outside only, her canopy's lining drawing its inside (see CanopyLiningRenderer).
 {
   const DIMS = [0, 1, 2, 3];
   for (const dim of DIMS) {
     const skin = dim === 0 ? "smoked_glass" : `dimming_glass_${dim}`;
-    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, {
-      loader: `${ID}:shell`, render_type: "minecraft:translucent",
-      textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
+    const textures = { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` };
+    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, { loader: `${ID}:shell`, render_type: "minecraft:translucent", textures });
+    write(`assets/${ID}/models/block/dimming_glass_${dim}_lined.json`, {
+      loader: `${ID}:shell`, render_type: "minecraft:translucent", outside_only: true, textures,
     });
   }
   write(`assets/${ID}/blockstates/dimming_glass.json`, {
-    variants: Object.fromEntries(DIMS.map((dim) => [`dim=${dim}`, { model: `${ID}:block/dimming_glass_${dim}` }])),
+    variants: Object.fromEntries(DIMS.flatMap((dim) => [false, true].map((lined) =>
+      [`dim=${dim},lined=${lined}`, { model: `${ID}:block/dimming_glass_${dim}${lined ? "_lined" : ""}` }]))),
   });
   write(`data/${ID}/loot_table/blocks/dimming_glass.json`, {
     type: "minecraft:block",
@@ -866,18 +869,21 @@ function slideLang() {
 // baked by the mod's own "shell" loader from the block's corners, the windscreen's drawn as a single pane however
 // thick its glass runs (see ShellModel). They give back the part they are cut from (the clear glass, plain glass). The
 // relay hidden in the nacelles drops nothing.
-for (const [name, skin, renderType, part, singlePane, tinted] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
-  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
+// The freighter's canopy frame is her cover drawn from outside only, as her lined canopy glass is.
+for (const [name, skin, renderType, part, singlePane, tinted, outsideOnly] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false, false],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false, false],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
+  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
+  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, false],
+  ["canopy_frame", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
     loader: `${ID}:shell`,
     render_type: renderType,
     ...(singlePane ? { single_pane: true } : {}),
+    ...(outsideOnly ? { outside_only: true } : {}),
     ...(tinted ? { tint_index: 0 } : {}),
     textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
   });
@@ -1700,7 +1706,7 @@ function zeppelinControlsLang() {
 // against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size;
 // the rocket's cover lined inside her rooms is the same cover, and weighs the same.
 write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`,
-  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`] });
+  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`, `${ID}:canopy_frame`] });
 write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {
   priority: 1002,
   selector: `#${ID}:zeppelin_fabric`,
@@ -5641,6 +5647,18 @@ cubes.dome_limit = null;
 write(`data/${ID}/physics_block_properties/dome_limit.json`, {
   priority: 1004,
   selector: `${ID}:dome_limit`,
+  properties: { "sable:mass": 0.05 },
+});
+// The freighter's canopy lining (see CanopyLiningBlock): no model of its own to draw, its renderer drawing the canopy's
+// inside, and next to no weight, as the dome's limit.
+write(`assets/${ID}/blockstates/canopy_lining.json`, {
+  variants: Object.fromEntries(Object.keys(yRot).map((facing) => [`facing=${facing}`, { model: `${ID}:block/canopy_lining` }])),
+});
+write(`assets/${ID}/models/block/canopy_lining.json`, { textures: { particle: `${ID}:block/smoked_glass` } });
+cubes.canopy_lining = null;
+write(`data/${ID}/physics_block_properties/canopy_lining.json`, {
+  priority: 1004,
+  selector: `${ID}:canopy_lining`,
   properties: { "sable:mass": 0.05 },
 });
 function ledStripLang() {
@@ -10458,6 +10476,7 @@ FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...windowDimmerFittings());
 FITTINGS.push("dome_limit");
+FITTINGS.push("canopy_lining");
 FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
@@ -10792,6 +10811,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",
   "block.skyliners.dimming_glass": "Dimming Glass",
+  "block.skyliners.canopy_frame": "Canopy Frame",
+  "block.skyliners.canopy_lining": "Canopy Lining",
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",

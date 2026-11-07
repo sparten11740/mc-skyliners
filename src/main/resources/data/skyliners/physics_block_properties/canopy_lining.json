@@ -1,0 +1,7 @@
+{
+  "priority": 1004,
+  "selector": "skyliners:canopy_lining",
+  "properties": {
+    "sable:mass": 0.05
+  }
+}
