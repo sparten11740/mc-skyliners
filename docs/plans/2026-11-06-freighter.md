@@ -775,6 +775,13 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   hostile mobs only, venting after three quick shots. Found in play: charging when the hold finished let the held use
   key fire it at once; it now charges once let go, as the game's crossbow does, guarded by laser-crossbow. The bolt
   payload carries its glow's colour now, so the protocol went to 32.
+- M7's first cut, her top turret: a ladder up her core to the gunner's seat under her top dome, "Turret ready" as a
+  gunner sits, and a laser cannon on the dome whose twin barrels follow where the gunner looks and fire red bolts from
+  alternate barrels while attack is held, hurting hostile mobs only and breaking nothing, overheating after twenty in a
+  row, its servos whirring as it swings. The pair caught that bolts flew parallel to the gunner's look from a muzzle
+  above their eyes, missing the crosshair at range: it now aims at what the look reaches. The crossbow and the cannon
+  share one rule for what a laser hurts (`LaserFire.strike`). Checked by freighter-turret; one early run of it missed
+  and could not be made to miss again in three runs.
 
 ### For Jan to look at
 
@@ -794,5 +801,8 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
 - Her ramp refuses where the ground under its foot rises (no adapting foot lip yet), and two freighters with ramps
   in one world were not tried.
 - The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet, as her lounge is not built.
+- Her top turret has no gunner's sight on screen yet (the plain crosshair is honest, the cannon aiming at what it
+  covers), no bottom turret and no training drones; seen sideways from the seat, the dome's lower ring hides low
+  targets, which its arc (level to 85° up) cannot reach anyway.
 - Two leftovers of mine to clear, refused to me as irreversible: `git stash drop` of "freighter-m2-flight (before the
   pilot abstraction)", superseded by cd630624, and `git worktree remove --force` of the scratch worktree `wt-a`.
