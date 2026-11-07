@@ -1078,7 +1078,7 @@ function checkFreighterLake() {
 
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 // A freighter's rooms: her crew quarters have their bunks, reading lights on, her lounge its booth, a table among
-// seats, and her cargo hold its racks of cargo and crates.
+// seats, and its galley, and her cargo hold its racks of cargo and crates.
 function checkFreighterRooms() {
   ship("freighter");
   const bunks = must("find skyliners:bunk 128 20").rows.length;
@@ -1089,6 +1089,8 @@ function checkFreighterRooms() {
   const racks = must("find skyliners:pallet_rack 128 40").rows.length;
   const crates = must("find skyliners:cargo_crate 128 10").rows.length;
   expect(racks >= HOLD_RACKS && crates >= HOLD_CRATES, "freighter: her cargo hold has its racks of cargo and crates", `${racks} rack bays, ${crates} crates`);
+  const galley = ["skyliners:galley_fridge", "skyliners:galley_oven", "skyliners:coffee_machine"].filter((block) => must(`find ${block} 128 2`).rows.length === 0);
+  expect(galley.length === 0, "freighter: her lounge has its galley, a fridge, an oven and a coffee machine", galley.length ? `no ${galley.join(", ")}` : "");
 }
 
 // A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage

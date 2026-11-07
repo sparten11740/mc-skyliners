@@ -15,9 +15,14 @@ import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinRailBlock;
 import dev.skyliners.block.CabinSeatBlock;
 import dev.skyliners.block.CargoCrateBlock;
+import dev.skyliners.block.CoffeeMachineBlock;
 import dev.skyliners.block.DeckRobotBlock;
 import dev.skyliners.block.DisplayShelfBlock;
 import dev.skyliners.block.DrinkTapBlock;
+import dev.skyliners.block.GalleyFridgeBlock;
+import dev.skyliners.block.GalleyFridgeBlockEntity;
+import dev.skyliners.block.GalleyOvenBlock;
+import dev.skyliners.block.GalleyUnitBlock;
 import dev.skyliners.block.LightTone;
 import dev.skyliners.block.PalletRackBlock;
 import dev.skyliners.block.PilotSeatBlock;
@@ -44,6 +49,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BedPart;
@@ -212,6 +218,13 @@ public final class FreighterLayout extends HullLayout {
     private static final int RACK_BAYS = 2;
     private static final PalletRackBlock.Load[] RACK_LOADS = {PalletRackBlock.Load.BOXES, PalletRackBlock.Load.DRUMS, PalletRackBlock.Load.CRATES};
     private static final Crate[] CRATES = {new Crate(-2, -12, 0), new Crate(-1, -12, 1), new Crate(2, -13, 2), new Crate(-2, -14, 3)};
+    /**
+     * Her galley, in her lounge: a run of units along the wall between the lounge and her entry hall, facing into the
+     * lounge, from so far out from her axis to so far: a worktop with the coffee machine on it at its inner end, an
+     * oven in its middle, the fridge, stocked, at its outer end, and stowage and worktops by turns between.
+     */
+    private static final int GALLEY_FROM = 8;
+    private static final int GALLEY_TO = 14;
     /** The sides of her lounge's table its seats stand at, in turn. */
     private static final Direction[] LOUNGE_SIDES = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
     /**
@@ -394,6 +407,7 @@ public final class FreighterLayout extends HullLayout {
         layout.quarters();
         layout.lounge();
         layout.cargoHold();
+        layout.galley();
         layout.lights();
         layout.countAir();
         return layout;
@@ -1067,6 +1081,69 @@ public final class FreighterLayout extends HullLayout {
         BlockState seat = CabinSeatBlock.seat(SkylinersRegistry.BUSINESS_SEAT.get(), colour, facing);
         set(x, deck + 1, z, seat);
         set(x, deck + 2, z, seat.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER));
+    }
+
+    /**
+     * Her galley's run of units along the lounge's wall, facing in, each where it has room over her deck's floor; none
+     * with the server config's {@code freighter.rooms} off.
+     */
+    private void galley() {
+        if (!SkylinersConfig.FREIGHTER_ROOMS.get()) {
+            return;
+        }
+        // Laid out nose north, her lounge lies south of the wall it shares with her entry hall, which runs along z 0.
+        Direction facing = Direction.SOUTH;
+        int z = 1;
+        int oven = (GALLEY_FROM + GALLEY_TO) / 2;
+        for (int x = GALLEY_FROM; x <= GALLEY_TO; x++) {
+            GalleyUnit unit = x == GALLEY_FROM ? GalleyUnit.COFFEE : x == oven ? GalleyUnit.OVEN : x == GALLEY_TO ? GalleyUnit.FRIDGE
+                : GalleyUnit.COUNTER;
+            galleyUnit(x, z, facing, unit);
+        }
+    }
+
+    /**
+     * What a unit of her galley is: the worktop the coffee machine stands on, the oven, the fridge, or plain counter.
+     */
+    private enum GalleyUnit { COFFEE, OVEN, FRIDGE, COUNTER }
+
+    /**
+     * A unit of her galley at a column, facing the way given: the fridge, stocked once it stands; the oven; the worktop
+     * with the coffee machine on it, where the block over it is open; or plain counter, stowage and worktops by turns.
+     */
+    private void galleyUnit(int x, int z, Direction facing, GalleyUnit unit) {
+        if (unit == GalleyUnit.FRIDGE) {
+            if (onFloor(x, z, SkylinersRegistry.GALLEY_FRIDGE.get().defaultBlockState().setValue(GalleyFridgeBlock.FACING, facing))) {
+                fit(new BlockPos(x, deck + 1, z), FreighterLayout::stockFridge);
+            }
+            return;
+        }
+        boolean placed = onFloor(x, z, unit == GalleyUnit.OVEN ? oven(facing) : counter(x, facing));
+        if (placed && unit == GalleyUnit.COFFEE && isOpen(x, deck + 2, z)) {
+            set(x, deck + 2, z, SkylinersRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, facing));
+        }
+    }
+
+    /** Her galley's oven, facing the way given. */
+    private static BlockState oven(Direction facing) {
+        return SkylinersRegistry.GALLEY_OVEN.get().defaultBlockState().setValue(GalleyOvenBlock.FACING, facing);
+    }
+
+    /**
+     * A unit of her galley's counter at a column, facing the way given: worktops on even steps from its inner end, so
+     * the coffee machine's is one, and stowage between.
+     */
+    private static BlockState counter(int x, Direction facing) {
+        boolean stowage = (x - GALLEY_FROM) % 2 == 1;
+        return (stowage ? SkylinersRegistry.GALLEY_STOWAGE : SkylinersRegistry.GALLEY_WORKTOP).get().defaultBlockState()
+            .setValue(GalleyUnitBlock.FACING, facing);
+    }
+
+    /** Stocks her galley's fridge once it stands, as the rocket's mess stocks its own. */
+    private static void stockFridge(BlockEntity blockEntity, Rotation rotation) {
+        if (blockEntity instanceof GalleyFridgeBlockEntity fridge) {
+            fridge.stock();
+        }
     }
 
     /**
