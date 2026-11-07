@@ -277,8 +277,10 @@ each change redraws her round them; `LiftPlumes` shows her lift thrusters' plume
 (`Thrusters.plume`), since every puff is sent to every player near. Her pilot smooths what it reads of how fast she
 tilts, turns and moves, and holds each set of thrusters at a signal until it is asked a step and more away, so they are
 not set back and forth with every jitter. Her jets fire inside her, so she never runs them at a third of full or more,
-where Create Propulsion sets fire to whatever stands in a thruster's exhaust. She and the rocket are both `HullLayout`s,
-which keeps their blocks, fittings and glazing and works out the air inside their hulls, their features `ShipPiece`s.
+where Create Propulsion sets fire to whatever stands in a thruster's exhaust. Her canopy is `DimmingGlassBlock`, cut to
+her curve as the windscreen is and drawn denser for each darkness, which the rocket's window dimmer sets, as it does her
+oval windows, through the same `OvalWindowPieceBlock.DIM`. She and the rocket are both `HullLayout`s, which keeps their
+blocks, fittings and glazing and works out the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

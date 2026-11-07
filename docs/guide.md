@@ -2578,7 +2578,10 @@ built at the same size, whatever the server config's scale: a disc 60 blocks acr
 upright rim, with two flat prongs reaching forward either side of a loading gap, 84 blocks long in all from their tips
 to her stern, standing on five landing legs, a strut down to a square foot plate each, her belly a couple of blocks off
 the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
-of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go.
+of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go. Her canopy's
+glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
+from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
+through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
 
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight

@@ -147,6 +147,28 @@ for (const [name, renderType] of Object.entries(cubes)) {
   });
 }
 
+// The freighter's dimming glass (see DimmingGlassBlock): her canopy, cut to her hull's curve as the smoked glass is by the
+// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass.
+{
+  const DIMS = [0, 1, 2, 3];
+  for (const dim of DIMS) {
+    const skin = dim === 0 ? "smoked_glass" : `dimming_glass_${dim}`;
+    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, {
+      loader: `${ID}:shell`, render_type: "minecraft:translucent",
+      textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
+    });
+  }
+  write(`assets/${ID}/blockstates/dimming_glass.json`, {
+    variants: Object.fromEntries(DIMS.map((dim) => [`dim=${dim}`, { model: `${ID}:block/dimming_glass_${dim}` }])),
+  });
+  write(`data/${ID}/loot_table/blocks/dimming_glass.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: "minecraft:glass" }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/dimming_glass`,
+  });
+  cubes.dimming_glass = null;
+}
+
 // The freighter's engine grille (see EngineGrilleBlock): a cube of its own texture for each of its glows, dark, idling and
 // at full, the glowing ones lit full whatever the light round them, as the cabin light glows at night; its item shows it
 // at full.
@@ -10385,6 +10407,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.cockpit_glass": "Cockpit Glass",
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",
+  "block.skyliners.dimming_glass": "Dimming Glass",
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",

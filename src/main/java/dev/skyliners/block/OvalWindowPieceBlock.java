@@ -51,7 +51,10 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     public static final int ROWS = 4;
     public static final IntegerProperty COLUMN = IntegerProperty.create("column", 0, COLUMNS - 1);
     public static final IntegerProperty ROW = IntegerProperty.create("row", 0, ROWS - 1);
-    /** How dark its glass is: 0 clear, up to {@link #DARKEST}. */
+    /**
+     * How dark its glass is: 0 clear, up to {@link #DARKEST}; any glass carrying it is set by a window dimmer, the
+     * freighter's canopy too (see {@link DimmingGlassBlock}).
+     */
     public static final int DARKEST = 3;
     public static final IntegerProperty DIM = IntegerProperty.create("dim", 0, DARKEST);
     /** The chime's pitch when clear, and how far it falls with each step darker; and how loud it is. */
@@ -330,7 +333,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
             return;
         }
         BlockState state = level.getBlockState(at);
-        if (state.getBlock() instanceof OvalWindowPieceBlock && state.getValue(DIM) != dim) {
+        if (state.hasProperty(DIM) && state.getValue(DIM) != dim) {
             level.setBlock(at, state.setValue(DIM, dim), Block.UPDATE_ALL);
         }
     }

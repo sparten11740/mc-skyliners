@@ -68,6 +68,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_STABILITY_SWITCH;
     public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -620,6 +621,12 @@ public final class SkylinersConfig {
                 "Without it, her stern is plain hull, her engines' plumes still showing."
             )
             .define("engineGrille", true);
+        FREIGHTER_CANOPY_DIMMER = builder
+            .comment(
+                "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",
+                "hand, its four buttons from clear to all but black. Without it, her canopy is plain smoked glass."
+            )
+            .define("canopyDimmer", true);
         builder.pop();
 
         SPEC = builder.build();

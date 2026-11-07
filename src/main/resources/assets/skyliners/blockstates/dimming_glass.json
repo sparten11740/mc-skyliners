@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "dim=0": {
+      "model": "skyliners:block/dimming_glass_0"
+    },
+    "dim=1": {
+      "model": "skyliners:block/dimming_glass_1"
+    },
+    "dim=2": {
+      "model": "skyliners:block/dimming_glass_2"
+    },
+    "dim=3": {
+      "model": "skyliners:block/dimming_glass_3"
+    }
+  }
+}

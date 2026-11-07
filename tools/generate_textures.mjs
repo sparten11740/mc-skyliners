@@ -190,6 +190,11 @@ texture(blockOutput, "cockpit_glass", () => COCKPIT_GLASS);
 // enough to see out of by day. Each of its faces is drawn, so a look passes through two of them as through any glass:
 // together they are about as dark as one pane of the windscreen's tint at 0xA8.
 texture(blockOutput, "smoked_glass", () => SMOKED_GLASS);
+// The freighter's dimming glass (see DimmingGlassBlock) at each darkness past clear, which is the smoked glass itself:
+// darker and denser each step, the darkest all but black, a faint glint left across it so it still reads as glass.
+const DIMMING_GLASS = [[0x18, 0x1c, 0x24, 0x90], [0x0e, 0x10, 0x16, 0xc0], [0x06, 0x07, 0x0a, 0xe8]];
+DIMMING_GLASS.forEach((pane, step) => texture(blockOutput, `dimming_glass_${step + 1}`, (x, y) =>
+  (x + y === 9 ? [0x6a, 0x74, 0x84, pane[3]] : pane), 0));
 
 // Clear hull glass, for the moon pool's view down: nearly clear with a faint sky-blue tint and a glint across it.
 texture(blockOutput, "hull_glass", (x, y) => (x + y >= 9 && x + y <= 10 ? [0xf2, 0xfa, 0xff, 0x70] : [0xc8, 0xe4, 0xf4, 0x30]), 0);

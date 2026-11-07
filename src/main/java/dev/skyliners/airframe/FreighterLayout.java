@@ -11,6 +11,8 @@ import dev.skyliners.block.AutopilotScreenBlockEntity;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
+import dev.skyliners.block.WindowDimmerBlock;
+import dev.skyliners.block.WindowDimmerBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +113,12 @@ public final class FreighterLayout extends HullLayout {
     private static final int PILOTS_OUT = 2;
     private static final int JUMP_BEHIND = 2;
     private static final int SCREEN_AHEAD = 2;
+    /**
+     * Her canopy's dimmer: how far over the pilots' seats' floor row it stands, at a seated pilot's hand, and how far
+     * out past the seat's side it may stand at most, toward her skin, so the pilot reaches it from the seat, in blocks.
+     */
+    private static final int DIMMER_UP = 1;
+    private static final int DIMMER_OUT = 2;
 
     /**
      * How near her hull a block counts as under it, looking for ground to come down on, in blocks: a little wide, so a
@@ -140,6 +148,11 @@ public final class FreighterLayout extends HullLayout {
     private final List<BlockPos> feet = new ArrayList<>();
     /** Her engine grille's blocks, for her autopilot to light. */
     private final List<BlockPos> grille = new ArrayList<>();
+    /** The box round her canopy's dimming glass, its corners as it is laid; null before any is. */
+    @Nullable
+    private BlockPos canopyLow;
+    @Nullable
+    private BlockPos canopyHigh;
     /** Where the autopilot's control head stands in her cockpit; null before it is laid. */
     @Nullable
     private BlockPos head;
@@ -259,7 +272,6 @@ public final class FreighterLayout extends HullLayout {
      */
     private void skin() {
         BlockState cover = SkylinersRegistry.ZEPPELIN_COVER.get().defaultBlockState();
-        BlockState glass = SkylinersRegistry.SMOKED_GLASS.get().defaultBlockState();
         for (int y = 0; y <= top; y++) {
             for (int x = -side; x <= side; x++) {
                 skinRow(cover, x, y);
@@ -267,7 +279,7 @@ public final class FreighterLayout extends HullLayout {
         }
         for (int y = 0; y <= top; y++) {
             for (int x = -side; x <= side; x++) {
-                glassRow(glass, x, y);
+                glassRow(x, y);
             }
         }
     }
@@ -281,11 +293,28 @@ public final class FreighterLayout extends HullLayout {
         }
     }
 
-    private void glassRow(BlockState glass, int x, int y) {
+    /**
+     * Her glass along a row: the canopy's dimming glass (see {@link dev.skyliners.block.DimmingGlassBlock}), smoked
+     * glass with the server config's {@code freighter.canopyDimmer} off, and smoked glass over her turrets' domes.
+     */
+    private void glassRow(int x, int y) {
+        BlockState glass = SkylinersRegistry.SMOKED_GLASS.get().defaultBlockState();
+        boolean dimming = SkylinersConfig.FREIGHTER_CANOPY_DIMMER.get();
+        BlockState canopy = dimming ? SkylinersRegistry.DIMMING_GLASS.get().defaultBlockState() : glass;
         for (int z = front; z <= back; z++) {
             if (!isOpen(x, y, z) && glazed(x, y + 0.5, z)) {
-                glaze(x, y, z, glass);
+                boolean onCanopy = FreighterShape.nearest(x / scale, (y + 0.5) / scale, z / scale) == FreighterShape.Part.POD;
+                glaze(x, y, z, onCanopy ? canopy : glass);
+                noteCanopy(onCanopy && dimming, new BlockPos(x, y, z));
             }
+        }
+    }
+
+    /** Widens the box round her canopy's dimming glass to take in a block of it. */
+    private void noteCanopy(boolean dimming, BlockPos at) {
+        if (dimming) {
+            canopyLow = canopyLow == null ? at : BlockPos.min(canopyLow, at);
+            canopyHigh = canopyHigh == null ? at : BlockPos.max(canopyHigh, at);
         }
     }
 
@@ -635,6 +664,7 @@ public final class FreighterLayout extends HullLayout {
         seat(x - PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
         seat(x + PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
         autopilotScreen(new BlockPos(x - AutopilotScreenBlock.COLUMNS / 2, y, z - SCREEN_AHEAD));
+        canopyDimmer(new BlockPos(x - PILOTS_OUT - 1, y + DIMMER_UP, z));
     }
 
     /** A pilot seat facing her bow, both its halves, where both are open. */
@@ -646,6 +676,33 @@ public final class FreighterLayout extends HullLayout {
             .setValue(PilotSeatBlock.STICK, stick);
         set(x, y, z, seat);
         set(x, y + 1, z, seat.setValue(PilotSeatBlock.HALF, DoubleBlockHalf.UPPER));
+    }
+
+    /**
+     * The window dimmer for her canopy (see {@link dev.skyliners.block.WindowDimmerBlock}), at the pilot's left hand:
+     * from beside the seat out toward her skin as far as it is open, facing in, told once it stands the box round the
+     * canopy's glass, as two corners from it turned as she was placed; none where her canopy is smoked glass.
+     */
+    private void canopyDimmer(BlockPos beside) {
+        BlockPos at = beside;
+        for (int out = 0; out < DIMMER_OUT && isOpen(at.getX() - 1, at.getY(), at.getZ())
+            && surface.depth(at.getX() - 1, at.getY() + 0.5, at.getZ()) < 0; out++) {
+            at = at.west();
+        }
+        if (canopyLow == null || canopyHigh == null || !isOpen(at.getX(), at.getY(), at.getZ())) {
+            return;
+        }
+        // Her left is west as she is laid out, so the dimmer faces east, into her cockpit.
+        BlockState facingIn = SkylinersRegistry.WINDOW_DIMMER.get().defaultBlockState().setValue(WindowDimmerBlock.FACING, Direction.EAST);
+        set(at.getX(), at.getY(), at.getZ(), facingIn);
+        BlockPos from = canopyLow.subtract(at);
+        BlockPos to = canopyHigh.subtract(at);
+        // Her canopy is one box, as a rocket's story is, laid clear.
+        fit(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof WindowDimmerBlockEntity dimmer) {
+                dimmer.story(from.rotate(rotation), to.rotate(rotation), 0);
+            }
+        });
     }
 
     /**

@@ -86,6 +86,7 @@ import dev.skyliners.block.DropReleaseBlockEntity;
 import dev.skyliners.block.DutyFreeCounterBlock;
 import dev.skyliners.block.EngineCoreBlock;
 import dev.skyliners.block.EngineCoreBlockEntity;
+import dev.skyliners.block.DimmingGlassBlock;
 import dev.skyliners.block.EngineGrilleBlock;
 import dev.skyliners.block.ExitSignBlock;
 import dev.skyliners.block.FairingBlock;
@@ -905,6 +906,10 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<CockpitGlassBlock> SMOKED_GLASS = BLOCKS.registerBlock(
         "smoked_glass", properties -> new CockpitGlassBlock(properties, () -> Blocks.GLASS), glass()
+    );
+    /** Smoked glass cut to the hull's curve that a window dimmer darkens: the freighter's canopy; it gives back glass. */
+    public static final DeferredBlock<DimmingGlassBlock> DIMMING_GLASS = BLOCKS.registerBlock(
+        "dimming_glass", properties -> new DimmingGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
 
     /**
