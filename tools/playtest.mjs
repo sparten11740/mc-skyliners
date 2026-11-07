@@ -246,6 +246,9 @@ const OWN_FLOORS = 6;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
+// Her breaker board: where its switch for engineering's lights is on its face, as the use command aims (west to east,
+// up, north to south as drawn facing north): the bottom row's left, the viewer's left being its east side.
+const ENGINEERING_SWITCH = "0.77,0.31,0.88";
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1303,6 +1306,30 @@ function checkFreighterJumpDrive() {
   expect(must(`block ${at}`).props?.drive === "running", "freighter: fired, it runs", must(`block ${at}`).props?.drive);
 }
 
+// A freighter's breaker board in engineering: flipping engineering's switch puts the room's LED strips out, and flipping
+// it again brings them back as bright as they were.
+function checkFreighterBreakerBoard() {
+  ship("freighter");
+  const [board] = must("find skyliners:breaker_board 128 1").rows;
+  expect(Boolean(board), "freighter: she is built with her breaker board in engineering");
+  if (!board) {
+    return;
+  }
+  const [x, y, z] = board.at_abs;
+  const [drive] = must("find skyliners:jump_drive 128 1").rows;
+  const panel = must("find skyliners:led_panel 128 6").rows.map((row) => row.at_abs)
+    .reduce((nearest, at) => (Math.hypot(at[0] - drive.at_abs[0], at[2] - drive.at_abs[2]) < Math.hypot(nearest[0] - drive.at_abs[0], nearest[2] - drive.at_abs[2]) ? at : nearest));
+  const brightness = () => Number(must(`server data get block ${panel.join(" ")} Setting.Brightness`).rows[0]?.line.split(" ").at(-1));
+  const before = brightness();
+  const [dx, dz] = STEPS[must(`block ${board.at_abs.join(",")}`).props.facing];
+  must(`server tp @p ${x + 0.5 + dx * 2.5} ${y - 1} ${z + 0.5 + dz * 2.5}; wait 5t; use ${board.at_abs.join(",")} at ${ENGINEERING_SWITCH}; wait 5t`);
+  const out = brightness();
+  expect(out === 0, "freighter: flipping engineering's switch puts its lights out", `brightness ${before} then ${out}`);
+  must(`use ${board.at_abs.join(",")} at ${ENGINEERING_SWITCH}; wait 5t`);
+  const back = brightness();
+  expect(back === before, "freighter: flipped again, they come back as bright as they were", `brightness ${back}, was ${before}`);
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1681,6 +1708,7 @@ const CHECKS = {
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
+  "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

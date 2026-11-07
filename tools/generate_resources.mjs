@@ -355,6 +355,23 @@ function rampFittings() {
   cubes.jump_drive = null;
 }
 
+// The freighter's breaker board in engineering (see BreakerBoardBlock): a steel panel two pixels deep against the wall
+// behind it, a darker frame round its face, its six switches drawn over it by BreakerBoardRenderer; drawn facing north.
+{
+  write(`assets/${ID}/models/block/breaker_board.json`, {
+    parent: "minecraft:block/block",
+    textures: { panel: `${ID}:block/habitat_kerb`, frame: `${ID}:block/lab_dark`, particle: `${ID}:block/habitat_kerb` },
+    elements: [solid([0, 0, 14], [16, 16, 16], "#panel"), solid([0, 0, 13.6], [16, 0.8, 14], "#frame"), solid([0, 15.2, 13.6], [16, 16, 14], "#frame"),
+      solid([0, 0.8, 13.6], [0.8, 15.2, 14], "#frame"), solid([15.2, 0.8, 13.6], [16, 15.2, 14], "#frame")],
+  });
+  write(`assets/${ID}/blockstates/breaker_board.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/breaker_board`, y }])),
+  });
+  write(`assets/${ID}/models/item/breaker_board.json`, { parent: `${ID}:block/breaker_board` });
+  dropsItself("breaker_board");
+  cubes.breaker_board = null;
+}
+
 // The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
 // (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
 // charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
@@ -1465,6 +1482,7 @@ function zeppelinControlsLang() {
     "block.skyliners.flight_deck_stripe": "Flight Deck Line",
     "block.skyliners.engine_grating": "Engine Grating",
     "block.skyliners.jump_drive": "Jump Drive",
+    "block.skyliners.breaker_board": "Breaker Board",
     "block.skyliners.deck_clamp": "Docking Clamp",
     "block.skyliners.carrier_lever": "Clamp Release Lever",
     "entity.skyliners.crane_hook": "Crane Hook",
@@ -10257,7 +10275,7 @@ FITTINGS.push(...rampFittings());
 // The club's bandstand is fitted into her club, set down and taken up by hand.
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
-FITTINGS.push("spookie_hammock", "jump_drive");
+FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board");
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10388,6 +10406,7 @@ shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gol
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
 shaped("engine_grating", ["BBB", "BGB", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 8);
+shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
 shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);
 shaped("techno_deck", ["NJN", "CCC"], { N: "minecraft:note_block", J: "minecraft:jukebox", C: "minecraft:black_concrete" }, 1);

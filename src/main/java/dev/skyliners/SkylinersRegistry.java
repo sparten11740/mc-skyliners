@@ -363,6 +363,8 @@ import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.engineering.BreakerBoardBlock;
+import dev.skyliners.engineering.BreakerBoardBlockEntity;
 import dev.skyliners.engineering.JumpDriveBlock;
 import dev.skyliners.engineering.JumpDriveBlockEntity;
 import dev.skyliners.spookie.SpookieHammockBlock;
@@ -1363,6 +1365,13 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<JumpDriveBlockEntity>> JUMP_DRIVE_ENTITY =
         BLOCK_ENTITIES.register("jump_drive", () -> BlockEntityType.Builder.of(JumpDriveBlockEntity::new, JUMP_DRIVE.get()).build(null));
     public static final DeferredItem<BlockItem> JUMP_DRIVE_ITEM = ITEMS.registerSimpleBlockItem(JUMP_DRIVE);
+    /** The freighter's breaker board in engineering (see {@link BreakerBoardBlock}), a switch for each room's lights. */
+    public static final DeferredBlock<BreakerBoardBlock> BREAKER_BOARD = BLOCKS.registerBlock(
+        "breaker_board", BreakerBoardBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BreakerBoardBlockEntity>> BREAKER_BOARD_ENTITY =
+        BLOCK_ENTITIES.register("breaker_board", () -> BlockEntityType.Builder.of(BreakerBoardBlockEntity::new, BREAKER_BOARD.get()).build(null));
+    public static final DeferredItem<BlockItem> BREAKER_BOARD_ITEM = ITEMS.registerSimpleBlockItem(BREAKER_BOARD);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2872,7 +2881,8 @@ public final class SkylinersRegistry {
             BANDSTAND_ITEM,
             SPOOKIE_HAMMOCK_ITEM,
             ENGINE_GRATING_ITEM,
-            JUMP_DRIVE_ITEM
+            JUMP_DRIVE_ITEM,
+            BREAKER_BOARD_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

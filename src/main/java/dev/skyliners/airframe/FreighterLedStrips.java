@@ -23,14 +23,14 @@ import net.minecraft.world.level.block.state.BlockState;
  * lying on her deck where it meets the room's walls, each room in a colour and a way of its own, so anyone stepping in
  * knows at once where they are, and an LED panel on the wall by each room's doorway (see {@link LedPanelBlock}) to set
  * them, as the rocket's stories have: her cargo hold sunshine yellow, chasing as a warehouse's guide lights do, so it
- * differs from her lounge by more than its colour; her entry hall snow white; her lounge a warm
- * tangerine; engineering sky blue, chasing round it as power does; her crew quarters a dim grape, breathing like a night
- * light; and her club pink, pulsing to the beat. Each room is a wedge round her axis between two of her room walls, so
- * its panel is told the wedge as well as the box round its strips, which overlaps its neighbours'.
+ * differs from her lounge by more than its colour; her entry hall snow white; her lounge a warm tangerine; engineering
+ * sky blue, chasing round it as power does; her crew quarters a dim grape, breathing like a night light; and her club
+ * pink, pulsing to the beat. Each room is a wedge round her axis between two of her room walls, so its panel is told
+ * the wedge as well as the box round its strips, which overlaps its neighbours'.
  *
  * <p>A strip goes in every open block over her deck's floor in a room, past the open floor about her core, that has her
- * padded wall or her shell beside it on a side, and runs along those sides; none where something stands. Laid after
- * her rooms are furnished, so it fills in round their fittings. Laid out nose north, as the rest of her; none with the
+ * padded wall or her shell beside it on a side, and runs along those sides; none where something stands. Laid after her
+ * rooms are furnished, so it fills in round their fittings. Laid out nose north, as the rest of her; none with the
  * server config's {@code freighter.ledStrips} off.
  */
 final class FreighterLedStrips {
@@ -86,19 +86,30 @@ final class FreighterLedStrips {
         this.reach = reach;
     }
 
-    /** Lays the strips and panels in a freighter's layout whose deck's floor is the row given, reaching so far out. */
-    static void build(HullLayout layout, int deck, int reach) {
-        if (SkylinersConfig.FREIGHTER_LED_STRIPS.get()) {
-            FreighterLedStrips strips = new FreighterLedStrips(layout, deck, reach);
-            ROOMS.forEach(strips::room);
+    /**
+     * Lays the strips and panels in a freighter's layout whose deck's floor is the row given, reaching so far out;
+     * gives where each room's panel went, in the order her cargo hold, entry hall, lounge, engineering, crew quarters
+     * and club, null where a room has none, or none at all with the strips switched off.
+     */
+    static List<BlockPos> build(HullLayout layout, int deck, int reach) {
+        if (!SkylinersConfig.FREIGHTER_LED_STRIPS.get()) {
+            return List.of();
         }
+        FreighterLedStrips strips = new FreighterLedStrips(layout, deck, reach);
+        List<BlockPos> panels = new ArrayList<>();
+        ROOMS.forEach(room -> panels.add(strips.room(room)));
+        return panels;
     }
 
-    /** A room's ring of strips and its panel; neither where the panel has no place, as nothing would set them. */
-    private void room(Room room) {
+    /**
+     * A room's ring of strips and its panel, giving where the panel went; neither where the panel has no place, as
+     * nothing would set them, nor a panel with no strips to set.
+     */
+    @Nullable
+    private BlockPos room(Room room) {
         BlockPos panel = panelSpot(room);
         if (panel == null) {
-            return;
+            return null;
         }
         List<BlockPos> strips = new ArrayList<>();
         LedPanelBlockEntity.Wedge wedge = room.wedge();
@@ -111,9 +122,11 @@ final class FreighterLedStrips {
                 strips.add(at);
             }
         }
-        if (!strips.isEmpty()) {
-            setPanel(room, panel, strips);
+        if (strips.isEmpty()) {
+            return null;
         }
+        setPanel(room, panel, strips);
+        return panel;
     }
 
     /** Whether a block lies in a room: in its wedge, past the open floor about her core. */
@@ -170,7 +183,10 @@ final class FreighterLedStrips {
         return best;
     }
 
-    /** Whether a room's panel fits at a block: in the room just in through its doorway, against her wall, open before. */
+    /**
+     * Whether a room's panel fits at a block: in the room just in through its doorway, against her wall, and open
+     * before it.
+     */
     private boolean panelFits(Room room, BlockPos at) {
         double out = Math.hypot(at.getX(), at.getZ());
         boolean near = out >= PANEL_FROM && out <= PANEL_TO && inRoom(room.wedge(), at);

@@ -317,7 +317,9 @@ wedge too (`LedPanelBlockEntity.Wedge`), which the server's brightness, `LedLigh
 lays each room's own floor over her deck, in the mod's own light blocks so her weight is unchanged. `FreighterEngineering`
 sets her `JumpDriveBlock` in engineering, its steps its block state and its timing scheduled ticks, as the parcel
 scanner's are; its block entity only keeps the client's ring speed for `JumpDriveRenderer`, which draws its core and
-rings. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+rings. Her `BreakerBoardBlock`, laid after her LED strips, which hand on where each
+room's panel went, keeps those panels' offsets in its `BreakerBoardBlockEntity` and changes their brightness; a switch is on
+while its room is lit, as `BreakerBoardRenderer` reads from the panel. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

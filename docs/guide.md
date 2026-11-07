@@ -2704,8 +2704,12 @@ dance floor in her club; her crew quarters keep the soft carpet of the rest of h
 over it in three gyroscope rings. Use it and it spools up with a rising whine, its rings spinning faster and glowing sky
 blue; mostly it then fires with a deep whump, sparks crackling round its racing white-blue rings, and runs a while
 before it winds down. But now and then it sputters instead: its rings slow and flicker red, smoke puffs from it and it
-coughs, and it stays so until you thump it, using it again, when it kicks back in with a clang and fires. The Jump Drive
-is among her blocks in the creative tab, and the server config's `freighter.engineering` builds her without it.
+coughs, and it stays so until you thump it, using it again, when it kicks back in with a clang and fires. On the wall
+behind it hangs her breaker board: six big switches in two rows, one for each of her rooms under a band of its LED
+colour, its lamp lit while the room's strips are. Flip one and that room's lights go out with a heavy clack, a spark and
+a power hum falling away; flip it back and they come on again as bright as they were. A room put out at its own panel
+shows off on the board too. The Jump Drive and the Breaker Board are among her blocks in the creative tab, and the
+server config's `freighter.engineering` builds her without them.
 
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
