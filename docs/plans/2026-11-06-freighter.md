@@ -795,6 +795,10 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   club and cool in the crew quarters, the bandstand's footlights lighting its band; her corridor measures block light
   8 to 10 and the club 5 before its stage, checked by freighter-lights. The pair wanted the corridor brighter than the
   first cut's single washer between doorways; it has three now.
+- Her rooms begin (M6), out of blocks the mod already has: a bar along the club's straight wall, the rocket club's
+  counter, stools, taps, bartender and back bar (6250daa7); four bunks with their reading lights in her crew quarters
+  and a booth, a low table among four seats, in her lounge (4c8a4a21); and pallet racks and crates in her cargo hold
+  (b87eb397). Checked by freighter-band and freighter-rooms. Engineering, the med bay and the galley are still bare.
 
 ### For Jan to look at
 
@@ -814,6 +818,9 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
 - Her ramp refuses where the ground under its foot rises (no adapting foot lip yet), and two freighters with ramps
   in one world were not tried.
 - The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet, as her lounge is not built.
+- Her rooms are big for their furniture: the lounge's booth and the crew quarters' bunks stand in a lot of floor, and
+  the cargo hold's far wall is dark (its far-wall washer finds no padded wall there by the prongs' gap). Her bartender
+  is the rocket's tan robot, while her deck robots and band are white and teal: two robot families aboard.
 - Her top turret has no gunner's sight on screen yet (the plain crosshair is honest, the cannon aiming at what it
   covers), no bottom turret and no training drones; seen sideways from the seat, the dome's lower ring hides low
   targets, which its arc (level to 85° up) cannot reach anyway.
