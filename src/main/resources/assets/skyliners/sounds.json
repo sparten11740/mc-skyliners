@@ -701,6 +701,24 @@
       }
     ]
   },
+  "freighter_legs_up": {
+    "subtitle": "subtitles.skyliners.freighter_legs_up",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_legs_up",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "freighter_legs_down": {
+    "subtitle": "subtitles.skyliners.freighter_legs_down",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_legs_down",
+        "attenuation_distance": 24
+      }
+    ]
+  },
   "freighter_engine_idle": {
     "subtitle": "subtitles.skyliners.freighter_engine_idle",
     "sounds": [
@@ -992,6 +1010,60 @@
     "sounds": [
       {
         "name": "skyliners:freighter_computer_magpie_ready",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_jump_spooling": {
+    "subtitle": "subtitles.skyliners.freighter_computer_jump_spooling",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_jump_spooling",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_jump_go": {
+    "subtitle": "subtitles.skyliners.freighter_computer_jump_go",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_jump_go",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_jump_arrived": {
+    "subtitle": "subtitles.skyliners.freighter_computer_jump_arrived",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_jump_arrived",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_jump_no_pin": {
+    "subtitle": "subtitles.skyliners.freighter_computer_jump_no_pin",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_jump_no_pin",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_jump_grounded": {
+    "subtitle": "subtitles.skyliners.freighter_computer_jump_grounded",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_jump_grounded",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_jump_too_near": {
+    "subtitle": "subtitles.skyliners.freighter_computer_jump_too_near",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_jump_too_near",
         "attenuation_distance": 1024
       }
     ]

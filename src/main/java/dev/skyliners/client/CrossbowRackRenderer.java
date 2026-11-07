@@ -16,16 +16,17 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Draws the laser crossbow lying across its rack's pegs while it is racked (see {@link CrossbowRackBlock}), as its own
- * item is drawn, flat against the board, its stock to the viewer's right and its bow to the left. Left out while out of
- * sight or taken down.
+ * item is drawn on a wall: its top to the viewer, its stock level across the pegs, its muzzle to the viewer's right and
+ * its arms spread up and down the board. Left out while out of sight or taken down.
  */
 public class CrossbowRackRenderer implements BlockEntityRenderer<CrossbowRackBlockEntity> {
-    /** Where the crossbow lies, as drawn for a rack facing north: its middle, from the block's corner, and its size. */
-    private static final float MIDDLE_Y = 0.55F;
-    private static final float FROM_WALL = 0.8F;
+    /**
+     * Where the crossbow lies, as drawn for a rack facing north: the middle of its stock, from the block's corner, up
+     * at the pegs and out from the wall so its underside rests on them; and its size.
+     */
+    private static final float MIDDLE_Y = 0.45F;
+    private static final float FROM_WALL = 0.68F;
     private static final float SIZE = 0.75F;
-    /** How far its picture, drawn corner to corner, is turned to lie level across the pegs, in degrees. */
-    private static final float LEVEL = 45;
     /** The crossbow as its item is drawn. */
     private final ItemStack crossbow = new ItemStack(SkylinersRegistry.LASER_CROSSBOW.get());
 
@@ -40,8 +41,6 @@ public class CrossbowRackRenderer implements BlockEntityRenderer<CrossbowRackBlo
         pose.pushPose();
         pose.rotateAround(Axis.YP.rotationDegrees(180 - facing.toYRot()), 0.5F, 0, 0.5F);
         pose.translate(0.5, MIDDLE_Y, FROM_WALL);
-        pose.mulPose(Axis.YP.rotationDegrees(180));
-        pose.mulPose(Axis.ZP.rotationDegrees(LEVEL));
         pose.scale(SIZE, SIZE, SIZE);
         Minecraft.getInstance().getItemRenderer().renderStatic(crossbow, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, pose, buffers,
             rack.getLevel(), 0);

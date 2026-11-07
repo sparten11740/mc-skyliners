@@ -67,21 +67,32 @@ public final class LaserFire {
 
     /**
      * A bolt fired from a point, landing where a trace found: a hostile mob it struck hurt so much, by whoever fired
-     * it; the bolt drawn in its glow's colour for everyone within so many blocks; sparks where it strikes. Gives the
-     * mob it hurt, if any, for its shooter to throw back.
+     * it; the bolt drawn in its glow's colour for everyone within so many blocks, leaving the weapon of whoever holds
+     * it as each of them draws it, if it is held in hand rather than mounted; sparks where it strikes. Gives the mob it
+     * hurt, if any, for its shooter to throw back.
      */
     @Nullable
-    public static LivingEntity strike(ServerLevel level, @Nullable Entity shooter, Vec3 from, HitResult hit, float damage, int glow, double seen) {
+    public static LivingEntity strike(ServerLevel level, @Nullable Entity shooter, Vec3 from, HitResult hit, float damage, int glow, double seen,
+        @Nullable Entity holder) {
         Vec3 struck = hit.getLocation();
         LivingEntity hurt = null;
         if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity target && hurts(target)) {
             target.hurt(laser(level, shooter), damage);
             hurt = target;
         }
-        PacketDistributor.sendToPlayersNear(level, null, from.x, from.y, from.z, seen, new LaserBolt(from, struck, glow));
+        LaserBolt bolt = new LaserBolt(from, drawnTo(level, hit), glow, holder == null ? LaserBolt.NO_HOLDER : holder.getId());
+        PacketDistributor.sendToPlayersNear(level, null, from.x, from.y, from.z, seen, bolt);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, struck.x, struck.y, struck.z, SPARKS, SPARK_SPREAD, SPARK_SPREAD, SPARK_SPREAD,
             SPARK_SPEED);
         return hurt;
+    }
+
+    /**
+     * Where a bolt is drawn landing: where it struck, but among a ship's blocks where it struck one of hers, so that a
+     * client draws it landing on her as she is drawn there, a little behind where the server has her.
+     */
+    private static Vec3 drawnTo(ServerLevel level, HitResult hit) {
+        return hit instanceof BlockHitResult block ? SableFlight.toPlot(level, block.getBlockPos(), hit.getLocation(), false) : hit.getLocation();
     }
 
     /** Whether a bolt hurts what it strikes: a hostile mob, alive. */

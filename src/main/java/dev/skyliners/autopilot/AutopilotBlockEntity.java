@@ -8,12 +8,12 @@ import dev.skyliners.airframe.Livery;
 import dev.skyliners.block.Announcement;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.Control;
-import dev.skyliners.block.GearBayBlockEntity;
 import dev.skyliners.block.GearLeverBlockEntity;
 import dev.skyliners.block.Loaded;
 import dev.skyliners.block.ParkingBrakeBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.Relays;
+import dev.skyliners.block.RetractableLegBlockEntity;
 import dev.skyliners.block.Stowing;
 import dev.skyliners.block.ThrustLeverBlock;
 import dev.skyliners.block.ThrustRelayBlock;
@@ -2430,7 +2430,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             linksChecked = true;
             // The steering and brake relays of a leg folded up are away with it, not lost.
             List<BlockPos> links = Stream.of(relays.values().stream().flatMap(List::stream), controls.stream(), flight.links().stream())
-                .flatMap(each -> each).filter(link -> !GearBayBlockEntity.stows(level, worldPosition.offset(link))).toList();
+                .flatMap(each -> each).filter(link -> !RetractableLegBlockEntity.stows(level, worldPosition.offset(link))).toList();
             Turning.mend(level, worldPosition, links, AutopilotBlockEntity::linked, this::turnLinks);
         }
     }

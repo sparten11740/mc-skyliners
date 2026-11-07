@@ -217,7 +217,10 @@ const VIEW_BACK_TICKS = 2;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
-// full health, in half hearts; and how long it is left to cool after venting, in ticks.
+// full health, in half hearts; how long it is left to cool after venting, in ticks; and how many shots in a row vent
+// it. Its bolt: how soon after a shot it is looked for and how much later again, in ticks; how long it must have shown
+// by then at least, in ticks, more than the blink of four it once was; and how near the eye it must leave from, in
+// blocks, as the crossbow's muzzle is.
 const CROSSBOW_CHARGE_TICKS = 30;
 const CROSSBOW_HELD_LONG_TICKS = 60;
 const CROSSBOW_TARGET_AHEAD = 6;
@@ -225,6 +228,17 @@ const CROSSBOW_AIM_DOWN = 8;
 const CREEPER_HEALTH = 20;
 const COW_HEALTH = 10;
 const CROSSBOW_COOLED_TICKS = 100;
+const CROSSBOW_HEAT = 3;
+const BOLT_LOOKED_FOR_TICKS = 3;
+const BOLT_LATER_TICKS = 15;
+const BOLT_SHOWN_TICKS = 8;
+const BOLT_NEAR_EYE = 1.5;
+// The laser crossbow aboard a flying freighter: how fast she flies along, in blocks a second, what share of that she
+// must have come up to, and how far up the player looks to fire, in degrees, clear of her controls, which a click
+// would work instead of firing.
+const CROSSBOW_FLIGHT_SPEED = 20;
+const CROSSBOW_FLIGHT_UP_TO = 0.8;
+const CROSSBOW_FLIGHT_AIM_UP = 80;
 // A freighter's lights: how many wall washers she has at least, and how bright her club is before its stage at least,
 // as a block's light.
 const FREIGHTER_LIGHTS = 24;
@@ -259,6 +273,40 @@ const FREIGHTER_ROOMS = 6;
 const FREIGHTER_STRIPS = 300;
 // How many different floors her six rooms have: each its own, her crew quarters keeping her carpet.
 const OWN_FLOORS = 6;
+// Her canopy seen from inside: where on the screen the sky ahead is looked at through it from the pilot's seat, as
+// frame fractions from the top left, between her canopy's ribs; how much darker it must look once her dimmer darkens
+// the canopy, as a share of how bright it was clear; and how long the dimmer and a drawn frame are given, in ticks.
+const CANOPY_SKY = "sky=0.62,0.05,0.72,0.18";
+const CANOPY_DIMMED_SHARE = 0.6;
+const CANOPY_SETTLE = 20;
+// Her canopy's dimmer: how far its face stands out from her wall, in blocks, and where its darkest and its clear button
+// are on it, so far along it toward its side a quarter turn clockwise from the way it faces and up from its foot, in
+// blocks.
+const DIMMER_FACE = 0.12;
+const DIMMER_DARKEST = [0.8, 0.15];
+const DIMMER_CLEAR = [0.2, 0.75];
+// Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
+const CONSOLE_SLICES = { console_switches: 2, console_readouts: 1, console_boost: 1, console_scanner: 1, console_jump: 1, console_engines: 1 };
+const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump"];
+// Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
+// much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
+// speed, in ticks, and how near, in blocks a second.
+const BOOST_CRUISE = 10;
+const BOOST_WATCH_TICKS = 160;
+const BOOST_GAIN = 10;
+const BOOST_SETTLE_TICKS = 600;
+const BOOST_SETTLED_WITHIN = 3;
+// Her hyperspace jump: how far off along the ground her pin is, in blocks, and how tall the pillar standing on it, in
+// blocks over the ground; how long she is given from the button to come out there, in ticks; how near the pin her
+// middle must come out, and how far her lowest block must keep over the pillar's top, in blocks.
+const JUMP_PIN = 2000;
+const JUMP_PILLAR = 70;
+const JUMP_WITHIN = 600;
+const JUMP_NEAR = 8;
+const JUMP_CLEAR = 10;
+// The longest a server tick may take while she jumps, in milliseconds: loading the land at her pin all at once held one
+// for nearly four seconds.
+const JUMP_LONGEST_TICK = 1500;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -350,6 +398,13 @@ const GALLERY_POSTER_BLOCKS = 34;
 // The beach's pieces that go up on a wall as well as on a floor.
 const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
+// A freighter's landing legs: how many she stands on; how long they are given to draw up once she is cruising, in
+// ticks; how often her landing is looked at, in ticks; and how near the ground her feet count as touching it, in blocks
+// over where her control head stood on it.
+const FREIGHTER_LEGS = 5;
+const LEGS_UP_TICKS = 300;
+const LEGS_LOOK_EVERY = 5;
+const LEGS_TOUCHING = 2.5;
 const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
@@ -1199,9 +1254,11 @@ function aimFromSight(point) {
   return gunnerSight();
 }
 
-// The laser crossbow: charged by holding use, it fires an amber bolt that strikes a creeper hard and leaves a cow
-// unharmed; three quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the
-// world on easy, as a peaceful world takes hostile mobs away at once.
+// The laser crossbow: charged by holding use, it fires an amber bolt that the player sees leave the crossbow's muzzle
+// in front of them and that shows a while, not for a blink; it strikes a creeper hard and leaves a cow unharmed; three
+// quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the world on easy, as
+// a peaceful world takes hostile mobs away at once. The quick shots go in one script: sent one by one, the time between
+// them let it cool before the third.
 function checkLaserCrossbow() {
   const x = nextSite++ * SITE_APART;
   creative();
@@ -1211,20 +1268,39 @@ function checkLaserCrossbow() {
   const charged = /laser_crossbow_charged\W*1b/.test(JSON.stringify(send("server data get entity @p SelectedItem")[0]));
   expect(charged && !heard("skyliners:laser_crossbow_shot", held, 0), "laser crossbow: held long past its click, it charges and does not fire by itself",
     charged ? "charged" : "not charged");
-  must("use; wait 10t");
+  seesItsBolt("laser crossbow: fired", "use");
   must("server difficulty easy");
   const struck = shootAt("creeper", x);
   must("server difficulty peaceful");
   expect(struck < CREEPER_HEALTH, "laser crossbow: charged and fired, its bolt strikes a creeper", `health ${struck} of ${CREEPER_HEALTH}`);
   const spared = shootAt("cow", x);
   expect(spared === COW_HEALTH, "laser crossbow: its bolt never hurts a cow", `health ${spared} of ${COW_HEALTH}`);
-  const since = now();
-  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
-  expect(!heard("skyliners:laser_crossbow_shot", since, 0), "laser crossbow: after three quick shots it vents, and does not fire");
+  must(`wait ${CROSSBOW_COOLED_TICKS}t`);
+  const quick = now();
+  const shot = `use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 5t`;
+  must(`${Array(CROSSBOW_HEAT + 1).fill(shot).join("; ")}; wait 10t`);
+  const shots = played("skyliners:laser_crossbow_shot", quick).length;
+  expect(shots === CROSSBOW_HEAT && heard("minecraft:block.fire.extinguish", quick, 0),
+    "laser crossbow: three quick shots and it vents, hissing, and does not fire a fourth", `${shots} shots`);
   must(`wait ${CROSSBOW_COOLED_TICKS}t`);
   const cooled = now();
   must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
   expect(heard("skyliners:laser_crossbow_shot", cooled, 0), "laser crossbow: once cooled, it charges and fires again");
+}
+
+// Fires the laser crossbow in hand, charged, by a script ending in its use, and looks at its bolt as the player sees
+// it: drawn leaving the crossbow's muzzle in front of them, not where the server had them, and still shown a moment
+// later, not gone in a blink.
+function seesItsBolt(what, fire, aimed = "") {
+  const before = must("skyliners:bolts").received ?? 0;
+  const bolt = must(`${fire}; wait ${BOLT_LOOKED_FOR_TICKS}t; skyliners:bolts`);
+  const [right, up, ahead] = (bolt.from_camera ?? "0,0,-99").split(",").map(Number);
+  const fromEye = Math.hypot(right, up, ahead);
+  expect(bolt.received > before && bolt.from_muzzle === true && ahead > 0 && fromEye <= BOLT_NEAR_EYE,
+    `${what}, its bolt is drawn leaving the crossbow's muzzle in front of the player`,
+    `${bolt.received - before} sent, from the muzzle ${bolt.from_muzzle}, from the eye ${right}, ${up}, ${ahead}${aimed ? `, ${aimed}` : ""}`);
+  const later = must(`wait ${BOLT_LATER_TICKS}t; skyliners:bolts`);
+  expect(later.shown >= BOLT_SHOWN_TICKS, `${what}, its bolt shows a while, not for a blink`, `shown ${later.shown} ticks`);
 }
 
 // Summons a mob that stands still in front of the player, charges the laser crossbow and fires it at the mob: its
@@ -1236,6 +1312,31 @@ function shootAt(mob, x) {
   must(`server kill @e[type=${mob}]; wait 5t`);
   const health = Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1]);
   return Number.isNaN(health) ? 0 : health;
+}
+
+// The laser crossbow fired aboard a freighter flying along: its bolt is drawn leaving the crossbow in the player's
+// hands as they ride along with her, not blocks behind, where the server had them as it fired, by the time it is drawn.
+function checkLaserCrossbowInFlight() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + FREIGHTER_CLIMB;
+  must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off to cruise");
+  if (!up) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:autopilot 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  must(`skyliners:autopilot fly altitude=${height} speed=${CROSSBOW_FLIGHT_SPEED} heading=${up.heading}`);
+  const going = waitForReport(freighterReport, (report) => report.ahead >= CROSSBOW_FLIGHT_SPEED * CROSSBOW_FLIGHT_UP_TO, FREIGHTER_UP_TICKS);
+  expect(going, "freighter: she flies along", `at ${freighterReport()?.ahead} blocks a second`);
+  must(`sable:tp ${at.join(",")}; wait 20t; server item replace entity @p weapon.mainhand with skyliners:laser_crossbow`);
+  const { aim } = must(`turn 0 ${-CROSSBOW_FLIGHT_AIM_UP}; wait 5t; status`);
+  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t`);
+  seesItsBolt("laser crossbow: fired aboard a freighter flying along", "use", `aimed at ${aim ?? "nothing in reach"}`);
+  must("skyliners:autopilot land");
 }
 
 // A freighter that has learnt far too much drag, as one did once she had hunted round her height: set to cruise at 20
@@ -1518,6 +1619,211 @@ function checkFreighterLeds() {
   expect(colours.size === panels.length, "freighter: each room's strips are a colour of their own", [...colours].join(", "));
   const floors = new Set(panels.map(([x, y, z]) => must(`block ${x},${y - 2},${z}`).id));
   expect(floors.size >= OWN_FLOORS, "freighter: her rooms have floors of their own", [...floors].join(", "));
+}
+
+// The yaw and pitch that look from an eye at a point, as the turn command takes them, in degrees.
+function aimFrom(eye, point) {
+  const [dx, dy, dz] = [0, 1, 2].map((axis) => point[axis] - eye[axis]);
+  const yaw = (Math.atan2(-dx, dz) * 180) / Math.PI;
+  const pitch = (-Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;
+  return `${round(yaw)} ${round(pitch)}`;
+}
+
+// The ways round, as a block's facing, a unit step along the ground and the yaw that looks that way; and the way a
+// quarter turn clockwise from each, seen from above.
+const WAYS = { north: [0, -1, 180], east: [1, 0, -90], south: [0, 1, 0], west: [-1, 0, 90] };
+const CLOCKWISE = { north: "east", east: "south", south: "west", west: "north" };
+
+// Presses a freighter's canopy dimmer at a point of its face, so far along it toward its side a quarter turn clockwise
+// from the way it faces, seen from above, and up from its foot, standing two blocks out in front of it; its face is
+// against her wall.
+function pressDimmer(dimmer, facing, along, up) {
+  const [x, y, z] = dimmer;
+  const [fx, fz] = WAYS[facing];
+  const [rx, rz] = WAYS[CLOCKWISE[facing]];
+  const eye = [x + 0.5 + fx * 2, y - 1 + EYE_HEIGHT, z + 0.5 + fz * 2];
+  const back = 0.5 - DIMMER_FACE;
+  const point = [x + 0.5 - fx * back + rx * (along - 0.5), y + up, z + 0.5 - fz * back + rz * (along - 0.5)];
+  must(`server tp @p ${eye[0]} ${y - 1} ${eye[2]}; turn ${aimFrom(eye, point)}; wait 5t; use any; wait ${CANOPY_SETTLE}t`);
+}
+
+// How bright the sky ahead looks through a freighter's canopy from her pilot's seat, its luma from 0 to 255: seated,
+// looking the way her nose points and up a little.
+function skyThroughCanopy(seat, nose) {
+  const [, , yaw] = WAYS[nose];
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t; turn ${yaw} -20; wait ${CANOPY_SETTLE}t`);
+  const luma = must(`pixels ${CANOPY_SKY}`).sky.luma;
+  must("key press key.sneak 10t; wait 10t");
+  return luma;
+}
+
+// A freighter's canopy seen from inside: one smooth cone drawn by its lining, not her glass and its struts stepping
+// round her curve, which are drawn from outside only; and dimmed by her dimmer, the view through it darkens with her
+// glass, as smooth.
+function checkFreighterCanopy() {
+  ship("freighter");
+  const linings = must("find skyliners:canopy_lining 128 2").rows;
+  expect(linings.length === 1, "freighter: her canopy has its lining", `${linings.length} linings`);
+  const unlined = must("find skyliners:dimming_glass[lined=false] 128 1").count ?? 0;
+  const lined = must("find skyliners:dimming_glass[lined=true] 128 1").count ?? 0;
+  expect(unlined === 0 && lined > 0, "freighter: her canopy's glass is drawn from outside only, its lining drawing its inside",
+    `${lined} lined, ${unlined} not`);
+  expect((must("find skyliners:canopy_frame 128 1").count ?? 0) > 0, "freighter: the struts between her canopy's panes are its frame");
+  const [dimmer] = must("find skyliners:window_dimmer 128 1").rows;
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  if (!dimmer || !head) {
+    expect(false, "freighter: her cockpit has its dimmer and control head");
+    return;
+  }
+  const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
+  const facing = must(`block ${dimmer.at_abs.join(",")}`).props.facing ?? "east";
+  const seat = pilotSeat();
+  const clear = skyThroughCanopy(seat, nose);
+  pressDimmer(dimmer.at_abs, facing, ...DIMMER_DARKEST);
+  const dimmed = skyThroughCanopy(seat, nose);
+  expect(dimmed < clear * CANOPY_DIMMED_SHARE, "freighter: dimmed, the sky ahead through her canopy darkens from her seat",
+    `luma ${round(clear)} clear, ${round(dimmed)} dimmed`);
+  pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
+}
+
+// A freighter's console: her modules curve round her seats, each a slice of one ring; on the ground her boost button
+// will not boost, saying so with a low note; and a bank of toggles clicks a toggle up under the hand.
+function checkFreighterConsole() {
+  ship("freighter");
+  const slices = Object.entries(CONSOLE_SLICES).map(([kind, count]) => [kind, count, must(`find skyliners:${kind} 128 ${count + 1}`).rows]);
+  for (const [kind, count, rows] of slices) {
+    expect(rows.length === count, `freighter: her console has its ${kind.replace("console_", "")}`, `${rows.length} of ${count}`);
+  }
+  const all = slices.flatMap(([, , rows]) => rows.map((row) => row.at_abs));
+  const curved = all.filter((at) => send(`server data get block ${at.join(" ")} Facet.Inner`)[0].ok !== false);
+  expect(curved.length === all.length, "freighter: each module is a slice of her half-round console", `${curved.length} of ${all.length}`);
+  const [boost] = must("find skyliners:console_boost 128 1").rows;
+  if (boost) {
+    const pressed = now();
+    useModule(boost.at_abs);
+    const refused = must(`messages since=${pressed} kind=actionbar match=*boosts*only* limit=1`).rows.length > 0;
+    expect(refused && played("*note_block.bass*", pressed).length > 0, "freighter: on the ground her boost button says no, with a low note");
+  }
+  const [toggles] = must("find skyliners:console_switches 128 1").rows;
+  if (toggles) {
+    const before = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
+    const flipped = now();
+    useModule(toggles.at_abs);
+    const after = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
+    expect(after !== before && played("*lever.click*", flipped).length > 0, "freighter: a toggle on her console clicks over", `${before} to ${after}`);
+  }
+}
+
+// Uses a console module on the ground as her pilot would, from her seat.
+function useModule(at) {
+  const seat = pilotSeat();
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t; use ${at.join(",")}; wait 10t`);
+  must("key press key.sneak 10t; wait 10t");
+}
+
+// Where a freighter's pilot sits, standing on the ground near the player: on her left, two blocks from her control head.
+function pilotSeat() {
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
+  const [lx, lz] = WAYS[CLOCKWISE[CLOCKWISE[CLOCKWISE[nose]]]];
+  return [head.at_abs[0] + 2 * lx, head.at_abs[1], head.at_abs[2] + 2 * lz];
+}
+
+// A freighter's boost: cruising, its button fires her mains flat out a while, her roar going up and her speed with
+// it, and afterwards she slows back to her speed; pressed again straight after, it rests, saying so.
+function checkFreighterBoost() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.ahead - BOOST_CRUISE) < 1,
+    FREIGHTER_UP_TICKS);
+  expect(cruising, "freighter: she lifts off and cruises at the speed set");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:console_boost 1 side=server`).rows[0];
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*speed_boost*", pressed, LOOK_EVERY)), "freighter: her boost button roars into it");
+  const rows = must(`sample skyliners:freighter every 20t x${BOOST_WATCH_TICKS / 20}`, BUILD_SECONDS).rows;
+  const fastest = Math.max(...rows.map((row) => row.ahead));
+  expect(fastest >= BOOST_CRUISE + BOOST_GAIN, "freighter: boosting, she surges ahead", `fastest ${round(fastest)}, set ${BOOST_CRUISE}`);
+  const again = now();
+  must(`use ${at.join(",")}`);
+  expect(must(`messages since=${again} kind=actionbar match=*resting* limit=1`).rows.length > 0, "freighter: pressed again at once, the boost rests");
+  const settled = waitForReport(freighterReport, (report) => Math.abs(report.ahead - BOOST_CRUISE) < BOOST_SETTLED_WITHIN, BOOST_SETTLE_TICKS);
+  expect(settled, "freighter: afterwards she slows back to her speed", settled ? `at ${settled.ahead}` : "");
+  must("skyliners:autopilot land");
+}
+
+// A freighter's hyperspace jump: flying along with no pin, her jump button says there is nowhere to jump to; flying to a
+// pin far off, a pillar of stone standing on it taller than she flies, the button spools her drive up, the land round
+// the pin loads as she spools without ever holding the server up, and she comes out over the pin, whoever pressed it
+// still aboard, her lowest block kept well clear over the pillar's top rather than in it.
+function checkFreighterJump() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const below = head[1] - ground;
+  const height = head[1] + FREIGHTER_CLIMB;
+  const pin = [site.x + JUMP_PIN, site.z];
+  must(`server forceload add ${pin[0]} ${pin[1]}; server fill ${pin[0]} ${ground} ${pin[1]} ${pin[0]} ${ground + JUMP_PILLAR - 1} ${pin[1]} stone`);
+  must(`server forceload remove ${pin[0]} ${pin[1]}`);
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(cruising, "freighter: she lifts off and cruises");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:console_jump 1 side=server`).rows[0];
+  const noPin = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*jump_no_pin*", noPin, LOOK_EVERY)), "freighter: with no pin set, her jump button says there is nowhere to jump to");
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE} pin=${pin[0]},${pin[1]}; wait 20t`);
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  send("?perf stop");
+  must(`perf start jump; use ${at.join(",")}`);
+  expect(Boolean(heard("*jump_drive_spool*", pressed, LOOK_EVERY)), "freighter: her jump button spools her drive up");
+  // Waited out on the client's clock: a question for the server would wait behind the land loading at her pin.
+  must(`wait ${JUMP_WITHIN}t`, BUILD_SECONDS);
+  const longest = must("perf stop").summary?.server?.mspt?.max ?? 0;
+  const out = freighterReport();
+  const off = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
+  expect(off < JUMP_NEAR, "freighter: she comes out of the jump over her pin", out ? `middle at ${out.middle}` : "no report");
+  if (off >= JUMP_NEAR) {
+    return;
+  }
+  const loaded = out.jump_loaded_after < 0 ? "not in yet as she went, at the cap" : `in after ${out.jump_loaded_after} ticks`;
+  expect(longest < JUMP_LONGEST_TICK, "freighter: her jump never holds the server up, the land at her pin loading as she spools",
+    `longest tick ${round(longest)} ms; the land under her ${loaded}`);
+  const clear = out.altitude - below - (ground + JUMP_PILLAR - 1);
+  expect(clear >= JUMP_CLEAR, "freighter: she comes out with her lowest block well clear over the pillar on her pin", `${round(clear)} blocks over it`);
+  const aboard = must("wait 40t; status");
+  expect(aboard.aboard !== undefined || JSON.stringify(aboard).includes("aboard"), "freighter: whoever pressed the button is still aboard her",
+    aboard.pos?.map(round).join(","));
+  must("skyliners:autopilot land");
+}
+
+// The console's modules set up by hand: each kind stands on a floor as a desk, fixed to a wall as a plate and hung
+// under a ceiling as a wedge, each facing whoever put it up.
+function checkConsoleMounts() {
+  creative();
+  const x = nextSite++ * SITE_APART;
+  const z = 0;
+  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t; server fill ${x - 6} ${ground} ${z - 4} ${x + 6} ${ground + 3} ${z - 4} stone`);
+  must(`server fill ${x - 6} ${ground + 3} ${z - 3} ${x + 6} ${ground + 3} ${z - 1} stone`);
+  CONSOLE_KINDS.forEach((kind) => must(`server give @p skyliners:${kind}`));
+  const tries = [["floor", ground, z, 30], ["wall", ground + 1, z - 3, 0], ["ceiling", ground + 2, z - 2, -50]];
+  for (const [mount, y, at, pitch] of tries) {
+    for (const [i, kind] of CONSOLE_KINDS.entries()) {
+      const spot = x - 4 + 2 * i;
+      must(`server tp @p ${spot + 0.5} ${ground} ${z + 1.5} 180 ${pitch}; wait 5t; place skyliners:${kind} ${spot},${y},${at}`);
+      const state = must(`block ${spot},${y},${at}`);
+      expect(state.props?.mount === mount && state.props?.facing === "south", `${kind}: put up on a ${mount}, it is put up so, facing whoever put it up`,
+        `${state.props?.mount} facing ${state.props?.facing}`);
+    }
+  }
 }
 
 // A freighter's jump drive in engineering: used, it spools up and fires, or sputters until thumped, when it fires; and
@@ -1892,6 +2198,74 @@ function checkFreighterExteriorLiftOff() {
   expect(left.length === 0, "freighter: lifting off, she leaves none of her outside behind", left.join(", "));
 }
 
+// How many blocks of her legs a freighter flying carries, by id: their struts, their foot plates and her ramp's call
+// button on one of them.
+function legBlocks(freighter) {
+  const count = (id, most) => must(`sable:find ${freighter} skyliners:${id} ${most} side=server`).rows.length;
+  return { struts: count("landing_gear", 100), feet: count("zeppelin_fabric", 100), button: count("ramp_button", 1) };
+}
+
+// A freighter's landing legs, watched from the ground: she is built with a bay where each leg meets her belly; once
+// she is well clear of the ground her legs draw up into it, no strut, foot plate or call button left hanging under
+// her; set to land, they are down again before her feet touch the ground, and she stands level on them, every block of
+// them back. Her legs used to hang under her all through every flight.
+function checkFreighterLegs() {
+  layDown("freighter");
+  const bays = found("leg_bay");
+  expect(bays === FREIGHTER_LEGS, "freighter: she is built with a bay where each of her legs meets her belly", `${bays} bays`);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const built = legBlocks(freighter);
+  const raised = waitForReport(freighterReport, (report) => report.legs === "up", FREIGHTER_UP_TICKS + LEGS_UP_TICKS);
+  const flying = freighterReport();
+  expect(raised, "freighter: well clear of the ground, her legs draw up into her belly", `legs ${flying?.legs}, ${flying?.phase} at ${flying?.altitude}`);
+  const hanging = legBlocks(freighter);
+  expect(hanging.struts + hanging.feet + hanging.button === 0, "freighter: her legs up, no strut, foot plate or call button hangs under her",
+    `${hanging.struts} struts, ${hanging.feet} foot plates, ${hanging.button} button`);
+  waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  must("skyliners:autopilot land");
+  const touching = waitForReport(freighterReport, (report) => report.altitude - head[1] < LEGS_TOUCHING, FREIGHTER_DOWN_TICKS);
+  expect(touching?.legs === "down", "freighter: set to land, her legs are down before her feet touch the ground",
+    `legs ${touching?.legs} at ${touching?.altitude}, her control head stood at ${head[1]}`);
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: she lands and switches herself off", down ? "" : `still ${freighterReport()?.phase}`);
+  if (!down) {
+    return;
+  }
+  const lean = Math.max(Math.abs(down.tilt_front), Math.abs(down.tilt_right));
+  expect(lean < FREIGHTER_LEVEL_WITHIN && Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: she stands level on her legs",
+    `leaning ${lean} degrees, control head at ${down.altitude}, built at ${head[1]}`);
+  const back = legBlocks(freighter);
+  expect(back.struts === built.struts && back.feet === built.feet && back.button === built.button,
+    "freighter: every block of her legs is back, her ramp's call button among them",
+    `${back.struts} of ${built.struts} struts, ${back.feet} of ${built.feet} foot plates, ${back.button} of ${built.button} button`);
+}
+
+// A freighter built with her legs fixed, the server config's freighter.retractingLegs off, as one built before her legs
+// drew up has them: she has no bays, flies with her legs down all the while and comes down on them as ever.
+function checkFreighterFixedLegs() {
+  must("config skyliners server freighter.retractingLegs false");
+  try {
+    layDown("freighter");
+    expect(found("leg_bay") === 0, "freighter: her legs fixed, she is built with no leg bays");
+    const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+    must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+    const freighter = findShipFlying("skyliners:engine_grille");
+    const built = legBlocks(freighter);
+    const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+    const flying = legBlocks(freighter);
+    expect(up && up.legs === "fixed" && flying.struts === built.struts && flying.feet === built.feet,
+      "freighter: her legs fixed, she climbs to the height set with them down", `${up?.phase}, legs ${up?.legs}, ${flying.struts} of ${built.struts} struts`);
+    must("skyliners:autopilot land");
+    const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+    expect(down && Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: her legs fixed, she lands on them and switches herself off",
+      `${down?.phase ?? freighterReport()?.phase}, control head at ${down?.altitude}, built at ${head[1]}`);
+  } finally {
+    must("config reset");
+  }
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -2261,7 +2635,8 @@ const CHECKS = {
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
-  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
+  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },
+  "laser-crossbow-flight": { run: checkLaserCrossbowInFlight, slow: true, about: "the laser crossbow's bolt, fired aboard a flying freighter, is seen leaving it" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
@@ -2269,6 +2644,11 @@ const CHECKS = {
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
+  "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
+  "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
+  "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
+  "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
+  "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
@@ -2284,6 +2664,8 @@ const CHECKS = {
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },
+  "freighter-legs": { run: checkFreighterLegs, slow: true, about: "a freighter's legs draw up into her belly once she is clear, and are down again before she lands on them" },
+  "freighter-fixed-legs": { run: checkFreighterFixedLegs, slow: true, about: "a freighter built with fixed legs, as before they drew up, flies and lands on them as ever" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

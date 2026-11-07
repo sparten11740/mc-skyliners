@@ -2579,12 +2579,58 @@ Freighter Blueprint, under Blueprints in the creative tab, lays her down just pa
 toward you, and operators can build one with `/skyliners build <pos> <north|east|south|west> freighter`. She is always
 built at the same size, whatever the server config's scale: a disc 60 blocks across, a low dome over and under a short
 upright rim, with two flat prongs reaching forward either side of a loading gap, 84 blocks long in all from their tips
-to her stern, standing on five landing legs, a strut down to a square foot plate each, her belly a couple of blocks off
-the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
+to her stern, standing on five landing legs, a strut down to a square foot plate each from a leg bay set into her belly,
+a block of gunmetal housing ringed in hazard stripes, her belly a couple of blocks off the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
 of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go. Her canopy's
 glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
 through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
+From her seats her canopy is one smooth round cone of tinted glass with a flat glazed front, not glass stepping round
+her curve block by block: her four spokes, the ring half way along and the rims round the cone's base and its front are
+chunky dark gunmetal ribs studded with rivets, a row of small amber lamps glowing round the base, and dimmed it is just
+as smooth, the whole cone darkening evenly to all but black. From outside she looks as ever, her struts her silver
+cover and her glass smoked. The server config's `freighter.smoothCanopy` draws her canopy block by block from inside
+too, as freighters built before it are.
+
+Before her seats her console curves round in a half circle, from in front of the pilot round ahead of the control head
+to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky
+controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
+turned toward her middle so whichever seat you fly from it faces you. Left to right: a bank of toggles, her flight
+readouts, the boost button, the scanner, the hyperspace jump button, her engines and another bank of toggles. Every
+reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons, her
+height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
+with north marked red; gauges of her lift thrusters' push in cyan, her mains' in amber and her boost, whose levers on
+the desk move with them; and a round scope whose beam sweeps round, her pin an amber diamond pulsing at its bearing and
+whoever is near a green dot lit as the beam passes. Click the scope and it pings, a ring going out over it with a chime;
+click a readout or the engines and they beep, every lamp lit for a moment; click a toggle and it clicks up or down, its
+square on the screen over it lighting in its colour. While she flies along, the big red button in its hazard-striped
+ring fires her mains flat out for eight seconds: her roar goes up at her stern and she surges ahead, holding her height
+and her heading, its screen's chevrons flashing orange over a bar running down; then she slows back to her speed, the
+chevrons red in a ring of segments lighting one by one as it rests for ten seconds, and green again when it is ready.
+On the ground, lifting off, landing or resting, it only says no with a low note. Before she is assembled, her screens
+show the power sign pulsing amber and only one lamp blinks. Each module is among her blocks in the creative tab (Flight
+Readout Console, Scanner Console, Engine Console, Toggle Console and Boost Console) and works on its own: put down on a
+floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down toward you, and it reads
+the nearest autopilot, showing the standby picture with none; the scope sweeps for whoever is near wherever it stands,
+pointing the way its desk does. The server config's `freighter.console` builds her without it.
+
+The big blue button on the co-pilot's side, in its ring of blue and white stripes under a starburst, jumps her through
+hyperspace to her pin. It lights up, its starburst pulsing cyan, only while she flies along to a pin set on her
+autopilot's map; otherwise it is dark, and pressed it only says why not, her computer's gruff voice with it: nowhere to
+jump to, not from down on the ground, or a pin so near she should just fly there. Pressed while it is lit, her
+computer says her jump drive is spooling up and to hold on to something, and her drive in engineering whines up too;
+for everyone aboard, wherever they are in her, stars come out over the view and stretch into streaks rushing out
+toward them, longer and faster, the view widening and deepening to blue, while the jump screen's streaks stream out
+inside a ring of segments lighting one by one. Meanwhile the land round the pin is loaded, far out, so she does not
+stall coming out there. Her computer lets go with a dry "here goes nothing", the streaks race, and in a white flash and
+a deep whump she is over the pin, everyone aboard with her, the streaks falling back to points; she comes out as high
+as she flew, or higher where the land there is higher, always with her lowest block at least ten blocks over the
+highest block under her, trees and buildings and all. Then her autopilot carries on as if she had flown there,
+hovering over the pin or, set to land, coming down beside it. Her computer welcomes everyone to wherever this is. If
+she stops flying along before she goes, the jump is called off: the streaks fade and her computer reports a fault. The
+Hyperspace Jump Console is among her blocks in the creative tab and works for any freighter near it, on a floor, a wall
+or a ceiling. The server config's `freighter.hyperspaceJump` switches the jump off; her console then has her flight
+readouts again where the jump button was.
 
 The tube out to her cockpit runs between ledges where its round wall meets her deck, and on them stands the fleet in
 miniature: models of the airliner, the zeppelin, the rocket and the freighter herself on their stands, their noses all
@@ -2604,10 +2650,20 @@ her and keep her deck level, more of their push going to whichever side dips, so
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
 tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
-control head stands between the pilot's seat and the co-pilot's, jump seats behind them, and the autopilot screen on
-the wall at the co-pilot's right hand, so the view ahead through her canopy is clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
+control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
+before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
+clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
-anywhere, and climbs to her height, her deck level all the way. Set a speed of nothing, she hovers there. Given a pin,
+anywhere, and climbs to her height, her deck level all the way. Once her feet are sixteen blocks over the ground her legs
+draw up into her belly, with a clunk and a hydraulic whine heard on her deck and on the ground under her: each strut's
+sleeves unlock and draw in, it telescopes up into its bay over six seconds, and its foot plate comes up with it to tuck
+flat under her belly, her ramp's call button going up with its leg. They come down again, five seconds and a heavy
+thunk as they lock, as soon as she comes down to land, flies lower than twelve blocks over the ground, or below
+sixteen sinks fast enough to reach it before they would be down; and she hovers ten blocks up until they are down and
+locked, so she
+always lands on her feet. The server config's `freighter.retractingLegs` builds her with her legs fixed, as a freighter
+built before her legs drew up has them; switched off later, legs already built still come down but no longer go up. Set
+a speed of nothing, she hovers there. Given a pin,
 she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for the
 last of the way, hovering over it or, set to land there, coming straight down near it. Set to land, she looks as she
 comes for clear, level ground within 64 blocks of the pin, all five of her legs' feet on dry, bare ground no more than a
@@ -2722,14 +2778,19 @@ you faced as you set it down. The server config's `freighter.turrets` builds her
 cannon from firing.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
-copper ingot), is her own weapon. Hold use to charge it, a ratchet and a rising whine, until it clicks, and let go: its
-coil glows bright and its lamps green. Use it again to fire an amber bolt the way you look, up to 48 blocks, which
-strikes hostile mobs hard and throws them back in a shower of sparks; it never hurts players, villagers, pets or
-animals, and never breaks a block. Three quick shots and it vents steam for a few seconds, its lamps red, hissing if you
-try it, before it charges again. The server config's `freighter.laserCrossbow` switches it off, leaving it a click. Its
-rack hangs on the wall of her entry hall, just in from the corridor, the crossbow lying across its two brass pegs: use
-it with an empty hand to take the crossbow down, and use it holding the crossbow to rack it again; an empty rack shows
-its bare pegs. The Crossbow Rack is among her blocks in the creative tab, put up empty.
+copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing
+emitters and a string of amber light between them, a copper-wound coil round its prod. Hold use to charge it, a ratchet
+and a rising whine: you raise it to aim as its coil glows warmer and then hot, until it clicks. Let go and it stays
+charged, its string drawn back in a V glowing near white and the three lamps at the back of its sight green; anyone
+watching sees you aim it in both hands. Use it again to fire: it kicks back with a flash at its muzzle, and an amber
+bolt flies from it the way you look, up to 48 blocks, leaving a glowing trail that fades, seen leaving your crossbow by
+you and everyone near, on the ground or aboard a ship in flight. It strikes hostile mobs hard and throws them back in a
+shower of sparks; it never hurts players, villagers, pets or animals, and never breaks a block. Three quick shots and it
+vents steam for a few seconds, its lamps red, hissing if you try it, before it charges again. The server config's
+`freighter.laserCrossbow` switches it off, leaving it a click. Its rack hangs on the wall of her entry hall, just in
+from the corridor, the crossbow lying across its two brass pegs: use it with an empty hand to take the crossbow down,
+and use it holding the crossbow to rack it again; an empty rack shows its bare pegs. The Crossbow Rack is among her
+blocks in the creative tab, put up empty.
 
 Her club, the room through the doorway at her port bow, has a bar along its straight wall, as the rocket's club has:
 a counter with stools and two drink taps, the robot bartender behind it selling mocktails, and back bars of bottles

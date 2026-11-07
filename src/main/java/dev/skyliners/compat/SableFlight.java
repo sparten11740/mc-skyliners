@@ -15,6 +15,7 @@ import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
 import dev.ryanhcode.sable.api.physics.callback.BlockSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintConfiguration;
 import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintHandle;
+import dev.ryanhcode.sable.api.physics.PhysicsPipeline;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
@@ -32,6 +33,7 @@ import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
+import dev.ryanhcode.sable.sublevel.system.SubLevelPhysicsSystem;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -293,6 +295,17 @@ public final class SableFlight {
      */
     public static boolean keepLoaded(BlockEntity blockEntity, boolean kept) {
         return SABLE && blockEntity.getLevel() instanceof ServerLevel && Access.keepLoaded(blockEntity, kept);
+    }
+
+    /**
+     * Moves the assembled airframe the block entity is part of straight across the world by an offset, in the world's
+     * directions, in blocks, as it lies, its motion stopped, in one tick, as a freighter's hyperspace jump does, those
+     * living among its blocks going with it. Sable carries whoever stands or sits on it along with the move as a rule,
+     * but not always, nor anyone in the air: whoever moves it puts them back aboard (see {@link #toPlot} and
+     * {@link #toWorld}). Whether there was one to move.
+     */
+    public static boolean jump(BlockEntity blockEntity, Vec3 by) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel && Access.jump(blockEntity, by);
     }
 
     /**
@@ -691,6 +704,21 @@ public final class SableFlight {
                 container.removeForceLoadTicket(airframe, KEPT, Unit.INSTANCE);
             }
             return kept;
+        }
+
+        static boolean jump(BlockEntity blockEntity, Vec3 by) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe) || airframe.isRemoved()) {
+                return false;
+            }
+            SubLevelPhysicsSystem physics = SubLevelPhysicsSystem.get(blockEntity.getLevel());
+            if (physics == null) {
+                return false;
+            }
+            PhysicsPipeline pipeline = physics.getPipeline();
+            Pose3dc pose = airframe.logicalPose();
+            pipeline.resetVelocity(airframe);
+            pipeline.teleport(airframe, new Vector3d(pose.position()).add(by.x, by.y, by.z), pose.orientation());
+            return true;
         }
 
         static double mass(BlockEntity blockEntity) {

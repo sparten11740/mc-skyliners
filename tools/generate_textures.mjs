@@ -5990,45 +5990,91 @@ const LIFT_ICONS = {
   texture(itemOutput, "rover_remote_paired", remote(LIT_GREEN), 0);
 }
 
-// The freighter's laser crossbow (see LaserCrossbowItem), pointing up and to the right as the game's own crossbow does:
-// a dark-wood stock from its butt at the bottom left, a gunmetal body on to its muzzle, two swept gunmetal arms across
-// its front and its coil drawn back from their tips to the nut, three heat lamps along the stock. Resting, its coil is
-// a dull amber and its lamps dark; charged, its coil glows bright amber, its nut a white-hot spark, and its lamps green;
-// venting, its coil is dull, its lamps red and wisps of steam rise off its arms, so each look differs in shape too.
+// The freighter's laser crossbow's icon (see LaserCrossbowItem), as its model is seen from above, pointing up and to the
+// right as the game's own crossbow does: a dark-wood stock and grip from its butt at the bottom left, a gunmetal body on
+// to the glowing emitter at its muzzle, its coil round the prod, two gunmetal arms across its front, swept back to the
+// glowing pods at their tips, and its three heat lamps along the body. Resting, its string lies straight between the
+// pods, a dull amber, and its lamps are dark; charging, it glows warmer and then hot; charged, its string is drawn back to
+// its latch in a V, glowing near white, and its lamps are green; venting, its lamps are red and wisps of steam rise off
+// its arms, so each look differs in shape or colour, never in text alone.
 {
   const CLEAR = [0, 0, 0, 0];
   const WOOD = [0x4a, 0x30, 0x20];
   const WOOD_LIGHT = [0x6e, 0x48, 0x2e];
-  const GUNMETAL = [0x55, 0x5a, 0x63];
-  const GUNMETAL_LIGHT = [0x8a, 0x90, 0x99];
-  const LAMP_DARK = [0x26, 0x28, 0x2c];
+  const GUNMETAL = [0x34, 0x39, 0x40];
+  const GUNMETAL_LIGHT = [0x5e, 0x66, 0x70];
   // A line of pixels from one to the other, both ends in, as a set of "x,y".
   const line = (x0, y0, x1, y1) => {
     const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
     return new Set(Array.from({ length: steps + 1 }, (_, i) => `${Math.round(x0 + (x1 - x0) * i / steps)},${Math.round(y0 + (y1 - y0) * i / steps)}`));
   };
-  const coil = new Set([...line(7, 1, 6, 9), ...line(14, 8, 6, 9)]);
-  const arms = new Set([...line(7, 1, 11, 4), ...line(11, 4, 14, 8), "8,1", "14,7"]);
-  const lamps = ["2,12", "3,11", "4,10"];
+  // Its arms bow forward from the coil and curl back to their pods, mirrored across the stock.
+  const upperArm = new Set(["9,3", "8,2", "7,2", "6,2"]);
+  const lowerArm = new Set(["13,7", "14,8", "14,9", "14,10"]);
+  const pods = new Set(["5,3", "13,11"]);
+  const coil = new Set(["10,4", "11,5", "11,4", "12,5", "11,3", "12,4"]);
+  const emitter = new Set(["14,1", "15,1"]);
+  const slack = line(5, 3, 13, 11);
+  const drawn = new Set([...line(5, 3, 7, 9), ...line(13, 11, 7, 9)]);
+  const lamps = ["4,12", "5,11", "6,10"];
+  const grip = new Set(["6,11", "7,11", "6,12"]);
   const STEAM = [0xe8, 0xec, 0xf0, 0xc8];
-  const steam = new Set(["2,1", "3,0", "4,2", "1,4", "2,3", "10,0", "12,1"]);
-  const SPARK = [0xff, 0xff, 0xf0];
-  const crossbow = (coilColour, lampColour, extra = new Map()) => (x, y) => {
+  const steam = new Set(["4,0", "3,1", "9,1", "10,0", "15,5", "15,4"]);
+  const body = (x, y) => {
+    const across = x + y;
+    if (across === 15 && x >= 1 && x <= 13) return x <= 5 ? WOOD_LIGHT : GUNMETAL_LIGHT;
+    if (across === 16 && x >= 1 && x <= 14) return x <= 5 ? WOOD : GUNMETAL;
+    if (across === 14 && x === 0) return GUNMETAL;
+    return null;
+  };
+  // A look: the colour its coil, string, pods and emitter glow, its string's shape, its lamps' colour, and anything
+  // drawn over it.
+  const crossbow = (glow, string, lampColour, extra = new Map()) => (x, y) => {
     const at = `${x},${y}`;
     if (extra.has(at)) return extra.get(at);
     if (lamps.includes(at)) return lampColour;
-    if (arms.has(at)) return x + y < 15 ? GUNMETAL_LIGHT : GUNMETAL;
-    if (coil.has(at)) return coilColour;
-    if (x + y === 15 && x >= 8 && x <= 13) return GUNMETAL_LIGHT;
-    if (x + y === 16 && x >= 9 && x <= 14) return GUNMETAL;
-    if (x + y === 15 && x >= 1 && x <= 7) return WOOD_LIGHT;
-    if (x + y === 16 && x >= 2 && x <= 8) return WOOD;
-    if ((x === 1 && y === 15) || (x === 2 && y === 15) || (x === 1 && y === 14) || (x === 0 && y === 15)) return WOOD;
-    return CLEAR;
+    if (coil.has(at) || emitter.has(at) || pods.has(at)) return glow;
+    if (string.has(at)) return glow;
+    if (upperArm.has(at)) return GUNMETAL_LIGHT;
+    if (lowerArm.has(at)) return GUNMETAL;
+    if (grip.has(at)) return WOOD;
+    return body(x, y) ?? CLEAR;
   };
-  texture(itemOutput, "laser_crossbow", crossbow([0x9a, 0x62, 0x14], LAMP_DARK), 0);
-  texture(itemOutput, "laser_crossbow_charged", crossbow([0xff, 0xd0, 0x40], [0x50, 0xf0, 0x60], new Map([["6,9", SPARK], ["6,8", SPARK]])), 0);
-  texture(itemOutput, "laser_crossbow_venting", crossbow([0x9a, 0x62, 0x14], [0xf0, 0x30, 0x20], new Map([...steam].map((at) => [at, STEAM]))), 0);
+  const LAMP_DARK = [0x26, 0x28, 0x2c];
+  const GLOWS = { "": [0xb8, 0x6a, 0x1c], warm: [0xe0, 0x88, 0x24], hot: [0xff, 0xb4, 0x3c], charged: [0xff, 0xf0, 0xb0] };
+  for (const [look, glow] of Object.entries(GLOWS)) {
+    const name = look ? `laser_crossbow_${look}` : "laser_crossbow";
+    texture(itemOutput, name, crossbow(glow, look === "charged" ? drawn : slack, look === "charged" ? [0x50, 0xf0, 0x60] : LAMP_DARK), 0);
+  }
+  texture(itemOutput, "laser_crossbow_venting", crossbow(GLOWS[""], slack, [0xf0, 0x30, 0x20], new Map([...steam].map((at) => [at, STEAM]))), 0);
+}
+
+// The laser crossbow's model's parts (see generate_resources.mjs): gunmetal with faint panel seams for its body, prod,
+// arms and butt plate, a paler steel for its rail, sights and trigger, dark wood with a grain for its stock and grip,
+// copper for the windings round its coil, and the amber of its coil, string, channel and emitters as it glows brighter
+// charging, from a dull ember resting through warm and hot to near white charged; and its three heat lamps, dark, green
+// or red.
+{
+  const METAL = [0x4a, 0x50, 0x5a];
+  const METAL_SEAM = [0x38, 0x3d, 0x45];
+  const TRIM = [0x8e, 0x96, 0xa0];
+  const TRIM_EDGE = [0xb4, 0xbb, 0xc4];
+  const WOOD = [0x4c, 0x31, 0x21];
+  const WOOD_GRAIN = [0x3a, 0x25, 0x18];
+  const COPPER = [0xb8, 0x6a, 0x30];
+  const COPPER_DARK = [0x86, 0x4a, 0x20];
+  texture(itemOutput, "laser_crossbow_metal", (x, y) => (y === 7 || x === 11 ? METAL_SEAM : METAL), 3);
+  texture(itemOutput, "laser_crossbow_trim", (x, y) => (y % 8 === 0 ? TRIM_EDGE : TRIM), 3);
+  texture(itemOutput, "laser_crossbow_wood", (x, y) => ((y * 5 + Math.floor(x / 4)) % 7 === 0 ? WOOD_GRAIN : WOOD), 4);
+  texture(itemOutput, "laser_crossbow_copper", (x, y) => ((x + y) % 2 === 0 ? COPPER : COPPER_DARK), 3);
+  const GLOWS = { rest: [0x8a, 0x4c, 0x14], warm: [0xc8, 0x74, 0x1c], hot: [0xf4, 0xa8, 0x30], charged: [0xff, 0xec, 0xa8] };
+  for (const [look, colour] of Object.entries(GLOWS)) {
+    texture(itemOutput, `laser_crossbow_glow_${look}`, () => colour, 2);
+  }
+  const LAMPS = { dark: [0x26, 0x28, 0x2c], green: [0x50, 0xf0, 0x60], red: [0xf0, 0x30, 0x20] };
+  for (const [look, colour] of Object.entries(LAMPS)) {
+    texture(itemOutput, `laser_crossbow_lamp_${look}`, () => colour, 0);
+  }
 }
 
 // The freighter's Spookie (see SpookieModel, whose boxes take their faces from the places here): slate blue-grey fur
@@ -8838,6 +8884,86 @@ function beachTextures() {
 }
 beachTextures();
 
+// The freighter's cockpit console (see ConsoleCasing and ConsoleArt), our own design: its casing worn dark gunmetal,
+// scuffed, a panel seam near its top and its foot and a screw head in two corners; its desk top a darker panel ruled
+// into squares by fine lighter lines, as of plates bolted down, one scratched; each module's screen as its item shows
+// it, a little picture of what it shows on dark glass; and the pictures its screens and plates are drawn with, white to
+// be tinted, so none needs reading: chevrons for speed, a peak and an arrow up for height, an arrow up for a climb,
+// three arrows up for her lift, a flame for her mains, a fat double chevron for the boost, a starburst of streaks out
+// from a bright middle for the hyperspace jump, and the power sign.
+function consoleTextures() {
+  const GUNMETAL = [0x3c, 0x41, 0x47];
+  texture(blockOutput, "console_casing", (x, y) => {
+    if (y === 1 || y === 14) return [0x2a, 0x2e, 0x33];
+    if ((x === 2 && y === 3) || (x === 13 && y === 12)) return [0x74, 0x7a, 0x82];
+    const scuff = (x * 7 + y * 3) % 23 === 0 ? 10 : 0;
+    return GUNMETAL.map((c) => c + scuff);
+  }, 5);
+  texture(blockOutput, "console_deck", (x, y) => {
+    if (x % 8 === 0 || y % 8 === 0) return [0x3e, 0x43, 0x4a];
+    if (x === y + 3 && x > 9) return [0x48, 0x4e, 0x55];
+    return [0x26, 0x29, 0x2e];
+  }, 3);
+  const GLASS = [0x06, 0x10, 0x0c];
+  const GREEN = [0x4c, 0xf0, 0x8a];
+  const AMBER = [0xff, 0xb2, 0x38];
+  const RED = [0xff, 0x4a, 0x3a];
+  const CYAN = [0x56, 0xd8, 0xff];
+  const PICTURES = {
+    readouts: (x, y) => (y === 5 && x > 2 && x < 13) || (y > 8 && y < 12 && x > 2 && x < 3 + (x % 3) * 3) ? GREEN : null,
+    scanner: (x, y) => {
+      const out = Math.hypot(x - 7.5, y - 7.5);
+      if (Math.abs(out - 5.5) < 0.6 || (out < 5.5 && Math.abs(x - y) < 0.7 && x > 7)) return GREEN;
+      return (x === 5 && y === 6) || (x === 10 && y === 9) ? AMBER : null;
+    },
+    engines: (x, y) => (x % 4 === 2 && y > 13 - [7, 10, 4, 8][Math.floor(x / 4)] && y < 14 ? [CYAN, AMBER, RED, GREEN][Math.floor(x / 4)] : null),
+    switches: (x, y) => (x % 3 === 1 && y > 9 && y < 13 ? [0xb0, 0xb6, 0xbe] : x % 3 === 1 && y === 5 ? [GREEN, AMBER, RED, CYAN, GREEN][Math.floor(x / 3)] : null),
+    boost: (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 5 ? RED : Math.hypot(x - 7.5, y - 7.5) < 6 ? [0xf2, 0xc0, 0x1a] : null),
+    jump: (x, y) => {
+      const out = Math.hypot(x - 7.5, y - 7.5);
+      if (out < 1.6) return [0xea, 0xf6, 0xff];
+      return out < 6.5 && (Math.abs(x - 7.5) < 0.6 || Math.abs(y - 7.5) < 0.6 || Math.abs(Math.abs(x - 7.5) - Math.abs(y - 7.5)) < 0.6) ? CYAN : null;
+    },
+  };
+  for (const [kind, paint] of Object.entries(PICTURES)) {
+    texture(blockOutput, `console_${kind}_screen`, (x, y) => {
+      if (x === 0 || y === 0 || x === 15 || y === 15) return GUNMETAL;
+      return paint(x, y) ?? GLASS;
+    }, 1);
+  }
+  const iconsOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/console");
+  mkdirSync(iconsOutput, { recursive: true });
+  const ICONS = {
+    speed: ["................", "................", "..##.....##.....", "...##.....##....", "....##.....##...", ".....##.....##..",
+      "......##.....##.", ".......##.....##", ".......##.....##", "......##.....##.", ".....##.....##..", "....##.....##...",
+      "...##.....##....", "..##.....##.....", "................", "................"],
+    height: ["................", "...........#....", "..........###...", ".........#####..", "...........#....", "....#......#....",
+      "...###.....#....", "..#####.........", ".#######........", "#########.......", "##########......", "###########.....",
+      "############....", "#############...", "################", "................"],
+    climb: ["................", ".......##.......", "......####......", ".....######.....", "....########....", "...##########...",
+      "..############..", ".......##.......", ".......##.......", ".......##.......", ".......##.......", ".......##.......",
+      ".......##.......", ".......##.......", "................", "................"],
+    lift: ["................", "..#....#....#...", ".###..###..###..", "..#....#....#...", "..#....#....#...", "..#....#....#...",
+      "..#....#....#...", "..#....#....#...", "................", "################", "################", ".##..........##.",
+      ".##..........##.", "................", "................", "................"],
+    mains: ["................", ".......#........", ".......##.......", "......###.......", "......####......", ".....#####..#...",
+      ".....######.##..", "....##########..", "....##########..", "...###########..", "...####..#####..", "...###....####..",
+      "....##....###...", ".....##..###....", "......#####.....", "................"],
+    boost: ["................", "................", ".###.....###....", "..###.....###...", "...###.....###..", "....###.....###.",
+      ".....###.....###", "......###.....##", "......###.....##", ".....###.....###", "....###.....###.", "...###.....###..",
+      "..###.....###...", ".###.....###....", "................", "................"],
+    jump: ["................", ".......##.......", "..#....##....#..", "...#...##...#...", "....#..##..#....", ".....#.##.#.....",
+      "......####......", "################", "################", "......####......", ".....#.##.#.....", "....#..##..#....",
+      "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
+    power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
+      ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",
+      "....########....", ".....######.....", "................", "................"],
+  };
+  for (const [name, rows] of Object.entries(ICONS)) {
+    texture(iconsOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
+  }
+}
+consoleTextures();
 // The freighter's outside fittings (see the outside fittings in generate_resources.mjs), weathered, working metal:
 // mid-grey steel panels edged in a darker seam with a rivet at each corner; dark gunmetal for their bases, collars and
 // frames, scuffed along a few scratches; copper pipe ringed by darker bands with a bright line down it; an amber
@@ -8925,6 +9051,26 @@ function hullPlateTextures() {
   }, 5);
 }
 hullPlateTextures();
+
+// The freighter's leg bays (see LegBayBlock), where each landing leg meets her belly: on its sides a housing of dark
+// gunmetal, riveted, with a band of hazard stripes along its foot, as round anything that moves; and from below its
+// socket, a steel collar round a dark well the strut's sleeves draw up into, a glint of chrome on its far wall.
+function legBayTextures() {
+  texture(blockOutput, "leg_bay_side", (x, y) => {
+    if (y >= 12) return Math.floor((x + y) / 3) % 2 === 0 ? [0xf0, 0xbc, 0x1c] : [0x24, 0x24, 0x26];
+    if (y === 11 || x === 0) return [0x34, 0x3a, 0x42];
+    if (y === 2 && x % 4 === 2) return [0x80, 0x88, 0x92];
+    return [0x4c, 0x53, 0x5c];
+  }, 4);
+  texture(blockOutput, "leg_bay_bottom", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out < 4.5) return x + y < 12 && out > 3 ? [0x9a, 0xa2, 0xac] : [0x16, 0x18, 0x1c];
+    if (out < 6.5) return out < 5.5 ? [0x8a, 0x90, 0x97] : [0x5c, 0x62, 0x69];
+    if (x === 0 || y === 0 || x === 15 || y === 15) return [0x34, 0x3a, 0x42];
+    return [0x4c, 0x53, 0x5c];
+  }, 3);
+}
+legBayTextures();
 
 // The freighter's outside lights (see FreighterLights): her light band, a bright cyan-white line along the middle of a
 // dark plate; and a light strip's glowing diffuser.

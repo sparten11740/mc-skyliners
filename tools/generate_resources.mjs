@@ -150,18 +150,21 @@ for (const [name, renderType] of Object.entries(cubes)) {
 }
 
 // The freighter's dimming glass (see DimmingGlassBlock): her canopy, cut to her hull's curve as the smoked glass is by the
-// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass.
+// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass; and,
+// lined, the same drawn from outside only, her canopy's lining drawing its inside (see CanopyLiningRenderer).
 {
   const DIMS = [0, 1, 2, 3];
   for (const dim of DIMS) {
     const skin = dim === 0 ? "smoked_glass" : `dimming_glass_${dim}`;
-    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, {
-      loader: `${ID}:shell`, render_type: "minecraft:translucent",
-      textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
+    const textures = { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` };
+    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, { loader: `${ID}:shell`, render_type: "minecraft:translucent", textures });
+    write(`assets/${ID}/models/block/dimming_glass_${dim}_lined.json`, {
+      loader: `${ID}:shell`, render_type: "minecraft:translucent", outside_only: true, textures,
     });
   }
   write(`assets/${ID}/blockstates/dimming_glass.json`, {
-    variants: Object.fromEntries(DIMS.map((dim) => [`dim=${dim}`, { model: `${ID}:block/dimming_glass_${dim}` }])),
+    variants: Object.fromEntries(DIMS.flatMap((dim) => [false, true].map((lined) =>
+      [`dim=${dim},lined=${lined}`, { model: `${ID}:block/dimming_glass_${dim}${lined ? "_lined" : ""}` }]))),
   });
   write(`data/${ID}/loot_table/blocks/dimming_glass.json`, {
     type: "minecraft:block",
@@ -264,6 +267,19 @@ for (const [name, renderType] of Object.entries(cubes)) {
 }
 // Her ramp's call button, low on her starboard leg: a lit push-button, its amber cap showing her ramp let down.
 litButton("ramp_button");
+// The freighter's leg bays (see LegBayBlock), where each landing leg meets her belly: a block of riveted gunmetal
+// housing, its socket for the strut seen from below. Only the blueprint places one, so it has no item and drops nothing.
+{
+  write(`assets/${ID}/models/block/leg_bay.json`, {
+    parent: "minecraft:block/cube",
+    textures: {
+      down: `${ID}:block/leg_bay_bottom`, up: `${ID}:block/leg_bay_side`, particle: `${ID}:block/leg_bay_side`,
+      north: `${ID}:block/leg_bay_side`, south: `${ID}:block/leg_bay_side`, east: `${ID}:block/leg_bay_side`, west: `${ID}:block/leg_bay_side`,
+    },
+  });
+  facing("leg_bay");
+  cubes.leg_bay = null;
+}
 function rampFittings() {
   return ["ramp_deck"];
 }
@@ -576,6 +592,36 @@ function hullLightLang() {
   cubes.jump_drive = null;
 }
 
+// The freighter's cockpit console (see ConsoleBlock), our own design: each module drawn by its renderer alone
+// (ConsoleRenderer), whichever way it faces and however it is put up, its block's model only its particle; its item a
+// little desk, its worn casing under a screen leaning back over its top, showing a picture of what it shows.
+const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump"];
+{
+  const MOUNTS = ["floor", "wall", "ceiling"];
+  for (const kind of CONSOLE_KINDS) {
+    const name = `console_${kind}`;
+    write(`assets/${ID}/models/block/${name}.json`, { textures: { particle: `${ID}:block/console_casing` } });
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(MOUNTS.flatMap((mount) => Object.keys(yRot).map((facing) => [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${name}` }]))),
+    });
+    const casing = { texture: "#casing" };
+    write(`assets/${ID}/models/item/${name}.json`, {
+      parent: "minecraft:block/block",
+      textures: { casing: `${ID}:block/console_casing`, deck: `${ID}:block/console_deck`, screen: `${ID}:block/console_${kind}_screen`,
+        particle: `${ID}:block/console_casing` },
+      elements: [
+        { from: [0, 0, 1], to: [16, 10, 16], faces: { north: casing, south: casing, east: casing, west: casing, up: { texture: "#deck" }, down: casing } },
+        {
+          from: [0, 10, 9], to: [16, 19, 12], rotation: { angle: -22.5, axis: "x", origin: [8, 10, 12] },
+          faces: { north: { texture: "#screen" }, south: casing, east: casing, west: casing, up: casing, down: casing },
+        },
+      ],
+    });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
 // The freighter's breaker board in engineering (see BreakerBoardBlock): a steel panel two pixels deep against the wall
 // behind it, a darker frame round its face, its six switches drawn over it by BreakerBoardRenderer; drawn facing north.
 {
@@ -762,23 +808,115 @@ function hullLightLang() {
   }
 }
 
-// The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
-// (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
-// charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
+// The freighter's laser crossbow (see LaserCrossbowItem), our own design, drawn muzzle north with its rail up, as it is
+// aimed: a gunmetal receiver on a dark-wood stock and pistol grip, a steel rail along its top with a glowing channel
+// for the bolt, an emitter at its muzzle, a trigger in its guard, and a sight housing at the back whose face shows the
+// one aiming its three heat lamps. Across its front, its prod, a coil wound in copper round it, and two arms, straight
+// out and then swept back, each tipped with an emitter pod glowing inward, an amber string of light between them.
+// Resting, its string lies straight across the pods; charged, it is drawn back to its latch in a V. As it charges its
+// coil, string and emitters glow brighter in three steps, near white once charged, its lamps then green; venting, its
+// lamps are red (see LaserCrossbowLooks). Its glowing parts glow whatever the light round them. Held, it is posed by
+// LaserCrossbowHands: these transforms are for that pose, its muzzle along the aiming arm.
 {
-  for (const look of ["charged", "venting"]) {
-    write(`assets/${ID}/models/item/laser_crossbow_${look}.json`, {
-      parent: "minecraft:item/handheld", textures: { layer0: `${ID}:item/laser_crossbow_${look}` },
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const sides = ["north", "south", "east", "west", "up", "down"];
+  const round = (value) => Math.round(value * 1000) / 1000;
+  // A box glowing all over whatever the light round it, shaded by no side.
+  const glowing = (from, to, texture, rotation) => ({ ...solid(from, to, texture, rotation), shade: false,
+    faces: Object.fromEntries(sides.map((side) => [side, { texture, ...lit }])) });
+  // A box of one texture with one face glowing in another.
+  const glowingFace = (from, to, texture, side, glow) => {
+    const box = solid(from, to, texture);
+    box.faces[side] = { texture: glow, ...lit };
+    return box;
+  };
+  // How far each arm's swept outer part is turned back, in degrees, and where its tip lies, in pixels: the string is
+  // drawn back from both tips at that angle again, to its latch on the rail.
+  const SWEEP = 22.5;
+  const turn = (SWEEP * Math.PI) / 180;
+  const tipX = 13 + 3 * Math.cos(turn);
+  const tipZ = 2 + 3 * Math.sin(turn);
+  const halfString = (tipX - 8) / Math.cos(turn);
+  const latchZ = tipZ + halfString * Math.sin(turn);
+  const body = [
+    solid([6, 6.5, 0], [10, 9.5, 4], "#metal"),
+    glowing([5.85, 6.35, 0.75], [10.15, 9.65, 3.25], "#coil"),
+    solid([5.7, 6.2, 1.25], [10.3, 9.8, 1.75], "#copper"),
+    solid([5.7, 6.2, 2.25], [10.3, 9.8, 2.75], "#copper"),
+    solid([6.5, 6.5, 4], [9.5, 9, 11], "#metal"),
+    solid([7, 9, -0.5], [9, 9.5, 11], "#trim"),
+    glowing([7.6, 9.5, -0.25], [8.4, 9.55, 9.25], "#channel"),
+    glowingFace([7.25, 8.5, -1.75], [8.75, 10, -0.5], "#metal", "north", "#emitter"),
+    solid([7.65, 9.5, 0.25], [8.35, 10.75, 0.85], "#trim"),
+    solid([7.4, 9.5, round(latchZ - 0.5)], [8.6, 9.9, round(latchZ + 0.5)], "#trim"),
+    solid([7, 9.5, 9.25], [9, 10.75, 11], "#metal"),
+    ...[7.15, 7.75, 8.35].map((x) => glowing([x, 9.85, 11], [x + 0.5, 10.4, 11.3], "#lamp")),
+    solid([7, 6, 11], [9, 9.25, 16.5], "#wood"),
+    solid([7, 4.25, 12.5], [9, 6, 16.5], "#wood"),
+    solid([6.75, 4, 16.5], [9.25, 9.5, 17.25], "#metal"),
+    solid([7.25, 2, 8.75], [8.75, 6.5, 10.5], "#wood", { origin: [8, 6.5, 9.6], axis: "x", angle: -22.5 }),
+    solid([7.6, 4, 6.75], [8.4, 4.5, 9.25], "#metal"),
+    solid([7.6, 4.5, 6.75], [8.4, 6.5, 7.25], "#metal"),
+    solid([7.8, 4.9, 8], [8.2, 6.5, 8.5], "#trim"),
+    solid([10, 8.75, 1.25], [13, 10.25, 2.75], "#metal"),
+    solid([3, 8.75, 1.25], [6, 10.25, 2.75], "#metal"),
+    solid([13, 9, 1.5], [16, 10, 2.5], "#metal", { origin: [13, 9.5, 2], axis: "y", angle: -SWEEP }),
+    solid([0, 9, 1.5], [3, 10, 2.5], "#metal", { origin: [3, 9.5, 2], axis: "y", angle: SWEEP }),
+    glowingFace([round(tipX - 0.7), 8.5, round(tipZ - 0.7)], [round(tipX + 0.7), 10.5, round(tipZ + 0.7)], "#metal", "west", "#emitter"),
+    glowingFace([round(16 - tipX - 0.7), 8.5, round(tipZ - 0.7)], [round(16 - tipX + 0.7), 10.5, round(tipZ + 0.7)], "#metal", "east", "#emitter"),
+  ];
+  const slack = [glowing([round(16 - tipX + 0.7), 9.55, round(tipZ - 0.2)], [round(tipX - 0.7), 9.95, round(tipZ + 0.2)], "#string")];
+  const length = round(halfString);
+  const drawn = [
+    glowing([8, 9.55, round(latchZ - 0.2)], [8 + length, 9.95, round(latchZ + 0.2)], "#string", { origin: [8, 9.75, round(latchZ)], axis: "y", angle: SWEEP }),
+    glowing([8 - length, 9.55, round(latchZ - 0.2)], [8, 9.95, round(latchZ + 0.2)], "#string", { origin: [8, 9.75, round(latchZ)], axis: "y", angle: -SWEEP }),
+  ];
+  // Laid on a wall, as in a frame or on its rack, it shows its top, its muzzle to the right.
+  const display = {
+    ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.5, 0.5, 0.5] },
+    fixed: { rotation: [-90, 90, 0], translation: [0, 0, 0], scale: [1, 1, 1] },
+    thirdperson_righthand: { rotation: [0, 0, 0], translation: [0, 2.5, -2], scale: [0.8, 0.8, 0.8] },
+    firstperson_righthand: { rotation: [3, 4, 0], translation: [-0.5, 2, -1], scale: [0.52, 0.52, 0.52] },
+  };
+  for (const [shape, string] of [["slack", slack], ["drawn", drawn]]) {
+    write(`assets/${ID}/models/item/laser_crossbow_${shape}.json`, { display, elements: [...body, ...string] });
+  }
+  // Each look in the hand, on the ground and on a wall is the model; among the slots it is its icon, which reads better
+  // so small (see generate_textures.mjs).
+  const looks = [
+    ["laser_crossbow", "slack", "rest", "dark"],
+    ["laser_crossbow_warm", "slack", "warm", "dark"],
+    ["laser_crossbow_hot", "slack", "hot", "dark"],
+    ["laser_crossbow_charged", "drawn", "charged", "green"],
+    ["laser_crossbow_venting", "slack", "rest", "red"],
+  ];
+  for (const [name, shape, glow, lamp] of looks) {
+    const glowing = `${ID}:item/laser_crossbow_glow_${glow}`;
+    write(`assets/${ID}/models/item/${name}.json`, {
+      loader: "neoforge:separate_transforms",
+      gui_light: "front",
+      base: {
+        parent: `${ID}:item/laser_crossbow_${shape}`,
+        textures: {
+          metal: `${ID}:item/laser_crossbow_metal`, trim: `${ID}:item/laser_crossbow_trim`, wood: `${ID}:item/laser_crossbow_wood`,
+          copper: `${ID}:item/laser_crossbow_copper`, coil: glowing, string: glowing, emitter: glowing,
+          channel: `${ID}:item/laser_crossbow_glow_${glow === "charged" ? "charged" : "rest"}`, lamp: `${ID}:item/laser_crossbow_lamp_${lamp}`,
+          particle: `${ID}:item/laser_crossbow_metal`,
+        },
+      },
+      perspectives: {
+        gui: { parent: "minecraft:item/generated", loader: "neoforge:item_layers", textures: { layer0: `${ID}:item/${name}`, particle: `${ID}:item/${name}` } },
+      },
+      ...(name === "laser_crossbow" ? {
+        overrides: [
+          { predicate: { [`${ID}:charge`]: 0.34 }, model: `${ID}:item/laser_crossbow_warm` },
+          { predicate: { [`${ID}:charge`]: 0.67 }, model: `${ID}:item/laser_crossbow_hot` },
+          { predicate: { [`${ID}:charged`]: 1 }, model: `${ID}:item/laser_crossbow_charged` },
+          { predicate: { [`${ID}:venting`]: 1 }, model: `${ID}:item/laser_crossbow_venting` },
+        ],
+      } : {}),
     });
   }
-  write(`assets/${ID}/models/item/laser_crossbow.json`, {
-    parent: "minecraft:item/handheld",
-    textures: { layer0: `${ID}:item/laser_crossbow` },
-    overrides: [
-      { predicate: { [`${ID}:charged`]: 1 }, model: `${ID}:item/laser_crossbow_charged` },
-      { predicate: { [`${ID}:venting`]: 1 }, model: `${ID}:item/laser_crossbow_venting` },
-    ],
-  });
 }
 
 // A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
@@ -1114,18 +1252,21 @@ function slideLang() {
 // baked by the mod's own "shell" loader from the block's corners, the windscreen's drawn as a single pane however
 // thick its glass runs (see ShellModel). They give back the part they are cut from (the clear glass, plain glass). The
 // relay hidden in the nacelles drops nothing.
-for (const [name, skin, renderType, part, singlePane, tinted] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
-  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
+// The freighter's canopy frame is her cover drawn from outside only, as her lined canopy glass is.
+for (const [name, skin, renderType, part, singlePane, tinted, outsideOnly] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false, false],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false, false],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
+  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
+  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, false],
+  ["canopy_frame", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
     loader: `${ID}:shell`,
     render_type: renderType,
     ...(singlePane ? { single_pane: true } : {}),
+    ...(outsideOnly ? { outside_only: true } : {}),
     ...(tinted ? { tint_index: 0 } : {}),
     textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
   });
@@ -1875,6 +2016,23 @@ function zeppelinControlsLang() {
     "block.skyliners.breaker_board": "Breaker Board",
     "block.skyliners.coolant_valve": "Coolant Valve",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
+    "block.skyliners.console_readouts": "Flight Readout Console",
+    "block.skyliners.console_scanner": "Scanner Console",
+    "block.skyliners.console_engines": "Engine Console",
+    "block.skyliners.console_switches": "Toggle Console",
+    "block.skyliners.console_boost": "Boost Console",
+    "message.skyliners.console.boost_boosting": "Boost!",
+    "message.skyliners.console.boost_resting": "The boost is resting",
+    "message.skyliners.console.boost_not_flying": "She boosts only while she flies along",
+    "message.skyliners.console.boost_no_ship": "No freighter here to boost",
+    "block.skyliners.console_jump": "Hyperspace Jump Console",
+    "message.skyliners.console.jump_jumping": "Jump drive spooling up",
+    "message.skyliners.console.jump_no_pin": "Nowhere to jump to: set a pin on the autopilot's map",
+    "message.skyliners.console.jump_not_flying": "She jumps only while she flies along",
+    "message.skyliners.console.jump_too_near": "The pin is too near to jump to: she flies there",
+    "message.skyliners.console.jump_busy": "She is jumping already",
+    "message.skyliners.console.jump_switched_off": "The hyperspace jump is switched off on this server",
+    "message.skyliners.console.jump_no_ship": "No freighter here to jump",
     "block.skyliners.floor_window": "Floor Window",
     "block.skyliners.floor_window_panel": "Floor Window Panel",
     "block.skyliners.beach_sand": "Beach Sand",
@@ -1949,7 +2107,7 @@ function zeppelinControlsLang() {
 // against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size;
 // the rocket's cover lined inside her rooms is the same cover, and weighs the same.
 write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`,
-  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`] });
+  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`, `${ID}:canopy_frame`] });
 write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {
   priority: 1002,
   selector: `#${ID}:zeppelin_fabric`,
@@ -2158,6 +2316,9 @@ const FREIGHTER_SOUNDS = {
   ramp_steam: { subtitle: "Ramp vents steam", heard: 32 },
   ramp_hydraulics: { subtitle: "Ramp hydraulics whine", heard: 32 },
   ramp_thud: { subtitle: "Ramp thuds down", heard: 32 },
+  // Her landing legs drawing up into her belly and coming down, heard on her deck over them and on the ground under her.
+  freighter_legs_up: { subtitle: "Landing legs retract", heard: 24 },
+  freighter_legs_down: { subtitle: "Landing legs extend", heard: 24 },
   // Her engines: their hum inside her hull, heard all through her; their roar, the show piece, heard up to
   // FREIGHTER_HEARD blocks off with her lift jets lighting, her mains spooling up and her pass at speed; her lift
   // jets themselves, as she lifts off and lands, nearer.
@@ -2199,6 +2360,14 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_turret_ready: { subtitle: "Computer: Gun turret online", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
+  // Her computer through her hyperspace jump, the lines generate_sounds.mjs keeps together in COMPUTER_JUMP_LINES,
+  // each with its gist.
+  freighter_computer_jump_spooling: { subtitle: "Computer: Jump drive spooling up", aboard: true },
+  freighter_computer_jump_go: { subtitle: "Computer: Here goes nothing", aboard: true },
+  freighter_computer_jump_arrived: { subtitle: "Computer: Out of the jump", aboard: true },
+  freighter_computer_jump_no_pin: { subtitle: "Computer: Nowhere to jump to", aboard: true },
+  freighter_computer_jump_grounded: { subtitle: "Computer: Not from down here", aboard: true },
+  freighter_computer_jump_too_near: { subtitle: "Computer: Pin's next door, just fly", aboard: true },
   freighter_computer_takeoff: { subtitle: "Computer: Lifting off, hold on", aboard: true },
   freighter_computer_landing: { subtitle: "Computer: Coming down to land", aboard: true },
   freighter_computer_arrival: { subtitle: "Computer: We're down", aboard: true },
@@ -5924,6 +6093,18 @@ cubes.dome_limit = null;
 write(`data/${ID}/physics_block_properties/dome_limit.json`, {
   priority: 1004,
   selector: `${ID}:dome_limit`,
+  properties: { "sable:mass": 0.05 },
+});
+// The freighter's canopy lining (see CanopyLiningBlock): no model of its own to draw, its renderer drawing the canopy's
+// inside, and next to no weight, as the dome's limit.
+write(`assets/${ID}/blockstates/canopy_lining.json`, {
+  variants: Object.fromEntries(Object.keys(yRot).map((facing) => [`facing=${facing}`, { model: `${ID}:block/canopy_lining` }])),
+});
+write(`assets/${ID}/models/block/canopy_lining.json`, { textures: { particle: `${ID}:block/smoked_glass` } });
+cubes.canopy_lining = null;
+write(`data/${ID}/physics_block_properties/canopy_lining.json`, {
+  priority: 1004,
+  selector: `${ID}:canopy_lining`,
   properties: { "sable:mass": 0.05 },
 });
 function ledStripLang() {
@@ -10734,6 +10915,8 @@ FITTINGS.push(...rampFittings());
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
 FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve", "crossbow_rack");
+// Her console's modules are fitted into her cockpit, and set up by hand anywhere.
+FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
 FITTINGS.push("floor_window", "floor_window_panel");
 // Her beach's palms, parasol, loungers and torches are fitted into her lounge too, set down and taken up by hand.
@@ -10769,6 +10952,7 @@ FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...windowDimmerFittings());
 FITTINGS.push("dome_limit");
+FITTINGS.push("canopy_lining");
 FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
@@ -10884,6 +11068,12 @@ shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
+// Her console's modules: a screen of glass over iron, each with what it works in its middle.
+const CONSOLE_PARTS = { readouts: "minecraft:clock", scanner: "minecraft:compass", engines: "minecraft:comparator", switches: "minecraft:lever",
+  boost: "minecraft:blaze_powder", jump: "minecraft:ender_eye" };
+for (const [kind, part] of Object.entries(CONSOLE_PARTS)) {
+  shaped(`console_${kind}`, ["GGG", "IPI", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", P: part, R: "minecraft:redstone" }, 1);
+}
 shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);
 shaped("techno_deck", ["NJN", "CCC"], { N: "minecraft:note_block", J: "minecraft:jukebox", C: "minecraft:black_concrete" }, 1);
 shaped("secret_hatch", ["T", "G"], { T: "minecraft:iron_trapdoor", G: `${ID}:zeppelin_catwalk` }, 1);
@@ -11120,6 +11310,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",
   "block.skyliners.dimming_glass": "Dimming Glass",
+  "block.skyliners.canopy_frame": "Canopy Frame",
+  "block.skyliners.canopy_lining": "Canopy Lining",
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",
@@ -11504,6 +11696,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.ramp_deck": "Boarding Ramp",
   "block.skyliners.ramp_panel": "Boarding Ramp Panel",
   "block.skyliners.ramp_button": "Ramp Call Button",
+  "block.skyliners.leg_bay": "Landing Leg Bay",
   "item.skyliners.laser_crossbow": "Laser Crossbow",
   "block.skyliners.laser_cannon": "Laser Cannon",
   "block.skyliners.bandstand": "Bandstand",

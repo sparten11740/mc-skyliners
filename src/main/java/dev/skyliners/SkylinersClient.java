@@ -9,6 +9,7 @@ import dev.skyliners.block.DeckRobotBlockEntity;
 import dev.skyliners.block.DiscoBallBlockEntity;
 import dev.skyliners.block.EngineCoreBlockEntity;
 import dev.skyliners.block.FogMachineBlockEntity;
+import dev.skyliners.block.LaserBolt;
 import dev.skyliners.block.LookoutGlassBlockEntity;
 import dev.skyliners.block.PassengerScreenBlockEntity;
 import dev.skyliners.block.PropellerBlockEntity;
@@ -30,9 +31,11 @@ import dev.skyliners.client.BoardingRampRenderer;
 import dev.skyliners.client.CabinArchModel;
 import dev.skyliners.client.CameraShake;
 import dev.skyliners.client.CannonServo;
+import dev.skyliners.client.CanopyLiningRenderer;
 import dev.skyliners.client.CarriedAboard;
 import dev.skyliners.client.CloudlessCabin;
 import dev.skyliners.client.ClubBand;
+import dev.skyliners.client.ConsoleRenderer;
 import dev.skyliners.client.CockpitDisplayRenderer;
 import dev.skyliners.client.BubbleLevelRenderer;
 import dev.skyliners.client.CockpitDoorRenderer;
@@ -69,12 +72,14 @@ import dev.skyliners.client.GearBayRenderer;
 import dev.skyliners.client.HelmRenderer;
 import dev.skyliners.client.HelmetBreathing;
 import dev.skyliners.client.HelmetVisor;
+import dev.skyliners.client.HyperspaceOverlay;
 import dev.skyliners.client.KeptLooks;
 import dev.skyliners.client.LaserBolts;
 import dev.skyliners.client.LaserCannonRenderer;
 import dev.skyliners.client.LaserCrossbowLooks;
 import dev.skyliners.client.LaserTurretRenderer;
 import dev.skyliners.client.LedLights;
+import dev.skyliners.client.LegBayRenderer;
 import dev.skyliners.client.LiftPanelRenderer;
 import dev.skyliners.client.LiftRide;
 import dev.skyliners.client.LightningFlash;
@@ -201,6 +206,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
+        LaserBolt.clientSeen = LaserBolts::seen;
         NeoForge.EVENT_BUS.addListener(FreighterEngineGlow::stage);
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
         NeoForge.EVENT_BUS.addListener(ClubBand::tick);
@@ -268,12 +274,15 @@ public final class SkylinersClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, SkylinersRegistry.CABIN_CURTAIN.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(ZeppelinPaint::tint,
             SkylinersRegistry.ZEPPELIN_COVER.get(), SkylinersRegistry.ZEPPELIN_FABRIC.get(), SkylinersRegistry.ROCKET_LINED_COVER.get(),
-            SkylinersRegistry.ROCKET_LINING_PANEL.get()));
+            SkylinersRegistry.ROCKET_LINING_PANEL.get(), SkylinersRegistry.CANOPY_FRAME.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(OvalWindowWall::tint,
             SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get(), SkylinersRegistry.PORTHOLE.get(),
             SkylinersRegistry.FLAT_PORTHOLE.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
+        // A freighter's hyperspace jump: her computer's last word as she comes out, and the view widening as she goes.
+        NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::tick);
+        NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::widen);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
@@ -367,6 +376,8 @@ public final class SkylinersClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "outside_camera"), PassengerCameras::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lightning_flash"), LightningFlash::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "blast_flash"), BlastFlash::overlay);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_jump"),
+            HyperspaceOverlay::overlay);
         // Where the spyglass's own round is drawn, under the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lookout_glass"), LookoutView::overlay);
         // The gunner's sight, over the view from the freighter's laser cannon and under the hotbar and the chat.
@@ -413,6 +424,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.DECK_ROBOT_ENTITY.get(), DeckRobotRenderer::new);
         event.registerBlockEntityRenderer(SkylinersRegistry.GEAR_BAY_ENTITY.get(), context -> new GearBayRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.LEG_BAY_ENTITY.get(), context -> new LegBayRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LASER_TURRET_ENTITY.get(), context -> new LaserTurretRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
@@ -463,6 +475,8 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.ORRERY_ENTITY.get(), context -> new OrreryRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.SPRINKLER_ENTITY.get(), context -> new SprinklerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
+        event.registerBlockEntityRenderer(SkylinersRegistry.CANOPY_LINING_ENTITY.get(), context -> new CanopyLiningRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.CONSOLE_ENTITY.get(), context -> new ConsoleRenderer());
         event.registerEntityRenderer(SkylinersRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);

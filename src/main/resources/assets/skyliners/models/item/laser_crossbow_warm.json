@@ -1,0 +1,29 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "gui_light": "front",
+  "base": {
+    "parent": "skyliners:item/laser_crossbow_slack",
+    "textures": {
+      "metal": "skyliners:item/laser_crossbow_metal",
+      "trim": "skyliners:item/laser_crossbow_trim",
+      "wood": "skyliners:item/laser_crossbow_wood",
+      "copper": "skyliners:item/laser_crossbow_copper",
+      "coil": "skyliners:item/laser_crossbow_glow_warm",
+      "string": "skyliners:item/laser_crossbow_glow_warm",
+      "emitter": "skyliners:item/laser_crossbow_glow_warm",
+      "channel": "skyliners:item/laser_crossbow_glow_rest",
+      "lamp": "skyliners:item/laser_crossbow_lamp_dark",
+      "particle": "skyliners:item/laser_crossbow_metal"
+    }
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/generated",
+      "loader": "neoforge:item_layers",
+      "textures": {
+        "layer0": "skyliners:item/laser_crossbow_warm",
+        "particle": "skyliners:item/laser_crossbow_warm"
+      }
+    }
+  }
+}

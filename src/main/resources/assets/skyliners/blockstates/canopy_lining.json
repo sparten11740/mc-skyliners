@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/canopy_lining"
+    },
+    "facing=east": {
+      "model": "skyliners:block/canopy_lining"
+    },
+    "facing=south": {
+      "model": "skyliners:block/canopy_lining"
+    },
+    "facing=west": {
+      "model": "skyliners:block/canopy_lining"
+    }
+  }
+}

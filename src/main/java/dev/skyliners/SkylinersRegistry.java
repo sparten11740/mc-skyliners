@@ -55,6 +55,8 @@ import dev.skyliners.block.CabinSeatBlock;
 import dev.skyliners.block.CabinStairsBlock;
 import dev.skyliners.block.CabinWindowBlock;
 import dev.skyliners.block.CabinWindowShellBlock;
+import dev.skyliners.block.CanopyLiningBlock;
+import dev.skyliners.block.CanopyLiningBlockEntity;
 import dev.skyliners.block.CargoCrateBlock;
 import dev.skyliners.block.CargoCrateBlockEntity;
 import dev.skyliners.block.CargoFloorBlock;
@@ -156,6 +158,8 @@ import dev.skyliners.block.LabPipeBlock;
 import dev.skyliners.block.LaunchPadBlockEntity;
 import dev.skyliners.block.LaunchPadGrateBlock;
 import dev.skyliners.block.LaunchPadHubBlock;
+import dev.skyliners.block.LegBayBlock;
+import dev.skyliners.block.LegBayBlockEntity;
 import dev.skyliners.block.LiftFloorBlock;
 import dev.skyliners.block.OrreryBlock;
 import dev.skyliners.block.OrreryBlockEntity;
@@ -375,6 +379,9 @@ import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.console.ConsoleBlock;
+import dev.skyliners.console.ConsoleBlockEntity;
+import dev.skyliners.console.ConsoleKind;
 import dev.skyliners.engineering.BreakerBoardBlock;
 import dev.skyliners.engineering.BreakerBoardBlockEntity;
 import dev.skyliners.engineering.CoolantValveBlock;
@@ -457,6 +464,8 @@ public final class SkylinersRegistry {
      * the airliner, in its way as it takes off.
      */
     private static final float ONLY_EVER_PLACED = Float.MAX_VALUE;
+    /** How brightly the freighter's console modules' screens and lamps light what is round them, in light levels. */
+    private static final int CONSOLE_GLOW = 4;
     /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see AirframeBlueprintItem). */
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
@@ -661,6 +670,13 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<GearBayBlock> GEAR_BAY = BLOCKS.registerBlock("gear_bay", GearBayBlock::new, metal(MapColor.METAL));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GearBayBlockEntity>> GEAR_BAY_ENTITY =
         BLOCK_ENTITIES.register("gear_bay", () -> BlockEntityType.Builder.of(GearBayBlockEntity::new, GEAR_BAY.get()).build(null));
+    /**
+     * The top of one of the freighter's landing legs, set into her belly, with the hydraulics that draw the leg up and
+     * let it down (see {@link LegBayBlock}); only her blueprint places it, so it has no item and drops nothing.
+     */
+    public static final DeferredBlock<LegBayBlock> LEG_BAY = BLOCKS.registerBlock("leg_bay", LegBayBlock::new, metal(MapColor.METAL).noLootTable());
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LegBayBlockEntity>> LEG_BAY_ENTITY =
+        BLOCK_ENTITIES.register("leg_bay", () -> BlockEntityType.Builder.of(LegBayBlockEntity::new, LEG_BAY.get()).build(null));
     public static final DeferredBlock<Block> LANDING_GEAR_TIRE = BLOCKS.registerSimpleBlock(
         "landing_gear_tire",
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 3.0F).sound(SoundType.WOOL).isValidSpawn(SkylinersRegistry::never)
@@ -874,6 +890,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_HYDRAULICS = sound("ramp_hydraulics");
     /** Her boarding ramp's foot lip coming down onto the ground with a thud, its latch clicking home. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_THUD = sound("ramp_thud");
+    /**
+     * Her landing legs drawing up into her belly, the sleeves unlocking and the hydraulics whining up to the feet
+     * clunking home; and coming down, the whine falling to the struts locking with a heavy thunk.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_LEGS_UP = sound("freighter_legs_up");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_LEGS_DOWN = sound("freighter_legs_down");
     /** Her engines' hum as heard inside her hull, a seamless loop. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_ENGINE_IDLE = sound("freighter_engine_idle");
     /** Her engines' roar as heard outside, up to 160 blocks off, a seamless loop crossfaded over the hum by thrust. */
@@ -942,6 +964,23 @@ public final class SkylinersRegistry {
     /** Her computer, after its falling blip, saying her name: "Magpie's awake. Barely." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_MAGPIE_READY =
         sound("freighter_computer_magpie_ready");
+    /** Her computer as she jumps: "Jump drive spooling up. Hold on to something." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_SPOOLING =
+        sound("freighter_computer_jump_spooling");
+    /** Her computer letting go into the jump: "Here goes nothing." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_GO = sound("freighter_computer_jump_go");
+    /** Her computer coming out of the jump: "Out of the jump. Welcome to wherever this is." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_ARRIVED =
+        sound("freighter_computer_jump_arrived");
+    /** Her computer with no pin to jump to: "Nowhere to jump to. Pick a spot on the map." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_NO_PIN =
+        sound("freighter_computer_jump_no_pin");
+    /** Her computer asked to jump on the ground: "Not from down here. Get her flying first." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_GROUNDED =
+        sound("freighter_computer_jump_grounded");
+    /** Her computer asked to jump to a pin close by: "That is practically next door. Just fly there." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_TOO_NEAR =
+        sound("freighter_computer_jump_too_near");
     /** Her computer for her flight deck, set to take off: "Lifting off. Hold on to something bolted down." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_TAKEOFF =
         sound("freighter_computer_takeoff");
@@ -975,6 +1014,22 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<DimmingGlassBlock> DIMMING_GLASS = BLOCKS.registerBlock(
         "dimming_glass", properties -> new DimmingGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
+    /**
+     * The freighter's canopy seen smooth from inside: the frame round her canopy's glass, her cover cut to her curve but
+     * drawn from outside only, as her canopy's glass is, painted by her livery and as light as her cover; and the unseen
+     * block in her cockpit whose renderer draws the canopy's inside as one smooth cone (see {@link CanopyLiningBlock}).
+     * Placed only when she is built, so no items; the frame gives back fabric, the lining nothing.
+     */
+    public static final DeferredBlock<ShellBlock> CANOPY_FRAME = BLOCKS.registerBlock(
+        "canopy_frame", properties -> new ShellBlock(properties, SkylinersRegistry.ZEPPELIN_FABRIC), fabric()
+    );
+    public static final DeferredBlock<CanopyLiningBlock> CANOPY_LINING = BLOCKS.registerBlock(
+        "canopy_lining", CanopyLiningBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.NONE).noCollission().noOcclusion().noLootTable().strength(ONLY_EVER_PLACED, 3600000.0F)
+            .isValidSpawn(SkylinersRegistry::never)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CanopyLiningBlockEntity>> CANOPY_LINING_ENTITY =
+        BLOCK_ENTITIES.register("canopy_lining", () -> BlockEntityType.Builder.of(CanopyLiningBlockEntity::new, CANOPY_LINING.get()).build(null));
 
     /**
      * The hull's lining (see {@link dev.skyliners.block.Lining}): the skin cut to the hull's curve where the airliner's
@@ -1513,6 +1568,25 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrossbowRackBlockEntity>> CROSSBOW_RACK_ENTITY =
         BLOCK_ENTITIES.register("crossbow_rack", () -> BlockEntityType.Builder.of(CrossbowRackBlockEntity::new, CROSSBOW_RACK.get()).build(null));
     public static final DeferredItem<BlockItem> CROSSBOW_RACK_ITEM = ITEMS.registerSimpleBlockItem(CROSSBOW_RACK);
+    /**
+     * The freighter's cockpit console (see {@link ConsoleBlock}): its modules, each its own block, curving round her
+     * pilots' seats as one half-round desk and put up anywhere by hand, sharing one kind of block entity.
+     */
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_READOUTS = consoleModule("console_readouts", ConsoleKind.READOUTS);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_SCANNER = consoleModule("console_scanner", ConsoleKind.SCANNER);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_ENGINES = consoleModule("console_engines", ConsoleKind.ENGINES);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_SWITCHES = consoleModule("console_switches", ConsoleKind.SWITCHES);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_BOOST = consoleModule("console_boost", ConsoleKind.BOOST);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_JUMP = consoleModule("console_jump", ConsoleKind.JUMP);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConsoleBlockEntity>> CONSOLE_ENTITY =
+        BLOCK_ENTITIES.register("console", () -> BlockEntityType.Builder.of(ConsoleBlockEntity::new, CONSOLE_READOUTS.get(),
+            CONSOLE_SCANNER.get(), CONSOLE_ENGINES.get(), CONSOLE_SWITCHES.get(), CONSOLE_BOOST.get(), CONSOLE_JUMP.get()).build(null));
+    public static final DeferredItem<BlockItem> CONSOLE_READOUTS_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_READOUTS);
+    public static final DeferredItem<BlockItem> CONSOLE_SCANNER_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SCANNER);
+    public static final DeferredItem<BlockItem> CONSOLE_ENGINES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_ENGINES);
+    public static final DeferredItem<BlockItem> CONSOLE_SWITCHES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SWITCHES);
+    public static final DeferredItem<BlockItem> CONSOLE_BOOST_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_BOOST);
+    public static final DeferredItem<BlockItem> CONSOLE_JUMP_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_JUMP);
     /**
      * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
      * and walked over, glass under its iris, as strong as glass is not and proof against blasts, as one blown out by a
@@ -3088,6 +3162,12 @@ public final class SkylinersRegistry {
             BREAKER_BOARD_ITEM,
             COOLANT_VALVE_ITEM,
             CROSSBOW_RACK_ITEM,
+            CONSOLE_READOUTS_ITEM,
+            CONSOLE_SCANNER_ITEM,
+            CONSOLE_ENGINES_ITEM,
+            CONSOLE_SWITCHES_ITEM,
+            CONSOLE_BOOST_ITEM,
+            CONSOLE_JUMP_ITEM,
             FLOOR_WINDOW_ITEM,
             FLOOR_WINDOW_PANEL_ITEM,
             BEACH_SAND_ITEM,
@@ -3208,6 +3288,12 @@ public final class SkylinersRegistry {
      */
     private static BlockBehaviour.Properties metal(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).isValidSpawn(SkylinersRegistry::never);
+    }
+
+    /** A module of the freighter's cockpit console, of a kind: dark metal, its screens and lamps glowing a little. */
+    private static DeferredBlock<ConsoleBlock> consoleModule(String name, ConsoleKind kind) {
+        return BLOCKS.registerBlock(name, properties -> new ConsoleBlock(properties, kind),
+            metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(state -> CONSOLE_GLOW));
     }
 
     /** A mocktail's nourishment, a sip's, drunk whenever it is wanted, the lift it gives added to it. */

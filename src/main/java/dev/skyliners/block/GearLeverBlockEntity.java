@@ -67,7 +67,7 @@ public class GearLeverBlockEntity extends BlockEntity {
 
     /** Whether every leg is down and locked. */
     public boolean locked() {
-        return level != null && legs(level).stream().allMatch(bay -> bay.motion() == GearBayBlockEntity.Motion.DOWN);
+        return level != null && legs(level).stream().allMatch(bay -> bay.motion() == RetractableLegBlockEntity.Motion.DOWN);
     }
 
     /**
@@ -75,7 +75,7 @@ public class GearLeverBlockEntity extends BlockEntity {
      * or not; with no legs, as high as can be.
      */
     public double lowestWheels(Level level) {
-        return legs(level).stream().mapToDouble(bay -> bay.wheelsAboveGround(level)).min().orElse(Double.MAX_VALUE);
+        return legs(level).stream().mapToDouble(bay -> bay.aboveGround(level)).min().orElse(Double.MAX_VALUE);
     }
 
     /**
@@ -171,14 +171,14 @@ public class GearLeverBlockEntity extends BlockEntity {
 
     /** Whether the gear horn should sound: the airliner coming down near the ground with its gear not all down. */
     private boolean horn(ServerLevel level, List<GearBayBlockEntity> legs) {
-        if (legs.stream().allMatch(bay -> bay.motion() == GearBayBlockEntity.Motion.DOWN)) {
+        if (legs.stream().allMatch(bay -> bay.motion() == RetractableLegBlockEntity.Motion.DOWN)) {
             return false;
         }
         SableFlight.State state = SableFlight.read(this, nose());
         if (state == null || state.velocity().y > -HORN_SINK) {
             return false;
         }
-        return legs.stream().anyMatch(bay -> bay.wheelsAboveGround(level) < HORN_HEIGHT);
+        return legs.stream().anyMatch(bay -> bay.aboveGround(level) < HORN_HEIGHT);
     }
 
     /** What the lamps show: flashing red as asked, else green with every leg down, dark with every leg up, red between. */
@@ -186,10 +186,10 @@ public class GearLeverBlockEntity extends BlockEntity {
         if (flashing) {
             return flashLit ? GearLeverBlock.Lamps.RED : GearLeverBlock.Lamps.OFF;
         }
-        if (legs.stream().allMatch(bay -> bay.motion() == GearBayBlockEntity.Motion.DOWN)) {
+        if (legs.stream().allMatch(bay -> bay.motion() == RetractableLegBlockEntity.Motion.DOWN)) {
             return GearLeverBlock.Lamps.GREEN;
         }
-        boolean up = legs.stream().allMatch(bay -> bay.motion() == GearBayBlockEntity.Motion.UP);
+        boolean up = legs.stream().allMatch(bay -> bay.motion() == RetractableLegBlockEntity.Motion.UP);
         return up ? GearLeverBlock.Lamps.OFF : GearLeverBlock.Lamps.RED;
     }
 

@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.GearBayBlock;
 import dev.skyliners.block.GearBayBlockEntity;
+import dev.skyliners.block.RetractableLegBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -62,7 +63,7 @@ public class GearBayRenderer implements BlockEntityRenderer<GearBayBlockEntity> 
             pose.pushPose();
             // About the bay's lower edge, its middle: the leg's foot goes the way the bay faces.
             pose.rotateAround(turn(swing, SWING * swung), 0.5F, 0, 0.5F);
-            for (GearBayBlockEntity.Part part : bay.stowed()) {
+            for (RetractableLegBlockEntity.Part part : bay.stowed()) {
                 part(pose, buffers, level, part, light);
             }
             pose.popPose();
@@ -80,7 +81,7 @@ public class GearBayRenderer implements BlockEntityRenderer<GearBayBlockEntity> 
     }
 
     /** One block of the leg, where it stands from the bay, and a wheel mount's tire beside it. */
-    private void part(PoseStack pose, MultiBufferSource buffers, Level level, GearBayBlockEntity.Part part, int light) {
+    private void part(PoseStack pose, MultiBufferSource buffers, Level level, RetractableLegBlockEntity.Part part, int light) {
         pose.pushPose();
         pose.translate(part.offset().getX(), part.offset().getY(), part.offset().getZ());
         blocks.renderSingleBlock(part.state(), pose, buffers, light, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
@@ -96,7 +97,7 @@ public class GearBayRenderer implements BlockEntityRenderer<GearBayBlockEntity> 
     }
 
     /** The tire a wheel mount of the leg holds, as its data keeps it ("CurrentStack"); nothing for any other block. */
-    private static ItemStack tire(Level level, GearBayBlockEntity.Part part) {
+    private static ItemStack tire(Level level, RetractableLegBlockEntity.Part part) {
         BlockState state = part.state();
         if (part.data() == null || !part.data().contains("CurrentStack") || !state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
             return ItemStack.EMPTY;
@@ -145,7 +146,7 @@ public class GearBayRenderer implements BlockEntityRenderer<GearBayBlockEntity> 
     @Override
     public AABB getRenderBoundingBox(GearBayBlockEntity bay) {
         int reach = 2;
-        for (GearBayBlockEntity.Part part : bay.stowed()) {
+        for (RetractableLegBlockEntity.Part part : bay.stowed()) {
             reach = Math.max(reach, Math.abs(part.offset().getY()) + 2);
         }
         BlockPos pos = bay.getBlockPos();
