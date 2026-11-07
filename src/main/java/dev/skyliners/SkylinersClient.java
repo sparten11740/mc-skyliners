@@ -287,6 +287,7 @@ public final class SkylinersClient {
         // A freighter's hyperspace jump: her computer's last word as she comes out, and the view widening as she goes.
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::tick);
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::widen);
+        NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::world);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
