@@ -1,0 +1,9 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:translucent",
+  "outside_only": true,
+  "textures": {
+    "skin": "skyliners:block/dimming_glass_3",
+    "particle": "skyliners:block/dimming_glass_3"
+  }
+}

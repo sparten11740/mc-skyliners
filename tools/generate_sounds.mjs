@@ -4285,6 +4285,95 @@ const RAMP = {
   writeSound("ramp_thud", hullEcho(dry, RAMP.echo), 0.9);
 }
 
+// The freighter's landing legs (see LegBayBlockEntity and LegBayRenderer), each sound with a random sequence of its
+// own and timed to the legs' movement. Going up: the uplocks letting go with a clunk and a hiss of oil, the sleeves'
+// servos zipping as they draw in, the hydraulic pump's whine rising with the electric servos singing over it as the
+// struts telescope up, and the feet clunking home under her belly, latched with a clack. Coming down: the latches
+// letting go, the whine falling as the struts run out, the feet reaching the end of their travel with a thud, the
+// servos zipping as the sleeves widen, and the struts locking with a heavy thunk. Tune them here.
+const LEGS = {
+  // How long each takes, in seconds, as the leg bay has them (RAISE_TICKS and LOWER_TICKS), the share of it the
+  // sleeves take to draw in or widen, as its renderer has it, and the echo after, in seconds.
+  upSeconds: 6,
+  downSeconds: 5,
+  unlockShare: 0.12,
+  tail: 0.6,
+  // The pump's whine going up and coming down, from and to, in hertz, and the servos' song over it, as a multiple of
+  // its pitch and as loud as a share of it.
+  upFrom: 150,
+  upTo: 230,
+  downFrom: 220,
+  downTo: 150,
+  servo: 4.2,
+  servoGain: 0.12,
+  // The sleeves' servos zipping, from and to, in hertz.
+  zipLow: 520,
+  zipHigh: 880,
+  // The thunk of the feet and the struts striking home and the uplocks letting go, the ring over it and the latches'
+  // clack, in hertz.
+  thudHz: 42,
+  releaseHz: 60,
+  ringHz: 300,
+  latchHz: 950,
+  // How much of the echo under her belly is mixed in.
+  echo: 0.12,
+};
+/** A servo's electric whine from one time to another, in seconds, gliding from one pitch to another, in hertz. */
+function legServo(samples, from, to, startHz, endHz, gain) {
+  let phase = 0;
+  const span = to - from;
+  for (let i = Math.round(from * RATE); i < Math.min(samples.length, Math.round(to * RATE)); i++) {
+    const t = i / RATE - from;
+    const envelope = Math.min(1, t / 0.05) * Math.max(0, Math.min(1, (span - t) / 0.08));
+    phase += (2 * Math.PI * (startHz + ((endHz - startHz) * t) / span)) / RATE;
+    samples[i] += gain * envelope * (Math.sin(phase) + 0.3 * Math.sin(2 * phase) + 0.15 * Math.sin(3 * phase));
+  }
+}
+/** Oil hissing through a valve as it opens, at a time in seconds: bright noise dying away over so long. */
+function oilHiss(samples, start, seconds, gain, noise) {
+  let previous = 0;
+  for (let i = Math.round(start * RATE); i < Math.min(samples.length, Math.round((start + seconds) * RATE)); i++) {
+    const t = i / RATE - start;
+    const white = noise() * 2 - 1;
+    samples[i] += gain * Math.min(1, t / 0.01) * (1 - t / seconds) ** 2 * (white - previous);
+    previous = white;
+  }
+}
+{
+  const up = ownRandom(0x4c656755);
+  const unlocked = LEGS.upSeconds * LEGS.unlockShare;
+  const home = LEGS.upSeconds - 0.15;
+  const dry = new Float64Array(Math.round((LEGS.upSeconds + LEGS.tail) * RATE));
+  thunk(dry, 0, LEGS.releaseHz, 0.7, up);
+  click(dry, 0.02, LEGS.latchHz * 1.2, 0.4, up);
+  oilHiss(dry, 0.03, 0.5, 0.25, up);
+  legServo(dry, 0.05, unlocked, LEGS.zipLow, LEGS.zipHigh, 0.25);
+  gearHydraulics(dry, unlocked - 0.1, home, LEGS.upFrom, LEGS.upTo, 1, up);
+  legServo(dry, unlocked, home, LEGS.upFrom * LEGS.servo, LEGS.upTo * LEGS.servo, LEGS.servoGain);
+  thunk(dry, home, LEGS.thudHz, 1, up);
+  gearRing(dry, home + 0.002, LEGS.ringHz, 0.25);
+  click(dry, home + 0.13, LEGS.latchHz, 0.5, up);
+  click(dry, home + 0.145, LEGS.latchHz * 1.6, 0.25, up);
+  writeSound("freighter_legs_up", hullEcho(dry, LEGS.echo), 0.85);
+}
+{
+  const down = ownRandom(0x4c656744);
+  const runOut = LEGS.downSeconds * (1 - LEGS.unlockShare);
+  const locked = LEGS.downSeconds - 0.05;
+  const dry = new Float64Array(Math.round((LEGS.downSeconds + LEGS.tail) * RATE));
+  click(dry, 0, LEGS.latchHz * 1.2, 0.45, down);
+  thunk(dry, 0.01, LEGS.releaseHz, 0.5, down);
+  oilHiss(dry, 0.02, 0.6, 0.3, down);
+  gearHydraulics(dry, 0.15, runOut, LEGS.downFrom, LEGS.downTo, 0.8, down);
+  legServo(dry, 0.15, runOut, LEGS.downFrom * LEGS.servo, LEGS.downTo * LEGS.servo, LEGS.servoGain);
+  thunk(dry, runOut - 0.05, LEGS.thudHz * 1.2, 0.7, down);
+  legServo(dry, runOut, locked, LEGS.zipHigh, LEGS.zipLow, 0.25);
+  thunk(dry, locked, LEGS.thudHz * 0.9, 1.2, down);
+  gearRing(dry, locked + 0.002, LEGS.ringHz * 0.85, 0.3);
+  click(dry, locked + 0.02, LEGS.latchHz * 0.9, 0.5, down);
+  writeSound("freighter_legs_down", hullEcho(dry, LEGS.echo), 0.85);
+}
+
 // The freighter's engines (see the plan's "Her engines, impressive and loud"), her show piece outside, each sound with
 // a random sequence of its own. Under them all runs her drone, a deep 41 hertz thrum, its second and third harmonics
 // throbbing three times a second, driven into a growl; and over it her turbines' whine at 1.1 kilohertz. Her idle, a
@@ -5217,6 +5306,18 @@ const COMPUTER_ANNOUNCEMENTS = {
   freighter_computer_space: "We're in space. | Keep the windows shut.",
   freighter_computer_gravity: "Gravity back on. | Mind your landing.",
 };
+// Her computer through her hyperspace jump (see FreighterJump), our own lines in the voice of a worn old cargo hauler's
+// computer that has seen it all: spooling up as the button is pressed, letting go as she jumps, coming out of it at the
+// pin, and, the button pressed when she cannot jump, why not: no pin set, not flying, or the pin too near to bother.
+// Said in COMPUTER's voice, its blip first, as her other lines are.
+const COMPUTER_JUMP_LINES = {
+  freighter_computer_jump_spooling: "Jump drive spooling up. | Hold on to something.",
+  freighter_computer_jump_go: "Here goes nothing.",
+  freighter_computer_jump_arrived: "Out of the jump. | Welcome to wherever this is.",
+  freighter_computer_jump_no_pin: "Nowhere to jump to. | Pick a spot on the map.",
+  freighter_computer_jump_grounded: "Not from down here. | Get her flying first.",
+  freighter_computer_jump_too_near: "That is practically next door. | Just fly there.",
+};
 /**
  * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
  * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
@@ -5247,6 +5348,7 @@ async function sayAsFreighterComputer(speaker, lines, longest) {
 if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

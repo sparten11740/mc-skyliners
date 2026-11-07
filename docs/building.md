@@ -272,7 +272,13 @@ The freighter is drawn in `FreighterShape`'s metres, her hull the union of her p
 and her domes, her outer bulkhead, her core, ring corridor and room walls of `PADDED_BULKHEAD`, the passages out past
 the bulkhead to her cockpit and along her prongs walled off from the void beside them, her landing legs, her thrusters
 and her cockpit's control head, seats and autopilot screen, the head wired to her thrusters' relays and her legs' feet
-as a `FreighterPilot.Wiring`. `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her lift from the
+as a `FreighterPilot.Wiring`, and to her leg bays. Each leg's strut meets her belly in its `LegBayBlock`, laid in place
+of the skin over the strut, which her belly's curve cuts open underneath (`FreighterLayout.legTop`); its
+`LegBayBlockEntity` takes the leg's blocks away as it draws up and puts them back as it locks down, the same
+`RetractableLegBlockEntity` as the airliner's `GearBayBlockEntity`, with its own timings, sounds and reach, and
+`LegBayRenderer` draws its strut telescoping and its foot tucked under her belly. `FreighterLegs`, her flight's own,
+raises them once she climbs or cruises well clear of the ground and lowers them otherwise, and her pilot holds her
+landing at its hover until they are down (`FreighterPilot.Orders.legsDown`). `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her lift from the
 mass Sable weighs and a trim it learns, split over her four clusters by her tilt and by where Sable puts her centre of
 mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the heading she wants,
 round a circle or onto a pin with the zeppelin's `Steering`, set to land near a pin coming down on the nearest clear,
@@ -290,7 +296,24 @@ tilts, turns and moves, and holds each set of thrusters at a signal until it is 
 not set back and forth with every jitter. Her jets fire inside her, so she never runs them at a third of full or more,
 where Create Propulsion sets fire to whatever stands in a thruster's exhaust. Her canopy is `DimmingGlassBlock`, cut to
 her curve as the windscreen is and drawn denser for each darkness, which the rocket's window dimmer sets, as it does her
-oval windows, through the same `OvalWindowPieceBlock.DIM`. Her `DeckRobotBlock`s chirp, trill and beep from their block
+oval windows, through the same `OvalWindowPieceBlock.DIM`. Seen from inside her canopy is smooth: its glass, lined
+(`DimmingGlassBlock.LINED`), and the struts between its panes, made her `CANOPY_FRAME`, are drawn from outside only
+(`ShellModel`'s `outside_only`, a whole block telling which way is out from the cut blocks round it), and the unseen
+`CanopyLiningBlock` near the canopy's tip, whose `CanopyLiningBlockEntity` `FreighterLayout.canopyLining()` tells the
+cone a skin's thickness in from her surface and a pane of her glass to follow, has `CanopyLiningRenderer` draw the
+inside as one cone of tinted glass, darkening with that pane, framed by ribs. `FreighterConsole` lays her console round
+her control head, a `ConsoleBlock` of each `ConsoleKind` (in `console/`) in the block each slice's middle falls in, its
+`ConsoleBlockEntity` told its slice of the ring (`ConsoleShape.Facet`) and the way to her head through a `Fitting`;
+`ConsoleShape` says where a module stands in its block, a slice, a desk of its own, a plate or a wedge, for the server to
+read a touch on its toggles and the client's `ConsoleRenderer` to draw it, its casing by `ConsoleCasing`, the shading
+rolled round the ring, and its screens and controls by `ConsoleArt`, from the autopilot and `SableClient.attitude`. Her
+boost is `FreighterFlight.boost`, her pilot firing her mains flat out while it lasts (`FreighterPilot.Boost`), the
+clients shown when it ends to draw it. Her hyperspace jump is `FreighterJump`, owned by `FreighterFlight` and asked for
+by the jump console: her `JumpDriveBlock` spooled through `spoolForJump`, the land round the pin loaded by a region
+ticket of its own (which lets go by itself), her lowest block kept clear over the highest of the land's
+`MOTION_BLOCKING` heightmap under her, and `SableFlight.jump` moving her, Sable carrying whoever stands or sits on her
+and the rest aboard moved with her; each step goes to everyone aboard as a `HyperspaceJump`, which the client's
+`HyperspaceOverlay` shows and sounds, her computer's lines generated with the rest of hers (`COMPUTER_JUMP_LINES`). Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing

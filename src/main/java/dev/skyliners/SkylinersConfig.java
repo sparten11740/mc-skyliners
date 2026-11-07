@@ -74,6 +74,9 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_CONSOLE;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_HYPERSPACE_JUMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
@@ -88,6 +91,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_FINISHES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINEERING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_BEACH;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_RETRACTING_LEGS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -681,6 +685,28 @@ public final class SkylinersConfig {
                 "hand, its four buttons from clear to all but black. Without it, her canopy is plain smoked glass."
             )
             .define("canopyDimmer", true);
+        FREIGHTER_SMOOTH_CANOPY = builder
+            .comment(
+                "Whether the freighter's canopy is seen smooth from inside: one round cone of tinted glass framed by dark ribs,",
+                "dimmed with the dimmer as smoothly as clear, in place of her glass and its frame stepping round her curve block",
+                "by block. Without it, her canopy is drawn block by block from inside as from outside."
+            )
+            .define("smoothCanopy", true);
+        FREIGHTER_CONSOLE = builder
+            .comment(
+                "Whether the freighter's cockpit has its console: a half-round desk curving round her pilots' seats, live",
+                "readouts of her speed, height, climb and heading, her engines and a sweeping scanner, banks of toggles that",
+                "click, and a big boost button that fires her mains flat out a while. Without it, her seats face her canopy bare."
+            )
+            .define("console", true);
+        FREIGHTER_HYPERSPACE_JUMP = builder
+            .comment(
+                "Whether the freighter can jump to her pin through hyperspace from the jump button on her console: while she",
+                "flies to a pin, her drive spools up as the land there loads, the stars stretch into streaks for everyone",
+                "aboard, and in a flash she is at the pin, everyone aboard with her, clear over the highest ground there.",
+                "Without it, the button only clicks, and her console has her flight readouts in its place."
+            )
+            .define("hyperspaceJump", true);
         FREIGHTER_ROBOTS = builder
             .comment(
                 "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",
@@ -768,6 +794,13 @@ public final class SkylinersConfig {
                 "up to a blast of steam."
             )
             .define("engineering", true);
+        FREIGHTER_RETRACTING_LEGS = builder
+            .comment(
+                "Whether the freighter's landing legs draw up into her belly once she is well clear of the ground, their struts",
+                "telescoping up and their feet tucking under her, and come down again before she lands. Read when she is built: off,",
+                "her legs are fixed. Switched off later, legs already built still come down but no longer go up."
+            )
+            .define("retractingLegs", true);
         builder.pop();
 
         SPEC = builder.build();

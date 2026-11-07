@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "facing=north,mount=floor": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/console_switches"
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/console_switches"
+    }
+  }
+}

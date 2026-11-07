@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "skyliners:block/leg_bay_bottom",
+    "up": "skyliners:block/leg_bay_side",
+    "particle": "skyliners:block/leg_bay_side",
+    "north": "skyliners:block/leg_bay_side",
+    "south": "skyliners:block/leg_bay_side",
+    "east": "skyliners:block/leg_bay_side",
+    "west": "skyliners:block/leg_bay_side"
+  }
+}
