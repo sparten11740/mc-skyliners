@@ -48,6 +48,14 @@ abstract class HullLayout implements Layout {
         cells.put(new BlockPos(x, y, z), state);
     }
 
+    /**
+     * Keeps a block of the hull's air clear of whatever is laid after: it is still air, but no longer open, so nothing
+     * that looks for open space stands in it, as over a hatch that drops away.
+     */
+    void keepClear(int x, int y, int z) {
+        set(x, y, z, Blocks.AIR.defaultBlockState());
+    }
+
     BlockState stateAt(int x, int y, int z) {
         return cells.getOrDefault(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
     }

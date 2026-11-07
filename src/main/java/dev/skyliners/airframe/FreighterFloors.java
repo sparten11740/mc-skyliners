@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The freighter's floors, each room's its own, so no two of her rooms look alike underfoot: her cargo hold a steel
@@ -15,9 +16,10 @@ import net.minecraft.world.level.block.Block;
  * soft blue-grey carpet the rest of her deck has, as the open floor about her core keeps. Each is one of the mod's own
  * blocks, as light as the carpet it takes the place of, so she weighs and flies as before.
  *
- * <p>Laid over her deck's floor, the row of her carpet, in each room, a wedge round her axis between two of her room walls, past the open
- * floor about her core, wherever it is her carpet, before her rooms are furnished. Laid out nose north, as the rest of
- * her; none with the server config's {@code freighter.finishes} off.
+ * <p>Laid over her deck's floor, the row of her carpet, in each room, a wedge round her axis between two of her room
+ * walls, past the open floor about her core, wherever it is her carpet, before her ramp's well is cut, whose hatch
+ * takes up a room's floor as it does her carpet, and before her rooms are furnished. Laid out nose north, as the rest
+ * of her; none with the server config's {@code freighter.finishes} off.
  */
 final class FreighterFloors {
     /** How wide each room is, round her axis, in degrees: one of six. */
@@ -61,6 +63,12 @@ final class FreighterFloors {
                 lay(layout, room, new BlockPos(block / across - reach, deck, block % across - reach), plain, floor.lined());
             }
         }
+    }
+
+    /** Whether a block is one of her rooms' floors, which her ramp's hatch may be cut from as from her carpet. */
+    static boolean isRoomFloor(BlockState state) {
+        return state.is(SkylinersRegistry.FLIGHT_DECK_STRIPE.get())
+            || FLOORS.stream().anyMatch(floor -> state.is(floor.block().get()));
     }
 
     /**

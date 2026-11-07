@@ -892,8 +892,8 @@ public final class FreighterLayout extends HullLayout {
     /**
      * Her boarding ramp, where its well holds nothing but her skin, her deck and her walls: the corridor's wall opened
      * at its head, the glass rail along its well's open side, its panel on the wall beside its head, and the panel
-     * handed the ramp once it stands, its hatch every block of hers in its well's columns from her deck's floor down;
-     * none with the server config's {@code freighter.ramp} off.
+     * handed the ramp once it stands, its hatch every block of hers in its well's columns from her deck's floor down,
+     * the row over it kept clear; none with the server config's {@code freighter.ramp} off.
      */
     private void ramp() {
         int rise = deck + 1;
@@ -911,6 +911,7 @@ public final class FreighterLayout extends HullLayout {
         List<AirstairControllerBlockEntity.Step> hatch = new ArrayList<>();
         for (int cell = 0; cell < reach * RAMP_WIDTH; cell++) {
             hatchColumn(hatch, RAMP_HEAD + cell / RAMP_WIDTH, left + cell % RAMP_WIDTH, panel);
+            keepOffHatch(RAMP_HEAD + cell / RAMP_WIDTH, left + cell % RAMP_WIDTH);
         }
         BlockPos head = new BlockPos(RAMP_HEAD, deck, RAMP_MIDDLE).subtract(panel);
         fit(panel, (blockEntity, rotation) -> {
@@ -919,6 +920,16 @@ public final class FreighterLayout extends HullLayout {
                     hatch.stream().map(part -> turned(part, rotation)).toList());
             }
         });
+    }
+
+    /**
+     * Keeps the row over a column of her ramp's hatch clear of what her rooms are furnished with after, where it would
+     * be left standing on nothing as the ramp comes down; what hangs on her walls over it stays free to.
+     */
+    private void keepOffHatch(int x, int z) {
+        if (isOpen(x, deck + 1, z) && !isOpen(x, deck, z) && inside(x, deck + 1, z)) {
+            keepClear(x, deck + 1, z);
+        }
     }
 
     /** A block of a hatch as it lies once she is placed, turned as she was. */
@@ -1340,9 +1351,13 @@ public final class FreighterLayout extends HullLayout {
         return true;
     }
 
-    /** Whether a block may be part of her ramp's hatch: her skin, her deck or a wall, nothing that works. */
+    /**
+     * Whether a block may be part of her ramp's hatch: her skin, her deck, its carpet or a room's own floor, or a wall,
+     * nothing that works.
+     */
     private static boolean hatchable(BlockState state) {
-        return skin(state) || state.is(SkylinersRegistry.CABIN_FLOOR.get()) || state.is(SkylinersRegistry.PADDED_BULKHEAD.get());
+        return skin(state) || state.is(SkylinersRegistry.CABIN_FLOOR.get()) || FreighterFloors.isRoomFloor(state)
+            || state.is(SkylinersRegistry.PADDED_BULKHEAD.get());
     }
 
     /** Adds a column of her ramp's well to its hatch: every block of hers in it from her deck's floor down. */
