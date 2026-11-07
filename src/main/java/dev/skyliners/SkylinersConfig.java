@@ -81,6 +81,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_SPOOKIE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LED_STRIPS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_FINISHES;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINEERING;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -714,6 +715,12 @@ public final class SkylinersConfig {
                 "her club. Off, every room has the carpet of the rest of her deck."
             )
             .define("finishes", true);
+        FREIGHTER_ENGINEERING = builder
+            .comment(
+                "Whether the freighter's engineering has its machines: her jump drive, spooled up by hand, which now and then",
+                "sputters until it is thumped."
+            )
+            .define("engineering", true);
         builder.pop();
 
         SPEC = builder.build();

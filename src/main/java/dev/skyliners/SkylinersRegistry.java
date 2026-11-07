@@ -363,6 +363,8 @@ import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.engineering.JumpDriveBlock;
+import dev.skyliners.engineering.JumpDriveBlockEntity;
 import dev.skyliners.spookie.SpookieHammockBlock;
 import dev.skyliners.spookie.SpookieHammockBlockEntity;
 import dev.skyliners.turret.LaserCannonBlock;
@@ -1354,6 +1356,13 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<Block> ENGINE_GRATING = BLOCKS.registerSimpleBlock("engine_grating",
         metal(MapColor.COLOR_GRAY).lightLevel(state -> 3));
     public static final DeferredItem<BlockItem> ENGINE_GRATING_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_GRATING);
+    /** The freighter's jump drive in engineering (see {@link JumpDriveBlock}), spooled up and thumped by hand. */
+    public static final DeferredBlock<JumpDriveBlock> JUMP_DRIVE = BLOCKS.registerBlock(
+        "jump_drive", JumpDriveBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(JumpDriveBlock::glow)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<JumpDriveBlockEntity>> JUMP_DRIVE_ENTITY =
+        BLOCK_ENTITIES.register("jump_drive", () -> BlockEntityType.Builder.of(JumpDriveBlockEntity::new, JUMP_DRIVE.get()).build(null));
+    public static final DeferredItem<BlockItem> JUMP_DRIVE_ITEM = ITEMS.registerSimpleBlockItem(JUMP_DRIVE);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2862,7 +2871,8 @@ public final class SkylinersRegistry {
             LASER_CANNON_ITEM,
             BANDSTAND_ITEM,
             SPOOKIE_HAMMOCK_ITEM,
-            ENGINE_GRATING_ITEM
+            ENGINE_GRATING_ITEM,
+            JUMP_DRIVE_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

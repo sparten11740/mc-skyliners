@@ -314,7 +314,10 @@ her racks and crates. Her deck is lit by the rocket's `WallLightBlock`s, which
 first block with room. `FreighterLedStrips` rings each of her rooms with the rocket's `LedStripBlock`s and sets an
 `LedPanelBlock` by its doorway; as her rooms are wedges round her axis whose boxes overlap, its panel is told the
 wedge too (`LedPanelBlockEntity.Wedge`), which the server's brightness, `LedLights`' tint and `LedRing` all keep to. `FreighterFloors`
-lays each room's own floor over her deck, in the mod's own light blocks so her weight is unchanged. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+lays each room's own floor over her deck, in the mod's own light blocks so her weight is unchanged. `FreighterEngineering`
+sets her `JumpDriveBlock` in engineering, its steps its block state and its timing scheduled ticks, as the parcel
+scanner's are; its block entity only keeps the client's ring speed for `JumpDriveRenderer`, which draws its core and
+rings. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "drive=rest,facing=north": {
+      "model": "skyliners:block/jump_drive",
+      "y": 0
+    },
+    "drive=spooling,facing=north": {
+      "model": "skyliners:block/jump_drive",
+      "y": 0
+    },
+    "drive=running,facing=north": {
+      "model": "skyliners:block/jump_drive",
+      "y": 0
+    },
+    "drive=sputtering,facing=north": {
+      "model": "skyliners:block/jump_drive",
+      "y": 0
+    },
+    "drive=rest,facing=east": {
+      "model": "skyliners:block/jump_drive",
+      "y": 90
+    },
+    "drive=spooling,facing=east": {
+      "model": "skyliners:block/jump_drive",
+      "y": 90
+    },
+    "drive=running,facing=east": {
+      "model": "skyliners:block/jump_drive",
+      "y": 90
+    },
+    "drive=sputtering,facing=east": {
+      "model": "skyliners:block/jump_drive",
+      "y": 90
+    },
+    "drive=rest,facing=south": {
+      "model": "skyliners:block/jump_drive",
+      "y": 180
+    },
+    "drive=spooling,facing=south": {
+      "model": "skyliners:block/jump_drive",
+      "y": 180
+    },
+    "drive=running,facing=south": {
+      "model": "skyliners:block/jump_drive",
+      "y": 180
+    },
+    "drive=sputtering,facing=south": {
+      "model": "skyliners:block/jump_drive",
+      "y": 180
+    },
+    "drive=rest,facing=west": {
+      "model": "skyliners:block/jump_drive",
+      "y": 270
+    },
+    "drive=spooling,facing=west": {
+      "model": "skyliners:block/jump_drive",
+      "y": 270
+    },
+    "drive=running,facing=west": {
+      "model": "skyliners:block/jump_drive",
+      "y": 270
+    },
+    "drive=sputtering,facing=west": {
+      "model": "skyliners:block/jump_drive",
+      "y": 270
+    }
+  }
+}

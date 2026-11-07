@@ -2700,7 +2700,14 @@ config's `freighter.ledStrips` builds her without them. Each has a floor of its 
 loading lanes in her cargo hold, cream tiles in her entry hall, warm wooden boards in her lounge, steel grating glowing
 amber down in its slots in engineering (the Engine Grating, among her blocks in the creative tab) and a glossy black
 dance floor in her club; her crew quarters keep the soft carpet of the rest of her deck. The server config's
-`freighter.finishes` lays that carpet everywhere. Her deck is lit by wall washers over head height, small dark
+`freighter.finishes` lays that carpet everywhere. Her engineering, the room astern of her core, has her jump drive in its middle: a dark steel plinth with a glowing core
+over it in three gyroscope rings. Use it and it spools up with a rising whine, its rings spinning faster and glowing sky
+blue; mostly it then fires with a deep whump, sparks crackling round its racing white-blue rings, and runs a while
+before it winds down. But now and then it sputters instead: its rings slow and flicker red, smoke puffs from it and it
+coughs, and it stays so until you thump it, using it again, when it kicks back in with a clang and fires. The Jump Drive
+is among her blocks in the creative tab, and the server config's `freighter.engineering` builds her without it.
+
+Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
 her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room
 through the doorway at her port quarter; the bandstand's footlights light its band. The server config's

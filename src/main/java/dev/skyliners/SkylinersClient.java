@@ -120,6 +120,7 @@ import dev.skyliners.client.SleepParticle;
 import dev.skyliners.client.SleighBells;
 import dev.skyliners.client.SlideRenderer;
 import dev.skyliners.client.SpaceSky;
+import dev.skyliners.client.JumpDriveRenderer;
 import dev.skyliners.client.SpookieModel;
 import dev.skyliners.client.SpookieRenderer;
 import dev.skyliners.client.SporeParticle;
@@ -320,6 +321,9 @@ public final class SkylinersClient {
             SpookieModel::createBodyLayer));
         modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerEntityRenderer(SkylinersRegistry.SPOOKIE.get(),
             SpookieRenderer::new));
+        // The freighter's jump drive: its rings and core over its plinth.
+        modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerBlockEntityRenderer(SkylinersRegistry.JUMP_DRIVE_ENTITY.get(),
+            context -> new JumpDriveRenderer()));
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);

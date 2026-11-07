@@ -243,6 +243,9 @@ const FREIGHTER_ROOMS = 6;
 const FREIGHTER_STRIPS = 300;
 // How many different floors her six rooms have: each its own, her crew quarters keeping her carpet.
 const OWN_FLOORS = 6;
+// Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
+const DRIVE_SPOOLS = 100;
+const DRIVE_THUMPED = 40;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1273,6 +1276,33 @@ function checkFreighterLeds() {
   expect(floors.size >= OWN_FLOORS, "freighter: her rooms have floors of their own", [...floors].join(", "));
 }
 
+// A freighter's jump drive in engineering: used, it spools up and fires, or sputters until thumped, when it fires; and
+// it shows which by its block, running or sputtering, as its rings do.
+function checkFreighterJumpDrive() {
+  ship("freighter");
+  const [drive] = must("find skyliners:jump_drive 128 1").rows;
+  expect(Boolean(drive), "freighter: she is built with her jump drive in engineering");
+  if (!drive) {
+    return;
+  }
+  const [x, y, z] = drive.at_abs;
+  const at = drive.at_abs.join(",");
+  must(`server tp @p ${x + 0.5} ${y} ${z - 2.5} 0 20; wait 5t`);
+  const used = now();
+  must(`use ${at}`);
+  expect(Boolean(heard("*jump_drive_spool*", used, LOOK_EVERY)), "freighter: used, her jump drive spools up");
+  const fired = heard("*jump_drive_jump*", used, DRIVE_SPOOLS);
+  if (!fired) {
+    const sputtered = must(`block ${at}`).props?.drive === "sputtering";
+    expect(sputtered, "freighter: spooled up, it fires or sputters", must(`block ${at}`).props?.drive);
+    const thumped = now();
+    must(`use ${at}`);
+    expect(Boolean(heard("*jump_drive_thump*", thumped, LOOK_EVERY)) && Boolean(heard("*jump_drive_jump*", thumped, DRIVE_THUMPED)),
+      "freighter: sputtering, thumped, it kicks back in and fires");
+  }
+  expect(must(`block ${at}`).props?.drive === "running", "freighter: fired, it runs", must(`block ${at}`).props?.drive);
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1650,6 +1680,7 @@ const CHECKS = {
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
+  "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
