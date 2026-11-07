@@ -379,6 +379,12 @@ const FITTINGS_PUT_UP = [
 const STAND_AWAY = 24;
 const STAND_APART = 3;
 const STAND_HIGH = 5;
+// The pieces of a freighter's outside that stand against her hull rather than in it, the most of each looked for, and
+// how many blocks are read in one script; and the way each direction points, as a block's facing names it.
+const RESTING_PIECES = [...FITTINGS_PUT_UP, "nav_light", "laser_cannon"];
+const RESTING_MOST = 400;
+const READS_AT_ONCE = 100;
+const POINTING = { up: [0, 1, 0], down: [0, -1, 0], north: [0, 0, -1], south: [0, 0, 1], east: [1, 0, 0], west: [-1, 0, 0] };
 // How far out from a freighter's axis her rooms' walls and what hangs on them reach at most, in blocks, past which her
 // cockpit's tube and her prongs' tunnels lie; and how many blocks of posters her gallery has at least: an earthrise and
 // a black hole, four by three, and the solar system, five by two.
@@ -2041,6 +2047,45 @@ function checkFreighterExterior() {
   FITTINGS_PUT_UP.forEach((id, i) => putUpEveryWay(id, x0 + i * STAND_APART, z0));
 }
 
+// A freighter's outside meets her hull: every fitting, light strip and navigation light, and her laser cannon, stands
+// against a whole block of her, face to face. Her skin is cut to her curve, and each piece used to stand on the edge of
+// its block over that cut, with a gap all round it under it.
+function checkFreighterExteriorFlush() {
+  ship("freighter");
+  const pieces = RESTING_PIECES.flatMap((id) => must(`find skyliners:${id} 128 ${RESTING_MOST}`).rows.map((row) => row.at_abs));
+  const states = readBlocks(pieces);
+  const held = readBlocks(pieces.map((at, i) => restsAgainst(at, states[i])));
+  const off = pieces.flatMap((at, i) => (wholeBlock(held[i]) ? [] : [`${states[i].id} at ${at.join(",")}`]));
+  expect(pieces.length > 0 && off.length === 0, "freighter: every piece of her outside meets her hull face to face, no gap under it",
+    `${off.length} of ${pieces.length} stand off it${off.length ? `, as ${off.slice(0, 4).join("; ")}` : ""}`);
+}
+
+// The server's blocks at the positions given, read a script at a time.
+function readBlocks(positions) {
+  const replies = [];
+  for (let from = 0; from < positions.length; from += READS_AT_ONCE) {
+    const reads = positions.slice(from, from + READS_AT_ONCE).map((at) => `block ${at.join(",")} side=server`);
+    replies.push(...send(reads.join("; ")));
+  }
+  return replies;
+}
+
+// The block a piece of a ship's outside stands against: a light the way away from where it shines, a fitting under it
+// on a floor, over it under a ceiling, and behind it on a wall.
+function restsAgainst(at, piece) {
+  const props = piece.props ?? {};
+  const mount = piece.id?.endsWith("nav_light") ? "light" : props.mount ?? "floor";
+  const away = { floor: [0, -1, 0], ceiling: [0, 1, 0], light: POINTING[props.facing ?? "up"].map((d) => -d) }[mount]
+    ?? POINTING[props.facing ?? "north"].map((d) => -d);
+  return at.map((value, axis) => value + away[axis]);
+}
+
+// Whether a block is solid and whole, neither air nor skin cut to a curve: skin's shape 0, in its two parts, is whole.
+function wholeBlock(reply) {
+  const props = reply?.props ?? {};
+  return Boolean(reply?.id) && !reply.id.endsWith("air") && Number(props.shape_high ?? 0) === 0 && Number(props.shape_low ?? 0) === 0;
+}
+
 // How many blocks of the mod's of an id stand in the world round the player: Blockpilot gives the total only when there
 // are more than it lists.
 function found(id) {
@@ -2561,6 +2606,7 @@ const CHECKS = {
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
+  "freighter-exterior-flush": { run: checkFreighterExteriorFlush, about: "every piece of a freighter's outside meets her hull face to face, no gap under it" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },
   "freighter-legs": { run: checkFreighterLegs, slow: true, about: "a freighter's legs draw up into her belly once she is clear, and are down again before she lands on them" },
   "freighter-fixed-legs": { run: checkFreighterFixedLegs, slow: true, about: "a freighter built with fixed legs, as before they drew up, flies and lands on them as ever" },

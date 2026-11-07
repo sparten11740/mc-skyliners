@@ -374,9 +374,11 @@ or a floor light; `skyliners:dark` measures the same in game. She and the rocket
 the air inside their hulls, their features `ShipPiece`s.
 `FreighterExterior` dresses her outside once her rooms stand with the fleet's outside fittings in `exterior/`, each a
 `HullFittingBlock` that a player puts up on a floor, a wall or a ceiling (MOUNT, through `Mounting`), a model of its own
-for each and an outline from `HullFittings`, in the open block just outside her solid skin, face to face with it so her
-assembly takes it along; its `SatelliteDishBlock` keeps its dish's pivots and size, which `SatelliteDishRenderer` turns
-it about by `DrawingClock`, and `ExhaustVentBlock` lets its wisps off where `SableFlight.toWorld` puts its mouth.
+for each and an outline from `HullFittings`, in the open block just outside her solid skin (or in place of a sliver of
+it, `FreighterExterior.against`), face to face with it so her assembly takes it along, the skin block behind made whole
+by `FreighterExterior.pad` so no gap shows under it, as her lights' strips and lamps and her laser cannon's hub are too;
+its `SatelliteDishBlock` keeps its dish's pivots and size, which `SatelliteDishRenderer` turns it about by
+`DrawingClock`, and `ExhaustVentBlock` lets its wisps off where `SableFlight.toWorld` puts its mouth.
 `FreighterPlating` swaps her cover, where `FreighterPlating.unseen` says no room sees it, past her outer bulkhead and
 clear of her passages, for the hull plates, `ShellBlock`s of their own textures cut to the same shapes.
 `FreighterLights` lays her light band, a lit `ShellBlock` round her rim, her `HullFittingBlock` light strips along her

@@ -2691,7 +2691,9 @@ a cyan band round their foot, banks of heat-sink fins glowing orange at their ro
 engines, exhaust vents between them letting off white wisps, and runs of machinery, boxes, copper pipes and amber
 status lamps, out from her middle and along her prongs. Off her port rim a smaller dish on an arm sweeps from side to
 side beside a whip antenna; conduit, vents, fins and floodlights hang on her rim; and under her belly floodlights light
-the ground she comes down on, with a radome, another dish, a blade antenna and tanks. The Satellite Dish, Big Satellite
+the ground she comes down on, with a radome, another dish, a blade antenna and tanks. Each piece meets her hull face to
+face, standing on a block of her skin made whole for it where her curve would have left a gap under it, as her light
+strips and lamps do too. The Satellite Dish, Big Satellite
 Dish, Antenna Mast, Sensor Dome, Heat Sink, Exhaust Vent, Hull Machinery and Hull Floodlight are among her blocks in the
 creative tab, and each goes up wherever it is clicked against, in a shape of its own for each: standing on a floor,
 fixed to a wall (a dish on an arm, a mast as a whip on its hinge, fins out from a plate, a louvred vent, a run of
