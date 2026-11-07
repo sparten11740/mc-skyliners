@@ -5,9 +5,11 @@ import dev.skyliners.compat.SableFlight;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 
@@ -118,6 +120,15 @@ public abstract class CraftFlight {
 
     /** Its landing called off by new settings: it goes on as it should then. */
     void goAround() {
+    }
+
+    /**
+     * What is said aboard it for one of the flight deck's announcements (see {@link CabinAnnouncements} and
+     * {@link EdgeOfSpace}): words of its own, in a voice of its own if it has one, or the announcement as the
+     * airliner's flight deck makes it.
+     */
+    Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
+        return announcement;
     }
 
     /** The mode it flies, as it says it, if it says it its own way; null for the usual heading, circle or pin. */

@@ -95,14 +95,18 @@ public final class EdgeOfSpace {
     }
 
     /**
-     * One of her flight deck's announcements up here, the welcome or her artificial gravity (see {@link SpaceGravity}):
-     * to everyone aboard wherever they are in her, holding her cockpit's floor as long as it lasts.
+     * One of her flight deck's announcements up here, the welcome or her artificial gravity (see {@link SpaceGravity}),
+     * in her craft's own words if it has them (see {@link CraftFlight#says}): to everyone aboard wherever they are in
+     * her, holding her cockpit's floor as long as it lasts. How long that is, in ticks.
      */
-    static void announce(ServerLevel level, AutopilotBlockEntity autopilot, Holder<SoundEvent> announcement) {
-        autopilot.holdFloor(VoiceLength.ticks(announcement, LONGEST));
+    static int announce(ServerLevel level, AutopilotBlockEntity autopilot, Holder<SoundEvent> announcement) {
+        Holder<SoundEvent> said = autopilot.says(announcement);
+        int length = VoiceLength.ticks(said, LONGEST);
+        autopilot.holdFloor(length);
         long seed = level.getRandom().nextLong();
         for (ServerPlayer player : Aboard.players(autopilot)) {
-            player.connection.send(new ClientboundSoundEntityPacket(announcement, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+            player.connection.send(new ClientboundSoundEntityPacket(said, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
         }
+        return length;
     }
 }

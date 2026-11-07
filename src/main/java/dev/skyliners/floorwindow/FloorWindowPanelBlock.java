@@ -1,6 +1,10 @@
 package dev.skyliners.floorwindow;
 
 import com.mojang.serialization.MapCodec;
+import dev.skyliners.block.Mount;
+import dev.skyliners.block.Mounting;
+import dev.skyliners.block.TurnedShapes;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -28,12 +33,16 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * button on it, it opens the nearest floor window within reach, or shuts it if it is open, with a click and the iris's
  * whirr; its lamp round the button shows green while the window it last worked is open and amber while it is shut.
  * With no window in reach it only gives a low thud. It works any window wherever both stand: on a ship, both are in
- * her plot. FACING is the way its face looks; OPEN its lamp; POWERED whether it has a redstone signal.
+ * her plot. Put up by hand it stands on its post on a floor, or is fixed flat to a wall (MOUNT), its button facing out
+ * from it in a steel rim; it goes against the block the player clicks, as a button does (see {@link Mounting}). FACING
+ * is the way its face looks; OPEN its lamp; POWERED whether it has a redstone signal.
  */
 public class FloorWindowPanelBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<FloorWindowPanelBlock> CODEC = simpleCodec(FloorWindowPanelBlock::new);
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    /** How it is put up: on its post on a floor, as the freighter's beach has it, or flat on a wall. */
+    public static final EnumProperty<Mount> MOUNT = Mount.property(Mount.WALL, Mount.FLOOR);
     /** How far round the panel a window is looked for: across, below and above it, in blocks. */
     private static final int REACH = 12;
     private static final int REACH_DOWN = 4;
@@ -42,12 +51,15 @@ public class FloorWindowPanelBlock extends HorizontalDirectionalBlock {
     private static final float CLICK_VOLUME = 0.5F;
     private static final float THUD_VOLUME = 0.8F;
     private static final float THUD_PITCH = 0.5F;
-    /** A post with its sloping head. */
-    private static final VoxelShape SHAPE = Block.box(3.5, 0, 3.5, 12.5, 14, 12.5);
+    /** A post with its head, standing on a floor. */
+    private static final VoxelShape STANDING = Block.box(3.5, 0, 3.5, 12.5, 14, 12.5);
+    /** Its button in its rim on a wall, facing north, its wall to the south. */
+    private static final Map<Direction, VoxelShape> ON_A_WALL = TurnedShapes.of(Block.box(3, 3, 14.5, 13, 13, 16));
 
     public FloorWindowPanelBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(POWERED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(POWERED, false)
+            .setValue(MOUNT, Mount.FLOOR));
     }
 
     @Override
@@ -57,21 +69,32 @@ public class FloorWindowPanelBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, POWERED);
+        builder.add(FACING, OPEN, POWERED, MOUNT);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return state.getValue(MOUNT) == Mount.WALL ? ON_A_WALL.get(state.getValue(FACING)) : STANDING;
     }
 
-    /** Put down facing whoever puts it there, its lamp showing whether the window nearest it is open. */
+    /**
+     * Put up against what holds it where the player puts it (see {@link Mounting}), on a wall facing out from it and on
+     * a floor facing whoever puts it there, nowhere that nothing holds it, its lamp showing whether the window nearest
+     * it is open.
+     */
+    @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction toward = Mounting.support(context, MOUNT.getPossibleValues());
+        if (toward == null) {
+            return null;
+        }
+        Mount mount = Mount.against(toward);
+        Direction facing = mount == Mount.WALL ? toward.getOpposite() : context.getHorizontalDirection().getOpposite();
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockPos middle = nearestWindow(level, pos);
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())
+        return defaultBlockState().setValue(MOUNT, mount).setValue(FACING, facing)
             .setValue(OPEN, middle != null && FloorWindowBlock.isOpen(level, middle)).setValue(POWERED, level.hasNeighborSignal(pos));
     }
 

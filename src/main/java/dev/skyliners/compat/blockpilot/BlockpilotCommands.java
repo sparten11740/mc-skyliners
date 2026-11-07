@@ -25,6 +25,7 @@ import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.turret.LaserCannonBlockEntity;
 import dev.blockpilot.api.Action;
 import dev.blockpilot.api.ArgType;
 import dev.blockpilot.api.Args;
@@ -58,9 +59,10 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * the nearest autopilot as its settings screen would ({@code skyliners:autopilot}), and laying an airframe down in
  * front of the player and waiting until it stands ({@code skyliners:build}), which of a zeppelin's blocks its
  * assembly would leave behind ({@code skyliners:assembly}), and a fingerprint of an airframe's layout, to show a change
- * to how it is laid out moves no block ({@code skyliners:layout}), repainting the nearest zeppelin
- * ({@code skyliners:livery}), and what the client last drew of a laser bolt ({@code skyliners:bolts}), the one command
- * run on the client. Only loaded when Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
+ * to how it is laid out moves no block ({@code skyliners:layout}), and repainting the nearest zeppelin
+ * ({@code skyliners:livery}); and, on the client, whether the player sees from a laser cannon's sight
+ * ({@code skyliners:gunner}) and what it last drew of a laser bolt ({@code skyliners:bolts}). Only loaded when
+ * Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
     /** How far from the player an autopilot is looked for, in blocks: past a zeppelin's length. */
@@ -112,6 +114,13 @@ public final class BlockpilotCommands {
             .field("clusters", "each lift cluster's total signal: ahead right, ahead left, astern right, astern left")
             .field("jets", "each jet's signal: nose right, nose left, tail right, tail left")
             .field("mass", "the freighter's mass in Sable's units"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("gunner", (context, args) -> gunner())
+            .needsWorld()
+            .group("skyliners")
+            .help("whether this client sees from a laser cannon's sight, sitting at it: where the sight is, and whether it is locked on to a hostile mob")
+            .field("on", "whether the view is the sight's")
+            .field("at", "where the sight is in the world")
+            .field("locked", "whether the sight rests on a hostile mob in reach"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -174,6 +183,17 @@ public final class BlockpilotCommands {
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("skyliners:build zeppelin"));
+    }
+
+    /** What this client's player sees from a laser cannon's sight, on the client, as its gunner's view tells it. */
+    private static Result gunner() {
+        LaserCannonBlockEntity.Sighting sighting = LaserCannonBlockEntity.clientSighting.get();
+        if (sighting == null) {
+            return Result.ok(new Fields().tag("on", false));
+        }
+        Vec3 eye = sighting.eye();
+        return Result.ok(new Fields().tag("on", true).tag("at", round(eye.x) + "," + round(eye.y) + "," + round(eye.z))
+            .tag("locked", sighting.lockedOn()));
     }
 
     private static Result zeppelin() throws CommandException {

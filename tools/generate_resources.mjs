@@ -268,16 +268,19 @@ function rampFittings() {
   return ["ramp_deck"];
 }
 
-// The freighter's laser cannon (see LaserCannonBlock): its mount, a low gunmetal drum in the middle of its block, its
-// swivel and barrels drawn over it by LaserCannonRenderer; its item shows the mount.
+// The freighter's laser cannon (see LaserCannonBlock): its pedestal, a gunmetal column on a flange up the middle of its
+// block with a drum on top, its swivel and barrels drawn on the drum by LaserCannonRenderer; round, so the same whichever
+// way it faces; its item shows the pedestal.
 {
   const bezel = `${ID}:block/airstair_button_bezel`;
   write(`assets/${ID}/models/block/laser_cannon.json`, {
     parent: "minecraft:block/block",
     textures: { mount: bezel, particle: bezel },
-    elements: [solid([3, 0, 3], [13, 4, 13], "#mount"), solid([4, 4, 4], [12, 6, 12], "#mount")],
+    elements: [solid([2, 0, 2], [14, 2, 14], "#mount"), solid([5, 2, 5], [11, 13, 11], "#mount"), solid([3, 13, 3], [13, 16, 13], "#mount")],
   });
-  write(`assets/${ID}/blockstates/laser_cannon.json`, { variants: { "": { model: `${ID}:block/laser_cannon` } } });
+  write(`assets/${ID}/blockstates/laser_cannon.json`, {
+    variants: Object.fromEntries(["north", "east", "south", "west"].map((facing) => [`facing=${facing}`, { model: `${ID}:block/laser_cannon` }])),
+  });
   write(`assets/${ID}/models/item/laser_cannon.json`, { parent: `${ID}:block/laser_cannon` });
   dropsItself("laser_cannon");
   cubes.laser_cannon = null;
@@ -629,7 +632,8 @@ function hullLightLang() {
 // The round floor window (see FloorWindowBlock): no model of its own, FloorWindowRenderer drawing it all, but glass
 // when it is broken; its item a flat picture of it. It drops nothing by itself, as the window gives itself back once
 // whichever of its blocks is broken. Its panel (see FloorWindowPanelBlock): a steel foot, post and head, and on top a
-// big round button painted with the window, glowing whatever the light round it, its lamp green or amber.
+// big round button painted with the window, glowing whatever the light round it, its lamp green or amber; fixed to a
+// wall, the same button facing out from it in a steel rim, flat to the wall, drawn facing north, its wall to the south.
 {
   write(`assets/${ID}/models/block/floor_window.json`, { textures: { particle: "minecraft:block/glass" } });
   write(`assets/${ID}/blockstates/floor_window.json`, {
@@ -650,9 +654,22 @@ function hullLightLang() {
             west: { texture: "#post" }, down: { texture: "#post" } } }],
     });
   }
+  for (const open of [false, true]) {
+    write(`assets/${ID}/models/block/floor_window_panel_wall_${open ? "open" : "shut"}.json`, {
+      parent: "minecraft:block/block",
+      textures: { post: `${ID}:block/floor_window_panel_post`, face: `${ID}:block/floor_window_panel_${open ? "open" : "shut"}`,
+        particle: `${ID}:block/floor_window_panel_post` },
+      elements: [solid([3, 3, 15.5], [13, 13, 16], "#post"),
+        { from: [3.5, 3.5, 14.5], to: [12.5, 12.5, 15.5], shade: false,
+          faces: { north: { texture: "#face", ...lit }, up: { texture: "#post" }, down: { texture: "#post" }, east: { texture: "#post" },
+            west: { texture: "#post" } } }],
+    });
+  }
+  const panelModel = (mount, open) => `${ID}:block/floor_window_panel_${mount === "wall" ? "wall_" : ""}${open ? "open" : "shut"}`;
   write(`assets/${ID}/blockstates/floor_window_panel.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((open) => [false, true]
-      .map((powered) => [`facing=${facing},open=${open},powered=${powered}`, { model: `${ID}:block/floor_window_panel_${open ? "open" : "shut"}`, y }])))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["floor", "wall"].flatMap((mount) => [false, true]
+      .flatMap((open) => [false, true].map((powered) => [`facing=${facing},mount=${mount},open=${open},powered=${powered}`,
+        { model: panelModel(mount, open), y }]))))),
   });
   write(`assets/${ID}/models/item/floor_window_panel.json`, { parent: `${ID}:block/floor_window_panel_shut` });
   dropsItself("floor_window_panel");
@@ -666,7 +683,8 @@ function hullLightLang() {
 // three tiers over it, as high as a model reaches, over the heads of whoever walks under it, paler underneath. A sun
 // lounger (see SunLoungerBlock): a white frame on four short legs, a striped cushion along it, its back raised at its
 // south end, facing north. A tiki torch (see TikiTorchBlock): a bamboo pole, a woven head and its flame glowing on top
-// whatever the light round it. All reach past their blocks, so none is drawn with ambient occlusion, which goes dark
+// whatever the light round it; fixed to a wall, a short pole held out from it on a bamboo bracket, facing north, its
+// wall to the south. All reach past their blocks, or nearly, so none is drawn with ambient occlusion, which goes dark
 // aboard.
 {
   const frond = (from, to, uv, rotation) => ({ from, to, rotation,
@@ -723,7 +741,20 @@ function hullLightLang() {
       variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${name}`, y }])),
     });
   }
-  write(`assets/${ID}/blockstates/tiki_torch.json`, { variants: { "": { model: `${ID}:block/tiki_torch` } } });
+  write(`assets/${ID}/models/block/tiki_torch_wall.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { bamboo: "minecraft:block/bamboo_block", head: "minecraft:block/hay_block_side", flame: `${ID}:block/tiki_flame`,
+      particle: "minecraft:block/bamboo_block" },
+    elements: [solid([6.5, 3, 15], [9.5, 9, 16], "#bamboo"), solid([7.25, 5, 9], [8.75, 6.5, 15], "#bamboo"), solid([7, 2, 7], [9, 11, 9], "#bamboo"),
+      solid([6, 11, 6], [10, 15, 10], "#head"),
+      { from: [6.5, 15, 6.5], to: [9.5, 16, 9.5], shade: false,
+        faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#flame", ...lit }])) }],
+  });
+  write(`assets/${ID}/blockstates/tiki_torch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [[`facing=${facing},mount=floor`, { model: `${ID}:block/tiki_torch` }],
+      [`facing=${facing},mount=wall`, { model: `${ID}:block/tiki_torch_wall`, ...(y ? { y } : {}) }]])),
+  });
   for (const name of ["potted_palm", "parasol", "sun_lounger", "tiki_torch"]) {
     write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
     dropsItself(name);
@@ -2252,13 +2283,19 @@ const FREIGHTER_SOUNDS = {
   radar_dish_whirr: { subtitle: "Radar dish whirrs", heard: 24 },
   hidden_hatch_open: { subtitle: "Hidden hatch slides open" },
   hidden_hatch_close: { subtitle: "Hidden hatch slides shut" },
-  // Her computer's voice, each line subtitled with what it says.
+  // Her computer's voice, each line subtitled with what it says, her own words for the flight deck's announcements
+  // with their gist.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
   freighter_computer_jump_fault: { subtitle: "Computer: Jump drive fault", aboard: true },
-  freighter_computer_ramp_lowering: { subtitle: "Computer: Ramp lowering", aboard: true },
-  freighter_computer_turret_ready: { subtitle: "Computer: Turret ready", aboard: true },
+  freighter_computer_ramp_lowering: { subtitle: "Computer: Ramp coming down", aboard: true },
+  freighter_computer_turret_ready: { subtitle: "Computer: Gun turret online", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
-  freighter_computer_magpie_ready: { subtitle: "Computer: Magpie ready", aboard: true },
+  freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
+  freighter_computer_takeoff: { subtitle: "Computer: Lifting off, hold on", aboard: true },
+  freighter_computer_landing: { subtitle: "Computer: Coming down to land", aboard: true },
+  freighter_computer_arrival: { subtitle: "Computer: We're down", aboard: true },
+  freighter_computer_space: { subtitle: "Computer: We're in space", aboard: true },
+  freighter_computer_gravity: { subtitle: "Computer: Gravity back on", aboard: true },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {

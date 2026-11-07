@@ -51,6 +51,8 @@ import dev.skyliners.client.FallingCrateRenderer;
 import dev.skyliners.client.GiantRubberDuckRenderer;
 import dev.skyliners.client.GreatShadow;
 import dev.skyliners.client.GunnerControls;
+import dev.skyliners.client.GunnerSight;
+import dev.skyliners.client.GunnerView;
 import dev.skyliners.client.HullAmbience;
 import dev.skyliners.client.EngineRenderer;
 import dev.skyliners.client.EngineSounds;
@@ -205,6 +207,14 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
         NeoForge.EVENT_BUS.addListener(ClubBand::tick);
         NeoForge.EVENT_BUS.addListener(GunnerControls::input);
+        // The view from the freighter's laser cannon's sight while its gunner sits at it.
+        NeoForge.EVENT_BUS.addListener(GunnerView::tick);
+        NeoForge.EVENT_BUS.addListener(GunnerView::frame);
+        NeoForge.EVENT_BUS.addListener(GunnerView::angles);
+        NeoForge.EVENT_BUS.addListener(GunnerView::hand);
+        NeoForge.EVENT_BUS.addListener(GunnerView::highlight);
+        NeoForge.EVENT_BUS.addListener(GunnerView::guiLayer);
+        NeoForge.EVENT_BUS.addListener(GunnerView::loggingOut);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
@@ -351,6 +361,7 @@ public final class SkylinersClient {
         RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;
         DeckRobotBlockEntity.clientTicker = DeckRobotRenderer::look;
         LaserCannonBlockEntity.clientTicker = CannonServo::listen;
+        LaserCannonBlockEntity.clientSighting = GunnerView::sighting;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -359,6 +370,8 @@ public final class SkylinersClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "blast_flash"), BlastFlash::overlay);
         // Where the spyglass's own round is drawn, under the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lookout_glass"), LookoutView::overlay);
+        // The gunner's sight, over the view from the freighter's laser cannon and under the hotbar and the chat.
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "gunner_sight"), GunnerSight::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "pilot_hud"), PilotHud::overlay);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "atc_headset"), AtcHeadset::overlay);

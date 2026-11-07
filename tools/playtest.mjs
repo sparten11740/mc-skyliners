@@ -15,7 +15,7 @@
 // Each check is written as a player would find the fault, not from how the code happens to work.
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -151,6 +151,9 @@ const FREIGHTER_LEVEL_WITHIN = 2;
 const FREIGHTER_WATCH_TICKS = 200;
 const FREIGHTER_AWAY = 400;
 const FREIGHTER_AWAY_TICKS = 60;
+// How long each of her computer's lines for her flight deck is given to be heard, in ticks, the take-off one waiting
+// for the player to board her and hear it.
+const FREIGHTER_VOICE_TICKS = 300;
 // A freighter that has learnt far too much drag: how much, as her pilot keeps it; the speed she is set to cruise at
 // and how fast she may go at most meanwhile, half as fast again as she unlearns it, in blocks a second; how long she is watched, in ticks; how near the
 // speed set she must be by then, in blocks a second; and how much drag she may still have learnt then.
@@ -199,10 +202,18 @@ const LADDER_CLIMB_TICKS = 100;
 const TURRET_TARGET_UP = 10;
 const TURRET_TARGET_AHEAD = 10;
 const TURRET_FIRE_TICKS = 30;
-// How far a creeper's middle stands over its feet, and a seated player's eyes over where they are, in blocks, for the
-// gunner to look at it: the cannon aims at what the gunner looks at.
+// How far down the gunner looks at her hull, in degrees, past the fifteen her cannon's barrels go, and how long the
+// trigger is pulled there, in ticks; how long it is held to overheat the cannon, past twenty bolts at four a second,
+// how long after that it is watched holding its fire, short of its cooling down, and how long it is let cool, in ticks.
+const TURRET_LOOK_DOWN = 40;
+const TURRET_HELD_TICKS = 20;
+const TURRET_OVERHEAT_TICKS = 110;
+const TURRET_HOT_WATCHED_TICKS = 20;
+const TURRET_COOLED_TICKS = 60;
+// How far a creeper's middle stands over its feet, in blocks, for the gunner to look at it from the sight: the cannon
+// aims at what the sight looks at; and how soon after sneaking the gunner's own view must be back, in ticks.
 const CREEPER_MIDDLE = 0.85;
-const SEATED_EYES = 1.62;
+const VIEW_BACK_TICKS = 2;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
@@ -333,6 +344,13 @@ const FITTINGS_PUT_UP = [
 const STAND_AWAY = 24;
 const STAND_APART = 3;
 const STAND_HIGH = 5;
+// How far out from a freighter's axis her rooms' walls and what hangs on them reach at most, in blocks, past which her
+// cockpit's tube and her prongs' tunnels lie; and how many blocks of posters her gallery has at least: an earthrise and
+// a black hole, four by three, and the solar system, five by two.
+const ROOMS_REACH = 22.5;
+const GALLERY_POSTER_BLOCKS = 34;
+// The beach's pieces that go up on a wall as well as on a floor.
+const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
 const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
@@ -943,6 +961,50 @@ function checkFreighterFlight() {
   }
 }
 
+// The freighter's computer speaks for her flight deck, in its own voice: set to fly with the player aboard in her
+// entry hall, by her ramp, it, not the airliner's flight deck, says she is lifting off; told to land, that she is
+// coming down; and on her legs again, that she is down, her ramp coming down saying so too without either line talking
+// over the other, as they once did.
+function checkFreighterVoice() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const since = now();
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:crossbow_rack 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 10t`);
+  expect(heard("skyliners:freighter_computer_takeoff", since, FREIGHTER_VOICE_TICKS), "freighter: set to fly, her computer says she lifts off");
+  expect(!heard("skyliners:announcement_takeoff", since, 0), "freighter: and the airliner's take-off announcement is not made aboard her");
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off with the player aboard");
+  if (!up) {
+    return;
+  }
+  const landing = now();
+  must("skyliners:autopilot land");
+  expect(heard("skyliners:freighter_computer_landing", landing, FREIGHTER_VOICE_TICKS), "freighter: told to land, her computer says she comes down");
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: she comes down and switches off");
+  const arrival = heard("skyliners:freighter_computer_arrival", landing, FREIGHTER_VOICE_TICKS);
+  expect(arrival, "freighter: on her legs again, her computer says she is down");
+  expect(!heard("skyliners:announcement_*", since, 0), "freighter: none of the airliner's announcements is made aboard her");
+  const ramp = heard("skyliners:freighter_computer_ramp_lowering", landing, FREIGHTER_VOICE_TICKS);
+  const [first, second] = [ramp, arrival].sort((a, b) => a?.tick - b?.tick);
+  const apart = ramp && arrival ? second.tick - first.tick : 0;
+  expect(ramp && arrival && apart >= soundTicks(first.id), "freighter: her ramp comes down saying so, and neither line talks over the other",
+    ramp && arrival ? `${first.id} for ${soundTicks(first.id)} ticks, ${second.id} ${apart} ticks after it began` : `ramp heard: ${Boolean(ramp)}`);
+}
+
+// How long one of the mod's sounds runs, in ticks, rounded down, from its Ogg Vorbis file (see VoiceLength): the sample
+// its last page ends on, over the sample rate its identification header gives.
+function soundTicks(sound) {
+  const [namespace, name] = sound.split(":");
+  const ogg = readFileSync(path.join(ROOT, "src/main/resources/assets", namespace, "sounds", `${name}.ogg`));
+  const rate = ogg.readUInt32LE(ogg.indexOf("\u0001vorbis", 0, "latin1") + 12);
+  const samples = Number(ogg.readBigUInt64LE(ogg.lastIndexOf("OggS", ogg.length, "latin1") + 6));
+  return Math.floor((samples * 20) / rate);
+}
+
 // A freighter's boarding ramp: laid down, it comes down by itself and is walked up from the ground with the walk key
 // alone, as a player boards her, its deck staying laid however often its blocks look whether they are leftovers; her
 // call button on her leg folds it away and brings it down again; set to fly with someone standing on it, she waits on
@@ -1026,8 +1088,11 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
 }
 
 // A freighter's top turret: the ladder up her core is climbed from her deck with the walk key alone to the gunner's
-// seat under her dome, where her computer says the turret is ready; holding attack fires her laser cannon where the
-// gunner looks, striking a creeper in the sky, and breaks nothing, the dome's glass over the gunner whole after.
+// seat under her dome, where her computer says the turret is ready and the view goes up to her laser cannon's sight,
+// above its swivel; aimed from there at a creeper in the sky, the sight locks on to it and holding attack fires her
+// cannon where the sight looks, striking it, and breaks nothing, the dome's glass over the gunner whole after; looking
+// lower than its barrels go, the trigger only clicks; held down, it overheats, holds its fire and fires again once
+// cooled; sneaking gets the gunner up and gives them their own view back at once.
 function checkFreighterTurret() {
   layDown("freighter");
   const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
@@ -1049,21 +1114,91 @@ function checkFreighterTurret() {
   const there = must(`move forward ${LADDER_CLIMB_TICKS}t; status`);
   creative();
   expect(there.pos[1] >= seat[1], "freighter: her core's ladder is climbed from her deck to her gunner's seat", `reached ${round(there.pos[1])}, seat at ${seat[1]}`);
+  expect(gunnerSight() === undefined, "freighter: standing by her gunner's seat, the player sees from their own eyes");
   const sat = now();
-  must(`use ${seat.join(",")}; wait 20t`);
+  sitAt(seat);
   expect(heard("skyliners:freighter_computer_turret_ready", sat, 0), "freighter: sat at her cannon, her computer says the turret is ready");
+  const sight = gunnerSight();
+  expect(sight && sight.at[1] > y + 1, "freighter: sat at her cannon, the view goes up to its sight, above its swivel",
+    sight ? `sight at ${sight.at.join(",")}, cannon at ${y}` : "the view stayed with the player");
   const glass = must(`block ${x},${y - 1},${z}`).id;
-  must(`server difficulty easy; server summon creeper ${x + 0.5} ${y + TURRET_TARGET_UP} ${z + 0.5 - TURRET_TARGET_AHEAD} {NoAI:1b,PersistenceRequired:1b}`);
-  const { pos: [eyeX, feetY, eyeZ] } = must("status");
-  const [toX, toY, toZ] = [x + 0.5 - eyeX, y + TURRET_TARGET_UP + CREEPER_MIDDLE - feetY - SEATED_EYES, z + 0.5 - TURRET_TARGET_AHEAD - eyeZ];
-  const toward = Math.round(Math.atan2(-toX, toZ) * 180 / Math.PI);
-  const up = Math.round(Math.atan2(toY, Math.hypot(toX, toZ)) * 180 / Math.PI);
-  must(`turn ${toward} ${-up}; wait 20t; key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
+  const creeper = [x + 0.5, y + TURRET_TARGET_UP, z + 0.5 - TURRET_TARGET_AHEAD];
+  must(`server difficulty easy; server summon creeper ${creeper.join(" ")} {NoAI:1b,PersistenceRequired:1b}`);
+  // The sight moves a little as the look turns, so the aim is taken from it twice.
+  aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
+  const aimed = aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
+  expect(aimed?.locked === true, "freighter: aimed from her cannon's sight at a creeper, the sight locks on to it");
+  must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
   const [reply] = send(`server data get entity @e[type=creeper,limit=1,sort=nearest] Health`);
   const health = reply.ok === false ? 0 : Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1] ?? CREEPER_HEALTH);
-  must("server kill @e[type=creeper]; server difficulty peaceful; key left_shift 5t");
-  expect(health < CREEPER_HEALTH, "freighter: holding attack, her cannon strikes a creeper in the sky where the gunner looks", `health ${health} of ${CREEPER_HEALTH}`);
+  must("server kill @e[type=creeper]; server difficulty peaceful");
+  expect(health < CREEPER_HEALTH, "freighter: holding attack, her cannon strikes a creeper in the sky where the sight looks", `health ${health} of ${CREEPER_HEALTH}`);
   expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing, the gunner breaks nothing, the dome's glass whole");
+  turretHoldsFireLow();
+  turretOverheats();
+  const gotUp = send(`key down left_shift; wait ${VIEW_BACK_TICKS}t; skyliners:gunner; key up left_shift; wait 5t`).find((reply) => "on" in reply);
+  expect(gotUp?.on === false, "freighter: sneaking to get up from her gunner's seat gives the player their own view back at once");
+}
+
+// Looked down at her hull, lower than her cannon's barrels go, it holds its fire: the trigger only clicks.
+function turretHoldsFireLow() {
+  must(`turn 0 ${TURRET_LOOK_DOWN}; wait 10t`);
+  const pulled = now();
+  must(`key down key.attack; wait ${TURRET_HELD_TICKS}t; key up key.attack; wait 5t`);
+  expect(played("skyliners:ball_turret_shot", pulled).length === 0 && played("block.dispenser.fail", pulled).length > 0,
+    "freighter: looking down at her hull, lower than her cannon's barrels go, the trigger only clicks");
+}
+
+// Held down well past twenty bolts, her cannon overheats with a hiss and holds its fire a while, its sight's
+// thermometer flashing; let go and given a moment to cool, it fires again.
+function turretOverheats() {
+  must(`turn 0 ${-TURRET_TARGET_UP}; wait ${TURRET_COOLED_TICKS}t`);
+  const firing = now();
+  must(`key down key.attack; wait ${TURRET_OVERHEAT_TICKS}t`);
+  const hot = now();
+  must(`wait ${TURRET_HOT_WATCHED_TICKS}t; key up key.attack`);
+  const hissed = played("block.fire.extinguish", firing).length > 0;
+  const shotsWhileHot = played("skyliners:ball_turret_shot", hot).length;
+  expect(hissed && shotsWhileHot === 0, "freighter: fired twenty bolts in a row, her cannon overheats with a hiss and holds its fire",
+    `${hissed ? "hissed" : "no hiss"}, ${shotsWhileHot} shots while hot`);
+  must(`wait ${TURRET_COOLED_TICKS}t`);
+  const cooled = now();
+  must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
+  expect(played("skyliners:ball_turret_shot", cooled).length > 0, "freighter: once her cannon has cooled, it fires again");
+}
+
+// Where the player sees from a laser cannon's sight, and whether it is locked on: undefined while they see from their
+// own eyes.
+function gunnerSight() {
+  const reply = must("skyliners:gunner");
+  return reply.on ? { at: String(reply.at).split(",").map(Number), locked: reply.locked } : undefined;
+}
+
+// Sits in a seat from where the player stands; if something stands in the way, from the floor beside it, where the
+// seat is in reach and in plain sight.
+function sitAt(seat) {
+  const [{ ok }] = send(`use ${seat.join(",")}; wait 20t`);
+  if (ok !== false) {
+    return;
+  }
+  const beside = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dz]) => [seat[0] + dx, seat[1], seat[2] + dz])
+    .find((spot) => must(`block ${spot.join(",")}`).id === "air" && must(`block ${spot[0]},${spot[1] - 1},${spot[2]}`).id !== "air");
+  if (beside) {
+    must(`server tp @p ${beside[0] + 0.5} ${beside[1]} ${beside[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 20t`);
+  }
+}
+
+// Turns the seated player to look at a point from the cannon's sight they see from; what the sight then says.
+function aimFromSight(point) {
+  const sight = gunnerSight();
+  if (!sight) {
+    return undefined;
+  }
+  const [toX, toY, toZ] = [point[0] - sight.at[0], point[1] - sight.at[1], point[2] - sight.at[2]];
+  const toward = Math.atan2(-toX, toZ) * 180 / Math.PI;
+  const up = Math.atan2(toY, Math.hypot(toX, toZ)) * 180 / Math.PI;
+  must(`turn ${round(toward)} ${round(-up)}; wait 10t`);
+  return gunnerSight();
 }
 
 // The laser crossbow: charged by holding use, it fires an amber bolt that the player sees leave the crossbow's muzzle
@@ -1665,12 +1800,13 @@ function found(id) {
   return reply.count ?? reply.rows.length;
 }
 
-// One fitting put up by hand as a player would: standing on the ground, on the stand's wall and under its overhang;
-// whether each took the shape for where it went.
-function putUpEveryWay(id, x, z) {
+// One fitting put up by hand as a player would, each way it goes up: standing on the ground, on the stand's wall and
+// under its overhang; whether each took the shape for where it went.
+function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   emptyHands();
   must(`server give @p skyliners:${id} 3; wait 5t; select 0`);
-  const spots = [["floor", x, ground, z - 3], ["wall", x, ground + 2, z + 2], ["ceiling", x, ground + STAND_HIGH - 1, z]];
+  const spots = [["floor", x, ground, z - 3], ["wall", x, ground + 2, z + 2], ["ceiling", x, ground + STAND_HIGH - 1, z]]
+    .filter(([mount]) => mounts.includes(mount));
   for (const [mount, sx, sy, sz] of spots) {
     must(`server tp @p ${sx + 0.5} ${ground} ${sz - 2.5} 0 20; wait 10t`);
     send(`place skyliners:${id} ${sx},${sy},${sz}`);
@@ -1679,6 +1815,28 @@ function putUpEveryWay(id, x, z) {
     const as = reply.props?.mount ?? "floor";
     expect(put.includes(id) && as === mount, `${id.replaceAll("_", " ")}: put up on a ${mount}, it takes its ${mount} shape`, `${put} mount=${as}`);
   }
+}
+
+// A freighter's galleries: the fleet's models, the freighter's own among them, along the tube out to her cockpit, and
+// space posters on the wall of the tunnel down her port prong, both farther out from her middle than any room's wall
+// (her lounge's shelves have models too, and the walls across her beam the fleet's paintings).
+function checkFreighterGallery() {
+  ship("freighter");
+  const [{ at_abs: middle }] = must("find skyliners:laser_cannon 128 1").rows;
+  const outside = (id) => must(`find skyliners:${id} 128 200`).rows.filter(({ at_abs: at }) => Math.hypot(at[0] - middle[0], at[2] - middle[2]) > ROOMS_REACH);
+  const models = ["model_airliner", "model_zeppelin", "model_rocket", "model_freighter"].filter((id) => outside(id).length > 0);
+  expect(models.length === 4, "freighter: the fleet's four models stand along the tube out to her cockpit", models.join(", "));
+  const posters = outside("space_poster").length;
+  expect(posters >= GALLERY_POSTER_BLOCKS, "freighter: space posters hang along the tunnel down her port prong", `${posters} blocks of posters`);
+}
+
+// The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
+// their own there: a torch standing tall or held out on a bracket, a panel on its post or flat in its rim.
+function checkBeachOnWalls() {
+  const [x0, z0] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x0 + BEACH_ON_WALLS.length * STAND_APART} ${ground + STAND_HIGH} ${z0 + 3} stone`);
+  BEACH_ON_WALLS.forEach((id, i) => putUpEveryWay(id, x0 + i * STAND_APART, z0, ["floor", "wall"]));
 }
 
 // A freighter lifting off takes all of her outside along: no piece of it is left on the ground where she stood.
@@ -2078,12 +2236,15 @@ const CHECKS = {
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
+  "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
+  "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
+  "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down, her ramp never talking over it", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };
 

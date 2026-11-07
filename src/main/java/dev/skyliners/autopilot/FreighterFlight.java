@@ -1,18 +1,22 @@
 package dev.skyliners.autopilot;
 
 import dev.skyliners.Aboard;
+import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.compat.SableFlight;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -55,6 +59,18 @@ public final class FreighterFlight extends StandingFlight {
      * off: someone staying on her ramp keeps it from folding away, and she never lifts off with them on it.
      */
     private static final int TAKEOFF_HELD_LONGEST = 600;
+    /**
+     * What her computer says in place of the flight deck's announcements, after its blip: as she is set to take off,
+     * comes down to land and stands on her legs again, and as she reaches space and her gravity comes back on, whether
+     * her autopilot or an announcement panel set aboard her makes it; any other announcement is the airliner's.
+     */
+    private static final Map<Holder<SoundEvent>, Holder<SoundEvent>> COMPUTER_SAYS = Map.of(
+        SkylinersRegistry.ANNOUNCEMENT_TAKEOFF, SkylinersRegistry.FREIGHTER_COMPUTER_TAKEOFF,
+        SkylinersRegistry.ANNOUNCEMENT_LANDING, SkylinersRegistry.FREIGHTER_COMPUTER_LANDING,
+        SkylinersRegistry.ANNOUNCEMENT_ARRIVAL, SkylinersRegistry.FREIGHTER_COMPUTER_ARRIVAL,
+        SkylinersRegistry.ANNOUNCEMENT_SPACE, SkylinersRegistry.FREIGHTER_COMPUTER_SPACE,
+        SkylinersRegistry.ANNOUNCEMENT_GRAVITY, SkylinersRegistry.FREIGHTER_COMPUTER_GRAVITY
+    );
 
     private final FreighterPilot pilot = new FreighterPilot();
     /** How many ticks in a row her take-off has been held (see {@link #HOLDS}). */
@@ -171,6 +187,12 @@ public final class FreighterFlight extends StandingFlight {
     @Override
     String offKey() {
         return "message.skyliners.autopilot.off_freighter";
+    }
+
+    /** Her computer speaks for her flight deck, in its own gruff voice and words (see {@link #COMPUTER_SAYS}). */
+    @Override
+    Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
+        return COMPUTER_SAYS.getOrDefault(announcement, announcement);
     }
 
     @Override
