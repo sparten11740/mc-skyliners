@@ -805,6 +805,14 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   kept apart from later builds; still not copied to the desktop, whose share was not mounted.
 - After alpha.9: a galley along her lounge's wall, the rocket mess's worktops, stowage, oven, coffee machine and
   stocked fridge (4a42e7b0), checked by freighter-rooms; not in a handed-out jar yet.
+- Jan back in the morning: the lounge's booth had its seats jammed against the table, so each stands a block back now,
+  leg room between, checked by freighter-rooms and seen to fail with the old spacing. The small tardigrade (ask 7, M8)
+  lives in a two-by-five glass tank on a cabinet stand off the lounge's wall by the galley: the rocket's creature at a
+  quarter of its size through the game's scale attribute, which the hatch saves and sets, its reach, clouds, stride,
+  walk and voice scaled with it, drawn mint with teal folds; fed moss through its hatch it came and munched in 210
+  ticks (freighter-tardigrade). And at Jan's ask, her sisters' paintings round her deck: the airliner in her entry
+  hall over the ramp's well, the zeppelin in her club past the bar (her lounge's wall has only four blocks between
+  the tank and her bulkhead), the rocket over the crew bunks (fleet-on-freighter).
 
 ### For Jan to look at
 
@@ -823,7 +831,11 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   `SHOWN_UNDER`.
 - Her ramp refuses where the ground under its foot rises (no adapting foot lip yet), and two freighters with ramps
   in one world were not tried.
-- The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet, as her lounge is not built.
+- The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet.
+- The small tardigrade's tank is open at its top under her hull, so its glass's lit top edge reads as a frame hanging
+  in the air over the moss, and its glass is as clear as the rocket's tank's
+  (run/blockpilot/screenshots/2026-11-07_06.38.08.539.png). The zeppelin's painting in the club is dim under its pink
+  washers (run/blockpilot/screenshots/2026-11-07_06.44.55.113.png).
 - Her rooms are big for their furniture: the lounge's booth and the crew quarters' bunks stand in a lot of floor, and
   the cargo hold's far wall is dark (near her outer bulkhead her hull is too low there for a washer and the row
   of light it throws up the wall). Her bartender
