@@ -2192,6 +2192,9 @@ function checkFreighterBeach() {
   const pieces = { loungers: count("sun_lounger"), palms: count("potted_palm"), torches: count("tiki_torch"), parasols: count("parasol") };
   expect(pieces.loungers >= BEACH_LOUNGERS && pieces.palms >= BEACH_PALMS && pieces.torches >= 1 && pieces.parasols >= 1,
     "freighter: round it, her beach's loungers, palms, tiki torches and parasol", JSON.stringify(pieces));
+  const hidden = must("find skyliners:potted_palm 128 10").rows.map((row) => row.at_abs).filter((at) => !crownInTheOpen(at));
+  expect(hidden.length === 0, "freighter: each of her beach's palms spreads its fronds in the open, through no wall and under no parasol",
+    hidden.map((at) => at.join(",")).join("; "));
   const [panel] = must("find skyliners:floor_window_panel 128 1").rows;
   expect(Boolean(panel) && windows.length > 0, "freighter: her window's panel stands by it");
   if (!panel || windows.length === 0) {
@@ -2225,6 +2228,15 @@ function prongEngines(middle) {
   const { along, bow } = bowOf(middle);
   return must("find createpropulsion:creative_thruster 128 100").rows.map((row) => row.at_abs)
     .filter((at) => (at[along] - middle[along]) * bow > ROOMS_REACH);
+}
+
+// Whether a potted palm's fronds have room: air beside its crown, a row up, and no parasol beside it, whose canopy
+// would hide its crown.
+function crownInTheOpen([x, y, z]) {
+  const beside = Object.values(STEPS).map(([dx, dz]) => [x + dx, y + 1, z + dz]);
+  const round = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dz) => [x + dx, y, z + dz]));
+  const [crown, ground] = [readBlocks(beside), readBlocks(round)];
+  return crown.every((block) => block?.id?.endsWith("air")) && !ground.some((block) => block?.id === "skyliners:parasol");
 }
 
 // A freighter's outside: she is built with every piece of it, as many as she should have of each at least; and each
@@ -2808,7 +2820,7 @@ const CHECKS = {
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges, her port prong's tunnel space posters, and no engine stands out in her prongs" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
-  "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
+  "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass, her palms in the open" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-flush": { run: checkFreighterExteriorFlush, about: "every piece of a freighter's outside meets her hull face to face, no gap under it" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },

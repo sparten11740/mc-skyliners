@@ -10,6 +10,7 @@ import dev.skyliners.floorwindow.FloorWindowPanelBlock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -56,8 +57,8 @@ final class FreighterChillout {
     private static final double LOUNGER_OUT = FloorWindowBlock.RADIUS + 1.6;
     private static final int[] LOUNGER_ANGLES = {0, 35, -35, 70, -70, 105, -105};
     private static final int LOUNGERS = 3;
-    private static final double PALM_OUT = FloorWindowBlock.RADIUS + 2;
-    private static final int[] PALM_ANGLES = {50, -50, 140, -140, 95, -95, 20, -20};
+    private static final double PALM_OUT = FloorWindowBlock.RADIUS + 1;
+    private static final int[] PALM_ANGLES = {50, -50, 140, -140, 95, -95, 20, -20, -65, 115, -165};
     private static final int PALMS = 4;
     private static final double TORCH_OUT = FloorWindowBlock.RADIUS + 2.1;
     private static final int[] TORCH_ANGLES = {75, -75, 160, -160, 120, -120};
@@ -92,12 +93,12 @@ final class FreighterChillout {
         beach.sand();
         beach.window();
         beach.belly();
-        BlockPos shaded = beach.around(LOUNGER_OUT, LOUNGER_ANGLES, LOUNGERS, 1,
+        BlockPos shaded = beach.around(LOUNGER_OUT, LOUNGER_ANGLES, LOUNGERS, 1, at -> true,
             facing -> SkylinersRegistry.SUN_LOUNGER.get().defaultBlockState().setValue(SunLoungerBlock.FACING, facing));
         beach.parasolBeside(shaded);
-        beach.around(PALM_OUT, PALM_ANGLES, PALMS, 2,
+        beach.around(PALM_OUT, PALM_ANGLES, PALMS, 2, beach::crownClear,
             facing -> SkylinersRegistry.POTTED_PALM.get().defaultBlockState().setValue(TropicalPieceBlock.FACING, facing));
-        beach.around(TORCH_OUT, TORCH_ANGLES, TORCHES, 2, facing -> SkylinersRegistry.TIKI_TORCH.get().defaultBlockState());
+        beach.around(TORCH_OUT, TORCH_ANGLES, TORCHES, 2, at -> true, facing -> SkylinersRegistry.TIKI_TORCH.get().defaultBlockState());
         beach.panel();
     }
 
@@ -281,15 +282,16 @@ final class FreighterChillout {
 
     /**
      * Up to so many of a piece round the window, so far out from its middle, at the first of the angles given with room
-     * for it, so many rows of it over the sand, each facing the window; gives where the first went, or null for none.
+     * for it, so many rows of it over the sand and clear round it as it asks, each facing the window; gives where the
+     * first went, or null for none.
      */
     @Nullable
-    private BlockPos around(double out, int[] angles, int most, int rows, Function<Direction, BlockState> piece) {
+    private BlockPos around(double out, int[] angles, int most, int rows, Predicate<BlockPos> clear, Function<Direction, BlockState> piece) {
         BlockPos first = null;
         int laid = 0;
         for (int angle = 0; angle < angles.length && laid < most; angle++) {
             BlockPos at = roundWindow(out, angles[angle]);
-            if (hasRoom(at, rows)) {
+            if (hasRoom(at, rows) && clear.test(at)) {
                 layout.set(at.getX(), at.getY(), at.getZ(), piece.apply(towardWindow(at)));
                 first = first == null ? at : first;
                 laid++;
@@ -356,6 +358,21 @@ final class FreighterChillout {
             }
         }
         return true;
+    }
+
+    /**
+     * Whether a potted palm's fronds have room at a block: open air beside its crown, a row up, for them to spread
+     * into rather than through a wall, and no parasol beside it, whose canopy would hide its crown.
+     */
+    private boolean crownClear(BlockPos at) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            BlockPos beside = at.above().relative(side);
+            if (!layout.isOpen(beside.getX(), beside.getY(), beside.getZ())) {
+                return false;
+            }
+        }
+        return BlockPos.betweenClosedStream(at.offset(-1, 0, -1), at.offset(1, 0, 1))
+            .noneMatch(near -> layout.stateAt(near.getX(), near.getY(), near.getZ()).is(SkylinersRegistry.PARASOL.get()));
     }
 
     /** The way from a block toward the window's middle, the way a piece round it faces. */

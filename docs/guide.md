@@ -2854,8 +2854,9 @@ like the floor. Shut, it is the sand itself but for a thin steel ring round its 
 panel by the sand, painted with the window and an eye looking down, and an iris opens from the middle out, showing glass
 flush with the floor and a round steel shaft below it down to glass in her belly, so you watch the ground pass far below
 as she flies; press it again and it shuts. The panel's lamp is green while the window is open and amber while it is
-shut. Round the window stand striped sun loungers to lie on, a red and white parasol, potted palms and tiki torches with
-flames flickering on them. Her booth stands in the lounge's far corner. The server config's `freighter.beach` leaves the
+shut. Round the window stand striped sun loungers to lie on, a red and white parasol, potted palms, each with room to
+spread its fronds clear of the walls and the parasol, and tiki torches with flames flickering on them. Her booth stands
+in the lounge's far corner. The server config's `freighter.beach` leaves the
 beach out.
 
 The floor window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
