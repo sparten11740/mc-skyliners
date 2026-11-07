@@ -792,7 +792,7 @@ public class Tardigrade extends PathfinderMob {
         sleep = Mth.approach(sleep, isAsleep() ? 1 : 0, 1.0F / SETTLE_TICKS);
         if (isAsleep() && tickCount % Z_EVERY == 0) {
             Vec3 head = overHead(Z_UP * getScale());
-            level().addParticle(SkylinersRegistry.SLEEP_Z.get(), head.x, head.y, head.z, 0, Z_RISE, 0);
+            ShipParticles.give(this, SkylinersRegistry.SLEEP_Z.get(), head, new Vec3(0, Z_RISE, 0));
         }
         chargeBefore = charge;
         charge = Mth.approach(charge, jump() == Jump.CHARGING ? 1 : 0, 1.0F / CHARGE_TICKS);
@@ -820,8 +820,8 @@ public class Tardigrade extends PathfinderMob {
         ItemStack eaten = entityData.get(EATEN);
         ItemParticleOption moss = new ItemParticleOption(ParticleTypes.ITEM, eaten.isEmpty() ? new ItemStack(Items.MOSS_BLOCK) : eaten);
         for (int bit = 0; bit < CRUMBS; bit++) {
-            level().addParticle(moss, mouth.x, mouth.y, mouth.z, (random.nextDouble() - 0.5) * CRUMB_SPREAD, CRUMB_SPREAD / 2 + random.nextDouble() * CRUMB_SPREAD,
-                (random.nextDouble() - 0.5) * CRUMB_SPREAD);
+            ShipParticles.give(this, moss, mouth, new Vec3((random.nextDouble() - 0.5) * CRUMB_SPREAD, CRUMB_SPREAD / 2 + random.nextDouble() * CRUMB_SPREAD,
+                (random.nextDouble() - 0.5) * CRUMB_SPREAD));
         }
     }
 
@@ -831,8 +831,8 @@ public class Tardigrade extends PathfinderMob {
         Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
         double speed = BURP_SPEED * getScale();
         for (int puff = 0; puff < BURP_PUFFS; puff++) {
-            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * speed + (random.nextDouble() - 0.5) * speed,
-                (random.nextDouble() - 0.3) * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed);
+            ShipParticles.give(this, ParticleTypes.POOF, mouth, new Vec3(ahead.x * speed + (random.nextDouble() - 0.5) * speed,
+                (random.nextDouble() - 0.3) * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed));
         }
         wiggleShown = WIGGLE_TICKS / 2;
     }
@@ -845,13 +845,13 @@ public class Tardigrade extends PathfinderMob {
         Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
         double speed = BIG_BURP_SPEED * getScale();
         for (int puff = 0; puff < BIG_BURP_PUFFS; puff++) {
-            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * speed + (random.nextDouble() - 0.5) * speed,
-                (random.nextDouble() - 0.3) * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed);
+            ShipParticles.give(this, ParticleTypes.POOF, mouth, new Vec3(ahead.x * speed + (random.nextDouble() - 0.5) * speed,
+                (random.nextDouble() - 0.3) * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed));
         }
         ItemParticleOption eaten = new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(SkylinersRegistry.ICE_CREAM.get()));
         for (int bit = 0; bit < BIG_BURP_BITS; bit++) {
-            level().addParticle(eaten, mouth.x, mouth.y, mouth.z, ahead.x * speed + (random.nextDouble() - 0.5) * speed,
-                random.nextDouble() * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed);
+            ShipParticles.give(this, eaten, mouth, new Vec3(ahead.x * speed + (random.nextDouble() - 0.5) * speed,
+                random.nextDouble() * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed));
         }
     }
 
@@ -862,7 +862,7 @@ public class Tardigrade extends PathfinderMob {
         for (int streak = 0; streak < STREAKS; streak++) {
             Vec3 at = position().add(ahead.scale((random.nextDouble() - 0.5) * reach * 2))
                 .add((random.nextDouble() - 0.5) * reach, random.nextDouble() * reach, (random.nextDouble() - 0.5) * reach);
-            level().addParticle(ParticleTypes.END_ROD, at.x, at.y, at.z, ahead.x * STREAK_SPEED, ahead.y * STREAK_SPEED, ahead.z * STREAK_SPEED);
+            ShipParticles.give(this, ParticleTypes.END_ROD, at, new Vec3(ahead.x * STREAK_SPEED, ahead.y * STREAK_SPEED, ahead.z * STREAK_SPEED));
         }
     }
 
@@ -875,7 +875,7 @@ public class Tardigrade extends PathfinderMob {
             double round = random.nextDouble() * Mth.TWO_PI;
             Vec3 start = middle.add(Math.cos(round) * from, (random.nextDouble() - UNDER_MIDDLE) * from, Math.sin(round) * from);
             Vec3 in = middle.subtract(start).scale(SWIRL_IN).add(-Math.sin(round) * SWIRL_ROUND * size, 0, Math.cos(round) * SWIRL_ROUND * size);
-            level().addParticle(SkylinersRegistry.SPORE.get(), start.x, start.y, start.z, in.x, in.y, in.z);
+            ShipParticles.give(this, SkylinersRegistry.SPORE.get(), start, in);
         }
     }
 
@@ -886,7 +886,7 @@ public class Tardigrade extends PathfinderMob {
             Vec3 out = new Vec3(random.nextDouble() - 0.5, random.nextDouble() - UNDER_MIDDLE, random.nextDouble() - 0.5).normalize()
                 .scale(BURST_SPEED * size * random.nextDouble());
             Vec3 at = position().add(out.scale(BURST_OUT)).add(0, mouthUp(), 0);
-            level().addParticle(SkylinersRegistry.SPORE.get(), at.x, at.y, at.z, out.x, out.y, out.z);
+            ShipParticles.give(this, SkylinersRegistry.SPORE.get(), at, out);
         }
     }
 
