@@ -180,7 +180,9 @@ final class FreighterFurnishings {
 
     /** Her lounge round her beach: a snack machine, shelves with the fleet's models, a screen and planters. */
     private void lounge() {
-        snackMachine(LOUNGE, 145, 12);
+        if (!snackMachine(LOUNGE, 145, 12)) {
+            snackMachine(LOUNGE, 132, 18);
+        }
         Block[] models = {SkylinersRegistry.MODEL_ROCKET.get(), SkylinersRegistry.MODEL_ZEPPELIN.get(), SkylinersRegistry.MODEL_AIRLINER.get()};
         for (int shelf = 0; shelf < models.length; shelf++) {
             Block model = models[shelf];
@@ -373,14 +375,19 @@ final class FreighterFurnishings {
         }
     }
 
-    /** The snack machine, two blocks tall, against the nearest wall with room to stand before it. */
-    private void snackMachine(int room, double bearing, double out) {
+    /**
+     * The snack machine, two blocks tall, against the nearest wall with room to stand before it; gives whether it found
+     * room.
+     */
+    private boolean snackMachine(int room, double bearing, double out) {
         BlockPos lower = wallPiece(room, bearing, out, 1, 2, 2, at -> true,
             facing -> SnackMachineBlock.lower(SkylinersRegistry.SNACK_MACHINE.get(), facing));
-        if (lower != null) {
-            BlockState placed = layout.stateAt(lower.getX(), lower.getY(), lower.getZ());
-            layout.set(lower.getX(), lower.getY() + 1, lower.getZ(), SnackMachineBlock.upper(placed));
+        if (lower == null) {
+            return false;
         }
+        BlockState placed = layout.stateAt(lower.getX(), lower.getY(), lower.getZ());
+        layout.set(lower.getX(), lower.getY() + 1, lower.getZ(), SnackMachineBlock.upper(placed));
+        return true;
     }
 
     /** A stack of two speakers near where it is meant, facing toward her axis. */
