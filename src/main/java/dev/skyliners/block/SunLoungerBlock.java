@@ -64,6 +64,16 @@ public class SunLoungerBlock extends SeatBlock {
         return SHAPES.get(state.getValue(FACING));
     }
 
+    /**
+     * As solid as it is drawn, frame, cushion and raised back, for everyone alike, rather than the low slab Create's
+     * seats give players, which feet sank into and the back was walked through; low enough to step up onto. The same
+     * for anything, so its shape comes from its state alone, as Sable keeps each state's shape for every ship.
+     */
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPES.get(state.getValue(FACING));
+    }
+
     /** Anything in hand lies whoever uses it down on it, as Create's seats do with nothing in hand: no dye recolours it. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,

@@ -1,6 +1,8 @@
 package dev.skyliners.club;
 
 import com.mojang.serialization.MapCodec;
+import dev.skyliners.block.TurnedShapes;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,8 +27,14 @@ public class BandstandBlock extends HorizontalDirectionalBlock implements Entity
     private static final MapCodec<BandstandBlock> CODEC = simpleCodec(BandstandBlock::new);
     /** How brightly its footlights light the band and the room round it, as a block's light level. */
     public static final int FOOTLIGHTS = 9;
-    /** Its stage, to stand on, and the band on it, to bump into: a slab with the players' bodies over its middle. */
-    private static final VoxelShape SHAPE = Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(4, 3, 4, 12, 14, 12));
+    /**
+     * Its stage, to stand on, and the band on it, to bump into, facing north: a slab as wide as the stage is drawn,
+     * three blocks across, its own block's and one either side, and a player's body over the middle of each third,
+     * as far apart as they are drawn (see the client's {@code BandstandRenderer}).
+     */
+    private static final VoxelShape NORTH = Shapes.or(Block.box(-16, 0, 0, 32, 3, 16), Block.box(4, 3, 4, 12, 14, 12),
+        Block.box(-11.2, 3, 4, -3.2, 14, 12), Block.box(19.2, 3, 4, 27.2, 14, 12));
+    private static final Map<Direction, VoxelShape> SHAPES = TurnedShapes.of(NORTH);
 
     public BandstandBlock(Properties properties) {
         super(properties);
@@ -50,7 +58,7 @@ public class BandstandBlock extends HorizontalDirectionalBlock implements Entity
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return SHAPES.get(state.getValue(FACING));
     }
 
     @Override

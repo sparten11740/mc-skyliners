@@ -197,6 +197,37 @@ const RAMP_RISE = 7;
 const RAMP_WALK_TICKS = 110;
 const RAMP_STAND_UP = 3;
 const RAMP_HELD_TICKS = 200;
+// Walking onto a freighter's ramp on its way: how far in from the middle of its head's block to stand in her corridor,
+// in blocks, a block and a half past its hinge; how long after its panel is pressed to walk out, in ticks, well into its
+// swing; how long the walk out and the look after it are, and the walk back, in ticks; and how far over the ground
+// whoever walked onto it must still be, in blocks, to be standing on it rather than fallen through to the ground.
+const RAMP_HEAD_IN = 2;
+const RAMP_INTO_SWING = 35;
+const RAMP_ONTO_TICKS = 25;
+const RAMP_HELD_LOOK = 20;
+const RAMP_BACK_TICKS = 40;
+const RAMP_ABOVE_GROUND = 2;
+// Standing under a freighter's ramp as it comes down: how far out from its head, in blocks, where it would come down
+// lower than a head; how long they stand there, in ticks, longer than it takes to come down; and how far to step
+// aside from under it, in blocks, clear of its width.
+const RAMP_UNDER_OUT = 9;
+const RAMP_UNDER_TICKS = 150;
+const RAMP_STEP_ASIDE = 4;
+// Walking at a freighter's furniture: how far out to start, in blocks, and how long to walk, in ticks, enough to reach
+// it; how far from its middle along the way walked the player must have been stopped, in blocks: her jump drive's
+// rings, round its core, and not its column; the body of a player of her band, in front of the side of its stage, and
+// not past its middle; and a sun lounger's raised back, walked at from closer in, behind its middle.
+const BUMP_FROM = 3;
+const BUMP_TICKS = 30;
+const DRIVE_RINGS_OUT = 1;
+const BAND_PLAYER_OUT = 0.4;
+const LOUNGER_FROM = 2;
+const LOUNGER_BACK_OUT = 0.6;
+// How far the player must have walked at all, in blocks, for a stop to be the lounger's and not where they started.
+const BUMP_MOVED = 0.5;
+// Where on a console module of a freighter its desk is aimed at, as a point of its block from 0 to 1 across, up and
+// along: the middle of its desk's top, which is drawn a little over four fifths of a block up at its back.
+const DESK_TOP_AT = "0.5,0.8,0.5";
 // How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
@@ -1174,8 +1205,59 @@ function checkFreighterRamp() {
   const stays = must("find skyliners:ramp_deck 128 200 side=server").rows.length;
   expect(stays === deck.length, "freighter: her ramp's deck stays laid, however often its blocks look whether they are leftovers",
     `${stays} of ${deck.length} blocks`);
+  walkOntoRampOnItsWay(deck, [dx, dz, yaw], panel.at_abs, lamp, lampTurns);
+  standUnderRamp(deck, [dx, dz], panel.at_abs, lamp, lampTurns);
   callRampFromTheGround(lamp, lampTurns);
   holdFreighterOnHerRamp(deck, footX + dx * 2 * RAMP_STAND_UP, lowest + RAMP_STAND_UP, footZ + dz * 2 * RAMP_STAND_UP, lamp);
+}
+
+// Where to stand in a freighter's ring corridor just in from the head of her ramp, as [x, y, z], from its deck laid and
+// the way it climbs into her: the middle of its highest row, a little way in past its hinge, on her deck.
+function rampHeadStand(deck, [dx, dz]) {
+  const highest = Math.max(...deck.map(([, y]) => y));
+  const innermost = Math.max(...deck.filter(([, y]) => y === highest).map(([x, , z]) => x * dx + z * dz));
+  const head = deck.filter(([x, y, z]) => y === highest && x * dx + z * dz === innermost).sort((a, b) => a[0] - b[0] || a[2] - b[2]);
+  const [x, y, z] = head[Math.floor(head.length / 2)];
+  return [x + 0.5 + dx * RAMP_HEAD_IN, y + 1, z + 0.5 + dz * RAMP_HEAD_IN];
+}
+
+// Walks onto a freighter's ramp from her corridor, in survival, while it swings: going up, it holds where it is with the
+// player standing on it rather than dropping them through the floor, and folds away once they step back off; coming
+// down, it carries them down with it, never dropping them to the ground under her. With the fault there was nothing
+// to stand on while it swung, and they fell through her floor to the ground.
+function walkOntoRampOnItsWay(deck, [dx, dz, yaw], panelAt, lamp, lampTurns) {
+  const [x, y, z] = rampHeadStand(deck, [dx, dz]);
+  const out = yaw + 180;
+  // Pressed and walked onto in one script, against the ramp's clock: a pause between the two let it all but fold first.
+  const walkOnto = `server tp @p ${x} ${y} ${z}; turn ${out} 20; wait 20t; use ${panelAt.join(",")}; wait ${RAMP_INTO_SWING}t; turn ${out} 20; `
+    + `move forward ${RAMP_ONTO_TICKS}t`;
+  survival();
+  const onIt = must(`${walkOnto}; wait ${RAMP_HELD_LOOK}t; status`);
+  const held = lamp();
+  expect(onIt.pos[1] > ground + RAMP_ABOVE_GROUND && held === "busy", "freighter: walked onto her ramp as it goes up, it holds them up, stopped",
+    `at ${onIt.pos.map(round).join(",")}, the ground at ${ground}, lamp ${held}`);
+  must(`turn ${yaw} 0; move forward ${RAMP_BACK_TICKS}t`);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: stepped back off it, her ramp folds away", `lamp ${lamp()}`);
+  const riding = must(`${walkOnto}; status`);
+  creative();
+  expect(riding.pos[1] > ground + RAMP_ABOVE_GROUND, "freighter: walked onto her ramp as it comes down, it carries them down on it",
+    `at ${riding.pos.map(round).join(",")}, the ground at ${ground}`);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: and comes down all the way with them on it", `lamp ${lamp()}`);
+}
+
+// Stands on the ground under where a freighter's ramp comes down, as it comes down: it holds over them rather than
+// coming down on them, and comes down once they step out from under it.
+function standUnderRamp(deck, [dx, dz], panelAt, lamp, lampTurns) {
+  const [x, y, z] = rampHeadStand(deck, [dx, dz]);
+  must(`server tp @p ${x} ${y} ${z}; wait 20t; use ${panelAt.join(",")}`);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: her ramp folds away from its panel", `lamp ${lamp()}`);
+  const [ux, uz] = [x - dx * (RAMP_HEAD_IN + RAMP_UNDER_OUT), z - dz * (RAMP_HEAD_IN + RAMP_UNDER_OUT)];
+  must(`use ${panelAt.join(",")}; server tp @p ${ux} ${ground} ${uz}; wait ${RAMP_UNDER_TICKS}t`);
+  const under = must("status");
+  expect(lamp() === "busy" && under.pos[1] < ground + 1, "freighter: standing under her ramp as it comes down, it holds over them",
+    `lamp ${lamp()}, at ${under.pos.map(round).join(",")}`);
+  must(`server tp @p ${ux + dz * RAMP_STEP_ASIDE} ${ground} ${uz + dx * RAMP_STEP_ASIDE}`);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: stepped out from under it, her ramp comes down", `lamp ${lamp()}`);
 }
 
 // Presses a freighter's ramp call button on her leg from the ground: her ramp folds away, and comes down again.
@@ -1817,6 +1899,13 @@ function checkFreighterConsole() {
     const refused = must(`messages since=${pressed} kind=actionbar match=*boosts*only* limit=1`).rows.length > 0;
     expect(refused && played("*note_block.bass*", pressed).length > 0, "freighter: on the ground her boost button says no, with a low note");
   }
+  const [jumpButton] = must("find skyliners:console_jump 128 1").rows;
+  if (jumpButton) {
+    const pressed = now();
+    useModule(jumpButton.at_abs, coPilotSeat());
+    expect(Boolean(heard("*freighter_computer_jump_*", pressed, LOOK_EVERY)), "freighter: standing as built, her jump button says why not in her computer's voice",
+      must(`messages since=${pressed} kind=actionbar limit=1`).rows[0]?.text ?? "");
+  }
   const [toggles] = must("find skyliners:console_switches 128 1").rows;
   if (toggles) {
     const before = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
@@ -1824,6 +1913,81 @@ function checkFreighterConsole() {
     useModule(toggles.at_abs, coPilotSeat());
     const after = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
     expect(after !== before && played("*lever.click*", flipped).length > 0, "freighter: a toggle on her console clicks over", `${before} to ${after}`);
+  }
+}
+
+// From a freighter's pilot's seat, each of her three big buttons on her console, climb, boost and jump, is pressed
+// where its desk is seen, over the desks between, so whoever flies her alone presses them all from where they sit.
+// With the fault each desk took clicks in the empty room over it up to the top of its block, so the jump button, round
+// on the co-pilot's side, could not be pressed from the pilot's seat past the scanner's.
+function checkFreighterCockpitReach() {
+  ship("freighter");
+  const seat = pilotSeat();
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t`);
+  for (const kind of ["climb", "boost", "jump"]) {
+    const [module] = must(`find skyliners:console_${kind} 128 1`).rows;
+    const reply = module ? send(`use ${module.at_abs.join(",")} at ${DESK_TOP_AT}; wait 10t`)[0] : undefined;
+    expect(module && reply.ok !== false, `freighter: from her pilot's seat, her ${kind} button is pressed where it is seen`,
+      module ? (reply.err ? `${reply.err} ${reply.arg ?? ""}` : "") : "no such button");
+  }
+  must("key press key.sneak 10t; wait 10t");
+}
+
+// Walks at a block of a freighter from so far out along a way, at the height of its foot, with the walk key alone;
+// how far from the block's middle along that way the player then stands, in blocks. In survival, so nothing is flown.
+function bumpInto(at, [wx, wz], out = BUMP_FROM) {
+  const [x, y, z] = at;
+  const [cx, cz] = [x + 0.5, z + 0.5];
+  const yaw = Math.atan2(wx, -wz) * 180 / Math.PI;
+  survival();
+  const there = must(`server tp @p ${cx + wx * out} ${y} ${cz + wz * out}; turn ${yaw} 0; wait 10t; move forward ${BUMP_TICKS}t; status`);
+  creative();
+  return { along: round((there.pos[0] - cx) * wx + (there.pos[2] - cz) * wz), up: round(there.pos[1] - y) };
+}
+
+// Whether a column of blocks out from a block along a way, at its height and the two over it, is open floor to walk.
+function clearWay([x, y, z], [wx, wz], out) {
+  const cells = [];
+  for (let step = 1; step <= out; step++) {
+    cells.push([x + wx * step, y, z + wz * step], [x + wx * step, y + 1, z + wz * step]);
+  }
+  return cells.every((cell) => must(`block ${cell.join(",")} side=server`).id === "air");
+}
+
+// A freighter's furniture is as solid as it is drawn: walked at, her jump drive's rings stop the player short of its
+// column, the band's players on the side thirds of the stage stop them short of the stage's middle, and a sun lounger's
+// raised back stops them from behind rather than being walked over. With the fault all three were walked through.
+function checkFreighterSolid() {
+  ship("freighter");
+  const [drive] = must("find skyliners:jump_drive 128 1").rows;
+  const way = drive && Object.values(STEPS).find((step) => clearWay(drive.at_abs, step, BUMP_FROM + 1));
+  if (way) {
+    const { along } = bumpInto(drive.at_abs, way);
+    expect(along >= DRIVE_RINGS_OUT && along < BUMP_FROM - BUMP_MOVED, "freighter: walked at, her jump drive's rings stop the player",
+      `${along} blocks from its middle`);
+  } else {
+    expect(false, "freighter: she has a jump drive with open floor round it to walk at it from");
+  }
+  const [stage] = must("find skyliners:bandstand 128 1").rows;
+  if (stage) {
+    const facing = must(`block ${stage.at_abs.join(",")}`).props.facing ?? "north";
+    const [ax, az] = STEPS[CLOCKWISE[facing]];
+    const side = [stage.at_abs[0] + ax, stage.at_abs[1], stage.at_abs[2] + az];
+    const open = clearWay(side, STEPS[facing], BUMP_FROM);
+    const { along } = open ? bumpInto(side, STEPS[facing]) : { along: NaN };
+    expect(open && along >= BAND_PLAYER_OUT && along < BUMP_FROM - BUMP_MOVED,
+      "freighter: walked at the band from the club, the player on the side of the stage stops them",
+      open ? `${along} blocks in front of the side's middle` : "no open floor in front of it to walk from");
+  }
+  const behindOf = (at) => STEPS[CLOCKWISE[CLOCKWISE[must(`block ${at.join(",")}`).props.facing ?? "north"]]];
+  const lounger = must("find skyliners:sun_lounger 128 8").rows.map((row) => row.at_abs)
+    .find((at) => clearWay(at, behindOf(at), LOUNGER_FROM));
+  if (lounger) {
+    const { along, up } = bumpInto(lounger, behindOf(lounger), LOUNGER_FROM);
+    expect(along >= LOUNGER_BACK_OUT && along < LOUNGER_FROM - BUMP_MOVED && up < 1,
+      "freighter: walked at a sun lounger from behind, its raised back stops the player", `${along} blocks behind its middle, ${up} up`);
+  } else {
+    expect(false, "freighter: she has a sun lounger with open floor behind it to walk at it from");
   }
 }
 
@@ -3025,6 +3189,8 @@ const CHECKS = {
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own, out to her prongs' tips and her cockpit" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
+  "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
+  "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },

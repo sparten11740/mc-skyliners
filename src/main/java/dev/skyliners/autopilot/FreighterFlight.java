@@ -215,14 +215,20 @@ public final class FreighterFlight extends StandingFlight {
 
     /**
      * Asks the freighter an autopilot flies to jump to her pin, on the server, as her console's jump button does (see
-     * {@link FreighterJump}): what it came to, for the button to answer with; none for any other craft.
+     * {@link FreighterJump}): what it came to, for the button to answer with; none for any other craft. Standing as
+     * she was built, never yet assembled, she is on the ground, and it says why not as it does there, her computer's
+     * voice with it, rather than that there is no freighter.
      */
     @Nullable
     public static FreighterJump.Answer jump(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
         FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
-        SableFlight.State state = freighter == null ? null : SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
-        if (freighter == null || state == null) {
+        if (freighter == null) {
             return null;
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        if (state == null) {
+            FreighterJump.Answer refused = FreighterJump.refusal(autopilot, Vec3.atCenterOf(autopilot.getBlockPos()));
+            return refused == null ? FreighterJump.Answer.NOT_FLYING : refused;
         }
         FreighterJump.Answer answer = freighter.jump.start(level, autopilot, freighter.pilot.middle(state), freighter.jumpDrive);
         if (answer == FreighterJump.Answer.JUMPING) {
@@ -356,13 +362,17 @@ public final class FreighterFlight extends StandingFlight {
      * Asks the freighter an autopilot flies to climb hard, on the server, as her console's climb button does: while
      * she flies along and her climb boost has rested since the last, her lift fires flat out and she climbs straight up
      * as fast as she can to a good height higher, which her autopilot then holds (see {@link FreighterClimbBoost}).
-     * What it came to, for the button to answer with.
+     * What it came to, for the button to answer with. Standing as she was built, never yet assembled, she is on the
+     * ground, and it says so, rather than that there is no freighter.
      */
     public static FreighterClimbBoost.Answer climbBoost(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
         FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
-        SableFlight.State state = freighter == null ? null : SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
-        if (freighter == null || state == null) {
+        if (freighter == null) {
             return FreighterClimbBoost.Answer.NO_SHIP;
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        if (state == null) {
+            return SkylinersConfig.FREIGHTER_CLIMB_BOOST.get() ? FreighterClimbBoost.Answer.NOT_FLYING : FreighterClimbBoost.Answer.SWITCHED_OFF;
         }
         return freighter.climb.start(level, autopilot, state.position().y);
     }

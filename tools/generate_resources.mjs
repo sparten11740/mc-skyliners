@@ -235,15 +235,18 @@ for (const [name, renderType] of Object.entries(cubes)) {
   cubes.engine_grille = null;
 }
 
-// The freighter's boarding ramp (see BoardingRamp): the invisible slopes its deck is walked on (see RampDeckBlock) only
-// give the particles feet kick up off its plate; the ramp lays and takes them up, so they have no item and drop nothing,
-// light as the rest of her but no part of her frame (see rampFittings). The panel at its head (see RampPanelBlock) is a
-// board two sixteenths thick at the back of its block, as the rover bay's panel is, its face in the colour of how the
-// ramp stands, painted as the rover panel's is; only the blueprint places it, so it has no item and drops nothing.
+// The freighter's boarding ramp (see BoardingRamp): the invisible slopes its deck is walked on (see RampDeckBlock), and
+// those under its plate as it swings (see RampPlateBlock), only give the particles feet kick up off its plate; the ramp
+// lays and takes them up, so they have no item and drop nothing, light as the rest of her but no part of her frame (see
+// rampFittings). The panel at its head (see RampPanelBlock) is a board two sixteenths thick at the back of its block, as
+// the rover bay's panel is, its face in the colour of how the ramp stands, painted as the rover panel's is; only the
+// blueprint places it, so it has no item and drops nothing.
 {
-  write(`assets/${ID}/blockstates/ramp_deck.json`, { variants: { "": { model: `${ID}:block/ramp_deck` } } });
+  for (const name of rampFittings()) {
+    write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/ramp_deck` } } });
+    cubes[name] = null;
+  }
   write(`assets/${ID}/models/block/ramp_deck.json`, { textures: { particle: `${ID}:block/airstair_tread` } });
-  cubes.ramp_deck = null;
   const variants = {};
   const FRONTS = { ready: "ready", busy: "busy", down: "out", refused: "refused" };
   for (const [status, front] of Object.entries(FRONTS)) {
@@ -281,7 +284,7 @@ litButton("ramp_button");
   cubes.leg_bay = null;
 }
 function rampFittings() {
-  return ["ramp_deck"];
+  return ["ramp_deck", "ramp_plate"];
 }
 
 // The freighter's laser cannon (see LaserCannonBlock): its pedestal, a gunmetal column on a flange up the middle of its
@@ -11875,6 +11878,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.engine_grille": "Engine Grille",
   "block.skyliners.deck_robot": "Deck Robot",
   "block.skyliners.ramp_deck": "Boarding Ramp",
+  "block.skyliners.ramp_plate": "Boarding Ramp",
   "block.skyliners.ramp_panel": "Boarding Ramp Panel",
   "block.skyliners.ramp_button": "Ramp Call Button",
   "block.skyliners.leg_bay": "Landing Leg Bay",

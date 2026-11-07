@@ -2611,6 +2611,7 @@ to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along
 controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
 turned toward her middle so whichever seat you fly from it faces you. Left to right: the climb button before the
 pilot, her flight readouts, the boost button, the scanner, the hyperspace jump button, her engines and a bank of toggles.
+From either seat every module is pressed where it is seen, over the desks between, so a pilot alone reaches them all.
 Every reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons,
 her
 height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
@@ -2819,7 +2820,10 @@ as soon as she is set to fly; her take-off waits on her legs until it is all awa
 in to land and it clicks, its lamp blinking amber, and the ramp comes down by itself as soon as she has settled on her
 legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and if her take-off is
 waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls her take-off off with
-a low note, her autopilot switching off and the ramp staying down. From the ground, the amber button low on her
+a low note, her autopilot switching off and the ramp staying down. Walk onto it while it swings and it holds you up:
+coming down it carries you down with it, and going up it stops where it is, chiming, until you step off it. It never
+comes down onto anyone standing under it, nor shuts its hatch on anyone in it, but stops with a chime until they move.
+From the ground, the amber button low on her
 starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where something stands in its
 way, such as ground rising under its foot. The server config's `freighter.ramp` builds her without it. The Ramp Call
 Button is among her blocks in the creative tab; set on any freighter, it works her ramp.

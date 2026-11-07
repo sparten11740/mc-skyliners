@@ -346,8 +346,10 @@ holding the spot it began over. Her `DeckRobotBlock`s chirp, trill and beep from
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing
-counted on the server and each client (`ToldTicks`), and once down the invisible `RampDeckBlock`s laid, falling a
-block in two in four little steps, which the ground passes through (`SableFlight.rampDeck`); `BoardingRampRenderer`
+counted on the server and each client (`ToldTicks`), invisible `RampPlateBlock`s set under the plate each tick as it
+swings, their slope in their state, and once down the invisible `RampDeckBlock`s laid, falling a block in two in four
+little steps, both of which the ground passes through (`SableFlight.rampPlate`, `rampDeck`); the swing holds, chiming,
+while anyone stands where it would move next (`BoardingRamp.anyoneInTheSwing`); `BoardingRampRenderer`
 draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
 long off. Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after

@@ -58,11 +58,12 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final Map<RampPanelBlock.Button, Integer> COLOURS = Map.of(
         RampPanelBlock.Button.LOWER, 0xFF2F6FC0, RampPanelBlock.Button.RAISE, 0xFF2E9A4A);
     /**
-     * The plate: how far in from the well's sides its edges stand, how thick it is, how deep the dark edge at its foot
-     * is, and how far its floor stands proud of it, all in blocks.
+     * The plate: how far in from the well's sides its edges stand, how thick it is (as thick as the ramp has it, which
+     * sets blocks under it as it swings), how deep the dark edge at its foot is, and how far its floor stands proud of
+     * it, all in blocks.
      */
     private static final float SIDE_GAP = 0.05F;
-    private static final float THICK = 0.25F;
+    private static final float THICK = BoardingRamp.THICKNESS;
     private static final float PLATE = 0.02F;
     private static final float TOP_PROUD = 0.002F;
     /** What makes a block's tint, which has no alpha, a colour drawn solid. */
@@ -80,11 +81,6 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     /** The foot lip: how long it is, in blocks, and how far it is turned back over the plate while folded, in degrees. */
     private static final float LIP = 0.6F;
     private static final float LIP_FOLDED = -175;
-    /**
-     * How far over the ground the plate's foot stops, in blocks: the lip's thickness, so the lip lies on the ground
-     * rather than in it, its top never in the same plane as the ground's, which flickers through it.
-     */
-    private static final double FOOT_CLEAR = THICK / 2 + 0.01;
     /**
      * The rams: how far along the plate their lugs are, as a share of its length; how far out from the head and how far
      * under the deck's top their brackets on the well's sides stand, in blocks; the barrel's length, and the barrel's
@@ -172,8 +168,8 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         BlockPos foot = panel.getBlockPos().offset(head).relative(out, frame.run()).below(frame.rise() - 1);
         int light = SableClient.light(level, foot);
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
-        double slope = Math.toDegrees(Math.atan2(frame.rise() - FOOT_CLEAR, frame.run()));
-        double angle = swing(ticks, slope);
+        double slope = frame.slope();
+        double angle = ramp.angle(ticks);
         float half = frame.width() / 2F - SIDE_GAP;
         int lamp = ticks >= BoardingRamp.OUT ? LAMP_WHITE : DrawingClock.wholeTicks() / BLINK % 2 == 0 ? LAMP_AMBER : 0;
         float hinge = half + HINGE_PROUD;
@@ -196,15 +192,6 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
             (float) frame.length());
         pose.popPose();
         pose.popPose();
-    }
-
-    /**
-     * How far down the plate has swung so far through coming down, in degrees: still while the rams take its weight,
-     * then eased down to its slope.
-     */
-    private static double swing(float ticks, double slope) {
-        double share = Math.clamp((ticks - BoardingRamp.PRESSURE) / (double) (BoardingRamp.SWUNG - BoardingRamp.PRESSURE), 0, 1);
-        return slope * share * share * (3 - 2 * share);
     }
 
     /** How far the foot lip is turned from the plate, in degrees: folded back over it, then out level on the ground. */

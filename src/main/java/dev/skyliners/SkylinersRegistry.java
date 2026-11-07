@@ -165,6 +165,7 @@ import dev.skyliners.block.OrreryBlock;
 import dev.skyliners.block.OrreryBlockEntity;
 import dev.skyliners.block.RampButtonBlock;
 import dev.skyliners.block.RampDeckBlock;
+import dev.skyliners.block.RampPlateBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.SampleCentrifugeBlock;
@@ -1409,6 +1410,17 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<RampDeckBlock> RAMP_DECK = BLOCKS.registerBlock(
         "ramp_deck", SableFlight::rampDeck,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.METAL).isValidSpawn(SkylinersRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
+    );
+    /**
+     * What the freighter's boarding ramp is walked on while it swings (see {@link RampPlateBlock}): invisible slopes the
+     * ramp sets a tick at a time under its plate and takes away, so, as its deck's, they cannot be mined, blown up or
+     * moved, and drop nothing.
+     */
+    public static final DeferredBlock<RampPlateBlock> RAMP_PLATE = BLOCKS.registerBlock(
+        "ramp_plate", SableFlight::rampPlate,
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
             .sound(SoundType.METAL).isValidSpawn(SkylinersRegistry::never).isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)

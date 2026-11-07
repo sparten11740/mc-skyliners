@@ -69,8 +69,13 @@ public class JumpDriveBlock extends HorizontalDirectionalBlock implements Entity
     private static final double CORE_UP = 1.9;
     private static final double PARTICLE_SPREAD = 0.4;
     private static final double MOTE_RISE = 0.04;
-    /** Its plinth and the column its core turns over, to bump into. */
-    private static final VoxelShape SHAPE = Shapes.or(Block.box(1, 0, 1, 15, 6, 15), Block.box(5, 6, 5, 11, 16, 11));
+    /**
+     * Its plinth, the column its core turns over and the room its rings turn in over that, to bump into: as wide as the
+     * outer ring is drawn round its core (see the client's {@code JumpDriveRenderer}), up to the top of the block over
+     * it, as far as a block's shape may reach, which stops anyone walking into the rings at a standing height.
+     */
+    private static final VoxelShape SHAPE = Shapes.or(Block.box(1, 0, 1, 15, 6, 15), Block.box(5, 6, 5, 11, 16, 11),
+        Block.box(-6.4, 16, -6.4, 22.4, 32, 22.4));
 
     /** Where the drive stands: at rest, spooling up, running, or sputtering until it is thumped. */
     public enum Drive implements StringRepresentable {
