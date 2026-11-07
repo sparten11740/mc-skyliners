@@ -803,6 +803,8 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   cargo hold stocked): the quick play-test suite (76 checks) and the freighter's slow checks (41: flight, drag, pad,
   lake, ramp and turret) all hold. The jar is build/libs/skyliners-1.2.0-alpha.9+1.21.1-neoforge.jar, with a copy
   kept apart from later builds; still not copied to the desktop, whose share was not mounted.
+- After alpha.9: a galley along her lounge's wall, the rocket mess's worktops, stowage, oven, coffee machine and
+  stocked fridge (4a42e7b0), checked by freighter-rooms; not in a handed-out jar yet.
 
 ### For Jan to look at
 
@@ -823,7 +825,8 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   in one world were not tried.
 - The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet, as her lounge is not built.
 - Her rooms are big for their furniture: the lounge's booth and the crew quarters' bunks stand in a lot of floor, and
-  the cargo hold's far wall is dark (its far-wall washer finds no padded wall there by the prongs' gap). Her bartender
+  the cargo hold's far wall is dark (near her outer bulkhead her hull is too low there for a washer and the row
+  of light it throws up the wall). Her bartender
   is the rocket's tan robot, while her deck robots and band are white and teal: two robot families aboard.
 - Her top turret has no gunner's sight on screen yet (the plain crosshair is honest, the cannon aiming at what it
   covers), no bottom turret and no training drones; seen sideways from the seat, the dome's lower ring hides low
