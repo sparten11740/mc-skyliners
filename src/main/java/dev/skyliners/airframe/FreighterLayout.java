@@ -133,10 +133,11 @@ public final class FreighterLayout extends HullLayout {
     /** Her retros in her prongs' tips, so far out either side of her middle line, in metres. */
     private static final double RETRO_OUT = 3.4;
     /**
-     * Her jets, hidden inside her, where they show no plume: her nose's pair in her prongs near their tips, so far out
-     * either side of her middle line and so far ahead of her axis, in metres, and her tail's pair in the void at her
-     * stern, so far out either side and so far astern. Each pushes toward her middle line, its exhaust outward; her
-     * pilot never runs them hard enough to burn anyone standing in it (see {@link FreighterPilot#JET_SETTING}).
+     * Her jets, where they show no plume: her nose's pair in her prongs near their tips, so far out either side of her
+     * middle line and so far ahead of her axis, in metres, set into the outer walls of her prongs' tunnels (see
+     * {@link #jet}), and her tail's pair hidden in the void at her stern, so far out either side and so far astern. Each
+     * pushes toward her middle line, its exhaust outward; her pilot never runs them hard enough to burn anyone standing
+     * in it (see {@link FreighterPilot#JET_SETTING}).
      */
     /**
      * Her engine grille across her stern's rim band, round her mains: so many degrees of bearing either side of
@@ -451,7 +452,7 @@ public final class FreighterLayout extends HullLayout {
         layout.core();
         layout.corridor();
         layout.roomWalls();
-        FreighterFloors.build(layout, layout.deck, layout.side);
+        FreighterFloors.build(layout, layout.deck, layout.side, layout.front);
         layout.legs();
         layout.engines();
         layout.engineBays();
@@ -479,7 +480,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterEntryHall.build(layout, layout.deck);
         FreighterFurnishings.build(layout, layout.deck);
         FreighterSpookie.build(layout, layout.deck);
-        FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side));
+        FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side, layout.front));
         FreighterPortholes.build(layout, layout.deck, layout.scale);
         FreighterLookout.build(layout, layout.deck, layout.jets[PORT_NOSE_JET]);
         layout.lights();
@@ -957,15 +958,39 @@ public final class FreighterLayout extends HullLayout {
         return null;
     }
 
-    /** A jet inside her at a column over her deck, pushing the way given, no plume; null where it does not fit. */
+    /**
+     * A jet inside her at a column over her deck, pushing the way given, no plume; null where it does not fit. Where
+     * the column is in a passage someone walks, the jet goes into the passage's wall on its exhaust's side instead, its
+     * nozzle out in the open and its relay a box against the wall inside, as her retros' are at her prongs' tips, so
+     * no engine stands out in the passage.
+     */
     @Nullable
     private BlockPos jet(BlockState engine, int x, int z, Direction pushes) {
         int y = deck + 1;
-        BlockPos relay = new BlockPos(x, y, z).relative(pushes);
-        if (!isOpen(x, y, z) || !isOpen(relay.getX(), y, relay.getZ()) || surface.depth(x, y + 0.5, z) >= 0) {
+        if (!isOpen(x, y, z) || surface.depth(x, y + 0.5, z) >= 0) {
             return null;
         }
-        return thruster(engine, x, y, z, pushes, EngineFlames.NONE, FreighterPilot.JET_SETTING);
+        BlockPos at = walkedThrough(x, y, z) ? intoWall(new BlockPos(x, y, z), pushes.getOpposite()) : new BlockPos(x, y, z);
+        BlockPos relay = at == null ? null : at.relative(pushes);
+        if (relay == null || !isOpen(relay.getX(), y, relay.getZ())) {
+            return null;
+        }
+        return thruster(engine, at.getX(), y, at.getZ(), pushes, EngineFlames.NONE, FreighterPilot.JET_SETTING);
+    }
+
+    /** Whether a block is in one of her passages out past her outer bulkhead, where someone walks. */
+    private boolean walkedThrough(int x, int y, int z) {
+        return Math.hypot(x, z) > bulkhead && inPassage(x, y, z);
+    }
+
+    /** The first block of her skin the way given from a block, through open air; null if open air runs on past it. */
+    @Nullable
+    private BlockPos intoWall(BlockPos from, Direction way) {
+        BlockPos at = from;
+        for (int step = 0; step <= 2 * side && isOpen(at.getX(), at.getY(), at.getZ()); step++) {
+            at = at.relative(way);
+        }
+        return skin(stateAt(at.getX(), at.getY(), at.getZ())) ? at : null;
     }
 
     /**

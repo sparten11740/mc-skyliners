@@ -384,6 +384,13 @@ const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
+// How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
+// round her control head her cockpit's floor is looked over for carpet, in blocks.
+const TIP_STRIPS_BACK = 3;
+const TIP_STRIPS_NEAR = 4;
+const COCKPIT_FLOOR_NEAR = 5;
+// How far behind her control head her pilots' seats stand, in blocks, where her cockpit's floor is looked over from.
+const SEATS_BEHIND_HEAD = 2;
 // How many blocks of counter her club's bar has at least.
 const CLUB_COUNTERS = 5;
 const BAND_AWAY = 40;
@@ -1708,6 +1715,21 @@ function checkFreighterLeds() {
   expect(colours.size === panels.length, "freighter: each room's strips are a colour of their own", [...colours].join(", "));
   const floors = new Set(panels.map(([x, y, z]) => must(`block ${x},${y - 2},${z}`).id));
   expect(floors.size >= OWN_FLOORS, "freighter: her rooms have floors of their own", [...floors].join(", "));
+  const [{ at_abs: middle }] = must("find skyliners:laser_cannon 128 1").rows;
+  const { along, bow } = bowOf(middle);
+  const across = 2 - along;
+  const engines = prongEngines(middle);
+  const prongs = [-1, 1].map((side) => engines.filter((at) => Math.sign(at[across] - middle[across]) === side));
+  const tips = prongs.filter((prong) => prong.length > 0).map((prong) => prong.reduce((a, b) => ((b[along] - a[along]) * bow > 0 ? b : a)));
+  const unlit = tips.filter((at) => !stripsNear(backFrom(at, along, bow, TIP_STRIPS_BACK)));
+  expect(tips.length === 2 && unlit.length === 0, "freighter: her bow room's strips run down both prongs' tunnels to their tips, not stopping half way",
+    `${tips.length} prong tips${unlit.map((at) => `, none near the tip at ${at.join(",")}`).join("")}`);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const seat = backFrom(head, along, bow, SEATS_BEHIND_HEAD);
+  must(`server tp @p ${seat[0]} ${seat[1]} ${seat[2]}; wait 10t`);
+  const carpet = must(`find skyliners:cabin_floor ${COCKPIT_FLOOR_NEAR} 1`).rows;
+  expect(carpet.length === 0, "freighter: her cockpit has one floor, no patch of carpet left before her console",
+    carpet.map((row) => row.at_abs.join(",")).join("; "));
 }
 
 // The yaw and pitch that look from an eye at a point, as the turn command takes them, in degrees.
@@ -2255,6 +2277,9 @@ function checkFreighterBeach() {
   const pieces = { loungers: count("sun_lounger"), palms: count("potted_palm"), torches: count("tiki_torch"), parasols: count("parasol") };
   expect(pieces.loungers >= BEACH_LOUNGERS && pieces.palms >= BEACH_PALMS && pieces.torches >= 1 && pieces.parasols >= 1,
     "freighter: round it, her beach's loungers, palms, tiki torches and parasol", JSON.stringify(pieces));
+  const hidden = must("find skyliners:potted_palm 128 10").rows.map((row) => row.at_abs).filter((at) => !crownInTheOpen(at));
+  expect(hidden.length === 0, "freighter: each of her beach's palms spreads its fronds in the open, through no wall and under no parasol",
+    hidden.map((at) => at.join(",")).join("; "));
   const [panel] = must("find skyliners:floor_window_panel 128 1").rows;
   expect(Boolean(panel) && windows.length > 0, "freighter: her window's panel stands by it");
   if (!panel || windows.length === 0) {
@@ -2273,6 +2298,42 @@ function checkFreighterBeach() {
   expect(below.includes("skyliners:smoked_glass"), "freighter: down its shaft, her belly is glass", below.join(", "));
   must(`use ${panel.at_abs.join(",")}; wait ${IRIS_TICKS}t`);
   expect(must(`block ${middle.join(",")}`).props?.open === "false", "freighter: pressed again, it shuts");
+}
+
+// The middle of the block so many blocks back toward her stern from a block of a freighter, her bow lying along the axis
+// and the way given, as bowOf finds them; on the same row, where someone standing there has their feet.
+function backFrom(at, along, bow, back) {
+  return at.map((value, axis) => (axis === 1 ? value : value + 0.5 - (axis === along ? bow * back : 0)));
+}
+
+// Whether an LED strip lies near a point, standing there.
+function stripsNear(stand) {
+  must(`server tp @p ${stand.join(" ")}; wait 10t`);
+  return must(`find skyliners:led_strip ${TIP_STRIPS_NEAR} 1`).rows.length > 0;
+}
+
+// Which way a freighter's bow lies from her middle, whichever way she was laid down: the axis, 0 for x or 2 for z, and
+// the sign along it, toward her cockpit, which stands out ahead of her more than to her side.
+function bowOf(middle) {
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const along = Math.abs(head[0] - middle[0]) > Math.abs(head[2] - middle[2]) ? 0 : 2;
+  return { along, bow: Math.sign(head[along] - middle[along]) };
+}
+
+// The engines in a freighter's prongs: those standing further ahead of her middle than her rooms reach.
+function prongEngines(middle) {
+  const { along, bow } = bowOf(middle);
+  return must("find createpropulsion:creative_thruster 128 100").rows.map((row) => row.at_abs)
+    .filter((at) => (at[along] - middle[along]) * bow > ROOMS_REACH);
+}
+
+// Whether a potted palm's fronds have room: air beside its crown, a row up, and no parasol beside it, whose canopy
+// would hide its crown.
+function crownInTheOpen([x, y, z]) {
+  const beside = Object.values(STEPS).map(([dx, dz]) => [x + dx, y + 1, z + dz]);
+  const round = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dz) => [x + dx, y, z + dz]));
+  const [crown, ground] = [readBlocks(beside), readBlocks(round)];
+  return crown.every((block) => block?.id?.endsWith("air")) && !ground.some((block) => block?.id === "skyliners:parasol");
 }
 
 // A freighter's outside: she is built with every piece of it, as many as she should have of each at least; and each
@@ -2368,6 +2429,11 @@ function checkFreighterGallery() {
   expect(models.length === 4, "freighter: the fleet's four models stand along the tube out to her cockpit", models.join(", "));
   const posters = outside("space_poster").length;
   expect(posters >= GALLERY_POSTER_BLOCKS, "freighter: space posters hang along the tunnel down her port prong", `${posters} blocks of posters`);
+  const ahead = prongEngines(middle);
+  const over = readBlocks(ahead.map(([x, y, z]) => [x, y + 1, z]));
+  const standing = ahead.filter((at, i) => over[i]?.id?.endsWith("air"));
+  expect(ahead.length > 0 && standing.length === 0, "freighter: walking down her prongs' tunnels, no engine stands out in either, each set into her skin",
+    `${standing.length} of ${ahead.length} stand in the open${standing.length ? `, as at ${standing[0].join(",")}` : ""}`);
 }
 
 // A freighter's middle and her prongs' tips: the laser cannon on her axis, and the thrusters in the tips, her retros and
@@ -2957,7 +3023,7 @@ const CHECKS = {
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
-  "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
+  "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own, out to her prongs' tips and her cockpit" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
@@ -2974,13 +3040,13 @@ const CHECKS = {
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
-  "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
+  "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges, her port prong's tunnel space posters, and no engine stands out in her prongs" },
   "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
   "freighter-smuggler-hold": { run: checkFreighterSmugglerHold, about: "a freighter's loose rivet chimes, its panel knocks hollow, opens onto a den of loot, shuts by itself and opens from inside" },
   "secret-panel": { run: checkSecretPanelByHand, about: "a secret panel set into a wall by hand opens and shuts at its loose rivet, and a rivet goes on a wall, a floor and a ceiling" },
   "freighter-lookout": { run: checkFreighterLookout, about: "a freighter's port prong has seats by its portholes and a nook at its tip facing a screen" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
-  "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
+  "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass, her palms in the open" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built in her own hull with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-flush": { run: checkFreighterExteriorFlush, about: "every piece of a freighter's outside meets her hull face to face, no gap under it" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },

@@ -50,17 +50,21 @@ final class FreighterFloors {
     private FreighterFloors() {
     }
 
-    /** Lays the rooms' floors in a freighter's layout whose deck's floor is the row given, reaching so far out. */
-    static void build(HullLayout layout, int deck, int reach) {
+    /**
+     * Lays the rooms' floors in a freighter's layout whose deck's floor is the row given, reaching so far out to either
+     * side and astern, and so far ahead, out past her disc to her prongs' tips and her cockpit's pod.
+     */
+    static void build(HullLayout layout, int deck, int reach, int ahead) {
         if (!SkylinersConfig.FREIGHTER_FINISHES.get()) {
             return;
         }
         int across = 2 * reach + 1;
+        int along = reach - ahead + 1;
         for (Floor floor : FLOORS) {
             LedPanelBlockEntity.Wedge room = new LedPanelBlockEntity.Wedge(BlockPos.ZERO, floor.from(), floor.from() + ROOM_TURN);
             Block plain = floor.block().get();
-            for (int block = 0; block < across * across; block++) {
-                lay(layout, room, new BlockPos(block / across - reach, deck, block % across - reach), plain, floor.lined());
+            for (int block = 0; block < across * along; block++) {
+                lay(layout, room, new BlockPos(block / along - reach, deck, block % along + ahead), plain, floor.lined());
             }
         }
     }

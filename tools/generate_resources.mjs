@@ -774,7 +774,8 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
 {
   const frond = (from, to, uv, rotation) => ({ from, to, rotation,
     faces: { up: { texture: "#frond", uv }, down: { texture: "#frond", uv } } });
-  const crossing = (angle) => ({ from: [-1, 27, 6], to: [17, 27.05, 10], rotation: { origin: [8, 27, 8], axis: "y", angle },
+  // The two crossing fronds lie a hair apart in height, so where they cross neither flickers through the other.
+  const crossing = (angle, y) => ({ from: [-1, y, 6], to: [17, y + 0.05, 10], rotation: { origin: [8, y, 8], axis: "y", angle },
     faces: { up: { texture: "#crossing", uv: [0, 0, 16, 16] }, down: { texture: "#crossing", uv: [0, 0, 16, 16] } } });
   write(`assets/${ID}/models/block/potted_palm.json`, {
     parent: "minecraft:block/block",
@@ -790,7 +791,7 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
         up: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 270 }, down: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 90 } } },
       { ...frond([5.5, 26, 10], [10.5, 26.05, 22], [0, 0, 16, 16], { origin: [8, 26, 10], axis: "x", angle: -22.5 }), faces: {
         up: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 90 }, down: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 270 } } },
-      crossing(45), crossing(-45)],
+      crossing(45, 27), crossing(-45, 27.2)],
   });
   write(`assets/${ID}/models/block/parasol.json`, {
     parent: "minecraft:block/block",

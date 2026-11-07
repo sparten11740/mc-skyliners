@@ -2704,9 +2704,10 @@ She flies on Create Propulsion's creative thrusters, which need no fuel: four cl
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
-tips hold her back; jets hidden at her nose, in her prongs' engine bays, and at her tail turn her and push her
-sideways. In her cockpit the autopilot's
-control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
+tips hold her back from behind grated engine bays; jets at her nose and her tail turn her and push her sideways, those
+at her nose set into the outer walls of her prongs' tunnels, only their nozzles showing outside, and those at her tail
+hidden. In her cockpit the autopilot's control head stands between the pilot's seat and the co-pilot's, jump seats
+behind them, her console curving round
 before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
 clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
@@ -2902,8 +2903,9 @@ like the floor. Shut, it is the sand itself but for a thin steel ring round its 
 panel by the sand, painted with the window and an eye looking down, and an iris opens from the middle out, showing glass
 flush with the floor and a round steel shaft below it down to glass in her belly, so you watch the ground pass far below
 as she flies; press it again and it shuts. The panel's lamp is green while the window is open and amber while it is
-shut. Round the window stand striped sun loungers to lie on, a red and white parasol, potted palms and tiki torches with
-flames flickering on them. Her booth stands in the lounge's far corner. The server config's `freighter.beach` leaves the
+shut. Round the window stand striped sun loungers to lie on, a red and white parasol, potted palms, each with room to
+spread its fronds clear of the walls and the parasol, and tiki torches with flames flickering on them. Her booth stands
+in the lounge's far corner. The server config's `freighter.beach` leaves the
 beach out.
 
 The floor window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
@@ -2937,10 +2939,12 @@ her without them.
 Each of her rooms has the rocket's LED strips along the foot of its walls, in a colour and a way of its own, so you know
 at once where you are: her cargo hold sunshine yellow, chasing as a warehouse's guide lights do, her entry hall snow
 white, her lounge a warm tangerine, engineering sky blue chasing round the room as power does, her crew quarters a dim
-grape breathing like a night light, and her club pink, pulsing to the beat. An LED panel on the wall just inside each
+grape breathing like a night light, and her club pink, pulsing to the beat; her cargo hold's run on down the tunnels
+in both her prongs to their tips. An LED panel on the wall just inside each
 room's doorway sets its strips, as the rocket's panels do: touch a colour, a brightness or a way of lighting. The server
 config's `freighter.ledStrips` builds her without them. Each has a floor of its own too: a dark steel deck with painted
-loading lanes in her cargo hold, cream tiles in her entry hall, warm wooden boards in her lounge, steel grating glowing
+loading lanes in her cargo hold, cream tiles in her entry hall, on out through the tube to her cockpit and under her
+console, warm wooden boards in her lounge, steel grating glowing
 amber down in its slots in engineering (the Engine Grating, among her blocks in the creative tab) and a glossy black
 dance floor in her club; her crew quarters keep the soft carpet of the rest of her deck. The server config's
 `freighter.finishes` lays that carpet everywhere. Her engineering, the room astern of her core, has her jump drive in its middle: a dark steel plinth with a glowing core
