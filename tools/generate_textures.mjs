@@ -8816,6 +8816,86 @@ function beachTextures() {
 }
 beachTextures();
 
+// The freighter's cockpit console (see ConsoleCasing and ConsoleArt), our own design: its casing worn dark gunmetal,
+// scuffed, a panel seam near its top and its foot and a screw head in two corners; its desk top a darker panel ruled
+// into squares by fine lighter lines, as of plates bolted down, one scratched; each module's screen as its item shows
+// it, a little picture of what it shows on dark glass; and the pictures its screens and plates are drawn with, white to
+// be tinted, so none needs reading: chevrons for speed, a peak and an arrow up for height, an arrow up for a climb,
+// three arrows up for her lift, a flame for her mains, a fat double chevron for the boost, a starburst of streaks out
+// from a bright middle for the hyperspace jump, and the power sign.
+function consoleTextures() {
+  const GUNMETAL = [0x3c, 0x41, 0x47];
+  texture(blockOutput, "console_casing", (x, y) => {
+    if (y === 1 || y === 14) return [0x2a, 0x2e, 0x33];
+    if ((x === 2 && y === 3) || (x === 13 && y === 12)) return [0x74, 0x7a, 0x82];
+    const scuff = (x * 7 + y * 3) % 23 === 0 ? 10 : 0;
+    return GUNMETAL.map((c) => c + scuff);
+  }, 5);
+  texture(blockOutput, "console_deck", (x, y) => {
+    if (x % 8 === 0 || y % 8 === 0) return [0x3e, 0x43, 0x4a];
+    if (x === y + 3 && x > 9) return [0x48, 0x4e, 0x55];
+    return [0x26, 0x29, 0x2e];
+  }, 3);
+  const GLASS = [0x06, 0x10, 0x0c];
+  const GREEN = [0x4c, 0xf0, 0x8a];
+  const AMBER = [0xff, 0xb2, 0x38];
+  const RED = [0xff, 0x4a, 0x3a];
+  const CYAN = [0x56, 0xd8, 0xff];
+  const PICTURES = {
+    readouts: (x, y) => (y === 5 && x > 2 && x < 13) || (y > 8 && y < 12 && x > 2 && x < 3 + (x % 3) * 3) ? GREEN : null,
+    scanner: (x, y) => {
+      const out = Math.hypot(x - 7.5, y - 7.5);
+      if (Math.abs(out - 5.5) < 0.6 || (out < 5.5 && Math.abs(x - y) < 0.7 && x > 7)) return GREEN;
+      return (x === 5 && y === 6) || (x === 10 && y === 9) ? AMBER : null;
+    },
+    engines: (x, y) => (x % 4 === 2 && y > 13 - [7, 10, 4, 8][Math.floor(x / 4)] && y < 14 ? [CYAN, AMBER, RED, GREEN][Math.floor(x / 4)] : null),
+    switches: (x, y) => (x % 3 === 1 && y > 9 && y < 13 ? [0xb0, 0xb6, 0xbe] : x % 3 === 1 && y === 5 ? [GREEN, AMBER, RED, CYAN, GREEN][Math.floor(x / 3)] : null),
+    boost: (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 5 ? RED : Math.hypot(x - 7.5, y - 7.5) < 6 ? [0xf2, 0xc0, 0x1a] : null),
+    jump: (x, y) => {
+      const out = Math.hypot(x - 7.5, y - 7.5);
+      if (out < 1.6) return [0xea, 0xf6, 0xff];
+      return out < 6.5 && (Math.abs(x - 7.5) < 0.6 || Math.abs(y - 7.5) < 0.6 || Math.abs(Math.abs(x - 7.5) - Math.abs(y - 7.5)) < 0.6) ? CYAN : null;
+    },
+  };
+  for (const [kind, paint] of Object.entries(PICTURES)) {
+    texture(blockOutput, `console_${kind}_screen`, (x, y) => {
+      if (x === 0 || y === 0 || x === 15 || y === 15) return GUNMETAL;
+      return paint(x, y) ?? GLASS;
+    }, 1);
+  }
+  const iconsOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/console");
+  mkdirSync(iconsOutput, { recursive: true });
+  const ICONS = {
+    speed: ["................", "................", "..##.....##.....", "...##.....##....", "....##.....##...", ".....##.....##..",
+      "......##.....##.", ".......##.....##", ".......##.....##", "......##.....##.", ".....##.....##..", "....##.....##...",
+      "...##.....##....", "..##.....##.....", "................", "................"],
+    height: ["................", "...........#....", "..........###...", ".........#####..", "...........#....", "....#......#....",
+      "...###.....#....", "..#####.........", ".#######........", "#########.......", "##########......", "###########.....",
+      "############....", "#############...", "################", "................"],
+    climb: ["................", ".......##.......", "......####......", ".....######.....", "....########....", "...##########...",
+      "..############..", ".......##.......", ".......##.......", ".......##.......", ".......##.......", ".......##.......",
+      ".......##.......", ".......##.......", "................", "................"],
+    lift: ["................", "..#....#....#...", ".###..###..###..", "..#....#....#...", "..#....#....#...", "..#....#....#...",
+      "..#....#....#...", "..#....#....#...", "................", "################", "################", ".##..........##.",
+      ".##..........##.", "................", "................", "................"],
+    mains: ["................", ".......#........", ".......##.......", "......###.......", "......####......", ".....#####..#...",
+      ".....######.##..", "....##########..", "....##########..", "...###########..", "...####..#####..", "...###....####..",
+      "....##....###...", ".....##..###....", "......#####.....", "................"],
+    boost: ["................", "................", ".###.....###....", "..###.....###...", "...###.....###..", "....###.....###.",
+      ".....###.....###", "......###.....##", "......###.....##", ".....###.....###", "....###.....###.", "...###.....###..",
+      "..###.....###...", ".###.....###....", "................", "................"],
+    jump: ["................", ".......##.......", "..#....##....#..", "...#...##...#...", "....#..##..#....", ".....#.##.#.....",
+      "......####......", "################", "################", "......####......", ".....#.##.#.....", "....#..##..#....",
+      "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
+    power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
+      ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",
+      "....########....", ".....######.....", "................", "................"],
+  };
+  for (const [name, rows] of Object.entries(ICONS)) {
+    texture(iconsOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
+  }
+}
+consoleTextures();
 // The freighter's outside fittings (see the outside fittings in generate_resources.mjs), weathered, working metal:
 // mid-grey steel panels edged in a darker seam with a rivet at each corner; dark gunmetal for their bases, collars and
 // frames, scuffed along a few scratches; copper pipe ringed by darker bands with a bright line down it; an amber

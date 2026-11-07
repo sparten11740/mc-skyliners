@@ -150,18 +150,21 @@ for (const [name, renderType] of Object.entries(cubes)) {
 }
 
 // The freighter's dimming glass (see DimmingGlassBlock): her canopy, cut to her hull's curve as the smoked glass is by the
-// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass.
+// mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass; and,
+// lined, the same drawn from outside only, her canopy's lining drawing its inside (see CanopyLiningRenderer).
 {
   const DIMS = [0, 1, 2, 3];
   for (const dim of DIMS) {
     const skin = dim === 0 ? "smoked_glass" : `dimming_glass_${dim}`;
-    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, {
-      loader: `${ID}:shell`, render_type: "minecraft:translucent",
-      textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
+    const textures = { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` };
+    write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, { loader: `${ID}:shell`, render_type: "minecraft:translucent", textures });
+    write(`assets/${ID}/models/block/dimming_glass_${dim}_lined.json`, {
+      loader: `${ID}:shell`, render_type: "minecraft:translucent", outside_only: true, textures,
     });
   }
   write(`assets/${ID}/blockstates/dimming_glass.json`, {
-    variants: Object.fromEntries(DIMS.map((dim) => [`dim=${dim}`, { model: `${ID}:block/dimming_glass_${dim}` }])),
+    variants: Object.fromEntries(DIMS.flatMap((dim) => [false, true].map((lined) =>
+      [`dim=${dim},lined=${lined}`, { model: `${ID}:block/dimming_glass_${dim}${lined ? "_lined" : ""}` }]))),
   });
   write(`data/${ID}/loot_table/blocks/dimming_glass.json`, {
     type: "minecraft:block",
@@ -587,6 +590,36 @@ function hullLightLang() {
   write(`assets/${ID}/models/item/jump_drive.json`, { parent: `${ID}:block/jump_drive` });
   dropsItself("jump_drive");
   cubes.jump_drive = null;
+}
+
+// The freighter's cockpit console (see ConsoleBlock), our own design: each module drawn by its renderer alone
+// (ConsoleRenderer), whichever way it faces and however it is put up, its block's model only its particle; its item a
+// little desk, its worn casing under a screen leaning back over its top, showing a picture of what it shows.
+const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump"];
+{
+  const MOUNTS = ["floor", "wall", "ceiling"];
+  for (const kind of CONSOLE_KINDS) {
+    const name = `console_${kind}`;
+    write(`assets/${ID}/models/block/${name}.json`, { textures: { particle: `${ID}:block/console_casing` } });
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(MOUNTS.flatMap((mount) => Object.keys(yRot).map((facing) => [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${name}` }]))),
+    });
+    const casing = { texture: "#casing" };
+    write(`assets/${ID}/models/item/${name}.json`, {
+      parent: "minecraft:block/block",
+      textures: { casing: `${ID}:block/console_casing`, deck: `${ID}:block/console_deck`, screen: `${ID}:block/console_${kind}_screen`,
+        particle: `${ID}:block/console_casing` },
+      elements: [
+        { from: [0, 0, 1], to: [16, 10, 16], faces: { north: casing, south: casing, east: casing, west: casing, up: { texture: "#deck" }, down: casing } },
+        {
+          from: [0, 10, 9], to: [16, 19, 12], rotation: { angle: -22.5, axis: "x", origin: [8, 10, 12] },
+          faces: { north: { texture: "#screen" }, south: casing, east: casing, west: casing, up: casing, down: casing },
+        },
+      ],
+    });
+    dropsItself(name);
+    cubes[name] = null;
+  }
 }
 
 // The freighter's breaker board in engineering (see BreakerBoardBlock): a steel panel two pixels deep against the wall
@@ -1127,18 +1160,21 @@ function slideLang() {
 // baked by the mod's own "shell" loader from the block's corners, the windscreen's drawn as a single pane however
 // thick its glass runs (see ShellModel). They give back the part they are cut from (the clear glass, plain glass). The
 // relay hidden in the nacelles drops nothing.
-for (const [name, skin, renderType, part, singlePane, tinted] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
-  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
+// The freighter's canopy frame is her cover drawn from outside only, as her lined canopy glass is.
+for (const [name, skin, renderType, part, singlePane, tinted, outsideOnly] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false, false],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false, false],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
+  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
+  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, false],
+  ["canopy_frame", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
     loader: `${ID}:shell`,
     render_type: renderType,
     ...(singlePane ? { single_pane: true } : {}),
+    ...(outsideOnly ? { outside_only: true } : {}),
     ...(tinted ? { tint_index: 0 } : {}),
     textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
   });
@@ -1888,6 +1924,23 @@ function zeppelinControlsLang() {
     "block.skyliners.breaker_board": "Breaker Board",
     "block.skyliners.coolant_valve": "Coolant Valve",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
+    "block.skyliners.console_readouts": "Flight Readout Console",
+    "block.skyliners.console_scanner": "Scanner Console",
+    "block.skyliners.console_engines": "Engine Console",
+    "block.skyliners.console_switches": "Toggle Console",
+    "block.skyliners.console_boost": "Boost Console",
+    "message.skyliners.console.boost_boosting": "Boost!",
+    "message.skyliners.console.boost_resting": "The boost is resting",
+    "message.skyliners.console.boost_not_flying": "She boosts only while she flies along",
+    "message.skyliners.console.boost_no_ship": "No freighter here to boost",
+    "block.skyliners.console_jump": "Hyperspace Jump Console",
+    "message.skyliners.console.jump_jumping": "Jump drive spooling up",
+    "message.skyliners.console.jump_no_pin": "Nowhere to jump to: set a pin on the autopilot's map",
+    "message.skyliners.console.jump_not_flying": "She jumps only while she flies along",
+    "message.skyliners.console.jump_too_near": "The pin is too near to jump to: she flies there",
+    "message.skyliners.console.jump_busy": "She is jumping already",
+    "message.skyliners.console.jump_switched_off": "The hyperspace jump is switched off on this server",
+    "message.skyliners.console.jump_no_ship": "No freighter here to jump",
     "block.skyliners.floor_window": "Floor Window",
     "block.skyliners.floor_window_panel": "Floor Window Panel",
     "block.skyliners.beach_sand": "Beach Sand",
@@ -1962,7 +2015,7 @@ function zeppelinControlsLang() {
 // against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size;
 // the rocket's cover lined inside her rooms is the same cover, and weighs the same.
 write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`,
-  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`] });
+  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`, `${ID}:canopy_frame`] });
 write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {
   priority: 1002,
   selector: `#${ID}:zeppelin_fabric`,
@@ -2215,6 +2268,14 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_turret_ready: { subtitle: "Computer: Gun turret online", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
+  // Her computer through her hyperspace jump, the lines generate_sounds.mjs keeps together in COMPUTER_JUMP_LINES,
+  // each with its gist.
+  freighter_computer_jump_spooling: { subtitle: "Computer: Jump drive spooling up", aboard: true },
+  freighter_computer_jump_go: { subtitle: "Computer: Here goes nothing", aboard: true },
+  freighter_computer_jump_arrived: { subtitle: "Computer: Out of the jump", aboard: true },
+  freighter_computer_jump_no_pin: { subtitle: "Computer: Nowhere to jump to", aboard: true },
+  freighter_computer_jump_grounded: { subtitle: "Computer: Not from down here", aboard: true },
+  freighter_computer_jump_too_near: { subtitle: "Computer: Pin's next door, just fly", aboard: true },
   freighter_computer_takeoff: { subtitle: "Computer: Lifting off, hold on", aboard: true },
   freighter_computer_landing: { subtitle: "Computer: Coming down to land", aboard: true },
   freighter_computer_arrival: { subtitle: "Computer: We're down", aboard: true },
@@ -5912,6 +5973,18 @@ cubes.dome_limit = null;
 write(`data/${ID}/physics_block_properties/dome_limit.json`, {
   priority: 1004,
   selector: `${ID}:dome_limit`,
+  properties: { "sable:mass": 0.05 },
+});
+// The freighter's canopy lining (see CanopyLiningBlock): no model of its own to draw, its renderer drawing the canopy's
+// inside, and next to no weight, as the dome's limit.
+write(`assets/${ID}/blockstates/canopy_lining.json`, {
+  variants: Object.fromEntries(Object.keys(yRot).map((facing) => [`facing=${facing}`, { model: `${ID}:block/canopy_lining` }])),
+});
+write(`assets/${ID}/models/block/canopy_lining.json`, { textures: { particle: `${ID}:block/smoked_glass` } });
+cubes.canopy_lining = null;
+write(`data/${ID}/physics_block_properties/canopy_lining.json`, {
+  priority: 1004,
+  selector: `${ID}:canopy_lining`,
   properties: { "sable:mass": 0.05 },
 });
 function ledStripLang() {
@@ -10722,6 +10795,8 @@ FITTINGS.push(...rampFittings());
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
 FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve", "crossbow_rack");
+// Her console's modules are fitted into her cockpit, and set up by hand anywhere.
+FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
 FITTINGS.push("floor_window", "floor_window_panel");
 // Her beach's palms, parasol, loungers and torches are fitted into her lounge too, set down and taken up by hand.
@@ -10757,6 +10832,7 @@ FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...windowDimmerFittings());
 FITTINGS.push("dome_limit");
+FITTINGS.push("canopy_lining");
 FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
@@ -10872,6 +10948,12 @@ shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
+// Her console's modules: a screen of glass over iron, each with what it works in its middle.
+const CONSOLE_PARTS = { readouts: "minecraft:clock", scanner: "minecraft:compass", engines: "minecraft:comparator", switches: "minecraft:lever",
+  boost: "minecraft:blaze_powder", jump: "minecraft:ender_eye" };
+for (const [kind, part] of Object.entries(CONSOLE_PARTS)) {
+  shaped(`console_${kind}`, ["GGG", "IPI", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", P: part, R: "minecraft:redstone" }, 1);
+}
 shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);
 shaped("techno_deck", ["NJN", "CCC"], { N: "minecraft:note_block", J: "minecraft:jukebox", C: "minecraft:black_concrete" }, 1);
 shaped("secret_hatch", ["T", "G"], { T: "minecraft:iron_trapdoor", G: `${ID}:zeppelin_catwalk` }, 1);
@@ -11106,6 +11188,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",
   "block.skyliners.dimming_glass": "Dimming Glass",
+  "block.skyliners.canopy_frame": "Canopy Frame",
+  "block.skyliners.canopy_lining": "Canopy Lining",
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",

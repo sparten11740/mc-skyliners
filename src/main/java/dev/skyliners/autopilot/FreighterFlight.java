@@ -1,9 +1,11 @@
 package dev.skyliners.autopilot;
 
 import dev.skyliners.Aboard;
+import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.RetractableLegBlockEntity;
+import dev.skyliners.block.Turning;
 import dev.skyliners.compat.SableFlight;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +20,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -69,6 +73,18 @@ public final class FreighterFlight extends StandingFlight {
      */
     private static final int LEGS_AWAITED_LONGEST = 200;
     /**
+     * Her boost (see {@link #boost}): how long it fires her mains flat out, and how long after it she rests before it
+     * fires again, slowing back to her autopilot's speed meanwhile, in ticks.
+     */
+    public static final int BOOST_TICKS = 160;
+    public static final int BOOST_REST_TICKS = 200;
+    /** No boost begun since she was loaded. */
+    private static final long NO_BOOST = Long.MIN_VALUE;
+    /** How loud her mains' roar and their cutting out are, heard at her stern as she boosts. */
+    private static final float BOOST_VOLUME = 3;
+    /** No jump on its way. */
+    private static final long NO_JUMP = Long.MIN_VALUE;
+    /**
      * What her computer says in place of the flight deck's announcements, after its blip: as she is set to take off,
      * comes down to land and stands on her legs again, and as she reaches space and her gravity comes back on, whether
      * her autopilot or an announcement panel set aboard her makes it; any other announcement is the airliner's.
@@ -103,6 +119,61 @@ public final class FreighterFlight extends StandingFlight {
     private double middleRight;
     private double middleAhead;
     private boolean middleKnown;
+    /** When the boost under way ends, in game time, on the server and as the clients are shown it; none begun yet. */
+    private long boostUntil = NO_BOOST;
+    /** Whether her mains fired flat out for a boost last tick, so they are heard cutting out once it ends. */
+    private boolean boosting;
+    /** Her hyperspace jump (see {@link #jump}), on the server. */
+    private final FreighterJump jump = new FreighterJump();
+    /**
+     * Her jump drive in engineering as an offset from her control head, set as she is built, which spools up and fires
+     * as she jumps; none for one built before, or without engineering's machines.
+     */
+    @Nullable
+    private BlockPos jumpDrive;
+    /**
+     * As the clients are shown it: when her jump's spool began, in game time, none while she is not jumping; and
+     * whether the server lets her jump at all.
+     */
+    private long jumpingSince = NO_JUMP;
+    private boolean jumpsAllowed;
+
+    /** Where her hyperspace jump stands as her console shows it: not to be had, ready, or on its way. */
+    public enum JumpStage {
+        UNAVAILABLE, READY, SPOOLING
+    }
+
+    /** Her jump as a console shows it, and how far into its spool she is, from 0 to 1. */
+    public record JumpShown(JumpStage stage, double spooled) {
+        public static final JumpShown UNAVAILABLE = new JumpShown(JumpStage.UNAVAILABLE, 0);
+    }
+
+    /** What asking her to boost comes to (see {@link #boost}), each with its own word in the hotbar. */
+    public enum BoostAnswer implements StringRepresentable {
+        /** Her mains roar into it. */
+        BOOSTING,
+        /** It is still resting after the last. */
+        RESTING,
+        /** She is not flying along: on the ground, lifting off, coming down or switched off. */
+        NOT_FLYING,
+        /** There is no freighter to boost. */
+        NO_SHIP;
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
+
+    /** Where her boost stands as her console shows it: ready, firing or resting, and how much of that is left. */
+    public enum BoostStage {
+        READY, FIRING, RESTING
+    }
+
+    /** Her boost as a console shows it, and the share of its firing or its rest still to come, from 1 down to 0. */
+    public record BoostShown(BoostStage stage, double left) {
+        public static final BoostShown READY = new BoostShown(BoostStage.READY, 0);
+    }
 
     @Override
     public Craft craft() {
@@ -133,6 +204,66 @@ public final class FreighterFlight extends StandingFlight {
         }
         RetractableLegBlockEntity.Motion motion = legs.motion(autopilot.getLevel(), autopilot.getBlockPos());
         return motion == null ? "moving" : motion.name().toLowerCase(Locale.ROOT);
+    }
+
+    /** Wired when she is built: her jump drive in engineering, as an offset from her control head, if she has one. */
+    public void wireJumpDrive(@Nullable BlockPos offset) {
+        jumpDrive = offset;
+    }
+
+    /**
+     * Asks the freighter an autopilot flies to jump to her pin, on the server, as her console's jump button does (see
+     * {@link FreighterJump}): what it came to, for the button to answer with; none for any other craft.
+     */
+    @Nullable
+    public static FreighterJump.Answer jump(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
+        SableFlight.State state = freighter == null ? null : SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        if (freighter == null || state == null) {
+            return null;
+        }
+        FreighterJump.Answer answer = freighter.jump.start(level, autopilot, freighter.pilot.middle(state), freighter.jumpDrive);
+        if (answer == FreighterJump.Answer.JUMPING) {
+            freighter.jumpingSince = level.getGameTime();
+            autopilot.changed();
+        }
+        return answer;
+    }
+
+    /**
+     * Where the jump of the freighter an autopilot flies stands at a game time, a client's eased one to draw it by:
+     * on its way, ready while the server lets her jump and she flies along to a pin, or not to be had; not to be had
+     * for any other craft.
+     */
+    public static JumpShown jumpOf(AutopilotBlockEntity autopilot, double now) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        if (freighter == null) {
+            return JumpShown.UNAVAILABLE;
+        }
+        if (freighter.jumpingSince != NO_JUMP) {
+            return new JumpShown(JumpStage.SPOOLING, Mth.clamp((now - freighter.jumpingSince) / FreighterJump.SPOOL_TICKS, 0, 1));
+        }
+        boolean ready = freighter.jumpsAllowed && autopilot.lateral == AutopilotBlockEntity.Lateral.DESTINATION && FreighterJump.flyingAlong(autopilot);
+        return ready ? new JumpShown(JumpStage.READY, 0) : JumpShown.UNAVAILABLE;
+    }
+
+    /** How many ticks after the button the land round her pin was in last jump, for play-testing; -1 before. */
+    public int jumpLoadedAfter() {
+        return jump.loadedAfter();
+    }
+
+    /** Her jump, once a tick, on the server: on its way, and the clients told once it is over. */
+    private void jumpTick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
+        boolean allowed = SkylinersConfig.FREIGHTER_HYPERSPACE_JUMP.get();
+        if (allowed != jumpsAllowed) {
+            jumpsAllowed = allowed;
+            autopilot.changed();
+        }
+        jump.tick(level, autopilot, flight, pilot.middle(flight), pilot, jumpDrive);
+        if (!jump.jumping() && jumpingSince != NO_JUMP) {
+            jumpingSince = NO_JUMP;
+            autopilot.changed();
+        }
     }
 
     /** Where her disc's middle is, from what her pilot is wired to. */
@@ -194,6 +325,77 @@ public final class FreighterFlight extends StandingFlight {
         return pilot.report();
     }
 
+    /**
+     * Asks the freighter an autopilot flies to boost, on the server, as her console's boost button does: while she
+     * flies along (climbing or cruising) and her boost has rested since the last, her mains fire flat out for {@link
+     * #BOOST_TICKS}, roaring at her stern, and she surges ahead holding her height and heading, then slows back to her
+     * speed. What it came to, for the button to answer with.
+     */
+    public static BoostAnswer boost(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
+        return freighter == null ? BoostAnswer.NO_SHIP : freighter.startBoost(level, autopilot);
+    }
+
+    private BoostAnswer startBoost(ServerLevel level, AutopilotBlockEntity autopilot) {
+        if (!flyingAlong(autopilot)) {
+            return BoostAnswer.NOT_FLYING;
+        }
+        long now = level.getGameTime();
+        if (boostUntil != NO_BOOST && now < boostUntil + BOOST_REST_TICKS) {
+            return BoostAnswer.RESTING;
+        }
+        boostUntil = now + BOOST_TICKS;
+        roarAtStern(level, autopilot, SkylinersRegistry.SPEED_BOOST.get());
+        autopilot.changed();
+        return BoostAnswer.BOOSTING;
+    }
+
+    /** Whether her autopilot flies her along, climbing or cruising: not lifting off or coming down. */
+    private static boolean flyingAlong(AutopilotBlockEntity autopilot) {
+        return (autopilot.phase == AutopilotBlockEntity.Phase.CLIMB || autopilot.phase == AutopilotBlockEntity.Phase.CRUISE) && !autopilot.comingIn();
+    }
+
+    /** A sound of her mains heard at her stern, where they are, or at her control head where that is not known. */
+    private static void roarAtStern(ServerLevel level, AutopilotBlockEntity autopilot, SoundEvent sound) {
+        Vec3 stern = sternOf(autopilot);
+        Vec3 at = stern == null ? Vec3.atCenterOf(autopilot.getBlockPos()) : stern;
+        level.playSound(null, at.x, at.y, at.z, sound, SoundSource.BLOCKS, BOOST_VOLUME, 1);
+    }
+
+    /**
+     * Her boost this tick: firing while it lasts and she flies along, cut short as soon as she does not; then settling
+     * while it rests, her pilot not learning her drag from how she slows; her mains heard cutting out as it ends.
+     */
+    private FreighterPilot.Boost boostNow(ServerLevel level, AutopilotBlockEntity autopilot) {
+        long now = level.getGameTime();
+        boolean firing = boostUntil != NO_BOOST && now < boostUntil && flyingAlong(autopilot);
+        if (boosting && !firing) {
+            boostUntil = Math.min(boostUntil, now);
+            roarAtStern(level, autopilot, SkylinersRegistry.BOOSTER_CUTOUT.get());
+            autopilot.changed();
+        }
+        boosting = firing;
+        if (firing) {
+            return FreighterPilot.Boost.FIRING;
+        }
+        return boostUntil != NO_BOOST && now < boostUntil + BOOST_REST_TICKS ? FreighterPilot.Boost.SETTLING : FreighterPilot.Boost.NONE;
+    }
+
+    /**
+     * Where the boost of the freighter an autopilot flies stands at a game time, a client's eased one to draw it by, on
+     * either side; ready for any other craft.
+     */
+    public static BoostShown boostOf(AutopilotBlockEntity autopilot, double now) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        if (freighter == null || freighter.boostUntil == NO_BOOST || now >= freighter.boostUntil + BOOST_REST_TICKS) {
+            return BoostShown.READY;
+        }
+        if (now < freighter.boostUntil) {
+            return new BoostShown(BoostStage.FIRING, (freighter.boostUntil - now) / BOOST_TICKS);
+        }
+        return new BoostShown(BoostStage.RESTING, (freighter.boostUntil + BOOST_REST_TICKS - now) / BOOST_REST_TICKS);
+    }
+
     @Override
     boolean wired() {
         return pilot.wired();
@@ -234,6 +436,7 @@ public final class FreighterFlight extends StandingFlight {
     void turn(Rotation turn) {
         pilot.turn(turn);
         legs.turn(turn);
+        jumpDrive = Turning.turn(jumpDrive, turn);
     }
 
     @Override
@@ -241,6 +444,9 @@ public final class FreighterFlight extends StandingFlight {
         CompoundTag freighter = pilot.save();
         legs.save(freighter);
         tag.put("Freighter", freighter);
+        if (jumpDrive != null) {
+            tag.putLong("FreighterJumpDrive", jumpDrive.asLong());
+        }
     }
 
     @Override
@@ -251,6 +457,8 @@ public final class FreighterFlight extends StandingFlight {
         if (!middleKnown) {
             knowMiddle(pilot.wiring());
         }
+        // Saved by one built before she jumped: no drive to spool with it.
+        jumpDrive = tag.contains("FreighterJumpDrive") ? Turning.turn(BlockPos.of(tag.getLong("FreighterJumpDrive")), turn) : null;
     }
 
     @Override
@@ -272,12 +480,22 @@ public final class FreighterFlight extends StandingFlight {
     void saveShown(CompoundTag tag) {
         lift.save(tag, "FreighterLift");
         mains.save(tag, "FreighterMains");
+        if (boostUntil != NO_BOOST) {
+            tag.putLong("FreighterBoostUntil", boostUntil);
+        }
+        if (jumpingSince != NO_JUMP) {
+            tag.putLong("FreighterJumpingSince", jumpingSince);
+        }
+        tag.putBoolean("FreighterJumps", jumpsAllowed);
     }
 
     @Override
     void loadShown(CompoundTag tag) {
         lift.load(tag, "FreighterLift");
         mains.load(tag, "FreighterMains");
+        boostUntil = tag.contains("FreighterBoostUntil") ? tag.getLong("FreighterBoostUntil") : NO_BOOST;
+        jumpingSince = tag.contains("FreighterJumpingSince") ? tag.getLong("FreighterJumpingSince") : NO_JUMP;
+        jumpsAllowed = tag.getBoolean("FreighterJumps");
     }
 
     /**
@@ -335,7 +553,7 @@ public final class FreighterFlight extends StandingFlight {
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,
-                legsDown);
+                legsDown, boostNow(level, autopilot));
             AutopilotBlockEntity.Phase next = pilot.fly(level, autopilot.getBlockPos(), orders, flight, radio,
                 SableFlight.mass(autopilot), SableFlight.centreOfMass(autopilot));
             if (next == AutopilotBlockEntity.Phase.OFF) {
@@ -357,6 +575,7 @@ public final class FreighterFlight extends StandingFlight {
         glow.tick(level, autopilot.getBlockPos(), pilot.wiring().grille(), lift.shown(), mains.shown(), now);
         liftPlumes.tick(level, autopilot.getBlockPos(), pilot.wiring().clusters(), radio);
         watchArrival(autopilot, flight, radio);
+        jumpTick(level, autopilot, flight);
     }
 
     /**

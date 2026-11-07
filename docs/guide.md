@@ -2585,6 +2585,52 @@ of struts; a glass dome stands on her top and another under her belly, where her
 glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
 through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
+From her seats her canopy is one smooth round cone of tinted glass with a flat glazed front, not glass stepping round
+her curve block by block: her four spokes, the ring half way along and the rims round the cone's base and its front are
+chunky dark gunmetal ribs studded with rivets, a row of small amber lamps glowing round the base, and dimmed it is just
+as smooth, the whole cone darkening evenly to all but black. From outside she looks as ever, her struts her silver
+cover and her glass smoked. The server config's `freighter.smoothCanopy` draws her canopy block by block from inside
+too, as freighters built before it are.
+
+Before her seats her console curves round in a half circle, from in front of the pilot round ahead of the control head
+to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky
+controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
+turned toward her middle so whichever seat you fly from it faces you. Left to right: a bank of toggles, her flight
+readouts, the boost button, the scanner, the hyperspace jump button, her engines and another bank of toggles. Every
+reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons, her
+height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
+with north marked red; gauges of her lift thrusters' push in cyan, her mains' in amber and her boost, whose levers on
+the desk move with them; and a round scope whose beam sweeps round, her pin an amber diamond pulsing at its bearing and
+whoever is near a green dot lit as the beam passes. Click the scope and it pings, a ring going out over it with a chime;
+click a readout or the engines and they beep, every lamp lit for a moment; click a toggle and it clicks up or down, its
+square on the screen over it lighting in its colour. While she flies along, the big red button in its hazard-striped
+ring fires her mains flat out for eight seconds: her roar goes up at her stern and she surges ahead, holding her height
+and her heading, its screen's chevrons flashing orange over a bar running down; then she slows back to her speed, the
+chevrons red in a ring of segments lighting one by one as it rests for ten seconds, and green again when it is ready.
+On the ground, lifting off, landing or resting, it only says no with a low note. Before she is assembled, her screens
+show the power sign pulsing amber and only one lamp blinks. Each module is among her blocks in the creative tab (Flight
+Readout Console, Scanner Console, Engine Console, Toggle Console and Boost Console) and works on its own: put down on a
+floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down toward you, and it reads
+the nearest autopilot, showing the standby picture with none; the scope sweeps for whoever is near wherever it stands,
+pointing the way its desk does. The server config's `freighter.console` builds her without it.
+
+The big blue button on the co-pilot's side, in its ring of blue and white stripes under a starburst, jumps her through
+hyperspace to her pin. It lights up, its starburst pulsing cyan, only while she flies along to a pin set on her
+autopilot's map; otherwise it is dark, and pressed it only says why not, her computer's gruff voice with it: nowhere to
+jump to, not from down on the ground, or a pin so near she should just fly there. Pressed while it is lit, her
+computer says her jump drive is spooling up and to hold on to something, and her drive in engineering whines up too;
+for everyone aboard, wherever they are in her, stars come out over the view and stretch into streaks rushing out
+toward them, longer and faster, the view widening and deepening to blue, while the jump screen's streaks stream out
+inside a ring of segments lighting one by one. Meanwhile the land round the pin is loaded, far out, so she does not
+stall coming out there. Her computer lets go with a dry "here goes nothing", the streaks race, and in a white flash and
+a deep whump she is over the pin, everyone aboard with her, the streaks falling back to points; she comes out as high
+as she flew, or higher where the land there is higher, always with her lowest block at least ten blocks over the
+highest block under her, trees and buildings and all. Then her autopilot carries on as if she had flown there,
+hovering over the pin or, set to land, coming down beside it. Her computer welcomes everyone to wherever this is. If
+she stops flying along before she goes, the jump is called off: the streaks fade and her computer reports a fault. The
+Hyperspace Jump Console is among her blocks in the creative tab and works for any freighter near it, on a floor, a wall
+or a ceiling. The server config's `freighter.hyperspaceJump` switches the jump off; her console then has her flight
+readouts again where the jump button was.
 
 The tube out to her cockpit runs between ledges where its round wall meets her deck, and on them stands the fleet in
 miniature: models of the airliner, the zeppelin, the rocket and the freighter herself on their stands, their noses all
@@ -2598,8 +2644,9 @@ her and keep her deck level, more of their push going to whichever side dips, so
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
 tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
-control head stands between the pilot's seat and the co-pilot's, jump seats behind them, and the autopilot screen on
-the wall at the co-pilot's right hand, so the view ahead through her canopy is clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
+control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
+before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
+clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
 anywhere, and climbs to her height, her deck level all the way. Once her feet are sixteen blocks over the ground her legs
 draw up into her belly, with a clunk and a hydraulic whine heard on her deck and on the ground under her: each strut's

@@ -1,0 +1,10 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "outside_only": true,
+  "tint_index": 0,
+  "textures": {
+    "skin": "skyliners:block/zeppelin_skin",
+    "particle": "skyliners:block/zeppelin_skin"
+  }
+}

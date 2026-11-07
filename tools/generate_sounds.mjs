@@ -5306,6 +5306,18 @@ const COMPUTER_ANNOUNCEMENTS = {
   freighter_computer_space: "We're in space. | Keep the windows shut.",
   freighter_computer_gravity: "Gravity back on. | Mind your landing.",
 };
+// Her computer through her hyperspace jump (see FreighterJump), our own lines in the voice of a worn old cargo hauler's
+// computer that has seen it all: spooling up as the button is pressed, letting go as she jumps, coming out of it at the
+// pin, and, the button pressed when she cannot jump, why not: no pin set, not flying, or the pin too near to bother.
+// Said in COMPUTER's voice, its blip first, as her other lines are.
+const COMPUTER_JUMP_LINES = {
+  freighter_computer_jump_spooling: "Jump drive spooling up. | Hold on to something.",
+  freighter_computer_jump_go: "Here goes nothing.",
+  freighter_computer_jump_arrived: "Out of the jump. | Welcome to wherever this is.",
+  freighter_computer_jump_no_pin: "Nowhere to jump to. | Pick a spot on the map.",
+  freighter_computer_jump_grounded: "Not from down here. | Get her flying first.",
+  freighter_computer_jump_too_near: "That is practically next door. | Just fly there.",
+};
 /**
  * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
  * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
@@ -5336,6 +5348,7 @@ async function sayAsFreighterComputer(speaker, lines, longest) {
 if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

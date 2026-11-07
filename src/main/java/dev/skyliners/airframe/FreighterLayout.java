@@ -14,9 +14,12 @@ import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinRailBlock;
 import dev.skyliners.block.CabinSeatBlock;
+import dev.skyliners.block.CanopyLiningBlock;
+import dev.skyliners.block.CanopyLiningBlockEntity;
 import dev.skyliners.block.CargoCrateBlock;
 import dev.skyliners.block.CoffeeMachineBlock;
 import dev.skyliners.block.DeckRobotBlock;
+import dev.skyliners.block.DimmingGlassBlock;
 import dev.skyliners.block.DisplayShelfBlock;
 import dev.skyliners.block.DrinkTapBlock;
 import dev.skyliners.block.GalleyFridgeBlock;
@@ -116,6 +119,13 @@ public final class FreighterLayout extends HullLayout {
      * each runs straight along a row of them; between them her canopy is glass, with a ring of strut half way along.
      */
     private static final int CANOPY_SPOKES = 4;
+    /**
+     * Her canopy's lining (see {@link #canopyLining}): how far in from her surface its glass is drawn, in blocks, at the
+     * inside of her canopy's blocks, and how many blocks back from her canopy's front along its axis an open block for
+     * it is looked for.
+     */
+    private static final double LINING_IN = 0.6;
+    private static final int LINING_SEARCH = 4;
     private static final int MAIN_ROWS_UP = 2;
     /** How far past her rim's face her engines' glow is drawn, in blocks: out in the air behind her mains' nozzles. */
     private static final double NOZZLE_OUT = 0.6;
@@ -142,11 +152,12 @@ public final class FreighterLayout extends HullLayout {
     private static final double TAIL_JET_ASTERN = 10.8;
     /**
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
-     * pilots' seats a block behind it, the pilots so far either side of the head, the jump seats so far behind them,
-     * and the autopilot screen's middle so far to the head's right and so many rows up, on the ledge of her skin at the
-     * co-pilot's right hand, where it leaves the view ahead through her canopy clear.
+     * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
+     * pilots so far either side of the head, the jump seats so far behind them, and the autopilot screen's middle so
+     * far to the head's right and so many rows up, on the ledge of her skin at the co-pilot's right hand, where it
+     * leaves the view ahead through her canopy clear.
      */
-    private static final int SEATS_BEHIND = 1;
+    private static final int SEATS_BEHIND = 2;
     private static final int PILOTS_OUT = 2;
     private static final int JUMP_BEHIND = 2;
     private static final int SCREEN_OUT = 4;
@@ -311,6 +322,9 @@ public final class FreighterLayout extends HullLayout {
     /** Where the autopilot's control head stands in her cockpit; null before it is laid. */
     @Nullable
     private BlockPos head;
+    /** The first block of her canopy's glass laid, which her canopy's lining follows as it dims; null before any is. */
+    @Nullable
+    private BlockPos canopyPane;
 
     /** Her hull's surface in blocks, as her skin is cut by it: her axis runs through the middle of block 0 each way. */
     private final SurfaceCut.Surface surface = new SurfaceCut.Surface() {
@@ -494,18 +508,41 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Her glass along a row: the canopy's dimming glass (see {@link dev.skyliners.block.DimmingGlassBlock}), smoked
-     * glass with the server config's {@code freighter.canopyDimmer} off, and smoked glass over her turrets' domes.
+     * glass with the server configs {@code freighter.canopyDimmer} and {@code freighter.smoothCanopy} both off, and
+     * smoked glass over her turrets' domes; and, seen smooth from inside, the struts between her canopy's panes made her
+     * canopy's frame, drawn from outside only, as her dimming glass is (see {@link #canopyLining}).
      */
     private void glassRow(int x, int y) {
         BlockState glass = SkylinersRegistry.SMOKED_GLASS.get().defaultBlockState();
         boolean dimming = SkylinersConfig.FREIGHTER_CANOPY_DIMMER.get();
-        BlockState canopy = dimming ? SkylinersRegistry.DIMMING_GLASS.get().defaultBlockState() : glass;
+        boolean smooth = SkylinersConfig.FREIGHTER_SMOOTH_CANOPY.get();
+        BlockState dimmingGlass = SkylinersRegistry.DIMMING_GLASS.get().defaultBlockState().setValue(DimmingGlassBlock.LINED, smooth);
+        BlockState canopy = dimming || smooth ? dimmingGlass : glass;
         for (int z = front; z <= back; z++) {
-            if (!isOpen(x, y, z) && glazed(x, y + 0.5, z)) {
+            if (isOpen(x, y, z)) {
+                continue;
+            }
+            if (glazed(x, y + 0.5, z)) {
                 boolean onCanopy = FreighterShape.nearest(x / scale, (y + 0.5) / scale, z / scale) == FreighterShape.Part.POD;
                 glaze(x, y, z, onCanopy ? canopy : glass);
                 noteCanopy(onCanopy && dimming, new BlockPos(x, y, z));
+                canopyPane = onCanopy && canopyPane == null && !isOpen(x, y, z) ? new BlockPos(x, y, z) : canopyPane;
+            } else if (smooth && onCone(x, y + 0.5, z)) {
+                canopyFrame(x, y, z);
             }
+        }
+    }
+
+    /** Whether a point, in blocks, lies on her cockpit's cone or its glazed front, where her canopy is. */
+    private boolean onCone(double x, double y, double z) {
+        return FreighterShape.nearest(x / scale, y / scale, z / scale) == FreighterShape.Part.POD && z / scale < FreighterShape.CONE_FROM;
+    }
+
+    /** A strut of her canopy's cone made her canopy's frame, cut to her curve as the cover there was. */
+    private void canopyFrame(int x, int y, int z) {
+        BlockState cover = stateAt(x, y, z);
+        if (cover.is(SkylinersRegistry.ZEPPELIN_COVER.get())) {
+            set(x, y, z, ShellBlock.withShape(SkylinersRegistry.CANOPY_FRAME.get().defaultBlockState(), ShellBlock.shape(cover)));
         }
     }
 
@@ -892,7 +929,7 @@ public final class FreighterLayout extends HullLayout {
      * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its cone,
      * the pilot's seat on its left and the co-pilot's on its right, a sidestick at each outboard hand, the jump seats
      * behind them, and the autopilot screen at the co-pilot's right, facing in, linked to the head; the head wired once
-     * it stands.
+     * it stands; her canopy's dimmer and lining; and her console curving round before the seats.
      */
     private void cockpit() {
         int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
@@ -913,6 +950,56 @@ public final class FreighterLayout extends HullLayout {
         // Laid out nose north, her right is east: the screen at the co-pilot's right faces west, into her cockpit.
         autopilotScreen(new BlockPos(x + SCREEN_OUT, y + SCREEN_UP, z - AutopilotScreenBlock.COLUMNS / 2), Direction.WEST);
         canopyDimmer(new BlockPos(x - PILOTS_OUT - 1, y + DIMMER_UP, z));
+        canopyLining();
+        FreighterConsole.build(this, at);
+    }
+
+    /**
+     * Her canopy's lining (see {@link dev.skyliners.block.CanopyLiningBlock}), whose renderer draws her canopy's inside
+     * as one smooth cone: unseen in the air on her canopy's axis just behind its front, told once it stands the cone
+     * a skin's thickness in from her surface, where the inside of her glass is, and the pane of glass to follow as it
+     * dims; none with the server config's {@code freighter.smoothCanopy} off, or no open block there.
+     */
+    private void canopyLining() {
+        if (!SkylinersConfig.FREIGHTER_SMOOTH_CANOPY.get()) {
+            return;
+        }
+        int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
+        int y = (int) Math.floor(FreighterShape.POD_UP * scale);
+        int tip = (int) Math.round(FreighterShape.POD_TIP * scale);
+        int z = tip + 1;
+        while (z <= tip + LINING_SEARCH && !isOpen(x, y, z)) {
+            z++;
+        }
+        if (!isOpen(x, y, z)) {
+            return;
+        }
+        BlockPos at = new BlockPos(x, y, z);
+        set(x, y, z, SkylinersRegistry.CANOPY_LINING.get().defaultBlockState().setValue(CanopyLiningBlock.FACING, Direction.NORTH));
+        CanopyLiningBlockEntity.Cone cone = liningCone(at);
+        BlockPos pane = canopyPane == null ? null : canopyPane.subtract(at);
+        fit(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof CanopyLiningBlockEntity lining) {
+                lining.shape(cone, pane, rotation);
+            }
+        });
+    }
+
+    /**
+     * The cone her canopy's lining is drawn on, from the middle of the block given, as she is laid out nose north: her
+     * cone and its flat front each moved in from her surface by {@link #LINING_IN}, the ring half way along her cone,
+     * and a rib at each of her struts.
+     */
+    private CanopyLiningBlockEntity.Cone liningCone(BlockPos at) {
+        double narrowing = (FreighterShape.POD_RADIUS - FreighterShape.TIP_RADIUS) / (FreighterShape.CONE_FROM - FreighterShape.POD_TIP);
+        double radiusIn = LINING_IN * Math.sqrt(1 + narrowing * narrowing);
+        double length = (FreighterShape.CONE_FROM - FreighterShape.POD_TIP) * scale - LINING_IN;
+        double baseZ = FreighterShape.CONE_FROM * scale;
+        double ringZ = (FreighterShape.CONE_FROM + FreighterShape.POD_TIP) / 2 * scale;
+        // The surface's x and z run through the middle of a block, its y from a block's foot.
+        Vec3 base = new Vec3(FreighterShape.TUBE_OUT * scale - at.getX(), FreighterShape.POD_UP * scale - at.getY() - 0.5, baseZ - at.getZ());
+        return new CanopyLiningBlockEntity.Cone(base, length, FreighterShape.POD_RADIUS * scale - radiusIn,
+            FreighterShape.TIP_RADIUS * scale - radiusIn, (baseZ - ringZ) / length, CANOPY_SPOKES);
     }
 
     /** A pilot seat facing her bow, both its halves, where both are open. */
@@ -1511,8 +1598,8 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Wires the control head once it stands: her thrusters' relays, her legs' feet and her leg bays as offsets from it,
-     * turned as she was placed, where her disc's middle is from it, how far its block stands above her legs' feet, and
-     * the box round her blocks.
+     * turned as she was placed, where her disc's middle is from it, how far its block stands above her legs' feet, the
+     * box round her blocks, and where her jump drive stands in engineering, to spool and fire as she jumps.
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = clusters.stream().map(cluster -> offsets(at, cluster, rotation)).toList();
@@ -1523,6 +1610,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterFlight flight = autopilot.wire(FreighterFlight.class, at.getY());
         flight.configure(wiring);
         flight.wireLegs(offsets(at, legBays(), rotation));
+        flight.wireJumpDrive(offset(at, FreighterEngineering.driveAt(deck), rotation));
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-side, 0, front), new BlockPos(side, top, back)), rotation);
         autopilot.frame(frame.get(0), frame.get(1));
     }
