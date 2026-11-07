@@ -2658,7 +2658,8 @@ She is boarded up a ramp out of her starboard side. It lies in a well along the 
 the well's floor, a glass rail along the well's open side; at its head, on the wall, its panel has a lamp over one big
 button that shows only what pressing it does: blue with a ramp coming down while the ramp is up, green with an arrow
 up while it is down; press it while the ramp is on its way and it turns round where it is. Let down, its latches
-let go in a burst of steam, her computer says "Ramp lowering", the floor and her belly under it open, and the plate
+let go in a burst of steam, her computer says "Ramp coming down. Mind the rust.", the floor and her belly under it
+open, and the plate
 swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud; walk
 up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
 waiting, blue down, red for a moment when it will not move, with a low note. It comes down by itself once she is built
@@ -2674,9 +2675,9 @@ without it. The Ramp Call Button is among her blocks in the creative tab; set on
 Up her core, through its doorway from the ring corridor on her bow side, a slim chrome crew ladder climbs the core's
 back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
 gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
-on. Sit in the gunner's seat and her computer says "Turret ready": the laser cannon on the dome over you turns its twin
-barrels to whatever you look at, its servos whirring, all the way round and from level to near straight up. Hold attack
-to fire, red bolts from alternate barrels four times a second with a crack each, sparks
+on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and the laser cannon on
+the dome over you turns its twin barrels to whatever you look at, its servos whirring, all the way round and from level
+to near straight up. Hold attack to fire, red bolts from alternate barrels four times a second with a crack each, sparks
 wherever they strike; they hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard her, and
 never break a block, and attack does nothing else while you sit there, so the dome's glass is safe. Twenty bolts in a
 row and it overheats a moment with a hiss. The Laser Cannon is among her blocks in the creative tab; set down by hand

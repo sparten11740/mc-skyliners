@@ -2191,10 +2191,10 @@ const FREIGHTER_SOUNDS = {
   // Her computer's voice, each line subtitled with what it says.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
   freighter_computer_jump_fault: { subtitle: "Computer: Jump drive fault", aboard: true },
-  freighter_computer_ramp_lowering: { subtitle: "Computer: Ramp lowering", aboard: true },
-  freighter_computer_turret_ready: { subtitle: "Computer: Turret ready", aboard: true },
+  freighter_computer_ramp_lowering: { subtitle: "Computer: Ramp coming down", aboard: true },
+  freighter_computer_turret_ready: { subtitle: "Computer: Gun turret online", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
-  freighter_computer_magpie_ready: { subtitle: "Computer: Magpie ready", aboard: true },
+  freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {

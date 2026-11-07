@@ -374,7 +374,10 @@ speech synthesis model under the Apache License 2.0, in its British woman's voic
 with `npm install --prefix tools` (the model, some 300 MB, is fetched into `tools/node_modules` on the first run), or
 the voice is left as it is. FFmpeg plays it through the cabin's loudspeakers, their band, a bright middle and the
 speakers further along the cabin, and evens its level: the callouts compressed hard, crisp as warnings, the
-announcements through a loudness normaliser. The settings for all of it are together in `VOICE`, to tune it. Air traffic
+announcements through a loudness normaliser. The settings for all of it are together in `VOICE`, to tune it. The
+freighter's computer is Kokoro's deepest man's voice, Onyx, through her worn intercom (a narrow band, a boxy honk, a
+little grit and crushed bits, her corridors' short echo), its settings in `COMPUTER`; `sayAsFreighterComputer` says any
+line in it. Air traffic
 control is Windows' own speech synthesis, its man's voice ("Microsoft David"), so that part runs on Windows only,
 through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to 3000 Hz), compresses, clips and bit-crushes
 it a little, and the script lays it over the carrier's hiss with the odd crackle, between the squelch's click as the
