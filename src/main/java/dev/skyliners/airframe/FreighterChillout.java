@@ -17,9 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The freighter's beach in her lounge: her huge round floor window (see {@link FloorWindowBlock}) in the middle of a
  * patch of sand, which its shut iris blends into, a round steel shaft under it down to the smoked glass of her skin set
- * into her belly, so the ground is seen passing far below her as she flies; sun loungers round the window facing it, a parasol over one of
- * them, potted palms and tiki torches round the sand, and the window's panel at its edge on the side she is come into
- * from, out of her doorway's way.
+ * into her belly, so the ground is seen passing far below her as she flies; sun loungers round the window facing it, a
+ * parasol over one of them, potted palms and tiki torches round the sand, and the window's panel at its edge on the
+ * side she is come into from, out of her doorway's way.
  *
  * <p>The window goes where the whole of it has her lounge's floor under it, open over it, and nothing but air between
  * it and her belly's skin under it, nearest a point in the middle of her lounge, before her rooms are furnished, which
@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 final class FreighterChillout {
     /** Her lounge, by the bearing of the room wall on its anticlockwise side, in degrees clockwise from her bow. */
     private static final int LOUNGE = 90;
-    /** Where the window's middle is meant to be: at this bearing, in degrees, and so far out from her axis, in blocks. */
+    /** Where the window's middle is meant to be: at this bearing, in degrees, and so far from her axis, in blocks. */
     private static final double WINDOW_BEARING = 120;
     private static final double WINDOW_OUT = 13.9;
     /** How far the window's middle may be moved from where it is meant, either way, to find it room, in blocks. */
@@ -39,8 +39,8 @@ final class FreighterChillout {
     /** How far past the edge of the window's glass her belly is glazed under it, in blocks, wider than its shaft. */
     private static final double BELLY_MARGIN = 1.5;
     /**
-     * Where the beach's pieces go round the window: so far out from its middle, in blocks, and at these angles round it,
-     * in degrees clockwise from straight out from her axis, the first that have room, up to so many of each.
+     * Where the beach's pieces go round the window: so far out from its middle, in blocks, and at these angles round
+     * it, in degrees clockwise from straight out from her axis, the first that have room, up to so many of each.
      */
     private static final double LOUNGER_OUT = FloorWindowBlock.RADIUS + 1.6;
     private static final int[] LOUNGER_ANGLES = {0, 35, -35, 70, -70, 105, -105};
@@ -274,7 +274,8 @@ final class FreighterChillout {
         for (Direction side : new Direction[]{facing.getClockWise(), facing.getCounterClockWise()}) {
             BlockPos at = lounger.relative(side);
             if (hasRoom(at, 2)) {
-                layout.set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.PARASOL.get().defaultBlockState().setValue(TropicalPieceBlock.FACING, facing));
+                BlockState parasol = SkylinersRegistry.PARASOL.get().defaultBlockState().setValue(TropicalPieceBlock.FACING, facing);
+                layout.set(at.getX(), at.getY(), at.getZ(), parasol);
                 return;
             }
         }
@@ -283,12 +284,15 @@ final class FreighterChillout {
     /** The block over her deck's floor so far out from the window's middle at an angle round it from straight out. */
     private BlockPos roundWindow(double out, double angle) {
         double turn = Math.toRadians(outward + angle);
-        return new BlockPos(middle.getX() + (int) Math.round(Math.sin(turn) * out), deck + 1, middle.getZ() + (int) Math.round(-Math.cos(turn) * out));
+        int right = (int) Math.round(Math.sin(turn) * out);
+        int astern = (int) Math.round(-Math.cos(turn) * out);
+        return new BlockPos(middle.getX() + right, deck + 1, middle.getZ() + astern);
     }
 
-    /** Whether a piece has room at a block: on the sand, so many rows open over it, in the lounge, out of its doorway. */
+    /** Whether a piece has room at a block: on the sand, rows open over it, in the lounge, out of the doorway. */
     private boolean hasRoom(BlockPos at, int rows) {
-        if (!layout.stateAt(at.getX(), deck, at.getZ()).is(SkylinersRegistry.BEACH_SAND.get()) || !inLounge(at) || FreighterFurnishings.inDoorway(at)) {
+        boolean onSand = layout.stateAt(at.getX(), deck, at.getZ()).is(SkylinersRegistry.BEACH_SAND.get());
+        if (!onSand || !inLounge(at) || FreighterFurnishings.inDoorway(at)) {
             return false;
         }
         for (int row = 0; row < rows; row++) {

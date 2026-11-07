@@ -1399,10 +1399,11 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> CROSSBOW_RACK_ITEM = ITEMS.registerSimpleBlockItem(CROSSBOW_RACK);
     /**
      * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
-     * and walked over, glass under its iris, as strong as glass is not; and its panel, which opens and shuts it.
+     * and walked over, glass under its iris, as strong as glass is not and proof against blasts, as one blown out by a
+     * part would leave the rest of it behind; and its panel, which opens and shuts it.
      */
     public static final DeferredBlock<FloorWindowBlock> FLOOR_WINDOW = BLOCKS.registerBlock(
-        "floor_window", FloorWindowBlock::new, metal(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.GLASS).noOcclusion()
+        "floor_window", FloorWindowBlock::new, metal(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.GLASS).noOcclusion().explosionResistance(1200F)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FloorWindowBlockEntity>> FLOOR_WINDOW_ENTITY =
         BLOCK_ENTITIES.register("floor_window", () -> BlockEntityType.Builder.of(FloorWindowBlockEntity::new, FLOOR_WINDOW.get()).build(null));

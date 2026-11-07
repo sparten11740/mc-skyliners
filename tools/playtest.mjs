@@ -1508,7 +1508,7 @@ function checkFloorWindow() {
   must(`use ${panel}; wait ${IRIS_TICKS}t`);
   expect(must(`block ${middle}`).props?.open === "false", "floor window: pressed again, it shuts");
   survival();
-  must(`select 2; server tp @p ${x + 1.5} ${ground} ${z - 6.5} 0 50; wait 10t; mine ${x},${ground - 1},${z - 4}; wait 20t`);
+  must(`select 2; server tp @p ${x + 0.5} ${ground} ${z - 5.5} 0 70; wait 10t; mine ${x},${ground - 1},${z - 4}; wait 20t`);
   const left = must("find skyliners:floor_window 12 100").rows.length;
   const back = must(`block ${middle}`).id;
   const given = must("server data get entity @e[type=item,limit=1,sort=nearest] Item.id").rows[0]?.line ?? "";

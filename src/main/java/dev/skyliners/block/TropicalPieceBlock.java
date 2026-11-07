@@ -25,19 +25,19 @@ public class TropicalPieceBlock extends HorizontalDirectionalBlock {
     public static final VoxelShape PALM = Shapes.or(Block.box(4.5, 0, 4.5, 11.5, 5.5, 11.5), Block.box(7, 5.5, 7, 9, 16, 9));
     /** A parasol: its weighted foot, and its pole up to the top of its block. */
     public static final VoxelShape PARASOL = Shapes.or(Block.box(5, 0, 5, 11, 1, 11), Block.box(7.5, 1, 7.5, 8.5, 16, 8.5));
-    private final VoxelShape shape;
     private final Map<Direction, VoxelShape> shapes;
+    private final MapCodec<TropicalPieceBlock> codec;
 
     public TropicalPieceBlock(Properties properties, VoxelShape shape) {
         super(properties);
-        this.shape = shape;
         this.shapes = TurnedShapes.of(shape);
+        this.codec = simpleCodec(made -> new TropicalPieceBlock(made, shape));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return simpleCodec(properties -> new TropicalPieceBlock(properties, shape));
+        return codec;
     }
 
     @Override

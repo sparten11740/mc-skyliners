@@ -16,11 +16,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * A block of a round floor window (see {@link FloorWindowBlock}): where the window's middle block is, as an offset
- * from it, turned with the block if it is ever loaded facing another way (see {@link Turning}); the floor its shut
- * iris looks like, so the window blends into the floor round it; the block it took the place of, put back when the
- * window is taken out; and how deep a shaft runs down under it, if any. Clients are sent them all to draw it. On the client it also keeps how far its iris has opened,
- * eased toward open or shut at a steady pace, so every block of the window, told at once, opens as one.
+ * A block of a round floor window (see {@link FloorWindowBlock}): where the window's middle block is, as an offset from
+ * it, turned with the block if it is ever loaded facing another way (see {@link Turning}); the floor its shut iris
+ * looks like, so the window blends into the floor round it; the block it took the place of, put back when the window is
+ * taken out; and how deep a shaft runs down under it, if any. Clients are sent them all to draw it. On the client it
+ * also keeps how far its iris has opened, eased toward open or shut at a steady pace, so every block of the window,
+ * told at once, opens as one.
  */
 public class FloorWindowBlockEntity extends BlockEntity {
     /** The floor a window blends into when it has been told none, as one built before its floor was known. */
@@ -30,8 +31,8 @@ public class FloorWindowBlockEntity extends BlockEntity {
     private BlockState floor = PLAIN_FLOOR;
     private BlockState replaced = Blocks.AIR.defaultBlockState();
     /**
-     * How deep a round steel shaft runs down from under the window to where it looks out, in blocks, as through a ship's
-     * hull to the glass in her belly; none for a window laid straight into a floor.
+     * How deep a round steel shaft runs down from under the window to where it looks out, in blocks, as through a
+     * ship's hull to the glass in her belly; none for a window laid straight into a floor.
      */
     private int shaft;
     /**
@@ -46,8 +47,8 @@ public class FloorWindowBlockEntity extends BlockEntity {
     }
 
     /**
-     * Set as the window is laid: where its middle block is from this one, the floor it blends into and the block it took
-     * the place of.
+     * Set as the window is laid: where its middle block is from this one, the floor it blends into and the block it
+     * took the place of.
      */
     public void configure(BlockPos toMiddle, BlockState floor, BlockState replaced) {
         configure(toMiddle, floor, replaced, 0);

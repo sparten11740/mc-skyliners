@@ -64,7 +64,7 @@ public class SunLoungerBlock extends SeatBlock {
         return SHAPES.get(state.getValue(FACING));
     }
 
-    /** Anything in hand lies whoever uses it down on it, as Create's seats do with nothing in hand, so no dye recolours it. */
+    /** Anything in hand lies whoever uses it down on it, as Create's seats do with nothing in hand: no dye recolours it. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                               BlockHitResult hit) {

@@ -22,8 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * The round floor window as an item (see {@link FloorWindowBlock}): used on the top or underside of a floor, it lays
  * the whole window into that floor, its middle where it was used, every block of the disc taking the place of the floor
  * block there and blending into it, and over open air into the floor most common round it. It fits only where every
- * block of the disc is open or plain floor, a whole block with nothing kept in it that can be broken, and the player
- * may build; anywhere else it only thuds and puffs, and is kept.
+ * block of the disc is open or plain floor, a whole block with nothing kept in it that can be broken, loaded, and the
+ * player may build there, out of the spawn's protection; anywhere else it only thuds and puffs, and is kept. It lays
+ * itself as a builder's tool does, past the events by which claim mods guard each block placed.
  */
 public class FloorWindowItem extends BlockItem {
     /** How far past the window's own blocks the floor it blends into is looked for, in blocks. */
@@ -62,19 +63,23 @@ public class FloorWindowItem extends BlockItem {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** Whether a window fits round a middle block: every block of it open or plain floor, where the player may build. */
+    /** Whether a window fits round a middle block: every block of it open or plain floor, where one may build. */
     private static boolean fits(Level level, BlockPos middle, Player player, ItemStack stack) {
         for (BlockPos offset : FloorWindowBlock.footprint()) {
             BlockPos at = middle.offset(offset);
-            boolean allowed = player == null || player.mayUseItemAt(at, Direction.UP, stack);
-            if (!allowed || !fitsAt(level, at)) {
+            if (!level.isLoaded(at) || !allowed(level, at, player, stack) || !fitsAt(level, at)) {
                 return false;
             }
         }
         return true;
     }
 
-    /** Whether a block of a window may take the place of what is at a block: open, or a whole block that can be broken. */
+    /** Whether a player may build at a block: out of the spawn's protection and where they may use what they hold. */
+    private static boolean allowed(Level level, BlockPos at, Player player, ItemStack stack) {
+        return player == null || level.mayInteract(player, at) && player.mayUseItemAt(at, Direction.UP, stack);
+    }
+
+    /** Whether a block of a window may take the place of what is at a block: open, or a whole block to break. */
     private static boolean fitsAt(Level level, BlockPos at) {
         BlockState state = level.getBlockState(at);
         if (state.canBeReplaced()) {
@@ -84,7 +89,7 @@ public class FloorWindowItem extends BlockItem {
         return plain && state.getDestroySpeed(level, at) >= 0 && !(state.getBlock() instanceof FloorWindowBlock);
     }
 
-    /** Lays a window round a middle block, facing the way given, each block remembering the floor it took the place of. */
+    /** Lays a window round a middle block, facing the way given, each block keeping the floor it took the place of. */
     private void lay(ServerLevel level, BlockPos middle, Direction facing) {
         BlockState around = floorAround(level, middle);
         BlockState window = getBlock().defaultBlockState().setValue(FloorWindowBlock.FACING, facing);
@@ -99,7 +104,7 @@ public class FloorWindowItem extends BlockItem {
         }
     }
 
-    /** The floor most common in and round a window's blocks: whole blocks with nothing kept in them; plain stone for none. */
+    /** The floor most common in and round a window's blocks: whole blocks keeping nothing; plain stone for none. */
     private static BlockState floorAround(Level level, BlockPos middle) {
         int reach = (int) Math.ceil(FloorWindowBlock.RADIUS) + FLOOR_LOOK;
         Map<BlockState, Integer> counted = new HashMap<>();
