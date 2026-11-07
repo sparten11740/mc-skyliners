@@ -30,6 +30,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
@@ -70,6 +71,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * then it stretches out long and thin and is gone to hyperspace in a streak of light. Nothing hurts it, but a player
  * attacking it startles it into a jump straight away, and then it stays away a minute or two.
  *
+ * <p>The freighter keeps a small cousin of it, a quarter its size and mint green, in a tank in her lounge: the same
+ * creature made small (see {@link #setSize}), which does all it does, its voice higher and its burp a hiccup that
+ * hardly rocks her.
+ *
  * <p>Left without its keeper a while, as when its tank is broken, it goes; one never kept, as one summoned, stays.
  */
 public class Tardigrade extends PathfinderMob {
@@ -90,6 +95,12 @@ public class Tardigrade extends PathfinderMob {
     private static final int REST_FROM = 80;
     private static final int REST_TO = 260;
     private static final float TURN_CHANCE = 0.35F;
+    /**
+     * How much higher its voice is and how much softer the smaller it is, each as a power of its size: a quarter the
+     * size, half again as high and half as loud.
+     */
+    private static final double VOICE_RISE = 0.3;
+    private static final double VOICE_FALL = 0.5;
     /** How long it stays at the hatch after coming to it, in ticks. */
     private static final int AT_HATCH = 100;
     /** How long it munches, and how often it takes a bite, in ticks; how long it wriggles when touched. */
@@ -112,11 +123,11 @@ public class Tardigrade extends PathfinderMob {
     private static final float VOLUME = 0.7F;
     /**
      * How far from its middle its mouth is, ahead and up, in blocks, and how near the hatch it has come to be touched
-     * there.
+     * there, each at its full size (see {@link #setSize}).
      */
-    public static final double MOUTH_AHEAD = 2.9;
-    public static final double MOUTH_UP = 1.3;
-    public static final double AT_REACH = 1.6;
+    private static final double MOUTH_AHEAD = 2.9;
+    private static final double MOUTH_UP = 1.3;
+    private static final double AT_REACH = 1.6;
     /** How far it looks for whoever is near to look at, in blocks. */
     private static final float LOOK_RANGE = 10.0F;
     /** What the client is told as it munches and as it wriggles. */
@@ -318,6 +329,34 @@ public class Tardigrade extends PathfinderMob {
             .add(Attributes.FOLLOW_RANGE, LOOK_RANGE);
     }
 
+    /**
+     * Makes it so many times its full size, every part of it with it: its body and the box it stands in, its mouth and
+     * its reach, its stride and the clouds it lets out, its voice higher and softer. The game's scale attribute holds
+     * it, so it is saved and told to clients with the rest of its attributes; 1, the rocket's elephant, unless set.
+     */
+    public void setSize(double size) {
+        AttributeInstance scale = getAttribute(Attributes.SCALE);
+        if (scale != null) {
+            scale.setBaseValue(size);
+        }
+    }
+
+    /** Its voice, higher and softer the smaller it is (see {@link #setSize}). */
+    @Override
+    public void playSound(SoundEvent sound, float volume, float pitch) {
+        super.playSound(sound, softer(volume), higher(pitch));
+    }
+
+    /** How loud a sound of its is, softer the smaller it is. */
+    private float softer(float volume) {
+        return (float) (volume * Math.pow(getScale(), VOICE_FALL));
+    }
+
+    /** How high a sound of its is, higher the smaller it is. */
+    private float higher(float pitch) {
+        return (float) (pitch * Math.pow(getScale(), -VOICE_RISE));
+    }
+
     /** Gives the creature its attributes as the game asks for every living thing's. */
     public static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(SkylinersRegistry.TARDIGRADE.get(), createAttributes().build());
@@ -372,7 +411,7 @@ public class Tardigrade extends PathfinderMob {
         hatch = hatchInside;
         kept = true;
         keptAt = tick;
-        restrictTo(BlockPos.containing(lineFrom.add(lineTo).scale(0.5)), (int) Math.ceil(lineFrom.distanceTo(lineTo) / 2 + MOUTH_AHEAD));
+        restrictTo(BlockPos.containing(lineFrom.add(lineTo).scale(0.5)), (int) Math.ceil(lineFrom.distanceTo(lineTo) / 2 + mouthAhead()));
         if (turnAt == null && turning == 0) {
             setYRot(lineYaw(true));
         }
@@ -380,7 +419,7 @@ public class Tardigrade extends PathfinderMob {
 
     /** Whether it is at the hatch with its mouth: near enough to be touched or fed there. */
     public boolean atHatch() {
-        return hatch != null && mouth().distanceTo(hatch) < AT_REACH;
+        return hatch != null && mouth().distanceTo(hatch) < AT_REACH * getScale();
     }
 
     /**
@@ -530,9 +569,19 @@ public class Tardigrade extends PathfinderMob {
         return Math.max(0, wiggleShown - partialTick) / WIGGLE_TICKS;
     }
 
+    /** How far ahead of its middle its mouth is, as big as it is, in blocks. */
+    private double mouthAhead() {
+        return MOUTH_AHEAD * getScale();
+    }
+
+    /** How far over its feet its mouth is, as big as it is, in blocks. */
+    private double mouthUp() {
+        return MOUTH_UP * getScale();
+    }
+
     /** Where its mouth is, in front of its head, among her blocks. */
     public Vec3 mouth() {
-        return position().add(Vec3.directionFromRotation(0, yBodyRot).scale(MOUTH_AHEAD)).add(0, MOUTH_UP, 0);
+        return position().add(Vec3.directionFromRotation(0, yBodyRot).scale(mouthAhead())).add(0, mouthUp(), 0);
     }
 
     /**
@@ -669,12 +718,16 @@ public class Tardigrade extends PathfinderMob {
         shakeShip();
     }
 
-    /** Shakes the view of everyone near it, as rough air does: players are in the world, it among her blocks. */
+    /**
+     * Shakes the view of everyone near it, as rough air does, as far and as hard as it is big: players are in the world,
+     * it among her blocks.
+     */
     private void shakeShip() {
         Vec3 here = SableFlight.toWorld(level(), position());
+        float size = getScale();
         for (Player player : level().players()) {
-            if (player instanceof ServerPlayer near && near.position().distanceTo(here) < SHAKE_REACH) {
-                PacketDistributor.sendToPlayer(near, new TurbulencePayload(SHAKE_STRENGTH, SHAKE_TICKS));
+            if (player instanceof ServerPlayer near && near.position().distanceTo(here) < SHAKE_REACH * size) {
+                PacketDistributor.sendToPlayer(near, new TurbulencePayload(SHAKE_STRENGTH * size, SHAKE_TICKS));
             }
         }
     }
@@ -736,7 +789,8 @@ public class Tardigrade extends PathfinderMob {
         if (munching > 0) {
             if (munching % BITE_EVERY == 0) {
                 Vec3 mouth = mouth();
-                level().playSound(null, mouth.x, mouth.y, mouth.z, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, VOLUME, 0.75F + random.nextFloat() * 0.15F);
+                level().playSound(null, mouth.x, mouth.y, mouth.z, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, softer(VOLUME),
+                    higher(0.75F + random.nextFloat() * 0.15F));
             }
             munching--;
         }
@@ -752,7 +806,7 @@ public class Tardigrade extends PathfinderMob {
         sleepBefore = sleep;
         sleep = Mth.approach(sleep, isAsleep() ? 1 : 0, 1.0F / SETTLE_TICKS);
         if (isAsleep() && tickCount % Z_EVERY == 0) {
-            Vec3 head = overHead(Z_UP);
+            Vec3 head = overHead(Z_UP * getScale());
             level().addParticle(SkylinersRegistry.SLEEP_Z.get(), head.x, head.y, head.z, 0, Z_RISE, 0);
         }
         chargeBefore = charge;
@@ -790,9 +844,10 @@ public class Tardigrade extends PathfinderMob {
     private void burpPuff() {
         Vec3 mouth = mouth();
         Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
+        double speed = BURP_SPEED * getScale();
         for (int puff = 0; puff < BURP_PUFFS; puff++) {
-            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * BURP_SPEED + (random.nextDouble() - 0.5) * BURP_SPEED,
-                (random.nextDouble() - 0.3) * BURP_SPEED, ahead.z * BURP_SPEED + (random.nextDouble() - 0.5) * BURP_SPEED);
+            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * speed + (random.nextDouble() - 0.5) * speed,
+                (random.nextDouble() - 0.3) * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed);
         }
         wiggleShown = WIGGLE_TICKS / 2;
     }
@@ -803,44 +858,49 @@ public class Tardigrade extends PathfinderMob {
         wiggleShown = WIGGLE_TICKS;
         Vec3 mouth = mouth();
         Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
+        double speed = BIG_BURP_SPEED * getScale();
         for (int puff = 0; puff < BIG_BURP_PUFFS; puff++) {
-            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED,
-                (random.nextDouble() - 0.3) * BIG_BURP_SPEED, ahead.z * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED);
+            level().addParticle(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, ahead.x * speed + (random.nextDouble() - 0.5) * speed,
+                (random.nextDouble() - 0.3) * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed);
         }
         ItemParticleOption eaten = new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(SkylinersRegistry.ICE_CREAM.get()));
         for (int bit = 0; bit < BIG_BURP_BITS; bit++) {
-            level().addParticle(eaten, mouth.x, mouth.y, mouth.z, ahead.x * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED,
-                random.nextDouble() * BIG_BURP_SPEED, ahead.z * BIG_BURP_SPEED + (random.nextDouble() - 0.5) * BIG_BURP_SPEED);
+            level().addParticle(eaten, mouth.x, mouth.y, mouth.z, ahead.x * speed + (random.nextDouble() - 0.5) * speed,
+                random.nextDouble() * speed, ahead.z * speed + (random.nextDouble() - 0.5) * speed);
         }
     }
 
     /** Streaks of light flying on ahead from all along it as it goes to hyperspace, on the client. */
     private void hyperspaceStreaks() {
         Vec3 ahead = Vec3.directionFromRotation(0, yBodyRot);
+        double reach = mouthAhead();
         for (int streak = 0; streak < STREAKS; streak++) {
-            Vec3 at = position().add(ahead.scale((random.nextDouble() - 0.5) * MOUTH_AHEAD * 2))
-                .add((random.nextDouble() - 0.5) * MOUTH_AHEAD, random.nextDouble() * MOUTH_AHEAD, (random.nextDouble() - 0.5) * MOUTH_AHEAD);
+            Vec3 at = position().add(ahead.scale((random.nextDouble() - 0.5) * reach * 2))
+                .add((random.nextDouble() - 0.5) * reach, random.nextDouble() * reach, (random.nextDouble() - 0.5) * reach);
             level().addParticle(ParticleTypes.END_ROD, at.x, at.y, at.z, ahead.x * STREAK_SPEED, ahead.y * STREAK_SPEED, ahead.z * STREAK_SPEED);
         }
     }
 
     /** Spores swirling in round it as it charges up to jump, on the client, from all round toward its middle. */
     private void sporeSwirl() {
-        Vec3 middle = position().add(0, MOUTH_UP, 0);
+        double size = getScale();
+        Vec3 middle = position().add(0, mouthUp(), 0);
+        double from = SWIRL_FROM * size;
         for (int spore = 0; spore < SWIRL; spore++) {
             double round = random.nextDouble() * Mth.TWO_PI;
-            Vec3 start = middle.add(Math.cos(round) * SWIRL_FROM, (random.nextDouble() - UNDER_MIDDLE) * SWIRL_FROM, Math.sin(round) * SWIRL_FROM);
-            Vec3 in = middle.subtract(start).scale(SWIRL_IN).add(-Math.sin(round) * SWIRL_ROUND, 0, Math.cos(round) * SWIRL_ROUND);
+            Vec3 start = middle.add(Math.cos(round) * from, (random.nextDouble() - UNDER_MIDDLE) * from, Math.sin(round) * from);
+            Vec3 in = middle.subtract(start).scale(SWIRL_IN).add(-Math.sin(round) * SWIRL_ROUND * size, 0, Math.cos(round) * SWIRL_ROUND * size);
             level().addParticle(SkylinersRegistry.SPORE.get(), start.x, start.y, start.z, in.x, in.y, in.z);
         }
     }
 
     /** A burst of spores from all over it as it jumps away or comes back, on the client. */
     private void sporeBurst() {
+        double size = getScale();
         for (int spore = 0; spore < BURST; spore++) {
             Vec3 out = new Vec3(random.nextDouble() - 0.5, random.nextDouble() - UNDER_MIDDLE, random.nextDouble() - 0.5).normalize()
-                .scale(BURST_SPEED * random.nextDouble());
-            Vec3 at = position().add(out.scale(BURST_OUT)).add(0, MOUTH_UP, 0);
+                .scale(BURST_SPEED * size * random.nextDouble());
+            Vec3 at = position().add(out.scale(BURST_OUT)).add(0, mouthUp(), 0);
             level().addParticle(SkylinersRegistry.SPORE.get(), at.x, at.y, at.z, out.x, out.y, out.z);
         }
     }
@@ -986,13 +1046,13 @@ public class Tardigrade extends PathfinderMob {
      * the hatch.
      */
     private boolean inTank(Vec3 at) {
-        ClipContext look = new ClipContext(overHead(MOUTH_UP), at.add(0, LOOKED_OVER, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this);
+        ClipContext look = new ClipContext(overHead(mouthUp()), at.add(0, LOOKED_OVER, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this);
         return level().clip(look).getType() == HitResult.Type.MISS;
     }
 
     /** Over its head, halfway out to its mouth, so high over its middle, among her blocks. */
     private Vec3 overHead(double up) {
-        return position().add(Vec3.directionFromRotation(0, yBodyRot).scale(MOUTH_AHEAD / 2)).add(0, up, 0);
+        return position().add(Vec3.directionFromRotation(0, yBodyRot).scale(mouthAhead() / 2)).add(0, up, 0);
     }
 
     /**
@@ -1009,7 +1069,7 @@ public class Tardigrade extends PathfinderMob {
             return;
         }
         Vec3 along = line.scale(1 / length);
-        double mouthAhead = Vec3.directionFromRotation(0, getYRot()).dot(along) > 0 ? MOUTH_AHEAD : -MOUTH_AHEAD;
+        double mouthAhead = Vec3.directionFromRotation(0, getYRot()).dot(along) > 0 ? mouthAhead() : -mouthAhead();
         double stand = Mth.clamp(at.subtract(from).dot(along) - mouthAhead, 0, length);
         atMeal = walkTo(from.add(along.scale(stand)));
     }
@@ -1025,13 +1085,13 @@ public class Tardigrade extends PathfinderMob {
         Vec3 at = itemPoint(meal);
         Vec3 mouth = mouth();
         double distance = at.distanceTo(mouth);
-        if (sucked == 0 && distance > SUCK_REACH && !atMeal) {
+        if (sucked == 0 && distance > SUCK_REACH * getScale() && !atMeal) {
             return;
         }
         if (sucked++ == 0) {
             playSound(SkylinersRegistry.TARDIGRADE_SLURP.get(), VOLUME, 0.9F + random.nextFloat() * 0.2F);
         }
-        if (distance < SWALLOWED || sucked > SUCK_LONGEST) {
+        if (distance < SWALLOWED * getScale() || sucked > SUCK_LONGEST) {
             swallow();
             return;
         }
@@ -1083,7 +1143,7 @@ public class Tardigrade extends PathfinderMob {
         }
         boolean ahead = off.dot(Vec3.directionFromRotation(0, getYRot())) >= 0;
         walked++;
-        double speed = (ahead ? WALK_SPEED : BACK_SPEED) * Math.min(1, walked / (double) EASE);
+        double speed = (ahead ? WALK_SPEED : BACK_SPEED) * Math.sqrt(getScale()) * Math.min(1, walked / (double) EASE);
         Vec3 step = off.scale(Math.min(speed, distance) / distance);
         setDeltaMovement(step.x, getDeltaMovement().y, step.z);
         return false;
@@ -1193,7 +1253,7 @@ public class Tardigrade extends PathfinderMob {
     /** Its body reaches well past the box it stands in, its head and its tail out ahead and behind. */
     @Override
     public AABB getBoundingBoxForCulling() {
-        return getBoundingBox().inflate(MOUTH_AHEAD, 0, MOUTH_AHEAD);
+        return getBoundingBox().inflate(mouthAhead(), 0, mouthAhead());
     }
 
     @Override

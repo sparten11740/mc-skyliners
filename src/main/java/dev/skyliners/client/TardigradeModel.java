@@ -212,10 +212,15 @@ public class TardigradeModel extends HierarchicalModel<Tardigrade> {
     @Override
     public void setupAnim(Tardigrade creature, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         root.getAllParts().forEach(TardigradeModel::reset);
+        // A smaller one takes quicker steps of the same swing, walking slower, so its feet keep to the ground as they do.
+        float size = creature.getScale();
+        float stride = limbSwing / size;
+        float striding = limbSwingAmount / Mth.sqrt(size);
         float open = 1 - curl;
         for (int i = 0; i < segments.length; i++) {
             ModelPart segment = segments[i];
-            float sway = SWAY * limbSwingAmount * Mth.sin(limbSwing * STRIDE_RATE / 2 + i * 0.9F) + WRIGGLE * wriggle * Mth.sin(ageInTicks * 0.9F + i * 1.3F);
+            float sway = SWAY * striding * Mth.sin(stride * STRIDE_RATE / 2 + i * 0.9F)
+                + WRIGGLE * wriggle * Mth.sin(ageInTicks * 0.9F + i * 1.3F);
             segment.yRot = sway * open;
             segment.z += TUN_ALONG[i] * curl;
             segment.y += TUN_DROP * curl;
@@ -226,9 +231,9 @@ public class TardigradeModel extends HierarchicalModel<Tardigrade> {
         }
         for (int i = 0; i < legs.length; i++) {
             ModelPart leg = legs[i];
-            float phase = limbSwing * STRIDE_RATE + (i / 2) * Mth.HALF_PI + (i % 2) * Mth.PI;
-            leg.xRot += STRIDE * limbSwingAmount * Mth.sin(phase);
-            leg.y -= Math.max(0, Mth.cos(phase)) * limbSwingAmount + TUN_DROP * 0.5F * curl;
+            float phase = stride * STRIDE_RATE + (i / 2) * Mth.HALF_PI + (i % 2) * Mth.PI;
+            leg.xRot += STRIDE * striding * Mth.sin(phase);
+            leg.y -= Math.max(0, Mth.cos(phase)) * striding + TUN_DROP * 0.5F * curl;
             leg.yScale = open * (1 - SLEEP_LEG_FOLD * sleep);
             leg.y += SLEEP_DROP * sleep;
             leg.visible = curl < 0.98F;

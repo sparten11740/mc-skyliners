@@ -77,6 +77,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_LIGHTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CLUB_BAR;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROOMS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_TARDIGRADE;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -684,6 +685,12 @@ public final class SkylinersConfig {
                 "low table among four seats, in her lounge, and racks of cargo and crates in her cargo hold at her bow."
             )
             .define("rooms", true);
+        FREIGHTER_TARDIGRADE = builder
+            .comment(
+                "Whether the freighter's lounge has a small tardigrade, a quarter the size of the rocket's, in a glass tank on a",
+                "cabinet by its north wall, with a feeding hatch and moss to feed it in the cabinet under the hatch."
+            )
+            .define("tardigrade", true);
         builder.pop();
 
         SPEC = builder.build();

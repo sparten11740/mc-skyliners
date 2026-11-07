@@ -2670,6 +2670,14 @@ her cargo hold at her bow two walls of pallet racks loaded with boxes, drums and
 before them.
 The server config's `freighter.rooms` builds her rooms bare.
 
+Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal
+folds, in a glass tank standing out from the wall by the galley on a stand of cabinets, so it paces at the eye height
+of whoever stands before it. It does all the big one does, pacing, turning round, sleeping at night and jumping away
+through its spore drive, its voice higher and its massive burp after an ice cream only a hiccup that hardly rocks her.
+Its feeding hatch is at the tank's end facing into the room, its vitals screen over it, and the cabinet under the hatch
+holds moss to feed it with: use the hatch with moss in hand and it comes to munch it. The server config's
+`freighter.tardigrade` builds her without it.
+
 Her deck is lit by wall washers over head height, small dark lamps each throwing a fan of light up the wall: round
 her ring corridor between its doorways, along the walls between her rooms and on each room's far wall, warm white, pink
 in her club and a cool night blue in her crew quarters, the room through the doorway at her port quarter; the

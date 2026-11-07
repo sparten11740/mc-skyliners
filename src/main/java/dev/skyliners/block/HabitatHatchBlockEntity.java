@@ -29,6 +29,7 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Its line is set as the rocket is built (see {@link #configure}), as offsets from the hatch's middle turned as she
  * was placed, and turned again with the hatch's facing if it is ever loaded facing another way (see {@link Turning}).
+ * The freighter's lounge has a hatch of its own, on a smaller tank, which keeps a small cousin of the creature.
  */
 public class HabitatHatchBlockEntity extends BlockEntity {
     /**
@@ -63,19 +64,23 @@ public class HabitatHatchBlockEntity extends BlockEntity {
     private Vec3 turn;
     private boolean curled;
     private int missing;
+    /** How many times the rocket's size the creature it makes is: 1 in her lab, a quarter in the freighter's lounge. */
+    private double size = 1;
 
     public HabitatHatchBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.HABITAT_HATCH_ENTITY.get(), pos, state);
     }
 
     /**
-     * Set as the rocket is built: the creature's line's ends and the point where it turns round (null where it cannot),
-     * as offsets from the hatch's middle in her layout, turned as she was placed.
+     * Set as the ship is built: the creature's line's ends and the point where it turns round (null where it cannot),
+     * as offsets from the hatch's middle in her layout, turned as she was placed, and how many times the rocket's
+     * creature's size the one it keeps is (see {@link Tardigrade#setSize}).
      */
-    public void configure(Vec3 lineFrom, Vec3 lineTo, @Nullable Vec3 turnPoint, Rotation rotation) {
+    public void configure(Vec3 lineFrom, Vec3 lineTo, @Nullable Vec3 turnPoint, Rotation rotation, double creatureSize) {
         from = turned(lineFrom, rotation);
         to = turned(lineTo, rotation);
         turn = turnPoint == null ? null : turned(turnPoint, rotation);
+        size = creatureSize;
         setChanged();
     }
 
@@ -166,6 +171,7 @@ public class HabitatHatchBlockEntity extends BlockEntity {
         Vec3 home = home(middle);
         Vec3 along = to.subtract(from);
         Tardigrade made = new Tardigrade(SkylinersRegistry.TARDIGRADE.get(), level);
+        made.setSize(size);
         made.moveTo(home.x, home.y, home.z, (float) Math.toDegrees(Math.atan2(along.z, along.x)) - 90, 0);
         made.keep(level.getGameTime(), middle.add(from), middle.add(to), turn == null ? null : middle.add(turn), inside());
         made.setCurled(curled);
@@ -225,6 +231,7 @@ public class HabitatHatchBlockEntity extends BlockEntity {
         save(tag, "To", to);
         save(tag, "Turn", turn);
         tag.putBoolean("Curled", curled);
+        tag.putDouble("Size", size);
         Turning.save(tag, getBlockState());
     }
 
@@ -248,6 +255,7 @@ public class HabitatHatchBlockEntity extends BlockEntity {
         to = load(tag, "To", since);
         turn = load(tag, "Turn", since);
         curled = tag.getBoolean("Curled");
+        size = tag.contains("Size") ? tag.getDouble("Size") : 1;
     }
 
     @Nullable

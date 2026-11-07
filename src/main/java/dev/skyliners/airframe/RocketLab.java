@@ -43,6 +43,8 @@ final class RocketLab extends RocketRoom {
     static final int STORY = 7;
     /** How much moss the wet bench's first cabinet holds, to feed the tardigrade with: sixteen carpets of it. */
     private static final int FEED = 16;
+    /** How many times its own size her tardigrade is: the elephant of them, the size it is drawn at. */
+    private static final double CREATURE_SIZE = 1;
 
     RocketLab(RocketLayout layout) {
         super(layout, STORY);
@@ -187,7 +189,7 @@ final class RocketLab extends RocketRoom {
         Vec3 turn = track.turn() == null ? null : track.turn().subtract(middle);
         layout.fit(hatch, (blockEntity, rotation) -> {
             if (blockEntity instanceof HabitatHatchBlockEntity keeper) {
-                keeper.configure(from, to, turn, rotation);
+                keeper.configure(from, to, turn, rotation, CREATURE_SIZE);
             }
         });
     }

@@ -5958,16 +5958,17 @@ const LIFT_ICONS = {
 {
   const entityOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/entity");
   mkdirSync(entityOutput, { recursive: true });
-  const SKIN = [0xe8, 0xc9, 0xa8];
-  const BUMP = [0xd9, 0xb7, 0x94];
-  const SHEEN = [0xf3, 0xde, 0xc6];
-  const FOLD = [0xc9, 0xa5, 0x84];
-  const CREASE = [0xb0, 0x8b, 0x67];
+  // The rocket's in peach and tan, and the freighter's small one (see Tardigrade.setSize) in pale mint, its folds teal.
+  const PEACH = {
+    skin: [0xe8, 0xc9, 0xa8], bump: [0xd9, 0xb7, 0x94], sheen: [0xf3, 0xde, 0xc6], fold: [0xc9, 0xa5, 0x84], crease: [0xb0, 0x8b, 0x67],
+    lip: [0xb9, 0x8f, 0x6e], mouth: [0x3a, 0x24, 0x18], snout: [0xee, 0xd4, 0xb8],
+  };
+  const MINT = {
+    skin: [0xc6, 0xe9, 0xd6], bump: [0xae, 0xd9, 0xc2], sheen: [0xe0, 0xf6, 0xea], fold: [0x62, 0xb5, 0xa6], crease: [0x3e, 0x93, 0x86],
+    lip: [0x7e, 0xb6, 0x9f], mouth: [0x1c, 0x33, 0x2b], snout: [0xd9, 0xf2, 0xe4],
+  };
   const CLAW = [0xf3, 0xec, 0xdf];
-  const LIP = [0xb9, 0x8f, 0x6e];
-  const MOUTH = [0x3a, 0x24, 0x18];
   const EYE = [0x1e, 0x16, 0x12];
-  const SNOUT = [0xee, 0xd4, 0xb8];
   // The patches' places, as TardigradeModel has them: the folds' rows, and the claws', lip's, eyes' and snout's corner.
   const FOLD_V = 80;
   const CLAW_V = 112;
@@ -5989,26 +5990,30 @@ const LIFT_ICONS = {
     return top * (1 - sy) + bottom * sy;
   };
   const shade = ([r, g, b], by) => [r * by, g * by, b * by].map((c) => Math.round(Math.max(0, Math.min(255, c))));
-  const skin = (x, y, base) => {
+  const skin = (x, y, base, colours) => {
     const blotch = 0.94 + 0.09 * smooth(x, y, 7) + 0.04 * smooth(x + 31, y + 17, 3);
     const speck = hash(x + 101, y + 37);
-    if (speck < 0.025) return shade(BUMP, blotch);
-    if (speck > 0.985) return shade(SHEEN, blotch);
+    if (speck < 0.025) return shade(colours.bump, blotch);
+    if (speck > 0.985) return shade(colours.sheen, blotch);
     return shade(base, blotch);
   };
-  texture(entityOutput, "tardigrade", (x, y) => {
-    if (y >= FOLD_V && y < CLAW_V) return x % 3 === 1 ? shade(CREASE, 0.97 + 0.06 * smooth(x, y, 4)) : shade(FOLD, 0.95 + 0.08 * smooth(x, y, 5));
+  const bear = (colours) => (x, y) => {
+    if (y >= FOLD_V && y < CLAW_V) {
+      return x % 3 === 1 ? shade(colours.crease, 0.97 + 0.06 * smooth(x, y, 4)) : shade(colours.fold, 0.95 + 0.08 * smooth(x, y, 5));
+    }
     if (y >= CLAW_V && x < LIP_U) return CLAW;
     if (y >= CLAW_V && x < EYE_U) {
       // The middle of the lip's front face, a pixel in from its patch's corner, five pixels across and four down.
       const round = Math.hypot(x + 0.5 - (LIP_U + 3.5), y + 0.5 - (CLAW_V + 3));
-      if (round < 1.3) return MOUTH;
-      return round < 2.2 ? shade(LIP, 0.82) : LIP;
+      if (round < 1.3) return colours.mouth;
+      return round < 2.2 ? shade(colours.lip, 0.82) : colours.lip;
     }
     if (y >= CLAW_V && x < EYE_U + 8) return EYE;
-    if (y >= CLAW_V && x >= SNOUT_U && x < SNOUT_U + 32) return skin(x, y, SNOUT);
-    return skin(x, y, SKIN);
-  }, 2, 128, 128);
+    if (y >= CLAW_V && x >= SNOUT_U && x < SNOUT_U + 32) return skin(x, y, colours.snout, colours);
+    return skin(x, y, colours.skin, colours);
+  };
+  texture(entityOutput, "tardigrade", bear(PEACH), 2, 128, 128);
+  texture(entityOutput, "tardigrade_small", bear(MINT), 2, 128, 128);
 
   const GLASS_TINT = [0xd8, 0xf0, 0xf4, 0x2c];
   texture(blockOutput, "habitat_glass", (x, y) => (Math.abs(x - y - 4) < 1.2 || Math.abs(x - y + 7) < 0.6 ? [0xff, 0xff, 0xff, 0x48] : GLASS_TINT), 0);
@@ -6060,7 +6065,7 @@ const LIFT_ICONS = {
   const trace = (x, frame, beat) => 11 + beat[(x + frame) % beat.length];
   animated("lab_screen_vitals", 3, (x, y, frame) => {
     if (!onScreen(x, y)) return BEZEL;
-    if (outline([".####.", "######", "#.##.#"], x, y, 2, 2)) return SKIN;
+    if (outline([".####.", "######", "#.##.#"], x, y, 2, 2)) return PEACH.skin;
     if (y === trace(x, frame, PULSE)) return [0x5c, 0xf0, 0x8a];
     if (y > 4 && Math.abs(y - trace(x, frame, PULSE)) === 1 && PULSE[(x + frame) % 16] !== 0) return [0x1f, 0x6a, 0x3c];
     return x % 4 === 0 || y % 4 === 0 ? GRID : SCREEN;
@@ -6072,7 +6077,7 @@ const LIFT_ICONS = {
   animated("lab_screen_asleep", 6, (x, y, frame) => {
     if (!onScreen(x, y)) return BEZEL;
     if (outline(MOON, x, y, 10, 2)) return [0xf4, 0xe2, 0x8c];
-    if (outline(LYING, x, y, 2, 6)) return SKIN;
+    if (outline(LYING, x, y, 2, 6)) return PEACH.skin;
     if (y === trace(x, frame, SLOW)) return [0x7c, 0xb8, 0xf0];
     return x % 4 === 0 || y % 4 === 0 ? [0x12, 0x14, 0x30] : [0x08, 0x08, 0x1c];
   });

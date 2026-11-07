@@ -15,6 +15,13 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class TardigradeRenderer extends MobRenderer<Tardigrade, TardigradeModel> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "textures/entity/tardigrade.png");
+    /**
+     * The colours of a small one, as the freighter keeps (see {@link Tardigrade#setSize}): pale mint, its folds teal; and
+     * how many times the rocket's one's size it is under, to be drawn in them.
+     */
+    private static final double SMALL_UNDER = 1;
+    private static final ResourceLocation SMALL_TEXTURE =
+        ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "textures/entity/tardigrade_small.png");
     /** How many times its model's size it is drawn, and how far its shadow spreads, in blocks. */
     private static final float SCALE = 2.0F;
     private static final float SHADOW = 1.8F;
@@ -40,6 +47,6 @@ public class TardigradeRenderer extends MobRenderer<Tardigrade, TardigradeModel>
 
     @Override
     public ResourceLocation getTextureLocation(Tardigrade creature) {
-        return TEXTURE;
+        return creature.getScale() < SMALL_UNDER ? SMALL_TEXTURE : TEXTURE;
     }
 }

@@ -221,6 +221,11 @@ const QUARTERS_BUNKS = 3;
 const LOUNGE_SEATED = 3;
 const LOUNGE_SEAT_OUT = 2;
 const BOOTH_REACH = 3;
+// Her small tardigrade: how many times the rocket's one's size it is, how long it may take to come to its hatch and
+// munch moss fed through it, in ticks, turning round on the way, and the highest the big one munches, as a pitch.
+const SMALL_TARDIGRADE = 0.25;
+const SMALL_COMES_WITHIN = 600;
+const BIG_MUNCH_HIGHEST = 0.9;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1151,6 +1156,31 @@ function checkLegRoom() {
     `seats ${apart.join(", ")} blocks from it`);
 }
 
+// A freighter's small tardigrade: a quarter the size of the rocket's, in the tank in her lounge, it comes to its hatch
+// to munch moss fed through it, munching higher than the big one.
+function checkFreighterTardigrade() {
+  ship("freighter");
+  const [hatchRow] = must("find skyliners:habitat_hatch 128 1").rows;
+  expect(Boolean(hatchRow), "freighter: she is built with a tank in her lounge, a feeding hatch on it");
+  if (!hatchRow) {
+    return;
+  }
+  const scale = must("server execute as @e[type=skyliners:tardigrade] run attribute @s minecraft:generic.scale get").rows[0]?.line ?? "";
+  const size = Number(scale.split(" ").at(-1));
+  expect(size === SMALL_TARDIGRADE, "freighter: a small tardigrade lives in it, a quarter the rocket's one's size", `size ${size}`);
+  const hatch = hatchRow.at_abs.join(",");
+  const [dx, dz] = CLIMBS[must(`block ${hatch}`).props.facing];
+  const [hx, hy, hz] = hatchRow.at_abs;
+  emptyHands();
+  must(`server give @p minecraft:moss_carpet 4; select 0; server tp @p ${hx + 0.5 + dx * 2.5} ${hy - 1} ${hz + 0.5 + dz * 2.5}; wait 20t; face ${hatch}`);
+  const since = now();
+  must(`use ${hatch}`);
+  const munch = heard("*sniffer.eat*", since, SMALL_COMES_WITHIN);
+  expect(Boolean(munch), "freighter: fed moss through the hatch, it comes to the hatch and munches it",
+    munch ? `${munch.tick - since} ticks after` : "it never munched");
+  expect(munch?.pitch > BIG_MUNCH_HIGHEST, "freighter: it munches higher than the big one", `pitch ${munch?.pitch}`);
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1522,6 +1552,7 @@ const CHECKS = {
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room and her hold its cargo" },
+  "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
