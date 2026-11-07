@@ -397,6 +397,7 @@ public final class FreighterLayout extends HullLayout {
         layout.core();
         layout.corridor();
         layout.roomWalls();
+        FreighterFloors.build(layout, layout.deck, layout.side);
         layout.legs();
         layout.engines();
         layout.engineGrille();

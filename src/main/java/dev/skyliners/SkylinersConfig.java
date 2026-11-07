@@ -80,6 +80,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_TARDIGRADE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SPOOKIE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LED_STRIPS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_FINISHES;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -706,6 +707,13 @@ public final class SkylinersConfig {
                 "each room in a colour and a way of lighting of its own, and an LED panel by each room's doorway to set them."
             )
             .define("ledStrips", true);
+        FREIGHTER_FINISHES = builder
+            .comment(
+                "Whether each of the freighter's rooms has a floor of its own: a steel deck with loading lines in her cargo hold,",
+                "cream tiles in her entry hall, wooden boards in her lounge, glowing grating in engineering and a glossy dance floor in",
+                "her club. Off, every room has the carpet of the rest of her deck."
+            )
+            .define("finishes", true);
         builder.pop();
 
         SPEC = builder.build();

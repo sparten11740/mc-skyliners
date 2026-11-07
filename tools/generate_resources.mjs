@@ -121,6 +121,7 @@ const cubes = {
   dance_floor: null,
   club_wall: null,
   padded_bulkhead: null,
+  engine_grating: null,
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light", "flight_deck_stripe"]);
@@ -1442,6 +1443,7 @@ function zeppelinControlsLang() {
     "block.skyliners.crane_winch": "Crane Winch",
     "block.skyliners.flight_deck": "Flight Deck",
     "block.skyliners.flight_deck_stripe": "Flight Deck Line",
+    "block.skyliners.engine_grating": "Engine Grating",
     "block.skyliners.deck_clamp": "Docking Clamp",
     "block.skyliners.carrier_lever": "Clamp Release Lever",
     "entity.skyliners.crane_hook": "Crane Hook",
@@ -10364,6 +10366,7 @@ shaped("boost_button", ["F", "B"], { F: "minecraft:fire_charge", B: "minecraft:p
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
+shaped("engine_grating", ["BBB", "BGB", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 8);
 shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);
 shaped("techno_deck", ["NJN", "CCC"], { N: "minecraft:note_block", J: "minecraft:jukebox", C: "minecraft:black_concrete" }, 1);
 shaped("secret_hatch", ["T", "G"], { T: "minecraft:iron_trapdoor", G: `${ID}:zeppelin_catwalk` }, 1);

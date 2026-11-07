@@ -1350,6 +1350,10 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SpookieHammockBlockEntity>> SPOOKIE_HAMMOCK_ENTITY =
         BLOCK_ENTITIES.register("spookie_hammock", () -> BlockEntityType.Builder.of(SpookieHammockBlockEntity::new, SPOOKIE_HAMMOCK.get()).build(null));
     public static final DeferredItem<BlockItem> SPOOKIE_HAMMOCK_ITEM = ITEMS.registerSimpleBlockItem(SPOOKIE_HAMMOCK);
+    /** The freighter's engineering floor: dark steel grating, a warm amber glow down in its slots. */
+    public static final DeferredBlock<Block> ENGINE_GRATING = BLOCKS.registerSimpleBlock("engine_grating",
+        metal(MapColor.COLOR_GRAY).lightLevel(state -> 3));
+    public static final DeferredItem<BlockItem> ENGINE_GRATING_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_GRATING);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2857,7 +2861,8 @@ public final class SkylinersRegistry {
             LASER_CROSSBOW,
             LASER_CANNON_ITEM,
             BANDSTAND_ITEM,
-            SPOOKIE_HAMMOCK_ITEM
+            SPOOKIE_HAMMOCK_ITEM,
+            ENGINE_GRATING_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

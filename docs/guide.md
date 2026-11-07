@@ -2696,7 +2696,11 @@ at once where you are: her cargo hold sunshine yellow, chasing as a warehouse's 
 white, her lounge a warm tangerine, engineering sky blue chasing round the room as power does, her crew quarters a dim
 grape breathing like a night light, and her club pink, pulsing to the beat. An LED panel on the wall just inside each
 room's doorway sets its strips, as the rocket's panels do: touch a colour, a brightness or a way of lighting. The server
-config's `freighter.ledStrips` builds her without them. Her deck is lit by wall washers over head height, small dark
+config's `freighter.ledStrips` builds her without them. Each has a floor of its own too: a dark steel deck with painted
+loading lanes in her cargo hold, cream tiles in her entry hall, warm wooden boards in her lounge, steel grating glowing
+amber down in its slots in engineering (the Engine Grating, among her blocks in the creative tab) and a glossy black
+dance floor in her club; her crew quarters keep the soft carpet of the rest of her deck. The server config's
+`freighter.finishes` lays that carpet everywhere. Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
 her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room
 through the doorway at her port quarter; the bandstand's footlights light its band. The server config's
