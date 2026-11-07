@@ -80,6 +80,11 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final float LIP = 0.6F;
     private static final float LIP_FOLDED = -175;
     /**
+     * How far over the ground the plate's foot stops, in blocks: the lip's thickness, so the lip lies on the ground
+     * rather than in it, its top never in the same plane as the ground's, which flickers through it.
+     */
+    private static final double FOOT_CLEAR = THICK / 2 + 0.01;
+    /**
      * The rams: how far along the plate their lugs are, as a share of its length; how far out from the head and how far
      * under the deck's top their brackets on the well's sides stand, in blocks; the barrel's length, and the barrel's
      * and the rod's half thickness, in blocks; and their colours, the barrel painted hydraulic yellow, to be seen in the
@@ -175,7 +180,8 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         BlockPos foot = panel.getBlockPos().offset(head).relative(out, frame.run()).below(frame.rise() - 1);
         int light = SableClient.light(level, foot);
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
-        double angle = swing(ticks, frame.slope());
+        double slope = Math.toDegrees(Math.atan2(frame.rise() - FOOT_CLEAR, frame.run()));
+        double angle = swing(ticks, slope);
         float half = frame.width() / 2F - SIDE_GAP;
         int lamp = ticks >= BoardingRamp.OUT ? LAMP_WHITE : DrawingClock.wholeTicks() / BLINK % 2 == 0 ? LAMP_AMBER : 0;
         FlatQuads.box(consumer, pose.last(), light, STEEL, -half, -HINGE_HALF, -HINGE_HALF, half, HINGE_HALF, HINGE_HALF);
@@ -188,7 +194,7 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         plate(consumer, pose.last(), light, half, (float) frame.length(), skin(panel, frame));
         pose.translate(0, 0, frame.length());
         lamps(consumer, pose.last(), half, -LAMP_HALF, lamp);
-        pose.mulPose(Axis.XP.rotationDegrees(lip(ticks, frame.slope())));
+        pose.mulPose(Axis.XP.rotationDegrees(lip(ticks, slope)));
         FlatQuads.box(consumer, pose.last(), light, DECK, -half, -THICK / 2, 0, half, 0, LIP);
         pose.popPose();
         pose.popPose();
