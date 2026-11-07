@@ -2686,7 +2686,9 @@ tools, spare-parts crates and barrels, and a cauldron of coolant. Her crew quart
 seats set a block back from it, bean bags, shelves of books and towels, a suitcase, planters and a med bay corner, a
 white-blanketed bunk with a vitals screen over its head. Her club has four cocktail tables with stools, neon signs on its walls,
 speakers either side of its bandstand, the rocket club's fog machine, a bean bag and a disco ball. Each stands where it
-has room; every room's doorway is kept clear, and nothing stands on her ramp's hatch.
+has room; every room's doorway is kept clear, and nothing stands on her ramp's hatch. Press any of her passenger
+screens to look out through her outside cameras: under her belly straight down at the ground, between her prongs out
+ahead, astern of her over her top, and one circling her; press again for the next, and Left Shift brings you back.
 The server config's `freighter.rooms` builds her rooms bare.
 
 Her lounge has a beach. In the middle of a patch of sand is a huge round floor window, nine blocks across, walked over

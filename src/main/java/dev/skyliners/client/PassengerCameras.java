@@ -44,6 +44,9 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * screen or the player is gone or out of reach. Only ever for the local player, on the client.
  */
 public final class PassengerCameras {
+    /** How loud the low thud is that says a screen has no camera to show here, and its pitch. */
+    private static final float NO_CAMERA_VOLUME = 0.6F;
+    private static final float NO_CAMERA_PITCH = 0.5F;
     /** Further than this from the screen, in blocks, the player has left the airliner or been left behind. */
     private static final double REACH = 32;
     /** The pitch of the click as the view changes. */
@@ -135,7 +138,10 @@ public final class PassengerCameras {
         return CameraSpot.of(craft).stream().filter(camera -> flyby || camera.orbitRadius() <= 0).toList();
     }
 
-    /** The local player has used a passenger screen: look through the first camera, if the airliner has them. */
+    /**
+     * The local player has used a passenger screen: look through the first camera, if the airframe it is aboard has
+     * any it shows, which one whose only camera circles has not with the flyby camera off.
+     */
     public static void use(PassengerScreenBlockEntity screen) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
@@ -154,6 +160,11 @@ public final class PassengerCameras {
         // other's.
         Viewing view = new Viewing(screen, frame, new Lens(player.level(), player.getEyeHeight()),
             minecraft.options.getCameraType(), player.getYRot(), player.getXRot());
+        if (view.cameras.isEmpty()) {
+            player.displayClientMessage(Component.translatable("message.skyliners.passenger_screen.no_camera_here"), true);
+            player.playSound(SoundEvents.NOTE_BLOCK_BASS.value(), NO_CAMERA_VOLUME, NO_CAMERA_PITCH);
+            return;
+        }
         view.mount(0);
         if (!place(view, minecraft.getTimer().getGameTimeDeltaPartialTick(true))) {
             return;

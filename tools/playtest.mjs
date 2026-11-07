@@ -261,6 +261,8 @@ const VALVE_VENTS = 120;
 // many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
 // for, in blocks.
 const FLOOR_WINDOW_BLOCKS = 60;
+// How far before a passenger screen's face the player stands to press it, in blocks.
+const SCREEN_STAND = 2;
 const IRIS_TICKS = 40;
 const BEACH_LOUNGERS = 2;
 const BEACH_PALMS = 2;
@@ -1455,6 +1457,32 @@ function checkFreighterFurnishings() {
   }
 }
 
+// A freighter's passenger screens, used aboard her once she flies: one shows the view from her outside cameras, where
+// pressing one once crashed the game reaching for a camera she did not have.
+function checkFreighterScreens() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [screen] = must(`sable:find ${freighter} skyliners:passenger_screen 1 side=server`).rows;
+  expect(Boolean(screen), "freighter: aboard her flying, she has passenger screens");
+  if (!screen) {
+    return;
+  }
+  const at = screen.at.join(",");
+  const [dx, dz] = STEPS[must(`block ${at}`).props?.facing ?? "north"];
+  const [sx, sy, sz] = screen.at;
+  emptyHands();
+  must(`sable:tp ${sx + dx * SCREEN_STAND},${sy - 1},${sz + dz * SCREEN_STAND}; wait 20t; face ${at}`);
+  const since = now();
+  send(`use ${at}`);
+  const click = heard("*ui.button.click*", since, LOOK_EVERY);
+  const thud = played("*note_block.bass*", since).length;
+  expect(Boolean(click) && thud === 0 && Boolean(must("wait 40t; status").pos), "freighter: pressed, a screen shows her outside camera and the game runs on",
+    `${click ? "a click" : "no click"}, ${thud} thuds`);
+  must("key left_shift 5t; wait 10t");
+}
+
 // A round floor window laid from its item into the ground anywhere: every block of it blends into the grass it took
 // the place of; its panel, set down by it, opens and shuts it; and broken, it all comes out, the grass put back where
 // it was and the window given back.
@@ -1902,6 +1930,7 @@ const CHECKS = {
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
+  "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
