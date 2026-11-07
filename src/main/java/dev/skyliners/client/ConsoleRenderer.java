@@ -3,6 +3,7 @@ package dev.skyliners.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.FreighterClimbBoost;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.console.ConsoleBlock;
@@ -78,11 +79,12 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
         double now = DrawingClock.gameTime(partialTick);
         FreighterFlight.BoostShown boost = autopilot == null ? FreighterFlight.BoostShown.READY : FreighterFlight.boostOf(autopilot, now);
         FreighterFlight.JumpShown jump = autopilot == null ? FreighterFlight.JumpShown.UNAVAILABLE : FreighterFlight.jumpOf(autopilot, now);
+        FreighterClimbBoost.Shown climb = autopilot == null ? FreighterClimbBoost.Shown.UNAVAILABLE : FreighterFlight.climbOf(autopilot, now);
         float since = console.touched() == Long.MIN_VALUE ? -1 : (float) (now - console.touched());
         List<ConsoleArt.Blip> blips = kind == ConsoleKind.SCANNER ? blips(console, level, heading, autopilot) : List.of();
         return new ConsoleArt.Readings(attitude != null, attitude == null ? 0 : attitude.airspeed(), attitude == null ? 0 : attitude.altitude(),
             attitude == null ? 0 : attitude.verticalSpeed(), heading, autopilot == null ? 0 : FreighterFlight.liftOf(autopilot),
-            autopilot == null ? 0 : FreighterFlight.mainsOf(autopilot), boost, jump, freighter, (float) (DrawingClock.ticks(partialTick) % TICKS_ROUND), since,
+            autopilot == null ? 0 : FreighterFlight.mainsOf(autopilot), boost, jump, climb, freighter, (float) (DrawingClock.ticks(partialTick) % TICKS_ROUND), since,
             console.toggles(), blips);
     }
 

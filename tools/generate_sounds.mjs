@@ -5318,6 +5318,10 @@ const COMPUTER_JUMP_LINES = {
   freighter_computer_jump_grounded: "Not from down here. | Get her flying first.",
   freighter_computer_jump_too_near: "That is practically next door. | Just fly there.",
 };
+// Her computer as her climb boost fires (see FreighterClimbBoost), our own line in the same voice.
+const COMPUTER_CLIMB_LINES = {
+  freighter_computer_climb_boost: "Climbing hard. | Hold on to your stomachs.",
+};
 /**
  * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
  * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
@@ -5349,6 +5353,7 @@ if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_CLIMB_LINES, COMPUTER_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

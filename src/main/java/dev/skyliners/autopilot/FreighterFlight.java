@@ -125,6 +125,8 @@ public final class FreighterFlight extends StandingFlight {
     private boolean boosting;
     /** Her hyperspace jump (see {@link #jump}), on the server. */
     private final FreighterJump jump = new FreighterJump();
+    /** Her climb boost (see {@link #climbBoost}), on the server and as the clients are shown it. */
+    private final FreighterClimbBoost climb = new FreighterClimbBoost();
     /**
      * Her jump drive in engineering as an offset from her control head, set as she is built, which spools up and fires
      * as she jumps; none for one built before, or without engineering's machines.
@@ -350,6 +352,30 @@ public final class FreighterFlight extends StandingFlight {
         return BoostAnswer.BOOSTING;
     }
 
+    /**
+     * Asks the freighter an autopilot flies to climb hard, on the server, as her console's climb button does: while
+     * she flies along and her climb boost has rested since the last, her lift fires flat out and she climbs straight up
+     * as fast as she can to a good height higher, which her autopilot then holds (see {@link FreighterClimbBoost}).
+     * What it came to, for the button to answer with.
+     */
+    public static FreighterClimbBoost.Answer climbBoost(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
+        SableFlight.State state = freighter == null ? null : SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        if (freighter == null || state == null) {
+            return FreighterClimbBoost.Answer.NO_SHIP;
+        }
+        return freighter.climb.start(level, autopilot, state.position().y);
+    }
+
+    /**
+     * Where the climb boost of the freighter an autopilot flies stands at a game time, a client's eased one to draw it
+     * by, on either side; not to be had for any other craft.
+     */
+    public static FreighterClimbBoost.Shown climbOf(AutopilotBlockEntity autopilot, double now) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? FreighterClimbBoost.Shown.UNAVAILABLE : freighter.climb.shown(now, FreighterJump.flyingAlong(autopilot));
+    }
+
     /** Whether her autopilot flies her along, climbing or cruising: not lifting off or coming down. */
     private static boolean flyingAlong(AutopilotBlockEntity autopilot) {
         return (autopilot.phase == AutopilotBlockEntity.Phase.CLIMB || autopilot.phase == AutopilotBlockEntity.Phase.CRUISE) && !autopilot.comingIn();
@@ -487,6 +513,7 @@ public final class FreighterFlight extends StandingFlight {
             tag.putLong("FreighterJumpingSince", jumpingSince);
         }
         tag.putBoolean("FreighterJumps", jumpsAllowed);
+        climb.saveShown(tag);
     }
 
     @Override
@@ -496,6 +523,7 @@ public final class FreighterFlight extends StandingFlight {
         boostUntil = tag.contains("FreighterBoostUntil") ? tag.getLong("FreighterBoostUntil") : NO_BOOST;
         jumpingSince = tag.contains("FreighterJumpingSince") ? tag.getLong("FreighterJumpingSince") : NO_JUMP;
         jumpsAllowed = tag.getBoolean("FreighterJumps");
+        climb.loadShown(tag);
     }
 
     /**
@@ -550,10 +578,11 @@ public final class FreighterFlight extends StandingFlight {
         }
         AutopilotBlockEntity.Phase phase = autopilot.phase;
         boolean legsDown = legsDown(level, autopilot, phase);
+        climb.tick(level, autopilot, flight.position().y);
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,
-                legsDown, boostNow(level, autopilot));
+                legsDown, boostNow(level, autopilot), climb.firing());
             AutopilotBlockEntity.Phase next = pilot.fly(level, autopilot.getBlockPos(), orders, flight, radio,
                 SableFlight.mass(autopilot), SableFlight.centreOfMass(autopilot));
             if (next == AutopilotBlockEntity.Phase.OFF) {

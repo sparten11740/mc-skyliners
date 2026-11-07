@@ -17,11 +17,12 @@ import net.minecraft.world.level.block.state.BlockState;
  * The freighter's console (see {@link ConsoleBlock}): a half-round desk curving round her pilots' seats, its middle at
  * her control head between them, from in front of the pilot's seat round ahead of the head to in front of the
  * co-pilot's, every slice of it turned toward the head, so whichever seat she is flown from it faces her. Left to right
- * as they see it: a bank of toggles, her flight readouts, the boost button, the scanner in the middle, the hyperspace
- * jump button (her flight readouts again with the server config's {@code freighter.hyperspaceJump} off), her engines
- * and another bank of toggles. Each slice is a console module of its own in the block its middle falls in, wired to her
- * control head; one whose block is not open is left out. Laid out nose north; none with the server config's
- * {@code freighter.console} off.
+ * as they see it: the climb button right before the pilot (a bank of toggles with the server config's
+ * {@code freighter.climbBoost} off), her flight readouts behind it, which need no touching, the boost button, the
+ * scanner in the middle, the hyperspace jump button (her flight readouts again with {@code freighter.hyperspaceJump}
+ * off), her engines, behind the next, and a bank of toggles right before the co-pilot. Each slice is a console module
+ * of its own in the block its middle falls in, wired to her control head; one whose block is not open is left out.
+ * Laid out nose north; none with the server config's {@code freighter.console} off.
  */
 final class FreighterConsole {
     /** The ring's inner and outer circles round her control head's middle, in blocks: the desk's near and far edges. */
@@ -33,7 +34,7 @@ final class FreighterConsole {
      */
     private static final double SWEEP = 72;
     /** The modules round the ring, left to right as her pilots see them. */
-    private static final List<Supplier<? extends Block>> MODULES = List.of(SkylinersRegistry.CONSOLE_SWITCHES, SkylinersRegistry.CONSOLE_READOUTS,
+    private static final List<Supplier<? extends Block>> MODULES = List.of(FreighterConsole::climbOrSwitches, SkylinersRegistry.CONSOLE_READOUTS,
         SkylinersRegistry.CONSOLE_BOOST, SkylinersRegistry.CONSOLE_SCANNER, FreighterConsole::jumpOrReadouts, SkylinersRegistry.CONSOLE_ENGINES,
         SkylinersRegistry.CONSOLE_SWITCHES);
 
@@ -43,6 +44,11 @@ final class FreighterConsole {
     /** The hyperspace jump's button, or her flight readouts where the server does not let her jump. */
     private static Block jumpOrReadouts() {
         return SkylinersConfig.FREIGHTER_HYPERSPACE_JUMP.get() ? SkylinersRegistry.CONSOLE_JUMP.get() : SkylinersRegistry.CONSOLE_READOUTS.get();
+    }
+
+    /** The climb boost's button, or a bank of toggles where the server does not let her climb so. */
+    private static Block climbOrSwitches() {
+        return SkylinersConfig.FREIGHTER_CLIMB_BOOST.get() ? SkylinersRegistry.CONSOLE_CLIMB.get() : SkylinersRegistry.CONSOLE_SWITCHES.get();
     }
 
     /** Lays her console round her control head, its block given, in a freighter's layout. */

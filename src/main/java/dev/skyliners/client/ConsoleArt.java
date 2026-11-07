@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.skyliners.Skyliners;
+import dev.skyliners.autopilot.FreighterClimbBoost;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.console.ConsoleBlockEntity;
 import dev.skyliners.console.ConsoleKind;
@@ -27,9 +28,11 @@ import org.joml.Matrix4f;
  * sweeps round over her pin and whoever is near; gauges of her lift, her mains and her boost; a grid of lit squares;
  * the boost's flame chevrons, green when it is ready, pulsing orange as it fires and ringed red while it rests; and the
  * hyperspace jump's starburst, dark with no pin to jump to, pulsing cyan while she can, and streaming streaks inside a
- * filling ring as her drive spools up, its big blue button lit the same. Along each desk stand chunky controls of its
- * kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly and only one lamp
- * blinks.
+ * filling ring as her drive spools up, its big blue button lit the same; and the climb boost's arrow up over flames,
+ * dark while she cannot climb so, pulsing orange while she can, flashing as dashes race up past it as
+ * it fires and ringed red while it rests, its big orange button lit the same. Along each desk stand chunky controls of
+ * its kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly and only one
+ * lamp blinks.
  */
 final class ConsoleArt {
     /** Each layer of a face drawn just off the one under it, in blocks. */
@@ -94,6 +97,10 @@ final class ConsoleArt {
     /** The streaks out of the jump's starburst as her drive spools up: how many, and how far each runs a tick, a share. */
     private static final int JUMP_STREAKS = 16;
     private static final float JUMP_STREAK_SPEED = 0.06F;
+    private static final int CLIMB_DARK = 0xFF3A2C20;
+    /** The dashes racing up past the climb boost's arrow as it fires: how many, and how far each runs a tick, a share. */
+    private static final int CLIMB_DASHES = 6;
+    private static final float CLIMB_DASH_SPEED = 0.08F;
 
     private ConsoleArt() {
     }
@@ -101,12 +108,13 @@ final class ConsoleArt {
     /**
      * The readings a console draws from, read once a frame: whether there is a ship to read, her speed ahead, height,
      * climb and heading as her instruments show them, her lift's and her mains' shares of full and where her boost
-     * stands, and her hyperspace jump, and whether she is a freighter at all; the drawing clock's ticks for what only
-     * moves for show; how long ago the console was last touched, in ticks, negative for never; which of its toggles are
-     * up, a bit each; and the blips its scope shows.
+     * stands, her hyperspace jump and her climb boost, and whether she is a freighter at all; the drawing clock's ticks
+     * for what only moves for show; how long ago the console was last touched, in ticks, negative for never; which of
+     * its toggles are up, a bit each; and the blips its scope shows.
      */
     record Readings(boolean powered, double speed, double height, double climb, double heading, double lift, double mains,
-                    FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, boolean freighter, float ticks, float sinceTouched, int toggles,
+                    FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, FreighterClimbBoost.Shown climbBoost, boolean freighter, float ticks,
+                    float sinceTouched, int toggles,
                     List<Blip> blips) {
     }
 
@@ -132,6 +140,7 @@ final class ConsoleArt {
             case SWITCHES -> annunciators(buffers, matrix, width, height, readings);
             case BOOST -> boostScreen(buffers, matrix, width, height, readings);
             case JUMP -> jumpScreen(buffers, matrix, width, height, readings);
+            case CLIMB -> climbScreen(buffers, matrix, width, height, readings);
         }
     }
 
@@ -377,6 +386,49 @@ final class ConsoleArt {
         ScreenDrawing.picture(buffers, matrix, icon("jump"), 0, y, size, 5 * LAYER, colour);
     }
 
+    /**
+     * The climb boost: its arrow up over flames big in the middle, dark while she cannot climb so, gently glowing
+     * orange while she can climb, flashing orange and amber as it fires with dashes racing up either side, and red
+     * while it rests with a ring of segments lighting one by one round it.
+     */
+    private static void climbScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
+        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        FreighterClimbBoost.Shown climb = readings.climbBoost();
+        double size = Math.min(width, height) * 0.3;
+        double y = height * 0.55;
+        if (climb.stage() == FreighterClimbBoost.Stage.FIRING) {
+            dashes(shapes, matrix, width, height, readings.ticks());
+        }
+        if (climb.stage() == FreighterClimbBoost.Stage.RESTING) {
+            restRing(shapes, matrix, y, size * 1.35, 1 - climb.left());
+        }
+        ScreenDrawing.picture(buffers, matrix, icon("climb_boost"), 0, y, size, 5 * LAYER, climbColour(readings));
+    }
+
+    /** Dashes racing up either side of the climb boost's arrow as it fires, as the sky would past her. */
+    private static void dashes(VertexConsumer shapes, Matrix4f matrix, double width, double height, float ticks) {
+        double length = height * 0.12;
+        for (int dash = 0; dash < CLIMB_DASHES; dash++) {
+            double side = (dash % 2 == 0 ? -1 : 1) * width * (0.3 + 0.05 * (dash % 3));
+            double run = (ticks * CLIMB_DASH_SPEED + dash * 0.29) % 1;
+            double bottom = height * 0.1 + run * (height * 0.8 - length);
+            ScreenDrawing.line(shapes, matrix, side, bottom, side, bottom + length, 4 * LAYER, (float) (width * 0.015), AMBER);
+        }
+    }
+
+    /** The colour the climb boost is lit in, on its screen and its button: by where it stands (see {@link #climbScreen}). */
+    private static int climbColour(Readings readings) {
+        if (!readings.freighter()) {
+            return UNLIT;
+        }
+        return switch (readings.climbBoost().stage()) {
+            case UNAVAILABLE -> CLIMB_DARK;
+            case READY -> fade(ORANGE, 0.75F + 0.25F * Mth.sin(readings.ticks() * 0.12F)) | 0xFF000000;
+            case FIRING -> (int) readings.ticks() % 4 < 2 ? ORANGE : AMBER;
+            case RESTING -> RED;
+        };
+    }
+
     /** Streaks streaming out of the jump's starburst as her drive spools up, longer the further it has spooled. */
     private static void streaks(VertexConsumer shapes, Matrix4f matrix, double y, double size, double spooled, float ticks) {
         for (int streak = 0; streak < JUMP_STREAKS; streak++) {
@@ -441,6 +493,8 @@ final class ConsoleArt {
                 readings.freighter() ? RED : UNLIT, HAZARD_YELLOW, HAZARD_BLACK);
             case JUMP -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
                 jumpCap(readings), JUMP_WHITE, JUMP_BLUE);
+            case CLIMB -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
+                climbColour(readings), ORANGE, HAZARD_BLACK);
             default -> pushButton(solid, pose, x, y, slot, light, LAMP_COLOURS[index % LAMP_COLOURS.length]);
         }
     }

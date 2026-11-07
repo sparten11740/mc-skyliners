@@ -288,8 +288,9 @@ const DIMMER_FACE = 0.12;
 const DIMMER_DARKEST = [0.8, 0.15];
 const DIMMER_CLEAR = [0.2, 0.75];
 // Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
-const CONSOLE_SLICES = { console_switches: 2, console_readouts: 1, console_boost: 1, console_scanner: 1, console_jump: 1, console_engines: 1 };
-const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump"];
+const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1, console_scanner: 1, console_jump: 1, console_engines: 1,
+  console_switches: 1 };
+const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump", "console_climb"];
 // Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
 // much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
 // speed, in ticks, and how near, in blocks a second.
@@ -298,6 +299,15 @@ const BOOST_WATCH_TICKS = 160;
 const BOOST_GAIN = 10;
 const BOOST_SETTLE_TICKS = 600;
 const BOOST_SETTLED_WITHIN = 3;
+// Her climb boost: the height it gains, in blocks; how long she is watched climbing, in ticks, and the share of that
+// height she must gain meanwhile at least; how far she may drift off her spot as she climbs, in blocks; and how long
+// after she is watched holding it, in ticks, and how near it she must stay, in blocks.
+const CLIMB_BOOST_GAIN = 300;
+const CLIMB_BOOST_WATCH_TICKS = 600;
+const CLIMB_BOOST_SHARE = 0.8;
+const CLIMB_BOOST_DRIFT = 10;
+const CLIMB_BOOST_HOLD_TICKS = 200;
+const CLIMB_BOOST_HELD_WITHIN = 15;
 // Her hyperspace jump: how far off along the ground her pin is, in blocks, and how tall the pillar standing on it, in
 // blocks over the ground; how long she is given from the button to come out there, in ticks; how near the pin her
 // middle must come out, and how far her lowest block must keep over the pillar's top, in blocks.
@@ -1732,7 +1742,7 @@ function checkFreighterConsole() {
   if (toggles) {
     const before = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
     const flipped = now();
-    useModule(toggles.at_abs);
+    useModule(toggles.at_abs, coPilotSeat());
     const after = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
     expect(after !== before && played("*lever.click*", flipped).length > 0, "freighter: a toggle on her console clicks over", `${before} to ${after}`);
   }
@@ -1745,9 +1755,8 @@ function sliceOfRing(at) {
   return send(ask)[0].ok !== false || send(`wait 20t; ${ask}`).at(-1).ok !== false;
 }
 
-// Uses a console module on the ground as her pilot would, from her seat.
-function useModule(at) {
-  const seat = pilotSeat();
+// Uses a console module on the ground as her pilot would, from her seat, or from the seat given.
+function useModule(at, seat = pilotSeat()) {
   must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t; use ${at.join(",")}; wait 10t`);
   must("key press key.sneak 10t; wait 10t");
 }
@@ -1758,6 +1767,50 @@ function pilotSeat() {
   const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
   const [lx, lz] = WAYS[CLOCKWISE[CLOCKWISE[CLOCKWISE[nose]]]];
   return [head.at_abs[0] + 2 * lx, head.at_abs[1], head.at_abs[2] + 2 * lz];
+}
+
+// Where a freighter's co-pilot sits, standing on the ground near the player: on her right, two blocks from her head.
+function coPilotSeat() {
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
+  const [rx, rz] = WAYS[CLOCKWISE[nose]];
+  return [head.at_abs[0] + 2 * rx, head.at_abs[1], head.at_abs[2] + 2 * rz];
+}
+
+// A freighter's climb boost: hovering, its button fires her lift flat out, her roar going up, and she climbs straight
+// up hard, gaining most of the height it takes her within the time it should and hardly drifting off her spot; then
+// her autopilot holds that height rather than pulling her back down.
+function checkFreighterClimbBoost() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
+  expect(hovering, "freighter: she lifts off and hovers");
+  if (!hovering) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:console_climb 1 side=server`).rows[0];
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  const before = freighterReport();
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*speed_boost*", pressed, LOOK_EVERY)), "freighter: her climb button roars into it");
+  const rows = must(`sample skyliners:freighter every 20t x${CLIMB_BOOST_WATCH_TICKS / 20}`, BUILD_SECONDS).rows;
+  const fastest = Math.max(...rows.map((row) => row.climb));
+  const top = rows.at(-1);
+  const gained = top.altitude - before.altitude;
+  expect(gained >= CLIMB_BOOST_GAIN * CLIMB_BOOST_SHARE, "freighter: climbing hard, she gains most of its height in time",
+    `${round(gained)} blocks in ${CLIMB_BOOST_WATCH_TICKS / 20} s, climbing ${round(fastest)} a second at the fastest`);
+  const [fromX, fromZ] = before.middle.split(",").map(Number);
+  const [toX, toZ] = top.middle.split(",").map(Number);
+  const drift = Math.hypot(toX - fromX, toZ - fromZ);
+  expect(drift <= CLIMB_BOOST_DRIFT, "freighter: she climbs straight up, holding her spot", `${round(drift)} blocks off it`);
+  must(`wait ${CLIMB_BOOST_HOLD_TICKS}t`, BUILD_SECONDS);
+  const after = freighterReport();
+  const off = Math.abs(after.altitude - (before.altitude + CLIMB_BOOST_GAIN));
+  expect(off <= CLIMB_BOOST_HELD_WITHIN && after.target_altitude >= before.altitude + CLIMB_BOOST_GAIN - CLIMB_BOOST_HELD_WITHIN,
+    "freighter: afterwards her autopilot holds the height she climbed to", `at ${after.altitude}, set to ${after.target_altitude}`);
+  must("skyliners:autopilot land");
 }
 
 // A freighter's boost: cruising, its button fires her mains flat out a while, her roar going up and her speed with
@@ -1842,8 +1895,10 @@ function checkConsoleMounts() {
   creative();
   const x = nextSite++ * SITE_APART;
   const z = 0;
-  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t; server fill ${x - 6} ${ground} ${z - 4} ${x + 6} ${ground + 3} ${z - 4} stone`);
-  must(`server fill ${x - 6} ${ground + 3} ${z - 3} ${x + 6} ${ground + 3} ${z - 1} stone`);
+  // A wall and a ceiling of stone running past the last kind's spot, two blocks apart from the first's.
+  const far = x - 2 + 2 * CONSOLE_KINDS.length;
+  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t; server fill ${x - 6} ${ground} ${z - 4} ${far} ${ground + 3} ${z - 4} stone`);
+  must(`server fill ${x - 6} ${ground + 3} ${z - 3} ${far} ${ground + 3} ${z - 1} stone`);
   CONSOLE_KINDS.forEach((kind) => must(`server give @p skyliners:${kind}`));
   const tries = [["floor", ground, z, 30], ["wall", ground + 1, z - 3, 0], ["ceiling", ground + 2, z - 2, -50]];
   for (const [mount, y, at, pitch] of tries) {
@@ -2716,6 +2771,7 @@ const CHECKS = {
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
+  "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },

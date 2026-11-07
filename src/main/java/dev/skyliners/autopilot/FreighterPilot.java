@@ -77,6 +77,14 @@ public final class FreighterPilot {
      * eases off as she nears her height by as much, so she comes to it without overshooting.
      */
     private static final double CLIMB_EASE = 1;
+    /**
+     * Her climb boost (see {@link FreighterClimbBoost}): how fast she climbs at most as it fires, in blocks a second,
+     * and how fast that climb may change, in blocks a second each second, both speeding up and slowing to stop at the
+     * height it climbs to, no harder than her lift can slow her with its least (see {@link #LEAST_LIFT}); she slows as
+     * fast from any climb faster than she ever climbs without it.
+     */
+    private static final double CLIMB_BOOST_SPEED = 30;
+    private static final double CLIMB_BOOST_EASE = 4;
     /** How quickly her lift closes on the climb she wants, in blocks a second each second a block a second off it. */
     private static final double CLIMB_GAIN = 1.2;
     /** The least share of her weight her lift holds up in flight: she never falls faster than the rest of gravity. */
@@ -262,11 +270,12 @@ public final class FreighterPilot {
     /**
      * What the autopilot is set to fly: its phase, the height and speed set, the heading, and how it goes, on the
      * heading, round a circle about a middle so wide, or to a pin there, landing at it or not; whether her legs are
-     * down to land on (see {@link FreighterLegs}); and where her boost stands.
+     * down to land on (see {@link FreighterLegs}); where her boost stands; and whether her climb boost fires, when she
+     * climbs straight up as fast as she can to the height set, holding the spot it began over.
      */
     record Orders(AutopilotBlockEntity.Phase phase, double altitude, double speed, double heading,
                   AutopilotBlockEntity.Lateral lateral, double pinX, double pinZ, double radius, boolean landAtPin,
-                  boolean legsDown, Boost boost) {
+                  boolean legsDown, Boost boost, boolean climbBoost) {
     }
 
     /**
@@ -380,6 +389,8 @@ public final class FreighterPilot {
     private final int[] jetsHeld = new int[2];
     /** The climb she wanted last tick, eased toward the one she wants now. */
     private double easedClimb;
+    /** Whether her climb boost fired last tick, so the spot she holds is taken as it begins. */
+    private boolean climbBoosting;
     /** The signals each set of her thrusters was last set to together: her clusters, her mains and her retros. */
     private final int[] clusterTotals = new int[4];
     private int mainsTotal;
@@ -487,6 +498,11 @@ public final class FreighterPilot {
         Vec3 going = smoothedGoing(going(state, middle, motion));
         lastClimb = going.y;
         Balance balance = balance(state, middle, centreOfMass);
+        if (orders.climbBoost() && !climbBoosting) {
+            spot = middle;
+            spotHeading = state.heading();
+        }
+        climbBoosting = orders.climbBoost();
         if (phase == AutopilotBlockEntity.Phase.TAKEOFF && spooled < SPOOL_TICKS) {
             spooled++;
             lift(level, origin, SPOOL_SHARE * hoverShare(state, mass) * spooled / SPOOL_TICKS, balance.ahead(), balance.right());
@@ -498,8 +514,8 @@ public final class FreighterPilot {
         } else {
             lookForPad(level, phase, orders, state, middle);
             Course course = course(phase, orders, state, middle);
-            double climb = easedClimb(climbWanted(phase, orders, state, radio));
-            boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE && orders.boost() == Boost.NONE;
+            double climb = easedClimb(climbWanted(phase, orders, state, radio), orders.climbBoost());
+            boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE && orders.boost() == Boost.NONE && !orders.climbBoost();
             boolean boosting = orders.boost() == Boost.FIRING && course.ahead() >= orders.speed() - BOOST_SLOWER;
             level(motion.tilt());
             lift(level, origin, liftShare(state, going, mass, climb, learning),
@@ -567,12 +583,12 @@ public final class FreighterPilot {
 
     /**
      * Where she goes this tick, as her phase and her orders have it: lifting off and coming down, she holds her spot on
-     * the heading she had there; otherwise she goes the way she is set to, to a pin turning toward it until she is
-     * near, then sliding onto it on the heading she has.
+     * the heading she had there, as she does while her climb boost fires; otherwise she goes the way she is set to, to
+     * a pin turning toward it until she is near, then sliding onto it on the heading she has.
      */
     private Course course(AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, Vec3 middle) {
         boolean holding = phase == AutopilotBlockEntity.Phase.TAKEOFF || phase == AutopilotBlockEntity.Phase.DESCENT
-            || phase == AutopilotBlockEntity.Phase.LAND;
+            || phase == AutopilotBlockEntity.Phase.LAND || orders.climbBoost();
         if (holding && spot != null) {
             return toward(state, middle, spot, spotHeading, MOST_SETTLING);
         }
@@ -625,32 +641,41 @@ public final class FreighterPilot {
      * The climb she wants, in blocks a second: lifting off, straight up slowly; climbing and cruising, toward the
      * height set; coming down, sinking fast to {@link #PAD_HOVER} over the ground, then at her landing speed, but with
      * her legs not yet down only to that height, where she hovers until they are, and no lower. Nearing a height she
-     * eases off soon enough to stop at it as gently as {@link #CLIMB_EASE} lets her.
+     * eases off soon enough to stop at it as gently as {@link #CLIMB_EASE} lets her; with her climb boost firing, she
+     * climbs up to {@link #CLIMB_BOOST_SPEED}, easing off as {@link #CLIMB_BOOST_EASE} lets her.
      */
     private static double climbWanted(AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, double radio) {
         return switch (phase) {
             case TAKEOFF -> LIFT_OFF_CLIMB;
-            case DESCENT -> -Math.max(orders.legsDown() ? LANDING_SINK : 0, approach(radio - PAD_HOVER, MOST_SINK));
+            case DESCENT -> -Math.max(orders.legsDown() ? LANDING_SINK : 0, approach(radio - PAD_HOVER, MOST_SINK, CLIMB_EASE));
             case LAND -> orders.legsDown() ? -LANDING_SINK : 0;
             default -> {
                 double toGo = orders.altitude() - state.position().y;
-                yield Math.signum(toGo) * approach(Math.abs(toGo), toGo > 0 ? MOST_CLIMB : MOST_SINK);
+                if (orders.climbBoost() && toGo > 0) {
+                    yield approach(toGo, CLIMB_BOOST_SPEED, CLIMB_BOOST_EASE);
+                }
+                yield Math.signum(toGo) * approach(Math.abs(toGo), toGo > 0 ? MOST_CLIMB : MOST_SINK, CLIMB_EASE);
             }
         };
     }
 
     /**
      * How fast to close on a height so far off, in blocks a second: no faster than she can ease off to stop at it,
-     * planning on half of {@link #CLIMB_EASE}, since her lift takes a moment to follow the climb she wants.
+     * planning on half the ease given, in blocks a second each second, since her lift takes a moment to follow the
+     * climb she wants.
      */
-    private static double approach(double away, double fastest) {
+    private static double approach(double away, double fastest, double ease) {
         double off = Math.max(0, away);
-        return Math.min(fastest, Math.min(HOLD_GAIN * off, Math.sqrt(CLIMB_EASE * off)));
+        return Math.min(fastest, Math.min(HOLD_GAIN * off, Math.sqrt(ease * off)));
     }
 
-    /** The climb she wants this tick, eased from the one she wanted last by at most {@link #CLIMB_EASE}. */
-    private double easedClimb(double wanted) {
-        double step = CLIMB_EASE / SharedConstants.TICKS_PER_SECOND;
+    /**
+     * The climb she wants this tick, eased from the one she wanted last by at most {@link #CLIMB_EASE}, or by
+     * {@link #CLIMB_BOOST_EASE} while her climb boost fires or she still climbs faster than she does without it.
+     */
+    private double easedClimb(double wanted, boolean climbBoost) {
+        boolean hard = climbBoost || Math.abs(easedClimb) > MOST_CLIMB;
+        double step = (hard ? CLIMB_BOOST_EASE : CLIMB_EASE) / SharedConstants.TICKS_PER_SECOND;
         easedClimb = Mth.clamp(wanted, easedClimb - step, easedClimb + step);
         return easedClimb;
     }

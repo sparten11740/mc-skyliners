@@ -22,7 +22,12 @@ public enum ConsoleKind implements StringRepresentable {
      * A big blue push-button under a starburst, lit while she flies to a pin, that jumps her there through hyperspace
      * (see her autopilot's jump).
      */
-    JUMP(1);
+    JUMP(1),
+    /**
+     * A big orange push-button under an arrow pointing up over flames, lit while she flies along, that fires her lift
+     * flat out to climb straight up hard (see her autopilot's climb boost).
+     */
+    CLIMB(1);
 
     /** How many controls stand in a row along its desk: toggles, knobs, levers, or its one big button. */
     private final int controls;

@@ -3,6 +3,7 @@ package dev.skyliners.console;
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.FreighterClimbBoost;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.FreighterJump;
 import dev.skyliners.block.Mount;
@@ -44,8 +45,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * a ceiling as a wedge leaning down, each drawn its own way, facing whoever put it up, reading the nearest autopilot.
  * Its renderer draws it all, the client's {@code ConsoleRenderer}, its pictures live, or a standby picture with no
  * ship to read. Used, it answers with a sound and a moment its client draws: a toggle flipped under the hand, its lamp
- * lit; the scope's ping going out; a lamp test; or a big button pressed in, which asks her autopilot to boost or to
- * jump through hyperspace to her pin.
+ * lit; the scope's ping going out; a lamp test; or a big button pressed in, which asks her autopilot to boost, to climb
+ * hard or to jump through hyperspace to her pin.
  * FACING is the way toward whoever works it, MOUNT how it is put up.
  */
 public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBlock {
@@ -138,6 +139,7 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
             }
             case BOOST -> boost(level, pos, console, player);
             case JUMP -> jump(level, pos, console, player);
+            case CLIMB -> climb(level, pos, console, player);
             default -> {
                 console.touch(level);
                 sound(level, pos, SoundEvents.NOTE_BLOCK_BIT.value(), BEEP_PITCH);
@@ -187,6 +189,24 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
         };
         if (why != null) {
             level.playSound(null, pos, why, SoundSource.BLOCKS, 1, 1);
+        }
+    }
+
+    /**
+     * The climb button pressed in: her autopilot asked to climb hard, which roars into it as her computer says so, or
+     * says why not with a low note; only a click while it fires already.
+     */
+    private static void climb(ServerLevel level, BlockPos pos, ConsoleBlockEntity console, Player player) {
+        console.touch(level);
+        FreighterClimbBoost.Answer answer = FreighterFlight.climbBoost(level, console.autopilot());
+        player.displayClientMessage(Component.translatable("message.skyliners.console.climb_" + answer.getSerializedName()), true);
+        switch (answer) {
+            case CLIMBING -> {
+                level.playSound(null, pos, SkylinersRegistry.SPEED_BOOST.get(), SoundSource.BLOCKS, ROAR_VOLUME, 1);
+                level.playSound(null, pos, SkylinersRegistry.FREIGHTER_COMPUTER_CLIMB_BOOST.get(), SoundSource.BLOCKS, 1, 1);
+            }
+            case BUSY -> sound(level, pos, SoundEvents.STONE_BUTTON_CLICK_ON, BEEP_PITCH);
+            default -> sound(level, pos, SoundEvents.NOTE_BLOCK_BASS.value(), REFUSED_PITCH);
         }
     }
 

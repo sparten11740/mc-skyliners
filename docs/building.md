@@ -318,7 +318,12 @@ by the jump console: her `JumpDriveBlock` spooled through `spoolForJump`, the la
 ticket of its own (which lets go by itself), her lowest block kept clear over the highest of the land's
 `MOTION_BLOCKING` heightmap under her, and `SableFlight.jump` moving her, Sable carrying whoever stands or sits on her
 and the rest aboard moved with her; each step goes to everyone aboard as a `HyperspaceJump`, which the client's
-`HyperspaceOverlay` shows and sounds, her computer's lines generated with the rest of hers (`COMPUTER_JUMP_LINES`). Her `DeckRobotBlock`s chirp, trill and beep from their block
+`HyperspaceOverlay` shows and sounds, her computer's lines generated with the rest of hers (`COMPUTER_JUMP_LINES`).
+After a jump, `SableFlight.letGoAboard` and `SableClient.keepAboard` let go of the jump's length Sable would otherwise
+keep everyone carried across going at. Her climb boost is `FreighterClimbBoost`, also owned by `FreighterFlight` and
+asked for by the climb console: it sets her autopilot's height to the top and tells her pilot it fires
+(`FreighterPilot.Orders.climbBoost`), when she climbs at up to `CLIMB_BOOST_SPEED`, easing by `CLIMB_BOOST_EASE`,
+holding the spot it began over. Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing

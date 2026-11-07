@@ -2596,9 +2596,10 @@ too, as freighters built before it are.
 Before her seats her console curves round in a half circle, from in front of the pilot round ahead of the control head
 to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky
 controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
-turned toward her middle so whichever seat you fly from it faces you. Left to right: a bank of toggles, her flight
-readouts, the boost button, the scanner, the hyperspace jump button, her engines and another bank of toggles. Every
-reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons, her
+turned toward her middle so whichever seat you fly from it faces you. Left to right: the climb button before the
+pilot, her flight readouts, the boost button, the scanner, the hyperspace jump button, her engines and a bank of toggles.
+Every reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons,
+her
 height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
 with north marked red; gauges of her lift thrusters' push in cyan, her mains' in amber and her boost, whose levers on
 the desk move with them; and a round scope whose beam sweeps round, her pin an amber diamond pulsing at its bearing and
@@ -2610,10 +2611,23 @@ and her heading, its screen's chevrons flashing orange over a bar running down; 
 chevrons red in a ring of segments lighting one by one as it rests for ten seconds, and green again when it is ready.
 On the ground, lifting off, landing or resting, it only says no with a low note. Before she is assembled, her screens
 show the power sign pulsing amber and only one lamp blinks. Each module is among her blocks in the creative tab (Flight
-Readout Console, Scanner Console, Engine Console, Toggle Console and Boost Console) and works on its own: put down on a
-floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down toward you, and it reads
+Readout Console, Scanner Console, Engine Console, Toggle Console, Boost Console and Climb Boost Console) and works on
+its own: put down on a floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down
+toward you, and it reads
 the nearest autopilot, showing the standby picture with none; the scope sweeps for whoever is near wherever it stands,
 pointing the way its desk does. The server config's `freighter.console` builds her without it.
+
+Right before the pilot, the big orange button in its ring of orange and black stripes, under an arrow pointing up over
+flames, climbs her hard. It glows orange while she flies along, hovering or cruising; pressed then, her computer says
+she is climbing hard and to hold on to your stomachs, her lift roars flat out and she climbs straight up far faster
+than she ever flies along, holding her spot and her heading, dashes racing up past the arrow on its screen, her legs
+drawn up into her belly as she goes. She slows as she nears the top and stops 300 blocks higher, or at the edge of
+space if that is nearer, and her autopilot holds that height from then on rather than bringing her back down. Then
+the button rests for fifteen seconds, the arrow red in a ring of segments lighting one by one, and glows orange again
+when it is ready. On the ground, lifting off, landing, resting or at the edge of space it only says no with a low
+note. Climbing straight up brings no new land into view, as flying along does, so the server keeps up however fast
+she climbs. The server config's `freighter.climbBoost` switches it off; her console then has a second bank of toggles
+where the climb button was.
 
 The big blue button on the co-pilot's side, in its ring of blue and white stripes under a starburst, jumps her through
 hyperspace to her pin. It lights up, its starburst pulsing cyan, only while she flies along to a pin set on her

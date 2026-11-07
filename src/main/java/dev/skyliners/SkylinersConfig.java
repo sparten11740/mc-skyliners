@@ -79,6 +79,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CONSOLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_HYPERSPACE_JUMP;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_CLIMB_BOOST;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
@@ -716,6 +717,14 @@ public final class SkylinersConfig {
                 "Without it, the button only clicks, and her console has her flight readouts in its place."
             )
             .define("hyperspaceJump", true);
+        FREIGHTER_CLIMB_BOOST = builder
+            .comment(
+                "Whether the freighter can climb hard from the climb button on her console: while she flies along, her lift",
+                "fires flat out and she climbs straight up far faster than she flies, holding her spot, until she is 300",
+                "blocks higher or at the edge of space, which her autopilot then holds. Climbing loads no new land, so the",
+                "server keeps up. Without it, the button only says no, and her console has a bank of toggles in its place."
+            )
+            .define("climbBoost", true);
         FREIGHTER_ROBOTS = builder
             .comment(
                 "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",
