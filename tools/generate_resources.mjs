@@ -362,7 +362,7 @@ function rampFittings() {
 // The freighter's cockpit console (see ConsoleBlock), our own design: each module drawn by its renderer alone
 // (ConsoleRenderer), whichever way it faces and however it is put up, its block's model only its particle; its item a
 // little desk, its worn casing under a screen leaning back over its top, showing a picture of what it shows.
-const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost"];
+const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump"];
 {
   const MOUNTS = ["floor", "wall", "ceiling"];
   for (const kind of CONSOLE_KINDS) {
@@ -1672,6 +1672,14 @@ function zeppelinControlsLang() {
     "message.skyliners.console.boost_resting": "The boost is resting",
     "message.skyliners.console.boost_not_flying": "She boosts only while she flies along",
     "message.skyliners.console.boost_no_ship": "No freighter here to boost",
+    "block.skyliners.console_jump": "Hyperspace Jump Console",
+    "message.skyliners.console.jump_jumping": "Jump drive spooling up",
+    "message.skyliners.console.jump_no_pin": "Nowhere to jump to: set a pin on the autopilot's map",
+    "message.skyliners.console.jump_not_flying": "She jumps only while she flies along",
+    "message.skyliners.console.jump_too_near": "The pin is too near to jump to: she flies there",
+    "message.skyliners.console.jump_busy": "She is jumping already",
+    "message.skyliners.console.jump_switched_off": "The hyperspace jump is switched off on this server",
+    "message.skyliners.console.jump_no_ship": "No freighter here to jump",
     "block.skyliners.floor_window": "Floor Window",
     "block.skyliners.floor_window_panel": "Floor Window Panel",
     "block.skyliners.beach_sand": "Beach Sand",
@@ -1994,6 +2002,13 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_turret_ready: { subtitle: "Computer: Turret ready", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie ready", aboard: true },
+  // Her computer through her hyperspace jump, the lines generate_sounds.mjs keeps together in COMPUTER_JUMP_LINES.
+  freighter_computer_jump_spooling: { subtitle: "Computer: Jump drive spooling up. Hold on to something", aboard: true },
+  freighter_computer_jump_go: { subtitle: "Computer: Here goes nothing", aboard: true },
+  freighter_computer_jump_arrived: { subtitle: "Computer: Out of the jump. Welcome to wherever this is", aboard: true },
+  freighter_computer_jump_no_pin: { subtitle: "Computer: Nowhere to jump to. Pick a spot on the map", aboard: true },
+  freighter_computer_jump_grounded: { subtitle: "Computer: Not from down here. Get her flying first", aboard: true },
+  freighter_computer_jump_too_near: { subtitle: "Computer: That is practically next door. Just fly there", aboard: true },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {
@@ -10634,7 +10649,7 @@ shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
 // Her console's modules: a screen of glass over iron, each with what it works in its middle.
 const CONSOLE_PARTS = { readouts: "minecraft:clock", scanner: "minecraft:compass", engines: "minecraft:comparator", switches: "minecraft:lever",
-  boost: "minecraft:blaze_powder" };
+  boost: "minecraft:blaze_powder", jump: "minecraft:ender_eye" };
 for (const [kind, part] of Object.entries(CONSOLE_PARTS)) {
   shaped(`console_${kind}`, ["GGG", "IPI", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", P: part, R: "minecraft:redstone" }, 1);
 }

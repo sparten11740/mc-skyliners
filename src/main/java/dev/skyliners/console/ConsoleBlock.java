@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.FreighterFlight;
+import dev.skyliners.autopilot.FreighterJump;
 import dev.skyliners.block.Mount;
 import dev.skyliners.block.MountedModule;
 import dev.skyliners.block.TurnedShapes;
@@ -43,7 +44,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * a ceiling as a wedge leaning down, each drawn its own way, facing whoever put it up, reading the nearest autopilot.
  * Its renderer draws it all, the client's {@code ConsoleRenderer}, its pictures live, or a standby picture with no
  * ship to read. Used, it answers with a sound and a moment its client draws: a toggle flipped under the hand, its lamp
- * lit; the scope's ping going out; a lamp test; or the boost button pressed in, which asks her autopilot to boost.
+ * lit; the scope's ping going out; a lamp test; or a big button pressed in, which asks her autopilot to boost or to
+ * jump through hyperspace to her pin.
  * FACING is the way toward whoever works it, MOUNT how it is put up.
  */
 public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBlock {
@@ -135,6 +137,7 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
                 sound(level, pos, SoundEvents.NOTE_BLOCK_CHIME.value(), PING_PITCH);
             }
             case BOOST -> boost(level, pos, console, player);
+            case JUMP -> jump(level, pos, console, player);
             default -> {
                 console.touch(level);
                 sound(level, pos, SoundEvents.NOTE_BLOCK_BIT.value(), BEEP_PITCH);
@@ -155,6 +158,35 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
             level.playSound(null, pos, SkylinersRegistry.SPEED_BOOST.get(), SoundSource.BLOCKS, ROAR_VOLUME, 1);
         } else {
             sound(level, pos, SoundEvents.NOTE_BLOCK_BASS.value(), REFUSED_PITCH);
+        }
+    }
+
+    /**
+     * The jump button pressed in: her autopilot asked to jump to her pin, her computer answering as her drive spools
+     * up, or, with a low note, saying why not: no pin, not flying along, or the pin too near to bother; only a click
+     * while she is jumping already.
+     */
+    private static void jump(ServerLevel level, BlockPos pos, ConsoleBlockEntity console, Player player) {
+        console.touch(level);
+        FreighterJump.Answer answer = FreighterFlight.jump(level, console.autopilot());
+        String said = answer == null ? "no_ship" : answer.getSerializedName();
+        player.displayClientMessage(Component.translatable("message.skyliners.console.jump_" + said), true);
+        if (answer == FreighterJump.Answer.JUMPING) {
+            return;
+        }
+        if (answer == FreighterJump.Answer.BUSY) {
+            sound(level, pos, SoundEvents.STONE_BUTTON_CLICK_ON, BEEP_PITCH);
+            return;
+        }
+        sound(level, pos, SoundEvents.NOTE_BLOCK_BASS.value(), REFUSED_PITCH);
+        SoundEvent why = answer == null ? null : switch (answer) {
+            case NO_PIN -> SkylinersRegistry.FREIGHTER_COMPUTER_JUMP_NO_PIN.get();
+            case NOT_FLYING -> SkylinersRegistry.FREIGHTER_COMPUTER_JUMP_GROUNDED.get();
+            case TOO_NEAR -> SkylinersRegistry.FREIGHTER_COMPUTER_JUMP_TOO_NEAR.get();
+            default -> null;
+        };
+        if (why != null) {
+            level.playSound(null, pos, why, SoundSource.BLOCKS, 1, 1);
         }
     }
 

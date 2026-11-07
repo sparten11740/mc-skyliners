@@ -259,8 +259,8 @@ const DIMMER_FACE = 0.12;
 const DIMMER_DARKEST = [0.8, 0.15];
 const DIMMER_CLEAR = [0.2, 0.75];
 // Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
-const CONSOLE_SLICES = { console_switches: 2, console_readouts: 2, console_boost: 1, console_scanner: 1, console_engines: 1 };
-const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost"];
+const CONSOLE_SLICES = { console_switches: 2, console_readouts: 1, console_boost: 1, console_scanner: 1, console_jump: 1, console_engines: 1 };
+const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump"];
 // Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
 // much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
 // speed, in ticks, and how near, in blocks a second.
@@ -269,6 +269,17 @@ const BOOST_WATCH_TICKS = 160;
 const BOOST_GAIN = 10;
 const BOOST_SETTLE_TICKS = 600;
 const BOOST_SETTLED_WITHIN = 3;
+// Her hyperspace jump: how far off along the ground her pin is, in blocks, and how tall the pillar standing on it, in
+// blocks over the ground; how long she is given from the button to come out there, in ticks; how near the pin her
+// middle must come out, and how far her lowest block must keep over the pillar's top, in blocks.
+const JUMP_PIN = 2000;
+const JUMP_PILLAR = 70;
+const JUMP_WITHIN = 600;
+const JUMP_NEAR = 8;
+const JUMP_CLEAR = 10;
+// The longest a server tick may take while she jumps, in milliseconds: loading the land at her pin all at once held one
+// for nearly four seconds.
+const JUMP_LONGEST_TICK = 1500;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -1505,6 +1516,54 @@ function checkFreighterBoost() {
   must("skyliners:autopilot land");
 }
 
+// A freighter's hyperspace jump: flying along with no pin, her jump button says there is nowhere to jump to; flying to a
+// pin far off, a pillar of stone standing on it taller than she flies, the button spools her drive up, the land round
+// the pin loads as she spools without ever holding the server up, and she comes out over the pin, whoever pressed it
+// still aboard, her lowest block kept well clear over the pillar's top rather than in it.
+function checkFreighterJump() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const below = head[1] - ground;
+  const height = head[1] + FREIGHTER_CLIMB;
+  const pin = [site.x + JUMP_PIN, site.z];
+  must(`server forceload add ${pin[0]} ${pin[1]}; server fill ${pin[0]} ${ground} ${pin[1]} ${pin[0]} ${ground + JUMP_PILLAR - 1} ${pin[1]} stone`);
+  must(`server forceload remove ${pin[0]} ${pin[1]}`);
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(cruising, "freighter: she lifts off and cruises");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:console_jump 1 side=server`).rows[0];
+  const noPin = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*jump_no_pin*", noPin, LOOK_EVERY)), "freighter: with no pin set, her jump button says there is nowhere to jump to");
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE} pin=${pin[0]},${pin[1]}; wait 20t`);
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  send("?perf stop");
+  must(`perf start jump; use ${at.join(",")}`);
+  expect(Boolean(heard("*jump_drive_spool*", pressed, LOOK_EVERY)), "freighter: her jump button spools her drive up");
+  // Waited out on the client's clock: a question for the server would wait behind the land loading at her pin.
+  must(`wait ${JUMP_WITHIN}t`, BUILD_SECONDS);
+  const longest = must("perf stop").summary?.server?.mspt?.max ?? 0;
+  const out = freighterReport();
+  const off = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
+  expect(off < JUMP_NEAR, "freighter: she comes out of the jump over her pin", out ? `middle at ${out.middle}` : "no report");
+  if (off >= JUMP_NEAR) {
+    return;
+  }
+  const loaded = out.jump_loaded_after < 0 ? "not in yet as she went, at the cap" : `in after ${out.jump_loaded_after} ticks`;
+  expect(longest < JUMP_LONGEST_TICK, "freighter: her jump never holds the server up, the land at her pin loading as she spools",
+    `longest tick ${round(longest)} ms; the land under her ${loaded}`);
+  const clear = out.altitude - below - (ground + JUMP_PILLAR - 1);
+  expect(clear >= JUMP_CLEAR, "freighter: she comes out with her lowest block well clear over the pillar on her pin", `${round(clear)} blocks over it`);
+  const aboard = must("wait 40t; status");
+  expect(aboard.aboard !== undefined || JSON.stringify(aboard).includes("aboard"), "freighter: whoever pressed the button is still aboard her",
+    aboard.pos?.map(round).join(","));
+  must("skyliners:autopilot land");
+}
+
 // The console's modules set up by hand: each kind stands on a floor as a desk, fixed to a wall as a plate and hung
 // under a ceiling as a wedge, each facing whoever put it up.
 function checkConsoleMounts() {
@@ -2079,6 +2138,7 @@ const CHECKS = {
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
+  "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },

@@ -930,6 +930,23 @@ public final class SkylinersRegistry {
     /** Her computer, after its falling blip, saying her name: "Magpie ready." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_MAGPIE_READY =
         sound("freighter_computer_magpie_ready");
+    /** Her computer as she jumps: "Jump drive spooling up. Hold on to something." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_SPOOLING =
+        sound("freighter_computer_jump_spooling");
+    /** Her computer letting go into the jump: "Here goes nothing." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_GO = sound("freighter_computer_jump_go");
+    /** Her computer coming out of the jump: "Out of the jump. Welcome to wherever this is." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_ARRIVED =
+        sound("freighter_computer_jump_arrived");
+    /** Her computer with no pin to jump to: "Nowhere to jump to. Pick a spot on the map." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_NO_PIN =
+        sound("freighter_computer_jump_no_pin");
+    /** Her computer asked to jump on the ground: "Not from down here. Get her flying first." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_GROUNDED =
+        sound("freighter_computer_jump_grounded");
+    /** Her computer asked to jump to a pin close by: "That is practically next door. Just fly there." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_TOO_NEAR =
+        sound("freighter_computer_jump_too_near");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );
@@ -1429,14 +1446,16 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<ConsoleBlock> CONSOLE_ENGINES = consoleModule("console_engines", ConsoleKind.ENGINES);
     public static final DeferredBlock<ConsoleBlock> CONSOLE_SWITCHES = consoleModule("console_switches", ConsoleKind.SWITCHES);
     public static final DeferredBlock<ConsoleBlock> CONSOLE_BOOST = consoleModule("console_boost", ConsoleKind.BOOST);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_JUMP = consoleModule("console_jump", ConsoleKind.JUMP);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConsoleBlockEntity>> CONSOLE_ENTITY =
         BLOCK_ENTITIES.register("console", () -> BlockEntityType.Builder.of(ConsoleBlockEntity::new, CONSOLE_READOUTS.get(),
-            CONSOLE_SCANNER.get(), CONSOLE_ENGINES.get(), CONSOLE_SWITCHES.get(), CONSOLE_BOOST.get()).build(null));
+            CONSOLE_SCANNER.get(), CONSOLE_ENGINES.get(), CONSOLE_SWITCHES.get(), CONSOLE_BOOST.get(), CONSOLE_JUMP.get()).build(null));
     public static final DeferredItem<BlockItem> CONSOLE_READOUTS_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_READOUTS);
     public static final DeferredItem<BlockItem> CONSOLE_SCANNER_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SCANNER);
     public static final DeferredItem<BlockItem> CONSOLE_ENGINES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_ENGINES);
     public static final DeferredItem<BlockItem> CONSOLE_SWITCHES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SWITCHES);
     public static final DeferredItem<BlockItem> CONSOLE_BOOST_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_BOOST);
+    public static final DeferredItem<BlockItem> CONSOLE_JUMP_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_JUMP);
     /**
      * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
      * and walked over, glass under its iris, as strong as glass is not; and its panel, which opens and shuts it.
@@ -2993,6 +3012,7 @@ public final class SkylinersRegistry {
             CONSOLE_ENGINES_ITEM,
             CONSOLE_SWITCHES_ITEM,
             CONSOLE_BOOST_ITEM,
+            CONSOLE_JUMP_ITEM,
             FLOOR_WINDOW_ITEM,
             FLOOR_WINDOW_PANEL_ITEM,
             BEACH_SAND_ITEM,

@@ -71,6 +71,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CONSOLE;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_HYPERSPACE_JUMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
@@ -658,6 +659,14 @@ public final class SkylinersConfig {
                 "click, and a big boost button that fires her mains flat out a while. Without it, her seats face her canopy bare."
             )
             .define("console", true);
+        FREIGHTER_HYPERSPACE_JUMP = builder
+            .comment(
+                "Whether the freighter can jump to her pin through hyperspace from the jump button on her console: while she",
+                "flies to a pin, her drive spools up as the land there loads, the stars stretch into streaks for everyone",
+                "aboard, and in a flash she is at the pin, everyone aboard with her, clear over the highest ground there.",
+                "Without it, the button only clicks, and her console has her flight readouts in its place."
+            )
+            .define("hyperspaceJump", true);
         FREIGHTER_ROBOTS = builder
             .comment(
                 "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",

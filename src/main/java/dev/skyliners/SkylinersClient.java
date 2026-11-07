@@ -68,6 +68,7 @@ import dev.skyliners.client.GearBayRenderer;
 import dev.skyliners.client.HelmRenderer;
 import dev.skyliners.client.HelmetBreathing;
 import dev.skyliners.client.HelmetVisor;
+import dev.skyliners.client.HyperspaceOverlay;
 import dev.skyliners.client.KeptLooks;
 import dev.skyliners.client.LaserBolts;
 import dev.skyliners.client.LaserCannonRenderer;
@@ -262,6 +263,9 @@ public final class SkylinersClient {
             SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
+        // A freighter's hyperspace jump: her computer's last word as she comes out, and the view widening as she goes.
+        NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::tick);
+        NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::widen);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
@@ -354,6 +358,8 @@ public final class SkylinersClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "outside_camera"), PassengerCameras::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lightning_flash"), LightningFlash::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "blast_flash"), BlastFlash::overlay);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_jump"),
+            HyperspaceOverlay::overlay);
         // Where the spyglass's own round is drawn, under the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lookout_glass"), LookoutView::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.

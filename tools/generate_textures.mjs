@@ -8767,7 +8767,8 @@ beachTextures();
 // into squares by fine lighter lines, as of plates bolted down, one scratched; each module's screen as its item shows
 // it, a little picture of what it shows on dark glass; and the pictures its screens and plates are drawn with, white to
 // be tinted, so none needs reading: chevrons for speed, a peak and an arrow up for height, an arrow up for a climb,
-// three arrows up for her lift, a flame for her mains, a fat double chevron for the boost and the power sign.
+// three arrows up for her lift, a flame for her mains, a fat double chevron for the boost, a starburst of streaks out
+// from a bright middle for the hyperspace jump, and the power sign.
 function consoleTextures() {
   const GUNMETAL = [0x3c, 0x41, 0x47];
   texture(blockOutput, "console_casing", (x, y) => {
@@ -8796,6 +8797,11 @@ function consoleTextures() {
     engines: (x, y) => (x % 4 === 2 && y > 13 - [7, 10, 4, 8][Math.floor(x / 4)] && y < 14 ? [CYAN, AMBER, RED, GREEN][Math.floor(x / 4)] : null),
     switches: (x, y) => (x % 3 === 1 && y > 9 && y < 13 ? [0xb0, 0xb6, 0xbe] : x % 3 === 1 && y === 5 ? [GREEN, AMBER, RED, CYAN, GREEN][Math.floor(x / 3)] : null),
     boost: (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 5 ? RED : Math.hypot(x - 7.5, y - 7.5) < 6 ? [0xf2, 0xc0, 0x1a] : null),
+    jump: (x, y) => {
+      const out = Math.hypot(x - 7.5, y - 7.5);
+      if (out < 1.6) return [0xea, 0xf6, 0xff];
+      return out < 6.5 && (Math.abs(x - 7.5) < 0.6 || Math.abs(y - 7.5) < 0.6 || Math.abs(Math.abs(x - 7.5) - Math.abs(y - 7.5)) < 0.6) ? CYAN : null;
+    },
   };
   for (const [kind, paint] of Object.entries(PICTURES)) {
     texture(blockOutput, `console_${kind}_screen`, (x, y) => {
@@ -8824,6 +8830,9 @@ function consoleTextures() {
     boost: ["................", "................", ".###.....###....", "..###.....###...", "...###.....###..", "....###.....###.",
       ".....###.....###", "......###.....##", "......###.....##", ".....###.....###", "....###.....###.", "...###.....###..",
       "..###.....###...", ".###.....###....", "................", "................"],
+    jump: ["................", ".......##.......", "..#....##....#..", "...#...##...#...", "....#..##..#....", ".....#.##.#.....",
+      "......####......", "################", "################", "......####......", ".....#.##.#.....", "....#..##..#....",
+      "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
     power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
       ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",
       "....########....", ".....######.....", "................", "................"],

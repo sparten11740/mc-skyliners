@@ -889,8 +889,20 @@ public final class FreighterPilot {
         return Math.abs(wanted - last) < SIGNAL_HOLD ? last : (int) Math.round(wanted);
     }
 
+    /**
+     * Moved straight to her pin by a hyperspace jump (see {@link FreighterJump}): what she had read of how she moves
+     * and of the ground round her pin is forgotten, since both were where she was, and she counts afresh from here how
+     * long she has been over it.
+     */
+    void jumped() {
+        smoothedGoing = null;
+        pads.reset();
+        lastPad = null;
+        overFor = 0;
+    }
+
     /** Where her disc's middle is in the world, from where her control head is and the way she points. */
-    private Vec3 middle(SableFlight.State state) {
+    Vec3 middle(SableFlight.State state) {
         Vec3 right = flat(state.right()).scale(wiring.middleRight());
         return state.position().add(right).add(flat(state.nose()).scale(wiring.middleAhead()));
     }

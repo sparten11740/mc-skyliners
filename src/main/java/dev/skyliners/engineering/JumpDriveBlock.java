@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.compat.SableFlight;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -157,6 +158,35 @@ public class JumpDriveBlock extends HorizontalDirectionalBlock implements Entity
         level.playSound(null, pos, sound, SoundSource.BLOCKS, VOLUME, 1.0F);
         if (ticks > 0) {
             level.scheduleTick(pos, this, ticks);
+        }
+    }
+
+    /**
+     * Her hyperspace jump begun from her cockpit (see {@code FreighterJump}): a drive at rest at a position, if one is
+     * there, spools up with its whine and holds there until she jumps, with no tick of its own to fire or sputter by.
+     */
+    public static void spoolForJump(ServerLevel level, @Nullable BlockPos pos) {
+        BlockState state = pos == null ? null : level.getBlockState(pos);
+        if (state != null && state.getBlock() instanceof JumpDriveBlock && state.getValue(DRIVE) == Drive.REST) {
+            level.setBlock(pos, state.setValue(DRIVE, Drive.SPOOLING), Block.UPDATE_ALL);
+            level.playSound(null, pos, SkylinersRegistry.JUMP_DRIVE_SPOOL.get(), SoundSource.BLOCKS, VOLUME, 1.0F);
+        }
+    }
+
+    /** She jumps: the drive, if one is there, fires with its whump and runs a while before it winds down. */
+    public static void fireForJump(ServerLevel level, @Nullable BlockPos pos) {
+        BlockState state = pos == null ? null : level.getBlockState(pos);
+        if (state != null && state.getBlock() instanceof JumpDriveBlock drive) {
+            level.getBlockTicks().clearArea(new BoundingBox(pos));
+            drive.step(level, pos, state, Drive.RUNNING, SkylinersRegistry.JUMP_DRIVE_JUMP.get(), RUN_TICKS);
+        }
+    }
+
+    /** Her jump called off: the drive, if one is spooling for it, falls back to rest. */
+    public static void spinDown(ServerLevel level, @Nullable BlockPos pos) {
+        BlockState state = pos == null ? null : level.getBlockState(pos);
+        if (state != null && state.getBlock() instanceof JumpDriveBlock && state.getValue(DRIVE) == Drive.SPOOLING) {
+            level.setBlock(pos, state.setValue(DRIVE, Drive.REST), Block.UPDATE_ALL);
         }
     }
 

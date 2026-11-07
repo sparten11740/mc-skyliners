@@ -46,13 +46,21 @@ final class FreighterEngineering {
         if (!SkylinersConfig.FREIGHTER_ENGINEERING.get()) {
             return;
         }
-        BlockPos drive = new BlockPos(0, deck + 1, DRIVE_OUT);
+        BlockPos drive = driveAt(deck);
         if (standsFree(layout, deck, drive) && standsFree(layout, deck, drive.north())) {
             layout.set(drive.getX(), drive.getY(), drive.getZ(),
                 SkylinersRegistry.JUMP_DRIVE.get().defaultBlockState().setValue(JumpDriveBlock.FACING, Direction.NORTH));
         }
         valveSpots(deck).stream().filter(at -> onWall(layout, at)).findFirst().ifPresent(at -> layout.set(at.getX(), at.getY(), at.getZ(),
             SkylinersRegistry.COOLANT_VALVE.get().defaultBlockState().setValue(CoolantValveBlock.FACING, Direction.NORTH)));
+    }
+
+    /**
+     * Where her jump drive stands, as she is laid out, in a freighter whose deck's floor is the row given; there only
+     * where her engineering has its machines and room for it, which whoever reads it finds by what stands there.
+     */
+    static BlockPos driveAt(int deck) {
+        return new BlockPos(0, deck + 1, DRIVE_OUT);
     }
 
     /**

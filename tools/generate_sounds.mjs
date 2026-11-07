@@ -5189,16 +5189,37 @@ const COMPUTER_LINES = {
 /** The longest a line may run, its blip and all, in seconds; and the countdown, a beat a number. */
 const COMPUTER_LONGEST = 2.5;
 const COMPUTER_COUNTDOWN_LONGEST = 4;
+// Her computer through her hyperspace jump (see FreighterJump), our own lines in the voice of a worn old cargo hauler's
+// computer that has seen it all: spooling up as the button is pressed, letting go as she jumps, coming out of it at the
+// pin, and, the button pressed when she cannot jump, why not: no pin set, not flying, or the pin too near to bother.
+// Said in COMPUTER's voice, its blip first, as her other lines are; a line in two phrases may run longer.
+const COMPUTER_JUMP_LINES = {
+  freighter_computer_jump_spooling: "Jump drive spooling up. | Hold on to something.",
+  freighter_computer_jump_go: "Here goes nothing.",
+  freighter_computer_jump_arrived: "Out of the jump. | Welcome to wherever this is.",
+  freighter_computer_jump_no_pin: "Nowhere to jump to. | Pick a spot on the map.",
+  freighter_computer_jump_grounded: "Not from down here. | Get her flying first.",
+  freighter_computer_jump_too_near: "That is practically next door. | Just fly there.",
+};
+const COMPUTER_JUMP_LONGEST = 4.5;
+/** A line of her computer's, said: its blip, then the voice. */
+function computerLine(name) {
+  const voice = trim(readWav(join(scratch, `${name}.voiced.wav`)));
+  const chirp = toneChirp(COMPUTER);
+  const samples = new Float64Array(chirp.length + voice.length);
+  const level = COMPUTER.chirpLevel * peakOf(voice);
+  chirp.forEach((sample, i) => (samples[i] = sample * level));
+  samples.set(voice, chirp.length);
+  return samples;
+}
 if (speaker) {
   await say(speaker, COMPUTER_LINES, COMPUTER, COMPUTER);
   for (const name of Object.keys(COMPUTER_LINES)) {
-    const voice = trim(readWav(join(scratch, `${name}.voiced.wav`)));
-    const chirp = toneChirp(COMPUTER);
-    const samples = new Float64Array(chirp.length + voice.length);
-    const level = COMPUTER.chirpLevel * peakOf(voice);
-    chirp.forEach((sample, i) => (samples[i] = sample * level));
-    samples.set(voice, chirp.length);
-    writeVoiced(name, samples, COMPUTER, name === "freighter_computer_jump_countdown" ? COMPUTER_COUNTDOWN_LONGEST : COMPUTER_LONGEST);
+    writeVoiced(name, computerLine(name), COMPUTER, name === "freighter_computer_jump_countdown" ? COMPUTER_COUNTDOWN_LONGEST : COMPUTER_LONGEST);
+  }
+  await say(speaker, COMPUTER_JUMP_LINES, COMPUTER, COMPUTER);
+  for (const name of Object.keys(COMPUTER_JUMP_LINES)) {
+    writeVoiced(name, computerLine(name), COMPUTER, COMPUTER_JUMP_LONGEST);
   }
 }
 

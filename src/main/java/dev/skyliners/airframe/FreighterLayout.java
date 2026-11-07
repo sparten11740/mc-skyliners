@@ -1504,8 +1504,8 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Wires the control head once it stands: her thrusters' relays and her legs' feet as offsets from it, turned as she
-     * was placed, where her disc's middle is from it, how far its block stands above her legs' feet, and the box round
-     * her blocks.
+     * was placed, where her disc's middle is from it, how far its block stands above her legs' feet, the box round her
+     * blocks, and where her jump drive stands in engineering, to spool and fire as she jumps.
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = clusters.stream().map(cluster -> offsets(at, cluster, rotation)).toList();
@@ -1513,7 +1513,9 @@ public final class FreighterLayout extends HullLayout {
             offset(at, jets[2], rotation), offset(at, jets[3], rotation));
         FreighterPilot.Wiring wiring = new FreighterPilot.Wiring(turned, offsets(at, mains, rotation), offsets(at, retros, rotation),
             jetRelays, offsets(at, feet, rotation), offsets(at, grille, rotation), -at.getX(), at.getZ(), Math.round(LIFT_OUT * scale));
-        autopilot.wire(FreighterFlight.class, at.getY()).configure(wiring);
+        FreighterFlight freighter = autopilot.wire(FreighterFlight.class, at.getY());
+        freighter.configure(wiring);
+        freighter.wireJumpDrive(offset(at, FreighterEngineering.driveAt(deck), rotation));
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-side, 0, front), new BlockPos(side, top, back)), rotation);
         autopilot.frame(frame.get(0), frame.get(1));
     }

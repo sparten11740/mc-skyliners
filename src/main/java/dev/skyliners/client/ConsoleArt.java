@@ -21,13 +21,15 @@ import org.joml.Matrix4f;
 
 /**
  * What a freighter console module shows and the controls standing on it (see {@link ConsoleRenderer}), each drawn on
- * its face in that face's own frame (see {@link ConsoleCasing.Surface}): x across from its middle, y up from its
- * bottom edge and z out of it, in blocks. The screens glow green and amber on dark glass, every reading with its own
- * picture, a bar or a needle beside its figure, so none needs reading: her speed, height, climb and heading; a scope
- * whose beam sweeps round over her pin and whoever is near; gauges of her lift, her mains and her boost; a grid of lit
- * squares; and the boost's flame chevrons, green when it is ready, pulsing orange as it fires and ringed red while it
- * rests. Along each desk stand chunky controls of its kind and a row of small lamps; with no ship to read, the screens
- * show the power sign pulsing slowly and only one lamp blinks.
+ * its face in that face's own frame (see {@link ConsoleCasing.Surface}): x across from its middle, y up from its bottom
+ * edge and z out of it, in blocks. The screens glow green and amber on dark glass, every reading with its own picture,
+ * a bar or a needle beside its figure, so none needs reading: her speed, height, climb and heading; a scope whose beam
+ * sweeps round over her pin and whoever is near; gauges of her lift, her mains and her boost; a grid of lit squares;
+ * the boost's flame chevrons, green when it is ready, pulsing orange as it fires and ringed red while it rests; and the
+ * hyperspace jump's starburst, dark with no pin to jump to, pulsing cyan while she can, and streaming streaks inside a
+ * filling ring as her drive spools up, its big blue button lit the same. Along each desk stand chunky controls of its
+ * kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly and only one lamp
+ * blinks.
  */
 final class ConsoleArt {
     /** Each layer of a face drawn just off the one under it, in blocks. */
@@ -86,6 +88,12 @@ final class ConsoleArt {
     private static final int HAZARD_YELLOW = 0xFFF2C01A;
     private static final int HAZARD_BLACK = 0xFF1C1D20;
     private static final int BUTTON_SIDES = 20;
+    private static final int JUMP_WHITE = 0xFFEAF6FF;
+    private static final int JUMP_BLUE = 0xFF1C4CA8;
+    private static final int JUMP_DARK = 0xFF233040;
+    /** The streaks out of the jump's starburst as her drive spools up: how many, and how far each runs a tick, a share. */
+    private static final int JUMP_STREAKS = 16;
+    private static final float JUMP_STREAK_SPEED = 0.06F;
 
     private ConsoleArt() {
     }
@@ -93,12 +101,13 @@ final class ConsoleArt {
     /**
      * The readings a console draws from, read once a frame: whether there is a ship to read, her speed ahead, height,
      * climb and heading as her instruments show them, her lift's and her mains' shares of full and where her boost
-     * stands, and whether she is a freighter at all; the drawing clock's ticks for what only moves for show; how long ago
-     * the console was last touched, in ticks, negative for never; which of its toggles are up, a bit each; and the blips
-     * its scope shows.
+     * stands, and her hyperspace jump, and whether she is a freighter at all; the drawing clock's ticks for what only
+     * moves for show; how long ago the console was last touched, in ticks, negative for never; which of its toggles are
+     * up, a bit each; and the blips its scope shows.
      */
     record Readings(boolean powered, double speed, double height, double climb, double heading, double lift, double mains,
-                    FreighterFlight.BoostShown boost, boolean freighter, float ticks, float sinceTouched, int toggles, List<Blip> blips) {
+                    FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, boolean freighter, float ticks, float sinceTouched, int toggles,
+                    List<Blip> blips) {
     }
 
     /** One blip on the scope: its bearing off her heading, in degrees, its distance, in blocks, and whether it is her pin. */
@@ -122,6 +131,7 @@ final class ConsoleArt {
             case ENGINES -> gauges(buffers, matrix, width, height, readings);
             case SWITCHES -> annunciators(buffers, matrix, width, height, readings);
             case BOOST -> boostScreen(buffers, matrix, width, height, readings);
+            case JUMP -> jumpScreen(buffers, matrix, width, height, readings);
         }
     }
 
@@ -345,6 +355,52 @@ final class ConsoleArt {
         ScreenDrawing.picture(buffers, matrix, icon("boost"), 0, y, size, 5 * LAYER, colour);
     }
 
+    /**
+     * The hyperspace jump: its starburst big in the middle, dark with nothing to jump to, pulsing cyan while she can
+     * jump, and white as her drive spools up, streaks streaming out of it longer and longer and a ring of segments
+     * round it lighting one by one.
+     */
+    private static void jumpScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
+        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        FreighterFlight.JumpShown jump = readings.jump();
+        double size = Math.min(width, height) * 0.28;
+        double y = height * 0.5;
+        int colour = switch (jump.stage()) {
+            case UNAVAILABLE -> UNLIT;
+            case READY -> fade(CYAN, 0.7F + 0.3F * Mth.sin(readings.ticks() * 0.15F));
+            case SPOOLING -> JUMP_WHITE;
+        };
+        if (jump.stage() == FreighterFlight.JumpStage.SPOOLING) {
+            streaks(shapes, matrix, y, size, jump.spooled(), readings.ticks());
+            spoolRing(shapes, matrix, y, size * 1.5, jump.spooled());
+        }
+        ScreenDrawing.picture(buffers, matrix, icon("jump"), 0, y, size, 5 * LAYER, colour);
+    }
+
+    /** Streaks streaming out of the jump's starburst as her drive spools up, longer the further it has spooled. */
+    private static void streaks(VertexConsumer shapes, Matrix4f matrix, double y, double size, double spooled, float ticks) {
+        for (int streak = 0; streak < JUMP_STREAKS; streak++) {
+            double angle = Mth.TWO_PI * streak / JUMP_STREAKS;
+            double run = ((ticks * JUMP_STREAK_SPEED + streak * 0.37) % 1);
+            double from = size * (0.9 + run * 0.6);
+            double to = from + size * (0.1 + spooled * 0.8);
+            ScreenDrawing.line(shapes, matrix, Math.sin(angle) * from, y + Math.cos(angle) * from, Math.sin(angle) * to, y + Math.cos(angle) * to,
+                3 * LAYER, (float) (size * 0.05), fade(CYAN, (float) (1 - run)));
+        }
+    }
+
+    /** The ring round the jump's starburst as her drive spools up, its segments lit one by one. */
+    private static void spoolRing(VertexConsumer shapes, Matrix4f matrix, double y, double radius, double spooled) {
+        int segments = 12;
+        for (int segment = 0; segment < segments; segment++) {
+            double a = Mth.TWO_PI * (segment + 0.15) / segments;
+            double b = Mth.TWO_PI * (segment + 0.85) / segments;
+            int colour = segment < spooled * segments ? CYAN : UNLIT;
+            ScreenDrawing.line(shapes, matrix, Math.sin(a) * radius, y + Math.cos(a) * radius, Math.sin(b) * radius, y + Math.cos(b) * radius,
+                4 * LAYER, (float) (radius * 0.08), colour);
+        }
+    }
+
     /** The ring of segments round the boost's chevrons while it rests, lit one by one as its rest runs out. */
     private static void restRing(VertexConsumer shapes, Matrix4f matrix, double y, double radius, double rested) {
         int segments = 8;
@@ -382,7 +438,9 @@ final class ConsoleArt {
             case ENGINES -> lever(solid, pose, x, y, slot, light, index == 0 ? readings.lift() : index == 1 ? readings.mains() : index == 2
                 ? readings.speed() / SPEED_FULL : readings.climb() / CLIMB_FULL * 0.5 + 0.5);
             case BOOST -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
-                readings.freighter() ? RED : UNLIT);
+                readings.freighter() ? RED : UNLIT, HAZARD_YELLOW, HAZARD_BLACK);
+            case JUMP -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
+                jumpCap(readings), JUMP_WHITE, JUMP_BLUE);
             default -> pushButton(solid, pose, x, y, slot, light, LAMP_COLOURS[index % LAMP_COLOURS.length]);
         }
     }
@@ -426,14 +484,24 @@ final class ConsoleArt {
         FlatQuads.box(solid, pose.last(), light, colour, (float) x - half, (float) y - half, 0.008F, (float) x + half, (float) y + half, 0.02F);
     }
 
+    /** The jump button's cap: lit cyan, pulsing, while she can jump, flashing white as she spools up, dark otherwise. */
+    private static int jumpCap(Readings readings) {
+        return switch (readings.jump().stage()) {
+            case UNAVAILABLE -> JUMP_DARK;
+            case READY -> fade(CYAN, 0.75F + 0.25F * Mth.sin(readings.ticks() * 0.15F)) | 0xFF000000;
+            case SPOOLING -> (int) readings.ticks() % 6 < 3 ? JUMP_WHITE : CYAN;
+        };
+    }
+
     /**
-     * The big boost button in the middle of its desk: a ring of yellow and black hazard stripes round a round red cap
-     * standing proud, pressed in a moment after a press.
+     * A big button in the middle of its desk: a ring of hazard stripes in two colours round a round cap standing proud,
+     * pressed in a moment after a press.
      */
-    private static void bigButton(VertexConsumer solid, PoseStack pose, double y, double slot, int light, boolean pressed, int colour) {
+    private static void bigButton(VertexConsumer solid, PoseStack pose, double y, double slot, int light, boolean pressed, int colour, int stripes,
+                                  int between) {
         float radius = (float) Math.min(slot * 0.22, 0.13);
         for (int stripe = 0; stripe < BUTTON_SIDES; stripe++) {
-            wedge(solid, pose, y, radius * 1.15F, radius * 1.55F, stripe, light, stripe % 2 == 0 ? HAZARD_YELLOW : HAZARD_BLACK);
+            wedge(solid, pose, y, radius * 1.15F, radius * 1.55F, stripe, light, stripe % 2 == 0 ? stripes : between);
         }
         prism(solid, pose, 0, y, radius * 1.1F, 0.02F, light, PLATE);
         prism(solid, pose, 0, y, radius, pressed ? 0.06F - PUSH : 0.06F, LightTexture.FULL_BRIGHT, colour);

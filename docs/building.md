@@ -298,7 +298,12 @@ her control head, a `ConsoleBlock` of each `ConsoleKind` (in `console/`) in the 
 read a touch on its toggles and the client's `ConsoleRenderer` to draw it, its casing by `ConsoleCasing`, the shading
 rolled round the ring, and its screens and controls by `ConsoleArt`, from the autopilot and `SableClient.attitude`. Her
 boost is `FreighterFlight.boost`, her pilot firing her mains flat out while it lasts (`FreighterPilot.Boost`), the
-clients shown when it ends to draw it. Her `DeckRobotBlock`s chirp, trill and beep from their block
+clients shown when it ends to draw it. Her hyperspace jump is `FreighterJump`, owned by `FreighterFlight` and asked for
+by the jump console: her `JumpDriveBlock` spooled through `spoolForJump`, the land round the pin loaded by a region
+ticket of its own (which lets go by itself), her lowest block kept clear over the highest of the land's
+`MOTION_BLOCKING` heightmap under her, and `SableFlight.jump` moving her, Sable carrying whoever stands or sits on her
+and the rest aboard moved with her; each step goes to everyone aboard as a `HyperspaceJump`, which the client's
+`HyperspaceOverlay` shows and sounds, her computer's lines generated with the rest of hers (`COMPUTER_JUMP_LINES`). Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing

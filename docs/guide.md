@@ -2595,7 +2595,7 @@ Before her seats her console curves round in a half circle, from in front of the
 to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky
 controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
 turned toward her middle so whichever seat you fly from it faces you. Left to right: a bank of toggles, her flight
-readouts, the boost button, the scanner, her flight readouts again, her engines and another bank of toggles. Every
+readouts, the boost button, the scanner, the hyperspace jump button, her engines and another bank of toggles. Every
 reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons, her
 height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
 with north marked red; gauges of her lift thrusters' push in cyan, her mains' in amber and her boost, whose levers on
@@ -2612,6 +2612,24 @@ Readout Console, Scanner Console, Engine Console, Toggle Console and Boost Conso
 floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down toward you, and it reads
 the nearest autopilot, showing the standby picture with none; the scope sweeps for whoever is near wherever it stands,
 pointing the way its desk does. The server config's `freighter.console` builds her without it.
+
+The big blue button on the co-pilot's side, in its ring of blue and white stripes under a starburst, jumps her through
+hyperspace to her pin. It lights up, its starburst pulsing cyan, only while she flies along to a pin set on her
+autopilot's map; otherwise it is dark, and pressed it only says why not, her computer's gruff voice with it: nowhere to
+jump to, not from down on the ground, or a pin so near she should just fly there. Pressed while it is lit, her
+computer says her jump drive is spooling up and to hold on to something, and her drive in engineering whines up too;
+for everyone aboard, wherever they are in her, stars come out over the view and stretch into streaks rushing out
+toward them, longer and faster, the view widening and deepening to blue, while the jump screen's streaks stream out
+inside a ring of segments lighting one by one. Meanwhile the land round the pin is loaded, far out, so she does not
+stall coming out there. Her computer lets go with a dry "here goes nothing", the streaks race, and in a white flash and
+a deep whump she is over the pin, everyone aboard with her, the streaks falling back to points; she comes out as high
+as she flew, or higher where the land there is higher, always with her lowest block at least ten blocks over the
+highest block under her, trees and buildings and all. Then her autopilot carries on as if she had flown there,
+hovering over the pin or, set to land, coming down beside it. Her computer welcomes everyone to wherever this is. If
+she stops flying along before she goes, the jump is called off: the streaks fade and her computer reports a fault. The
+Hyperspace Jump Console is among her blocks in the creative tab and works for any freighter near it, on a floor, a wall
+or a ceiling. The server config's `freighter.hyperspaceJump` switches the jump off; her console then has her flight
+readouts again where the jump button was.
 
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight

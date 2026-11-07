@@ -17,7 +17,12 @@ public enum ConsoleKind implements StringRepresentable {
     /** A bank of chunky toggles, each with its lamp, that click up and down; its screen a grid of lit squares. */
     SWITCHES(5),
     /** A big red push-button under a flame picture that fires her mains flat out a while (see her autopilot's boost). */
-    BOOST(1);
+    BOOST(1),
+    /**
+     * A big blue push-button under a starburst, lit while she flies to a pin, that jumps her there through hyperspace
+     * (see her autopilot's jump).
+     */
+    JUMP(1);
 
     /** How many controls stand in a row along its desk: toggles, knobs, levers, or its one big button. */
     private final int controls;
