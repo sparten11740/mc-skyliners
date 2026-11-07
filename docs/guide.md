@@ -2769,7 +2769,10 @@ as soon as she is set to fly; her take-off waits on her legs until it is all awa
 in to land and it clicks, its lamp blinking amber, and the ramp comes down by itself as soon as she has settled on her
 legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and if her take-off is
 waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls her take-off off with
-a low note, her autopilot switching off and the ramp staying down. From the ground, the amber button low on her
+a low note, her autopilot switching off and the ramp staying down. Walk onto it while it swings and it holds you up:
+coming down it carries you down with it, and going up it stops where it is, chiming, until you step off it. It never
+comes down onto anyone standing under it, nor shuts its hatch on anyone in it, but stops with a chime until they move.
+From the ground, the amber button low on her
 starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where something stands in its
 way, such as ground rising under its foot. The server config's `freighter.ramp` builds her without it. The Ramp Call
 Button is among her blocks in the creative tab; set on any freighter, it works her ramp.

@@ -46,9 +46,12 @@ public class RampDeckBlock extends Block {
      * further than its ramp's panel ever stands from it, so the panel is loaded too if it is there.
      */
     private static final int PANEL_REACH = 24;
+    /** A whole block's height, in sixteenths, and the fall across one block of a ramp falling one block in two. */
+    static final int FULL = 16;
+    private static final int HALF_FALL = FULL / 2;
     /** How many little steps each block's fall is cut into, and how many sixteenths each of a block's run is. */
     private static final int STEPS = 4;
-    private static final int STEP_RUN = 16 / STEPS;
+    private static final int STEP_RUN = FULL / STEPS;
     private static final Map<Half, Map<Direction, VoxelShape>> SHAPES = new EnumMap<>(Half.class);
 
     static {
@@ -77,16 +80,32 @@ public class RampDeckBlock extends Block {
         return base.setValue(FACING, up).setValue(HALF, half);
     }
 
-    /**
-     * A block's slope climbing north, as {@link TurnedShapes} wants it: each little step as high as the plate over the
-     * middle of its run, so the plate's top is never more than half a step from it.
-     */
+    /** A block's slope climbing north for one half of a block's fall (see {@link #slope(int, int)}). */
     private static VoxelShape slope(Half half) {
+        return slope(half == Half.UPPER ? FULL : HALF_FALL, HALF_FALL);
+    }
+
+    /**
+     * Whether a plate whose top stands so many sixteenths over a block's foot at its north edge, falling so many across
+     * it, dips to its foot or under before its far edge, leaving its last little steps to the block under.
+     */
+    static boolean dipsOut(int top, int drop) {
+        return top - drop * (STEPS - 0.5) / STEPS <= 0;
+    }
+
+    /**
+     * A block's slope climbing north, as {@link TurnedShapes} wants it, under a plate whose top stands so many
+     * sixteenths over the block's foot at its north edge and falls so many across it: each little step solid from the
+     * foot as high as the plate over the middle of its run, so the plate's top is never more than half a step from it,
+     * and no higher than the block; a step the plate passes under leaves nothing.
+     */
+    static VoxelShape slope(int top, int drop) {
         VoxelShape shape = Shapes.empty();
-        double top = half == Half.UPPER ? 16 : 8;
         for (int step = 0; step < STEPS; step++) {
-            double height = top - 8.0 * (step + 0.5) / STEPS;
-            shape = Shapes.or(shape, box(0, 0, step * STEP_RUN, 16, height, (step + 1) * STEP_RUN));
+            double height = Math.min(FULL, top - (double) drop * (step + 0.5) / STEPS);
+            if (height > 0) {
+                shape = Shapes.or(shape, box(0, 0, step * STEP_RUN, FULL, height, (step + 1) * STEP_RUN));
+            }
         }
         return shape;
     }
@@ -145,6 +164,14 @@ public class RampDeckBlock extends Block {
      */
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        takeAwayIfLeftover(level, pos);
+    }
+
+    /**
+     * Takes away a block of a ramp's deck or plate in the world that no ramp holds any more; never one aboard, nor one
+     * while the world round it is not all loaded, where its ramp's panel may not be loaded yet.
+     */
+    static void takeAwayIfLeftover(ServerLevel level, BlockPos pos) {
         if (!BlockPos.containing(SableFlight.toWorld(level, Vec3.atCenterOf(pos))).equals(pos) || !aroundLoaded(level, pos)) {
             return;
         }

@@ -6,7 +6,9 @@ import dev.skyliners.autopilot.Craft;
 import dev.skyliners.autopilot.VoiceLength;
 import dev.skyliners.compat.SableFlight;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -20,6 +22,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -36,9 +39,13 @@ import net.minecraft.world.phys.Vec3;
  * rams take its weight ({@link #PRESSURE}), the plate swings down on them to the hydraulics' whine, falling one block
  * in two to the ground she stands on ({@link #SWUNG}), and its foot lip unfolds with a thud and a second breath of
  * steam ({@link #OUT}); then the deck it is walked on is laid (see {@link RampDeckBlock}). Going away runs backwards,
- * once nobody stands on it, the steam last as it seals. It will not come down where anything stands in its way, or
- * while someone stands on the stowed plate: it sounds a low note, or waits with a chime until they step off. The server
- * runs it and tells every client where it is going, each client running the same clock to draw it in between.
+ * once nobody stands on it, the steam last as it seals. All the while it swings, blocks under its plate (see
+ * {@link RampPlateBlock}) are set where it is each tick, so whoever walks onto it on its way is held up: coming down it
+ * carries them down with it; going up it never lifts anyone, holding where it is while anyone stands on it, as it holds
+ * coming down while anyone stands under it and shutting while anyone stands in its hatch, waiting with a chime until
+ * they move. It will not come down where anything stands in its way, or while someone stands on the stowed plate: it
+ * sounds a low note, or waits with a chime until they step off. The server runs it and tells every client where it is
+ * going, each client running the same clock to draw it in between.
  */
 public final class BoardingRamp {
     /** The ticks of coming down: the rams pressed, the plate swung all the way down, and the foot lip unfolded. */
@@ -47,6 +54,35 @@ public final class BoardingRamp {
     public static final int OUT = 90;
     /** While someone stands on it or on the stowed plate, how often it looks again whether they have stepped off. */
     private static final int CLEAR_CHECK_TICKS = 10;
+    /**
+     * While it waits so, how often its chime sounds again, in ticks, so whoever holds it hears it waits for them for as
+     * long as it does, not only as it stops, with no need to read anything.
+     */
+    private static final int CHIME_AGAIN_TICKS = 40;
+    /** How thick the plate is under its top, in blocks, as it is drawn. */
+    public static final float THICKNESS = 0.25F;
+    /**
+     * How far over the ground the plate's foot stops, in blocks: half its foot lip's thickness and a hair, so the lip
+     * lies on the ground rather than in it, its top never in the same plane as the ground's, which flickers through it.
+     */
+    public static final double FOOT_CLEAR = THICKNESS / 2 + 0.01;
+    /**
+     * How far under the plate's top the blocks set under it reach at most, in blocks: whoever stands that close under
+     * it as it comes down is in its way.
+     */
+    private static final double SOLID_UNDER = 1.0;
+    /**
+     * How far under the plate's top someone's feet may be and still stand on it rather than under it, in blocks: its
+     * blocks' little steps, and the sixteenths they are cut to, keep a foot on it within this.
+     */
+    private static final double STANDING_ON = 0.25;
+    /** How far in from a block of the hatch someone must be to stand in its way as it shuts, in blocks. */
+    private static final double IN_THE_HATCH = 0.05;
+    /**
+     * How the blocks under the plate are set and taken away each tick it swings: told to the clients, but to nothing
+     * round them, as nothing there needs to know, so it costs little.
+     */
+    private static final int PLATE_UPDATE = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /** How loud its sounds are, as shares of full: the latch, the steam, the hydraulics and the foot's thud. */
     private static final float LATCH_VOLUME = 1.0F;
     private static final float STEAM_VOLUME = 1.0F;
@@ -68,9 +104,9 @@ public final class BoardingRamp {
     private static final int[] EDGES = {-1, 1};
     /** How far the steam blows out sideways from the well's edges, in blocks a tick. */
     private static final double STEAM_SPEED = 0.08;
-    /** What stands in the ramp's way, in the world or aboard: anything solid but its own deck. */
-    private static final Predicate<BlockState> IN_THE_WAY =
-        state -> !state.isAir() && !state.canBeReplaced() && !(state.getBlock() instanceof RampDeckBlock);
+    /** What stands in the ramp's way, in the world or aboard: anything solid but its own deck and plate. */
+    private static final Predicate<BlockState> IN_THE_WAY = state -> !state.isAir() && !state.canBeReplaced()
+        && !(state.getBlock() instanceof RampDeckBlock) && !(state.getBlock() instanceof RampPlateBlock);
 
     /** The block entity that keeps a ramp, where it is: its panel. */
     interface Keeper {
@@ -102,9 +138,9 @@ public final class BoardingRamp {
             return Math.hypot(run(), rise);
         }
 
-        /** How steeply the plate lies once down, in degrees. */
+        /** How steeply the plate lies once down, in degrees: its foot just clear of the ground (see {@link #FOOT_CLEAR}). */
         public double slope() {
-            return Math.toDegrees(Math.atan2(rise, run()));
+            return Math.toDegrees(Math.atan2(rise - FOOT_CLEAR, run()));
         }
 
         /** The way across the ramp, to the right seen from outside, looking at her. */
@@ -124,6 +160,8 @@ public final class BoardingRamp {
     /** Someone stands on it, or on the stowed plate, and it waits for them to step off; the chime has sounded. */
     private boolean held;
     private int cooldown;
+    /** How long it has waited so, in ticks, for its chime to sound again; not saved. */
+    private int waitedFor;
     /** Whether its deck is laid, and the hatch's blocks taken away. */
     private boolean laid;
     private boolean hatchOpen;
@@ -169,6 +207,15 @@ public final class BoardingRamp {
         return Mth.lerp(partialTick, lastTicks, ticks);
     }
 
+    /**
+     * How far down the plate has swung so far through coming down, in degrees: still while the rams take its weight,
+     * then eased down to its slope, where it lies once down.
+     */
+    public double angle(double at) {
+        double share = Math.clamp((at - PRESSURE) / (double) (SWUNG - PRESSURE), 0, 1);
+        return frame.slope() * share * share * (3 - 2 * share);
+    }
+
     /** Whether the hatch's blocks are away, so the plate is drawn in their place. */
     public boolean hatchOpen() {
         return hatchOpen;
@@ -194,10 +241,13 @@ public final class BoardingRamp {
         return deck(cell / frame.width(), firstColumn() + cell % frame.width());
     }
 
-    /** Whether a block is part of its deck, laid. */
+    /** Whether a block is part of its deck, laid, or of the blocks under its plate as it swings now. */
     boolean holds(Level level, BlockPos pos) {
-        if (!laid || level != panel.getLevel()) {
+        if (level != panel.getLevel()) {
             return false;
+        }
+        if (!laid) {
+            return hatchOpen && plateAt(angle(ticks)).containsKey(pos);
         }
         for (int cell = 0; cell < cells(); cell++) {
             if (cell(cell).equals(pos)) {
@@ -247,6 +297,7 @@ public final class BoardingRamp {
     /** The latches let go: the hatch's blocks go, in a burst of steam, her computer saying so. */
     private void unlatch(ServerLevel level) {
         openHatch(level);
+        setPlate(level, plateAt(angle(ticks)));
         sound(level, SkylinersRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
         sound(level, SkylinersRegistry.RAMP_STEAM.get(), STEAM_VOLUME, 1.0F);
         sayLowering(level);
@@ -292,6 +343,12 @@ public final class BoardingRamp {
     private void waitFor(ServerLevel level) {
         held = true;
         cooldown = CLEAR_CHECK_TICKS;
+        waitedFor = 0;
+        chime(level);
+    }
+
+    /** The chime that says it waits for someone to step off or out of its way. */
+    private void chime(ServerLevel level) {
         level.playSound(null, panel.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
             BoardingAirstairs.WAITING_PITCH);
     }
@@ -304,18 +361,41 @@ public final class BoardingRamp {
             return;
         }
         if (deploying && ticks < OUT) {
+            if (anyoneInTheSwing(level, ticks, ticks + 1)) {
+                hold(level);
+                return;
+            }
             ticks++;
             arrive(level, ticks);
             panel.setChanged();
         } else if (!deploying && (ticks > 0 || hatchOpen)) {
+            if (inTheWayGoingUp(level)) {
+                hold(level);
+                return;
+            }
             ticks = Math.max(0, ticks - 1);
             leave(level, ticks);
             panel.setChanged();
         }
     }
 
-    /** Coming down, what a tick brings: the hydraulics as the plate swings, the thud at its foot, then its deck. */
+    /** Someone stands where it would move on its way: it stops where it is, with a chime, telling the clients. */
+    private void hold(ServerLevel level) {
+        waitFor(level);
+        panel.sync();
+    }
+
+    /** Whether anyone stands where it would move next going up: in its hatch as it would shut, or in its swing. */
+    private boolean inTheWayGoingUp(ServerLevel level) {
+        return ticks <= 1 ? AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), hatchSpots()) : anyoneInTheSwing(level, ticks, ticks - 1);
+    }
+
+    /**
+     * Coming down, what a tick brings: the blocks under the plate where it has swung to, the hydraulics as it swings,
+     * the thud at its foot, then its deck in their place.
+     */
     private void arrive(ServerLevel level, int at) {
+        setPlate(level, at == OUT ? Map.of() : plateAt(angle(at)));
         if (at == PRESSURE) {
             sound(level, SkylinersRegistry.RAMP_HYDRAULICS.get(), HYDRAULICS_VOLUME, 1.0F);
         } else if (at == SWUNG) {
@@ -327,8 +407,12 @@ public final class BoardingRamp {
         }
     }
 
-    /** Going away, what a tick brings: the hydraulics as the plate swings back, the seal's steam, the hatch shut. */
+    /**
+     * Going away, what a tick brings: the blocks under the plate where it has swung back to, the hydraulics as it
+     * swings, the seal's steam, the hatch shut in their place.
+     */
     private void leave(ServerLevel level, int at) {
+        setPlate(level, at == 0 ? Map.of() : plateAt(angle(at)));
         if (at == SWUNG) {
             sound(level, SkylinersRegistry.RAMP_HYDRAULICS.get(), HYDRAULICS_VOLUME, 1.0F);
         } else if (at == PRESSURE) {
@@ -340,23 +424,46 @@ public final class BoardingRamp {
         }
     }
 
-    /** Held up by someone where it would move: now and then a look whether they have stepped off, and then away. */
+    /**
+     * Held up by someone where it would move: now and then a look whether they have stepped off or out of its way, and
+     * then on its way again, the hydraulics heard again where the plate is part way through its swing.
+     */
     private void waitForClear(ServerLevel level) {
+        if (++waitedFor % CHIME_AGAIN_TICKS == 0) {
+            chime(level);
+        }
         if (--cooldown > 0) {
             return;
         }
         cooldown = CLEAR_CHECK_TICKS;
         boolean opening = deploying && ticks == 0 && !hatchOpen;
-        if (AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), opening ? plateSpots() : deckSpots())) {
+        if (stillInTheWay(level, opening)) {
             return;
         }
         held = false;
         if (opening) {
             unlatch(level);
-        } else if (!deploying) {
+        } else if (!deploying && laid) {
             takeUp(level);
         }
+        if (swinging()) {
+            sound(level, SkylinersRegistry.RAMP_HYDRAULICS.get(), HYDRAULICS_VOLUME, 1.0F);
+        }
         panel.sync();
+    }
+
+    /**
+     * Whether whoever held it still stands where it would move: on the stowed plate as it would open, on its deck as
+     * it would fold, in its hatch as it would shut, or where its plate would swing through next.
+     */
+    private boolean stillInTheWay(ServerLevel level, boolean opening) {
+        if (opening) {
+            return AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), plateSpots());
+        }
+        if (deploying) {
+            return anyoneInTheSwing(level, ticks, ticks + 1);
+        }
+        return laid ? AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), deckSpots()) : inTheWayGoingUp(level);
     }
 
     /** On a client, each tick: the same clock the server runs, and steam as the latches let go or the plate seals. */
@@ -428,7 +535,7 @@ public final class BoardingRamp {
         return List.of(AABB.encapsulatingFullBlocks(left, right));
     }
 
-    /** Lays its deck, each block where nothing else stands. */
+    /** Lays its deck, each block where nothing else stands now its plate's blocks are away. */
     private void lay(ServerLevel level) {
         BlockState block = SkylinersRegistry.RAMP_DECK.get().defaultBlockState();
         Direction up = frame.out().getOpposite();
@@ -441,24 +548,161 @@ public final class BoardingRamp {
         laid = true;
     }
 
-    /** Takes its deck up, and any of it she left standing in the world as she was assembled with it down. */
+    /**
+     * Takes its deck up, and any of it she left standing in the world as she was assembled with it down, the blocks
+     * under its plate set in its place as it starts back up.
+     */
     private void takeUp(ServerLevel level) {
         for (int cell = 0; cell < cells(); cell++) {
             BlockPos at = cell(cell);
-            takeUpAt(level, at);
+            takeUpAt(level, at, RampDeckBlock.class);
             BlockPos world = BlockPos.containing(SableFlight.toWorld(level, Vec3.atCenterOf(at)));
             if (!world.equals(at) && level.isLoaded(world)) {
-                takeUpAt(level, world);
+                takeUpAt(level, world, RampDeckBlock.class);
             }
         }
         laid = false;
+        if (hatchOpen) {
+            setPlate(level, plateAt(angle(ticks)));
+        }
     }
 
-    /** Takes up a block of its deck, if it is still one. */
-    private static void takeUpAt(ServerLevel level, BlockPos at) {
-        if (level.getBlockState(at).getBlock() instanceof RampDeckBlock) {
+    /** Takes up a block of its deck or of its plate, if it is still one. */
+    private static void takeUpAt(ServerLevel level, BlockPos at, Class<? extends Block> kind) {
+        if (kind.isInstance(level.getBlockState(at).getBlock())) {
             level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         }
+    }
+
+    /**
+     * The blocks under its plate swung so far down, each where it goes and what it is: in each block's run out from its
+     * hinge as far as the plate reaches over, across its width, the block its top passes through at the run's edge
+     * toward the hinge and, where its top dips out of that block across the run, the block under too.
+     */
+    private Map<BlockPos, BlockState> plateAt(double angle) {
+        Map<BlockPos, BlockState> plate = new HashMap<>();
+        double fall = Math.tan(Math.toRadians(angle));
+        int drop = (int) Math.round(fall * RampDeckBlock.FULL);
+        long runs = Math.round(frame.length() * Math.cos(Math.toRadians(angle)));
+        BlockState base = SkylinersRegistry.RAMP_PLATE.get().defaultBlockState();
+        Direction up = frame.out().getOpposite();
+        for (int out = 0; out < runs; out++) {
+            double near = -out * fall * RampDeckBlock.FULL;
+            int row = (int) Math.ceil(near / RampDeckBlock.FULL);
+            int top = (int) Math.round(near - RampDeckBlock.FULL * (row - 1));
+            if (top <= 0) {
+                row--;
+                top += RampDeckBlock.FULL;
+            }
+            plateRun(plate, out, row, RampPlateBlock.plate(base, up, top, drop));
+            if (RampDeckBlock.dipsOut(top, drop)) {
+                plateRun(plate, out, row - 1, RampPlateBlock.plate(base, up, top + RampDeckBlock.FULL, drop));
+            }
+        }
+        return plate;
+    }
+
+    /** A block of the plate so many rows over its head's, in a run out from its hinge, across its width; none for none. */
+    private void plateRun(Map<BlockPos, BlockState> plate, int out, int row, @Nullable BlockState block) {
+        if (block == null) {
+            return;
+        }
+        BlockPos middle = panel.getBlockPos().offset(frame.head()).relative(frame.out(), out).above(row);
+        for (int column = firstColumn(); column < firstColumn() + frame.width(); column++) {
+            plate.put(middle.relative(frame.right(), column), block);
+        }
+    }
+
+    /**
+     * Sets the blocks under its plate where it lies now, in open room only, and takes away any of them lying elsewhere
+     * in the room it swings through, as they did a tick ago; with none given, takes all of them away, and any left
+     * standing in the world as she was assembled with it swinging.
+     */
+    private void setPlate(ServerLevel level, Map<BlockPos, BlockState> plate) {
+        BlockPos head = panel.getBlockPos().offset(frame.head());
+        int runs = (int) Math.ceil(frame.length());
+        for (int out = 0; out <= runs; out++) {
+            for (int row = -frame.rise() - 1; row <= 0; row++) {
+                setPlateRow(level, plate, head.relative(frame.out(), out).above(row));
+            }
+        }
+        if (!plate.isEmpty()) {
+            return;
+        }
+        for (int cell = 0; cell < cells(); cell++) {
+            BlockPos world = BlockPos.containing(SableFlight.toWorld(level, Vec3.atCenterOf(cell(cell))));
+            if (!world.equals(cell(cell)) && level.isLoaded(world)) {
+                takeUpAt(level, world, RampPlateBlock.class);
+            }
+        }
+    }
+
+    /** One row across the room its plate swings through, each block of it set as the plate has it now. */
+    private void setPlateRow(ServerLevel level, Map<BlockPos, BlockState> plate, BlockPos middle) {
+        for (int column = firstColumn(); column < firstColumn() + frame.width(); column++) {
+            BlockPos at = middle.relative(frame.right(), column);
+            BlockState there = level.getBlockState(at);
+            BlockState wanted = plate.get(at);
+            boolean ours = there.getBlock() instanceof RampPlateBlock;
+            if (wanted != null && there != wanted && (ours || there.canBeReplaced())) {
+                level.setBlock(at, wanted, PLATE_UPDATE);
+            } else if (wanted == null && ours) {
+                level.setBlock(at, Blocks.AIR.defaultBlockState(), PLATE_UPDATE);
+            }
+        }
+    }
+
+    /**
+     * Whether anyone stands where its plate would swing through between two ticks of its way, seen in her frame
+     * wherever she is: over or under its plate, across its width and out as far as it reaches.
+     */
+    private boolean anyoneInTheSwing(ServerLevel level, int from, int to) {
+        double before = Math.tan(Math.toRadians(angle(from)));
+        double after = Math.tan(Math.toRadians(angle(to)));
+        if (before == after) {
+            return false;
+        }
+        double reach = frame.length() * Math.cos(Math.atan(Math.min(before, after)));
+        Vec3 out = Vec3.atLowerCornerOf(frame.out().getNormal());
+        Vec3 hinge = Vec3.atBottomCenterOf(panel.getBlockPos().offset(frame.head()).above()).subtract(out.scale(0.5));
+        Vec3 middle = SableFlight.toWorld(level, hinge.add(out.scale(reach / 2)).add(0, -frame.rise() / 2.0, 0));
+        AABB near = new AABB(middle, middle).inflate(reach / 2 + frame.rise() + frame.width());
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, near, LivingEntity::isAlive)) {
+            Vec3 centre = SableFlight.toPlot(level, panel.getBlockPos(), entity.getBoundingBox().getCenter(), false).subtract(hinge);
+            if (inTheSwing(entity, centre, reach, before, after)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether someone, their middle so far from its hinge, stands where its plate would swing through from where it
+     * falls so much a block to where it falls so much: coming down, under it, as close under its top as its blocks
+     * reach; going up, over its well, under her deck's top and over the plate's underside, on it as much as under where
+     * it would rise to. Over the plate across its width and out as far as it reaches, checked at the side of them
+     * nearer its hinge for the top over them and the further side for the underside.
+     */
+    private boolean inTheSwing(LivingEntity entity, Vec3 centre, double reach, double before, double after) {
+        double along = centre.dot(Vec3.atLowerCornerOf(frame.out().getNormal()));
+        double across = centre.dot(Vec3.atLowerCornerOf(frame.right().getNormal()));
+        double half = entity.getBbWidth() / 2;
+        if (Math.abs(across) >= frame.width() / 2.0 + half || along <= -half || along - half >= reach) {
+            return false;
+        }
+        double feet = centre.y - entity.getBbHeight() / 2;
+        double head = feet + entity.getBbHeight();
+        double nearSide = Math.max(0, along - half);
+        double farSide = Math.min(reach, along + half);
+        if (after > before) {
+            return feet < -nearSide * before - STANDING_ON && head > -farSide * after - SOLID_UNDER;
+        }
+        return along > 0 && feet < -STANDING_ON / 2 && feet < -nearSide * after + STANDING_ON && head > -farSide * before - SOLID_UNDER;
+    }
+
+    /** The room each block of its hatch fills once shut, where someone standing holds it open. */
+    private List<AABB> hatchSpots() {
+        return hatch.cells(panel.getBlockPos()).stream().map(cell -> new AABB(cell).deflate(IN_THE_HATCH)).toList();
     }
 
     /** Takes the hatch's blocks away, as it opens. */

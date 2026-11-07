@@ -188,6 +188,22 @@ const RAMP_RISE = 7;
 const RAMP_WALK_TICKS = 110;
 const RAMP_STAND_UP = 3;
 const RAMP_HELD_TICKS = 200;
+// Walking onto a freighter's ramp on its way: how far in from the middle of its head's block to stand in her corridor,
+// in blocks, a block and a half past its hinge; how long after its panel is pressed to walk out, in ticks, well into its
+// swing; how long the walk out and the look after it are, and the walk back, in ticks; and how far over the ground
+// whoever walked onto it must still be, in blocks, to be standing on it rather than fallen through to the ground.
+const RAMP_HEAD_IN = 2;
+const RAMP_INTO_SWING = 35;
+const RAMP_ONTO_TICKS = 25;
+const RAMP_HELD_LOOK = 20;
+const RAMP_BACK_TICKS = 40;
+const RAMP_ABOVE_GROUND = 2;
+// Standing under a freighter's ramp as it comes down: how far out from its head, in blocks, where it would come down
+// lower than a head; how long they stand there, in ticks, longer than it takes to come down; and how far to step
+// aside from under it, in blocks, clear of its width.
+const RAMP_UNDER_OUT = 9;
+const RAMP_UNDER_TICKS = 150;
+const RAMP_STEP_ASIDE = 4;
 // How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
@@ -1111,8 +1127,58 @@ function checkFreighterRamp() {
   const stays = must("find skyliners:ramp_deck 128 200 side=server").rows.length;
   expect(stays === deck.length, "freighter: her ramp's deck stays laid, however often its blocks look whether they are leftovers",
     `${stays} of ${deck.length} blocks`);
+  walkOntoRampOnItsWay(deck, [dx, dz, yaw], panel.at_abs, lamp, lampTurns);
+  standUnderRamp(deck, [dx, dz], panel.at_abs, lamp, lampTurns);
   callRampFromTheGround(lamp, lampTurns);
   holdFreighterOnHerRamp(deck, footX + dx * 2 * RAMP_STAND_UP, lowest + RAMP_STAND_UP, footZ + dz * 2 * RAMP_STAND_UP, lamp);
+}
+
+// Where to stand in a freighter's ring corridor just in from the head of her ramp, as [x, y, z], from its deck laid and
+// the way it climbs into her: the middle of its highest row, a little way in past its hinge, on her deck.
+function rampHeadStand(deck, [dx, dz]) {
+  const highest = Math.max(...deck.map(([, y]) => y));
+  const innermost = Math.max(...deck.filter(([, y]) => y === highest).map(([x, , z]) => x * dx + z * dz));
+  const head = deck.filter(([x, y, z]) => y === highest && x * dx + z * dz === innermost).sort((a, b) => a[0] - b[0] || a[2] - b[2]);
+  const [x, y, z] = head[Math.floor(head.length / 2)];
+  return [x + 0.5 + dx * RAMP_HEAD_IN, y + 1, z + 0.5 + dz * RAMP_HEAD_IN];
+}
+
+// Walks onto a freighter's ramp from her corridor, in survival, while it swings: going up, it holds where it is with the
+// player standing on it rather than dropping them through the floor, and folds away once they step back off; coming
+// down, it carries them down with it, never dropping them to the ground under her. With the fault there was nothing
+// to stand on while it swung, and they fell through her floor to the ground.
+function walkOntoRampOnItsWay(deck, [dx, dz, yaw], panelAt, lamp, lampTurns) {
+  const [x, y, z] = rampHeadStand(deck, [dx, dz]);
+  const out = yaw + 180;
+  survival();
+  must(`server tp @p ${x} ${y} ${z}; turn ${out} 20; wait 20t; use ${panelAt.join(",")}; wait ${RAMP_INTO_SWING}t; turn ${out} 20`);
+  const onIt = must(`move forward ${RAMP_ONTO_TICKS}t; wait ${RAMP_HELD_LOOK}t; status`);
+  const held = lamp();
+  expect(onIt.pos[1] > ground + RAMP_ABOVE_GROUND && held === "busy", "freighter: walked onto her ramp as it goes up, it holds them up, stopped",
+    `at ${onIt.pos.map(round).join(",")}, the ground at ${ground}, lamp ${held}`);
+  must(`turn ${yaw} 0; move forward ${RAMP_BACK_TICKS}t`);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: stepped back off it, her ramp folds away", `lamp ${lamp()}`);
+  must(`server tp @p ${x} ${y} ${z}; turn ${out} 20; wait 20t; use ${panelAt.join(",")}; wait ${RAMP_INTO_SWING}t; turn ${out} 20`);
+  const riding = must(`move forward ${RAMP_ONTO_TICKS}t; status`);
+  creative();
+  expect(riding.pos[1] > ground + RAMP_ABOVE_GROUND, "freighter: walked onto her ramp as it comes down, it carries them down on it",
+    `at ${riding.pos.map(round).join(",")}, the ground at ${ground}`);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: and comes down all the way with them on it", `lamp ${lamp()}`);
+}
+
+// Stands on the ground under where a freighter's ramp comes down, as it comes down: it holds over them rather than
+// coming down on them, and comes down once they step out from under it.
+function standUnderRamp(deck, [dx, dz], panelAt, lamp, lampTurns) {
+  const [x, y, z] = rampHeadStand(deck, [dx, dz]);
+  must(`server tp @p ${x} ${y} ${z}; wait 20t; use ${panelAt.join(",")}`);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: her ramp folds away from its panel", `lamp ${lamp()}`);
+  const [ux, uz] = [x - dx * (RAMP_HEAD_IN + RAMP_UNDER_OUT), z - dz * (RAMP_HEAD_IN + RAMP_UNDER_OUT)];
+  must(`use ${panelAt.join(",")}; server tp @p ${ux} ${ground} ${uz}; wait ${RAMP_UNDER_TICKS}t`);
+  const under = must("status");
+  expect(lamp() === "busy" && under.pos[1] < ground + 1, "freighter: standing under her ramp as it comes down, it holds over them",
+    `lamp ${lamp()}, at ${under.pos.map(round).join(",")}`);
+  must(`server tp @p ${ux + dz * RAMP_STEP_ASIDE} ${ground} ${uz + dx * RAMP_STEP_ASIDE}`);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: stepped out from under it, her ramp comes down", `lamp ${lamp()}`);
 }
 
 // Presses a freighter's ramp call button on her leg from the ground: her ramp folds away, and comes down again.

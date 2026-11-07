@@ -58,6 +58,11 @@ final class Hatch {
         return top;
     }
 
+    /** Where each of its blocks goes, kept from a place. */
+    List<BlockPos> cells(BlockPos keeper) {
+        return parts.stream().map(part -> keeper.offset(part.offset())).toList();
+    }
+
     /** Whether a block is one of its own, kept from a place. */
     boolean covers(BlockPos keeper, BlockPos cell) {
         BlockPos from = cell.subtract(keeper);
