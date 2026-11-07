@@ -2838,11 +2838,11 @@ beach out.
 The floor window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
 it lays itself into that floor, the whole disc at once, each block taking on the look of the floor it replaced, grass,
 planks or tiles alike; it does not fit (a thud and a puff of smoke) where any block of the disc is something other than
-plain floor or open air. Set its panel down within twelve blocks to open and shut it, by hand or with a redstone pulse
-such as a button on the panel: on a floor it stands on its post, and on a wall it sits flat in a steel rim. Break any
-block of the window and it all comes out, the floor put back as it was and the window given back. Beach sand, potted
-palms, parasols, sun loungers and tiki torches are in the creative tab as well; a tiki torch stands tall on a floor, or
-put on a wall it is held out from it on a bamboo bracket, its flame lower.
+plain floor or open air. Use the window itself to open or shut it, or set its panel down within twelve blocks to open
+and shut it, by hand or with a redstone pulse such as a button on the panel: on a floor it stands on its post, and on a
+wall it sits flat in a steel rim. Break any block of the window and it all comes out, the floor put back as it was and
+the window given back. Beach sand, potted palms, parasols, sun loungers and tiki torches are in the creative tab as
+well; a tiki torch stands tall on a floor, or put on a wall it is held out from it on a bamboo bracket, its flame lower.
 
 Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal
 folds, in a glass tank standing out from the wall by the galley on a stand of cabinets, a dark hood over it, so it paces

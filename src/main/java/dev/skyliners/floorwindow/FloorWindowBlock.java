@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * A block of a round floor window: a disc of glass nine blocks across, set into a floor and walked over, under an iris
@@ -157,6 +159,22 @@ public class FloorWindowBlock extends BaseEntityBlock {
         SoundEvent hatch = open ? SoundEvents.IRON_TRAPDOOR_OPEN : SoundEvents.IRON_TRAPDOOR_CLOSE;
         level.playSound(null, middle, iris, SoundSource.BLOCKS, IRIS_VOLUME, IRIS_PITCH);
         level.playSound(null, middle, hatch, SoundSource.BLOCKS, IRIS_VOLUME, HATCH_PITCH);
+    }
+
+    /**
+     * Used by hand, the window opens, or shuts if it is open, as its panel works it, every panel working it showing
+     * which on its lamp.
+     */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (level instanceof ServerLevel server && !player.isSpectator()
+            && level.getBlockEntity(pos) instanceof FloorWindowBlockEntity window) {
+            BlockPos middle = window.middle();
+            boolean open = !isOpen(server, middle);
+            setOpen(server, middle, open);
+            FloorWindowPanelBlock.showFor(server, middle, open);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     /**

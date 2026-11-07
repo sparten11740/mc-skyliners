@@ -47,6 +47,8 @@ public class FloorWindowPanelBlock extends HorizontalDirectionalBlock {
     private static final int REACH = 12;
     private static final int REACH_DOWN = 4;
     private static final int REACH_UP = 2;
+    /** How far a window's blocks reach out from its middle block at most, in blocks: its radius, rounded up. */
+    private static final int WINDOW_OUT = 5;
     /** How loud its click is, and its thud where no window is in reach, and the thud's pitch. */
     private static final float CLICK_VOLUME = 0.5F;
     private static final float THUD_VOLUME = 0.8F;
@@ -134,6 +136,22 @@ public class FloorWindowPanelBlock extends HorizontalDirectionalBlock {
         boolean open = !FloorWindowBlock.isOpen(level, middle);
         FloorWindowBlock.setOpen(level, middle, open);
         level.setBlock(pos, state.setValue(OPEN, open), Block.UPDATE_CLIENTS);
+        showFor(level, middle, open);
+    }
+
+    /**
+     * Every panel in reach of a window that works it shows on its lamp whether it is open, as the window is opened or
+     * shut by hand or from one of them.
+     */
+    static void showFor(ServerLevel level, BlockPos middle, boolean open) {
+        int across = REACH + WINDOW_OUT;
+        for (BlockPos at : BlockPos.betweenClosed(middle.offset(-across, -REACH_UP, -across), middle.offset(across, REACH_DOWN, across))) {
+            BlockState panel = level.isLoaded(at) ? level.getBlockState(at) : null;
+            if (panel != null && panel.getBlock() instanceof FloorWindowPanelBlock && panel.getValue(OPEN) != open
+                && middle.equals(nearestWindow(level, at))) {
+                level.setBlock(at, panel.setValue(OPEN, open), Block.UPDATE_CLIENTS);
+            }
+        }
     }
 
     /** The middle block of the window with a block nearest the panel, within its reach; null for none. */
