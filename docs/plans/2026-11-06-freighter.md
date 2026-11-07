@@ -753,6 +753,11 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   the ground read on a first flight trusted on the next, and her circling a spot beside her for ever (she now turns
   toward a pin before speeding to it). The search costs her autopilot 0.20 ms a tick on average over a landing, 0.16
   without it.
+- Her canopy (ask 14): four struts square to the blocks and a ring, in place of eight that stepped across them (1888bb88).
+- Her canopy dims (ask 13, 1db68720): the rocket's window dimmer at the pilot's left hand, reached from the seat, its four
+  buttons from clear to all but black; the rocket's oval windows dim as before, checked on the final build.
+- Before handing out 1.2.0-alpha.7: the quick play-test suite (58 checks) and the freighter's slow checks
+  (freighter-flight, freighter-drag, freighter-pad, freighter-lake) all hold.
 
 ### For Jan to look at
 
