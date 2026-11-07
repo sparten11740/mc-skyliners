@@ -303,6 +303,21 @@ const FREIGHTER_ROBOTS = 2;
 const ROBOT_FRONT = 2;
 const ROBOT_AWAY = 30;
 const ROBOT_HEARD_TICKS = 80;
+// A freighter's outside: how many of each piece of it she is built with at least, by block id, her fittings, her
+// plates and her lights; the outside fittings put up by hand on a floor, a wall and under a ceiling; how far south of where she was laid down the stand they are
+// put up on is, how far apart along it they go, and how high it is, in blocks; and how far above her control head she
+// is sent to look for any of her outside left on the ground, in blocks.
+const EXTERIOR_PIECES = [
+  ["big_satellite_dish", 1], ["satellite_dish", 2], ["antenna_mast", 6], ["sensor_dome", 3], ["heat_sink", 12], ["exhaust_vent", 5],
+  ["hull_machinery", 20], ["hull_floodlight", 6],
+];
+const FITTINGS_PUT_UP = [
+  "satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "hull_machinery", "hull_floodlight",
+];
+const STAND_AWAY = 24;
+const STAND_APART = 3;
+const STAND_HIGH = 5;
+const EXTERIOR_CLIMB = 30;
 const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
@@ -1566,6 +1581,56 @@ function checkFreighterBeach() {
   expect(must(`block ${middle.join(",")}`).props?.open === "false", "freighter: pressed again, it shuts");
 }
 
+// A freighter's outside: she is built with every piece of it, as many as she should have of each at least; and each
+// outside fitting, put up by hand on a floor, on a wall and under a ceiling, takes the shape for where it went, as a
+// player clicking there would expect.
+function checkFreighterExterior() {
+  const site = ship("freighter");
+  for (const [id, least] of EXTERIOR_PIECES) {
+    const count = found(id);
+    expect(count >= least, `freighter: she is built with ${id.replaceAll("_", " ")}, ${least} or more`, `${count} of them`);
+  }
+  const [x0, z0] = [site.x - Math.floor((FITTINGS_PUT_UP.length * STAND_APART) / 2), site.z + STAND_AWAY];
+  const x1 = x0 + FITTINGS_PUT_UP.length * STAND_APART;
+  must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x1} ${ground + STAND_HIGH + 1} ${z0 + 3} stone`);
+  must(`server fill ${x0 - 1} ${ground + STAND_HIGH} ${z0} ${x1} ${ground + STAND_HIGH} ${z0 + 2} stone`);
+  FITTINGS_PUT_UP.forEach((id, i) => putUpEveryWay(id, x0 + i * STAND_APART, z0));
+}
+
+// How many blocks of the mod's of an id stand in the world round the player: Blockpilot gives the total only when there
+// are more than it lists.
+function found(id) {
+  const reply = must(`find skyliners:${id} 128 1`);
+  return reply.count ?? reply.rows.length;
+}
+
+// One fitting put up by hand as a player would: standing on the ground, on the stand's wall and under its overhang;
+// whether each took the shape for where it went.
+function putUpEveryWay(id, x, z) {
+  emptyHands();
+  must(`server give @p skyliners:${id} 3; wait 5t; select 0`);
+  const spots = [["floor", x, ground, z - 3], ["wall", x, ground + 2, z + 2], ["ceiling", x, ground + STAND_HIGH - 1, z]];
+  for (const [mount, sx, sy, sz] of spots) {
+    must(`server tp @p ${sx + 0.5} ${ground} ${sz - 2.5} 0 20; wait 10t`);
+    send(`place skyliners:${id} ${sx},${sy},${sz}`);
+    const reply = must(`block ${sx},${sy},${sz} side=server`);
+    const put = reply.id ?? "";
+    const as = reply.props?.mount ?? "floor";
+    expect(put.includes(id) && as === mount, `${id.replaceAll("_", " ")}: put up on a ${mount}, it takes its ${mount} shape`, `${put} mount=${as}`);
+  }
+}
+
+// A freighter lifting off takes all of her outside along: no piece of it is left on the ground where she stood.
+function checkFreighterExteriorLiftOff() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + EXTERIOR_CLIMB} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off her legs", up ? `at ${up.altitude}` : "");
+  const left = EXTERIOR_PIECES.filter(([id]) => found(id) > 0).map(([id]) => id);
+  expect(left.length === 0, "freighter: lifting off, she leaves none of her outside behind", left.join(", "));
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1952,6 +2017,8 @@ const CHECKS = {
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
+  "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
+  "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

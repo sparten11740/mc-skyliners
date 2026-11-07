@@ -345,6 +345,11 @@ import dev.skyliners.entity.SlideRide;
 import dev.skyliners.entity.Spookie;
 import dev.skyliners.entity.Tardigrade;
 import dev.skyliners.entity.Trolley;
+import dev.skyliners.exterior.ExhaustVentBlock;
+import dev.skyliners.exterior.HullFittingBlock;
+import dev.skyliners.exterior.HullFittings;
+import dev.skyliners.exterior.SatelliteDishBlock;
+import dev.skyliners.exterior.SatelliteDishBlockEntity;
 import dev.skyliners.item.AirframeBlueprintItem;
 import dev.skyliners.item.BasketballItem;
 import dev.skyliners.item.BoardingPassItem;
@@ -472,6 +477,10 @@ public final class SkylinersRegistry {
     private static final int PRESSED_GLOW = 7;
     /** How brightly the self-destruct button glows while armed, in light levels: a red glow round it on the wall. */
     private static final int ARMED_GLOW = 9;
+    /** How brightly a sensor dome's band glows, in light levels: a faint cyan halo round it at night. */
+    private static final int SENSOR_GLOW = 4;
+    /** How brightly a hull floodlight lights what is round it, in light levels: as bright as a light gets. */
+    private static final int HULL_FLOODLIGHT_GLOW = 15;
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -1341,6 +1350,51 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserCannonBlockEntity>> LASER_CANNON_ENTITY =
         BLOCK_ENTITIES.register("laser_cannon", () -> BlockEntityType.Builder.of(LaserCannonBlockEntity::new, LASER_CANNON.get()).build(null));
     public static final DeferredItem<BlockItem> LASER_CANNON_ITEM = ITEMS.registerSimpleBlockItem(LASER_CANNON);
+    /**
+     * The freighter's outside fittings (see {@link HullFittingBlock}), each put up on a floor, a wall or a ceiling in a
+     * shape of its own: her satellite dishes, small and big, turning on their mounts (see {@link SatelliteDishBlock}),
+     * her antenna masts with their blinking red lamps, her sensor domes, her banks of heat-sink fins, her exhaust vents
+     * letting off wisps, the boxes, pipes and tanks of her hull machinery, and her floodlights, lighting the ground
+     * under her.
+     */
+    public static final DeferredBlock<SatelliteDishBlock> SATELLITE_DISH = BLOCKS.registerBlock(
+        "satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.SATELLITE_DISH, HullFittings.SMALL_DISH),
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> SATELLITE_DISH_ITEM = ITEMS.registerSimpleBlockItem(SATELLITE_DISH);
+    public static final DeferredBlock<SatelliteDishBlock> BIG_SATELLITE_DISH = BLOCKS.registerBlock(
+        "big_satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.BIG_SATELLITE_DISH, HullFittings.BIG_DISH),
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> BIG_SATELLITE_DISH_ITEM = ITEMS.registerSimpleBlockItem(BIG_SATELLITE_DISH);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SatelliteDishBlockEntity>> SATELLITE_DISH_ENTITY = BLOCK_ENTITIES.register(
+        "satellite_dish", () -> BlockEntityType.Builder.of(SatelliteDishBlockEntity::new, SATELLITE_DISH.get(), BIG_SATELLITE_DISH.get()).build(null));
+    public static final DeferredBlock<HullFittingBlock> ANTENNA_MAST = BLOCKS.registerBlock(
+        "antenna_mast", properties -> new HullFittingBlock(properties, HullFittings.ANTENNA_MAST), metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> ANTENNA_MAST_ITEM = ITEMS.registerSimpleBlockItem(ANTENNA_MAST);
+    public static final DeferredBlock<HullFittingBlock> SENSOR_DOME = BLOCKS.registerBlock(
+        "sensor_dome", properties -> new HullFittingBlock(properties, HullFittings.SENSOR_DOME), metal(MapColor.SNOW).noOcclusion()
+            .lightLevel(state -> SENSOR_GLOW)
+    );
+    public static final DeferredItem<BlockItem> SENSOR_DOME_ITEM = ITEMS.registerSimpleBlockItem(SENSOR_DOME);
+    public static final DeferredBlock<HullFittingBlock> HEAT_SINK = BLOCKS.registerBlock(
+        "heat_sink", properties -> new HullFittingBlock(properties, HullFittings.HEAT_SINK), metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> HEAT_SINK_ITEM = ITEMS.registerSimpleBlockItem(HEAT_SINK);
+    public static final DeferredBlock<ExhaustVentBlock> EXHAUST_VENT = BLOCKS.registerBlock(
+        "exhaust_vent", ExhaustVentBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> EXHAUST_VENT_ITEM = ITEMS.registerSimpleBlockItem(EXHAUST_VENT);
+    public static final DeferredBlock<HullFittingBlock> HULL_MACHINERY = BLOCKS.registerBlock(
+        "hull_machinery", properties -> new HullFittingBlock(properties, HullFittings.HULL_MACHINERY), metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> HULL_MACHINERY_ITEM = ITEMS.registerSimpleBlockItem(HULL_MACHINERY);
+    public static final DeferredBlock<HullFittingBlock> HULL_FLOODLIGHT = BLOCKS.registerBlock(
+        "hull_floodlight", properties -> new HullFittingBlock(properties, HullFittings.HULL_FLOODLIGHT), metal(MapColor.COLOR_GRAY).noOcclusion()
+            .lightLevel(state -> HULL_FLOODLIGHT_GLOW)
+    );
+    public static final DeferredItem<BlockItem> HULL_FLOODLIGHT_ITEM = ITEMS.registerSimpleBlockItem(HULL_FLOODLIGHT);
     /** The bandstand in the freighter's club, its band playing her song (see {@link BandstandBlock}). */
     public static final DeferredBlock<BandstandBlock> BANDSTAND = BLOCKS.registerBlock(
         "bandstand", BandstandBlock::new,
@@ -2948,6 +3002,14 @@ public final class SkylinersRegistry {
             RAMP_BUTTON_ITEM,
             LASER_CROSSBOW,
             LASER_CANNON_ITEM,
+            SATELLITE_DISH_ITEM,
+            BIG_SATELLITE_DISH_ITEM,
+            ANTENNA_MAST_ITEM,
+            SENSOR_DOME_ITEM,
+            HEAT_SINK_ITEM,
+            EXHAUST_VENT_ITEM,
+            HULL_MACHINERY_ITEM,
+            HULL_FLOODLIGHT_ITEM,
             BANDSTAND_ITEM,
             SPOOKIE_HAMMOCK_ITEM,
             ENGINE_GRATING_ITEM,

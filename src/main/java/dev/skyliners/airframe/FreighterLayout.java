@@ -414,6 +414,7 @@ public final class FreighterLayout extends HullLayout {
         layout.robots();
         layout.ramp();
         layout.turret();
+        FreighterExterior.build(layout);
         layout.bandstand();
         layout.clubBar();
         layout.quarters();
@@ -1465,7 +1466,7 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /** The way along her deck at a bearing, clockwise from her bow, as x and z of a unit vector. */
-    private static double[] way(double bearing) {
+    static double[] way(double bearing) {
         double turn = Math.toRadians(bearing);
         return new double[]{Math.sin(turn), -Math.cos(turn)};
     }

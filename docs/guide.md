@@ -2615,6 +2615,20 @@ off and lands, and behind her mains or ahead of her retros as they fire: Create 
 whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her autopilot screen and the settings
 screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
 
+Her outside is a working ship's. On her top, to port of her stern, a big white satellite dish nearly four blocks across
+turns slowly round on its pedestal, tipped up at the sky; off her port bow stands a little farm of antenna masts, two
+more to starboard, each with a red lamp at its tip blinking a second on and three off; there are cream sensor domes with
+a cyan band round their foot, banks of heat-sink fins glowing orange at their roots either side of her stern over her
+engines, exhaust vents between them letting off white wisps, and runs of machinery, boxes, copper pipes and amber
+status lamps, out from her middle and along her prongs. Off her port rim a smaller dish on an arm sweeps from side to
+side beside a whip antenna; conduit, vents, fins and floodlights hang on her rim; and under her belly floodlights light
+the ground she comes down on, with a radome, another dish, a blade antenna and tanks. The Satellite Dish, Big Satellite
+Dish, Antenna Mast, Sensor Dome, Heat Sink, Exhaust Vent, Hull Machinery and Hull Floodlight are among her blocks in the
+creative tab, and each goes up wherever it is clicked against, in a shape of its own for each: standing on a floor,
+fixed to a wall (a dish on an arm, a mast as a whip on its hinge, fins out from a plate, a louvred vent, a run of
+conduit, a spotlight on a bracket) or hung under a ceiling (a dish turned down at the ground, a blade antenna, a radome,
+a nozzle, a tank, a landing light). The server config's `freighter.exterior` builds her without them.
+
 Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
 bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three
 tall in the corridor's wall, out to her outer bulkhead, where her hull grows too low to stand in. Past the bulkhead the

@@ -68,6 +68,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_STABILITY_SWITCH;
     public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_EXTERIOR;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
@@ -636,6 +637,13 @@ public final class SkylinersConfig {
                 "Without it, her stern is plain hull, her engines' plumes still showing."
             )
             .define("engineGrille", true);
+        FREIGHTER_EXTERIOR = builder
+            .comment(
+                "Whether the freighter is built with her outside fitted out: satellite dishes turning on her top, her rim and her",
+                "belly, antenna masts with blinking red lamps, sensor domes, heat-sink fins over her engines, exhaust vents letting",
+                "off wisps, boxes and pipes of machinery on her prongs and floodlights under her. Without them, her hull is bare."
+            )
+            .define("exterior", true);
         FREIGHTER_CANOPY_DIMMER = builder
             .comment(
                 "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",

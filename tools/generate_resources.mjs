@@ -283,6 +283,184 @@ function rampFittings() {
   cubes.laser_cannon = null;
 }
 
+// The fleet's outside fittings (see HullFittingBlock), the freighter's dishes, masts, domes, fins, vents, machinery
+// and floodlights: each a model of its own for each way it is put up, drawn facing north, a wall's
+// against the south side of its block (see hullFittingModels), turned for each facing, unlit by the corner darkening
+// so a part past its block never draws black aboard. A satellite dish's mount is its block's model and its dish a model
+// of its own, drawn over it by SatelliteDishRenderer about the back of its hub, the big dish's three times as big on
+// heavier mounts; their items show the dish on its post. Fitted onto her hull, so breakable, and light as the rest of
+// her is (see FITTINGS); each drops itself.
+{
+  const textures = {
+    steel: `${ID}:block/hull_fitting_steel`, dark: `${ID}:block/hull_fitting_dark`, pipe: `${ID}:block/hull_pipe`,
+    lamp: `${ID}:block/hull_status_lamp`, particle: `${ID}:block/hull_fitting_steel`,
+  };
+  for (const [name, own, mounts] of hullFittingModels()) {
+    for (const [mount, elements] of Object.entries(mounts)) {
+      write(`assets/${ID}/models/block/${name}_${mount}.json`, {
+        parent: "minecraft:block/block", ambientocclusion: false, textures: { ...textures, ...own }, elements,
+      });
+    }
+    const part = name.endsWith("satellite_dish") ? ",part=mount" : "";
+    const variants = Object.fromEntries(Object.keys(mounts).filter((mount) => mount !== "dish").flatMap((mount) => Object.entries(yRot).map(([facing, y]) =>
+      [`facing=${facing},mount=${mount}${part}`, { model: `${ID}:block/${name}_${mount}`, ...(y ? { y } : {}) }])));
+    if (part) {
+      ["floor", "wall", "ceiling"].forEach((mount) => Object.keys(yRot).forEach((facing) => {
+        variants[`facing=${facing},mount=${mount},part=dish`] = { model: `${ID}:block/satellite_dish_dish` };
+      }));
+    }
+    write(`assets/${ID}/blockstates/${name}.json`, { variants });
+    if (!part) {
+      write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_floor` });
+    }
+    dropsItself(name);
+    cubes[name] = null;
+  }
+  const models = Object.fromEntries(hullFittingModels().map(([name, own, mounts]) => [name, { own, mounts }]));
+  const bowl = models.satellite_dish.mounts.dish.filter((element) => !element.rotation);
+  for (const [name, up] of [["satellite_dish", 6], ["big_satellite_dish", 11]]) {
+    write(`assets/${ID}/models/item/${name}.json`, {
+      parent: "minecraft:block/block", ambientocclusion: false, textures: { ...textures, ...models.satellite_dish.own },
+      elements: [...models[name].mounts.floor, ...shifted(bowl, 0, up, -4)],
+      display: { gui: { rotation: [25, 200, 0], translation: [0, -1.5, 0], scale: [0.55, 0.55, 0.55] } },
+    });
+  }
+}
+// The outside fittings, each [its name, its own textures, its models by mount]: on a floor, on a wall, under a ceiling,
+// and the satellite dish's dish.
+function hullFittingModels() {
+  const glow = (from, to, texture, rotation) => {
+    const element = solid(from, to, texture, rotation);
+    element.shade = false;
+    Object.values(element.faces).forEach((face) => (face.neoforge_data = { block_light: 15, sky_light: 15 }));
+    return element;
+  };
+  const faced = (from, to, faces, rotation) => ({
+    from, to, ...(rotation ? { rotation } : {}),
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) => [side, { texture: faces[side] ?? faces.all }])),
+  });
+  const tilt = (origin, angle) => ({ origin, axis: "x", angle });
+  // A disc of a radius about the middle of a face looking north, between two depths, as three crossed boxes.
+  const disc = (radius, z0, z1, faces) => [[1, 0.41], [0.41, 1], [0.71, 0.71]].map(([across, up]) =>
+    faced([8 - radius * across, 8 - radius * up, z0], [8 + radius * across, 8 + radius * up, z1], faces));
+  // The bowl's raised rim, a ring of boxes round its edge.
+  const rim = (radius, z0, z1, texture) => {
+    const [side, flat, thick] = [radius * 0.41, radius * 0.71, 1.5];
+    return [
+      solid([8 - side, 8 + radius - thick, z0], [8 + side, 8 + radius, z1], texture), solid([8 - side, 8 - radius, z0], [8 + side, 8 - radius + thick, z1], texture),
+      solid([8 - radius, 8 - side, z0], [8 - radius + thick, 8 + side, z1], texture), solid([8 + radius - thick, 8 - side, z0], [8 + radius, 8 + side, z1], texture),
+      ...[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([sx, sy]) => solid(
+        [Math.min(8 + sx * flat, 8 + sx * side), Math.min(8 + sy * flat, 8 + sy * side), z0],
+        [Math.max(8 + sx * flat, 8 + sx * side), Math.max(8 + sy * flat, 8 + sy * side), z1], texture)),
+    ];
+  };
+  const fins = (count, place) => Array.from({ length: count }, (_, i) => place(2 + i * 2.3));
+  return [
+    ["satellite_dish", { face: `${ID}:block/satellite_dish_face`, back: `${ID}:block/satellite_dish_back` }, {
+      floor: [solid([4, 0, 4], [12, 1.5, 12], "#dark"), solid([5, 1.5, 5], [11, 2.5, 11], "#steel"), solid([6.5, 2.5, 6.5], [9.5, 9, 9.5], "#steel"),
+        solid([9.5, 1.5, 7.5], [10.5, 8, 8.5], "#pipe"), solid([5, 9, 5], [11, 10.5, 11], "#dark")],
+      wall: [solid([5, 3, 14], [11, 13, 16], "#dark"), solid([7, 7, 6], [9, 9, 14], "#steel"),
+        solid([7.25, 3.5, 9.3], [8.75, 5, 15], "#steel", tilt([8, 4.25, 15], 45)), solid([5.5, 9, 3.5], [10.5, 10, 7.5], "#dark")],
+      ceiling: [solid([4, 14.5, 4], [12, 16, 12], "#dark"), solid([7, 10.5, 7], [9, 14.5, 9], "#steel"), solid([9, 11, 7.5], [10, 14.5, 8.5], "#pipe"),
+        solid([5.5, 9, 5.5], [10.5, 10.5, 10.5], "#dark")],
+      dish: [solid([6.5, 6.5, 10], [9.5, 9.5, 12], "#dark"), ...disc(9, 9, 10, { north: "#face", all: "#back" }), ...rim(9, 7.5, 9, "#back"),
+        solid([7.4, 7.4, 1], [8.6, 8.6, 9], "#steel"), solid([6.5, 6.5, -1.5], [9.5, 9.5, 1], "#dark"), glow([7.25, 7.25, -1.6], [8.75, 8.75, -1.5], "#lamp"),
+        solid([7.5, 9, 0.5], [8.5, 10, 11.1], "#steel", tilt([8, 9.5, 0.5], -45)), solid([7.5, 6, 0.5], [8.5, 7, 11.1], "#steel", tilt([8, 6.5, 0.5], 45))],
+    }],
+    ["big_satellite_dish", {}, {
+      floor: [solid([1, 0, 1], [15, 2, 15], "#dark"), solid([3, 2, 3], [13, 6, 13], "#steel"), solid([5, 6, 5], [11, 13, 11], "#steel"),
+        solid([11, 2, 7.5], [12.5, 13, 8.5], "#pipe"), solid([3.5, 13, 3.5], [12.5, 16, 12.5], "#dark"), glow([5, 3.5, 2.9], [7, 4.5, 3], "#lamp")],
+      wall: [solid([3, 2, 14], [13, 14, 16], "#dark"), solid([5, 9, 4], [7, 11, 14], "#steel"), solid([9, 9, 4], [11, 11, 14], "#steel"),
+        solid([6, 4.5, 9.4], [10, 6, 15], "#steel", tilt([8, 5.25, 15], 45)), solid([4.5, 11, 1], [11.5, 12, 5], "#dark")],
+      ceiling: [solid([2, 14, 2], [14, 16, 14], "#dark"), solid([5, 4, 5], [11, 14, 11], "#steel"), solid([10.5, 5, 7.5], [12, 14, 8.5], "#pipe"),
+        solid([3.5, 1, 3.5], [12.5, 4, 12.5], "#dark")],
+    }],
+    ["antenna_mast", { beacon: `${ID}:block/antenna_lamp` }, {
+      floor: [solid([5, 0, 5], [11, 1, 11], "#dark"), solid([6, 1, 6], [10, 3, 10], "#steel"), solid([7.25, 3, 7.25], [8.75, 28, 8.75], "#steel"),
+        solid([6.5, 6, 6.5], [9.5, 10, 9.5], "#dark"), glow([9.5, 8, 7.5], [9.6, 9, 8.5], "#lamp"), solid([7.5, 13, 4], [8.5, 14, 12], "#steel"),
+        solid([3, 18, 7.5], [13, 19, 8.5], "#steel"), solid([4.5, 23, 7.5], [11.5, 24, 8.5], "#steel"), glow([6.75, 28, 6.75], [9.25, 30.5, 9.25], "#beacon")],
+      wall: [solid([5.5, 2, 14], [10.5, 8, 16], "#dark"), solid([6.5, 3, 11], [9.5, 7, 14], "#steel"), glow([9.5, 4.5, 12], [9.6, 5.5, 13], "#lamp"),
+        solid([7.4, 4.4, -9], [8.6, 5.6, 11], "#steel", tilt([8, 5, 11], 45)), glow([6.9, 3.9, -11.5], [9.1, 6.1, -9], "#beacon", tilt([8, 5, 11], 45)),
+        solid([9.5, 8, 12.5], [10.5, 13, 13.5], "#steel")],
+      ceiling: [solid([5, 15, 5], [11, 16, 11], "#dark"), solid([7.5, 9, 3], [8.5, 15, 12], "#steel"), solid([7.5, 4, 6], [8.5, 9, 12], "#steel"),
+        solid([7.5, 0.5, 12.5], [8.5, 15, 13.5], "#steel"), glow([7, 2, 6.5], [9, 4, 8.5], "#beacon"), glow([8.5, 13, 9], [8.6, 14, 10], "#lamp")],
+    }],
+    ["sensor_dome", { dome: `${ID}:block/sensor_dome`, glow: `${ID}:block/sensor_glow` }, {
+      floor: [solid([3, 0, 3], [13, 2.5, 13], "#dark"), glow([2.9, 1, 2.9], [13.1, 1.6, 13.1], "#glow"),
+        solid([3.5, 2.5, 3.5], [12.5, 7, 12.5], "#dome"), solid([2.5, 2.5, 4.5], [13.5, 6, 11.5], "#dome"), solid([4.5, 2.5, 2.5], [11.5, 6, 13.5], "#dome"),
+        solid([4.5, 7, 4.5], [11.5, 9.5, 11.5], "#dome"), solid([5.5, 9.5, 5.5], [10.5, 11, 10.5], "#dome"), solid([6.5, 11, 6.5], [9.5, 12, 9.5], "#dome"),
+        glow([6.5, 4, 2.4], [9.5, 5.5, 2.5], "#glow")],
+      wall: [solid([3, 3, 14.5], [13, 13, 16], "#dark"), glow([2.9, 2.9, 14.6], [13.1, 13.1, 15.2], "#glow"),
+        solid([3.5, 3.5, 10], [12.5, 12.5, 14.5], "#dome"), solid([4.5, 2.5, 11], [11.5, 13.5, 14.5], "#dome"), solid([2.5, 4.5, 11], [13.5, 11.5, 14.5], "#dome"),
+        solid([4.5, 4.5, 7.5], [11.5, 11.5, 10], "#dome"), solid([5.5, 5.5, 6], [10.5, 10.5, 7.5], "#dome"), solid([6.5, 6.5, 5], [9.5, 9.5, 6], "#dome"),
+        glow([6.5, 4, 9.9], [9.5, 5.5, 10], "#glow")],
+      ceiling: [solid([3, 13.5, 3], [13, 16, 13], "#dark"), glow([2.9, 14.4, 2.9], [13.1, 15, 13.1], "#glow"),
+        solid([3.5, 9, 3.5], [12.5, 13.5, 12.5], "#dome"), solid([2.5, 10, 4.5], [13.5, 13.5, 11.5], "#dome"), solid([4.5, 10, 2.5], [11.5, 13.5, 13.5], "#dome"),
+        solid([4.5, 6.5, 4.5], [11.5, 9, 11.5], "#dome"), solid([5.5, 5, 5.5], [10.5, 6.5, 10.5], "#dome"), solid([6.5, 4, 6.5], [9.5, 5, 9.5], "#dome"),
+        glow([6.5, 10.5, 2.4], [9.5, 12, 2.5], "#glow")],
+    }],
+    ["heat_sink", { fin: `${ID}:block/heat_sink_fin`, heat: `${ID}:block/heat_glow` }, {
+      floor: [solid([1, 0, 2], [15, 2, 14], "#dark"), glow([1.5, 2, 3.5], [14.5, 2.4, 12.5], "#heat"),
+        ...fins(6, (x) => solid([x, 2, 3], [x + 1, 13, 13], "#fin")), solid([1.5, 13, 7.25], [14.5, 14, 8.75], "#dark"), solid([0, 0.5, 0.5], [16, 2.5, 2.5], "#pipe")],
+      wall: [solid([1, 1, 14], [15, 15, 16], "#dark"), glow([2, 1.5, 13.6], [14, 14.5, 14], "#heat"),
+        ...fins(6, (y) => solid([2, y, 4], [14, y + 1, 14], "#fin")), solid([1, 1, 3.5], [2, 15, 14], "#dark"), solid([14, 1, 3.5], [15, 15, 14], "#dark"),
+        solid([2, 0, 12], [14, 1.5, 13.5], "#pipe")],
+      ceiling: [solid([1, 14, 2], [15, 16, 14], "#dark"), glow([1.5, 13.6, 3.5], [14.5, 14, 12.5], "#heat"),
+        ...fins(6, (x) => solid([x, 3, 3], [x + 1, 14, 13], "#fin")), solid([1.5, 2, 7.25], [14.5, 3, 8.75], "#dark"), solid([0, 13.5, 0.5], [16, 15.5, 2.5], "#pipe")],
+    }],
+    ["exhaust_vent", { grate: `${ID}:block/exhaust_grate` }, {
+      floor: [solid([3, 0, 3], [13, 2, 13], "#dark"), faced([4.5, 2, 4.5], [11.5, 11, 11.5], { up: "#grate", all: "#steel" }),
+        solid([4.2, 5, 4.2], [11.8, 6, 11.8], "#dark"), faced([3.8, 11, 3.8], [12.2, 12.5, 12.2], { up: "#grate", all: "#dark" }),
+        ...[[4.5, 4.5], [10.5, 4.5], [4.5, 10.5], [10.5, 10.5]].map(([x, z]) => solid([x, 12.5, z], [x + 1, 14.5, z + 1], "#dark")),
+        solid([4, 14.5, 4], [12, 15.5, 12], "#dark"), solid([5.5, 15.5, 5.5], [10.5, 16, 10.5], "#dark")],
+      wall: [faced([2, 2, 13], [14, 14, 16], { north: "#grate", all: "#dark" }), solid([1.5, 2, 9], [2.5, 14, 16], "#dark"), solid([13.5, 2, 9], [14.5, 14, 16], "#dark"),
+        solid([1.5, 14, 8.5], [14.5, 15, 16], "#dark"), ...[3.5, 6, 8.5, 11].map((y) => solid([2.5, y, 9.5], [13.5, y + 1, 13], "#steel", tilt([8, y + 0.5, 13], -22.5)))],
+      ceiling: [solid([3, 14, 3], [13, 16, 13], "#dark"), solid([4.5, 7, 4.5], [11.5, 14, 11.5], "#steel"), solid([4.2, 10, 4.2], [11.8, 11, 11.8], "#dark"),
+        faced([3.5, 4.5, 3.5], [12.5, 7, 12.5], { down: "#grate", all: "#dark" })],
+    }],
+    ["hull_machinery", { valve: "minecraft:block/red_concrete" }, {
+      floor: [solid([1.5, 0, 6], [9.5, 6, 14.5], "#steel"), solid([2.5, 6, 7], [8.5, 6.4, 13.5], "#dark"), glow([4, 3, 5.9], [6, 4.5, 6], "#lamp"),
+        solid([10.5, 0, 7], [14.5, 4.5, 11], "#dark"), solid([0, 0.5, 2], [16, 2.5, 4], "#pipe"), solid([11.5, 2.5, 2], [13.5, 7, 4], "#pipe"),
+        solid([11.5, 5, 4], [13.5, 7, 8], "#pipe"), solid([10.5, 7, 1.8], [14.5, 7.6, 4.2], "#valve"), solid([0, 0.5, 14.8], [16, 1.5, 15.8], "#dark")],
+      wall: [solid([0, 2, 13.5], [16, 3.5, 15], "#pipe"), solid([0, 12.5, 14], [16, 13.5, 15], "#dark"), solid([4, 4.5, 11], [12, 11.5, 16], "#steel"),
+        solid([5, 5.5, 10.6], [11, 10.5, 11], "#dark"), glow([9.5, 9, 10.5], [10.5, 10, 10.6], "#lamp"), solid([13, 0, 13], [14.5, 16, 14.5], "#pipe"),
+        solid([12.6, 3.5, 12.5], [14.9, 4.5, 15], "#dark"), solid([12.6, 11, 12.5], [14.9, 12, 15], "#dark"), solid([1.5, 6.5, 10.5], [3.5, 8.5, 13.5], "#valve")],
+      ceiling: [solid([2, 15, 6.5], [14, 16, 9.5], "#dark"), solid([4, 10, 6], [5, 15, 10], "#dark"), solid([11, 10, 6], [12, 15, 10], "#dark"),
+        solid([2.5, 6, 5], [13.5, 11, 11], "#steel"), solid([1.8, 6.5, 5.5], [2.5, 10.5, 10.5], "#dark"), solid([13.5, 6.5, 5.5], [14.2, 10.5, 10.5], "#dark"),
+        solid([0, 12.5, 12], [16, 14, 13.5], "#pipe"), solid([7.25, 11, 9.5], [8.75, 12.5, 12.5], "#pipe"), glow([7.5, 5.9, 7.5], [8.5, 6, 8.5], "#lamp")],
+    }],
+    ["hull_floodlight", { lens: `${ID}:block/floodlight_lens` }, {
+      floor: [solid([4, 0, 4], [12, 1.5, 12], "#dark"), solid([3, 1.5, 7], [4, 9, 9], "#dark"), solid([12, 1.5, 7], [13, 9, 9], "#dark"),
+        solid([4, 1.5, 7], [12, 2.5, 9], "#dark"), solid([4, 4, 5], [12, 10, 12], "#steel", tilt([8, 7, 8.5], 22.5)),
+        glow([4.5, 4.5, 4.9], [11.5, 9.5, 5], "#lens", tilt([8, 7, 8.5], 22.5))],
+      wall: [solid([5, 4, 15], [11, 11, 16], "#dark"), solid([6.5, 6, 11], [9.5, 9, 15], "#dark"), solid([4, 4, 4], [12, 10, 11], "#steel", tilt([8, 7, 7.5], -22.5)),
+        glow([4.5, 4.5, 3.9], [11.5, 9.5, 4], "#lens", tilt([8, 7, 7.5], -22.5))],
+      ceiling: [solid([3, 15, 3], [13, 16, 13], "#dark"), solid([4, 9, 4], [12, 15, 12], "#steel"), solid([3.5, 8, 3.5], [12.5, 9, 12.5], "#dark"),
+        glow([4.5, 7.9, 4.5], [11.5, 8, 11.5], "#lens")],
+    }],
+  ];
+}
+// A model's boxes moved by so many pixels each way.
+function shifted(elements, dx, dy, dz) {
+  const by = (at) => [at[0] + dx, at[1] + dy, at[2] + dz];
+  return elements.map((element) => ({ ...element, from: by(element.from), to: by(element.to) }));
+}
+function hullFittingNames() {
+  return ["satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "hull_machinery", "hull_floodlight"];
+}
+function hullFittingLang() {
+  return {
+    "block.skyliners.satellite_dish": "Satellite Dish",
+    "block.skyliners.big_satellite_dish": "Big Satellite Dish",
+    "block.skyliners.antenna_mast": "Antenna Mast",
+    "block.skyliners.sensor_dome": "Sensor Dome",
+    "block.skyliners.heat_sink": "Heat Sink",
+    "block.skyliners.exhaust_vent": "Exhaust Vent",
+    "block.skyliners.hull_machinery": "Hull Machinery",
+    "block.skyliners.hull_floodlight": "Hull Floodlight",
+  };
+}
+
 // The freighter's club bandstand (see BandstandBlock): its stage, a low dark-oak platform with a brass edge along its
 // front; its band is drawn over it by BandstandRenderer. Its item shows the stage.
 {
@@ -10458,6 +10636,8 @@ FITTINGS.push("floor_window", "floor_window_panel");
 FITTINGS.push("potted_palm", "parasol", "sun_lounger", "tiki_torch");
 // Her crew ladder is fitted up her core, and set up by hand anywhere.
 FITTINGS.push("crew_ladder");
+// The freighter's outside fittings, fitted onto her hull.
+FITTINGS.push(...hullFittingNames());
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10624,6 +10804,14 @@ shaped("deck_robot", [" G ", "IRI", "I I"], { G: "minecraft:glass_pane", I: "min
 shaped("ramp_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button", I: "minecraft:iron_ingot" }, 1);
 shaped("laser_crossbow", [" A ", "RCR", " O "], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", C: "minecraft:crossbow", O: "minecraft:copper_ingot" }, 1);
 shaped("laser_cannon", ["ARA", "IDI", "III"], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", I: "minecraft:iron_ingot", D: "minecraft:dispenser" }, 1);
+shaped("satellite_dish", [" Q ", "QIQ", " B "], { Q: "minecraft:quartz", I: "minecraft:iron_ingot", B: "minecraft:iron_bars" }, 1);
+shaped("big_satellite_dish", ["DD", "DD"], { D: `${ID}:satellite_dish` }, 1);
+shaped("antenna_mast", ["R", "B", "I"], { R: "minecraft:redstone_torch", B: "minecraft:iron_bars", I: "minecraft:iron_ingot" }, 2);
+shaped("sensor_dome", [" Q ", "QPQ", "III"], { Q: "minecraft:quartz", P: "minecraft:ender_pearl", I: "minecraft:iron_ingot" }, 1);
+shaped("heat_sink", ["BBB", "BBB", "ICI"], { B: "minecraft:iron_bars", I: "minecraft:iron_ingot", C: "minecraft:copper_ingot" }, 2);
+shaped("exhaust_vent", ["B", "H", "I"], { B: "minecraft:iron_bars", H: "minecraft:hopper", I: "minecraft:iron_ingot" }, 2);
+shaped("hull_machinery", ["CRC", "III"], { C: "minecraft:copper_ingot", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 2);
+shaped("hull_floodlight", ["IGI", " I "], { I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 2);
 shaped("bandstand", ["NNN", "PPP"], { N: "minecraft:note_block", P: "minecraft:dark_oak_slab" }, 1);
 shaped("spookie_hammock", ["I I", "WWW", "I I"], { I: "minecraft:iron_bars", W: "minecraft:orange_wool" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
@@ -11365,6 +11553,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...fogMachineLang(),
   ...clubBarLang(),
   ...girderDecorLang(),
+  ...hullFittingLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

@@ -335,6 +335,11 @@ last pass: it spreads her lamps' light through her layout as the game does and l
 in that is left unlit, her passages to a dim but never black level (`FreighterLayout.leastLight`), with a wall washer
 or a floor light; `skyliners:dark` measures the same in game. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
+`FreighterExterior` dresses her outside once her rooms stand with the fleet's outside fittings in `exterior/`, each a
+`HullFittingBlock` that a player puts up on a floor, a wall or a ceiling (MOUNT, through `Mounting`), a model of its own
+for each and an outline from `HullFittings`, in the open block just outside her solid skin, face to face with it so her
+assembly takes it along; its `SatelliteDishBlock` keeps its dish's pivots and size, which `SatelliteDishRenderer` turns
+it about by `DrawingClock`, and `ExhaustVentBlock` lets its wisps off where `SableFlight.toWorld` puts its mouth.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

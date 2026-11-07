@@ -11,12 +11,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A block's shape, or a point of it, drawn facing north, turned to face each way, as its model is turned by the
  * blockstate.
  */
-final class TurnedShapes {
+public final class TurnedShapes {
     private TurnedShapes() {
     }
 
     /** The shape for each horizontal facing, turned a quarter at a time clockwise, seen from above, from north. */
-    static Map<Direction, VoxelShape> of(VoxelShape north) {
+    public static Map<Direction, VoxelShape> of(VoxelShape north) {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             int turns = (facing.get2DDataValue() + 2) % 4;

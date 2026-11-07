@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,mount=floor": {
+      "model": "skyliners:block/heat_sink_floor"
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/heat_sink_floor",
+      "y": 90
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/heat_sink_floor",
+      "y": 180
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/heat_sink_floor",
+      "y": 270
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/heat_sink_wall"
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/heat_sink_wall",
+      "y": 90
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/heat_sink_wall",
+      "y": 180
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/heat_sink_wall",
+      "y": 270
+    },
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/heat_sink_ceiling"
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/heat_sink_ceiling",
+      "y": 90
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/heat_sink_ceiling",
+      "y": 180
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/heat_sink_ceiling",
+      "y": 270
+    }
+  }
+}

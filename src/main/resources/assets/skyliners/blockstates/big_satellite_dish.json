@@ -1,0 +1,85 @@
+{
+  "variants": {
+    "facing=north,mount=floor,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_floor"
+    },
+    "facing=east,mount=floor,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_floor",
+      "y": 90
+    },
+    "facing=south,mount=floor,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_floor",
+      "y": 180
+    },
+    "facing=west,mount=floor,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_floor",
+      "y": 270
+    },
+    "facing=north,mount=wall,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_wall"
+    },
+    "facing=east,mount=wall,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_wall",
+      "y": 90
+    },
+    "facing=south,mount=wall,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_wall",
+      "y": 180
+    },
+    "facing=west,mount=wall,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_wall",
+      "y": 270
+    },
+    "facing=north,mount=ceiling,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_ceiling"
+    },
+    "facing=east,mount=ceiling,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_ceiling",
+      "y": 90
+    },
+    "facing=south,mount=ceiling,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_ceiling",
+      "y": 180
+    },
+    "facing=west,mount=ceiling,part=mount": {
+      "model": "skyliners:block/big_satellite_dish_ceiling",
+      "y": 270
+    },
+    "facing=north,mount=floor,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=east,mount=floor,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=south,mount=floor,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=west,mount=floor,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=north,mount=wall,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=east,mount=wall,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=south,mount=wall,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=west,mount=wall,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=north,mount=ceiling,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=east,mount=ceiling,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=south,mount=ceiling,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    },
+    "facing=west,mount=ceiling,part=dish": {
+      "model": "skyliners:block/satellite_dish_dish"
+    }
+  }
+}

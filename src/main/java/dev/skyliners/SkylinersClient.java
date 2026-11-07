@@ -106,6 +106,7 @@ import dev.skyliners.client.RoomAmbience;
 import dev.skyliners.client.RoverClient;
 import dev.skyliners.client.RoverPanelRenderer;
 import dev.skyliners.client.RubberDuckRenderer;
+import dev.skyliners.client.SatelliteDishRenderer;
 import dev.skyliners.client.ScoreboardRenderer;
 import dev.skyliners.client.SearchlightBeams;
 import dev.skyliners.client.SelfDestructButtonRenderer;
@@ -410,6 +411,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.ROVER_PANEL_ENTITY.get(), context -> new RoverPanelRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.RAMP_PANEL_ENTITY.get(), context -> new BoardingRampRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LASER_CANNON_ENTITY.get(), context -> new LaserCannonRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.SATELLITE_DISH_ENTITY.get(), context -> new SatelliteDishRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.BANDSTAND_ENTITY.get(), context -> new BandstandRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.WINDOW_DIMMER_ENTITY.get(), context -> new WindowDimmerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());
