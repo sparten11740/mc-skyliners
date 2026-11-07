@@ -14,10 +14,12 @@ import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinRailBlock;
 import dev.skyliners.block.CabinSeatBlock;
+import dev.skyliners.block.CargoCrateBlock;
 import dev.skyliners.block.DeckRobotBlock;
 import dev.skyliners.block.DisplayShelfBlock;
 import dev.skyliners.block.DrinkTapBlock;
 import dev.skyliners.block.LightTone;
+import dev.skyliners.block.PalletRackBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
@@ -198,6 +200,18 @@ public final class FreighterLayout extends HullLayout {
     private static final int LOUNGE_BEARING = 120;
     private static final double LOUNGE_OUT = 14;
     private static final DyeColor[] LOUNGE_SEATS = {DyeColor.ORANGE, DyeColor.BROWN};
+    /**
+     * Her cargo hold, the room at her bow: two walls of pallet racks (see {@link PalletRackBlock}) so many blocks
+     * either side of her middle line, facing in, from so far ahead of her axis to so far, so many bays high, each
+     * loaded in turn with these loads; and care-package crates set down before them, each at a column ahead of her axis
+     * and its way, as two blocks across and along and a quarter turn.
+     */
+    private static final int RACKS_OUT = 5;
+    private static final int RACKS_FROM = 14;
+    private static final int RACKS_TO = 17;
+    private static final int RACK_BAYS = 2;
+    private static final PalletRackBlock.Load[] RACK_LOADS = {PalletRackBlock.Load.BOXES, PalletRackBlock.Load.DRUMS, PalletRackBlock.Load.CRATES};
+    private static final Crate[] CRATES = {new Crate(-2, -12, 0), new Crate(-1, -12, 1), new Crate(2, -13, 2), new Crate(-2, -14, 3)};
     /** The sides of her lounge's table its seats stand at, in turn. */
     private static final Direction[] LOUNGE_SIDES = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
     /**
@@ -379,6 +393,7 @@ public final class FreighterLayout extends HullLayout {
         layout.clubBar();
         layout.quarters();
         layout.lounge();
+        layout.cargoHold();
         layout.lights();
         layout.countAir();
         return layout;
@@ -1052,6 +1067,47 @@ public final class FreighterLayout extends HullLayout {
         BlockState seat = CabinSeatBlock.seat(SkylinersRegistry.BUSINESS_SEAT.get(), colour, facing);
         set(x, deck + 1, z, seat);
         set(x, deck + 2, z, seat.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER));
+    }
+
+    /**
+     * Her cargo hold's racks and crates, each where it has room over her deck's floor; none with the server config's
+     * {@code freighter.rooms} off.
+     */
+    private void cargoHold() {
+        if (!SkylinersConfig.FREIGHTER_ROOMS.get()) {
+            return;
+        }
+        int load = 0;
+        for (int z = -RACKS_FROM; z >= -RACKS_TO; z--) {
+            load = rack(-RACKS_OUT, z, Direction.EAST, load);
+            load = rack(RACKS_OUT, z, Direction.WEST, load);
+        }
+        for (Crate crate : CRATES) {
+            onFloor(crate.x(), crate.z(), SkylinersRegistry.CARGO_CRATE.get().defaultBlockState()
+                .setValue(CargoCrateBlock.FACING, Direction.from2DDataValue(crate.turn())));
+        }
+    }
+
+    /** A crate set down in her cargo hold: its column, and the quarter turn it was set down at, from south. */
+    private record Crate(int x, int z, int turn) {
+    }
+
+    /**
+     * A pallet rack of bays one on another at a column, facing the way given, as many as {@link #RACK_BAYS} and the
+     * room over it allow, each with the next load from so far through {@link #RACK_LOADS}; gives how far through them
+     * it got.
+     */
+    private int rack(int x, int z, Direction facing, int load) {
+        int next = load;
+        for (int bay = 0; bay < RACK_BAYS && bayFree(x, z, bay); bay++) {
+            set(x, deck + 1 + bay, z, PalletRackBlock.loaded(SkylinersRegistry.PALLET_RACK.get(), RACK_LOADS[next++ % RACK_LOADS.length], facing));
+        }
+        return next;
+    }
+
+    /** Whether a rack's bay so many up has room: the first over her deck's floor, those over it open. */
+    private boolean bayFree(int x, int z, int bay) {
+        return bay == 0 ? floorFree(x, z) : isOpen(x, deck + 1 + bay, z);
     }
 
     /**

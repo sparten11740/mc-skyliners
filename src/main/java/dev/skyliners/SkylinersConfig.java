@@ -680,8 +680,8 @@ public final class SkylinersConfig {
             .define("clubBar", true);
         FREIGHTER_ROOMS = builder
             .comment(
-                "Whether the freighter's rooms are furnished: bunks with their reading lights in her crew quarters, and a booth,",
-                "a low table among four seats, in her lounge."
+                "Whether the freighter's rooms are furnished: bunks with their reading lights in her crew quarters, a booth, a",
+                "low table among four seats, in her lounge, and racks of cargo and crates in her cargo hold at her bow."
             )
             .define("rooms", true);
         builder.pop();

@@ -218,6 +218,9 @@ const FREIGHTER_LIGHTS = 24;
 // How many bunks her crew quarters have at least, and how many seats her lounge's booth.
 const QUARTERS_BUNKS = 3;
 const LOUNGE_SEATED = 3;
+// How many pallet rack bays and crates her cargo hold has at least.
+const HOLD_RACKS = 8;
+const HOLD_CRATES = 2;
 const CLUB_LIT = 5;
 // How far out from her axis the middle of her ring corridor is, in blocks, and how bright it is there at least.
 const CORRIDOR_MIDDLE = 4;
@@ -1074,8 +1077,8 @@ function checkFreighterLake() {
 }
 
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
-// A freighter's rooms: her crew quarters have their bunks, reading lights on, and her lounge its booth, a table among
-// seats.
+// A freighter's rooms: her crew quarters have their bunks, reading lights on, her lounge its booth, a table among
+// seats, and her cargo hold its racks of cargo and crates.
 function checkFreighterRooms() {
   ship("freighter");
   const bunks = must("find skyliners:bunk 128 20").rows.length;
@@ -1083,6 +1086,9 @@ function checkFreighterRooms() {
   const table = must("find skyliners:lounge_table 128 2").rows.length;
   const seats = must("find skyliners:business_seat 128 20").rows.length / 2;
   expect(table > 0 && seats >= LOUNGE_SEATED, "freighter: her lounge has its booth, a table among seats", `${table} table, ${seats} seats`);
+  const racks = must("find skyliners:pallet_rack 128 40").rows.length;
+  const crates = must("find skyliners:cargo_crate 128 10").rows.length;
+  expect(racks >= HOLD_RACKS && crates >= HOLD_CRATES, "freighter: her cargo hold has its racks of cargo and crates", `${racks} rack bays, ${crates} crates`);
 }
 
 // A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage
@@ -1495,7 +1501,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
-  "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks and her lounge its booth" },
+  "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth and her hold its cargo" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },

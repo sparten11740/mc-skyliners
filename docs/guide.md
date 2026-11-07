@@ -2663,7 +2663,9 @@ among her blocks in the creative tab, to set down anywhere, and the server confi
 without it.
 
 Her crew quarters, the room through the doorway at her port quarter, have four bunks against their wall, each in its
-own blanket with its reading light on, and her lounge, aft of the entry hall, a booth: a low table among four seats.
+own blanket with its reading light on; her lounge, aft of the entry hall, a booth, a low table among four seats; and
+her cargo hold at her bow two walls of pallet racks loaded with boxes, drums and crates, care-package crates set down
+before them.
 The server config's `freighter.rooms` builds her rooms bare.
 
 Her deck is lit by wall washers over head height, small dark lamps each throwing a fan of light up the wall: round

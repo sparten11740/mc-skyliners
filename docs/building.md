@@ -300,7 +300,7 @@ crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurt
 block entity but is tracked on clients, where `ClubBand` starts its song for a player who comes near, counting its
 beat, and `BandstandRenderer` draws the three players swaying to it; `FreighterLayout.clubBar()` lays the rocket
 club's bar, counter, stools, taps, bartender and back bar, along the club's straight wall, and `quarters()` and
-`lounge()` her bunks and booth. Her deck is lit by the rocket's `WallLightBlock`s, which
+`lounge()` her bunks and booth, and `cargoHold()` her racks and crates. Her deck is lit by the rocket's `WallLightBlock`s, which
 `FreighterLayout.lights()` fixes to her padded walls round her corridor and rooms, stepping out from each wall to the
 first block with room. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
