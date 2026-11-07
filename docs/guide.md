@@ -2853,6 +2853,28 @@ too, its barrels resting the way you faced as you set it down. The server config
 without it and keeps every laser cannon from firing, and `freighter.turretBlasts` keeps their bolts from blasting any
 block.
 
+Either side of the cannon's swivel hangs a rocket pod, dark and banded in hazard yellow, tilting with the barrels: two
+tubes each, the red nose of a rocket showing in every loaded tube and a dark hole where one has gone. Hold use to
+launch them, one from each pod in turn every few ticks, each with a whoosh and a burst of smoke out of its tube, until
+all four are away; tap use for just one. A rocket leaves slowly, carried along at her speed, and its motor drives it
+off faster and faster, a white-hot flame out of its tail and a long white smoke trail behind it, its roar rising as it
+comes your way and falling as it goes. It flies to whatever the crosshair is on, and while the sight is locked on to a
+hostile mob (the reticle red, brackets closed round it) the rockets home in on that mob, turning gently, so a quick one
+can still dodge. Where a rocket strikes a block, another ship or a hostile mob, or passes close by the mob it chases,
+or after four seconds in the air, it goes off with a flash, a fireball, a cloud of soot and a deep bang heard far off,
+shaking the view of anyone near: a blast as strong as a creeper's that knocks out blocks round it as TNT does, by the
+world's own rules for TNT, but never a block of any ship, and hurts hostile mobs only, never players, villagers, pets,
+animals or anyone aboard her. Once she flies, rockets fly straight through her own hull; standing on the ground as she
+was built, she stops them as any block would, her frame left whole as it is by any blast. They fly past anyone who
+is not a hostile mob.
+Under the sight's reticle a row of four little rockets shows what is left in the pods: amber while loaded, red while the
+sight is locked on, grey where the cannon holds its fire (it holds its rockets where it holds its bolts), and an empty
+outline once launched, so the row empties from the left. A second after the last launch the pods load again, a rocket at
+a time with a clack, the next one on the sight filling up from its tail as it loads, until all four are back some eight
+seconds after the last left; press use with the pods empty and it only clicks. The server config's `freighter.rockets`
+takes the pods off every laser cannon, use then doing what it did before; with `freighter.turretBlasts` off, rockets
+still hurt hostile mobs but break no block.
+
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
 copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing
 emitters and a string of amber light between them, a copper-wound coil round its prod. Hold use to charge it, a ratchet

@@ -397,6 +397,7 @@ import dev.skyliners.floorwindow.FloorWindowItem;
 import dev.skyliners.floorwindow.FloorWindowPanelBlock;
 import dev.skyliners.spookie.SpookieHammockBlock;
 import dev.skyliners.spookie.SpookieHammockBlockEntity;
+import dev.skyliners.turret.CannonRocket;
 import dev.skyliners.turret.LaserCannonBlock;
 import dev.skyliners.turret.LaserCannonBlockEntity;
 import java.util.List;
@@ -628,6 +629,18 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_CLOUD = PARTICLES.register("rocket_cloud", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_DUST = PARTICLES.register("rocket_dust", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FOG_PUFF = PARTICLES.register("fog_puff", () -> new SimpleParticleType(false));
+    /**
+     * A laser cannon's rocket (see {@link CannonRocket}): the smoke trail it leaves, the flame out of its nozzle, and
+     * the fireball and soot where it goes off; drawn as the blast's puffs are.
+     */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CANNON_ROCKET_TRAIL =
+        PARTICLES.register("cannon_rocket_trail", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CANNON_ROCKET_FLAME =
+        PARTICLES.register("cannon_rocket_flame", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CANNON_ROCKET_FIREBALL =
+        PARTICLES.register("cannon_rocket_fireball", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CANNON_ROCKET_SOOT =
+        PARTICLES.register("cannon_rocket_soot", () -> new SimpleParticleType(false));
     /** A "z" rising from the rocket's tardigrade as it sleeps (see entity.Tardigrade). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SLEEP_Z = PARTICLES.register("sleep_z", () -> new SimpleParticleType(false));
     /** A glowing spore of the spore drive the rocket's tardigrade jumps through (see entity.Tardigrade). */
@@ -918,6 +931,14 @@ public final class SkylinersRegistry {
     /** A laser cannon's hydraulics: the hiss as a swing starts, and the clunk as its barrels lock at the end of one. */
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_HISS = sound("ball_turret_hiss");
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_LOCK = sound("ball_turret_lock");
+    /**
+     * A laser cannon's rockets (see {@link CannonRocket}): one launched from its pod with a whoosh, its motor roaring as
+     * it flies, a seamless loop that follows it, the bang where it goes off, and the clack of its pod loading another.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_LAUNCH = sound("cannon_rocket_launch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_FLIGHT = sound("cannon_rocket_flight");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_BLAST = sound("cannon_rocket_blast");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_LOAD = sound("cannon_rocket_load");
     /** The laser crossbow fired: its coil twanging and a crackling bolt. */
     public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_SHOT = sound("laser_crossbow_shot");
     /** The laser crossbow cocked and charged: a ratchet, a rising whine and its latch. */
@@ -1450,6 +1471,11 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserCannonBlockEntity>> LASER_CANNON_ENTITY =
         BLOCK_ENTITIES.register("laser_cannon", () -> BlockEntityType.Builder.of(LaserCannonBlockEntity::new, LASER_CANNON.get()).build(null));
     public static final DeferredItem<BlockItem> LASER_CANNON_ITEM = ITEMS.registerSimpleBlockItem(LASER_CANNON);
+    /** A rocket launched from a laser cannon's pod, flying out to where it goes off (see {@link CannonRocket}). */
+    public static final DeferredHolder<EntityType<?>, EntityType<CannonRocket>> CANNON_ROCKET = ENTITY_TYPES.register(
+        "cannon_rocket", () -> EntityType.Builder.<CannonRocket>of(CannonRocket::new, MobCategory.MISC).sized(0.25F, 0.25F)
+            .clientTrackingRange(10).updateInterval(1).noSave().build("cannon_rocket")
+    );
     /**
      * The freighter's outside fittings (see {@link HullFittingBlock}), each put up on a floor, a wall or a ceiling in a
      * shape of its own: her satellite dishes, small and big, turning on their mounts (see {@link SatelliteDishBlock}),

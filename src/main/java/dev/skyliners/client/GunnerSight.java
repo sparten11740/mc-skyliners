@@ -17,7 +17,11 @@ import org.joml.Matrix4f;
  * into her own hull, or lower than its barrels go. To its right a thermometer, filling with each bolt and going from
  * amber to red as the cannon nears overheating, heat waves over it and the whole of it flashing while it is
  * overheated. To its left a ring seen from above, her hull in the middle and her bow at the top, with a beam out of it
- * the way the gunner looks, so they know which way they face from her bow.
+ * the way the gunner looks, so they know which way they face from her bow. Under it, if the cannon has rocket pods, a
+ * row of four little rockets on a dark plate, one for each in its pods: amber while loaded, red while the sight is
+ * locked on to a hostile mob they would home in on, grey where the cannon holds its fire, and an outline once
+ * launched, filling up from its tail as its rocket loads again, so the row empties from the left as they go and fills
+ * back from the right.
  */
 public final class GunnerSight {
     /** The frame: how far in from the screen's edges its dark margin reaches, and how long its corners' arms are. */
@@ -74,6 +78,20 @@ public final class GunnerSight {
     private static final float PRONG_OUT = 4.5F;
     private static final float BOW_TALL = 4;
     private static final float BOW_WIDE = 3;
+    /**
+     * The row of rockets under the reticle: how far below the middle their middles are, and how far apart; each one's
+     * half width, how far above its middle its nose's tip and its shoulder are, how far below its tail is, how far out
+     * its fins reach past it and how far up its tail they start; and how far round the row its dark plate reaches.
+     */
+    private static final float ROCKETS_DOWN = 40;
+    private static final float ROCKET_APART = 11;
+    private static final float ROCKET_HALF = 2;
+    private static final float ROCKET_TIP = 9;
+    private static final float ROCKET_SHOULDER = 4;
+    private static final float ROCKET_TAIL = 6;
+    private static final float FIN_OUT = 2.5F;
+    private static final float FIN_UP = 3;
+    private static final float PLATE = 4;
     /** How many pieces a ring or a disc is drawn as. */
     private static final int ROUND = 32;
     /** How often what flashes flashes, in ticks a flash: slow enough to be gentle on the eyes. */
@@ -115,6 +133,61 @@ public final class GunnerSight {
         heat(graphics, matrix, x + HEAT_OUT, y, cannon.heat(partialTick), cannon.overheated(partialTick), flash);
         float facing = Mth.wrapDegrees(player.getViewYRot(partialTick) - cannon.bowYaw());
         bearing(graphics, matrix, x - BEARING_OUT, y, facing, halfWidth(minecraft, width, height));
+        if (cannon.pods()) {
+            int colour = GunnerView.held() ? GREY : GunnerView.locked() ? RED : AMBER;
+            rockets(graphics, matrix, x, y + ROCKETS_DOWN, cannon.rockets(), cannon.loading(partialTick), colour);
+        }
+    }
+
+    /**
+     * The row of rockets with its middle at a point, on its dark plate: so many loaded, drawn in a colour, the next to
+     * load filled so far, as a share, the rest outlines.
+     */
+    private static void rockets(GuiGraphics graphics, Matrix4f matrix, float x, float y, int loaded, float loading, int colour) {
+        int count = LaserCannonBlockEntity.ROCKETS;
+        float first = x - (count - 1) * ROCKET_APART / 2;
+        float halfRow = (count - 1) * ROCKET_APART / 2 + ROCKET_HALF + FIN_OUT + PLATE;
+        rect(graphics, matrix, x - halfRow, y - ROCKET_TIP - PLATE, x + halfRow, y + ROCKET_TAIL + PLATE, GLASS);
+        for (int rocket = 0; rocket < count; rocket++) {
+            float rocketX = first + rocket * ROCKET_APART;
+            int fromEnd = count - rocket;
+            if (fromEnd <= loaded) {
+                rocketShape(graphics, matrix, rocketX, y, colour);
+            } else if (fromEnd == loaded + 1) {
+                rocketFilling(graphics, matrix, rocketX, y, loading);
+            }
+            rocketOutline(graphics, matrix, rocketX, y, fromEnd <= loaded ? colour : AMBER_SOFT);
+        }
+    }
+
+    /** A little rocket standing with its middle at a point, nose up, filled in a colour. */
+    private static void rocketShape(GuiGraphics graphics, Matrix4f matrix, float x, float y, int colour) {
+        GuiShapes.triangle(graphics, matrix, x, y - ROCKET_TIP, x - ROCKET_HALF, y - ROCKET_SHOULDER, x + ROCKET_HALF, y - ROCKET_SHOULDER, colour);
+        rect(graphics, matrix, x - ROCKET_HALF, y - ROCKET_SHOULDER, x + ROCKET_HALF, y + ROCKET_TAIL, colour);
+        for (int side = -1; side <= 1; side += 2) {
+            float root = x + side * ROCKET_HALF;
+            GuiShapes.triangle(graphics, matrix, root, y + ROCKET_TAIL - FIN_UP, root + side * FIN_OUT, y + ROCKET_TAIL + 1, root, y + ROCKET_TAIL,
+                colour);
+        }
+    }
+
+    /** A little rocket loading again, its body filled from its tail up so far, as a share. */
+    private static void rocketFilling(GuiGraphics graphics, Matrix4f matrix, float x, float y, float share) {
+        float top = y + ROCKET_TAIL - (ROCKET_TAIL + ROCKET_SHOULDER) * Mth.clamp(share, 0, 1);
+        rect(graphics, matrix, x - ROCKET_HALF, top, x + ROCKET_HALF, y + ROCKET_TAIL, AMBER_SOFT);
+    }
+
+    /** A little rocket's outline, nose up, its middle at a point. */
+    private static void rocketOutline(GuiGraphics graphics, Matrix4f matrix, float x, float y, int colour) {
+        float left = x - ROCKET_HALF;
+        float right = x + ROCKET_HALF;
+        float shoulder = y - ROCKET_SHOULDER;
+        float tail = y + ROCKET_TAIL;
+        GuiShapes.line(graphics, matrix, x, y - ROCKET_TIP, left, shoulder, LINE, colour);
+        GuiShapes.line(graphics, matrix, x, y - ROCKET_TIP, right, shoulder, LINE, colour);
+        GuiShapes.line(graphics, matrix, left, shoulder, left, tail, LINE, colour);
+        GuiShapes.line(graphics, matrix, right, shoulder, right, tail, LINE, colour);
+        GuiShapes.line(graphics, matrix, left - FIN_OUT, tail + 1, right + FIN_OUT, tail + 1, LINE, colour);
     }
 
     /** A dark translucent margin round the screen, its inner corners marked in amber, short marks at each side's middle. */

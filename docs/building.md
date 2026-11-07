@@ -371,8 +371,16 @@ while the gunner's `GunnerTrigger` says the attack key is held, which the client
 swallows. The client's `GunnerView` moves the seated gunner's view to the sight, a `Lens` placed every frame through
 `SableClient.view`, and looks along it each tick for a hostile mob to lock on to; `GunnerSight` draws the sight's
 reticle, thermometer and bearing ring with `GuiShapes`, which the `PilotHud` draws with too; `LaserCannonRenderer`
-draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
-crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
+draws its swivel and barrels and `CannonServo` whirrs as they swing. Its rockets are `CannonRocket` entities, never
+saved: the cannon launches one from its next loaded tube, worked out in her frame by `tilted` (which
+`LaserCannonRenderer` turns its pods by too) and taken into the world (`SableFlight.toWorld`), carried along at her
+speed there (`SableFlight.velocity`) and homing on the mob its sight rested on; it flies on the server, through her own
+blocks (`SableFlight.bodyAt`), and goes off through `TurretBlast.rocket`, sending a `RocketBlast` to the clients near,
+where `CannonRockets` draws its fireball and soot and jolts the view (`CameraShake.jolt`). Each client carries it on
+between its moves; `CannonRockets` trails its smoke and flame as `BlastPuffParticle`s made there, not sent, and plays
+its roar, and `CannonRocketRenderer` draws it. `GunnerTrigger` carries the use key as the rockets' trigger, the cannon
+counts its rockets and loads its pods, telling clients in its update tag, and `GunnerSight` draws them under the
+reticle. Its bolts and the crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
 block entity but is tracked on clients, where `ClubBand` starts its song for a player who comes near, counting its
 beat, and `BandstandRenderer` draws the three players swaying to it; `FreighterLayout.clubBar()` lays the rocket
 club's bar, counter, stools, taps, bartender and back bar, along the club's straight wall, and `quarters()` and

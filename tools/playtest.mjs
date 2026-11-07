@@ -256,6 +256,20 @@ const TURRET_COOLED_TICKS = 60;
 // aims at what the sight looks at; and how soon after sneaking the gunner's own view must be back, in ticks.
 const CREEPER_MIDDLE = 0.85;
 const VIEW_BACK_TICKS = 2;
+// A freighter's rocket pods: how many rockets they hold; how long use is held, past her four launches six ticks apart;
+// how long the rockets are given to fly out and go off; how long after the last launch the sight must show the next
+// rocket filling, and how long her pods may take to load all four again, with a margin, in ticks.
+const ROCKETS = 4;
+const ROCKET_SALVO_TICKS = 30;
+const ROCKET_FLIGHT_TICKS = 40;
+const ROCKET_LOAD_STARTS_TICKS = 40;
+const ROCKET_RELOAD_TICKS = 220;
+// How far ahead of her cannon, toward her bow, and how far under it her deck's cover is where stone is set on it to be
+// shot at, in blocks: as low as her cannon's barrels reach; how many blocks of stone are set there, a row of three two
+// high.
+const ROCKET_DECK_AHEAD = 13;
+const ROCKET_DECK_UNDER = 3;
+const ROCKET_DECK_STONE = 6;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
@@ -1398,11 +1412,109 @@ function turretOverheats() {
   expect(played("skyliners:ball_turret_shot", cooled).length > 0, "freighter: once her cannon has cooled, it fires again");
 }
 
-// Where the player sees from a laser cannon's sight, and whether it is locked on: undefined while they see from their
-// own eyes.
+// Where the player sees from a laser cannon's sight, whether it is locked on, and its rockets as it shows them: how
+// many, and how far the next is loaded; undefined while they see from their own eyes.
 function gunnerSight() {
   const reply = must("skyliners:gunner");
-  return reply.on ? { at: String(reply.at).split(",").map(Number), locked: reply.locked } : undefined;
+  return reply.on ? { at: String(reply.at).split(",").map(Number), locked: reply.locked, rockets: reply.rockets, loading: reply.loading } : undefined;
+}
+
+// A freighter's rocket pods: sat at her laser cannon, the sight shows its four rockets; aimed at a creeper in the sky
+// with use held, her cannon launches all four with a whoosh each, and they go off with a bang, striking it, the
+// sight's rockets emptied; a moment later the next fills up on the sight, and her pods load again with a clack each
+// until it shows all four; a quick tap of use at a block of stone hung in the sky launches just one, whose blast knocks
+// out most of the stone; and none of it breaks any of her, the dome's glass over the gunner whole after.
+function checkFreighterRockets() {
+  layDown("freighter");
+  const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
+  expect(cannon, "freighter: she is built with a laser cannon on her top dome");
+  if (!cannon) {
+    return;
+  }
+  const [x, y, z] = cannon.at_abs;
+  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
+    .sort((a, b) => a[1] - b[1])[0];
+  if (!seat) {
+    expect(false, "freighter: she has a gunner's seat under her dome");
+    return;
+  }
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] - 0.5}; wait 20t`);
+  sitAt(seat);
+  expect(gunnerSight()?.rockets === ROCKETS, "freighter: sat at her cannon, its sight shows four rockets in its pods", `${gunnerSight()?.rockets} shown`);
+  const glass = must(`block ${x},${y - 1},${z}`).id;
+  const creeper = [x + 0.5, y + TURRET_TARGET_UP, z + 0.5 - TURRET_TARGET_AHEAD];
+  must(`server difficulty easy; server summon creeper ${creeper.join(" ")} {NoAI:1b,PersistenceRequired:1b}`);
+  aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
+  const aimed = aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
+  expect(aimed?.locked === true, "freighter: aimed from her cannon's sight at a creeper, the sight locks on to it");
+  const fired = now();
+  must(`key down key.use; wait ${ROCKET_SALVO_TICKS}t; key up key.use`);
+  const emptied = gunnerSight();
+  must(`wait ${ROCKET_FLIGHT_TICKS}t`);
+  const [reply] = send(`server data get entity @e[type=creeper,limit=1,sort=nearest] Health`);
+  const health = reply.ok === false ? 0 : Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1] ?? CREEPER_HEALTH);
+  send("?server kill @e[type=creeper]; server difficulty peaceful");
+  const whooshes = played("skyliners:cannon_rocket_launch", fired).length;
+  const bangs = played("skyliners:cannon_rocket_blast", fired).length;
+  expect(emptied?.rockets === 0 && whooshes > 0 && bangs > 0,
+    "freighter: holding use, her cannon launches all four rockets with a whoosh, the sight's rockets emptying, and they go off with a bang",
+    `${emptied?.rockets} shown after the salvo, ${whooshes} whooshes, ${bangs} bangs heard`);
+  expect(health < CREEPER_HEALTH, "freighter: her rockets strike the creeper the sight is locked on to", `health ${health} of ${CREEPER_HEALTH}`);
+  rocketsLoadAgain(fired);
+  rocketBlastsBlocks(creeper);
+  rocketSparesHer(cannon.at_abs);
+  expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing rockets, the gunner breaks none of her, the dome's glass whole");
+}
+
+// A row of stone set on her deck ahead of her cannon, shot with a rocket from its sight: its blast knocks stone out,
+// but leaves her deck's cover under it whole, though she stands on the ground as blocks of the world, as she does
+// until she first flies.
+function rocketSparesHer([x, y, z]) {
+  const ahead = z + ROCKET_DECK_AHEAD;
+  const deck = y - ROCKET_DECK_UNDER;
+  const under = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dz) => `${x + dx},${deck},${ahead + dz}`));
+  const cover = () => under.map((at) => must(`block ${at} side=server`).id);
+  const before = cover();
+  if (before.includes("air")) {
+    expect(false, "freighter: her deck is where stone is set on it to be shot at", before.join(" "));
+    return;
+  }
+  const row = `${x - 1} ${deck + 1} ${ahead} ${x + 1} ${deck + 2} ${ahead}`;
+  must(`server fill ${row} stone; wait 10t`);
+  aimFromSight([x + 0.5, deck + 2.4, ahead]);
+  aimFromSight([x + 0.5, deck + 2.4, ahead]);
+  must(`key press key.use; wait ${ROCKET_FLIGHT_TICKS}t`);
+  const stone = [-1, 0, 1].flatMap((dx) => [1, 2].map((dy) => must(`block ${x + dx},${deck + dy},${ahead} side=server`).id))
+    .filter((id) => id === "minecraft:stone").length;
+  const changed = cover().filter((id, i) => id !== before[i]).length;
+  send(`?server fill ${row} air`);
+  expect(stone < ROCKET_DECK_STONE && changed === 0, "freighter: a rocket at stone on her deck blasts the stone, but none of her deck's cover under it",
+    `${stone} of ${ROCKET_DECK_STONE} stone left, ${changed} of 9 blocks of her cover under it changed`);
+}
+
+// A moment after her last rocket left, the sight shows the next filling up; her pods then load again, a clack each,
+// until the sight shows all four.
+function rocketsLoadAgain(fired) {
+  const filling = waitForReport(gunnerSight, (sight) => sight.rockets < ROCKETS && sight.loading > 0, ROCKET_LOAD_STARTS_TICKS);
+  expect(filling, "freighter: a moment after her last rocket, the sight shows the next filling up", `${JSON.stringify(gunnerSight())}`);
+  const full = waitForReport(gunnerSight, (sight) => sight.rockets === ROCKETS, ROCKET_RELOAD_TICKS);
+  const clacks = played("skyliners:cannon_rocket_load", fired).length;
+  expect(full && clacks >= ROCKETS, "freighter: her pods load again with a clack each, until the sight shows all four", `${gunnerSight()?.rockets} shown, ${clacks} clacks`);
+}
+
+// A block of stone hung in the sky where the creeper was, three by three, aimed at from her cannon's sight: a quick
+// tap of use launches one rocket, whose blast knocks it away, or most of it.
+function rocketBlastsBlocks([cx, cy, cz]) {
+  const [x, y, z] = [Math.floor(cx), Math.floor(cy) + 1, Math.floor(cz)];
+  must(`server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} stone; wait 10t`);
+  aimFromSight([x + 0.5, y + 0.5, z + 1]);
+  aimFromSight([x + 0.5, y + 0.5, z + 1]);
+  must(`key press key.use; wait ${ROCKET_FLIGHT_TICKS}t`);
+  const shown = gunnerSight()?.rockets;
+  const left = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => must(`block ${x + dx},${y + dy},${z}`).id)).filter((id) => id === "minecraft:stone").length;
+  send(`?server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} air`);
+  expect(shown === ROCKETS - 1, "freighter: a quick tap of use launches just one rocket, the sight showing three left", `${shown} shown`);
+  expect(left < TURRET_BLASTED_LEFT, "freighter: her rocket's blast knocks out a block of stone it strikes", `${left} of 9 stone left`);
 }
 
 // Sits in a seat from where the player stands; if something stands in the way, from the floor beside it, where the
@@ -3179,6 +3291,7 @@ const CHECKS = {
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
+  "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },
   "laser-crossbow-flight": { run: checkLaserCrossbowInFlight, slow: true, about: "the laser crossbow's bolt, fired aboard a flying freighter, is seen leaving it" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },

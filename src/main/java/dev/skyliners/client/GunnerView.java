@@ -33,7 +33,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  *
  * <p>Once a tick it also looks along the sight for what the cannon would strike, for the sight to show: a hostile mob
  * in reach locks it on, with a beep; and pulling the trigger while it cannot fire (too hot, aimed into her own hull or
- * lower than its barrels go) gets a dry click.
+ * lower than its barrels go) gets a dry click, as does pressing use for its rockets with its pods empty or while it
+ * holds its fire.
  */
 public final class GunnerView {
     /** How loud and how high the beep is as the sight locks on to a hostile mob. */
@@ -60,8 +61,9 @@ public final class GunnerView {
         /** Whether the sight rests on a hostile mob it would strike, and for how many ticks it has. */
         boolean locked;
         int lockedTicks;
-        /** Whether the trigger was held last tick. */
+        /** Whether the trigger and the rockets' trigger were held last tick. */
         boolean triggerHeld;
+        boolean rocketsHeld;
 
         Gunning(LaserCannonBlockEntity cannon, Lens lens, CameraType cameraType) {
             this.cannon = cannon;
@@ -90,7 +92,8 @@ public final class GunnerView {
     @Nullable
     public static LaserCannonBlockEntity.Sighting sighting() {
         Gunning view = gunning;
-        return view == null ? null : new LaserCannonBlockEntity.Sighting(view.lens.getEyePosition(), view.locked);
+        return view == null ? null
+            : new LaserCannonBlockEntity.Sighting(view.lens.getEyePosition(), view.locked, view.cannon.rockets(), view.cannon.loading(0));
     }
 
     /**
@@ -186,13 +189,21 @@ public final class GunnerView {
         view.locked = locked;
     }
 
-    /** A dry click as the trigger is pulled while the cannon cannot fire: holding its fire, or overheated. */
+    /**
+     * A dry click as the trigger is pulled while the cannon cannot fire, holding its fire or overheated; or as use is
+     * pressed for its rockets while it holds its fire or its pods are empty.
+     */
     private static void dryClick(Minecraft minecraft, Gunning view) {
-        boolean pulled = minecraft.screen == null && minecraft.options.keyAttack.isDown();
-        if (pulled && !view.triggerHeld && (view.cannon.held() || view.cannon.overheated(0))) {
+        boolean free = minecraft.screen == null;
+        boolean pulled = free && minecraft.options.keyAttack.isDown();
+        boolean launching = free && view.cannon.pods() && minecraft.options.keyUse.isDown();
+        boolean cannotFire = view.cannon.held() || view.cannon.overheated(0);
+        boolean cannotLaunch = view.cannon.held() || view.cannon.rockets() == 0;
+        if (pulled && !view.triggerHeld && cannotFire || launching && !view.rocketsHeld && cannotLaunch) {
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.DISPENSER_FAIL, DRY_PITCH, DRY_VOLUME));
         }
         view.triggerHeld = pulled;
+        view.rocketsHeld = launching;
     }
 
     /** Before each frame is drawn, the lens goes to the sight as she is drawn now. */

@@ -4844,6 +4844,136 @@ const BALL_TURRET = {
   writeSound("ball_turret_lock", lock, 0.6);
 }
 
+// The laser cannon's rockets, each sound with a random sequence of its own. The launch: the motor lighting with a pop,
+// a 75 hertz thump under a crack of noise, and its whoosh, noise through a band swept up from 400 hertz to 2.6
+// kilohertz as it leaves the tube and down to 1.2 kilohertz as it flies off, swelling in 40 milliseconds and dying away
+// over a second, a low roar under it. The flight: a seamless loop of a small motor's roar, brown noise low-passed at
+// 700 hertz with a hiss round 3 kilohertz and its crackle over it, which the client pitches up and down as the rocket
+// comes and goes. The bang: a sharp crack, a boom falling from 90 hertz to 38, the rumble rolling on two seconds after
+// it and bits of debris pattering down in it. A pod loading: a rocket sliding into its tube, a band of noise swept down
+// from 2.2 kilohertz to 700 hertz, and its latch clacking home. Tune them here.
+const CANNON_ROCKET = {
+  // The launch: the thump's pitch, the whoosh's band at its start, its highest and its end, in hertz; when it is
+  // highest, how fast it falls after, and how long the launch lasts, in seconds.
+  thumpHz: 75,
+  whooshFrom: 400,
+  whooshPeak: 2600,
+  whooshTo: 1200,
+  whooshPeakAt: 0.12,
+  whooshFall: 0.35,
+  launchSeconds: 1.4,
+  // The flight: its loop and the crossfade that hides its seam, in seconds; its rumble's cutoff and its hiss's
+  // centre, in hertz; and its crackles a second.
+  flightLoop: 1.5,
+  flightFade: 0.3,
+  rumbleCutoff: 700,
+  hissHz: 3000,
+  crackles: 40,
+  // The bang: the boom from and to, in hertz, and how long it takes to fall most of the way, in seconds; the rumble's
+  // cutoff, in hertz, and how long it rolls on, in seconds; debris pops a second at first; how long it all lasts.
+  boomFrom: 90,
+  boomTo: 38,
+  boomFall: 0.15,
+  rumbleHz: 220,
+  rumbleSeconds: 0.8,
+  debris: 30,
+  blastSeconds: 2.6,
+  // The pod loading: the slide's band from and to, in hertz, and how long it slides; when the latch clacks, and how
+  // long the sound lasts, in seconds.
+  slideFrom: 2200,
+  slideTo: 700,
+  slideSeconds: 0.18,
+  latchAt: 0.2,
+  loadSeconds: 0.45,
+};
+
+/** Pops of a rocket's crackle over so many samples, each a sharp push of air and its smaller pull back, at a rate. */
+function rocketCrackle(length, perSecondAt, own) {
+  const crackle = new Float64Array(length);
+  const pop = Float64Array.from({ length: Math.round(0.003 * RATE) }, (_, i) => Math.exp(-i / (0.00025 * RATE)) - 0.45 * Math.exp(-i / (0.0009 * RATE)));
+  for (let i = 0; i < length; i++) {
+    if (own() >= perSecondAt(i / RATE) / RATE) {
+      continue;
+    }
+    const strength = 0.4 + 0.6 * own() ** 2;
+    for (let k = 0; k < pop.length && i + k < length; k++) {
+      crackle[i + k] += strength * pop[k];
+    }
+  }
+  return crackle;
+}
+
+/** So many seconds of brown noise low-passed at a cutoff in hertz, from the random sequence given. */
+function lowRoar(seconds, cutoff, own) {
+  const step = 1 - Math.exp((-2 * Math.PI * cutoff) / RATE);
+  let brown = 0;
+  let low = 0;
+  return Float64Array.from({ length: Math.round(seconds * RATE) }, () => {
+    brown = (brown + 0.02 * (own() * 2 - 1)) * 0.995;
+    low += step * (brown - low);
+    return low;
+  });
+}
+{
+  const launchRandom = ownRandom(0x524c6e63);
+  const R = CANNON_ROCKET;
+  const length = Math.round(R.launchSeconds * RATE);
+  const centre = (t) => (t < R.whooshPeakAt ? R.whooshFrom * (R.whooshPeak / R.whooshFrom) ** (t / R.whooshPeakAt)
+    : R.whooshTo + (R.whooshPeak - R.whooshTo) * Math.exp(-(t - R.whooshPeakAt) / R.whooshFall));
+  const whoosh = levelled(sweptResonance(whiteNoise(R.launchSeconds, launchRandom), centre, 1.4));
+  const roar = levelled(lowRoar(R.launchSeconds, 400, launchRandom));
+  const crackle = levelled(rocketCrackle(length, (t) => 60 * Math.exp(-t / 0.4), launchRandom));
+  const launch = new Float64Array(length);
+  thunk(launch, 0, R.thumpHz, 1.2, launchRandom);
+  for (let i = 0; i < length; i++) {
+    const t = i / RATE;
+    const swell = Math.min(1, t / 0.04) * Math.exp(-Math.max(0, t - 0.1) / 0.45);
+    launch[i] += swell * (0.8 * whoosh[i] + 0.4 * roar[i] + 0.2 * crackle[i]);
+  }
+  writeSound("cannon_rocket_launch", lowPassed(levelled(launch), 9000).map((sample) => Math.tanh(sample / 2.5)), 0.85);
+}
+{
+  const flightRandom = ownRandom(0x52466c74);
+  const R = CANNON_ROCKET;
+  const rendered = R.flightLoop + R.flightFade;
+  const rumble = levelled(lowRoar(rendered, R.rumbleCutoff, flightRandom));
+  const hiss = levelled(resonance(whiteNoise(rendered, flightRandom), R.hissHz, 0.9));
+  const crackle = levelled(rocketCrackle(rumble.length, () => R.crackles, flightRandom));
+  const mixed = rumble.map((sample, i) => Math.tanh((sample + 0.45 * hiss[i] + 0.3 * crackle[i]) / 2.2));
+  writeSound("cannon_rocket_flight", seamlessNoise(mixed, R.flightLoop, R.flightFade), 0.6);
+}
+{
+  const blastRandom = ownRandom(0x52426c73);
+  const R = CANNON_ROCKET;
+  const length = Math.round(R.blastSeconds * RATE);
+  const crack = levelled(highPassed(whiteNoise(R.blastSeconds, blastRandom), 300));
+  const rumble = levelled(lowRoar(R.blastSeconds, R.rumbleHz, blastRandom));
+  const debris = levelled(rocketCrackle(length, (t) => (t < 0.1 ? 0 : R.debris * Math.exp(-t / 0.6)), blastRandom));
+  let phase = 0;
+  const blast = crack.map((cracked, i) => {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (R.boomTo + (R.boomFrom - R.boomTo) * Math.exp(-t / R.boomFall))) / RATE;
+    const boom = Math.min(1, t / 0.003) * Math.exp(-t / 0.35) * Math.sin(phase);
+    const rolling = Math.min(1, t / 0.05) * Math.exp(-t / R.rumbleSeconds);
+    return 0.9 * Math.exp(-t / 0.012) * cracked + 2.4 * boom + 0.7 * rolling * rumble[i] + 0.15 * debris[i];
+  });
+  writeSound("cannon_rocket_blast", blast.map((sample) => Math.tanh(sample / 1.5)), 0.95);
+}
+{
+  const loadRandom = ownRandom(0x524c6f64);
+  const R = CANNON_ROCKET;
+  const slide = levelled(sweptResonance(whiteNoise(R.loadSeconds, loadRandom),
+    (t) => R.slideFrom + (R.slideTo - R.slideFrom) * Math.min(1, t / R.slideSeconds), 2.5));
+  const load = slide.map((sample, i) => {
+    const t = i / RATE;
+    return t < R.slideSeconds ? 0.3 * sample * Math.sin((Math.PI * t) / R.slideSeconds) : 0;
+  });
+  thunk(load, R.latchAt, 110, 0.6, loadRandom);
+  click(load, R.latchAt, 2400, 0.5, loadRandom);
+  click(load, R.latchAt + 0.03, 3100, 0.3, loadRandom);
+  writeSound("cannon_rocket_load", load, 0.6);
+}
+
 // The laser crossbow (see the plan's "The laser crossbow"), each sound with a random sequence of its own. Its shot:
 // the glowing coil it has for a string twanging as it is let go, a plucked string at 98 hertz; the bolt crackling off
 // it, noise round 2.5 kilohertz chopped by a 220 hertz square, swelling for 80 milliseconds; and the soft thump of the
