@@ -1808,6 +1808,13 @@ function checkFreighterConsole() {
     const refused = must(`messages since=${pressed} kind=actionbar match=*boosts*only* limit=1`).rows.length > 0;
     expect(refused && played("*note_block.bass*", pressed).length > 0, "freighter: on the ground her boost button says no, with a low note");
   }
+  const [jumpButton] = must("find skyliners:console_jump 128 1").rows;
+  if (jumpButton) {
+    const pressed = now();
+    useModule(jumpButton.at_abs, coPilotSeat());
+    expect(Boolean(heard("*freighter_computer_jump_*", pressed, LOOK_EVERY)), "freighter: standing as built, her jump button says why not in her computer's voice",
+      must(`messages since=${pressed} kind=actionbar limit=1`).rows[0]?.text ?? "");
+  }
   const [toggles] = must("find skyliners:console_switches 128 1").rows;
   if (toggles) {
     const before = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;

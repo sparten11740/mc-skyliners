@@ -194,7 +194,7 @@ public final class FreighterJump {
 
     /** Why she will not jump now, or null if she will. */
     @Nullable
-    private static Answer refusal(AutopilotBlockEntity autopilot, Vec3 middle) {
+    static Answer refusal(AutopilotBlockEntity autopilot, Vec3 middle) {
         if (!SkylinersConfig.FREIGHTER_HYPERSPACE_JUMP.get()) {
             return Answer.SWITCHED_OFF;
         }
