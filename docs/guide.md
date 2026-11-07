@@ -2664,8 +2664,9 @@ She flies on Create Propulsion's creative thrusters, which need no fuel: four cl
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
-tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
-control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
+tips hold her back; jets at her nose and her tail turn her and push her sideways, those at her nose set into the outer
+walls of her prongs' tunnels, only their nozzles showing outside, and those at her tail hidden. In her cockpit the
+autopilot's control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
 before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
 clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going

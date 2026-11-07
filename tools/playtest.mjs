@@ -2212,6 +2212,21 @@ function checkFreighterBeach() {
   expect(must(`block ${middle.join(",")}`).props?.open === "false", "freighter: pressed again, it shuts");
 }
 
+// Which way a freighter's bow lies from her middle, whichever way she was laid down: the axis, 0 for x or 2 for z, and
+// the sign along it, toward her cockpit, which stands out ahead of her more than to her side.
+function bowOf(middle) {
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const along = Math.abs(head[0] - middle[0]) > Math.abs(head[2] - middle[2]) ? 0 : 2;
+  return { along, bow: Math.sign(head[along] - middle[along]) };
+}
+
+// The engines in a freighter's prongs: those standing further ahead of her middle than her rooms reach.
+function prongEngines(middle) {
+  const { along, bow } = bowOf(middle);
+  return must("find createpropulsion:creative_thruster 128 100").rows.map((row) => row.at_abs)
+    .filter((at) => (at[along] - middle[along]) * bow > ROOMS_REACH);
+}
+
 // A freighter's outside: she is built with every piece of it, as many as she should have of each at least; and each
 // outside fitting, put up by hand on a floor, on a wall and under a ceiling, takes the shape for where it went, as a
 // player clicking there would expect.
@@ -2302,6 +2317,11 @@ function checkFreighterGallery() {
   expect(models.length === 4, "freighter: the fleet's four models stand along the tube out to her cockpit", models.join(", "));
   const posters = outside("space_poster").length;
   expect(posters >= GALLERY_POSTER_BLOCKS, "freighter: space posters hang along the tunnel down her port prong", `${posters} blocks of posters`);
+  const ahead = prongEngines(middle);
+  const over = readBlocks(ahead.map(([x, y, z]) => [x, y + 1, z]));
+  const standing = ahead.filter((at, i) => over[i]?.id?.endsWith("air"));
+  expect(ahead.length > 0 && standing.length === 0, "freighter: walking down her prongs' tunnels, no engine stands out in either, each set into her skin",
+    `${standing.length} of ${ahead.length} stand in the open${standing.length ? `, as at ${standing[0].join(",")}` : ""}`);
 }
 
 // The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
@@ -2786,7 +2806,7 @@ const CHECKS = {
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
-  "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
+  "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges, her port prong's tunnel space posters, and no engine stands out in her prongs" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
