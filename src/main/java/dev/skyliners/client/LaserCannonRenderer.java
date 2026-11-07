@@ -18,13 +18,17 @@ import net.minecraft.world.phys.AABB;
 public class LaserCannonRenderer implements BlockEntityRenderer<LaserCannonBlockEntity> {
     /**
      * The yoke: how far out its cheeks stand either side and how thick they are, and how high its base is, in blocks:
-     * on the top of the pedestal.
+     * on the top of the pedestal. The base between the cheeks is narrower than they are deep, so no side of it lies in
+     * the plane of theirs.
      */
     private static final float CHEEK_OUT = 0.42F;
     private static final float CHEEK = 0.07F;
     private static final float YOKE_FOOT = 1.0F;
-    /** The housing between the cheeks: its half width, half height and half length, in blocks. */
-    private static final float HOUSING_HALF_WIDTH = 0.36F;
+    /**
+     * The housing between the cheeks: its half width, half height and half length, in blocks; a little wider than its
+     * barrels reach out, so their outer sides never lie in the plane of its own and flicker against them.
+     */
+    private static final float HOUSING_HALF_WIDTH = 0.39F;
     private static final float HOUSING_HALF_HEIGHT = 0.17F;
     private static final float HOUSING_HALF_LENGTH = 0.42F;
     /**
@@ -55,7 +59,7 @@ public class LaserCannonRenderer implements BlockEntityRenderer<LaserCannonBlock
         for (float side : CHEEKS) {
             FlatQuads.box(consumer, pose.last(), light, GUNMETAL, side - CHEEK, foot, -CHEEK * 2, side + CHEEK, HOUSING_HALF_HEIGHT, CHEEK * 2);
         }
-        FlatQuads.box(consumer, pose.last(), light, GUNMETAL, -CHEEK_OUT, foot, -CHEEK * 2, CHEEK_OUT, foot + CHEEK, CHEEK * 2);
+        FlatQuads.box(consumer, pose.last(), light, GUNMETAL, -CHEEK_OUT, foot, -CHEEK, CHEEK_OUT, foot + CHEEK, CHEEK);
         pose.mulPose(Axis.XP.rotationDegrees(-cannon.shownPitch(partialTick)));
         FlatQuads.box(consumer, pose.last(), light, GUNMETAL_LIGHT, -HOUSING_HALF_WIDTH, -HOUSING_HALF_HEIGHT, -HOUSING_HALF_LENGTH,
             HOUSING_HALF_WIDTH, HOUSING_HALF_HEIGHT, HOUSING_HALF_LENGTH);

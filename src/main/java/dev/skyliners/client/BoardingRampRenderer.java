@@ -70,8 +70,12 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     /** The foot lip's grey steel, and the dark edge at the plate's foot. */
     private static final int DECK = 0xFF7A7F88;
     private static final int EDGE = 0xFF2A2D33;
-    /** The hinge tube along the plate's head: its half thickness, in blocks, and its steel. */
+    /**
+     * The hinge tube along the plate's head: its half thickness, how far its ends stand past the plate's sides, so
+     * neither lies in the plane of the other and flickers through it, in blocks, and its steel.
+     */
     private static final float HINGE_HALF = 0.14F;
+    private static final float HINGE_PROUD = 0.02F;
     private static final int STEEL = 0xFF8A8F98;
     /** The foot lip: how long it is, in blocks, and how far it is turned back over the plate while folded, in degrees. */
     private static final float LIP = 0.6F;
@@ -96,8 +100,11 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final float BRACKET_HALF = 0.15F;
     private static final int BARREL_PAINT = 0xFFD9A62A;
     private static final int ROD = 0xFFD8DCE2;
-    /** The lamps: half their size, in blocks, and their colours, amber moving and white down. */
-    private static final float LAMP_HALF = 0.07F;
+    /**
+     * The lamps: half their size, in blocks, their tops a little over the hinge's they stand by, and their colours,
+     * amber moving and white down.
+     */
+    private static final float LAMP_HALF = 0.075F;
     private static final int LAMP_AMBER = 0xFFFFA020;
     private static final int LAMP_WHITE = 0xFFF4F8FF;
     /** Either side of the ramp's middle line, for what stands in pairs: its rams and its lamps. */
@@ -169,7 +176,8 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         double angle = swing(ticks, slope);
         float half = frame.width() / 2F - SIDE_GAP;
         int lamp = ticks >= BoardingRamp.OUT ? LAMP_WHITE : DrawingClock.wholeTicks() / BLINK % 2 == 0 ? LAMP_AMBER : 0;
-        FlatQuads.box(consumer, pose.last(), light, STEEL, -half, -HINGE_HALF, -HINGE_HALF, half, HINGE_HALF, HINGE_HALF);
+        float hinge = half + HINGE_PROUD;
+        FlatQuads.box(consumer, pose.last(), light, STEEL, -hinge, -HINGE_HALF, -HINGE_HALF, hinge, HINGE_HALF, HINGE_HALF);
         lamps(consumer, pose.last(), frame.width() / 2F, 0, lamp);
         for (int side : SIDES) {
             ram(pose, consumer, light, side * (frame.width() / 2F - ROD_HALF), angle, frame.length());
@@ -206,12 +214,12 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     }
 
     /**
-     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it and along its sides, a dark
-     * edge at its foot, and on top the floor it is part of while up (see {@link #floorTop}), so nothing changes as it
-     * folds away into the floor.
+     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it and along its sides up to
+     * a dark edge at its foot, the two meeting rather than overlapping, which flickers, and on top the floor it is part
+     * of while up (see {@link #floorTop}), so nothing changes as it folds away into the floor.
      */
     private static void plate(VertexConsumer consumer, PoseStack.Pose at, int light, float half, float length, int skin) {
-        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, 0, length);
+        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, 0, length - PLATE);
         FlatQuads.box(consumer, at, light, EDGE, -half, -THICK, length - PLATE, half, 0, length);
     }
 
