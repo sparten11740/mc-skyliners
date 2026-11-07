@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/bandstand",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/bandstand",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/bandstand",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/bandstand",
+      "y": 270
+    }
+  }
+}

@@ -212,6 +212,11 @@ const CROSSBOW_AIM_DOWN = 8;
 const CREEPER_HEALTH = 20;
 const COW_HEALTH = 10;
 const CROSSBOW_COOLED_TICKS = 100;
+// A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
+// in blocks, and how long its song is given to start and to fade away, in ticks.
+const BAND_NEAR = 3;
+const BAND_AWAY = 40;
+const BAND_TICKS = 60;
 // A freighter's deck robots: how many she is built with, how far in front of one the player walks up to, and how far
 // off they start, in blocks; and how long its hello and its trill are given to be heard, in ticks.
 const FREIGHTER_ROBOTS = 2;
@@ -1057,6 +1062,22 @@ function checkFreighterLake() {
 }
 
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
+// A freighter's club band: standing before its bandstand, her song plays; gone well away from it, it falls silent.
+function checkFreighterBand() {
+  ship("freighter");
+  const [stand] = must("find skyliners:bandstand 128 1").rows;
+  expect(stand, "freighter: she is built with a bandstand in her club");
+  if (!stand) {
+    return;
+  }
+  const [x, y, z] = stand.at_abs;
+  const [dx, dz] = STEPS[must(`block ${x},${y},${z}`).props?.facing ?? "north"];
+  must(`server tp @p ${x + 0.5 + dx * BAND_NEAR} ${y} ${z + 0.5 + dz * BAND_NEAR}; wait ${BAND_TICKS}t`);
+  expect(playing("skyliners:club_band") > 0, "freighter: standing before her bandstand, her band's song plays");
+  must(`server tp @p ${x + 0.5 + dx * BAND_AWAY} ${y + BAND_AWAY} ${z + 0.5 + dz * BAND_AWAY}; wait ${BAND_TICKS}t`);
+  expect(playing("skyliners:club_band") === 0, "freighter: gone well away from it, the song falls silent");
+}
+
 function checkFreighterRobot() {
   ship("freighter");
   const robots = must(`find skyliners:deck_robot 128 ${FREIGHTER_ROBOTS + 1}`).rows;
@@ -1426,6 +1447,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
+  "freighter-band": { run: checkFreighterBand, about: "a freighter's club band plays her song to whoever stands before it, and falls silent as they go" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

@@ -73,6 +73,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRETS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_BANDSTAND;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -656,6 +657,12 @@ public final class SkylinersConfig {
                 "attack, their bolts strike hostile mobs, never players, villagers, pets, animals or anyone aboard."
             )
             .define("turrets", true);
+        FREIGHTER_BANDSTAND = builder
+            .comment(
+                "Whether the freighter is built with a bandstand in her club, the room through the doorway at her port bow, its",
+                "robot jazz trio playing her song to anyone who comes near."
+            )
+            .define("bandstand", true);
         builder.pop();
 
         SPEC = builder.build();

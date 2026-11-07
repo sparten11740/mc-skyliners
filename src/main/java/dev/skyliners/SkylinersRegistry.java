@@ -326,6 +326,8 @@ import dev.skyliners.block.TrimWinchBlock;
 import dev.skyliners.block.TrimWinchBlockEntity;
 import dev.skyliners.cabin.Passengers;
 import dev.skyliners.christening.ChristeningBottleItem;
+import dev.skyliners.club.BandstandBlock;
+import dev.skyliners.club.BandstandBlockEntity;
 import dev.skyliners.entity.Basketball;
 import dev.skyliners.entity.BlueIceChunk;
 import dev.skyliners.entity.CraneHook;
@@ -1320,6 +1322,13 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserCannonBlockEntity>> LASER_CANNON_ENTITY =
         BLOCK_ENTITIES.register("laser_cannon", () -> BlockEntityType.Builder.of(LaserCannonBlockEntity::new, LASER_CANNON.get()).build(null));
     public static final DeferredItem<BlockItem> LASER_CANNON_ITEM = ITEMS.registerSimpleBlockItem(LASER_CANNON);
+    /** The bandstand in the freighter's club, its band playing her song (see {@link BandstandBlock}). */
+    public static final DeferredBlock<BandstandBlock> BANDSTAND = BLOCKS.registerBlock(
+        "bandstand", BandstandBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BandstandBlockEntity>> BANDSTAND_ENTITY =
+        BLOCK_ENTITIES.register("bandstand", () -> BlockEntityType.Builder.of(BandstandBlockEntity::new, BANDSTAND.get()).build(null));
+    public static final DeferredItem<BlockItem> BANDSTAND_ITEM = ITEMS.registerSimpleBlockItem(BANDSTAND);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2825,7 +2834,8 @@ public final class SkylinersRegistry {
             DECK_ROBOT_ITEM,
             RAMP_BUTTON_ITEM,
             LASER_CROSSBOW,
-            LASER_CANNON_ITEM
+            LASER_CANNON_ITEM,
+            BANDSTAND_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

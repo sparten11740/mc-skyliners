@@ -1,0 +1,110 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "stage": "minecraft:block/dark_oak_planks",
+    "edge": "minecraft:block/gold_block",
+    "particle": "minecraft:block/dark_oak_planks"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stage"
+        },
+        "south": {
+          "texture": "#stage"
+        },
+        "east": {
+          "texture": "#stage"
+        },
+        "west": {
+          "texture": "#stage"
+        },
+        "up": {
+          "texture": "#stage"
+        },
+        "down": {
+          "texture": "#stage"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.05,
+        2.5,
+        -0.05
+      ],
+      "to": [
+        16.05,
+        3.2,
+        0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            12.8,
+            16,
+            13.5
+          ]
+        },
+        "south": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            12.8,
+            16,
+            13.5
+          ]
+        },
+        "east": {
+          "texture": "#edge",
+          "uv": [
+            15.45,
+            12.8,
+            16,
+            13.5
+          ]
+        },
+        "west": {
+          "texture": "#edge",
+          "uv": [
+            15.45,
+            12.8,
+            16,
+            13.5
+          ]
+        },
+        "up": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            15.45,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            15.45,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

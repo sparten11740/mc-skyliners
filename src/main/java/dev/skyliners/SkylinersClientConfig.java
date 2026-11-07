@@ -22,6 +22,7 @@ public final class SkylinersClientConfig {
     public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
     public static final ModConfigSpec.BooleanValue AURORA;
     public static final ModConfigSpec.BooleanValue LIFT_MUSIC;
+    public static final ModConfigSpec.BooleanValue CLUB_MUSIC;
     public static final ModConfigSpec.BooleanValue HEIGHT_GAUGE;
     public static final ModConfigSpec.BooleanValue HELMET_BREATHING;
     public static final ModConfigSpec.BooleanValue ROOM_AMBIENCE;
@@ -112,6 +113,10 @@ public final class SkylinersClientConfig {
             .comment("Play soft bossa nova in a lift's car while it rides, as lifts do, heard in the car and right by it, as loud as",
                 "the Jukebox/Note Blocks volume sets. Off, the car only hums.")
             .define("liftMusic", true);
+        CLUB_MUSIC = builder
+            .comment("Play the freighter's club band's song, \"Long Haul Swing\", from its bandstand to anyone who comes near it, as loud",
+                "as the Jukebox/Note Blocks volume sets. Off, the band plays on without a sound.")
+            .define("clubMusic", true);
         HEIGHT_GAUGE = builder
             .comment("While a rocket flies, show on her lift's picture boards, but where its car stands, how high she is: the sky in the colours",
                 "of each height, the edge of space marked with a star, and a little rocket at her height. Off, the boards show her floors.")

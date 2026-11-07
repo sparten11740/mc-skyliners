@@ -2652,6 +2652,14 @@ which strikes hostile mobs hard and throws them back in a shower of sparks; it n
 animals, and never breaks a block. Three quick shots and it vents steam for a few seconds, its lamps red, hissing if you
 try it, before it charges again. The server config's `freighter.laserCrossbow` switches it off, leaving it a click.
 
+Her club, the room through the doorway at her port bow, has a band: on a little dark-oak stage with footlights, a
+jazz trio of robots, cousins of her deck robots, white with teal, orange and violet bands and cyan visors, play her
+song, "Long Haul Swing", on upright bass, keyboard and drums, swaying and nodding to its swing as it swells up for
+whoever comes near and fading away as they go. The song plays as
+loud as the game's Jukebox/Note Blocks volume sets, and the client config's `clubMusic` silences it. The Bandstand is
+among her blocks in the creative tab, to set down anywhere, and the server config's `freighter.bandstand` builds her
+without it.
+
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning
 to follow you about; touch it and it trills back; and now and then, with someone near, it beeps happily to itself. The

@@ -19,6 +19,7 @@ import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.block.WindowDimmerBlock;
 import dev.skyliners.block.WindowDimmerBlockEntity;
+import dev.skyliners.club.BandstandBlock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -154,6 +155,13 @@ public final class FreighterLayout extends HullLayout {
      */
     private static final int RAMP_BUTTON_LEG = 1;
     private static final int RAMP_BUTTON_UP = 2;
+    /**
+     * Her club's bandstand (see {@link BandstandBlock}): in the room through the doorway at her port bow, at this
+     * bearing clockwise from her bow, in degrees, the room's middle line, so far out from her axis, in blocks, toward its
+     * far wall, its band facing back in over the room.
+     */
+    private static final int BANDSTAND_BEARING = 300;
+    private static final double BANDSTAND_OUT = 16;
     /**
      * Her canopy's dimmer: how far over the pilots' seats' floor row it stands, at a seated pilot's hand, and how far
      * out past the seat's side it may stand at most, toward her skin, so the pilot reaches it from the seat, in blocks.
@@ -306,6 +314,7 @@ public final class FreighterLayout extends HullLayout {
         layout.robots();
         layout.ramp();
         layout.turret();
+        layout.bandstand();
         layout.countAir();
         return layout;
     }
@@ -837,6 +846,23 @@ public final class FreighterLayout extends HullLayout {
             crown++;
         }
         set(0, crown, 0, SkylinersRegistry.LASER_CANNON.get().defaultBlockState());
+    }
+
+    /**
+     * Her club's bandstand, its stage on her deck and its band facing back in toward her axis, where there is room over
+     * a floor for its three players; none with the server config's {@code freighter.bandstand} off.
+     */
+    private void bandstand() {
+        double[] way = way(BANDSTAND_BEARING);
+        int x = (int) Math.round(way[0] * BANDSTAND_OUT);
+        int z = (int) Math.round(way[1] * BANDSTAND_OUT);
+        Direction facing = Direction.getNearest(-way[0], 0, -way[1]);
+        Direction across = facing.getClockWise();
+        boolean room = isOpen(x + across.getStepX(), deck + 1, z + across.getStepZ())
+            && isOpen(x - across.getStepX(), deck + 1, z - across.getStepZ());
+        if (SkylinersConfig.FREIGHTER_BANDSTAND.get() && room && isOpen(x, deck + 1, z) && !isOpen(x, deck, z)) {
+            set(x, deck + 1, z, SkylinersRegistry.BANDSTAND.get().defaultBlockState().setValue(BandstandBlock.FACING, facing));
+        }
     }
 
     /** Takes her core's walls out of a row, the top dome's, where they would stand between the gunner and the glass. */

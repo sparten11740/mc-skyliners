@@ -281,6 +281,22 @@ function rampFittings() {
   cubes.laser_cannon = null;
 }
 
+// The freighter's club bandstand (see BandstandBlock): its stage, a low dark-oak platform with a brass edge along its
+// front; its band is drawn over it by BandstandRenderer. Its item shows the stage.
+{
+  write(`assets/${ID}/models/block/bandstand.json`, {
+    parent: "minecraft:block/block",
+    textures: { stage: "minecraft:block/dark_oak_planks", edge: "minecraft:block/gold_block", particle: "minecraft:block/dark_oak_planks" },
+    elements: [solid([0, 0, 0], [16, 3, 16], "#stage"), solid([0, 2.5, 0], [16, 3.2, 0.5], "#edge")],
+  });
+  write(`assets/${ID}/blockstates/bandstand.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/bandstand`, y }])),
+  });
+  write(`assets/${ID}/models/item/bandstand.json`, { parent: `${ID}:block/bandstand` });
+  dropsItself("bandstand");
+  cubes.bandstand = null;
+}
+
 // The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
 // (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
 // charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
@@ -10172,6 +10188,8 @@ FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...roverFittings());
 FITTINGS.push(...rampFittings());
+// The club's bandstand is fitted into her club, set down and taken up by hand.
+FITTINGS.push("bandstand");
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10325,6 +10343,7 @@ shaped("deck_robot", [" G ", "IRI", "I I"], { G: "minecraft:glass_pane", I: "min
 shaped("ramp_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button", I: "minecraft:iron_ingot" }, 1);
 shaped("laser_crossbow", [" A ", "RCR", " O "], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", C: "minecraft:crossbow", O: "minecraft:copper_ingot" }, 1);
 shaped("laser_cannon", ["ARA", "IDI", "III"], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", I: "minecraft:iron_ingot", D: "minecraft:dispenser" }, 1);
+shaped("bandstand", ["NNN", "PPP"], { N: "minecraft:note_block", P: "minecraft:dark_oak_slab" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10898,6 +10917,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.ramp_button": "Ramp Call Button",
   "item.skyliners.laser_crossbow": "Laser Crossbow",
   "block.skyliners.laser_cannon": "Laser Cannon",
+  "block.skyliners.bandstand": "Bandstand",
   "message.skyliners.freighter.takeoff_ramp": "Her take-off waits for everyone to step off the ramp",
   "message.skyliners.freighter.takeoff_called_off": "Take-off called off: she was held on the ground too long",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
