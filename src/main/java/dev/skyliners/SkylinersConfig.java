@@ -704,7 +704,7 @@ public final class SkylinersConfig {
         FREIGHTER_PRONGS = builder
             .comment(
                 "Whether the tunnel down the freighter's port prong is a lookout: a seat facing each porthole down its outer wall,",
-                "and at its tip, past her nose jet's casing, a nook of seats facing a screen of her outside cameras.",
+                "and at its tip, past her nose jet's housing, a nook of seats facing a screen of her outside cameras.",
                 "Without it, the tunnel has only its posters and portholes."
             )
             .define("prongs", true);
@@ -712,7 +712,7 @@ public final class SkylinersConfig {
             .comment(
                 "Whether the freighter has her smugglers' hold: a secret panel in the wall across the tunnel down her starboard",
                 "prong, opened by a loose brass rivet beside it, onto a cramped den of contraband crates, a cot, a lantern and a",
-                "chest of loot. Without it, that tunnel runs on to her nose jet's casing."
+                "chest of loot. Without it, that tunnel runs on to her nose jet's housing."
             )
             .define("smugglerHold", true);
         FREIGHTER_CANOPY_DIMMER = builder

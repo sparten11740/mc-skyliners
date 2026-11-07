@@ -868,13 +868,13 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Her engine bays in her prongs' tips (see {@link FreighterEngineBays}): a bulkhead across each tip round her
-     * retro's relay, and a casing round each of her nose jets.
+     * retro's relay, and a housing round each of her nose jets' relays.
      */
     private void engineBays() {
         FreighterEngineBays bays = new FreighterEngineBays(this, deck);
         retros.forEach(bays::bulkhead);
         for (int jet = 0; jet < NOSE_JETS; jet++) {
-            bays.casing(jets[jet], JET_PUSHES[jet]);
+            bays.housing(jets[jet], JET_PUSHES[jet]);
         }
     }
 
