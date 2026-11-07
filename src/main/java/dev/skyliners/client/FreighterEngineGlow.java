@@ -40,8 +40,6 @@ public final class FreighterEngineGlow {
     private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "textures/misc/exhaust_glow.png");
     /** How far from the camera her glow is drawn, in blocks: as far as she is seen against the sky. */
     private static final double SEEN = 320;
-    /** How far round her stern her glow reaches at most, in blocks, for leaving it out unseen. */
-    private static final double REACH = 16;
     /**
      * How bright her glow is while only her lift holds her up, as a share of full, and her mains' share of full at
      * which it is at full.
@@ -73,6 +71,12 @@ public final class FreighterEngineGlow {
     private static final float[] HALO = {0.3F, 0.6F, 1.0F};
     /** Where her mains' nozzles are from her disc's middle (see {@link FreighterLayout#mainNozzles}). */
     private static final List<Vec3> NOZZLES = FreighterLayout.mainNozzles();
+    /**
+     * How far round the middle of her stern her glow reaches at most, in blocks, for leaving it out unseen: out to her
+     * farthest nozzle and half its widest halo past it.
+     */
+    private static final double REACH = NOZZLES.stream().mapToDouble(nozzle -> nozzle.distanceTo(NOZZLES.get(NOZZLES.size() / 2))).max()
+        .orElse(0) + HALO_FULL / 2;
     /** How bright each freighter's glow is shown, and when it was last drawn, by her autopilot. */
     private static final Map<AutopilotBlockEntity, Shown> SHOWN = new WeakHashMap<>();
 

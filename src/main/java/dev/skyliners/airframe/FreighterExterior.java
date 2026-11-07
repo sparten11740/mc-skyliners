@@ -80,7 +80,10 @@ final class FreighterExterior {
     private FreighterExterior() {
     }
 
-    /** A piece, how it is put up, and its column: so far to her right of her axis and astern of it, in metres. */
+    /**
+     * A piece, how it is put up, and its column: so far to her right of her axis and astern of it, in metres, either
+     * negative for her left and toward her bow.
+     */
     private record Spot(Supplier<? extends HullFittingBlock> piece, Mount mount, double right, double astern) {
     }
 
