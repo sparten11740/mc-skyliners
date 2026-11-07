@@ -390,6 +390,13 @@ by `FreighterExterior.pad` so no gap shows under it, as her lights' strips and l
 its `SatelliteDishBlock` keeps its dish's pivots and size, which `SatelliteDishRenderer` turns it about by
 `DrawingClock`, and `ExhaustVentBlock`, the exhaust vent's and the vent grille's, lets its wisps off where
 `SableFlight.toWorld` puts its mouth.
+Her cover is `FREIGHTER_COVER`, a `ShellBlock` of her own that `ZeppelinPaint` tints as it does the zeppelin's cover,
+as light as that by the `zeppelin_fabric` tag. Its blockstate is a weighted list of `ShellModel`s, one for each of her
+skins (painted by `freighterSkinTextures` in `generate_textures.mjs`, weighted by `FREIGHTER_SKINS` in
+`generate_resources.mjs`), so the game picks a skin for each block from its position, in her plot once she is
+assembled, which shuffles the pattern as she lifts off; each variant bakes a shape the first time it draws it. Her
+layout's passes look for her own cover; freighters built before it keep `ZEPPELIN_COVER`, which nothing of hers needs
+once she is built.
 `FreighterPlating` swaps her cover, where `FreighterPlating.unseen` says no room sees it, past her outer bulkhead and
 clear of her passages, for the hull plates, `ShellBlock`s of their own textures cut to the same shapes.
 `FreighterLights` lays her light band, a lit `ShellBlock` round her rim, her `HullFittingBlock` light strips along her

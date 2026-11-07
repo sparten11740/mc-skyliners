@@ -67,8 +67,9 @@ import net.minecraft.world.phys.Vec3;
  * the north, her outline at her own scale (see {@link FreighterShape}) and everything a player uses at a player's
  * size. Only her blocks are kept: the air inside her hull is worked out from its shape as she is handed over.
  *
- * <p>Her hull is a skin of the zeppelin's cover, cut to her lens and her parts in the snapped style (see
- * {@link SurfaceCut}), glazed round her cockpit's cone and over her turrets' domes, gunmetal ribs over each dome.
+ * <p>Her hull is a skin of her own cover, the zeppelin's silver laid as riveted plates, cut to her lens and her parts
+ * in the snapped style (see {@link SurfaceCut}), glazed round her cockpit's cone and over her turrets' domes, gunmetal
+ * ribs over each dome.
  * Inside, one deck: a core round the turrets' ladder on her axis, a ring corridor round it, and six rooms out to an
  * outer bulkhead, where her hull grows too low to stand in; past it, the wedge out to her rim is a closed void but
  * where a passage crosses it to her cockpit's tube or along her prongs, the bulkhead opening onto it and padded walls
@@ -485,7 +486,7 @@ public final class FreighterLayout extends HullLayout {
      * turrets' domes set into it (see {@link #glaze}).
      */
     private void skin() {
-        BlockState cover = SkylinersRegistry.ZEPPELIN_COVER.get().defaultBlockState();
+        BlockState cover = SkylinersRegistry.FREIGHTER_COVER.get().defaultBlockState();
         for (int y = 0; y <= top; y++) {
             for (int x = -side; x <= side; x++) {
                 skinRow(cover, x, y);
@@ -544,7 +545,7 @@ public final class FreighterLayout extends HullLayout {
     /** A strut of her canopy's cone made her canopy's frame, cut to her curve as the cover there was. */
     private void canopyFrame(int x, int y, int z) {
         BlockState cover = stateAt(x, y, z);
-        if (cover.is(SkylinersRegistry.ZEPPELIN_COVER.get())) {
+        if (cover.is(SkylinersRegistry.FREIGHTER_COVER.get())) {
             set(x, y, z, ShellBlock.withShape(SkylinersRegistry.CANOPY_FRAME.get().defaultBlockState(), ShellBlock.shape(cover)));
         }
     }
@@ -552,7 +553,7 @@ public final class FreighterLayout extends HullLayout {
     /** A rib of one of her turrets' domes made dark gunmetal plate, cut to her curve as the cover there was. */
     private void domeRib(int x, int y, int z) {
         BlockState cover = stateAt(x, y, z);
-        if (cover.is(SkylinersRegistry.ZEPPELIN_COVER.get())) {
+        if (cover.is(SkylinersRegistry.FREIGHTER_COVER.get())) {
             set(x, y, z, ShellBlock.withShape(SkylinersRegistry.HULL_PLATE_DARK.get().defaultBlockState(), ShellBlock.shape(cover)));
         }
     }

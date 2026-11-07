@@ -1485,6 +1485,17 @@ public final class SkylinersRegistry {
     );
     public static final DeferredItem<BlockItem> HULL_FLOODLIGHT_ITEM = ITEMS.registerSimpleBlockItem(HULL_FLOODLIGHT);
     /**
+     * The freighter's cover, her skin cut to her curve (see {@link ShellBlock}): the zeppelin's doped silver, tinted as
+     * its cover is, but laid as riveted plates at twice its fineness, its look picked for each block by where it is from
+     * several layouts of plates and, now and then, one with a hatch, a patch, a vent or a mark on it. Set by hand, a
+     * whole block; broken, it gives back fabric, as the zeppelin's cover does. Freighters built before she had it keep
+     * the zeppelin's cover.
+     */
+    public static final DeferredBlock<ShellBlock> FREIGHTER_COVER = BLOCKS.registerBlock(
+        "freighter_cover", properties -> new ShellBlock(properties, SkylinersRegistry.FREIGHTER_COVER_ITEM), fabric()
+    );
+    public static final DeferredItem<BlockItem> FREIGHTER_COVER_ITEM = ITEMS.registerSimpleBlockItem(FREIGHTER_COVER);
+    /**
      * The freighter's hull plates (see {@link ShellBlock}), laid in place of her cover outside where nobody inside sees
      * it, cut to her curve as her cover is: dark gunmetal plate, a riveted seam, a welded patch and hazard stripes. Set
      * by hand, each is a whole plate; broken, each gives itself back.
@@ -3162,6 +3173,7 @@ public final class SkylinersRegistry {
             VENT_GRILLE_ITEM,
             HULL_MACHINERY_ITEM,
             HULL_FLOODLIGHT_ITEM,
+            FREIGHTER_COVER_ITEM,
             HULL_PLATE_DARK_ITEM,
             HULL_PLATE_RIVETED_ITEM,
             HULL_PLATE_PATCHED_ITEM,

@@ -138,7 +138,7 @@ final class FreighterPortholes {
     /** Whether a block is a whole block of her cover with open sky right outside it, so many blocks across her on. */
     private boolean facesSky(int x, int y, int z, int dx) {
         BlockState there = layout.stateAt(x, y, z);
-        boolean cover = there.is(SkylinersRegistry.ZEPPELIN_COVER.get());
+        boolean cover = there.is(SkylinersRegistry.FREIGHTER_COVER.get());
         return cover && ShellBlock.shape(there) == ShellGeometry.WHOLE && sky(x + dx, y, z);
     }
 

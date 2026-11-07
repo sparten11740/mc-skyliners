@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "skyliners:block/freighter_skin_1"
+  }
+}

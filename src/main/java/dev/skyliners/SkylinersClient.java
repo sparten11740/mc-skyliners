@@ -278,11 +278,12 @@ public final class SkylinersClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, SkylinersRegistry.CABIN_CURTAIN.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(ZeppelinPaint::tint,
             SkylinersRegistry.ZEPPELIN_COVER.get(), SkylinersRegistry.ZEPPELIN_FABRIC.get(), SkylinersRegistry.ROCKET_LINED_COVER.get(),
-            SkylinersRegistry.ROCKET_LINING_PANEL.get(), SkylinersRegistry.CANOPY_FRAME.get()));
+            SkylinersRegistry.ROCKET_LINING_PANEL.get(), SkylinersRegistry.CANOPY_FRAME.get(), SkylinersRegistry.FREIGHTER_COVER.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(OvalWindowWall::tint,
             SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get(), SkylinersRegistry.PORTHOLE.get(),
             SkylinersRegistry.FLAT_PORTHOLE.get()));
-        modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get(),
+            SkylinersRegistry.FREIGHTER_COVER_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
         // A freighter's hyperspace jump: her computer's last word as she comes out, and the view widening as she goes.
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::tick);

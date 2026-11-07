@@ -311,7 +311,7 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static int skin(RampPanelBlockEntity panel, BoardingRamp.Frame frame) {
         BlockPos beside = panel.getBlockPos().offset(frame.head()).relative(frame.out(), frame.run() / 2).below()
             .relative(frame.right(), frame.width());
-        return OPAQUE | ZeppelinPaint.tint(SkylinersRegistry.ZEPPELIN_COVER.get().defaultBlockState(), panel.getLevel(), beside, 0);
+        return OPAQUE | ZeppelinPaint.tint(SkylinersRegistry.FREIGHTER_COVER.get().defaultBlockState(), panel.getLevel(), beside, 0);
     }
 
     @Override

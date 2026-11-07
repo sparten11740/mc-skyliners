@@ -395,6 +395,8 @@ const EXTERIOR_PIECES = [
   ["hull_plate_dark", 40], ["hull_plate_riveted", 20], ["hull_plate_patched", 10], ["hazard_plate", 20],
   ["hull_light_strip", 60], ["hull_light_band", 60], ["nav_light", 7],
 ];
+// How many blocks of her own Freighter Hull a freighter's skin has at least, none of it the zeppelin's cover.
+const FREIGHTER_HULL_LEAST = 500;
 const FITTINGS_PUT_UP = [
   "satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "vent_grille", "hull_machinery",
   "hull_floodlight", "hull_light_strip",
@@ -2220,6 +2222,9 @@ function checkFreighterExterior() {
     const count = found(id);
     expect(count >= least, `freighter: she is built with ${id.replaceAll("_", " ")}, ${least} or more`, `${count} of them`);
   }
+  const [own, zeppelin] = [found("freighter_cover"), found("zeppelin_cover")];
+  expect(own >= FREIGHTER_HULL_LEAST && zeppelin === 0, "freighter: her skin is her own Freighter Hull, none of it the zeppelin's cover",
+    `${own} of hers, ${zeppelin} of the zeppelin's`);
   const [x0, z0] = [site.x - Math.floor((FITTINGS_PUT_UP.length * STAND_APART) / 2), site.z + STAND_AWAY];
   const x1 = x0 + FITTINGS_PUT_UP.length * STAND_APART;
   must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x1} ${ground + STAND_HIGH + 1} ${z0 + 3} stone`);
@@ -2788,7 +2793,7 @@ const CHECKS = {
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
-  "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
+  "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built in her own hull with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-flush": { run: checkFreighterExteriorFlush, about: "every piece of a freighter's outside meets her hull face to face, no gap under it" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },
   "freighter-legs": { run: checkFreighterLegs, slow: true, about: "a freighter's legs draw up into her belly once she is clear, and are down again before she lands on them" },

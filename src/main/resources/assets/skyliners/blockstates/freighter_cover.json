@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "skyliners:block/freighter_cover_1",
+        "weight": 24
+      },
+      {
+        "model": "skyliners:block/freighter_cover_2",
+        "weight": 24
+      },
+      {
+        "model": "skyliners:block/freighter_cover_3",
+        "weight": 24
+      },
+      {
+        "model": "skyliners:block/freighter_cover_4",
+        "weight": 24
+      },
+      {
+        "model": "skyliners:block/freighter_cover_5",
+        "weight": 24
+      },
+      {
+        "model": "skyliners:block/freighter_cover_hatch",
+        "weight": 2
+      },
+      {
+        "model": "skyliners:block/freighter_cover_patch",
+        "weight": 2
+      },
+      {
+        "model": "skyliners:block/freighter_cover_rivets",
+        "weight": 2
+      },
+      {
+        "model": "skyliners:block/freighter_cover_scorch",
+        "weight": 2
+      },
+      {
+        "model": "skyliners:block/freighter_cover_vent",
+        "weight": 1
+      },
+      {
+        "model": "skyliners:block/freighter_cover_arrow",
+        "weight": 1
+      }
+    ]
+  }
+}

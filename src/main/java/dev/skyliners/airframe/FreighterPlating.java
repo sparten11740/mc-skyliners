@@ -45,7 +45,7 @@ final class FreighterPlating {
         if (!SkylinersConfig.FREIGHTER_PLATING.get()) {
             return;
         }
-        BlockState cover = SkylinersRegistry.ZEPPELIN_COVER.get().defaultBlockState();
+        BlockState cover = SkylinersRegistry.FREIGHTER_COVER.get().defaultBlockState();
         for (Map.Entry<BlockPos, BlockState> cell : List.copyOf(layout.cells.entrySet())) {
             BlockState plate = cell.getValue().is(cover.getBlock()) && unseen(cell.getKey()) ? plate(cell.getKey()) : null;
             if (plate != null) {
