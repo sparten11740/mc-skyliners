@@ -41,9 +41,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The feeding hatch in the glass of the tardigrade's tank, at chest height (see {@link HabitatHatchBlockEntity}, which
  * keeps the creature): a pane of the tank's glass with a small steel hatch in it. Use it with moss or a babycino in
- * hand and the hatch slides open, the food goes in and the creature comes to eat it; with an empty hand, to reach in
- * and touch it.
- * Open, a hand fits through it, so the creature can be fed or touched straight through it when it stands there. FACING
+ * hand and the hatch slides open, the food goes in and the creature comes to eat it; with an empty hand it slides open
+ * to reach in and touch it, and used so again it shuts. It stays open until it is shut by hand. Open, a hand fits
+ * through it, so the creature can be fed or touched straight through it when it stands there. FACING
  * is the way out of the tank. Broken, it gives itself back. Set up by hand it keeps no creature, having no tank, and
  * only opens and shuts.
  */
@@ -51,8 +51,9 @@ public class HabitatHatchBlock extends BaseEntityBlock {
     private static final MapCodec<HabitatHatchBlock> CODEC = simpleCodec(HabitatHatchBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
-    /** How long the hatch stands open once used, in ticks. */
-    private static final int OPEN_TICKS = 40;
+    /** How loud the click of its latch is, and its pitch. */
+    private static final float LATCH_VOLUME = 0.5F;
+    private static final float LATCH_PITCH = 1.5F;
     /** How thick its pane is, and the opening's edges across and up, in pixels, as drawn facing north. */
     private static final double PANE = 1;
     private static final double OPENING_FROM = 5;
@@ -135,34 +136,38 @@ public class HabitatHatchBlock extends BaseEntityBlock {
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** An empty hand: the hatch opens and the creature comes to be touched, or wriggles at once if it is there. */
+    /**
+     * An empty hand: shut, the hatch opens and the creature comes to be touched, or wriggles at once if it is there;
+     * open, the hatch shuts again.
+     */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!player.getMainHandItem().isEmpty()) {
             return InteractionResult.PASS;
         }
         if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof HabitatHatchBlockEntity keeper) {
-            open(server, pos, state);
-            keeper.call(server, false);
+            if (state.getValue(OPEN)) {
+                shut(server, pos, state);
+            } else {
+                open(server, pos, state);
+                keeper.call(server, false);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** Slides the hatch open, with the click of its latch, and shuts it again a little later. */
-    private void open(ServerLevel level, BlockPos pos, BlockState state) {
+    /** Slides the hatch open, with the click of its latch, where it stays until it is shut by hand. */
+    private static void open(ServerLevel level, BlockPos pos, BlockState state) {
         if (!state.getValue(OPEN)) {
             level.setBlock(pos, state.setValue(OPEN, true), UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.5F, 1.5F);
+            level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, LATCH_VOLUME, LATCH_PITCH);
         }
-        level.scheduleTick(pos, this, OPEN_TICKS);
     }
 
-    @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (state.getValue(OPEN)) {
-            level.setBlock(pos, state.setValue(OPEN, false), UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.5F, 1.5F);
-        }
+    /** Slides the hatch shut, with the click of its latch. */
+    private static void shut(ServerLevel level, BlockPos pos, BlockState state) {
+        level.setBlock(pos, state.setValue(OPEN, false), UPDATE_ALL);
+        level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, LATCH_VOLUME, LATCH_PITCH);
     }
 
     @Override

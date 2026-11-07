@@ -2296,8 +2296,9 @@ streaming past for as long as it is away on any jump. In the tank's glass on her
 feeding hatch at chest height,
 and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
 the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it
-with an empty hand to reach in and touch it, and it wriggles and gives a soft, low purr, as it does now and then on its
-own; while the hatch stands open, moss can go to it straight from your hand. Nothing hurts it, pushes it or leads it
+with an empty hand and it slides open for you to reach in and touch it, and it wriggles and gives a soft, low purr, as
+it does now and then on its own. The hatch stays open until you shut it with an empty hand again; while it stands
+open, moss can go to it straight from your hand. Nothing hurts it, pushes it or leads it
 away, and it flies with her as a part of her. Over the top of the world, in space, it curls up into a tun, the dry,
 wrinkled barrel real tardigrades live through space in, with a bloop, and its screen goes slow and blue under a
 barrel's picture; back under y 300 it uncurls with a purr. Round the front of the room lab counters curve either side
