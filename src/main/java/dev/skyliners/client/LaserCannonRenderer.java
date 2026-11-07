@@ -13,7 +13,10 @@ import net.minecraft.world.phys.AABB;
 /**
  * Draws the freighter's laser cannon's swivel on its pedestal (see {@link LaserCannonBlockEntity}), out of plain
  * coloured boxes: a yoke turning round to its aim, and between its cheeks a housing tilting up and down with it, its
- * twin barrels reaching out ahead with their muzzles glowing red-hot. Its pedestal is its block's own model.
+ * twin barrels reaching out ahead with their muzzles glowing red-hot. Outside its cheeks, on stubs through them and
+ * tilting with the housing, its two rocket pods, dark boxes banded in hazard yellow, each with two tubes: the red nose
+ * of a rocket shows in each loaded tube, and a spent one is a dark hole, so the pods show at a glance how many rockets
+ * are left. Its pedestal is its block's own model.
  */
 public class LaserCannonRenderer implements BlockEntityRenderer<LaserCannonBlockEntity> {
     /**
@@ -45,6 +48,31 @@ public class LaserCannonRenderer implements BlockEntityRenderer<LaserCannonBlock
     private static final float[] BARRELS = {(float) -LaserCannonBlockEntity.BARRELS_APART, (float) LaserCannonBlockEntity.BARRELS_APART};
     /** How far round its middle the swivel reaches, for leaving it out unseen, in blocks. */
     private static final float REACH = 2.3F;
+    /**
+     * Its rocket pods: their half width and half height, and how far back of the pivot they reach, in blocks; the
+     * hazard band round each, where along it and how far proud of it; the stub each hangs on, how thick, from inside
+     * its cheek to inside its pod.
+     */
+    private static final float POD_HALF_WIDTH = 0.12F;
+    private static final float POD_HALF_HEIGHT = 0.2F;
+    private static final float POD_BACK = -0.35F;
+    private static final float BAND_FROM = 0.36F;
+    private static final float BAND_TO = 0.44F;
+    private static final float BAND_PROUD = 0.006F;
+    private static final float STUB_HALF = 0.05F;
+    private static final float STUB_IN = CHEEK_OUT;
+    /**
+     * Its tubes: the half width of each dark mouth, and how far proud of the pod's face it is drawn, so the two never
+     * flicker; a loaded tube's rocket nose, its half width at the mouth and how far it stands out, in blocks.
+     */
+    private static final float TUBE_HALF = 0.075F;
+    private static final float TUBE_PROUD = 0.002F;
+    private static final float NOSE_HALF = 0.06F;
+    private static final float NOSE_OUT = 0.11F;
+    private static final int POD = 0xFF363A40;
+    private static final int HAZARD = 0xFFE8B425;
+    private static final int TUBE = 0xFF0E0F11;
+    private static final int NOSE = 0xFFD8362A;
 
     @Override
     public void render(LaserCannonBlockEntity cannon, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -70,7 +98,54 @@ public class LaserCannonRenderer implements BlockEntityRenderer<LaserCannonBlock
             FlatQuads.box(consumer, pose.last(), LightTexture.FULL_BRIGHT, MUZZLE_GLOW, side - BARREL_HALF, -BARREL_HALF, length - MUZZLE,
                 side + BARREL_HALF, BARREL_HALF, length);
         }
+        if (cannon.pods()) {
+            pods(consumer, pose.last(), light);
+            tubes(consumer, pose.last(), light, cannon);
+        }
         pose.popPose();
+    }
+
+    /** Its two rocket pods, either side of its housing on their stubs, banded in hazard yellow near their mouths. */
+    private static void pods(VertexConsumer consumer, PoseStack.Pose pose, int light) {
+        float mouth = (float) LaserCannonBlockEntity.POD_MOUTH;
+        for (int side = -1; side <= 1; side += 2) {
+            float middle = side * (float) LaserCannonBlockEntity.POD_OUT;
+            float inner = middle - side * POD_HALF_WIDTH;
+            FlatQuads.box(consumer, pose, light, POD, middle - POD_HALF_WIDTH, -POD_HALF_HEIGHT, POD_BACK, middle + POD_HALF_WIDTH, POD_HALF_HEIGHT,
+                mouth);
+            FlatQuads.box(consumer, pose, light, HAZARD, middle - POD_HALF_WIDTH - BAND_PROUD, -POD_HALF_HEIGHT - BAND_PROUD, BAND_FROM,
+                middle + POD_HALF_WIDTH + BAND_PROUD, POD_HALF_HEIGHT + BAND_PROUD, BAND_TO);
+            FlatQuads.box(consumer, pose, light, GUNMETAL, Math.min(side * STUB_IN, inner), -STUB_HALF, -STUB_HALF, Math.max(side * STUB_IN, inner),
+                STUB_HALF, STUB_HALF);
+        }
+    }
+
+    /** The mouths of its pods' tubes, dark, and a rocket's red nose standing out of each loaded one. */
+    private static void tubes(VertexConsumer consumer, PoseStack.Pose pose, int light, LaserCannonBlockEntity cannon) {
+        float mouth = (float) LaserCannonBlockEntity.POD_MOUTH;
+        float face = mouth + TUBE_PROUD;
+        for (int tube = 0; tube < LaserCannonBlockEntity.ROCKETS; tube++) {
+            float x = (float) LaserCannonBlockEntity.tubeAcross(tube);
+            float y = (float) LaserCannonBlockEntity.tubeUp(tube);
+            FlatQuads.quad(consumer, pose, light, TUBE, 0, 0, 1, x - TUBE_HALF, y - TUBE_HALF, face, x + TUBE_HALF, y - TUBE_HALF, face,
+                x + TUBE_HALF, y + TUBE_HALF, face, x - TUBE_HALF, y + TUBE_HALF, face);
+            if (cannon.tubeLoaded(tube)) {
+                nose(consumer, pose, light, x, y, face);
+            }
+        }
+    }
+
+    /** A rocket's red nose standing out of a tube's mouth, a little pyramid. */
+    private static void nose(VertexConsumer consumer, PoseStack.Pose pose, int light, float x, float y, float mouth) {
+        float tip = mouth + NOSE_OUT;
+        float left = x - NOSE_HALF;
+        float right = x + NOSE_HALF;
+        float low = y - NOSE_HALF;
+        float high = y + NOSE_HALF;
+        FlatQuads.quad(consumer, pose, light, NOSE, 0, -1, 0, left, low, mouth, right, low, mouth, x, y, tip, x, y, tip);
+        FlatQuads.quad(consumer, pose, light, NOSE, 1, 0, 0, right, low, mouth, right, high, mouth, x, y, tip, x, y, tip);
+        FlatQuads.quad(consumer, pose, light, NOSE, 0, 1, 0, right, high, mouth, left, high, mouth, x, y, tip, x, y, tip);
+        FlatQuads.quad(consumer, pose, light, NOSE, -1, 0, 0, left, high, mouth, left, low, mouth, x, y, tip, x, y, tip);
     }
 
     @Override

@@ -30,6 +30,8 @@ import dev.skyliners.client.BlueprintPreview;
 import dev.skyliners.client.BoardingRampRenderer;
 import dev.skyliners.client.CabinArchModel;
 import dev.skyliners.client.CameraShake;
+import dev.skyliners.client.CannonRocketRenderer;
+import dev.skyliners.client.CannonRockets;
 import dev.skyliners.client.CannonServo;
 import dev.skyliners.client.CanopyLiningRenderer;
 import dev.skyliners.client.CarriedAboard;
@@ -162,6 +164,7 @@ import dev.skyliners.client.ZeppelinPaint;
 import dev.skyliners.entity.LiftCar;
 import dev.skyliners.entity.ShipParticles;
 import dev.skyliners.parachute.SafetyCanopy;
+import dev.skyliners.turret.CannonRocket;
 import dev.skyliners.turret.LaserCannonBlockEntity;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -375,6 +378,7 @@ public final class SkylinersClient {
         DeckRobotBlockEntity.clientTicker = DeckRobotRenderer::look;
         LaserCannonBlockEntity.clientTicker = CannonServo::listen;
         LaserCannonBlockEntity.clientSighting = GunnerView::sighting;
+        CannonRocket.clientTicker = CannonRockets::tick;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -421,6 +425,11 @@ public final class SkylinersClient {
         event.registerSpriteSet(SkylinersRegistry.ROCKET_CLOUD.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.CLOUD));
         event.registerSpriteSet(SkylinersRegistry.ROCKET_DUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
         event.registerSpriteSet(SkylinersRegistry.FOG_PUFF.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.FOG));
+        event.registerSpriteSet(SkylinersRegistry.CANNON_ROCKET_TRAIL.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.TRAIL));
+        event.registerSpriteSet(SkylinersRegistry.CANNON_ROCKET_FLAME.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.FLAME));
+        event.registerSpriteSet(SkylinersRegistry.CANNON_ROCKET_FIREBALL.get(),
+            sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.FIREBALL));
+        event.registerSpriteSet(SkylinersRegistry.CANNON_ROCKET_SOOT.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.SOOT));
         event.registerSpriteSet(SkylinersRegistry.SLEEP_Z.get(), SleepParticle.Provider::new);
         event.registerSpriteSet(SkylinersRegistry.SPORE.get(), SporeParticle.Provider::new);
     }
@@ -489,6 +498,7 @@ public final class SkylinersClient {
         event.registerEntityRenderer(SkylinersRegistry.TROLLEY.get(), TrolleyRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.PAPER_PLANE.get(), PaperPlaneRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.BLUE_ICE_CHUNK.get(), BlueIceChunkRenderer::new);
+        event.registerEntityRenderer(SkylinersRegistry.CANNON_ROCKET.get(), CannonRocketRenderer::new);
         // A ride down a slide is only seen in who rides it.
         event.registerEntityRenderer(SkylinersRegistry.SLIDE_RIDE.get(), NoopRenderer::new);
     }

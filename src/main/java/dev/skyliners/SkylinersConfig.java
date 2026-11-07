@@ -74,6 +74,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_ROCKETS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
@@ -756,6 +757,14 @@ public final class SkylinersConfig {
                 "rules for TNT, but never a block of any ship, and hurting only hostile mobs. Without it, bolts break nothing."
             )
             .define("turretBlasts", true);
+        FREIGHTER_ROCKETS = builder
+            .comment(
+                "Whether a laser cannon carries rocket pods either side of its barrels, launched by holding use at its gunner's",
+                "seat: four rockets, one after another, that home in on a hostile mob the sight is locked on to and go off with",
+                "a bang, hurting hostile mobs only and breaking blocks as a creeper does only with turretBlasts on, never a",
+                "block of any ship. The pods load again a rocket at a time. Without it, the cannon has no pods."
+            )
+            .define("rockets", true);
         FREIGHTER_BANDSTAND = builder
             .comment(
                 "Whether the freighter is built with a bandstand in her club, the room through the doorway at her port bow, its",

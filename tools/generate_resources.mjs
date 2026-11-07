@@ -2355,6 +2355,13 @@ const FREIGHTER_SOUNDS = {
   ball_turret_servo: { subtitle: "Turret turns" },
   ball_turret_hiss: { subtitle: "Turret hydraulics hiss" },
   ball_turret_lock: { subtitle: "Turret locks" },
+  // Her laser cannon's rockets: launched with a whoosh, heard well off, their motors roaring as they fly, their bang
+  // heard furthest of all (the server sends it six times as far as its sixteen, as loud as it is played), and a pod
+  // loading another with a clack.
+  cannon_rocket_launch: { subtitle: "Rocket launches", heard: 32 },
+  cannon_rocket_flight: { subtitle: "Rocket roars", heard: 32 },
+  cannon_rocket_blast: { subtitle: "Rocket explodes", heard: 24 },
+  cannon_rocket_load: { subtitle: "Rocket pod loads" },
   laser_crossbow_shot: { subtitle: "Laser crossbow fires", heard: 32 },
   laser_crossbow_reload: { subtitle: "Laser crossbow charges" },
   // Her jump drive, heard all through her: spooling up, sputtering as it fails, thumped back to life and jumping.
@@ -2418,6 +2425,10 @@ for (const kind of ["exhaust", "cloud", "dust"]) {
 }
 // A fog machine's fog has a softer picture of its own.
 write(`assets/${ID}/particles/fog_puff.json`, { textures: [`${ID}:fog_puff`] });
+// A laser cannon's rocket's smoke trail, its flame, and its fireball and soot where it goes off share it too.
+for (const kind of ["trail", "flame", "fireball", "soot"]) {
+  write(`assets/${ID}/particles/cannon_rocket_${kind}.json`, { textures: [`${ID}:blast_puff`] });
+}
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {
@@ -11725,6 +11736,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.leg_bay": "Landing Leg Bay",
   "item.skyliners.laser_crossbow": "Laser Crossbow",
   "block.skyliners.laser_cannon": "Laser Cannon",
+  "entity.skyliners.cannon_rocket": "Cannon Rocket",
   "block.skyliners.bandstand": "Bandstand",
   "message.skyliners.freighter.takeoff_ramp": "Her take-off waits for everyone to step off the ramp",
   "message.skyliners.freighter.takeoff_called_off": "Take-off called off: she was held on the ground too long",

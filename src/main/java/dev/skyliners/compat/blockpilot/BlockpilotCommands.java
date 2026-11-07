@@ -119,10 +119,13 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("gunner", (context, args) -> gunner())
             .needsWorld()
             .group("skyliners")
-            .help("whether this client sees from a laser cannon's sight, sitting at it: where the sight is, and whether it is locked on to a hostile mob")
+            .help("whether this client sees from a laser cannon's sight, sitting at it: where the sight is, whether it is locked on to a hostile mob, "
+                + "and its rockets as the sight shows them")
             .field("on", "whether the view is the sight's")
             .field("at", "where the sight is in the world")
-            .field("locked", "whether the sight rests on a hostile mob in reach"));
+            .field("locked", "whether the sight rests on a hostile mob in reach")
+            .field("rockets", "how many rockets its pods hold, as the sight shows them")
+            .field("loading", "how far the next rocket is loaded, from 0 to 1, as the sight shows it filling"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -195,7 +198,7 @@ public final class BlockpilotCommands {
         }
         Vec3 eye = sighting.eye();
         return Result.ok(new Fields().tag("on", true).tag("at", round(eye.x) + "," + round(eye.y) + "," + round(eye.z))
-            .tag("locked", sighting.lockedOn()));
+            .tag("locked", sighting.lockedOn()).tag("rockets", sighting.rockets()).tag("loading", round(sighting.loading())));
     }
 
     private static Result zeppelin() throws CommandException {

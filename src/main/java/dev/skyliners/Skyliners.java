@@ -40,6 +40,7 @@ import dev.skyliners.cabin.TurbulencePayload;
 import dev.skyliners.client.AutopilotSettingsScreen;
 import dev.skyliners.client.BlastFlash;
 import dev.skyliners.client.CameraShake;
+import dev.skyliners.client.CannonRockets;
 import dev.skyliners.client.CoffeeMachineScreen;
 import dev.skyliners.client.HyperspaceOverlay;
 import dev.skyliners.client.LaserBolts;
@@ -76,6 +77,7 @@ import dev.skyliners.selfdestruct.SelfDestruct;
 import dev.skyliners.selfdestruct.SelfDestructAlarmPayload;
 import dev.skyliners.selfdestruct.ThrownClearPayload;
 import dev.skyliners.turret.GunnerTrigger;
+import dev.skyliners.turret.RocketBlast;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
@@ -181,11 +183,12 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("35")
+        event.registrar("36")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
             .playToServer(GunnerTrigger.TYPE, GunnerTrigger.STREAM_CODEC, GunnerTrigger::handle)
+            .playToClient(RocketBlast.TYPE, RocketBlast.STREAM_CODEC, (payload, context) -> CannonRockets.blast(payload))
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
             .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
             .playToServer(LookoutSpot.TYPE, LookoutSpot.STREAM_CODEC, LookoutSpot::handle)

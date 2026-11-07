@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -32,6 +33,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -45,6 +47,12 @@ import net.minecraft.world.phys.Vec3;
  * heats it, and it cools once it rests a moment: twenty bolts' worth of heat and it overheats, hissing, and holds fire
  * until it has cooled right down. It holds its fire too where its barrels would put their bolts into her own hull, and
  * where the gunner looks lower than they go. A gunner sitting down hears her computer say the turret is ready.
+ *
+ * <p>Either side of its housing, tilting with its barrels, it carries a rocket pod of two tubes, unless the server
+ * config's {@code freighter.rockets} is off. Holding use launches a rocket (see {@link CannonRocket}) from the next
+ * loaded tube every few ticks, flying to where the sight looks and homing in on the hostile mob it rests on, if any,
+ * until the pods are empty; a tap launches one. A moment after the last launch the pods load again, a rocket at a time
+ * with a clack. It holds its rockets where it holds its bolts.
  *
  * <p>The server works out the aim each tick: what the gunner looks at, along their look from the sight, and the way to
  * it from the cannon's pivot, turned into her frame, so its bolts land under the sight's crosshair at any range. It
@@ -112,6 +120,35 @@ public class LaserCannonBlockEntity extends BlockEntity {
     private static final float SHOT_VOLUME = 1.4F;
     private static final float OVERHEAT_VOLUME = 0.8F;
     private static final float VOICE_VOLUME = 0.8F;
+    /** How many rockets its pods hold: two tubes in each of its two pods. */
+    public static final int ROCKETS = 4;
+    /**
+     * Its rocket pods: how far either side of its middle line they stand, how far above and below the pivot their
+     * tubes are, and how far ahead of the pivot their mouths are, in blocks, in the frame its barrels tilt in.
+     */
+    public static final double POD_OUT = 0.64;
+    public static final double TUBE_UP = 0.09;
+    public static final double POD_MOUTH = 0.55;
+    /** How far ahead of its tube's mouth a rocket starts, in blocks, clear of the pod. */
+    private static final double LAUNCHED_AHEAD = 0.3;
+    /**
+     * How far off what the sight looks at must be for the rockets to fly there from their tubes, crossing under the
+     * crosshair, rather than straight along its barrels, in blocks.
+     */
+    private static final double CONVERGE_FROM = 4;
+    /** How often it launches a rocket while use is held, in ticks a rocket: all four in a little over a second. */
+    private static final int LAUNCH_EVERY = 6;
+    /**
+     * How long after its last launch its pods start loading again, and how long each rocket takes to load, in ticks:
+     * empty pods are full again eight seconds after the last rocket left.
+     */
+    private static final int LOADS_AFTER = 20;
+    private static final int LOAD_EVERY = 35;
+    /** How loud a rocket's launch is, past full so it carries thirty-two blocks, and a pod loading, as shares of full. */
+    private static final float LAUNCH_VOLUME = 2.0F;
+    private static final float LOAD_VOLUME = 0.7F;
+    /** How many game ticks there are in a second. */
+    private static final double TICKS_A_SECOND = 20;
 
     /** Where its barrels point, in degrees: round from her bow, as Minecraft turns, and up from level. */
     private float yaw;
@@ -121,8 +158,11 @@ public class LaserCannonBlockEntity extends BlockEntity {
     private float toldPitch;
     private boolean toldHeld;
     private long toldAt;
-    /** Whether the clients are owed word of its heat at once, a bolt having been fired, on the server. */
-    private boolean fired;
+    /**
+     * Whether the clients are owed word of it at once, on the server: of its heat, a bolt having been fired, or of its
+     * rockets, one having been launched or loaded.
+     */
+    private boolean owed;
     /** Who sits at it, on the server; none while the seat is empty. */
     @Nullable
     private Player gunner;
@@ -132,6 +172,30 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /** The game tick of its last bolt, on the server, and which barrel is next. */
     private long lastBolt;
     private boolean leftBarrel;
+    /**
+     * Whether its gunner holds use down, its rockets' trigger, and whether they pressed it since a rocket last left, so
+     * a quick tap launches one; on the server.
+     */
+    private boolean rocketTriggerHeld;
+    private boolean rocketPressed;
+    /** Where its gunner's sight looks, in the world, and the hostile mob it rests on, none for none; on the server. */
+    @Nullable
+    private Vec3 sighted;
+    @Nullable
+    private Entity lockedOn;
+    /**
+     * How many rockets its pods hold, and the game ticks its last rocket was launched and its pods last loaded one, on
+     * the server; the clients are told how many it holds.
+     */
+    private int rockets = ROCKETS;
+    private long lastLaunch;
+    private long lastLoad;
+    /**
+     * On a client: whether it has rocket pods at all, as the server's config says, and how long the next rocket had
+     * been loading when the server last told it, in ticks, below none while its pods wait to start loading.
+     */
+    private boolean pods;
+    private int loadingFor;
     /**
      * Its heat as of its last bolt, in bolts' worth; whether it overheated and is cooling down; and whether it holds
      * its fire where its gunner looks, its barrels pointing into her own hull or the look lower than they go. The
@@ -159,8 +223,11 @@ public class LaserCannonBlockEntity extends BlockEntity {
      */
     public static Supplier<Sighting> clientSighting = () -> null;
 
-    /** A view from a cannon's sight: where the sight is in the world, and whether it rests on a hostile mob in reach. */
-    public record Sighting(Vec3 eye, boolean lockedOn) {
+    /**
+     * A view from a cannon's sight: where the sight is in the world, whether it rests on a hostile mob in reach, how
+     * many rockets its pods hold, and how far the next is loaded, as a share, as the sight shows them.
+     */
+    public record Sighting(Vec3 eye, boolean lockedOn, int rockets, float loading) {
     }
 
     public LaserCannonBlockEntity(BlockPos pos, BlockState state) {
@@ -174,11 +241,16 @@ public class LaserCannonBlockEntity extends BlockEntity {
         return LOADED.in(level);
     }
 
-    /** Its trigger held or let go by a player, on the server: only the player seated at it works it. */
-    static void trigger(ServerPlayer player, boolean held) {
+    /**
+     * Its trigger and its rockets' trigger held or let go by a player, on the server: only the player seated at it
+     * works them.
+     */
+    static void trigger(ServerPlayer player, boolean held, boolean rockets) {
         for (LaserCannonBlockEntity cannon : LOADED.in(player.serverLevel())) {
             if (cannon.gunner == player) {
                 cannon.triggerHeld = held;
+                cannon.rocketPressed |= rockets && !cannon.rocketTriggerHeld;
+                cannon.rocketTriggerHeld = rockets;
                 cannon.heardAt = player.serverLevel().getGameTime();
             }
         }
@@ -194,20 +266,34 @@ public class LaserCannonBlockEntity extends BlockEntity {
         return bowYaw(getBlockState());
     }
 
-    /** Each tick on the server: who sits at it, where they look, its bolts while its trigger is held, and word of it. */
+    /**
+     * Each tick on the server: who sits at it, where they look, its bolts and rockets while their triggers are held,
+     * its pods loading, and word of it.
+     */
     void serverTick(ServerLevel level) {
         Player seated = seatedAt(level);
         if (seated != null && seated != gunner) {
             level.playSound(null, worldPosition, SkylinersRegistry.FREIGHTER_COMPUTER_TURRET_READY.get(), SoundSource.BLOCKS, VOICE_VOLUME, 1.0F);
         }
         gunner = seated;
+        load(level);
         if (gunner == null) {
-            triggerHeld = false;
-            return;
+            letGo();
+        } else {
+            aimAt(level, gunner);
+            fire(level);
+            launch(level);
         }
-        aimAt(level, gunner);
-        fire(level);
         tell(level);
+    }
+
+    /** With nobody seated at it, its triggers are let go and its sight rests on nothing. */
+    private void letGo() {
+        triggerHeld = false;
+        rocketTriggerHeld = false;
+        rocketPressed = false;
+        sighted = null;
+        lockedOn = null;
     }
 
     /** The player sitting under it, seated, their eyes within {@link #GUNNER_REACH} of it; none for nobody. */
@@ -232,7 +318,10 @@ public class LaserCannonBlockEntity extends BlockEntity {
     private void aimAt(ServerLevel level, Player gunner) {
         Vec3 look = gunner.getLookAngle();
         Vec3 sight = SableFlight.toWorld(level, sight(gunner.getYRot(), gunner.getXRot()));
-        Vec3 target = LaserFire.trace(level, gunner, sight, look, RANGE, notAboard()).getLocation();
+        HitResult seen = LaserFire.trace(level, gunner, sight, look, RANGE, notAboard());
+        Vec3 target = seen.getLocation();
+        sighted = target;
+        lockedOn = seen instanceof EntityHitResult hit && hit.getEntity() instanceof Enemy && hit.getEntity().isAlive() ? hit.getEntity() : null;
         Vec3 pivot = SableFlight.toWorld(level, pivot());
         Vec3 way = SableFlight.turnToPlot(level, worldPosition, target.subtract(pivot)).normalize();
         yaw = (float) Math.toDegrees(Math.atan2(-way.x, way.z));
@@ -297,7 +386,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         }
         heat = heatAfter(heat, now - lastBolt) + 1;
         lastBolt = now;
-        fired = true;
+        owed = true;
         bolt(level);
         if (heat >= MOST_HEAT) {
             overheated = true;
@@ -342,18 +431,87 @@ public class LaserCannonBlockEntity extends BlockEntity {
     }
 
     /**
-     * Tells the clients where it aims and whether it holds its fire, now and then as they change, and its heat at
-     * once, with every bolt.
+     * Launches a rocket from its next loaded tube if its rockets' trigger is pressed or held, it is due, it has rockets
+     * and is not holding its fire; with no rocket to launch or holding its fire, the press is let go.
+     */
+    private void launch(ServerLevel level) {
+        long now = level.getGameTime();
+        boolean pulled = rocketPressed || rocketTriggerHeld && now - heardAt <= TRIGGER_LAPSES;
+        if (!pulled || !SkylinersConfig.FREIGHTER_ROCKETS.get() || held || rockets == 0) {
+            rocketPressed = false;
+            return;
+        }
+        if (now - lastLaunch < LAUNCH_EVERY) {
+            return;
+        }
+        rocketPressed = false;
+        int tube = ROCKETS - rockets;
+        Vec3 mouth = pivot().add(tilted(yaw, pitch, tubeAcross(tube), tubeUp(tube), POD_MOUTH + LAUNCHED_AHEAD));
+        Vec3 from = SableFlight.toWorld(level, mouth);
+        Vec3 along = SableFlight.toWorld(level, mouth.add(way(yaw, pitch))).subtract(from);
+        Vec3 flight = sighted != null && sighted.distanceTo(from) > CONVERGE_FROM ? sighted.subtract(from) : along;
+        Vec3 drift = SableFlight.velocity(level, mouth).scale(1 / TICKS_A_SECOND);
+        CannonRocket.launch(level, this, gunner, from, flight, drift, lockedOn);
+        rockets--;
+        lastLaunch = now;
+        owed = true;
+        level.playSound(null, from.x, from.y, from.z, SkylinersRegistry.CANNON_ROCKET_LAUNCH.get(), SoundSource.BLOCKS, LAUNCH_VOLUME,
+            0.95F + level.getRandom().nextFloat() * 0.1F);
+    }
+
+    /** Loads a rocket into its pods once it is due, with a clack, until they are full. */
+    private void load(ServerLevel level) {
+        if (rockets >= ROCKETS || level.getGameTime() < loadingSince() + LOAD_EVERY) {
+            return;
+        }
+        rockets++;
+        lastLoad = level.getGameTime();
+        owed = true;
+        level.playSound(null, worldPosition, SkylinersRegistry.CANNON_ROCKET_LOAD.get(), SoundSource.BLOCKS, LOAD_VOLUME, 1.0F);
+    }
+
+    /** The game tick its pods' next rocket began loading: a while after its last launch, or as the last one loaded. */
+    private long loadingSince() {
+        return Math.max(lastLaunch + LOADS_AFTER, lastLoad);
+    }
+
+    /**
+     * Where a tube of its pods stands across its middle line and up from its pivot, in blocks, in the frame its barrels
+     * tilt in; its tubes numbered in the order they fire, left and right in turn, the upper two first.
+     */
+    public static double tubeAcross(int tube) {
+        return tube % 2 == 0 ? -POD_OUT : POD_OUT;
+    }
+
+    public static double tubeUp(int tube) {
+        return tube < 2 ? TUBE_UP : -TUBE_UP;
+    }
+
+    /**
+     * A point in the frame its barrels tilt in, so far across, up and along them, turned to an aim in her frame, from
+     * their pivot: as its renderer turns its housing.
+     */
+    public static Vec3 tilted(float yaw, float pitch, double across, double up, double along) {
+        double turn = Math.toRadians(yaw);
+        double tilt = Math.toRadians(pitch);
+        double y = up * Math.cos(tilt) + along * Math.sin(tilt);
+        double ahead = along * Math.cos(tilt) - up * Math.sin(tilt);
+        return new Vec3(across * Math.cos(turn) - ahead * Math.sin(turn), y, across * Math.sin(turn) + ahead * Math.cos(turn));
+    }
+
+    /**
+     * Tells the clients where it aims and whether it holds its fire, now and then as they change, and its heat and its
+     * rockets at once, with every bolt and every rocket launched or loaded.
      */
     private void tell(ServerLevel level) {
         long now = level.getGameTime();
         boolean moved = Math.abs(Mth.wrapDegrees(yaw - toldYaw)) >= AIM_SENT_FROM || Math.abs(pitch - toldPitch) >= AIM_SENT_FROM;
-        if (fired || (moved || held != toldHeld) && now - toldAt >= AIM_SENT_EVERY) {
+        if (owed || (moved || held != toldHeld) && now - toldAt >= AIM_SENT_EVERY) {
             toldYaw = yaw;
             toldPitch = pitch;
             toldHeld = held;
             toldAt = now;
-            fired = false;
+            owed = false;
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
@@ -406,18 +564,42 @@ public class LaserCannonBlockEntity extends BlockEntity {
         return held;
     }
 
+    /** Whether it has rocket pods, as the server last told this client. */
+    public boolean pods() {
+        return pods;
+    }
+
+    /** How many rockets its pods hold, as the server last told this client. */
+    public int rockets() {
+        return rockets;
+    }
+
+    /** Whether a tube of its pods holds a rocket on a client: the last ones in the order they fire hold those left. */
+    public boolean tubeLoaded(int tube) {
+        return tube >= ROCKETS - rockets;
+    }
+
+    /**
+     * How far its pods' next rocket is loaded on a client at a partial tick, as a share: 0 waiting to start, 1 loaded,
+     * and 0 with its pods full.
+     */
+    public float loading(float partialTick) {
+        return rockets >= ROCKETS ? 0 : Mth.clamp((loadingFor + sinceTold + partialTick) / LOAD_EVERY, 0, 1);
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
         LOADED.add(this);
     }
 
-    /** Gone, it lets go of its gunner, so it never keeps a player who has left. */
+    /** Gone, it lets go of its gunner and what its sight rested on, so it never keeps a player who has left. */
     @Override
     public void setRemoved() {
         super.setRemoved();
         LOADED.remove(this);
         gunner = null;
+        letGo();
     }
 
     @Override
@@ -425,11 +607,12 @@ public class LaserCannonBlockEntity extends BlockEntity {
         super.onChunkUnloaded();
         LOADED.remove(this);
         gunner = null;
+        letGo();
     }
 
     /**
-     * Only its aim, its heat and whether it holds its fire go to the clients; nothing of it is saved, the aim following
-     * whoever next sits at it and the heat long gone by the time it is loaded again.
+     * Only its aim, its heat, whether it holds its fire, and its rockets go to the clients; nothing of it is saved, the
+     * aim following whoever next sits at it, the heat long gone and its pods full again by the time it is loaded again.
      */
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
@@ -441,6 +624,9 @@ public class LaserCannonBlockEntity extends BlockEntity {
         tag.putInt("Rested", (int) Mth.clamp(now - lastBolt, 0, RESTED_TOLD));
         tag.putBoolean("Overheated", overheated);
         tag.putBoolean("Held", held);
+        tag.putBoolean("Pods", SkylinersConfig.FREIGHTER_ROCKETS.get());
+        tag.putInt("Rockets", rockets);
+        tag.putInt("Loading", (int) Mth.clamp(now - loadingSince(), -LOADS_AFTER, LOAD_EVERY));
         return tag;
     }
 
@@ -454,6 +640,9 @@ public class LaserCannonBlockEntity extends BlockEntity {
         sinceTold = 0;
         overheated = tag.getBoolean("Overheated");
         held = tag.getBoolean("Held");
+        pods = tag.getBoolean("Pods");
+        rockets = tag.contains("Rockets") ? Mth.clamp(tag.getInt("Rockets"), 0, ROCKETS) : ROCKETS;
+        loadingFor = tag.getInt("Loading");
     }
 
     @Nullable

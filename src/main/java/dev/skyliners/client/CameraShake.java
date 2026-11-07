@@ -110,6 +110,18 @@ public final class CameraShake {
         roughLeft = ticks;
     }
 
+    /**
+     * Something going off near the player, as a laser cannon's rocket does, jolts their view this hard (1 as the
+     * roughest air of clear skies) for this many ticks, unless rougher air shakes it harder already.
+     */
+    public static void jolt(float strength, int ticks) {
+        if (roughLeft > 0 && roughStrength >= strength) {
+            return;
+        }
+        roughStrength = strength;
+        roughLeft = ticks;
+    }
+
     /** The airliner the player rides has dropped into an air pocket this deep (about 1, deeper in a storm). */
     public static void airPocket(float depth) {
         pocket = depth;

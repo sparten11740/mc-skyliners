@@ -806,6 +806,41 @@
       }
     ]
   },
+  "cannon_rocket_launch": {
+    "subtitle": "subtitles.skyliners.cannon_rocket_launch",
+    "sounds": [
+      {
+        "name": "skyliners:cannon_rocket_launch",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "cannon_rocket_flight": {
+    "subtitle": "subtitles.skyliners.cannon_rocket_flight",
+    "sounds": [
+      {
+        "name": "skyliners:cannon_rocket_flight",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "cannon_rocket_blast": {
+    "subtitle": "subtitles.skyliners.cannon_rocket_blast",
+    "sounds": [
+      {
+        "name": "skyliners:cannon_rocket_blast",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "cannon_rocket_load": {
+    "subtitle": "subtitles.skyliners.cannon_rocket_load",
+    "sounds": [
+      {
+        "name": "skyliners:cannon_rocket_load"
+      }
+    ]
+  },
   "laser_crossbow_shot": {
     "subtitle": "subtitles.skyliners.laser_crossbow_shot",
     "sounds": [
