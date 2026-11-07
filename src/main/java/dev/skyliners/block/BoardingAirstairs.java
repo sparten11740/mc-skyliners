@@ -2,27 +2,19 @@ package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.compat.SableFlight;
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -104,7 +96,7 @@ final class BoardingAirstairs {
     private final int sections;
     private final int width;
     /** The hatch, shut: where each block of it is from the button, and what it is. */
-    private final List<AirstairControllerBlockEntity.Step> hatch;
+    private final Hatch hatch;
     /** The bay it slides out of, out of a door; none hung in a zeppelin's belly. */
     @Nullable
     private final Bay bay;
@@ -130,7 +122,7 @@ final class BoardingAirstairs {
     private boolean doorToShut;
 
     BoardingAirstairs(Keeper button, BlockPos head, Direction out, Direction right, int rise, int sections, int width,
-                      List<AirstairControllerBlockEntity.Step> hatch, @Nullable Bay bay) {
+                      Hatch hatch, @Nullable Bay bay) {
         this.button = button;
         this.head = head;
         this.out = out;
@@ -138,7 +130,7 @@ final class BoardingAirstairs {
         this.rise = rise;
         this.sections = sections;
         this.width = width;
-        this.hatch = List.copyOf(hatch);
+        this.hatch = hatch;
         this.bay = bay;
     }
 
@@ -222,7 +214,7 @@ final class BoardingAirstairs {
     /** Sets the stairs coming down, unless something stands in the way right under the hatch. */
     private void deploy(ServerLevel level) {
         if (ticks == 0) {
-            int reach = AirstairSteps.reach(level, this::step, width, rise, this::inHatch);
+            int reach = AirstairSteps.reach(level, this::step, width, rise, cell -> hatch.covers(button.getBlockPos(), cell));
             if (reach < AirstairFlight.shortest(rise, sections)) {
                 level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, REFUSED_VOLUME, REFUSED_PITCH);
                 return;
@@ -253,12 +245,6 @@ final class BoardingAirstairs {
         }
         takeUp(level);
         sound(level, SkylinersRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
-    }
-
-    /** Whether a block is part of the hatch, which the flight takes away as it comes down. */
-    private boolean inHatch(BlockPos cell) {
-        BlockPos from = cell.subtract(button.getBlockPos());
-        return hatch.stream().anyMatch(part -> part.offset().equals(from));
     }
 
     /** Once a tick, on the server: the stairs a tick further on their way, waiting while someone is on them. */
@@ -342,24 +328,13 @@ final class BoardingAirstairs {
 
     /** Takes the hatch's blocks away, as it opens. */
     private void openHatch(ServerLevel level) {
-        for (AirstairControllerBlockEntity.Step part : hatch) {
-            BlockPos at = button.getBlockPos().offset(part.offset());
-            if (level.getBlockState(at).is(part.state().getBlock())) {
-                level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            }
-        }
+        hatch.open(level, button.getBlockPos());
         hatchOpen = true;
     }
 
     /** Puts the hatch's blocks back as they were, where nothing else has taken their place. */
     private void closeHatch(ServerLevel level) {
-        for (AirstairControllerBlockEntity.Step part : hatch) {
-            BlockPos at = button.getBlockPos().offset(part.offset());
-            BlockState there = level.getBlockState(at);
-            if (there.isAir() || there.canBeReplaced()) {
-                level.setBlock(at, part.state(), Block.UPDATE_ALL);
-            }
-        }
+        hatch.close(level, button.getBlockPos());
         hatchOpen = false;
     }
 
@@ -407,14 +382,7 @@ final class BoardingAirstairs {
         tag.putInt("Rise", rise);
         tag.putInt("Sections", sections);
         tag.putInt("Width", width);
-        ListTag parts = new ListTag();
-        for (AirstairControllerBlockEntity.Step part : hatch) {
-            CompoundTag entry = new CompoundTag();
-            entry.put("Offset", NbtUtils.writeBlockPos(part.offset()));
-            entry.put("State", NbtUtils.writeBlockState(part.state()));
-            parts.add(entry);
-        }
-        tag.put("Hatch", parts);
+        hatch.save(tag);
         if (bay != null) {
             CompoundTag saved = new CompoundTag();
             saved.putFloat("HatchInset", bay.hatchInset());
@@ -439,12 +407,7 @@ final class BoardingAirstairs {
     static BoardingAirstairs load(Keeper button, @Nullable BoardingAirstairs before, CompoundTag tag, Rotation turn, HolderLookup.Provider registries) {
         Direction out = Direction.byName(tag.getString("Out"));
         Direction right = Direction.byName(tag.getString("Right"));
-        List<AirstairControllerBlockEntity.Step> parts = new ArrayList<>();
-        for (Tag entry : tag.getList("Hatch", Tag.TAG_COMPOUND)) {
-            CompoundTag part = (CompoundTag) entry;
-            parts.add(new AirstairControllerBlockEntity.Step(NbtUtils.readBlockPos(part, "Offset").orElse(BlockPos.ZERO),
-                NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), part.getCompound("State"))).turned(turn));
-        }
+        Hatch parts = Hatch.load(tag, turn, registries);
         int rise = Math.max(0, tag.getInt("Rise"));
         int width = tag.contains("Width") ? Math.max(1, tag.getInt("Width")) : AirstairFlight.WIDTH;
         CompoundTag saved = tag.getCompound("Bay");

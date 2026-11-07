@@ -76,7 +76,7 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
      */
     public void rigAirstairs(BlockPos head, Direction out, Direction right, int width, int rise, int sections,
                              List<AirstairControllerBlockEntity.Step> hatch, float hatchInset, int mouth) {
-        stairs = new BoardingAirstairs(this, head, out, right, rise, sections, width, hatch, new BoardingAirstairs.Bay(hatchInset, mouth));
+        stairs = new BoardingAirstairs(this, head, out, right, rise, sections, width, new Hatch(hatch), new BoardingAirstairs.Bay(hatchInset, mouth));
         flown = true;
         setChanged();
     }

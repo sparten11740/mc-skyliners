@@ -91,7 +91,7 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs,
     public void rigAirstairs(BlockPos head, Direction out, Direction right, int rise, int sections, List<AirstairControllerBlockEntity.Step> hatch) {
         folds.clear();
         rows.clear();
-        belly = new BoardingAirstairs(this, head, out, right, rise, sections, AirstairFlight.WIDTH, hatch, null);
+        belly = new BoardingAirstairs(this, head, out, right, rise, sections, AirstairFlight.WIDTH, new Hatch(hatch), null);
         flown = true;
         setChanged();
     }
