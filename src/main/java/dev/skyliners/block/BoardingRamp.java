@@ -67,10 +67,11 @@ public final class BoardingRamp {
      */
     public static final double FOOT_CLEAR = THICKNESS / 2 + 0.01;
     /**
-     * How far under the plate's top the blocks set under it reach at most, in blocks: whoever stands that close under
-     * it as it comes down is in its way.
+     * How far under the plate's top the blocks set under it reach at most, in blocks: the most its top stands over the
+     * foot of a block it is set in (see {@link RampPlateBlock#HIGHEST}), so whoever stands that close under it as it
+     * comes down is in its way.
      */
-    private static final double SOLID_UNDER = 1.0;
+    private static final double SOLID_UNDER = RampPlateBlock.HIGHEST / (double) RampDeckBlock.FULL;
     /**
      * How far under the plate's top someone's feet may be and still stand on it rather than under it, in blocks: its
      * blocks' little steps, and the sixteenths they are cut to, keep a foot on it within this.
@@ -124,8 +125,9 @@ public final class BoardingRamp {
 
     /**
      * Where the ramp lies, from its panel: the block at its head in the well's middle column, in her deck's row, whose
-     * top's inner edge is the hinge; the way out of her, down the ramp; how many blocks wide it is; and how far it
-     * falls, in blocks, from her deck's top to the ground under her feet, over twice as far out.
+     * top's inner edge is the hinge; the way out of her, down the ramp; how many blocks wide it is, an odd number, as
+     * many either side of the middle column; and how far it falls, in blocks, from her deck's top to the ground under
+     * her feet, over twice as far out.
      */
     public record Frame(BlockPos head, Direction out, int width, int rise) {
         /** How far out the ramp reaches, down on the ground, in blocks: twice as far as it falls. */
@@ -567,6 +569,13 @@ public final class BoardingRamp {
         }
     }
 
+    /** Takes the blocks under its plate away while it swings, as its panel goes; nothing while it is down or away. */
+    void takeAwaySwinging(ServerLevel level) {
+        if (hatchOpen && !laid) {
+            setPlate(level, Map.of());
+        }
+    }
+
     /** Takes up a block of its deck or of its plate, if it is still one. */
     private static void takeUpAt(ServerLevel level, BlockPos at, Class<? extends Block> kind) {
         if (kind.isInstance(level.getBlockState(at).getBlock())) {
@@ -623,24 +632,22 @@ public final class BoardingRamp {
         int runs = (int) Math.ceil(frame.length());
         for (int out = 0; out <= runs; out++) {
             for (int row = -frame.rise() - 1; row <= 0; row++) {
-                setPlateRow(level, plate, head.relative(frame.out(), out).above(row));
-            }
-        }
-        if (!plate.isEmpty()) {
-            return;
-        }
-        for (int cell = 0; cell < cells(); cell++) {
-            BlockPos world = BlockPos.containing(SableFlight.toWorld(level, Vec3.atCenterOf(cell(cell))));
-            if (!world.equals(cell(cell)) && level.isLoaded(world)) {
-                takeUpAt(level, world, RampPlateBlock.class);
+                setPlateRow(level, plate, head.relative(frame.out(), out).above(row), plate.isEmpty());
             }
         }
     }
 
-    /** One row across the room its plate swings through, each block of it set as the plate has it now. */
-    private void setPlateRow(ServerLevel level, Map<BlockPos, BlockState> plate, BlockPos middle) {
+    /**
+     * One row across the room its plate swings through, each block of it set as the plate has it now; taking all of
+     * it away, also where each block of the row is in the world, where she may have left it as she was assembled.
+     */
+    private void setPlateRow(ServerLevel level, Map<BlockPos, BlockState> plate, BlockPos middle, boolean leftovers) {
         for (int column = firstColumn(); column < firstColumn() + frame.width(); column++) {
             BlockPos at = middle.relative(frame.right(), column);
+            BlockPos world = leftovers ? BlockPos.containing(SableFlight.toWorld(level, Vec3.atCenterOf(at))) : at;
+            if (!world.equals(at) && level.isLoaded(world)) {
+                takeUpAt(level, world, RampPlateBlock.class);
+            }
             BlockState there = level.getBlockState(at);
             BlockState wanted = plate.get(at);
             boolean ours = there.getBlock() instanceof RampPlateBlock;
@@ -750,7 +757,11 @@ public final class BoardingRamp {
         tag.putBoolean("HatchOpen", hatchOpen);
     }
 
-    /** The ramp as saved, turned by the quarter turn its panel has turned since (see {@link Turning}). */
+    /**
+     * The ramp as saved, turned by the quarter turn its panel has turned since (see {@link Turning}). Held where it
+     * stopped, a client takes the server's count even where its own ran on ahead, so the plate is drawn where the
+     * blocks under it stand.
+     */
     static BoardingRamp load(Keeper panel, @Nullable BoardingRamp before, CompoundTag tag, Rotation turn, HolderLookup.Provider registries) {
         Direction out = Direction.byName(tag.getString("Out"));
         Direction saved = out == null || out.getAxis().isVertical() ? Direction.EAST : out;
@@ -758,10 +769,10 @@ public final class BoardingRamp {
             Math.max(1, tag.getInt("Width")), Math.max(1, tag.getInt("Rise")));
         BoardingRamp ramp = new BoardingRamp(panel, frame, Hatch.load(tag, turn, registries));
         ramp.deploying = tag.getBoolean("Deploying");
-        int told = Math.clamp(tag.getInt("Ticks"), 0, OUT);
-        ramp.ticks = before == null ? told : ToldTicks.count(panel.getLevel(), before.ticks, told, ramp.deploying);
-        ramp.lastTicks = before != null && ramp.ticks == before.ticks ? before.lastTicks : ramp.ticks;
         ramp.held = tag.getBoolean("Held");
+        int told = Math.clamp(tag.getInt("Ticks"), 0, OUT);
+        ramp.ticks = before == null || ramp.held ? told : ToldTicks.count(panel.getLevel(), before.ticks, told, ramp.deploying);
+        ramp.lastTicks = before != null && ramp.ticks == before.ticks ? before.lastTicks : ramp.ticks;
         ramp.laid = tag.getBoolean("Laid");
         ramp.hatchOpen = tag.getBoolean("HatchOpen");
         return ramp;

@@ -1165,16 +1165,17 @@ function rampHeadStand(deck, [dx, dz]) {
 function walkOntoRampOnItsWay(deck, [dx, dz, yaw], panelAt, lamp, lampTurns) {
   const [x, y, z] = rampHeadStand(deck, [dx, dz]);
   const out = yaw + 180;
+  // Pressed and walked onto in one script, against the ramp's clock: a pause between the two let it all but fold first.
+  const walkOnto = `server tp @p ${x} ${y} ${z}; turn ${out} 20; wait 20t; use ${panelAt.join(",")}; wait ${RAMP_INTO_SWING}t; turn ${out} 20; `
+    + `move forward ${RAMP_ONTO_TICKS}t`;
   survival();
-  must(`server tp @p ${x} ${y} ${z}; turn ${out} 20; wait 20t; use ${panelAt.join(",")}; wait ${RAMP_INTO_SWING}t; turn ${out} 20`);
-  const onIt = must(`move forward ${RAMP_ONTO_TICKS}t; wait ${RAMP_HELD_LOOK}t; status`);
+  const onIt = must(`${walkOnto}; wait ${RAMP_HELD_LOOK}t; status`);
   const held = lamp();
   expect(onIt.pos[1] > ground + RAMP_ABOVE_GROUND && held === "busy", "freighter: walked onto her ramp as it goes up, it holds them up, stopped",
     `at ${onIt.pos.map(round).join(",")}, the ground at ${ground}, lamp ${held}`);
   must(`turn ${yaw} 0; move forward ${RAMP_BACK_TICKS}t`);
   expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: stepped back off it, her ramp folds away", `lamp ${lamp()}`);
-  must(`server tp @p ${x} ${y} ${z}; turn ${out} 20; wait 20t; use ${panelAt.join(",")}; wait ${RAMP_INTO_SWING}t; turn ${out} 20`);
-  const riding = must(`move forward ${RAMP_ONTO_TICKS}t; status`);
+  const riding = must(`${walkOnto}; status`);
   creative();
   expect(riding.pos[1] > ground + RAMP_ABOVE_GROUND, "freighter: walked onto her ramp as it comes down, it carries them down on it",
     `at ${riding.pos.map(round).join(",")}, the ground at ${ground}`);

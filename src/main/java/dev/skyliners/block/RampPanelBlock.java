@@ -108,6 +108,19 @@ public class RampPanelBlock extends HorizontalDirectionalBlock implements Entity
         return new RampPanelBlockEntity(pos, state);
     }
 
+    /**
+     * Broken while its ramp swings, the blocks under its plate go with it: nothing would take them away after, aboard
+     * her, where none is ever a leftover, and they cannot be broken themselves.
+     */
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && !movedByPiston && level instanceof ServerLevel server
+            && level.getBlockEntity(pos) instanceof RampPanelBlockEntity panel && panel.ramp() != null) {
+            panel.ramp().takeAwaySwinging(server);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
