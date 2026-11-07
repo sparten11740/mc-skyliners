@@ -155,6 +155,7 @@ public final class FreighterLayout extends HullLayout {
     /** How many of her jets, the first, are her nose's, in her prongs: her port prong's and her starboard prong's. */
     private static final int NOSE_JETS = 2;
     private static final int PORT_NOSE_JET = 0;
+    private static final int STARBOARD_NOSE_JET = 1;
     /**
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
      * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
@@ -472,6 +473,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterChillout.build(layout, layout.deck);
         FreighterPaintings.build(layout, layout.deck);
         FreighterGallery.build(layout, layout.deck, layout.scale);
+        FreighterSmugglerDen.build(layout, layout.deck, layout.jets[STARBOARD_NOSE_JET]);
         FreighterEngineering.build(layout, layout.deck);
         FreighterEntryHall.build(layout, layout.deck);
         FreighterFurnishings.build(layout, layout.deck);

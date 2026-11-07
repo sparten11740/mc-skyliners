@@ -236,7 +236,14 @@ tips: an `ENGINE_GRATING` bulkhead across each tip round her retro's relay, and 
 under `HAZARD_PLATE`, leaving the jet's exhaust open straight out from its nozzle, the one line along which Create
 Propulsion counts a thruster obstructed, so it pushes as before. `FreighterLookout`, after her portholes, whose places
 it looks for, seats her port tunnel by them and lays the nook at its tip, a `PassengerScreenBlock` on the bulkhead;
-`freighter.prongs` switches it.
+`freighter.prongs` switches it. `FreighterSmugglerDen`, before her portholes, which keep clear of it, walls her
+starboard tunnel off short of the jet's casing, a `SecretPanelBlock` in the wall and a `LooseRivetBlock` on the plate
+beside it, and furnishes the den behind, a chest and a barrel filled from `chests/smuggler_stash` and
+`chests/smuggler_contraband`; nothing that a redstone pulse sends off stands beside a thrust relay, whose signal it
+would take for one; `freighter.smugglerHold` switches it. The rivet is a `ButtonBlock`, its pulse reaching the panel
+through the plate it is set in; the panel is a `DoorBlock` that swings at the start of each pulse and stays, shuts by
+itself as `SecretBookshelfBlock` does (sharing its `inDoorway`), only sounds hollow knocked on from its front and is
+pushed open from behind, and stands on her cut skin as well as on a full block.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.

@@ -76,6 +76,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PRONGS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SMUGGLER_HOLD;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CONSOLE;
@@ -697,6 +698,13 @@ public final class SkylinersConfig {
                 "Without it, the tunnel has only its posters and portholes."
             )
             .define("prongs", true);
+        FREIGHTER_SMUGGLER_HOLD = builder
+            .comment(
+                "Whether the freighter has her smugglers' hold: a secret panel in the wall across the tunnel down her starboard",
+                "prong, opened by a loose brass rivet beside it, onto a cramped den of contraband crates, a cot, a lantern and a",
+                "chest of loot. Without it, that tunnel runs on to her nose jet's casing."
+            )
+            .define("smugglerHold", true);
         FREIGHTER_CANOPY_DIMMER = builder
             .comment(
                 "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",

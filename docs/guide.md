@@ -2669,6 +2669,24 @@ casing, three seats in a row face a passenger screen on the engine bulkhead, pla
 nose; use the screen to look out through her outside cameras. The server config's `freighter.prongs` leaves the
 lookout out.
 
+Her starboard prong hides her smugglers' hold. Its tunnel seems to end short of the port prong's, at a wall of riveted
+hull plate. Look closely: one panel of the wall is a shade darker and scuffed along its edges, wisps of draught puff
+out of its seams, and in the wall beside it one rivet is brass, glinting gold, with a faint chime now and then when you
+stand near. Knock on the panel and it sounds hollow, but it stays shut; press the brass rivet and the panel swings open
+with a clunk and a hiss of air. Behind it a narrow way runs past the jet's casing to a cramped den against the engine
+bulkhead: a cot along her hull, care-package crates, barrels of smuggled goods, one with a lantern on it, a mail sack,
+and a chest of loot, cookies, emeralds, a spyglass, a Nebula Fizz and twinkling rockets; the barrel under the lantern
+holds cocoa, sugar, glow berries, honey and amethyst. The panel shuts by itself a while after you go through, once
+nobody stands in its doorway, or when the rivet is pressed again; from inside, just push it open. The server config's
+`freighter.smugglerHold` leaves the hold out, her starboard tunnel then running on to the jet's casing.
+
+The Secret Panel and the Loose Rivet are in the creative tab under The Den, for a secret door of your own: set the panel
+in a gap in a wall, as a door, and the rivet, a button no bigger than a fingertip, on the wall beside it. Pressed, the
+rivet swings the panel open, and pressed again shuts it; any redstone pulse does the same. Knocked on from its front
+the panel sounds hollow, from behind it is pushed open by hand, and it shuts by itself as it does aboard her. The rivet
+goes on a floor or under a ceiling too. The panel is crafted from two Riveted Hull Plates with redstone between them,
+the rivet from a gold nugget on a stone button.
+
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would

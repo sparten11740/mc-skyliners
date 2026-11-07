@@ -9073,6 +9073,24 @@ function hullPlateTextures() {
 }
 hullPlateTextures();
 
+// The freighter's smugglers' hold (see FreighterSmugglerDen): the secret panel, her riveted seam plate but a shade
+// darker, a hairline seam down either side and scuffs slashed across it near both edges, where it has swung open many
+// times; and the loose rivet's brass, a bright crown in its middle.
+function smugglerHoldTextures() {
+  texture(blockOutput, "secret_panel", (x, y) => {
+    if (x === 0 || x === 15) return [0x6a, 0x70, 0x78];
+    if ((x <= 3 || x >= 12) && (x + 2 * y) % 7 === 0) return [0x98, 0x9c, 0xa0];
+    if (x === 7 || x === 8) return [0x9c, 0xa2, 0xaa];
+    if ((x === 4 || x === 11) && y % 4 === 1) return [0x92, 0x98, 0xa0];
+    return [0xb8, 0xbd, 0xc3];
+  }, 3);
+  texture(blockOutput, "loose_rivet", (x, y) => {
+    if (Math.hypot(x - 7.5, y - 7.5) < 1.5) return [0xff, 0xe8, 0xa0];
+    return x + y < 15 ? [0xe0, 0xb0, 0x48] : [0xa8, 0x78, 0x28];
+  }, 3);
+}
+smugglerHoldTextures();
+
 // The freighter's leg bays (see LegBayBlock), where each landing leg meets her belly: on its sides a housing of dark
 // gunmetal, riveted, with a band of hazard stripes along its foot, as round anything that moves; and from below its
 // socket, a steel collar round a dark well the strut's sleeves draw up into, a glint of chrome on its far wall.

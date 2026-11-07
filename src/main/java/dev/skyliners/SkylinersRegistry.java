@@ -181,6 +181,7 @@ import dev.skyliners.block.LiveryBoardBlockEntity;
 import dev.skyliners.block.LiverySelectorBlock;
 import dev.skyliners.block.LiverySelectorBlockEntity;
 import dev.skyliners.block.LookoutGlassBlock;
+import dev.skyliners.block.LooseRivetBlock;
 import dev.skyliners.block.MailSackBlock;
 import dev.skyliners.block.LookoutGlassBlockEntity;
 import dev.skyliners.block.LavIceBlock;
@@ -265,6 +266,7 @@ import dev.skyliners.block.SeatbeltSignBlock;
 import dev.skyliners.block.SeatbeltSwitchBlock;
 import dev.skyliners.block.SeatbeltSwitchBlockEntity;
 import dev.skyliners.block.SecretBookshelfBlock;
+import dev.skyliners.block.SecretPanelBlock;
 import dev.skyliners.block.SelfDestructButtonBlock;
 import dev.skyliners.block.SelfDestructButtonBlockEntity;
 import dev.skyliners.block.ShaftDecorBlock;
@@ -1945,6 +1947,20 @@ public final class SkylinersRegistry {
     );
     public static final DeferredItem<BlockItem> BALL_PIT_ITEM = ITEMS.registerSimpleBlockItem(BALL_PIT);
     public static final DeferredItem<BlockItem> FAIRY_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(FAIRY_LIGHTS);
+    /**
+     * The freighter's smugglers' hold (see {@code airframe.FreighterSmugglerDen}): the secret panel into it, which a
+     * redstone pulse swings open, and the loose rivet set in the wall beside it that gives one, its brass gleaming.
+     */
+    public static final DeferredBlock<SecretPanelBlock> SECRET_PANEL = BLOCKS.registerBlock(
+        "secret_panel", SecretPanelBlock::new, metal(MapColor.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredBlock<LooseRivetBlock> LOOSE_RIVET = BLOCKS.registerBlock(
+        "loose_rivet", LooseRivetBlock::new, metal(MapColor.GOLD).strength(0.5F).noCollission().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<DoubleHighBlockItem> SECRET_PANEL_ITEM = ITEMS.register(
+        "secret_panel", () -> new DoubleHighBlockItem(SECRET_PANEL.get(), new Item.Properties())
+    );
+    public static final DeferredItem<BlockItem> LOOSE_RIVET_ITEM = ITEMS.registerSimpleBlockItem(LOOSE_RIVET);
     /** The light a bunk's reading light gives while it is on, in light levels: enough to read by on the pillow. */
     private static final int READING_GLOW = 7;
     /**
@@ -3271,7 +3287,7 @@ public final class SkylinersRegistry {
             TECHNO_DECK_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, NEON_SIGN_ITEM, DISCO_BALL_ITEM, FOG_MACHINE_ITEM, SECRET_HATCH_ITEM
         )),
         new TabSection("den", List.of(
-            BALL_PIT_ITEM, BEAN_BAG_ITEM, BUNK_ITEM, BUNK_LADDER_ITEM, SECRET_BOOKSHELF_ITEM
+            BALL_PIT_ITEM, BEAN_BAG_ITEM, BUNK_ITEM, BUNK_LADDER_ITEM, SECRET_BOOKSHELF_ITEM, SECRET_PANEL_ITEM, LOOSE_RIVET_ITEM
         )),
         new TabSection("lights", List.of(
             PENDANT_LIGHT_ITEM, HALO_LIGHT_ITEM, LIGHT_CABLE_ITEM, LIGHT_STRIP_ITEM, CABIN_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, FAIRY_LIGHTS_ITEM,
