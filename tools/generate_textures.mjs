@@ -4690,22 +4690,76 @@ const LIFT_ICONS = {
   for (const [name, rows] of Object.entries(ROVER_PICTURES)) {
     texture(roverOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : rows[y][x] === "g" ? [0x40, 0xe0, 0x60, 0xff] : [0, 0, 0, 0]), 0);
   }
-  // The freighter's ramp panel (see BoardingRampRenderer): its buttons' pictures in white, as the rover panel's are:
-  // the ramp let down from her belly to the ground beside an arrow pointing down, and the ramp drawn up flush under
-  // her belly over an arrow pointing up.
+  // The freighter's ramp panel (see BoardingRampRenderer): its button's two pictures, each a little scene in colour, so
+  // it says what pressing it does without a word. Both show her grey belly across the top, green ground across the
+  // bottom and her ramp, a yellow plate with a dark rim, hinged under her belly at the left. Lower: the ramp reaches
+  // down to the ground, and a white arrow sweeps down along its swing. Raise: the ramp swings up toward her belly, a
+  // faint ghost where it lay on the ground, and the arrow sweeps up into her.
   const rampOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/ramp");
   mkdirSync(rampOutput, { recursive: true });
-  const RAMP_PICTURES = {
-    lower: ["################", "###.........##..", "..##........##..", "...##.......##..", "....##....######", ".....##....####.",
-      "......##....##..", ".......##.......", "........##......", ".........##.....", "..........##....", "...........##...",
-      "............##..", ".............##.", "..............##", "################"],
-    raise: ["################", "################", "................", ".......##.......", "......####......", ".....######.....",
-      "....########....", ".......##.......", ".......##.......", ".......##.......", ".......##.......", "................",
-      "................", "................", "................", "################"],
+  const RAMP_SIZE = 32;
+  const HULL = [0xc8, 0xcc, 0xd4, 0xff];
+  const HULL_EDGE = [0x6a, 0x70, 0x7a, 0xff];
+  const GRASS = [0x5c, 0xc2, 0x4a, 0xff];
+  const GRASS_EDGE = [0x3a, 0x8a, 0x30, 0xff];
+  const PLATE = [0xf6, 0xd2, 0x3c, 0xff];
+  const RIM = [0x3a, 0x30, 0x10, 0xff];
+  const GHOST = [0xff, 0xff, 0xff, 0x50];
+  const ARROW = [0xff, 0xff, 0xff, 0xff];
+  const HINGE = [5, 6];
+  // How far a point is from a segment of a line, in pixels.
+  const fromSegment = (x, y, [ax, ay], [bx, by]) => {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(x - ax - t * dx, y - ay - t * dy);
   };
-  for (const [name, rows] of Object.entries(RAMP_PICTURES)) {
-    texture(rampOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
-  }
+  // A point round a middle, so far out, at an angle in degrees (0 to the right, 90 down).
+  const round = ([mx, my], radius, angle) => [mx + radius * Math.cos((angle * Math.PI) / 180), my + radius * Math.sin((angle * Math.PI) / 180)];
+  // Whether a point is inside a triangle.
+  const inTriangle = (x, y, [a, b, c]) => {
+    const side = (p, q) => (q[0] - p[0]) * (y - p[1]) - (q[1] - p[1]) * (x - p[0]);
+    const s1 = side(a, b);
+    const s2 = side(b, c);
+    const s3 = side(c, a);
+    return (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
+  };
+  // Whether a point is on a curved arrow round the hinge, so far out, from one angle round to another, its head at
+  // the second: the way the ramp swings.
+  const onArrow = (x, y, radius, from, to) => {
+    const way = Math.sign(to - from);
+    const angle = (Math.atan2(y - HINGE[1], x - HINGE[0]) * 180) / Math.PI;
+    const shaftEnd = to - way * 5;
+    const onShaft = Math.abs(Math.hypot(x - HINGE[0], y - HINGE[1]) - radius) < 1.2
+      && angle >= Math.min(from, shaftEnd) && angle <= Math.max(from, shaftEnd);
+    const head = [round(HINGE, radius, to + way * 3), round(HINGE, radius - 3.5, shaftEnd - way * 3), round(HINGE, radius + 3.5, shaftEnd - way * 3)];
+    return onShaft || inTriangle(x, y, head);
+  };
+  // The ramp, a plate from its hinge to its foot: yellow, a dark rim round it.
+  const plate = (x, y, foot) => {
+    const off = fromSegment(x, y, HINGE, foot);
+    return off < 1.6 ? PLATE : off < 2.5 ? RIM : null;
+  };
+  // Her belly over the scene and the ground under it.
+  const scene = (x, y) => {
+    if (y <= 3) return HULL;
+    if (y === 4) return HULL_EDGE;
+    if (y >= RAMP_SIZE - 3) return y === RAMP_SIZE - 3 ? GRASS_EDGE : GRASS;
+    return null;
+  };
+  const LOWERED = [24, 28];
+  const RAISED = [26, 9];
+  const lower = (x, y) => {
+    const [px, py] = [x + 0.5, y + 0.5];
+    return scene(x, y) ?? (onArrow(px, py, 23, 3, 36) ? ARROW : null) ?? plate(px, py, LOWERED) ?? [0, 0, 0, 0];
+  };
+  const raise = (x, y) => {
+    const [px, py] = [x + 0.5, y + 0.5];
+    const ghost = fromSegment(px, py, HINGE, LOWERED) < 1.6;
+    return scene(x, y) ?? (onArrow(px, py, 25, 44, 9) ? ARROW : null) ?? plate(px, py, RAISED) ?? (ghost ? GHOST : null) ?? [0, 0, 0, 0];
+  };
+  texture(rampOutput, "lower", lower, 0, RAMP_SIZE, RAMP_SIZE);
+  texture(rampOutput, "raise", raise, 0, RAMP_SIZE, RAMP_SIZE);
 }
 
 // The rocket's LED strips (see LedStripBlock): a milky diffuser over a row of LEDs, white so that the strip's tint

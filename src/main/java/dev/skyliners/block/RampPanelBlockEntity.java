@@ -31,8 +31,10 @@ import net.minecraft.world.phys.Vec3;
  * flying with her autopilot off, where the ground lies under its foot; it folds away as soon as her autopilot is set
  * to fly or she moves, and her take-off waits until it is all away (see {@link #holdsTakeoff}), as it waits, with a
  * chime, until nobody stands on it; while someone holds it so, everyone aboard is told once and her cockpit hears the
- * chime too. Either of the panel's buttons works it by hand while she stands with her autopilot off; flying, the lamp
- * only turns red with a low note. Its lamp follows how the ramp stands (see {@link RampPanelBlock.Status}).
+ * chime too. The panel's one button works it by hand while she stands with her autopilot off, showing what it does:
+ * down while the ramp is up, up while it is down. Pressed while she comes in to land, it promises the ramp, which comes
+ * down by itself as soon as she has settled; flying otherwise, the lamp only turns red with a low note. Its lamp
+ * follows how the ramp stands (see {@link RampPanelBlock.Status}).
  */
 public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Keeper {
     private static final Loaded<RampPanelBlockEntity> LOADED = new Loaded<>(RampPanelBlockEntity.class);
@@ -46,6 +48,8 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
     private static final int WAITING_CHIME = 40;
     /** How long the lamp stays red after the ramp would not move, in ticks. */
     private static final int REFUSED_TICKS = 40;
+    /** How loud the click is that says the ramp will come down once she has landed. */
+    private static final float PROMISE_VOLUME = 0.5F;
 
     /** Her ramp; none in a panel placed by hand. */
     @Nullable
@@ -57,6 +61,8 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
     private boolean holding;
     /** The game tick until which the lamp stays red, the ramp having refused to move; not saved. */
     private long refusedUntil;
+    /** Whether the ramp has been asked down while she lands, its lamp blinking until it comes; not saved. */
+    private boolean promised;
 
     public RampPanelBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.RAMP_PANEL_ENTITY.get(), pos, state);
@@ -119,16 +125,32 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
                 BoardingAirstairs.REFUSED_PITCH);
             return;
         }
-        panel.press(level, panel.ramp.down() ? RampPanelBlock.Button.RAISE : RampPanelBlock.Button.LOWER);
+        panel.pressButton(level);
     }
 
-    /** A button pressed, on the server: the ramp goes down or up while she stands, her autopilot off. */
+    /** Its button pressed, on the server: it does what it shows, letting the ramp down while up, bringing it up while down. */
+    void pressButton(ServerLevel level) {
+        press(level, RampPanelBlock.ACTION.action(ramp != null && ramp.down()));
+    }
+
+    /**
+     * A button pressed, on the server: the ramp goes down or up while she stands, her autopilot off. Asked down while
+     * she is coming in to land, it is promised instead: a click, the lamp blinking amber, and down by itself as soon as
+     * she has settled on her legs.
+     */
     void press(ServerLevel level, RampPanelBlock.Button button) {
+        if (ramp != null && button == RampPanelBlock.Button.LOWER && landing(level)) {
+            flown = true;
+            promised = true;
+            level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, PROMISE_VOLUME, 1.0F);
+            return;
+        }
         if (ramp == null || flying(level)) {
             refuse(level);
             return;
         }
         flown = false;
+        promised = false;
         if (!ramp.go(level, button == RampPanelBlock.Button.LOWER)) {
             refusedUntil = level.getGameTime() + REFUSED_TICKS;
         }
@@ -140,6 +162,12 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
         level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, BoardingAirstairs.REFUSED_VOLUME,
             BoardingAirstairs.REFUSED_PITCH);
         refusedUntil = level.getGameTime() + REFUSED_TICKS;
+    }
+
+    /** Whether she is coming down to land, her autopilot bringing her down onto her legs. */
+    private boolean landing(ServerLevel level) {
+        AutopilotBlockEntity freighter = AutopilotBlockEntity.framedBy(level, worldPosition, Craft.FREIGHTER);
+        return freighter != null && (freighter.phase() == AutopilotBlockEntity.Phase.LAND || freighter.phase() == AutopilotBlockEntity.Phase.DESCENT);
     }
 
     /**
@@ -173,6 +201,9 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
      * held it from folding, it stays down.
      */
     private void watch(ServerLevel level) {
+        if (promised && (!ramp.stowed() || flying(level) && !landing(level))) {
+            promised = false;
+        }
         if (flying(level)) {
             stillLooks = 0;
             flown = true;
@@ -189,7 +220,11 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
             return;
         }
         stillLooks = flown && ramp.stowed() ? stillLooks + 1 : 0;
-        if (stillLooks >= STILL_LOOKS && ramp.groundUnderFoot(level)) {
+        if (stillLooks < STILL_LOOKS) {
+            return;
+        }
+        promised = false;
+        if (ramp.groundUnderFoot(level)) {
             flown = false;
             ramp.go(level, true);
             sync();
@@ -229,7 +264,7 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
             return RampPanelBlock.Status.REFUSED;
         }
         if (ramp.stowed()) {
-            return RampPanelBlock.Status.READY;
+            return promised ? RampPanelBlock.Status.BUSY : RampPanelBlock.Status.READY;
         }
         return ramp.landed() && ramp.down() && !ramp.held() ? RampPanelBlock.Status.DOWN : RampPanelBlock.Status.BUSY;
     }

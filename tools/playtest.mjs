@@ -179,6 +179,8 @@ const LAKE_HOLD_WITHIN = 8;
 // falls, in blocks, which walking up it climbs, and how long the walk up from just past its foot takes, in ticks; how
 // many blocks up from its foot someone stands on it to hold her take-off; and how long she is watched held, in ticks.
 const RAMP_DOWN_TICKS = 300;
+// How far into its way down her ramp is pressed again to turn it round, in ticks: halfway through its swing.
+const RAMP_HALFWAY_TICKS = 40;
 const RAMP_RISE = 7;
 const RAMP_WALK_TICKS = 110;
 const RAMP_STAND_UP = 3;
@@ -956,6 +958,8 @@ function callRampFromTheGround(lamp, lampTurns) {
   const [fx, fz] = STEPS[must(`block ${button.at_abs.join(",")}`).props?.facing ?? "north"];
   must(`server tp @p ${bx + 0.5 + fx * 2} ${ground} ${bz + 0.5 + fz * 2}; wait 20t; use ${button.at_abs.join(",")}`);
   expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: her call button folds her ramp away", `lamp ${lamp()}`);
+  must(`wait ${CALL_AGAIN_TICKS}t; use ${button.at_abs.join(",")}; wait ${RAMP_HALFWAY_TICKS}t; use ${button.at_abs.join(",")}`);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: pressed again halfway down, her ramp turns round and folds away again", `lamp ${lamp()}`);
   must(`wait ${CALL_AGAIN_TICKS}t; use ${button.at_abs.join(",")}`);
   expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: pressed again, it brings her ramp back down", `lamp ${lamp()}`);
 }

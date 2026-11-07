@@ -165,7 +165,8 @@ inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (
 the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels, as are the
 airliner's announcement panel and autopilot screen and her LED panels and console, `TouchPanelBlock`s laying out their
 tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which brightens the tile looked at and makes the one
-picked glow alike on every panel, and over the paint of the zeppelin's `LiveryBoardBlock`, `SkywritingBoardBlock` and
+picked glow alike on every panel (a button of two states, which shows only what pressing it does, is a
+`TouchPanel.Toggle`, as the freighter's ramp panel's is), and over the paint of the zeppelin's `LiveryBoardBlock`, `SkywritingBoardBlock` and
 `PictureBoardBlock`, whose buttons are painted on, as over the `LiverySelectorBlock`'s pictures); on the client
 `LiftSounds` plays a riding car's hum, and its
 music for whoever rides it or

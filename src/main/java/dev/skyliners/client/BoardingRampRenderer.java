@@ -29,9 +29,10 @@ import org.joml.Quaternionf;
 
 /**
  * Draws the freighter's ramp panel (see {@link RampPanelBlock}) and the boarding ramp it keeps (see
- * {@link BoardingRamp}). The panel's face: the lamp across its top in the colour of how the ramp stands, blinking while it moves, and its two
- * picture buttons under it, blue to let the ramp down and green to bring it up, lit up as every touch panel's are (see
- * {@link TouchPanelArt}), one that can do nothing now dimmed. The ramp, out of plain coloured boxes, while its hatch is
+ * {@link BoardingRamp}). The panel's face: the lamp across its top in the colour of how the ramp stands, blinking
+ * while it moves, and its one big button under it, showing only what pressing it does (see {@link RampPanelBlock#ACTION}):
+ * blue with a ramp coming down while the ramp is up or coming up, green with an arrow up while it is down or coming
+ * down, so pressed while it moves it turns round, lit up as every touch panel's are (see {@link TouchPanelArt}). The ramp, out of plain coloured boxes, while its hatch is
  * open: the plate, grey ribbed deck plate edged in yellow and black hazard stripes on top and her skin's colour under
  * it, swinging down on its hinge tube at the head of the well; two hydraulic rams from brackets on the well's sides to
  * lugs on the plate's edges, lengthening as it falls; its foot lip unfolding at the end; and lamps at the well's head
@@ -43,8 +44,8 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final float FACE = -0.5F + RampPanelBlock.THICKNESS / 16F + 0.002F;
     /** The gap round each button and the lamp, in blocks. */
     private static final double GAP = 0.02;
-    /** How far out each way from its middle a button's picture reaches, as a share of the button's width. */
-    private static final double PICTURE = 0.4;
+    /** How far out each way from its middle the button's picture reaches, as a share of the button's height. */
+    private static final double PICTURE = 0.7;
     /** How often the panel's lamp and the ramp's lamps blink while it moves, in ticks a blink. */
     private static final int BLINK = 8;
     /** Lifts each layer of the panel's face off the one below it. */
@@ -134,27 +135,15 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         boolean blinkedOff = status == RampPanelBlock.Status.BUSY && DrawingClock.wholeTicks() / BLINK % 2 == 1;
         TouchPanelArt.tile(shapes, matrix, RampPanelBlock.LAMP_TILE.inset(GAP), LAMPS.get(status), new TouchPanelArt.Look(false, false, !blinkedOff),
             LAYER);
-        int looked = TouchPanelArt.lookedAt(panel);
-        RampPanelBlock.Button[] buttons = RampPanelBlock.Button.values();
-        for (int button = 0; button < buttons.length; button++) {
-            TouchPanelArt.tile(shapes, matrix, RampPanelBlock.BUTTONS.get(button).inset(GAP), COLOURS.get(buttons[button]),
-                TouchPanelArt.Look.of(button, looked, -1, works(buttons[button], status)), LAYER);
-        }
-        for (int button = 0; button < buttons.length; button++) {
-            TouchPanel.Tile tile = RampPanelBlock.BUTTONS.get(button);
-            ResourceLocation picture = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID,
-                "textures/gui/ramp/" + buttons[button].name().toLowerCase(Locale.ROOT) + ".png");
-            ScreenDrawing.picture(buffers, matrix, picture, tile.middleX(), tile.middleY(), tile.width() * PICTURE, 4 * LAYER, WHITE);
-        }
+        BoardingRamp ramp = panel.ramp();
+        RampPanelBlock.Button action = RampPanelBlock.ACTION.action(ramp != null && ramp.down());
+        TouchPanel.Tile tile = RampPanelBlock.BUTTONS.get(0);
+        TouchPanelArt.tile(shapes, matrix, tile.inset(GAP), COLOURS.get(action),
+            TouchPanelArt.Look.of(0, TouchPanelArt.lookedAt(panel), -1, true), LAYER);
+        ResourceLocation picture = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID,
+            "textures/gui/ramp/" + action.name().toLowerCase(Locale.ROOT) + ".png");
+        ScreenDrawing.picture(buffers, matrix, picture, tile.middleX(), tile.middleY(), tile.height() * PICTURE, 4 * LAYER, WHITE);
         pose.popPose();
-    }
-
-    /** Whether a button does anything as the ramp stands: letting it down while it is up, bringing it up while down. */
-    private static boolean works(RampPanelBlock.Button button, RampPanelBlock.Status status) {
-        return switch (button) {
-            case LOWER -> status == RampPanelBlock.Status.READY || status == RampPanelBlock.Status.REFUSED;
-            case RAISE -> status == RampPanelBlock.Status.DOWN;
-        };
     }
 
     /**
