@@ -758,6 +758,23 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   buttons from clear to all but black; the rocket's oval windows dim as before, checked on the final build.
 - Before handing out 1.2.0-alpha.7: the quick play-test suite (58 checks) and the freighter's slow checks
   (freighter-flight, freighter-drag, freighter-pad, freighter-lake) all hold.
+- Her deck robots (ask 16, 08bffd0d): two little white and teal robots, in the cargo hold and in engineering, chirping
+  hello as someone comes up, their heads turning to follow, trilling when touched and beeping to themselves now and
+  then; heard aboard her flying too. Their head turning and the bartender's now share `HeadTurn` and `Onlookers`
+  (e5fbe1e5), the bartender's checks holding.
+- Her autopilot screen moved from in front of the pilots to the ledge at the co-pilot's right (27894f9f): the view
+  ahead through her canopy is clear from both front seats.
+- M5, her boarding ramp (5c32ad8f, with the shared `Hatch` lifted out of the airstairs in 7af6f3f5): out of her
+  starboard side along the wall of her front right room, its panel at its head and an amber call button on her
+  starboard leg. It comes down by itself once she is built and after she lands, folds as she is set to fly, and her
+  take-off waits for it; someone standing on it holds it, and after half a minute she calls her take-off off. Walked up
+  from the ground into her ring corridor, on the ground and aboard her assembled. The pair caught a deck block's
+  random tick that could have deleted it aboard while its panel's chunk was not loaded, and a take-off a stranger on
+  the ramp could hold for ever; both mended and checked by freighter-ramp (11 checks).
+- The laser crossbow: charged by holding use until it clicks, fired with the next use as an amber bolt that strikes
+  hostile mobs only, venting after three quick shots. Found in play: charging when the hold finished let the held use
+  key fire it at once; it now charges once let go, as the game's crossbow does, guarded by laser-crossbow. The bolt
+  payload carries its glow's colour now, so the protocol went to 32.
 
 ### For Jan to look at
 
@@ -774,5 +791,8 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   near her is sent): from the side nothing then shows she is held up but her hum and roar, her grille glowing astern
   (run/blockpilot/screenshots/2026-11-07_01.16.10.853.png). Showing them higher is one number, `LiftPlumes`'
   `SHOWN_UNDER`.
+- Her ramp refuses where the ground under its foot rises (no adapting foot lip yet), and two freighters with ramps
+  in one world were not tried.
+- The laser crossbow is a flat picture held as the game's crossbow is; it has no rack yet, as her lounge is not built.
 - Two leftovers of mine to clear, refused to me as irreversible: `git stash drop` of "freighter-m2-flight (before the
   pilot abstraction)", superseded by cd630624, and `git worktree remove --force` of the scratch worktree `wt-a`.
