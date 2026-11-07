@@ -2662,22 +2662,21 @@ crafted from white wool round an iron ingot). The Model Freighter, a souvenir on
 
 She is boarded up a ramp out of her starboard side. It lies in a well along the wall of her front right room, its plate
 the well's floor, a glass rail along the well's open side; at its head, on the wall, its panel has a lamp over one big
-button that shows only what pressing it does: blue with a ramp coming down while the ramp is up, green with an arrow
-up while it is down; press it while the ramp is on its way and it turns round where it is. Let down, its latches
-let go in a burst of steam, her computer says "Ramp coming down. Mind the rust.", the floor and her belly under it
-open, and the plate
-swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud; walk
-up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
+button that shows only what pressing it does: blue with a ramp coming down while the ramp is up, green with an arrow up
+while it is down; press it while the ramp is on its way and it turns round where it is. Let down, its latches let go in
+a burst of steam, her computer says "Ramp coming down. Mind the rust.", the floor and her belly under it open, and the
+plate swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud;
+walk up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
 waiting, blue down, red for a moment when it will not move, with a low note. It comes down by itself once she is built
 and once she has landed with her autopilot off and her computer has had its say, never talking over it, and folds away
-as soon as she is set to fly; her take-off waits on her
-legs until it is all away. Press its button while she is coming in to land and it clicks, its lamp blinking amber, and
-the ramp comes down by itself as soon as she has settled on her legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and
-if her take-off is waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls
-her take-off off with a low note, her autopilot switching off and the ramp staying down. From the ground, the amber
-button low on her starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where
-something stands in its way, such as ground rising under its foot. The server config's `freighter.ramp` builds her
-without it. The Ramp Call Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
+as soon as she is set to fly; her take-off waits on her legs until it is all away. Press its button while she is coming
+in to land and it clicks, its lamp blinking amber, and the ramp comes down by itself as soon as she has settled on her
+legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and if her take-off is
+waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls her take-off off with
+a low note, her autopilot switching off and the ramp staying down. From the ground, the amber button low on her
+starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where something stands in its
+way, such as ground rising under its foot. The server config's `freighter.ramp` builds her without it. The Ramp Call
+Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
 
 Up her core, through its doorway from the ring corridor on her bow side, a slim chrome crew ladder climbs the core's
 back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the

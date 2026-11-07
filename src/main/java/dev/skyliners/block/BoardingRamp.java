@@ -57,7 +57,7 @@ public final class BoardingRamp {
     private static final float VOICE_VOLUME = 0.8F;
     /**
      * How long that line holds her cockpit's floor if its sound cannot be read, in ticks: tools/generate_sounds.mjs
-     * keeps it shorter (its COMPUTER_LONGEST).
+     * keeps it no longer than this (its COMPUTER_LONGEST).
      */
     private static final int VOICE_LONGEST = 90;
     /** The latch clunks higher coming free than going home. */

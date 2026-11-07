@@ -61,8 +61,8 @@ public final class FreighterFlight extends StandingFlight {
     private static final int TAKEOFF_HELD_LONGEST = 600;
     /**
      * What her computer says in place of the flight deck's announcements, after its blip: as she is set to take off,
-     * comes down to land and stands on her legs again, and as she reaches space and her gravity comes back on. Any
-     * other announcement, such as one an announcement panel set aboard her makes, is the airliner's.
+     * comes down to land and stands on her legs again, and as she reaches space and her gravity comes back on, whether
+     * her autopilot or an announcement panel set aboard her makes it; any other announcement is the airliner's.
      */
     private static final Map<Holder<SoundEvent>, Holder<SoundEvent>> COMPUTER_SAYS = Map.of(
         SkylinersRegistry.ANNOUNCEMENT_TAKEOFF, SkylinersRegistry.FREIGHTER_COMPUTER_TAKEOFF,
