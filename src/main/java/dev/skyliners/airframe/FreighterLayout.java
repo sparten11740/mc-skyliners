@@ -108,12 +108,14 @@ public final class FreighterLayout extends HullLayout {
     /**
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
      * pilots' seats a block behind it, the pilots so far either side of the head, the jump seats so far behind them,
-     * and the autopilot screen so far ahead of the head.
+     * and the autopilot screen's middle so far to the head's right and so many rows up, on the ledge of her skin at the
+     * co-pilot's right hand, where it leaves the view ahead through her canopy clear.
      */
     private static final int SEATS_BEHIND = 1;
     private static final int PILOTS_OUT = 2;
     private static final int JUMP_BEHIND = 2;
-    private static final int SCREEN_AHEAD = 2;
+    private static final int SCREEN_OUT = 4;
+    private static final int SCREEN_UP = 1;
     /**
      * Her deck robots (see {@link dev.skyliners.block.DeckRobotBlock}): so far out from her axis, in blocks, a couple
      * past the ring corridor's wall, at these bearings clockwise from her bow, in degrees: one in the cargo hold at her
@@ -654,7 +656,8 @@ public final class FreighterLayout extends HullLayout {
     /**
      * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its cone,
      * the pilot's seat on its left and the co-pilot's on its right, a sidestick at each outboard hand, the jump seats
-     * behind them, and the autopilot screen ahead, facing them, linked to the head; the head wired once it stands.
+     * behind them, and the autopilot screen at the co-pilot's right, facing in, linked to the head; the head wired once
+     * it stands.
      */
     private void cockpit() {
         int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
@@ -672,7 +675,8 @@ public final class FreighterLayout extends HullLayout {
         seat(x + PILOTS_OUT, y, z, PilotSeatBlock.Stick.RIGHT);
         seat(x - PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
         seat(x + PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
-        autopilotScreen(new BlockPos(x - AutopilotScreenBlock.COLUMNS / 2, y, z - SCREEN_AHEAD));
+        // Laid out nose north, her right is east: the screen at the co-pilot's right faces west, into her cockpit.
+        autopilotScreen(new BlockPos(x + SCREEN_OUT, y + SCREEN_UP, z - AutopilotScreenBlock.COLUMNS / 2), Direction.WEST);
         canopyDimmer(new BlockPos(x - PILOTS_OUT - 1, y + DIMMER_UP, z));
     }
 
@@ -734,13 +738,14 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * The autopilot screen facing the pilots, its first part where given, linked to the control head once it stands.
+     * The autopilot screen facing a way, its first part, at the bottom on the left as one looks at it, where given,
+     * linked to the control head once it stands.
      */
-    private void autopilotScreen(BlockPos origin) {
-        BlockState screen = SkylinersRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, Direction.SOUTH);
+    private void autopilotScreen(BlockPos origin, Direction facing) {
+        BlockState screen = SkylinersRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, facing);
+        Direction viewersRight = facing.getCounterClockWise();
         for (int part = 0; part < AutopilotScreenBlock.COLUMNS * AutopilotScreenBlock.ROWS; part++) {
-            // Facing south, the viewer's right is east.
-            BlockPos at = origin.offset(part % AutopilotScreenBlock.COLUMNS, part / AutopilotScreenBlock.COLUMNS, 0);
+            BlockPos at = origin.relative(viewersRight, part % AutopilotScreenBlock.COLUMNS).above(part / AutopilotScreenBlock.COLUMNS);
             cells.put(at, screen.setValue(AutopilotScreenBlock.PART, part));
         }
         BlockPos linked = head.subtract(origin);

@@ -2588,8 +2588,8 @@ her and keep her deck level, more of their push going to whichever side dips, so
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
 tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
-control head stands between the pilot's seat and the co-pilot's, jump seats behind them and the autopilot screen ahead.
-Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
+control head stands between the pilot's seat and the co-pilot's, jump seats behind them, and the autopilot screen on
+the wall at the co-pilot's right hand, so the view ahead through her canopy is clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
 anywhere, and climbs to her height, her deck level all the way. Set a speed of nothing, she hovers there. Given a pin,
 she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for the
