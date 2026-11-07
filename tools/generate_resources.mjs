@@ -1634,6 +1634,7 @@ function zeppelinControlsLang() {
     "block.skyliners.parasol": "Parasol",
     "block.skyliners.sun_lounger": "Sun Lounger",
     "block.skyliners.tiki_torch": "Tiki Torch",
+    "block.skyliners.crew_ladder": "Crew Ladder",
     "block.skyliners.deck_clamp": "Docking Clamp",
     "block.skyliners.carrier_lever": "Clamp Release Lever",
     "entity.skyliners.crane_hook": "Crane Hook",
@@ -9417,6 +9418,30 @@ const POOL = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps", "poo
   });
   write(`assets/${ID}/models/item/pool_ladder.json`, { parent: `${ID}:block/pool_ladder_top` });
 }
+// The freighter's crew ladder up her core (see RungLadderBlock), drawn facing north, its wall to the south: two chrome
+// rails close up against the wall, as slim as any ladder, and a ribbed steel rung between them every quarter block.
+// Its top piece's rails carry on up past its top into grab handles bent back to the wall.
+{
+  const textures = { chrome: `${ID}:block/lavatory_basin_chrome`, tread: `${ID}:block/pool_ladder_tread`, particle: `${ID}:block/lavatory_basin_chrome` };
+  const piece = [];
+  const top = [];
+  for (const [x0, x1] of [[1.5, 3], [13, 14.5]]) {
+    piece.push([[x0, 0, 13.5], [x1, 16, 15], "#chrome"]);
+    top.push([[x0, 16, 13.5], [x1, 23, 15], "#chrome"], [[x0, 21.5, 15], [x1, 23, 16], "#chrome"]);
+  }
+  for (const y of [1.5, 5.5, 9.5, 13.5]) {
+    piece.push([[3, y, 13], [13, y + 1, 15], { up: "#tread", down: "#tread", all: "#chrome" }]);
+  }
+  write(`assets/${ID}/models/block/crew_ladder.json`, boxes(textures, piece));
+  write(`assets/${ID}/models/block/crew_ladder_top.json`, boxes(textures, [...piece, ...top]));
+  write(`assets/${ID}/blockstates/crew_ladder.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isTop) =>
+      [`facing=${facing},top=${isTop}`, { model: `${ID}:block/crew_ladder${isTop ? "_top" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/crew_ladder.json`, { parent: `${ID}:block/crew_ladder_top` });
+  dropsItself("crew_ladder");
+  cubes.crew_ladder = null;
+}
 // The bunk ladder up a bunk bed's foot end (see RungLadderBlock), drawn facing north, the bunk's end to the south: two
 // white steel uprights up against it with a round chrome rung between them every quarter block. Its top piece's
 // uprights carry on up past its top and hook over onto the upper bunk's footboard beyond it, to hold on to climbing
@@ -10412,7 +10437,7 @@ write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
 write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airliner_door`]));
 // Climbed as a ladder is.
-write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable(), "bunk_ladder"].map((name) => `${ID}:${name}`)));
+write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable(), "bunk_ladder", "crew_ladder"].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
 const GROUND = ["launch_pad_grate", "launch_pad_hub", "landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
@@ -10431,6 +10456,8 @@ FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve",
 FITTINGS.push("floor_window", "floor_window_panel");
 // Her beach's palms, parasol, loungers and torches are fitted into her lounge too, set down and taken up by hand.
 FITTINGS.push("potted_palm", "parasol", "sun_lounger", "tiki_torch");
+// Her crew ladder is fitted up her core, and set up by hand anywhere.
+FITTINGS.push("crew_ladder");
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10568,6 +10595,7 @@ shaped("potted_palm", [" J ", " J ", " P "], { J: "minecraft:jungle_sapling", P:
 shaped("parasol", ["WWW", " S ", " S "], { W: "minecraft:red_wool", S: "minecraft:stick" }, 1);
 shaped("sun_lounger", ["  W", "SSS"], { W: "minecraft:cyan_wool", S: "minecraft:white_concrete" }, 1);
 shaped("tiki_torch", ["T", "B", "B"], { T: "minecraft:torch", B: "minecraft:bamboo" }, 2);
+shaped("crew_ladder", ["I I", "III", "I I"], { I: "minecraft:iron_ingot" }, 4);
 shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);

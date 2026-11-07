@@ -1007,7 +1007,7 @@ function checkFreighterTurret() {
   const [x, y, z] = cannon.at_abs;
   const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
     .sort((a, b) => a[1] - b[1])[0];
-  const ladder = must("find minecraft:ladder 128 20").rows.map((row) => row.at_abs).sort((a, b) => a[1] - b[1])[0];
+  const ladder = must("find skyliners:crew_ladder 128 20").rows.map((row) => row.at_abs).sort((a, b) => a[1] - b[1])[0];
   if (!seat || !ladder) {
     expect(false, "freighter: she has a gunner's seat under her dome and a ladder up to it");
     return;

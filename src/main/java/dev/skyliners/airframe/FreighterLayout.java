@@ -30,6 +30,7 @@ import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.RobotBartenderBlock;
+import dev.skyliners.block.RungLadderBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.block.WallLightBlock;
@@ -46,9 +47,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
-import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -960,9 +959,10 @@ public final class FreighterLayout extends HullLayout {
         if (!SkylinersConfig.FREIGHTER_TURRETS.get() || seat <= deck + 2) {
             return;
         }
-        BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
+        BlockState ladder = SkylinersRegistry.CREW_LADDER.get().defaultBlockState()
+            .setValue(RungLadderBlock.FACING, Direction.NORTH);
         for (int y = deck + 1; y <= seat; y++) {
-            set(0, y, CORE - 1, ladder);
+            set(0, y, CORE - 1, ladder.setValue(RungLadderBlock.TOP, y == seat));
         }
         BlockState floor = SkylinersRegistry.CABIN_FLOOR.get().defaultBlockState();
         for (int cell = 0; cell < 2 * CORE_INSIDE; cell++) {

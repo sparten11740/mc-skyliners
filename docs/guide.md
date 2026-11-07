@@ -2031,7 +2031,7 @@ is built, and again once she is down on her fins after flying and her autopilot 
 autopilot to fly and they fold away before she lifts off: her countdown waits until they are all away and her doors
 shut, as they wait, with a chime, until nobody is on them, everyone aboard told so and the chime heard in her cockpit
 too; and they fold away by themselves as soon as she moves. With
-the server config's `rocket.airstairs` off she is built with a crew ladder instead, the pool's chrome ladder up a column
+the server config's `rocket.airstairs` off she is built with a ladder instead, the pool's chrome ladder up a column
 beside an open doorway three blocks wide, climbing to a step in front of it; a rocket built before keeps her ladder.
 
 Her doorway closes with sliding airlock doors: two leaves meeting in its middle, faced outside in her skin's own weave
@@ -2640,10 +2640,12 @@ button low on her starboard leg, a ramp on its cap, calls it down, or folds it a
 something stands in its way, such as ground rising under its foot. The server config's `freighter.ramp` builds her
 without it. The Ramp Call Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
 
-Up her core, through its doorway from the ring corridor on her bow side, a ladder climbs the core's back wall to the
-gunner's seat under her top dome, the gunner's head in its glass. Sit in it and her computer says "Turret ready": the
-laser cannon on the dome over you turns its twin barrels to whatever you look at, its servos whirring, all the way
-round and from level to near straight up. Hold attack to fire, red bolts from alternate barrels four times a second with a crack each, sparks
+Up her core, through its doorway from the ring corridor on her bow side, a slim chrome crew ladder climbs the core's
+back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
+gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
+on. Sit in the gunner's seat and her computer says "Turret ready": the laser cannon on the dome over you turns its twin
+barrels to whatever you look at, its servos whirring, all the way round and from level to near straight up. Hold attack
+to fire, red bolts from alternate barrels four times a second with a crack each, sparks
 wherever they strike; they hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard her, and
 never break a block, and attack does nothing else while you sit there, so the dome's glass is safe. Twenty bolts in a
 row and it overheats a moment with a hiss. The Laser Cannon is among her blocks in the creative tab; set down by hand

@@ -1945,6 +1945,12 @@ public final class SkylinersRegistry {
         metal(MapColor.METAL).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> POOL_LADDER_ITEM = ITEMS.registerSimpleBlockItem(POOL_LADDER);
+    /** The freighter's slim chrome crew ladder up her core to her gunner's seat (see {@link RungLadderBlock}). */
+    public static final DeferredBlock<RungLadderBlock> CREW_LADDER = BLOCKS.registerBlock(
+        "crew_ladder", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.CREW_LADDER),
+        metal(MapColor.METAL).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> CREW_LADDER_ITEM = ITEMS.registerSimpleBlockItem(CREW_LADDER);
 
     /**
      * The gym hall's fittings: the wall bars and the climbing ropes, climbed as a ladder is, the mats in front of the
@@ -2955,7 +2961,8 @@ public final class SkylinersRegistry {
             POTTED_PALM_ITEM,
             PARASOL_ITEM,
             SUN_LOUNGER_ITEM,
-            TIKI_TORCH_ITEM
+            TIKI_TORCH_ITEM,
+            CREW_LADDER_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,
