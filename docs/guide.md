@@ -1116,7 +1116,7 @@ over into grab handles down onto the floor beyond its top, as a pool ladder's do
 
 ### The fleet's paintings
 
-Each ship carries paintings of the other two, in gilt frames, with no words on them: the airliner climbing through a
+Each ship carries paintings of the others, in gilt frames, with no words on them: the airliner climbing through a
 sunset over gold-lit cloud, two contrails drawn out behind her; the zeppelin riding a pale dawn over violet mountains,
 the lamps along her back lit; and the rocket lifting off at night under a crescent moon on a cyan flame, the smoke
 rolling out from under her and the tower at her side. And each carries a teaser of what is to come after them: a
@@ -1131,7 +1131,9 @@ and the freighter between them where the deck is wide enough.
 The rocket hangs the airliner and the zeppelin on her entry story, where you come aboard, either side of the lift shaft,
 and the freighter by her pool, on the shaft;
 in a rocket built larger than the default one or both of her sisters may hang in her cargo bay instead, and a smaller one
-goes without.
+goes without. The freighter carries all three of her sisters round her deck: the airliner in her entry hall, over the
+well of her ramp as you come up it, the zeppelin in her club past the end of its bar, and the rocket over the bunks in
+her crew quarters.
 They fly with the ship as a part of her.
 
 Nothing bumps into one; break any part of a painting and the whole of it comes down and is given back. The Airliner,

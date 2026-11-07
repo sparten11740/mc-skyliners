@@ -118,9 +118,10 @@ public final class SkylinersConfig {
             .defineEnum("shellStyle", ShellStyle.SNAPPED);
         FLEET_PAINTINGS = builder
             .comment(
-                "Whether each ship is built with paintings of the other two, and of the freighter to come after them: the rocket and the zeppelin high in a furnished airliner's",
-                "forward door hall and pool hall, the airliner and the rocket in a furnished zeppelin's dining room, and the airliner",
-                "and the zeppelin on a rocket's entry story. Ships already built keep theirs."
+                "Whether each ship is built with paintings of the others: the rocket and the zeppelin high in a furnished airliner's",
+                "forward door hall and pool hall, the airliner and the rocket in a furnished zeppelin's dining room, the airliner",
+                "and the zeppelin on a rocket's entry story, each of them with the freighter too, and the airliner, the zeppelin",
+                "and the rocket round the freighter's deck. Ships already built keep theirs."
             )
             .define("fleetPaintings", true);
         builder.pop();

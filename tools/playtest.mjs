@@ -59,8 +59,8 @@ const FLIGHT_HEIGHT_WANTED = 60;
 const LANDING_TICKS = 2400;
 // How often something being waited for is looked for, in ticks.
 const LOOK_EVERY = 20;
-// A painting: how many pieces the freighter has, and how far out in front of it must be clear, in blocks.
-const FREIGHTER_PIECES = 15;
+// A painting: how many pieces each of the fleet's has, and how far out in front of it must be clear, in blocks.
+const PAINTING_PIECES = 15;
 const IN_FRONT_CLEAR = 3;
 const SEE_THROUGH = new Set(["water", "light"]);
 // Whether anything stands in the way there: not nothing, what the eye sees through, or cloth on a floor.
@@ -457,9 +457,9 @@ function checkNoStepsLeftBehind() {
 // The freighter on a ship: all of it there, nothing in front of it, and the mouse wheel gives the painting.
 function checkFreighterOn(what) {
   ship(what);
-  const pieces = must(`find skyliners:space_poster[poster=freighter] 128 ${FREIGHTER_PIECES + 1}`).rows.map((row) => row.at_abs);
-  expect(pieces.length === FREIGHTER_PIECES, `${what}: the freighter hangs whole`, `${pieces.length} pieces of ${FREIGHTER_PIECES}`);
-  if (pieces.length !== FREIGHTER_PIECES) {
+  const pieces = must(`find skyliners:space_poster[poster=freighter] 128 ${PAINTING_PIECES + 1}`).rows.map((row) => row.at_abs);
+  expect(pieces.length === PAINTING_PIECES, `${what}: the freighter hangs whole`, `${pieces.length} pieces of ${PAINTING_PIECES}`);
+  if (pieces.length !== PAINTING_PIECES) {
     return;
   }
   const { facing } = must(`block ${pieces[0].join(",")}`).props;
@@ -487,8 +487,8 @@ function standingInFront(piece, dx, dz) {
 
 function checkFreighterComesDownWhole() {
   ship("rocket");
-  const pieces = must(`find skyliners:space_poster[poster=freighter] 128 ${FREIGHTER_PIECES + 1}`).rows.map((row) => row.at_abs);
-  if (pieces.length !== FREIGHTER_PIECES) {
+  const pieces = must(`find skyliners:space_poster[poster=freighter] 128 ${PAINTING_PIECES + 1}`).rows.map((row) => row.at_abs);
+  if (pieces.length !== PAINTING_PIECES) {
     return;
   }
   const lowest = Math.min(...pieces.map((piece) => piece[1]));
@@ -502,7 +502,7 @@ function checkFreighterComesDownWhole() {
   const dropped = must("find skyliners:freighter_painting 16 1").rows.length > 0;
   const given = held || dropped;
   creative();
-  const left = must(`find skyliners:space_poster[poster=freighter] 128 ${FREIGHTER_PIECES + 1}`).rows.length;
+  const left = must(`find skyliners:space_poster[poster=freighter] 128 ${PAINTING_PIECES + 1}`).rows.length;
   expect(left === 0 && given, "rocket: broken, the freighter comes down whole and is given back", `${left} pieces left, given back: ${given}`);
 }
 
@@ -1181,6 +1181,16 @@ function checkFreighterTardigrade() {
   expect(munch?.pitch > BIG_MUNCH_HIGHEST, "freighter: it munches higher than the big one", `pitch ${munch?.pitch}`);
 }
 
+// The freighter carries her sisters' paintings, as each of them carries hers: the airliner, the zeppelin and the
+// rocket each hang whole on her deck.
+function checkFleetOnTheFreighter() {
+  ship("freighter");
+  const piecesOf = (poster) => must(`find skyliners:space_poster[poster=${poster}] 128 ${PAINTING_PIECES + 1}`).rows.length;
+  const hung = ["airliner", "zeppelin", "rocket"].map((poster) => [poster, piecesOf(poster)]);
+  expect(hung.every(([, pieces]) => pieces === PAINTING_PIECES), "freighter: her sisters' paintings hang whole on her deck",
+    hung.map(([poster, pieces]) => `${poster} ${pieces} of ${PAINTING_PIECES}`).join(", "));
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1553,6 +1563,7 @@ const CHECKS = {
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room and her hold its cargo" },
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
+  "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },

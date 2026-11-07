@@ -219,8 +219,9 @@ a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem
 `RocketPaintings` hangs the fleet's paintings, more pictures on that block, on her entry story and by her pool;
 `ZeppelinPaintings` at the head of the zeppelin's dining room, on a panelled wall of its own; and `CabinPaintings` high
 on three of the airliner's bulkheads, last of its fit-out and only where the bulkhead carries on past every side of the
-picture.
-`airframe.fleetPaintings` switches all three.
+picture; `FreighterPaintings` on the freighter's two straight walls across her beam, each at the first place along its
+wall where it hangs whole.
+`airframe.fleetPaintings` switches all four.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.
