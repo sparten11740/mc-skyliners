@@ -174,8 +174,10 @@ music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
 pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes, and `OvalWindowWall` dresses one set
-by hand in the wall it is set into (`OvalWindowPieceBlock` holds what a window in a wall, `OvalWindowBlock`, and one
-lying flat, `FlatOvalWindowBlock`, share). `SpaceSky` draws space round any
+by hand in the wall it is set into (`OvalWindowPieceBlock` holds what every round or oval window shares, measured by
+its `OvalWindowPieceBlock.Size`, which the model reads from its JSON; `StandingWindowBlock` what one standing in a wall
+shares, as `OvalWindowBlock` does, and `FlatWindowBlock` what one lying flat shares, as `FlatOvalWindowBlock` does).
+`SpaceSky` draws space round any
 camera far over the top of the world, over the game's own sky, the fog the land fades into taking the planet's colour,
 and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along
 the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every

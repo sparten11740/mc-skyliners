@@ -29,23 +29,24 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
- * The model of a piece of the rocket's oval window ({@link OvalWindowBlock}): the inner half of its block, or the whole
- * block for a window set by hand, baked once as the models load, each piece drawing its share of the whole window.
- * Outside, the glass is a thin dome bulging out of the skin over the whole oval, steepest at its foot as a bubble's,
- * seated in a steel collar that slopes down from it to the skin, the dark gasket at its inner edge; inside, the same
- * glass is seen as a bowl at the back of an oval recess lined round with the collar's steel, through a hole in the
- * inner face with a steel lip round it. The dome, the collar, the lining and the lip are smooth rings of faces round
- * the oval, never a texture's pixels, so the window's outline is clean near and far. The cover's weave round the oval,
- * outside and in, and its edges are tinted as the cover is, in the ship's livery (see {@code ZeppelinPaint}); the glass
- * and the steel are not. Its JSON names the loader, the piece, whether the window is set by hand and the textures: the
- * glass over the whole window as seen from outside, the frame over the piece (the weave, cut away under the collar),
- * its inner face (cut away under the lip), the collar's steel, the lip's, the recess's lining and the edges: {@code
- * {"loader": "skyliners:oval_window", "part": "frame", "column": 0, "row": 0, "set_by_hand": true, "textures":
- * {"glass": ..., "frame": ..., "inside": ..., "rim": ..., "lip": ..., "reveal": ..., "edge": ..., "particle": ...}}}.
- * Its part is {@code "glass"}, the dome alone, which needs only the glass's texture, or {@code "frame"}, all the rest:
- * a window block's model is NeoForge's composite of the two, the glass drawn translucent and the rest cut out, so the
- * clear hole in the inner face never hides the steel behind it, as a translucent face drawn before what lies behind it
- * would.
+ * The model of a piece of a round or oval window ({@link OvalWindowPieceBlock}), as the rocket's big oval window
+ * ({@link OvalWindowBlock}): the inner half of its block, or the whole block for a window set by hand, baked once as
+ * the models load, each piece drawing its share of the whole window, measured as its size has it (see {@link
+ * OvalWindowPieceBlock.Size}). Outside, the glass is a thin dome bulging out of the skin over the whole oval, steepest
+ * at its foot as a bubble's, seated in a steel collar that slopes down from it to the skin, the dark gasket at its
+ * inner edge; inside, the same glass is seen as a bowl at the back of an oval recess lined round with the collar's
+ * steel, through a hole in the inner face with a steel lip round it. The dome, the collar, the lining and the lip are
+ * smooth rings of faces round the oval, never a texture's pixels, so the window's outline is clean near and far. The
+ * cover's weave round the oval, outside and in, and its edges are tinted as the cover is, in the ship's livery (see
+ * {@code ZeppelinPaint}); the glass and the steel are not. Its JSON names the loader, the window's size (the rocket's
+ * if none), the piece, whether the window is set by hand and the textures: the glass over the whole window as seen from
+ * outside, the frame over the piece (the weave, cut away under the collar), its inner face (cut away under the lip),
+ * the collar's steel, the lip's, the recess's lining and the edges: {@code {"loader": "skyliners:oval_window",
+ * "window": "rocket", "part": "frame", "column": 0, "row": 0, "set_by_hand": true, "textures": {"glass": ..., "frame":
+ * ..., "inside": ..., "rim": ..., "lip": ..., "reveal": ..., "edge": ..., "particle": ...}}}. Its part is {@code
+ * "glass"}, the dome alone, which needs only the glass's texture, or {@code "frame"}, all the rest: a window block's
+ * model is NeoForge's composite of the two, the glass drawn translucent and the rest cut out, so the clear hole in the
+ * inner face never hides the steel behind it, as a translucent face drawn before what lies behind it would.
  *
  * <p>It is drawn looking north, then turned the way its block state says. Its inner face is lit as a block's side is
  * and culled against what stands against it; the outer edges of hers are always drawn, so no crack opens where the
@@ -70,28 +71,9 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
      * the frame of one set by hand on the block's outer side.
      */
     private static final float SKIN = BLOCK / 2;
-    /** The whole window's width and height, in pixels. */
-    private static final float WIDE = OvalWindowBlock.COLUMNS * BLOCK;
-    private static final float TALL = OvalWindowBlock.ROWS * BLOCK;
-    /** The oval's half width and half height, in pixels, as the block measures them (see OvalWindowPieceBlock). */
-    private static final float OVAL_WIDE = OvalWindowPieceBlock.OVAL_WIDE;
-    private static final float OVAL_TALL = OvalWindowPieceBlock.OVAL_TALL;
-    /**
-     * The collar: how far out from the oval's edge it reaches, how far its inner edge, where the glass sits, stands out
-     * of the skin (as the block measures it), and how far its outer edge stands off the weave it lies on, in pixels.
-     */
-    private static final float RIM = 2.6F;
-    private static final float COLLAR = OvalWindowPieceBlock.COLLAR;
+    /** How far the collar's outer edge stands off the weave it lies on, in pixels. */
     private static final float COLLAR_FOOT = 0.1F;
-    /** How far out from the oval's edge the recess's lining runs, and how wide the lip round the hole is, in pixels. */
-    private static final float HOLE = 1.2F;
-    private static final float LIP = 1.7F;
-    /**
-     * How far the dome bulges out of the collar at its middle, in pixels, and how its height falls toward its foot: as
-     * this power of the share of the way still to go to its edge, steep at the foot for below 1, as a bubble's (as the
-     * block measures them).
-     */
-    private static final float BULGE = OvalWindowPieceBlock.BULGE;
+    /** How the dome's height falls toward its foot, as the block measures it (see OvalWindowPieceBlock). */
     private static final float PROFILE = OvalWindowPieceBlock.PROFILE;
     /** The least share of the way to the edge its slope is worked out at, so it stays finite at the very foot. */
     private static final float STEEPEST = 0.05F;
@@ -108,6 +90,14 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     /** How far in front of the faces they lie on the frame over the skin and the lip inside stand, in pixels. */
     private static final float OVER = 0.02F;
 
+    /**
+     * How big its window is and how its glass and steel are measured round its oval, from {@code "window"}: the
+     * rocket's for none (see OvalWindowPieceBlock.Size).
+     */
+    private final OvalWindowPieceBlock.Size size;
+    /** The whole window's width and height, in pixels. */
+    private final float wide;
+    private final float tall;
     /** The piece drawn: its column from the left as seen from outside and its row from the top. */
     private final int column;
     private final int row;
@@ -131,7 +121,10 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private record Point(float right, float down, float depth) {
     }
 
-    private OvalWindowModel(int column, int row, boolean glassPart, int insideTint, boolean setByHand) {
+    private OvalWindowModel(OvalWindowPieceBlock.Size size, int column, int row, boolean glassPart, int insideTint, boolean setByHand) {
+        this.size = size;
+        this.wide = size.columns() * BLOCK;
+        this.tall = size.rows() * BLOCK;
         this.column = column;
         this.row = row;
         this.glassPart = glassPart;
@@ -140,7 +133,8 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     private static OvalWindowModel read(JsonObject json) {
-        return new OvalWindowModel(GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"),
+        OvalWindowPieceBlock.Size size = OvalWindowPieceBlock.Size.named(GsonHelper.getAsString(json, "window", OvalWindowPieceBlock.Size.ROCKET.name()));
+        return new OvalWindowModel(size, GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"),
             "glass".equals(GsonHelper.getAsString(json, "part")), GsonHelper.getAsInt(json, "inside_tint", COVER_TINT),
             GsonHelper.getAsBoolean(json, "set_by_hand", false));
     }
@@ -264,7 +258,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         float[][] uv = new float[QUAD][];
         Vector3f[] in = new Vector3f[QUAD];
         for (int k = 0; k < QUAD; k++) {
-            uv[k] = new float[]{(WIDE / 2 + points[k].right()) / WIDE, (TALL / 2 + points[k].down()) / TALL};
+            uv[k] = new float[]{(wide / 2 + points[k].right()) / wide, (tall / 2 + points[k].down()) / tall};
             in[k] = new Vector3f(out[k]).negate();
         }
         face(builder, glass, points, out, uv, turn);
@@ -273,8 +267,8 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
 
     /** A point of the dome, so far out from its middle as a share of the way to its edge and so far round. */
     private Point domePoint(float out, double angle) {
-        float height = BULGE * (float) Math.pow(1 - out * out, PROFILE);
-        return new Point(OVAL_WIDE * out * (float) Math.cos(angle), OVAL_TALL * out * (float) Math.sin(angle), skin() - COLLAR - height);
+        float height = size.bulge() * (float) Math.pow(1 - out * out, PROFILE);
+        return new Point(size.ovalWide() * out * (float) Math.cos(angle), size.ovalTall() * out * (float) Math.sin(angle), skin() - size.collar() - height);
     }
 
     /**
@@ -286,12 +280,12 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     /** The way the dome faces outward at a point of it, looking north. */
-    private static Vector3f domeNormal(float out, double angle) {
+    private Vector3f domeNormal(float out, double angle) {
         float within = Math.max(1 - out * out, STEEPEST);
-        float slope = BULGE * PROFILE * (float) Math.pow(within, PROFILE - 1);
-        float right = OVAL_WIDE * out * (float) Math.cos(angle);
-        float down = OVAL_TALL * out * (float) Math.sin(angle);
-        return new Vector3f(-2 * slope * right / square(OVAL_WIDE), -2 * slope * down / square(OVAL_TALL), -1).normalize();
+        float slope = size.bulge() * PROFILE * (float) Math.pow(within, PROFILE - 1);
+        float right = size.ovalWide() * out * (float) Math.cos(angle);
+        float down = size.ovalTall() * out * (float) Math.sin(angle);
+        return new Vector3f(-2 * slope * right / square(size.ovalWide()), -2 * slope * down / square(size.ovalTall()), -1).normalize();
     }
 
     /** A face of the collar, from the gasket at the glass's foot down to its outer edge on the weave. */
@@ -299,14 +293,16 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         double from = angle(step);
         double to = angle(step + 1);
         float foot = skin() - OVER - COLLAR_FOOT;
-        Point[] points = {round(0, from, skin() - COLLAR), round(RIM, from, foot), round(RIM, to, foot), round(0, to, skin() - COLLAR)};
+        float reach = size.rim();
+        float seat = skin() - size.collar();
+        Point[] points = {round(0, from, seat), round(reach, from, foot), round(reach, to, foot), round(0, to, seat)};
         if (!mine(points)) {
             return;
         }
-        float fall = (foot - (skin() - COLLAR)) / RIM;
+        float fall = (foot - seat) / reach;
         Vector3f[] normals = new Vector3f[QUAD];
         for (int k = 0; k < QUAD; k++) {
-            Vector3f out = outward(k == 0 || k == 1 ? from : to, k == 0 || k == 3 ? 0 : RIM);
+            Vector3f out = outward(k == 0 || k == 1 ? from : to, k == 0 || k == 3 ? 0 : reach);
             normals[k] = out.mul(fall).add(0, 0, -1).normalize();
         }
         face(builder, rim, points, normals, new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
@@ -321,14 +317,17 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         double to = angle(step + 1);
         float[][] dark = {{0, DARKEST}, {0, 1}, {1, 1}, {1, DARKEST}};
         float skin = skin();
-        Point[] gasket = {round(0, from, skin - COLLAR), round(0, from, skin), round(0, to, skin), round(0, to, skin - COLLAR)};
+        float collar = size.collar();
+        float hole = size.hole();
+        float lipped = hole + size.lip();
+        Point[] gasket = {round(0, from, skin - collar), round(0, from, skin), round(0, to, skin), round(0, to, skin - collar)};
         ringFace(builder, reveal, gasket, inward(from, 0), inward(to, 0), dark, turn);
-        Point[] back = {round(0, from, skin), round(HOLE, from, skin), round(HOLE, to, skin), round(0, to, skin)};
+        Point[] back = {round(0, from, skin), round(hole, from, skin), round(hole, to, skin), round(0, to, skin)};
         ringFace(builder, reveal, back, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), dark, turn);
-        Point[] lining = {round(HOLE, from, BLOCK), round(HOLE, from, skin), round(HOLE, to, skin), round(HOLE, to, BLOCK)};
-        ringFace(builder, reveal, lining, inward(from, HOLE), inward(to, HOLE), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
-        Point[] lipFace = {round(HOLE, from, BLOCK + OVER), round(HOLE + LIP, from, BLOCK + OVER), round(HOLE + LIP, to, BLOCK + OVER),
-            round(HOLE, to, BLOCK + OVER)};
+        Point[] lining = {round(hole, from, BLOCK), round(hole, from, skin), round(hole, to, skin), round(hole, to, BLOCK)};
+        ringFace(builder, reveal, lining, inward(from, hole), inward(to, hole), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+        Point[] lipFace = {round(hole, from, BLOCK + OVER), round(lipped, from, BLOCK + OVER), round(lipped, to, BLOCK + OVER),
+            round(hole, to, BLOCK + OVER)};
         ringFace(builder, lip, lipFace, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
     }
 
@@ -346,17 +345,17 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     /** A point round the oval grown by so many pixels each way, so far round, at a depth into the block. */
-    private static Point round(float grown, double angle, float depth) {
-        return new Point((OVAL_WIDE + grown) * (float) Math.cos(angle), (OVAL_TALL + grown) * (float) Math.sin(angle), depth);
+    private Point round(float grown, double angle, float depth) {
+        return new Point((size.ovalWide() + grown) * (float) Math.cos(angle), (size.ovalTall() + grown) * (float) Math.sin(angle), depth);
     }
 
     /** The way out from the window's middle across its face at a point round the oval grown so far, looking north. */
-    private static Vector3f outward(double angle, float grown) {
-        return new Vector3f(-(float) Math.cos(angle) / (OVAL_WIDE + grown), -(float) Math.sin(angle) / (OVAL_TALL + grown), 0).normalize();
+    private Vector3f outward(double angle, float grown) {
+        return new Vector3f(-(float) Math.cos(angle) / (size.ovalWide() + grown), -(float) Math.sin(angle) / (size.ovalTall() + grown), 0).normalize();
     }
 
     /** The way in toward the window's middle from a wall of the recess round the oval grown so far, so far round. */
-    private static Vector3f inward(double angle, float grown) {
+    private Vector3f inward(double angle, float grown) {
         return outward(angle, grown).negate();
     }
 
@@ -368,7 +367,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             right += point.right() / points.length;
             down += point.down() / points.length;
         }
-        return (int) Math.floor((WIDE / 2 + right) / BLOCK) == column && (int) Math.floor((TALL / 2 + down) / BLOCK) == row;
+        return (int) Math.floor((wide / 2 + right) / BLOCK) == column && (int) Math.floor((tall / 2 + down) / BLOCK) == row;
     }
 
     /**
@@ -394,8 +393,8 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
 
     /** Where a point of the window lies in this piece's block looking north, as a share of the block. */
     private Vector3f inPiece(Point point) {
-        float across = column * BLOCK + BLOCK - WIDE / 2 - point.right();
-        float up = row * BLOCK + BLOCK - TALL / 2 - point.down();
+        float across = column * BLOCK + BLOCK - wide / 2 - point.right();
+        float up = row * BLOCK + BLOCK - tall / 2 - point.down();
         return new Vector3f(across, up, point.depth()).div(BLOCK);
     }
 
@@ -416,13 +415,13 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         if (column == 0) {
             edges.add(Direction.EAST);
         }
-        if (column == OvalWindowBlock.COLUMNS - 1) {
+        if (column == size.columns() - 1) {
             edges.add(Direction.WEST);
         }
         if (row == 0) {
             edges.add(Direction.UP);
         }
-        if (row == OvalWindowBlock.ROWS - 1) {
+        if (row == size.rows() - 1) {
             edges.add(Direction.DOWN);
         }
         return edges;

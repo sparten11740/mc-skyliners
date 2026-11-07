@@ -94,9 +94,10 @@ public final class OvalWindowWall {
     private static List<BlockPos> besideWindow(OvalWindowPieceBlock window, BlockPos pos, BlockState piece) {
         Direction left = window.left(piece);
         List<BlockPos> beside = new ArrayList<>();
-        for (int row = 0; row < OvalWindowPieceBlock.ROWS; row++) {
+        OvalWindowPieceBlock.Size size = window.size();
+        for (int row = 0; row < size.rows(); row++) {
             beside.add(window.pieceAt(pos, piece, 0, row).relative(left));
-            beside.add(window.pieceAt(pos, piece, OvalWindowPieceBlock.COLUMNS - 1, row).relative(left.getOpposite()));
+            beside.add(window.pieceAt(pos, piece, size.columns() - 1, row).relative(left.getOpposite()));
         }
         beside.sort(Comparator.comparingDouble(at -> at.distSqr(pos)));
         return beside;
