@@ -8,18 +8,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -77,26 +73,12 @@ public class LaserPointerItem extends Item {
             return;
         }
         Vec3 eye = user.getEyePosition();
-        HitResult hit = trace(server, user, eye);
+        HitResult hit = LaserFire.trace(server, user, eye, RANGE);
         Vec3 spot = hit.getLocation();
         shine(server, eye, spot, remainingUseDuration);
         if (hit instanceof EntityHitResult struck && struck.getEntity() instanceof LivingEntity target && inFace(target, spot, user.getLookAngle())) {
             dazzle(target, user);
         }
-    }
-
-    /** Where the beam from the eyes lands: on the first block it meets, or on someone standing before that block. */
-    private static HitResult trace(ServerLevel level, LivingEntity user, Vec3 eye) {
-        Vec3 far = eye.add(user.getLookAngle().scale(RANGE));
-        HitResult block = level.clip(new ClipContext(eye, far, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, user));
-        Vec3 end = block.getLocation();
-        AABB swept = new AABB(eye, end).inflate(1.0);
-        EntityHitResult entity = ProjectileUtil.getEntityHitResult(user, eye, end, swept, LaserPointerItem::catchesBeam, eye.distanceToSqr(end));
-        return entity != null ? entity : block;
-    }
-
-    private static boolean catchesBeam(Entity entity) {
-        return !entity.isSpectator() && entity.isPickable();
     }
 
     /**

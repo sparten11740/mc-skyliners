@@ -71,6 +71,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -641,6 +642,12 @@ public final class SkylinersConfig {
                 "lets down to the ground on its rams and brings back up. Without it, her well's floor is plain deck."
             )
             .define("ramp", true);
+        FREIGHTER_LASER_CROSSBOW = builder
+            .comment(
+                "Whether the laser crossbow fires: charged by holding use, its amber bolt strikes hostile mobs, never players,",
+                "villagers, pets or animals, and never a block. Without it, it only clicks."
+            )
+            .define("laserCrossbow", true);
         builder.pop();
 
         SPEC = builder.build();

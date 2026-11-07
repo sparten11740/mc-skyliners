@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "skyliners:item/laser_crossbow"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "skyliners:charged": 1
+      },
+      "model": "skyliners:item/laser_crossbow_charged"
+    },
+    {
+      "predicate": {
+        "skyliners:venting": 1
+      },
+      "model": "skyliners:item/laser_crossbow_venting"
+    }
+  ]
+}

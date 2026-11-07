@@ -341,6 +341,7 @@ import dev.skyliners.item.BasketballItem;
 import dev.skyliners.item.BoardingPassItem;
 import dev.skyliners.item.CoffeeItem;
 import dev.skyliners.item.ControlTowerBlueprintItem;
+import dev.skyliners.item.LaserCrossbowItem;
 import dev.skyliners.item.LightFittingItem;
 import dev.skyliners.item.LaunchPadBlueprintItem;
 import dev.skyliners.item.RocketBlueprintItem;
@@ -1304,6 +1305,17 @@ public final class SkylinersRegistry {
         BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> RAMP_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(RAMP_BUTTON);
+    /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
+    public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
+        () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
+    /** Whether a laser crossbow is charged, kept on its stack so every client draws its coil glowing. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> LASER_CROSSBOW_CHARGED = DATA_COMPONENTS.registerComponentType(
+        "laser_crossbow_charged", builder -> builder.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL)
+    );
+    /** How hot a laser crossbow is, kept on its stack so every client draws it venting. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<LaserCrossbowItem.Heat>> LASER_CROSSBOW_HEAT =
+        DATA_COMPONENTS.registerComponentType("laser_crossbow_heat",
+            builder -> builder.persistent(LaserCrossbowItem.Heat.CODEC).networkSynchronized(LaserCrossbowItem.Heat.STREAM_CODEC));
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
@@ -2796,7 +2808,8 @@ public final class SkylinersRegistry {
             PADDED_BULKHEAD_ITEM,
             ENGINE_GRILLE_ITEM,
             DECK_ROBOT_ITEM,
-            RAMP_BUTTON_ITEM
+            RAMP_BUTTON_ITEM,
+            LASER_CROSSBOW
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

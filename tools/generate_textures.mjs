@@ -5905,6 +5905,47 @@ const LIFT_ICONS = {
   texture(itemOutput, "rover_remote_paired", remote(LIT_GREEN), 0);
 }
 
+// The freighter's laser crossbow (see LaserCrossbowItem), pointing up and to the right as the game's own crossbow does:
+// a dark-wood stock from its butt at the bottom left, a gunmetal body on to its muzzle, two swept gunmetal arms across
+// its front and its coil drawn back from their tips to the nut, three heat lamps along the stock. Resting, its coil is
+// a dull amber and its lamps dark; charged, its coil glows bright amber, its nut a white-hot spark, and its lamps green;
+// venting, its coil is dull, its lamps red and wisps of steam rise off its arms, so each look differs in shape too.
+{
+  const CLEAR = [0, 0, 0, 0];
+  const WOOD = [0x4a, 0x30, 0x20];
+  const WOOD_LIGHT = [0x6e, 0x48, 0x2e];
+  const GUNMETAL = [0x55, 0x5a, 0x63];
+  const GUNMETAL_LIGHT = [0x8a, 0x90, 0x99];
+  const LAMP_DARK = [0x26, 0x28, 0x2c];
+  // A line of pixels from one to the other, both ends in, as a set of "x,y".
+  const line = (x0, y0, x1, y1) => {
+    const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    return new Set(Array.from({ length: steps + 1 }, (_, i) => `${Math.round(x0 + (x1 - x0) * i / steps)},${Math.round(y0 + (y1 - y0) * i / steps)}`));
+  };
+  const coil = new Set([...line(7, 1, 6, 9), ...line(14, 8, 6, 9)]);
+  const arms = new Set([...line(7, 1, 11, 4), ...line(11, 4, 14, 8), "8,1", "14,7"]);
+  const lamps = ["2,12", "3,11", "4,10"];
+  const STEAM = [0xe8, 0xec, 0xf0, 0xc8];
+  const steam = new Set(["2,1", "3,0", "4,2", "1,4", "2,3", "10,0", "12,1"]);
+  const SPARK = [0xff, 0xff, 0xf0];
+  const crossbow = (coilColour, lampColour, extra = new Map()) => (x, y) => {
+    const at = `${x},${y}`;
+    if (extra.has(at)) return extra.get(at);
+    if (lamps.includes(at)) return lampColour;
+    if (arms.has(at)) return x + y < 15 ? GUNMETAL_LIGHT : GUNMETAL;
+    if (coil.has(at)) return coilColour;
+    if (x + y === 15 && x >= 8 && x <= 13) return GUNMETAL_LIGHT;
+    if (x + y === 16 && x >= 9 && x <= 14) return GUNMETAL;
+    if (x + y === 15 && x >= 1 && x <= 7) return WOOD_LIGHT;
+    if (x + y === 16 && x >= 2 && x <= 8) return WOOD;
+    if ((x === 1 && y === 15) || (x === 2 && y === 15) || (x === 1 && y === 14) || (x === 0 && y === 15)) return WOOD;
+    return CLEAR;
+  };
+  texture(itemOutput, "laser_crossbow", crossbow([0x9a, 0x62, 0x14], LAMP_DARK), 0);
+  texture(itemOutput, "laser_crossbow_charged", crossbow([0xff, 0xd0, 0x40], [0x50, 0xf0, 0x60], new Map([["6,9", SPARK], ["6,8", SPARK]])), 0);
+  texture(itemOutput, "laser_crossbow_venting", crossbow([0x9a, 0x62, 0x14], [0xf0, 0x30, 0x20], new Map([...steam].map((at) => [at, STEAM]))), 0);
+}
+
 // The rocket's lab. Her tardigrade (see TardigradeModel, which takes its boxes' faces from these patches): soft
 // peach skin all over, mottled in soft blotches with fine darker bumps, as a water bear's cuticle is under a
 // microscope; its folds between the segments a darker tan with creases across them; its claws pale ivory; its mouth a

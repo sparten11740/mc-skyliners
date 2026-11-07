@@ -18,9 +18,11 @@ import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
 /**
- * The laser path clearer's bolts, as the server sends them (see {@link dev.skyliners.block.LaserTurretBlockEntity}):
- * each a short-lived beam from the turret's muzzle to where it strikes, a white-hot core in a red glow, fading out over
- * a few ticks. Drawn in the world after the particles, glowing like lightning.
+ * The laser bolts, as the server sends them: the path clearer's (see
+ * {@link dev.skyliners.block.LaserTurretBlockEntity}) and the laser crossbow's (see
+ * {@link dev.skyliners.item.LaserCrossbowItem}), each a short-lived beam from the muzzle to where it strikes, a
+ * white-hot core in a glow of its own colour, red or amber, fading out over a few ticks. Drawn in the world after the
+ * particles, glowing like lightning.
  *
  * <p>The server says only where a bolt leaves from and where it strikes, so the turret that fired it finds it by where
  * it leaves from (see {@link #from}), turns toward it (see {@link LaserTurretRenderer}), and has it drawn from the tip
@@ -30,11 +32,10 @@ import org.joml.Vector3d;
 public final class LaserBolts {
     /** How long a bolt shows, in ticks. */
     private static final int LIFE_TICKS = 4;
-    /** The beam's core and glow, half widths in blocks, and their colours (alpha first, as the glow fades from it). */
+    /** The beam's core and glow, half widths in blocks, and its core's colour (alpha first, as it fades from it). */
     private static final float CORE = 0.05F;
     private static final float GLOW = 0.16F;
     private static final int CORE_COLOUR = 0xFFFFE8E8;
-    private static final int GLOW_COLOUR = 0xA0FF2020;
     /**
      * The most a client draws an airliner behind where the server has it, in ticks: Sable shows it a tick and a half
      * back by default, and up to three as the server's ticks come unevenly, and the drawing between ticks lags up to
@@ -49,19 +50,22 @@ public final class LaserBolts {
     private static int now;
 
     /**
-     * A bolt, from the muzzle to where it struck, in the world, and the tick it was fired; and, once the turret that
-     * fired it has found it, the tip of that turret's barrel among its airliner's blocks, where it is drawn from.
+     * A bolt, from the muzzle to where it struck, in the world, the colour of its glow and the tick it was fired; and,
+     * once the turret that fired it has found it, the tip of that turret's barrel among its airliner's blocks, where it
+     * is drawn from.
      */
     static final class Bolt {
         private final Vec3 from;
         private final Vec3 to;
+        private final int glow;
         private final int fired;
         @Nullable
         private Vec3 tip;
 
-        private Bolt(Vec3 from, Vec3 to, int fired) {
+        private Bolt(Vec3 from, Vec3 to, int glow, int fired) {
             this.from = from;
             this.to = to;
+            this.glow = glow;
             this.fired = fired;
         }
 
@@ -76,7 +80,7 @@ public final class LaserBolts {
 
     /** A bolt fired. */
     public static void add(LaserBolt bolt) {
-        BOLTS.add(new Bolt(bolt.from(), bolt.to(), now));
+        BOLTS.add(new Bolt(bolt.from(), bolt.to(), bolt.glow(), now));
     }
 
     public static void tick(ClientTickEvent.Post event) {
@@ -146,7 +150,7 @@ public final class LaserBolts {
         for (Bolt bolt : BOLTS) {
             float fade = 1 - Math.min(1, (now - bolt.fired + partial) / LIFE_TICKS);
             Vec3 from = bolt.tip == null ? bolt.from : inWorld(SableClient.placing(bolt.tip, partial), bolt.tip);
-            beam(beams, matrix, from, bolt.to, GLOW, fade(GLOW_COLOUR, fade));
+            beam(beams, matrix, from, bolt.to, GLOW, fade(bolt.glow, fade));
             beam(beams, matrix, from, bolt.to, CORE, fade(CORE_COLOUR, fade));
         }
         buffers.endBatch(RenderType.lightning());

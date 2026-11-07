@@ -221,7 +221,7 @@ public class LaserTurretBlockEntity extends BlockEntity {
 
     /** The beam drawn by every client near, sparks where it strikes, and its hiss. */
     private void bolt(ServerLevel level, Vec3 muzzle, Vec3 struck) {
-        PacketDistributor.sendToPlayersNear(level, null, muzzle.x, muzzle.y, muzzle.z, BOLTS_SEEN, new LaserBolt(muzzle, struck));
+        PacketDistributor.sendToPlayersNear(level, null, muzzle.x, muzzle.y, muzzle.z, BOLTS_SEEN, new LaserBolt(muzzle, struck, LaserBolt.RED));
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, struck.x, struck.y, struck.z, 12, 0.3, 0.3, 0.3, 0.15);
         level.playSound(null, worldPosition, SkylinersRegistry.LASER_HISS.get(), SoundSource.BLOCKS, HISS_VOLUME, 0.9F + level.getRandom().nextFloat() * 0.2F);
     }

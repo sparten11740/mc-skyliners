@@ -191,6 +191,17 @@ const RAMP_TICKED = 60;
 // she calls it off, with a margin, in ticks.
 const CALL_AGAIN_TICKS = 20;
 const TAKEOFF_CALLED_OFF_TICKS = 700;
+// The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
+// past its click it does not fire by itself; how far in front of the
+// player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
+// full health, in half hearts; and how long it is left to cool after venting, in ticks.
+const CROSSBOW_CHARGE_TICKS = 30;
+const CROSSBOW_HELD_LONG_TICKS = 60;
+const CROSSBOW_TARGET_AHEAD = 6;
+const CROSSBOW_AIM_DOWN = 8;
+const CREEPER_HEALTH = 20;
+const COW_HEALTH = 10;
+const CROSSBOW_COOLED_TICKS = 100;
 // A freighter's deck robots: how many she is built with, how far in front of one the player walks up to, and how far
 // off they start, in blocks; and how long its hello and its trill are given to be heard, in ticks.
 const FREIGHTER_ROBOTS = 2;
@@ -879,6 +890,45 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   must("skyliners:autopilot off");
 }
 
+// The laser crossbow: charged by holding use, it fires an amber bolt that strikes a creeper hard and leaves a cow
+// unharmed; three quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the
+// world on easy, as a peaceful world takes hostile mobs away at once.
+function checkLaserCrossbow() {
+  const x = nextSite++ * SITE_APART;
+  creative();
+  must(`server tp @p ${x} ${ground} 0; turn 0 0; wait 40t; server item replace entity @p weapon.mainhand with skyliners:laser_crossbow`);
+  const held = now();
+  must(`turn 0 0; use hold=${CROSSBOW_HELD_LONG_TICKS}t; wait 5t`);
+  const charged = /laser_crossbow_charged\W*1b/.test(JSON.stringify(send("server data get entity @p SelectedItem")[0]));
+  expect(charged && !heard("skyliners:laser_crossbow_shot", held, 0), "laser crossbow: held long past its click, it charges and does not fire by itself",
+    charged ? "charged" : "not charged");
+  must("use; wait 10t");
+  must("server difficulty easy");
+  const struck = shootAt("creeper", x);
+  must("server difficulty peaceful");
+  expect(struck < CREEPER_HEALTH, "laser crossbow: charged and fired, its bolt strikes a creeper", `health ${struck} of ${CREEPER_HEALTH}`);
+  const spared = shootAt("cow", x);
+  expect(spared === COW_HEALTH, "laser crossbow: its bolt never hurts a cow", `health ${spared} of ${COW_HEALTH}`);
+  const since = now();
+  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
+  expect(!heard("skyliners:laser_crossbow_shot", since, 0), "laser crossbow: after three quick shots it vents, and does not fire");
+  must(`wait ${CROSSBOW_COOLED_TICKS}t`);
+  const cooled = now();
+  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
+  expect(heard("skyliners:laser_crossbow_shot", cooled, 0), "laser crossbow: once cooled, it charges and fires again");
+}
+
+// Summons a mob that stands still in front of the player, charges the laser crossbow and fires it at the mob: its
+// health after, the mob then taken away.
+function shootAt(mob, x) {
+  must(`server summon ${mob} ${x + 0.5} ${ground} ${CROSSBOW_TARGET_AHEAD + 0.5} {NoAI:1b,PersistenceRequired:1b}; wait 10t`);
+  must(`turn 0 ${CROSSBOW_AIM_DOWN}; use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
+  const [reply] = send(`server data get entity @e[type=${mob},limit=1,sort=nearest] Health`);
+  must(`server kill @e[type=${mob}]; wait 5t`);
+  const health = Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1]);
+  return Number.isNaN(health) ? 0 : health;
+}
+
 // A freighter that has learnt far too much drag, as one did once she had hunted round her height: set to cruise at 20
 // blocks a second, her mains pushed her on to almost three times that, and as her drag was learnt only near the speed
 // set, nothing could unlearn it. Ridden along, so she stays loaded flying away: she must stay near the speed set and
@@ -1323,6 +1373,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
+  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

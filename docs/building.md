@@ -287,7 +287,10 @@ counted on the server and each client (`ToldTicks`), and once down the invisible
 block in two in four little steps, which the ground passes through (`SableFlight.rampDeck`); `BoardingRampRenderer`
 draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
-long off. `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+long off. `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
+`LaserCrossbowItem` keeps its charge and heat on its stack as data components, which `LaserCrossbowLooks` draws, traces
+its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow colour tells
+`LaserBolts` to draw it amber rather than the path clearer's red. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

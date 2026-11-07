@@ -64,6 +64,7 @@ import dev.skyliners.client.HelmetBreathing;
 import dev.skyliners.client.HelmetVisor;
 import dev.skyliners.client.KeptLooks;
 import dev.skyliners.client.LaserBolts;
+import dev.skyliners.client.LaserCrossbowLooks;
 import dev.skyliners.client.LaserTurretRenderer;
 import dev.skyliners.client.LedLights;
 import dev.skyliners.client.LiftPanelRenderer;
@@ -307,6 +308,7 @@ public final class SkylinersClient {
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);
         KeptLooks.register(modEventBus);
+        LaserCrossbowLooks.register(modEventBus);
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
         RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;

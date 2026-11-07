@@ -266,6 +266,25 @@ function rampFittings() {
   return ["ramp_deck"];
 }
 
+// The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
+// (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
+// charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
+{
+  for (const look of ["charged", "venting"]) {
+    write(`assets/${ID}/models/item/laser_crossbow_${look}.json`, {
+      parent: "minecraft:item/handheld", textures: { layer0: `${ID}:item/laser_crossbow_${look}` },
+    });
+  }
+  write(`assets/${ID}/models/item/laser_crossbow.json`, {
+    parent: "minecraft:item/handheld",
+    textures: { layer0: `${ID}:item/laser_crossbow` },
+    overrides: [
+      { predicate: { [`${ID}:charged`]: 1 }, model: `${ID}:item/laser_crossbow_charged` },
+      { predicate: { [`${ID}:venting`]: 1 }, model: `${ID}:item/laser_crossbow_venting` },
+    ],
+  });
+}
+
 // A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
 // through, which only the blueprint places, so it has no item and drops nothing (picked, it gives the catwalk), and the
 // hub in its middle, which also goes up by hand and gives itself back. They are ground, not airframe (see GROUND).
@@ -10289,6 +10308,7 @@ shaped("padded_bulkhead", ["WWW", "WIW", "WWW"], { W: "minecraft:white_wool", I:
 shaped("engine_grille", ["BBB", "GGG", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 6);
 shaped("deck_robot", [" G ", "IRI", "I I"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("ramp_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button", I: "minecraft:iron_ingot" }, 1);
+shaped("laser_crossbow", [" A ", "RCR", " O "], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", C: "minecraft:crossbow", O: "minecraft:copper_ingot" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10860,6 +10880,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.ramp_deck": "Boarding Ramp",
   "block.skyliners.ramp_panel": "Boarding Ramp Panel",
   "block.skyliners.ramp_button": "Ramp Call Button",
+  "item.skyliners.laser_crossbow": "Laser Crossbow",
   "message.skyliners.freighter.takeoff_ramp": "Her take-off waits for everyone to step off the ramp",
   "message.skyliners.freighter.takeoff_called_off": "Take-off called off: she was held on the ground too long",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",

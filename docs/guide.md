@@ -2635,6 +2635,13 @@ button low on her starboard leg, a ramp on its cap, calls it down, or folds it a
 something stands in its way, such as ground rising under its foot. The server config's `freighter.ramp` builds her
 without it. The Ramp Call Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
 
+The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone
+and a copper ingot), is her own weapon. Hold use to charge it, a ratchet and a rising whine, until it clicks, and let
+go: its coil glows bright and its lamps green. Use it again to fire an amber bolt the way you look, up to 48 blocks,
+which strikes hostile mobs hard and throws them back in a shower of sparks; it never hurts players, villagers, pets or
+animals, and never breaks a block. Three quick shots and it vents steam for a few seconds, its lamps red, hissing if you
+try it, before it charges again. The server config's `freighter.laserCrossbow` switches it off, leaving it a click.
+
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning
 to follow you about; touch it and it trills back; and now and then, with someone near, it beeps happily to itself. The
