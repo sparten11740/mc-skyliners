@@ -1,6 +1,6 @@
 package dev.skyliners.autopilot;
 
-import dev.skyliners.block.GearBayBlockEntity;
+import dev.skyliners.block.RetractableLegBlockEntity;
 import dev.skyliners.compat.SableFlight;
 import java.util.Arrays;
 import java.util.List;
@@ -105,7 +105,7 @@ final class AirlinerShape {
         autopilot = at;
         forward = nose;
         right = nose.getClockWise();
-        List<BlockPos> stowed = GearBayBlockEntity.stowedWithin(level, blocks);
+        List<BlockPos> stowed = RetractableLegBlockEntity.stowedWithin(level, blocks);
         wheels = Math.min(blocks.minY(), stowed.stream().mapToInt(BlockPos::getY).min().orElse(blocks.minY()));
         nextX = blocks.minX();
         nextZ = blocks.minZ();
