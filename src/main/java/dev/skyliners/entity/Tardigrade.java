@@ -374,7 +374,7 @@ public class Tardigrade extends PathfinderMob {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new TankLife(this));
-        goalSelector.addGoal(2, new WatchVisitors(this));
+        goalSelector.addGoal(2, new WatchVisitors(this, LOOK_RANGE, () -> !isCurled() && !isAsleep() && jump() == Jump.HERE));
         goalSelector.addGoal(3, new RandomLookAroundGoal(this));
     }
 
@@ -589,22 +589,7 @@ public class Tardigrade extends PathfinderMob {
      * is), the point itself otherwise.
      */
     private Vec3 seen(Vec3 point) {
-        return SableFlight.toPlot(level(), blockPosition(), point, false);
-    }
-
-    /** The nearest player near enough to look at, as it sees them; null for none. */
-    @Nullable
-    private Player nearestVisitor() {
-        Player nearest = null;
-        double nearestDistance = LOOK_RANGE;
-        for (Player player : level().players()) {
-            double distance = seen(player.getEyePosition()).distanceTo(getEyePosition());
-            if (!player.isSpectator() && distance < nearestDistance) {
-                nearest = player;
-                nearestDistance = distance;
-            }
-        }
-        return nearest;
+        return WatchVisitors.seen(this, point);
     }
 
     /** Whether something held is what it eats: moss, a babycino or an ice cream, never refused (see {@link #chew}). */
@@ -1283,60 +1268,6 @@ public class Tardigrade extends PathfinderMob {
     public void remove(RemovalReason reason) {
         forgetMeal();
         super.remove(reason);
-    }
-
-    /**
-     * Looking a while at whoever comes near, now and then, as vanilla's creatures look at players; but seeing them as
-     * it sees the world, in her frame while it lives among her blocks, so aboard her in flight it still finds them.
-     */
-    private static final class WatchVisitors extends Goal {
-        /** How likely it is to look for someone each tick, and how long it looks, from and to, in ticks. */
-        private static final float CHANCE = 0.02F;
-        private static final int LOOK_FROM = 40;
-        private static final int LOOK_TO = 80;
-
-        private final Tardigrade creature;
-        @Nullable
-        private Player visitor;
-        private int looking;
-
-        WatchVisitors(Tardigrade creature) {
-            this.creature = creature;
-            setFlags(EnumSet.of(Flag.LOOK));
-        }
-
-        @Override
-        public boolean canUse() {
-            if (creature.isCurled() || creature.isAsleep() || creature.jump() != Jump.HERE || creature.random.nextFloat() >= CHANCE) {
-                return false;
-            }
-            visitor = creature.nearestVisitor();
-            return visitor != null;
-        }
-
-        @Override
-        public boolean canContinueToUse() {
-            return visitor != null && visitor.isAlive() && !creature.isCurled() && !creature.isAsleep() && looking > 0
-                && creature.seen(visitor.getEyePosition()).distanceTo(creature.getEyePosition()) < LOOK_RANGE;
-        }
-
-        @Override
-        public void start() {
-            looking = adjustedTickDelay(LOOK_FROM + creature.random.nextInt(LOOK_TO - LOOK_FROM));
-        }
-
-        @Override
-        public void stop() {
-            visitor = null;
-        }
-
-        @Override
-        public void tick() {
-            looking--;
-            if (visitor != null) {
-                creature.getLookControl().setLookAt(creature.seen(visitor.getEyePosition()));
-            }
-        }
     }
 
     /**
