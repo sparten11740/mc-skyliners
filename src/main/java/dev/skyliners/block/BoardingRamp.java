@@ -1,6 +1,9 @@
 package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.VoiceLength;
 import dev.skyliners.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +53,13 @@ public final class BoardingRamp {
     private static final float SECOND_STEAM_VOLUME = 0.6F;
     private static final float HYDRAULICS_VOLUME = 1.0F;
     private static final float THUD_VOLUME = 1.0F;
-    /** Her computer's "Ramp lowering", heard from the panel, as a share of full. */
+    /** Her computer's line as it comes down, heard from the panel, as a share of full. */
     private static final float VOICE_VOLUME = 0.8F;
+    /**
+     * How long that line holds her cockpit's floor if its sound cannot be read, in ticks: tools/generate_sounds.mjs
+     * keeps it no longer than this (its COMPUTER_LONGEST).
+     */
+    private static final int VOICE_LONGEST = 90;
     /** The latch clunks higher coming free than going home. */
     private static final float UNLATCH_PITCH = 1.25F;
     /** How many puffs of steam a client sees each tick the latches let go or the plate seals, either side. */
@@ -241,9 +249,21 @@ public final class BoardingRamp {
         openHatch(level);
         sound(level, SkylinersRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
         sound(level, SkylinersRegistry.RAMP_STEAM.get(), STEAM_VOLUME, 1.0F);
+        sayLowering(level);
+        panel.sync();
+    }
+
+    /**
+     * Her computer says the ramp is coming down, from the panel, holding her cockpit's floor while it does, so that
+     * none of her announcements, such as the one saying she is down, is made over it.
+     */
+    private void sayLowering(ServerLevel level) {
         level.playSound(null, panel.getBlockPos(), SkylinersRegistry.FREIGHTER_COMPUTER_RAMP_LOWERING.get(), SoundSource.BLOCKS,
             VOICE_VOLUME, 1.0F);
-        panel.sync();
+        AutopilotBlockEntity freighter = AutopilotBlockEntity.framedBy(level, panel.getBlockPos(), Craft.FREIGHTER);
+        if (freighter != null) {
+            freighter.holdFloor(VoiceLength.ticks(SkylinersRegistry.FREIGHTER_COMPUTER_RAMP_LOWERING, VOICE_LONGEST));
+        }
     }
 
     /** Sets it going away: at once, or once nobody stands on it. */

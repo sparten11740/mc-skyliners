@@ -1,6 +1,15 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
+      "model": "skyliners:block/laser_cannon"
+    },
+    "facing=east": {
+      "model": "skyliners:block/laser_cannon"
+    },
+    "facing=south": {
+      "model": "skyliners:block/laser_cannon"
+    },
+    "facing=west": {
       "model": "skyliners:block/laser_cannon"
     }
   }

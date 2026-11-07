@@ -48,8 +48,9 @@ public final class SpaceGravity {
     private static final int WAIT_MOST = 10 * 20;
     /**
      * How long after the announcement starts its first line has been said, in ticks: the chime, then "Artificial
-     * gravity enabled." (measured off announcement_gravity.ogg, whose words run from 2.1 to 4.2 seconds in). Everyone
-     * stays light until then, and is their own weight again as they next land.
+     * gravity enabled." (measured off announcement_gravity.ogg, whose words run from 2.1 to 4.2 seconds in); or the
+     * whole announcement, where a craft says it in fewer words, as the freighter's computer does. Everyone stays light
+     * until then, and is their own weight again as they next land.
      */
     private static final int SAID = 84;
     /** How much further than usual they may fall unhurt there, in blocks: a jump's height and more. */
@@ -145,8 +146,8 @@ public final class SpaceGravity {
      */
     private void announce(ServerLevel level, AutopilotBlockEntity autopilot, long now) {
         if (autopilot.quiet()) {
-            EdgeOfSpace.announce(level, autopilot, SkylinersRegistry.ANNOUNCEMENT_GRAVITY);
-            leaseAboardUntil(autopilot, now + SAID);
+            int length = EdgeOfSpace.announce(level, autopilot, SkylinersRegistry.ANNOUNCEMENT_GRAVITY);
+            leaseAboardUntil(autopilot, now + Math.min(SAID, length));
             announced = true;
         } else if (++waited >= WAIT_MOST) {
             leaseAboardUntil(autopilot, now);

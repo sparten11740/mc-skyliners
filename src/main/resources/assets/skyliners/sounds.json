@@ -1014,6 +1014,51 @@
       }
     ]
   },
+  "freighter_computer_takeoff": {
+    "subtitle": "subtitles.skyliners.freighter_computer_takeoff",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_takeoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_landing": {
+    "subtitle": "subtitles.skyliners.freighter_computer_landing",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_landing",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_arrival": {
+    "subtitle": "subtitles.skyliners.freighter_computer_arrival",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_arrival",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_space": {
+    "subtitle": "subtitles.skyliners.freighter_computer_space",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_space",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_gravity": {
+    "subtitle": "subtitles.skyliners.freighter_computer_gravity",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_gravity",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.skyliners.pa_chime",
     "sounds": [

@@ -8,10 +8,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -473,6 +475,13 @@ public final class RocketFlight extends StandingFlight {
     @Override
     void goAround() {
         pilot.holdHere();
+    }
+
+    /** She arrives as a spacecraft, not as an aircraft; her flight deck's other announcements are the airliner's. */
+    @Override
+    Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
+        boolean arrival = announcement == SkylinersRegistry.ANNOUNCEMENT_ARRIVAL;
+        return arrival ? SkylinersRegistry.ANNOUNCEMENT_ARRIVAL_ROCKET : announcement;
     }
 
     /**

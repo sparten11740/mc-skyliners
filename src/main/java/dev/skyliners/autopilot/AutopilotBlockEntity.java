@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -682,6 +683,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** What it flies, on the clients as on the server, whose pictures its screens show. */
     public Craft craft() {
         return flight.craft();
+    }
+
+    /** What is said aboard what it flies for one of the flight deck's announcements (see {@link CraftFlight#says}). */
+    Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
+        return flight.says(announcement);
     }
 
     /** How its zeppelin is painted, on the clients as on the server. */
