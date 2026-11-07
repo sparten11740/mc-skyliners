@@ -7,6 +7,8 @@ import dev.skyliners.block.TropicalPieceBlock;
 import dev.skyliners.floorwindow.FloorWindowBlock;
 import dev.skyliners.floorwindow.FloorWindowBlockEntity;
 import dev.skyliners.floorwindow.FloorWindowPanelBlock;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -36,6 +38,15 @@ final class FreighterChillout {
     private static final int NUDGE = 2;
     /** How far past the edge of the window's glass the sand reaches, in blocks. */
     private static final double BEACH = 2.6;
+    /**
+     * The partition across her lounge: how far astern of the window's middle it runs, one row past the window's edge;
+     * how far either side of the window's middle it is looked for, past her lounge's walls; and how wide its doorway
+     * at its outer end is and how tall, as her rooms' doorways are, in blocks.
+     */
+    private static final int PARTITION_ASTERN = 5;
+    private static final int PARTITION_REACH = 14;
+    private static final int PARTITION_DOORWAY = 2;
+    private static final int PARTITION_DOOR_ROWS = 3;
     /** How far past the edge of the window's glass her belly is glazed under it, in blocks, wider than its shaft. */
     private static final double BELLY_MARGIN = 1.5;
     /**
@@ -77,6 +88,7 @@ final class FreighterChillout {
             return;
         }
         FreighterChillout beach = new FreighterChillout(layout, deck, middle);
+        beach.partition();
         beach.sand();
         beach.window();
         beach.belly();
@@ -139,12 +151,55 @@ final class FreighterChillout {
         return FreighterFurnishings.inRoom(LOUNGE, at);
     }
 
-    /** Her lounge's floor turned to sand round the window, as far as the beach reaches. */
+    /**
+     * The partition across her lounge just astern of the window, from wall to wall, a padded wall up to her hull as her
+     * room walls are, with a doorway through it at its outer end: the beach on the window's side of it, and a corner of
+     * the lounge of its own on the other, her booth in it with room for more.
+     */
+    private void partition() {
+        int z = middle.getZ() + PARTITION_ASTERN;
+        List<Integer> run = new ArrayList<>();
+        for (int x = middle.getX() - PARTITION_REACH; x <= middle.getX() + PARTITION_REACH; x++) {
+            if (partitionFits(x, z)) {
+                run.add(x);
+            }
+        }
+        for (int place = 0; place < run.size(); place++) {
+            boolean doorway = place >= run.size() - PARTITION_DOORWAY;
+            wallUp(run.get(place), z, doorway ? deck + 1 + PARTITION_DOOR_ROWS : deck + 1);
+        }
+    }
+
+    /** The partition's padded wall at a column, from a row up to her hull, in every open block inside her. */
+    private void wallUp(int x, int z, int from) {
+        BlockState wall = SkylinersRegistry.PADDED_BULKHEAD.get().defaultBlockState();
+        for (int y = from; layout.inside(x, y, z); y++) {
+            if (layout.isOpen(x, y, z)) {
+                layout.set(x, y, z, wall);
+            }
+        }
+    }
+
+    /** Whether the partition may stand at a block: her lounge's floor under it, and open up a doorway's height. */
+    private boolean partitionFits(int x, int z) {
+        if (!inLounge(new BlockPos(x, deck + 1, z)) || !floor(layout.stateAt(x, deck, z))) {
+            return false;
+        }
+        for (int row = 1; row <= PARTITION_DOOR_ROWS; row++) {
+            if (!layout.isOpen(x, deck + row, z)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Her lounge's floor turned to sand round the window, as far as the beach reaches on its side of the partition. */
     private void sand() {
         int reach = (int) Math.ceil(FloorWindowBlock.RADIUS + BEACH);
         BlockState sand = SkylinersRegistry.BEACH_SAND.get().defaultBlockState();
         for (BlockPos at : BlockPos.betweenClosed(middle.offset(-reach, 0, -reach), middle.offset(reach, 0, reach))) {
-            boolean near = Math.hypot(at.getX() - middle.getX(), at.getZ() - middle.getZ()) <= FloorWindowBlock.RADIUS + BEACH;
+            boolean near = Math.hypot(at.getX() - middle.getX(), at.getZ() - middle.getZ()) <= FloorWindowBlock.RADIUS + BEACH
+                && at.getZ() < middle.getZ() + PARTITION_ASTERN;
             if (near && inLounge(at) && floor(layout.stateAt(at.getX(), deck, at.getZ()))) {
                 layout.set(at.getX(), deck, at.getZ(), sand);
             }

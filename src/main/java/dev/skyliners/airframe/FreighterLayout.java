@@ -204,11 +204,12 @@ public final class FreighterLayout extends HullLayout {
     private static final int PASSAGE_LIGHT = 4;
     /**
      * Her lounge's booth, in the room aft of her entry hall: a low table at this bearing and so far out from her axis,
-     * in the room's far corner, its middle kept for her beach, with a seat facing it on each side so many blocks from
-     * it, leg room between, in these colours by turns.
+     * in the room's far corner behind the partition across it, its middle kept for her beach (see {@link
+     * FreighterChillout}), with a seat facing it on each side that has room so many blocks from it, leg room between,
+     * in these colours by turns.
      */
-    private static final int LOUNGE_BEARING = 135;
-    private static final double LOUNGE_OUT = 19.8;
+    private static final int LOUNGE_BEARING = 137;
+    private static final double LOUNGE_OUT = 20.5;
     private static final int LOUNGE_SEAT_OUT = 2;
     private static final DyeColor[] LOUNGE_SEATS = {DyeColor.ORANGE, DyeColor.BROWN};
     /**
