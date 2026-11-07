@@ -2702,7 +2702,7 @@ function checkSecretPanelByHand() {
 }
 
 // A freighter's port prong a lookout: a seat faces a porthole down its tunnel, and at its tip, past her nose jet's
-// casing, a row of seats faces a screen of her outside cameras. Her port retro is the one further from her cockpit's
+// housing, a row of seats faces a screen of her outside cameras. Her port retro is the one further from her cockpit's
 // control head, out on her starboard side, and what is nearer her starboard retro, her cockpit among it, is left out.
 function checkFreighterLookout() {
   ship("freighter");

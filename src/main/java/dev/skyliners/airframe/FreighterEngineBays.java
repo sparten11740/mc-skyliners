@@ -11,22 +11,23 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The freighter's engine bays in her prongs' tips, so nobody walking down the tunnel in either prong comes face to face
  * with a thruster, nor reaches one: across the very tip a bulkhead of glowing engine grating, her retro's relay set
- * into it and the retro behind it in her skin; and round her nose jet a casing two blocks high, engine grating below
- * and a hazard-striped top, from just past its relay out to her hull, along her a block either side of it. Inside the
- * casing the jet's exhaust is left open straight out from its nozzle to her hull, as it was, so the jet pushes as hard
- * as ever (a thruster's push falls with what stands in that line, and only that line). Every block of both is held as
- * her frame is (see {@code FrameProtection}), so the thrusters behind them are out of sight and out of reach. Laid out
- * nose north, as the rest of her, straight after her engines; always, with her engines, as they would stand bare in
- * the tunnels without.
+ * into it and the retro behind it in her skin; and round her nose jet's relay a housing two blocks high, engine grating
+ * below and a hazard-striped top, along her a block either side of it, from the relay out through the jet and its
+ * exhaust to her hull. Her nose jets stand in her prongs' outer walls (see {@code FreighterLayout.jet}), so there the
+ * housing is a frame round the relay against the wall, its face showing; a jet out in a passage would be boxed in
+ * whole. Inside the housing the jet's exhaust is left open straight out from its nozzle, as it was, so the jet pushes
+ * as hard as ever (a thruster's push falls with what stands in that line, and only that line). Every block of both is
+ * held as her frame is (see {@code FrameProtection}), so the thrusters behind them are out of sight and out of reach.
+ * Laid out nose north, as the rest of her, straight after her engines; always, with her engines.
  */
 final class FreighterEngineBays {
-    /** How many rows over her deck the tip's bulkhead and a jet's casing reach up: her prongs' headroom there. */
+    /** How many rows over her deck the tip's bulkhead and a jet's housing reach up: her prongs' headroom there. */
     private static final int ROWS = 2;
     /** How far across her the tip's bulkhead is looked for either side of the relay set in it, in blocks. */
     private static final int BULKHEAD_REACH = 6;
-    /** How far along her a jet's casing reaches either side of the jet, in blocks. */
-    static final int CASING_ALONG = 1;
-    /** How far out from its jet a casing follows its exhaust at most, in blocks, should her hull never stop it. */
+    /** How far along her a jet's housing reaches either side of the jet, in blocks. */
+    static final int HOUSING_ALONG = 1;
+    /** How far out from its jet a housing follows its exhaust at most, in blocks, should her hull never stop it. */
     private static final int EXHAUST_REACH = 6;
 
     private final HullLayout layout;
@@ -48,27 +49,26 @@ final class FreighterEngineBays {
     }
 
     /**
-     * The casing round a nose jet whose relay is given, pushing the way given: round the relay, the jet and its exhaust
-     * out to her hull, which are left as they are.
+     * The housing round a nose jet whose relay is given, pushing the way given: from the relay's column out through the
+     * jet and its exhaust to her hull, which are left as they are, the relay's face toward her middle line showing.
      */
-    void casing(@Nullable BlockPos relay, Direction pushes) {
+    void housing(@Nullable BlockPos relay, Direction pushes) {
         if (relay == null) {
             return;
         }
         List<BlockPos> run = run(relay, pushes.getOpposite());
-        BlockPos from = relay.relative(pushes);
         BlockPos to = run.getLast();
         BlockState grating = SkylinersRegistry.ENGINE_GRATING.get().defaultBlockState();
         BlockState top = SkylinersRegistry.HAZARD_PLATE.get().defaultBlockState();
-        for (int x = Math.min(from.getX(), to.getX()); x <= Math.max(from.getX(), to.getX()); x++) {
-            for (int z = relay.getZ() - CASING_ALONG; z <= relay.getZ() + CASING_ALONG; z++) {
-                casingColumn(run, x, z, grating, top);
+        for (int x = Math.min(relay.getX(), to.getX()); x <= Math.max(relay.getX(), to.getX()); x++) {
+            for (int z = relay.getZ() - HOUSING_ALONG; z <= relay.getZ() + HOUSING_ALONG; z++) {
+                housingColumn(run, x, z, grating, top);
             }
         }
     }
 
-    /** One column of a casing: grating in its lowest row, hazard plate over it, but where the jet's run is. */
-    private void casingColumn(List<BlockPos> run, int x, int z, BlockState grating, BlockState top) {
+    /** One column of a housing: grating in its lowest row, hazard plate over it, but where the jet's run is. */
+    private void housingColumn(List<BlockPos> run, int x, int z, BlockState grating, BlockState top) {
         for (int y = deck + 1; y <= deck + ROWS; y++) {
             if (!run.contains(new BlockPos(x, y, z))) {
                 fill(x, y, z, y == deck + 1 ? grating : top);

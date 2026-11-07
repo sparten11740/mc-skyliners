@@ -28,12 +28,12 @@ import net.minecraft.world.level.storage.loot.LootTable;
 
 /**
  * The freighter's smugglers' hold, in the tip of her starboard prong. The tunnel down the prong seems to end short of
- * the port prong's, at a wall of riveted hull plate across it, a few blocks before her nose jet's casing (see
- * {@link FreighterEngineBays}). One panel of the wall, beside the casing, is a secret panel (see
+ * the port prong's, at a wall of riveted hull plate across it, a few blocks before her nose jet's housing (see
+ * {@link FreighterEngineBays}). One panel of the wall, beside the housing, is a secret panel (see
  * {@link dev.skyliners.block.SecretPanelBlock}), a shade darker than the rest and scuffed, wisps of draught puffing out
  * of its seams; and in the wall beside it, at eye height, one rivet is brass, glinting: the loose rivet that opens it
  * (see {@link dev.skyliners.block.LooseRivetBlock}), which it touches through the plate it is set in. Behind it a
- * narrow way runs past the casing to a cramped den against the engine bulkhead across the tip: a cot along her hull,
+ * way runs past the housing to a cramped den against the engine bulkhead across the tip: a cot along her hull,
  * contraband crates, barrels of smuggled goods, one with a lantern on it, a mail sack, and a chest of loot.
  *
  * <p>Found from her nose jet's relay, as her layout lays it, and from where her tunnel is open, so it follows her
@@ -47,10 +47,10 @@ final class FreighterSmugglerDen {
         ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "chests/smuggler_stash"));
     private static final ResourceKey<LootTable> CONTRABAND =
         ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "chests/smuggler_contraband"));
-    /** How far astern of her nose jet's casing the wall across her tunnel stands, in blocks: a block of way between. */
-    private static final int WALL_ASTERN = FreighterEngineBays.CASING_ALONG + 1;
-    /** How far toward her middle from the jet's relay the secret panel stands, in blocks: just past its casing. */
-    private static final int PANEL_IN = 2;
+    /** How far astern of her nose jet's housing the wall across her tunnel stands, in blocks: a block of way first. */
+    private static final int WALL_ASTERN = FreighterEngineBays.HOUSING_ALONG + 1;
+    /** How far toward her middle from the jet's relay the secret panel stands, in blocks: beside its housing. */
+    private static final int PANEL_IN = 1;
     /** How far across her tunnel, and how many rows over her deck, it is looked along, in blocks. */
     private static final int TUNNEL_REACH = 24;
     private static final int ROWS = 3;
@@ -81,7 +81,7 @@ final class FreighterSmugglerDen {
         int wallZ = jetRelay.getZ() + WALL_ASTERN;
         int panelX = jetRelay.getX() - PANEL_IN;
         int inner = tunnelEdge(wallZ);
-        int denZ = jetRelay.getZ() - FreighterEngineBays.CASING_ALONG - 1;
+        int denZ = jetRelay.getZ() - FreighterEngineBays.HOUSING_ALONG - 1;
         if (inner < 0 || inner > panelX || !openInside(panelX, deck + 2, wallZ)) {
             return;
         }
@@ -118,7 +118,7 @@ final class FreighterSmugglerDen {
     }
 
     /**
-     * The den against the bulkhead across her tip, from the row before her nose jet's casing toward it: along the
+     * The den against the bulkhead across her tip, from the row before her nose jet's housing toward it: along the
      * bulkhead, from her hull in, the cot's head, two crates, one stacked on the other, a crate, the chest, a barrel of
      * contraband with the lantern on it and two barrels stacked; the cot runs back along her hull, a mail sack past its
      * foot.

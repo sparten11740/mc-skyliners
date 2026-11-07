@@ -238,12 +238,13 @@ freighter's port prong through `FreighterPaintings.hangWhole`, and stands the fl
 her prong tunnels and both sides of her tube, where open sky lies straight out past them; `freighter.portholes`
 switches them.
 `FreighterEngineBays`, laid straight after her engines and always with them, closes off the thrusters in her prongs'
-tips: an `ENGINE_GRATING` bulkhead across each tip round her retro's relay, and round each nose jet a casing of grating
-under `HAZARD_PLATE`, leaving the jet's exhaust open straight out from its nozzle, the one line along which Create
-Propulsion counts a thruster obstructed, so it pushes as before. `FreighterLookout`, after her portholes, whose places
-it looks for, seats her port tunnel by them and lays the nook at its tip, a `PassengerScreenBlock` on the bulkhead;
-`freighter.prongs` switches it. `FreighterSmugglerDen`, before her portholes, which keep clear of it, walls her
-starboard tunnel off short of the jet's casing, a `SecretPanelBlock` in the wall and a `LooseRivetBlock` on the plate
+tips: an `ENGINE_GRATING` bulkhead across each tip round her retro's relay, and round each nose jet's relay, out to the
+wall the jet stands in, a housing of grating under `HAZARD_PLATE`, leaving the jet's exhaust open straight out from its
+nozzle, the one line along which Create Propulsion counts a thruster obstructed, so it pushes as before.
+`FreighterLookout`, after her portholes, whose places it looks for, and her LED strips, which it stands over, seats her
+port tunnel by them and lays the nook at its tip, a `PassengerScreenBlock` on the bulkhead; `freighter.prongs` switches
+it. `FreighterSmugglerDen`, before her portholes, which keep clear of it, walls her
+starboard tunnel off short of the jet's housing, a `SecretPanelBlock` in the wall and a `LooseRivetBlock` on the plate
 beside it, and furnishes the den behind, a chest and a barrel filled from `chests/smuggler_stash` and
 `chests/smuggler_contraband`; nothing that a redstone pulse sends off stands beside a thrust relay, whose signal it
 would take for one; `freighter.smugglerHold` switches it. The rivet is a `ButtonBlock`, its pulse reaching the panel
