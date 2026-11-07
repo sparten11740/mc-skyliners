@@ -718,7 +718,8 @@ public final class SkylinersConfig {
         FREIGHTER_ENGINEERING = builder
             .comment(
                 "Whether the freighter's engineering has its machines: her jump drive, spooled up by hand, which now and then",
-                "sputters until it is thumped."
+                "sputters until it is thumped; her breaker board, a switch for each room's lights; and her coolant valve, cranked",
+                "up to a blast of steam."
             )
             .define("engineering", true);
         builder.pop();

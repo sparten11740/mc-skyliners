@@ -372,6 +372,25 @@ function rampFittings() {
   cubes.breaker_board = null;
 }
 
+// The freighter's coolant valve in engineering (see CoolantValveBlock): a steel plate against the wall behind it, a
+// chrome pipe out of it to where the red wheel turns, and a chrome vent pipe up its right side, its mouth at the top of
+// the block, the wheel and the gauge drawn over it by CoolantValveRenderer; drawn facing north.
+{
+  write(`assets/${ID}/models/block/coolant_valve.json`, {
+    parent: "minecraft:block/block",
+    textures: { plate: `${ID}:block/habitat_kerb`, pipe: `${ID}:block/lab_chrome`, particle: `${ID}:block/habitat_kerb` },
+    elements: [solid([2, 0, 14], [14, 16, 16], "#plate"), solid([6.5, 5, 9], [9.5, 8, 14], "#pipe"), solid([3, 9, 11], [5, 16, 13], "#pipe"),
+      solid([3, 9, 13], [5, 11, 14], "#pipe")],
+  });
+  write(`assets/${ID}/blockstates/coolant_valve.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4].flatMap((pressure) => [false, true]
+      .map((venting) => [`facing=${facing},pressure=${pressure},venting=${venting}`, { model: `${ID}:block/coolant_valve`, y }])))),
+  });
+  write(`assets/${ID}/models/item/coolant_valve.json`, { parent: `${ID}:block/coolant_valve` });
+  dropsItself("coolant_valve");
+  cubes.coolant_valve = null;
+}
+
 // The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
 // (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
 // charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
@@ -1483,6 +1502,7 @@ function zeppelinControlsLang() {
     "block.skyliners.engine_grating": "Engine Grating",
     "block.skyliners.jump_drive": "Jump Drive",
     "block.skyliners.breaker_board": "Breaker Board",
+    "block.skyliners.coolant_valve": "Coolant Valve",
     "block.skyliners.deck_clamp": "Docking Clamp",
     "block.skyliners.carrier_lever": "Clamp Release Lever",
     "entity.skyliners.crane_hook": "Crane Hook",
@@ -10275,7 +10295,7 @@ FITTINGS.push(...rampFittings());
 // The club's bandstand is fitted into her club, set down and taken up by hand.
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
-FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board");
+FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve");
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10406,6 +10426,7 @@ shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gol
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
 shaped("engine_grating", ["BBB", "BGB", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 8);
+shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
 shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);

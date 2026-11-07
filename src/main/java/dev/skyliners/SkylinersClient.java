@@ -121,6 +121,7 @@ import dev.skyliners.client.SleighBells;
 import dev.skyliners.client.SlideRenderer;
 import dev.skyliners.client.SpaceSky;
 import dev.skyliners.client.BreakerBoardRenderer;
+import dev.skyliners.client.CoolantValveRenderer;
 import dev.skyliners.client.JumpDriveRenderer;
 import dev.skyliners.client.SpookieModel;
 import dev.skyliners.client.SpookieRenderer;
@@ -327,6 +328,8 @@ public final class SkylinersClient {
             context -> new JumpDriveRenderer()));
         modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerBlockEntityRenderer(
             SkylinersRegistry.BREAKER_BOARD_ENTITY.get(), context -> new BreakerBoardRenderer()));
+        modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerBlockEntityRenderer(
+            SkylinersRegistry.COOLANT_VALVE_ENTITY.get(), context -> new CoolantValveRenderer()));
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);

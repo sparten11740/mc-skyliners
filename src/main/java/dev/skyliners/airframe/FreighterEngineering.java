@@ -4,6 +4,7 @@ import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.engineering.BreakerBoardBlock;
 import dev.skyliners.engineering.BreakerBoardBlockEntity;
+import dev.skyliners.engineering.CoolantValveBlock;
 import dev.skyliners.engineering.JumpDriveBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * The freighter's engineering, the room astern of her core: her jump drive in its middle (see {@link JumpDriveBlock}),
  * facing in toward its doorway so whoever comes in meets its panel, with room all round it to watch its rings turn; and
  * on the wall behind it, at eye height, her breaker board (see {@link BreakerBoardBlock}), wired to each of her rooms'
- * LED panels, laid after them. Each is laid where its block has room, the drive with her deck's floor under it and
- * three rows open over it and the row before it open to stand in, the board against her padded wall with the room
- * open before it. Laid out nose north, as the rest of her; none with the server config's
- * {@code freighter.engineering} off.
+ * LED panels, laid after them, and further along it her coolant valve (see {@link CoolantValveBlock}). Each is laid
+ * where its block has room, the drive with her deck's floor under it and three rows open over it and the row before it
+ * open to stand in, the board against her padded wall with the room open before it. Laid out nose north, as the rest of
+ * her; none with the server config's {@code freighter.engineering} off.
  */
 final class FreighterEngineering {
     /** Where her jump drive stands: astern, so far out from her axis, in blocks, in the middle of the room. */
@@ -34,6 +35,8 @@ final class FreighterEngineering {
     private static final int BOARD_TO = DRIVE_OUT + 8;
     /** How far either side of her middle line the board may go, in blocks. */
     private static final int BOARD_ASIDE = 4;
+    /** How far to one side of her middle line the valve may go, in blocks, in turn, east positive. */
+    private static final int[] VALVE_ASIDES = {2, -2, 3, -3, 1, -1, 4, -4};
 
     private FreighterEngineering() {
     }
@@ -48,6 +51,20 @@ final class FreighterEngineering {
             layout.set(drive.getX(), drive.getY(), drive.getZ(),
                 SkylinersRegistry.JUMP_DRIVE.get().defaultBlockState().setValue(JumpDriveBlock.FACING, Direction.NORTH));
         }
+        valveSpots(deck).stream().filter(at -> onWall(layout, at)).findFirst().ifPresent(at -> layout.set(at.getX(), at.getY(), at.getZ(),
+            SkylinersRegistry.COOLANT_VALVE.get().defaultBlockState().setValue(CoolantValveBlock.FACING, Direction.NORTH)));
+    }
+
+    /**
+     * Where the valve is looked for on her stern wall, in turn: furthest astern first, where her wall is, and at each
+     * distance a little to one side of her middle line or the other, leaving the middle to the board, before further.
+     */
+    private static List<BlockPos> valveSpots(int deck) {
+        List<BlockPos> spots = new ArrayList<>();
+        for (int spot = 0; spot < (BOARD_TO - BOARD_FROM + 1) * VALVE_ASIDES.length; spot++) {
+            spots.add(new BlockPos(VALVE_ASIDES[spot % VALVE_ASIDES.length], deck + BOARD_UP, BOARD_TO - spot / VALVE_ASIDES.length));
+        }
+        return spots;
     }
 
     /**
@@ -58,8 +75,8 @@ final class FreighterEngineering {
         if (!SkylinersConfig.FREIGHTER_ENGINEERING.get() || panels.stream().allMatch(Objects::isNull)) {
             return;
         }
-        for (BlockPos at : boardSpots(deck)) {
-            if (boardFits(layout, at)) {
+        for (BlockPos at : wallSpots(deck)) {
+            if (onWall(layout, at)) {
                 setBoard(layout, at, panels);
                 return;
             }
@@ -67,10 +84,10 @@ final class FreighterEngineering {
     }
 
     /**
-     * Where the board is looked for, in turn: astern of the drive, nearest first, and at each distance on her middle
-     * line, then further out either side.
+     * Where the board, and the valve the other way about, are looked for on her stern wall, in turn: astern of the
+     * drive, nearest first, and at each distance on her middle line, then further out either side.
      */
-    private static List<BlockPos> boardSpots(int deck) {
+    private static List<BlockPos> wallSpots(int deck) {
         List<BlockPos> spots = new ArrayList<>();
         int across = 2 * BOARD_ASIDE + 1;
         for (int spot = 0; spot < (BOARD_TO - BOARD_FROM + 1) * across; spot++) {
@@ -81,8 +98,11 @@ final class FreighterEngineering {
         return spots;
     }
 
-    /** Whether the board fits at a block: open, her padded wall astern of it, and open before it, toward her bow. */
-    private static boolean boardFits(HullLayout layout, BlockPos at) {
+    /**
+     * Whether something hung on her wall fits at a block: open, her padded wall astern of it, and open before it,
+     * toward her bow.
+     */
+    private static boolean onWall(HullLayout layout, BlockPos at) {
         BlockPos wall = at.south();
         BlockPos before = at.north();
         return layout.isOpen(at.getX(), at.getY(), at.getZ()) && layout.isOpen(before.getX(), before.getY(), before.getZ())

@@ -365,6 +365,8 @@ import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.engineering.BreakerBoardBlock;
 import dev.skyliners.engineering.BreakerBoardBlockEntity;
+import dev.skyliners.engineering.CoolantValveBlock;
+import dev.skyliners.engineering.CoolantValveBlockEntity;
 import dev.skyliners.engineering.JumpDriveBlock;
 import dev.skyliners.engineering.JumpDriveBlockEntity;
 import dev.skyliners.spookie.SpookieHammockBlock;
@@ -1372,6 +1374,13 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BreakerBoardBlockEntity>> BREAKER_BOARD_ENTITY =
         BLOCK_ENTITIES.register("breaker_board", () -> BlockEntityType.Builder.of(BreakerBoardBlockEntity::new, BREAKER_BOARD.get()).build(null));
     public static final DeferredItem<BlockItem> BREAKER_BOARD_ITEM = ITEMS.registerSimpleBlockItem(BREAKER_BOARD);
+    /** The freighter's coolant valve in engineering (see {@link CoolantValveBlock}), cranked up to a blast of steam. */
+    public static final DeferredBlock<CoolantValveBlock> COOLANT_VALVE = BLOCKS.registerBlock(
+        "coolant_valve", CoolantValveBlock::new, metal(MapColor.COLOR_RED).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CoolantValveBlockEntity>> COOLANT_VALVE_ENTITY =
+        BLOCK_ENTITIES.register("coolant_valve", () -> BlockEntityType.Builder.of(CoolantValveBlockEntity::new, COOLANT_VALVE.get()).build(null));
+    public static final DeferredItem<BlockItem> COOLANT_VALVE_ITEM = ITEMS.registerSimpleBlockItem(COOLANT_VALVE);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2882,7 +2891,8 @@ public final class SkylinersRegistry {
             SPOOKIE_HAMMOCK_ITEM,
             ENGINE_GRATING_ITEM,
             JUMP_DRIVE_ITEM,
-            BREAKER_BOARD_ITEM
+            BREAKER_BOARD_ITEM,
+            COOLANT_VALVE_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

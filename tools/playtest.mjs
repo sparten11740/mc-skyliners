@@ -249,6 +249,11 @@ const DRIVE_THUMPED = 40;
 // Her breaker board: where its switch for engineering's lights is on its face, as the use command aims (west to east,
 // up, north to south as drawn facing north): the bottom row's left, the viewer's left being its east side.
 const ENGINEERING_SWITCH = "0.77,0.31,0.88";
+// Her coolant valve: how many turns of its wheel bring it to full, where its wheel is to turn, as the use command aims,
+// and how long it takes to let the pressure off once venting, at most, in ticks.
+const VALVE_TURNS = 4;
+const VALVE_WHEEL = "0.5,0.4,0.55";
+const VALVE_VENTS = 120;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1330,6 +1335,33 @@ function checkFreighterBreakerBoard() {
   expect(back === before, "freighter: flipped again, they come back as bright as they were", `brightness ${back}, was ${before}`);
 }
 
+// A freighter's coolant valve in engineering: each turn of its wheel squeaks and raises its pressure; at full it blasts
+// steam and lets the pressure off again.
+function checkFreighterCoolantValve() {
+  ship("freighter");
+  const [valve] = must("find skyliners:coolant_valve 128 1").rows;
+  expect(Boolean(valve), "freighter: she is built with her coolant valve in engineering");
+  if (!valve) {
+    return;
+  }
+  const at = valve.at_abs.join(",");
+  const [dx, dz] = STEPS[must(`block ${at}`).props.facing];
+  must(`server tp @p ${valve.at_abs[0] + 0.5 + dx * 2.5} ${valve.at_abs[1] - 1} ${valve.at_abs[2] + 0.5 + dz * 2.5}; wait 5t`);
+  const turned = now();
+  for (let turn = 1; turn < VALVE_TURNS; turn++) {
+    must(`use ${at} at ${VALVE_WHEEL}; wait 4t`);
+  }
+  const rising = must(`block ${at}`).props;
+  expect(Number(rising.pressure) === VALVE_TURNS - 1 && Boolean(heard("*irrigation_valve*", turned, LOOK_EVERY)),
+    "freighter: each turn of its wheel squeaks and raises its pressure", `pressure ${rising.pressure}`);
+  const blasted = now();
+  must(`use ${at} at ${VALVE_WHEEL}; wait 2t`);
+  expect(must(`block ${at}`).props.venting === "true" && Boolean(heard("*ramp_steam*", blasted, LOOK_EVERY)), "freighter: at full, it blasts steam");
+  must(`wait ${VALVE_VENTS}t`);
+  const after = must(`block ${at}`).props;
+  expect(after.venting === "false" && Number(after.pressure) === 0, "freighter: venting, it lets the pressure off", `pressure ${after.pressure}`);
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1709,6 +1741,7 @@ const CHECKS = {
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
+  "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

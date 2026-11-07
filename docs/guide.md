@@ -2708,8 +2708,11 @@ coughs, and it stays so until you thump it, using it again, when it kicks back i
 behind it hangs her breaker board: six big switches in two rows, one for each of her rooms under a band of its LED
 colour, its lamp lit while the room's strips are. Flip one and that room's lights go out with a heavy clack, a spark and
 a power hum falling away; flip it back and they come on again as bright as they were. A room put out at its own panel
-shows off on the board too. The Jump Drive and the Breaker Board are among her blocks in the creative tab, and the
-server config's `freighter.engineering` builds her without them.
+shows off on the board too. Further along the wall is her coolant valve, a big red wheel on a pipe with a pressure gauge
+over it: turn the wheel and it squeaks round a quarter, the gauge's needle climbing from green toward red, until at full
+pressure its vent blasts a great cloud of steam with a whoosh and a hiss and the needle sinks back as the pressure lets
+off. The Jump Drive, the Breaker Board and the Coolant Valve are among her blocks in the creative tab, and the server
+config's `freighter.engineering` builds her without them.
 
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between

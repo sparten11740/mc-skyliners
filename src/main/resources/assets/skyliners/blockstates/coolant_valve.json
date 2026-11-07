@@ -1,0 +1,164 @@
+{
+  "variants": {
+    "facing=north,pressure=0,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=0,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=1,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=1,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=2,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=2,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=3,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=3,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=4,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=north,pressure=4,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 0
+    },
+    "facing=east,pressure=0,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=0,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=1,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=1,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=2,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=2,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=3,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=3,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=4,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=east,pressure=4,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 90
+    },
+    "facing=south,pressure=0,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=0,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=1,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=1,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=2,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=2,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=3,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=3,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=4,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=south,pressure=4,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 180
+    },
+    "facing=west,pressure=0,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=0,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=1,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=1,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=2,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=2,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=3,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=3,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=4,venting=false": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    },
+    "facing=west,pressure=4,venting=true": {
+      "model": "skyliners:block/coolant_valve",
+      "y": 270
+    }
+  }
+}
