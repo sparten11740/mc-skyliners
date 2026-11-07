@@ -499,6 +499,30 @@ function hullFittingLang() {
   };
 }
 
+// The freighter's cover (see FreighterLayout): her skin cut to her curve, baked by the "shell" loader and tinted by the
+// livery's silver as the zeppelin's cover is, each block drawn with one of her skins (see freighterSkinTextures), picked
+// by where it is: five layouts of plates, alike in how often each turns up, and seldom one with a detail on it. Set by
+// hand, a whole block, its item shown with her first skin; part of her hull, so held fast aboard her, and as light as
+// the zeppelin's cover (see the zeppelin_fabric tag); broken, it gives back fabric as that does.
+const FREIGHTER_SKINS = [["1", 24], ["2", 24], ["3", 24], ["4", 24], ["5", 24],
+  ["hatch", 2], ["patch", 2], ["rivets", 2], ["scorch", 2], ["vent", 1], ["arrow", 1]];
+write(`assets/${ID}/blockstates/freighter_cover.json`, {
+  variants: { "": FREIGHTER_SKINS.map(([skin, weight]) => ({ model: `${ID}:block/freighter_cover_${skin}`, weight })) },
+});
+for (const [skin] of FREIGHTER_SKINS) {
+  write(`assets/${ID}/models/block/freighter_cover_${skin}.json`, {
+    loader: `${ID}:shell`, render_type: "minecraft:solid", tint_index: 0,
+    textures: { skin: `${ID}:block/freighter_skin_${skin}`, particle: `${ID}:block/freighter_skin_${skin}` },
+  });
+}
+write(`assets/${ID}/models/item/freighter_cover.json`, { parent: "minecraft:block/leaves", textures: { all: `${ID}:block/freighter_skin_1` } });
+write(`data/${ID}/loot_table/blocks/freighter_cover.json`, {
+  type: "minecraft:block",
+  pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:zeppelin_fabric` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+  random_sequence: `${ID}:blocks/freighter_cover`,
+});
+cubes.freighter_cover = null;
+
 // The freighter's hull plates (see FreighterPlating): skin cut to her curve as her cover is, baked by the "shell"
 // loader, each of its own texture; set by hand, a whole plate, its item shown as one. Part of her hull as her cover is,
 // so held fast aboard her; each gives itself back.
@@ -516,6 +540,7 @@ function hullPlate(name) {
 }
 function hullPlateLang() {
   return {
+    "block.skyliners.freighter_cover": "Freighter Hull",
     "block.skyliners.hull_plate_dark": "Dark Hull Plate",
     "block.skyliners.hull_plate_riveted": "Riveted Hull Plate",
     "block.skyliners.hull_plate_patched": "Patched Hull Plate",
@@ -2127,9 +2152,9 @@ function zeppelinControlsLang() {
 }
 // The zeppelin's fabric is far lighter than the airliner's aluminium: its cover and fins weigh a tenth of a block,
 // against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size;
-// the rocket's cover lined inside her rooms is the same cover, and weighs the same.
+// the rocket's cover lined inside her rooms and the freighter's cover are the same fabric, and weigh the same.
 write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`,
-  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`, `${ID}:canopy_frame`] });
+  `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`, `${ID}:canopy_frame`, `${ID}:freighter_cover`] });
 write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {
   priority: 1002,
   selector: `#${ID}:zeppelin_fabric`,

@@ -2722,6 +2722,14 @@ its hinge, fins out from a plate, a louvred vent, a hooded grille, a run of cond
 under a ceiling (a dish turned down at the ground, a blade antenna, a radome, a nozzle, an intake with a hub on its
 struts, a tank, a landing light). The server config's `freighter.exterior` builds her without them.
 
+Her skin is her own Freighter Hull, the zeppelin's pale silver laid as riveted plates: each block of it shows one of five
+layouts of plates of different sizes, a lighter edge inside every seam, rows of rivets along them and a soft sheen down
+each plate, picked by where the block is, so no stretch of her repeats the next. Now and then a block carries a small
+detail besides: an inspection hatch on its hinges, a welded patch, a doubler riveted over a plate, a faint scorch, a
+little vent or a stencilled arrow. From afar she is the same pale grey as ever. The Freighter Hull is among her blocks
+in the creative tab, a whole block set by hand, and gives back Zeppelin Fabric when broken. A freighter built before she
+had it keeps the zeppelin's plainer silver cover until she is built again.
+
 Her outer ring and rim are plated: riveted seams run out from her middle every 30 degrees, a few sectors between them
 are dark gunmetal, welded patches are scattered over the rest, and yellow and black hazard stripes ring her docking
 collars and run along the foot of her rim under her engines. The Dark, Riveted and Patched Hull Plates and the Hazard

@@ -1,0 +1,9 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "tint_index": 0,
+  "textures": {
+    "skin": "skyliners:block/freighter_skin_patch",
+    "particle": "skyliners:block/freighter_skin_patch"
+  }
+}

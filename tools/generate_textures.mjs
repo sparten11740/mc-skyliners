@@ -3978,6 +3978,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const UNDOPED = 1.2;
   const undoped = (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED)));
   texture(blockOutput, "zeppelin_skin", undoped, 3);
+  freighterSkinTextures(fabric, UNDOPED, { silver: SILVER, seam: SILVER_SEAM, sheen: SILVER_SHEEN });
   // A rocket's airlock doors' skin outside (see RocketStairsRenderer), tinted as her cover is: the same weave, block
   // for block, over the whole doorway, both leaves side by side as seen from outside, so they are of a piece with her
   // skin round it; each leaf's edges sunk in a dark groove, its top and left catching the light and its foot and right
@@ -9072,6 +9073,223 @@ function hullPlateTextures() {
   }, 5);
 }
 hullPlateTextures();
+
+// The freighter's hull (see the freighter_cover block): the zeppelin's doped silver at twice its fineness, laid as
+// riveted plates of many sizes. Each skin is one of five layouts of plates whose seams run along the skin's top and left
+// edges only, so that blocks side by side share one seam; each plate has a tone of its own, an edge a shade lighter just
+// inside its seam, a rivet row along its top and its left, a soft sheen down its middle, faint grain, the odd darker
+// speck and a fine scratch or two. Now and then a skin carries a detail besides: an inspection hatch on its hinges, a
+// welded patch, a doubler riveted on, a faint scorch, a little vent or a stencilled arrow. Each skin is evened out to
+// the zeppelin skin's mean colour, so she looks as she did from afar and finer close up, and undoped as that is, for the
+// livery's silver to tint back. Her blockstate picks a skin for each block by where it is, the details seldom.
+function freighterSkinTextures(fabric, undope, palette) {
+  const SKIN = 32;
+  // Her plate layouts, each plate a rectangle [left, top, right, bottom) in the skin's pixels, the plates tiling it.
+  const LAYOUTS = [
+    [[0, 0, 20, 12], [20, 0, 32, 12], [0, 12, 11, 32], [11, 12, 32, 22], [11, 22, 32, 32]],
+    [[0, 0, 32, 9], [0, 9, 14, 32], [14, 9, 32, 25], [14, 25, 32, 32]],
+    [[0, 0, 9, 18], [9, 0, 32, 18], [0, 18, 24, 32], [24, 18, 32, 32]],
+    [[0, 0, 16, 32], [16, 0, 32, 14], [16, 14, 32, 32]],
+    [[0, 0, 13, 7], [13, 0, 32, 7], [0, 7, 26, 20], [26, 7, 32, 20], [0, 20, 7, 32], [7, 20, 19, 32], [19, 20, 32, 32]],
+  ];
+  // Each skin: its name, its layout and the detail on it, if any, where on the skin. Its blockstate weights are in
+  // generate_resources.mjs (FREIGHTER_SKINS).
+  const SKINS = [
+    ["1", 0], ["2", 1], ["3", 2], ["4", 3], ["5", 4],
+    ["hatch", 1, skinHatch, [18, 13, 28, 21]],
+    ["patch", 2, skinPatch, [13, 4, 24, 13]],
+    ["rivets", 0, skinDoubler, [15, 14, 28, 21]],
+    ["scorch", 3, skinScorch, [6, 3, 16, 30]],
+    ["vent", 4, skinVent, [9, 10, 18, 18]],
+    ["arrow", 1, skinArrow, [3, 13, 11, 28]],
+  ];
+  const target = [0, 1, 2].map((c) => meanOver(16, 16, (x, y) => fabric(x, y)[c]));
+  for (const [name, layout, detail, where] of SKINS) {
+    reseed(`freighter_skin_${name}/plates`);
+    const pixels = skinPlates(SKIN, LAYOUTS[layout], palette);
+    if (detail) detail(pixels, where, palette);
+    evenOut(pixels, target);
+    texture(blockOutput, `freighter_skin_${name}`, (x, y) => pixels[y][x].map((c) => clamp(Math.round(c * undope))), 3, SKIN, SKIN);
+  }
+}
+/** The mean of what paint gives over a width and a height of pixels. */
+function meanOver(width, height, paint) {
+  let sum = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) sum += paint(x, y);
+  }
+  return sum / (width * height);
+}
+/** Shifts a picture's colours, channel by channel, so its mean is the target's. */
+function evenOut(pixels, target) {
+  const size = pixels.length;
+  const shift = [0, 1, 2].map((c) => target[c] - meanOver(pixels[0].length, size, (x, y) => pixels[y][x][c]));
+  for (const pixel of pixels.flat()) {
+    for (let c = 0; c < 3; c++) pixel[c] += shift[c];
+  }
+}
+/** Two colours mixed, the given share of the second. */
+function mixColour(a, b, share) {
+  return a.map((value, c) => value + (b[c] - value) * share);
+}
+/** A colour made lighter, or darker for a negative amount, by so many steps. */
+function lighten(colour, amount) {
+  return colour.map((value) => value + amount);
+}
+/**
+ * A freighter skin's plates, as floating-point colours before evening out: each plate's tone strays from the silver
+ * by up to PLATE_TONE steps (see platePixel); then specks and scratches over the whole.
+ */
+function skinPlates(size, plates, palette) {
+  const PLATE_TONE = 5;
+  const tones = plates.map(() => (random() * 2 - 1) * PLATE_TONE);
+  const pixels = Array.from({ length: size }, (_, y) => Array.from({ length: size }, (_, x) => platePixel(plates, tones, x, y, palette)));
+  skinWear(pixels);
+  return pixels;
+}
+/**
+ * A pixel of a skin's plates: the plate's seam on its top and left, a lighter edge just inside it, a rivet every
+ * RIVET_EVERY pixels along both, and a sheen down its middle, full at its heart and fading either side.
+ */
+function platePixel(plates, tones, x, y, { silver, seam, sheen }) {
+  const RIVET_EVERY = 5;
+  const RIVET_DARK = 20;
+  // The sheen's full and fading half-widths, as shares of a plate's width, each at least a pixel or a pixel and a half.
+  const SHEEN_FULL = 0.12;
+  const SHEEN_FADE = 0.2;
+  const k = plates.findIndex(([a, b, c, d]) => x >= a && x < c && y >= b && y < d);
+  const [a, b, c, d] = plates[k];
+  const off = Math.abs(x + 0.5 - (a + c) / 2);
+  const glow = off <= Math.max(1, (c - a) * SHEEN_FULL) ? 1 : off <= Math.max(1.5, (c - a) * SHEEN_FADE) ? 0.5 : 0;
+  let colour = lighten(mixColour(silver, sheen, glow), tones[k]);
+  if (x === a || y === b) colour = [...seam];
+  else if (x === a + 1 || y === b + 1) colour = mixColour(colour, sheen, 0.5);
+  const alongTop = y === b + 2 && x >= a + 2 && x < c - 1 && (x - a - 2) % RIVET_EVERY === 0;
+  const alongLeft = x === a + 2 && y >= b + 2 && y < d - 1 && (y - b - 2) % RIVET_EVERY === 0;
+  return alongTop || alongLeft ? lighten(colour, -RIVET_DARK) : colour;
+}
+/** Specks, a pixel in SPECKS darker by up to SPECK_DARK steps, and SCRATCHES fine light scratches a few pixels long. */
+function skinWear(pixels) {
+  const SPECKS = 0.04;
+  const SPECK_DARK = 10;
+  const SCRATCHES = 2;
+  const size = pixels.length;
+  for (const row of pixels) {
+    for (let x = 0; x < size; x++) row[x] = random() < SPECKS ? lighten(row[x], -(4 + random() * (SPECK_DARK - 4))) : row[x];
+  }
+  for (let n = 0; n < SCRATCHES; n++) {
+    skinScratch(pixels, 2 + random() * (size - 8), 2 + random() * (size - 8), 3 + random() * 3, random() < 0.5 ? 1 : -1);
+  }
+}
+/** A fine scratch, bare metal a few steps lighter, running right from a point and half as fast up or down. */
+function skinScratch(pixels, x0, y0, length, slope) {
+  const SCRATCH_LIGHT = 6;
+  for (let t = 0; t < length; t++) {
+    const [x, y] = [Math.floor(x0 + t), Math.floor(y0 + t * slope * 0.5)];
+    if (y > 1 && y < pixels.length) pixels[y][x] = lighten(pixels[y][x], SCRATCH_LIGHT);
+  }
+}
+/** Calls paint for every pixel of a rectangle [left, top, right, bottom), with whether it is on its edge. */
+function eachIn([x0, y0, x1, y1], paint) {
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) paint(x, y, x === x0 || x === x1 - 1 || y === y0 || y === y1 - 1);
+  }
+}
+/**
+ * An inspection hatch: a groove round it darker than the seams, its top and left catching the light and its foot and
+ * right in shadow, two hinge knuckles over its left groove, each lit along its top, and a latch slot on its right.
+ */
+function skinHatch(pixels, where, { seam, sheen }) {
+  const [x0, y0, x1, y1] = where;
+  eachIn(where, (x, y, edge) => {
+    if (edge) pixels[y][x] = lighten(seam, -22);
+    else if (x === x0 + 1 || y === y0 + 1) pixels[y][x] = mixColour(pixels[y][x], sheen, 0.6);
+    else if (x === x1 - 2 || y === y1 - 2) pixels[y][x] = lighten(pixels[y][x], -7);
+  });
+  for (const knuckle of [y0 + 1, y1 - 3]) {
+    eachIn([x0 - 1, knuckle, x0 + 1, knuckle + 2], (x, y) => {
+      pixels[y][x] = y === knuckle ? mixColour(seam, sheen, 0.5) : lighten(seam, -16);
+    });
+  }
+  const latch = Math.floor((y0 + y1) / 2);
+  pixels[latch][x1 - 3] = lighten(seam, -30);
+  pixels[latch][x1 - 4] = lighten(seam, -30);
+}
+/**
+ * A welded patch: a duller plate, its grind marks on the slant, set in a rippled weld bead, a faint straw-coloured heat
+ * tint round it.
+ */
+function skinPatch(pixels, where, { silver, seam }) {
+  const [x0, y0, x1, y1] = where;
+  const HEAT = [3, 0, -5];
+  eachIn([x0 - 1, y0 - 1, x1 + 1, y1 + 1], (x, y, edge) => {
+    if (edge) pixels[y][x] = pixels[y][x].map((value, c) => value + HEAT[c] - 2);
+  });
+  eachIn(where, (x, y, edge) => {
+    if (edge) pixels[y][x] = lighten(seam, (x + y) % 2 === 0 ? -24 : -12);
+    else pixels[y][x] = lighten(silver, (x - y) % 4 === 0 ? -5 : -9);
+  });
+}
+/**
+ * A doubler riveted over a plate: a raised plate, lit along its top and left and shadowed along its foot and right,
+ * with rivets close together just inside its edges.
+ */
+function skinDoubler(pixels, where) {
+  eachIn(where, (x, y, edge) => {
+    pixels[y][x] = lighten(pixels[y][x], doublerShade(where, x, y, edge));
+  });
+}
+/** How much lighter a doubler leaves a pixel of it: its lit or shadowed edge, or a rivet. */
+function doublerShade([x0, y0, x1, y1], x, y, edge) {
+  const inRow = (y === y0 + 1 || y === y1 - 2) && x > x0 && x < x1 - 1 && (x - x0 - 1) % 2 === 0;
+  const inColumn = (x === x0 + 1 || x === x1 - 2) && y > y0 && y < y1 - 1 && (y - y0 - 1) % 2 === 0;
+  if (edge) return x === x0 || y === y0 ? 7 : -9;
+  return inRow || inColumn ? -18 : 0;
+}
+/**
+ * A faint scorch: a sooty streak running down from under a seam, darkest where it starts, widening and fading as it
+ * goes and drifting a little aside, warmer than grey, its edges broken by the grain.
+ */
+function skinScorch(pixels, where) {
+  const [x0, y0, x1, y1] = where;
+  const DARKEST = 30;
+  for (let y = y0; y < y1; y++) {
+    const t = (y - y0) / (y1 - y0);
+    const middle = x0 + 0.5 + t * 2.5;
+    const width = 1.2 + t * 3;
+    for (let x = Math.max(0, x0 - 6); x < x1; x++) {
+      const dark = DARKEST * Math.pow(1 - t, 1.3) * Math.exp(-(((x + 0.5 - middle) / width) ** 2)) * (0.75 + random() * 0.5);
+      pixels[y][x] = [pixels[y][x][0] - dark * 0.85, pixels[y][x][1] - dark, pixels[y][x][2] - dark * 1.15];
+    }
+  }
+}
+/** A little vent: three slits in a darker frame, the lip under each catching the light. */
+function skinVent(pixels, where, { seam }) {
+  const [x0, y0, x1, y1] = where;
+  eachIn(where, (x, y, edge) => {
+    if (edge) {
+      pixels[y][x] = lighten(pixels[y][x], -9);
+    } else if (x > x0 + 1 && x < x1 - 2 && (y - y0) % 2 === 1 && y < y1 - 2) {
+      pixels[y][x] = lighten(seam, -55);
+    } else if (x > x0 + 1 && x < x1 - 2 && (y - y0) % 2 === 0) {
+      pixels[y][x] = lighten(pixels[y][x], 6);
+    }
+  });
+}
+/**
+ * A stencilled arrow pointing up her skin, in dark slate: its head a widening triangle, a bridge left between head and
+ * shaft as a stencil leaves one, and the paint worn through here and there.
+ */
+function skinArrow(pixels, where) {
+  const [x0, y0, x1] = where;
+  const SLATE = [0x4a, 0x55, 0x62];
+  const middle = (x0 + x1) / 2;
+  const head = y0 + Math.floor((x1 - x0) / 2);
+  const half = (y) => (y < head ? y - y0 + 1 : y === head ? 0 : 1);
+  eachIn(where, (x, y) => {
+    if (Math.abs(x + 0.5 - middle) < half(y)) pixels[y][x] = mixColour(pixels[y][x], SLATE, random() < 0.15 ? 0.25 : 0.55);
+  });
+}
 
 // The freighter's leg bays (see LegBayBlock), where each landing leg meets her belly: on its sides a housing of dark
 // gunmetal, riveted, with a band of hazard stripes along its foot, as round anything that moves; and from below its
