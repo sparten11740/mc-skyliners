@@ -1,0 +1,152 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "steel": "skyliners:block/hull_fitting_steel",
+    "dark": "skyliners:block/hull_fitting_dark",
+    "pipe": "skyliners:block/hull_pipe",
+    "lamp": "skyliners:block/hull_status_lamp",
+    "particle": "skyliners:block/hull_fitting_steel",
+    "face": "skyliners:block/satellite_dish_face",
+    "back": "skyliners:block/satellite_dish_back"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        3,
+        14
+      ],
+      "to": [
+        11,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark"
+        },
+        "south": {
+          "texture": "#dark"
+        },
+        "east": {
+          "texture": "#dark"
+        },
+        "west": {
+          "texture": "#dark"
+        },
+        "up": {
+          "texture": "#dark"
+        },
+        "down": {
+          "texture": "#dark"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        7,
+        6
+      ],
+      "to": [
+        9,
+        9,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        7.25,
+        3.5,
+        9.3
+      ],
+      "to": [
+        8.75,
+        5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          4.25,
+          15
+        ],
+        "axis": "x",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        5.5,
+        9,
+        3.5
+      ],
+      "to": [
+        10.5,
+        10,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark"
+        },
+        "south": {
+          "texture": "#dark"
+        },
+        "east": {
+          "texture": "#dark"
+        },
+        "west": {
+          "texture": "#dark"
+        },
+        "up": {
+          "texture": "#dark"
+        },
+        "down": {
+          "texture": "#dark"
+        }
+      }
+    }
+  ]
+}

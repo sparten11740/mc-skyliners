@@ -52,6 +52,8 @@ import dev.skyliners.client.FallingCrateRenderer;
 import dev.skyliners.client.GiantRubberDuckRenderer;
 import dev.skyliners.client.GreatShadow;
 import dev.skyliners.client.GunnerControls;
+import dev.skyliners.client.GunnerSight;
+import dev.skyliners.client.GunnerView;
 import dev.skyliners.client.HullAmbience;
 import dev.skyliners.client.EngineRenderer;
 import dev.skyliners.client.EngineSounds;
@@ -62,6 +64,7 @@ import dev.skyliners.client.FlightMapRenderer;
 import dev.skyliners.client.FlightStripBoardRenderer;
 import dev.skyliners.client.Floodlights;
 import dev.skyliners.client.FogMachineSounds;
+import dev.skyliners.client.FreighterEngineGlow;
 import dev.skyliners.client.FreighterRoar;
 import dev.skyliners.client.DeckRobotRenderer;
 import dev.skyliners.client.GearBayRenderer;
@@ -109,6 +112,7 @@ import dev.skyliners.client.RoomAmbience;
 import dev.skyliners.client.RoverClient;
 import dev.skyliners.client.RoverPanelRenderer;
 import dev.skyliners.client.RubberDuckRenderer;
+import dev.skyliners.client.SatelliteDishRenderer;
 import dev.skyliners.client.ScoreboardRenderer;
 import dev.skyliners.client.SearchlightBeams;
 import dev.skyliners.client.SelfDestructButtonRenderer;
@@ -200,9 +204,18 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
+        NeoForge.EVENT_BUS.addListener(FreighterEngineGlow::stage);
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
         NeoForge.EVENT_BUS.addListener(ClubBand::tick);
         NeoForge.EVENT_BUS.addListener(GunnerControls::input);
+        // The view from the freighter's laser cannon's sight while its gunner sits at it.
+        NeoForge.EVENT_BUS.addListener(GunnerView::tick);
+        NeoForge.EVENT_BUS.addListener(GunnerView::frame);
+        NeoForge.EVENT_BUS.addListener(GunnerView::angles);
+        NeoForge.EVENT_BUS.addListener(GunnerView::hand);
+        NeoForge.EVENT_BUS.addListener(GunnerView::highlight);
+        NeoForge.EVENT_BUS.addListener(GunnerView::guiLayer);
+        NeoForge.EVENT_BUS.addListener(GunnerView::loggingOut);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
@@ -352,6 +365,7 @@ public final class SkylinersClient {
         RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;
         DeckRobotBlockEntity.clientTicker = DeckRobotRenderer::look;
         LaserCannonBlockEntity.clientTicker = CannonServo::listen;
+        LaserCannonBlockEntity.clientSighting = GunnerView::sighting;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -362,6 +376,8 @@ public final class SkylinersClient {
             HyperspaceOverlay::overlay);
         // Where the spyglass's own round is drawn, under the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lookout_glass"), LookoutView::overlay);
+        // The gunner's sight, over the view from the freighter's laser cannon and under the hotbar and the chat.
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "gunner_sight"), GunnerSight::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "pilot_hud"), PilotHud::overlay);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "atc_headset"), AtcHeadset::overlay);
@@ -418,6 +434,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.ROVER_PANEL_ENTITY.get(), context -> new RoverPanelRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.RAMP_PANEL_ENTITY.get(), context -> new BoardingRampRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LASER_CANNON_ENTITY.get(), context -> new LaserCannonRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.SATELLITE_DISH_ENTITY.get(), context -> new SatelliteDishRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.BANDSTAND_ENTITY.get(), context -> new BandstandRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.WINDOW_DIMMER_ENTITY.get(), context -> new WindowDimmerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());

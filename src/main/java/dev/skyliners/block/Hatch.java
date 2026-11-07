@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -22,9 +23,13 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 final class Hatch {
     private final List<AirstairControllerBlockEntity.Step> parts;
+    /** Its topmost block, as the floor over a ship's ramp is; air for a hatch of none. */
+    private final BlockState top;
 
     Hatch(List<AirstairControllerBlockEntity.Step> parts) {
         this.parts = List.copyOf(parts);
+        this.top = parts.stream().max(Comparator.comparingInt(part -> part.offset().getY())).map(AirstairControllerBlockEntity.Step::state)
+            .orElse(Blocks.AIR.defaultBlockState());
     }
 
     /** Takes its blocks away, from what keeps it at a place, where they are still its own. */
@@ -46,6 +51,11 @@ final class Hatch {
                 level.setBlock(at, part.state(), Block.UPDATE_ALL);
             }
         }
+    }
+
+    /** Its topmost block, as the floor over a ship's ramp is: what its top looks like; air for a hatch of none. */
+    BlockState top() {
+        return top;
     }
 
     /** Whether a block is one of its own, kept from a place. */

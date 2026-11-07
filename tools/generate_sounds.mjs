@@ -5151,48 +5151,76 @@ function hiddenHatch(times, own) {
 writeSound("hidden_hatch_open", hiddenHatch(HIDDEN_HATCH.opening, ownRandom(0x48486f70)), 0.7);
 writeSound("hidden_hatch_close", hiddenHatch(HIDDEN_HATCH.closing, ownRandom(0x4848636c)), 0.7);
 
-// The freighter's computer (see the plan's "Sound"), said as the flight deck's lines are (see say): an American
-// woman's voice, Kokoro's Bella, which no other voice in the mod uses, so it is never taken for the flight deck's or
-// launch control's, heard through a small speaker in her cockpit, its narrow band, its boxy, bright middle and the
-// cockpit's short reflections, compressed as a ship's announcements are; and before each line a two-tone blip,
-// falling. Magpie, the name she answers to on the radio, is spoken as her own. Tune it here.
+// The freighter's computer (see the plan's "Sound"): a gruff old cargo ship's computer, as worn and lived-in as she is,
+// dry but plain-spoken. An American man's voice, Kokoro's Onyx, its deepest, which no other voice in the mod uses, so
+// she is never taken for the flight deck, launch control or the bartender; heard through her tired intercom: a cheap
+// speaker's narrow band and boxy honk, its old amplifier driven into a little grit and a touch of an old digital link's
+// crushed bits, and the short ringing of her steel corridors, then compressed and limited so every word carries. Before
+// each line her blip, two tones falling, buzzing as the intercom does. She speaks for her flight deck too (see
+// FreighterFlight's COMPUTER_SAYS), and Magpie, the name she answers to on the radio, is spoken as her own. Any line
+// said through sayAsFreighterComputer is in this voice. Tune it here.
 const COMPUTER = {
-  voice: "af_bella",
+  voice: "am_onyx",
   pace: 1,
-  // The pause a "|" in a line makes, in milliseconds: the beat of a countdown.
+  // The pause a "|" in a line makes, in milliseconds: the beat of a countdown, and before her dry asides.
   pause: 380,
-  // FFmpeg's filters for the cockpit's speaker, in order, and for levelling the line after them.
+  // FFmpeg's filters for her intercom, in order, and for levelling the line after them. A speech recogniser (Whisper)
+  // still heard every word of her lines through them.
   loudspeakers: [
+    // The intercom's narrow band, steep at both ends.
+    "highpass=f=340:poles=2",
+    "highpass=f=340:poles=2",
+    "lowpass=f=3500:poles=2",
+    "lowpass=f=3500:poles=2",
+    // Its small speaker's boxy honk.
+    "equalizer=f=1300:t=q:w=1.1:g=5",
+    // Its worn amplifier driven into a little grit, a touch of crushed bits, and the band again for what they add.
+    "acompressor=threshold=-28dB:ratio=5:attack=2:release=80:makeup=12dB",
+    "asoftclip=type=atan:threshold=0.5:oversample=2",
+    "acrusher=bits=9:mode=log:aa=1:mix=0.3",
     "highpass=f=320:poles=2",
-    "lowpass=f=5200:poles=2",
-    "equalizer=f=1900:t=q:w=1.4:g=4",
-    "aecho=0.9:0.6:4|9:0.25|0.12",
+    "lowpass=f=3900:poles=2",
+    // Her steel corridors' short ringing, each reflection later and quieter.
+    "aecho=0.85:0.5:23|41|67:0.22|0.13|0.07",
   ],
-  levelling: ["acompressor=threshold=-26dB:ratio=3:attack=3:release=90:makeup=8dB"],
-  // The blip: its tones, falling, in hertz, each so long and the gap after it, in seconds, and how loud beside the
-  // voice's peak.
-  chirp: [1568, 1175],
+  levelling: [
+    "acompressor=threshold=-24dB:ratio=3:attack=3:release=90:makeup=6dB",
+    "alimiter=limit=0.5:attack=2:release=50:level=false",
+  ],
+  // Her blip: its tones, falling, in hertz, each so long and the gap after it, in seconds; how hard it is driven for
+  // its buzz, and the intercom's top it is cut at, in hertz; and how loud beside the voice's peak.
+  chirp: [988, 740],
   chirpLength: 0.07,
   chirpGap: 0.03,
+  chirpDrive: 4,
+  chirpTop: 3500,
   chirpLevel: 0.35,
   // The peak it is written at, as the other voices'.
   level: 0.85,
 };
+// What her computer says of her own: her jump drive, her ramp coming down, her turret taken by a gunner and her name.
+// Gruff and dry, but always saying first what is happening. A "|" is a pause.
 const COMPUTER_LINES = {
   freighter_computer_jump_charged: "Jump drive charged.",
   freighter_computer_jump_fault: "Jump drive fault.",
-  freighter_computer_ramp_lowering: "Ramp lowering.",
-  freighter_computer_turret_ready: "Turret ready.",
+  freighter_computer_ramp_lowering: "Ramp coming down. | Mind the rust.",
+  freighter_computer_turret_ready: "Gun turret online. | Try and hit something.",
   freighter_computer_jump_countdown: "Jump in three, | two, | one.",
-  freighter_computer_magpie_ready: "Magpie ready.",
+  freighter_computer_magpie_ready: "Magpie's awake. | Barely.",
 };
-/** The longest a line may run, its blip and all, in seconds; and the countdown, a beat a number. */
-const COMPUTER_LONGEST = 2.5;
-const COMPUTER_COUNTDOWN_LONGEST = 4;
+// Her computer's words in place of the flight deck's announcements (see FreighterFlight): set to take off, coming down
+// to land, down on her legs again, reaching space and her gravity coming back on there.
+const COMPUTER_ANNOUNCEMENTS = {
+  freighter_computer_takeoff: "Lifting off. | Hold on to something bolted down.",
+  freighter_computer_landing: "Coming down to land. | Expect a bump. | Or two.",
+  freighter_computer_arrival: "We're down. | Nothing fell off. | That I know of.",
+  freighter_computer_space: "We're in space. | Keep the windows shut.",
+  freighter_computer_gravity: "Gravity back on. | Mind your landing.",
+};
 // Her computer through her hyperspace jump (see FreighterJump), our own lines in the voice of a worn old cargo hauler's
 // computer that has seen it all: spooling up as the button is pressed, letting go as she jumps, coming out of it at the
 // pin, and, the button pressed when she cannot jump, why not: no pin set, not flying, or the pin too near to bother.
-// Said in COMPUTER's voice, its blip first, as her other lines are; a line in two phrases may run longer.
+// Said in COMPUTER's voice, its blip first, as her other lines are.
 const COMPUTER_JUMP_LINES = {
   freighter_computer_jump_spooling: "Jump drive spooling up. | Hold on to something.",
   freighter_computer_jump_go: "Here goes nothing.",
@@ -5201,26 +5229,37 @@ const COMPUTER_JUMP_LINES = {
   freighter_computer_jump_grounded: "Not from down here. | Get her flying first.",
   freighter_computer_jump_too_near: "That is practically next door. | Just fly there.",
 };
-const COMPUTER_JUMP_LONGEST = 4.5;
-/** A line of her computer's, said: its blip, then the voice. */
-function computerLine(name) {
-  const voice = trim(readWav(join(scratch, `${name}.voiced.wav`)));
-  const chirp = toneChirp(COMPUTER);
-  const samples = new Float64Array(chirp.length + voice.length);
-  const level = COMPUTER.chirpLevel * peakOf(voice);
-  chirp.forEach((sample, i) => (samples[i] = sample * level));
-  samples.set(voice, chirp.length);
-  return samples;
+/**
+ * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
+ * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
+ */
+const COMPUTER_LONGEST = 4.5;
+const COMPUTER_ANNOUNCEMENT_LONGEST = 6;
+
+/**
+ * Says lines in the freighter's computer's voice (see COMPUTER), each after her blip, and writes each as the sound it
+ * is named for, refusing one that runs longer than the seconds given.
+ */
+async function sayAsFreighterComputer(speaker, lines, longest) {
+  await say(speaker, lines, COMPUTER, COMPUTER);
+  const drive = Math.tanh(COMPUTER.chirpDrive);
+  const driven = toneChirp(COMPUTER).map((sample) => Math.tanh(COMPUTER.chirpDrive * sample) / drive);
+  const buzzing = lowPassed(driven, COMPUTER.chirpTop);
+  const buzzPeak = peakOf(buzzing);
+  const chirp = buzzing.map((sample) => sample / buzzPeak);
+  for (const name of Object.keys(lines)) {
+    const voice = trim(readWav(join(scratch, `${name}.voiced.wav`)));
+    const samples = new Float64Array(chirp.length + voice.length);
+    const level = COMPUTER.chirpLevel * peakOf(voice);
+    chirp.forEach((sample, i) => (samples[i] = sample * level));
+    samples.set(voice, chirp.length);
+    writeVoiced(name, samples, COMPUTER, longest);
+  }
 }
 if (speaker) {
-  await say(speaker, COMPUTER_LINES, COMPUTER, COMPUTER);
-  for (const name of Object.keys(COMPUTER_LINES)) {
-    writeVoiced(name, computerLine(name), COMPUTER, name === "freighter_computer_jump_countdown" ? COMPUTER_COUNTDOWN_LONGEST : COMPUTER_LONGEST);
-  }
-  await say(speaker, COMPUTER_JUMP_LINES, COMPUTER, COMPUTER);
-  for (const name of Object.keys(COMPUTER_JUMP_LINES)) {
-    writeVoiced(name, computerLine(name), COMPUTER, COMPUTER_JUMP_LONGEST);
-  }
+  await sayAsFreighterComputer(speaker, COMPUTER_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

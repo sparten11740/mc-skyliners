@@ -185,4 +185,7 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
     other blocks pressed against it that would hold it as it flies off: a layout should leave none. `skyliners:layout
     <what>` lays an airframe out without building it and gives its block count and a fingerprint of its blocks: a
     refactor of a layout that should move no block leaves both as they were. `skyliners:livery <name>` repaints the
-    nearest zeppelin as its livery board does. A zeppelin's control head is in its control car under the bow.
+    nearest zeppelin as its livery board does. `skyliners:dark [radius=] [least=]` counts the spots round the player
+    inside the mod's ships, shut off from the sky, that someone could stand in and that are lit less than the least
+    (`unlit` counts those with no light, where monsters spawn). A zeppelin's control head is in its control car under
+    the bow.

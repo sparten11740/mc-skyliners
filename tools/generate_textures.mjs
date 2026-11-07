@@ -4690,22 +4690,76 @@ const LIFT_ICONS = {
   for (const [name, rows] of Object.entries(ROVER_PICTURES)) {
     texture(roverOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : rows[y][x] === "g" ? [0x40, 0xe0, 0x60, 0xff] : [0, 0, 0, 0]), 0);
   }
-  // The freighter's ramp panel (see BoardingRampRenderer): its buttons' pictures in white, as the rover panel's are:
-  // the ramp let down from her belly to the ground beside an arrow pointing down, and the ramp drawn up flush under
-  // her belly over an arrow pointing up.
+  // The freighter's ramp panel (see BoardingRampRenderer): its button's two pictures, each a little scene in colour, so
+  // it says what pressing it does without a word. Both show her grey belly across the top, green ground across the
+  // bottom and her ramp, a yellow plate with a dark rim, hinged under her belly at the left. Lower: the ramp reaches
+  // down to the ground, and a white arrow sweeps down along its swing. Raise: the ramp swings up toward her belly, a
+  // faint ghost where it lay on the ground, and the arrow sweeps up into her.
   const rampOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/ramp");
   mkdirSync(rampOutput, { recursive: true });
-  const RAMP_PICTURES = {
-    lower: ["################", "###.........##..", "..##........##..", "...##.......##..", "....##....######", ".....##....####.",
-      "......##....##..", ".......##.......", "........##......", ".........##.....", "..........##....", "...........##...",
-      "............##..", ".............##.", "..............##", "################"],
-    raise: ["################", "################", "................", ".......##.......", "......####......", ".....######.....",
-      "....########....", ".......##.......", ".......##.......", ".......##.......", ".......##.......", "................",
-      "................", "................", "................", "################"],
+  const RAMP_SIZE = 32;
+  const HULL = [0xc8, 0xcc, 0xd4, 0xff];
+  const HULL_EDGE = [0x6a, 0x70, 0x7a, 0xff];
+  const GRASS = [0x5c, 0xc2, 0x4a, 0xff];
+  const GRASS_EDGE = [0x3a, 0x8a, 0x30, 0xff];
+  const PLATE = [0xf6, 0xd2, 0x3c, 0xff];
+  const RIM = [0x3a, 0x30, 0x10, 0xff];
+  const GHOST = [0xff, 0xff, 0xff, 0x50];
+  const ARROW = [0xff, 0xff, 0xff, 0xff];
+  const HINGE = [5, 6];
+  // How far a point is from a segment of a line, in pixels.
+  const fromSegment = (x, y, [ax, ay], [bx, by]) => {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(x - ax - t * dx, y - ay - t * dy);
   };
-  for (const [name, rows] of Object.entries(RAMP_PICTURES)) {
-    texture(rampOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
-  }
+  // A point round a middle, so far out, at an angle in degrees (0 to the right, 90 down).
+  const round = ([mx, my], radius, angle) => [mx + radius * Math.cos((angle * Math.PI) / 180), my + radius * Math.sin((angle * Math.PI) / 180)];
+  // Whether a point is inside a triangle.
+  const inTriangle = (x, y, [a, b, c]) => {
+    const side = (p, q) => (q[0] - p[0]) * (y - p[1]) - (q[1] - p[1]) * (x - p[0]);
+    const s1 = side(a, b);
+    const s2 = side(b, c);
+    const s3 = side(c, a);
+    return (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
+  };
+  // Whether a point is on a curved arrow round the hinge, so far out, from one angle round to another, its head at
+  // the second: the way the ramp swings.
+  const onArrow = (x, y, radius, from, to) => {
+    const way = Math.sign(to - from);
+    const angle = (Math.atan2(y - HINGE[1], x - HINGE[0]) * 180) / Math.PI;
+    const shaftEnd = to - way * 5;
+    const onShaft = Math.abs(Math.hypot(x - HINGE[0], y - HINGE[1]) - radius) < 1.2
+      && angle >= Math.min(from, shaftEnd) && angle <= Math.max(from, shaftEnd);
+    const head = [round(HINGE, radius, to + way * 3), round(HINGE, radius - 3.5, shaftEnd - way * 3), round(HINGE, radius + 3.5, shaftEnd - way * 3)];
+    return onShaft || inTriangle(x, y, head);
+  };
+  // The ramp, a plate from its hinge to its foot: yellow, a dark rim round it.
+  const plate = (x, y, foot) => {
+    const off = fromSegment(x, y, HINGE, foot);
+    return off < 1.6 ? PLATE : off < 2.5 ? RIM : null;
+  };
+  // Her belly over the scene and the ground under it.
+  const scene = (x, y) => {
+    if (y <= 3) return HULL;
+    if (y === 4) return HULL_EDGE;
+    if (y >= RAMP_SIZE - 3) return y === RAMP_SIZE - 3 ? GRASS_EDGE : GRASS;
+    return null;
+  };
+  const LOWERED = [24, 28];
+  const RAISED = [26, 9];
+  const lower = (x, y) => {
+    const [px, py] = [x + 0.5, y + 0.5];
+    return scene(x, y) ?? (onArrow(px, py, 23, 3, 36) ? ARROW : null) ?? plate(px, py, LOWERED) ?? [0, 0, 0, 0];
+  };
+  const raise = (x, y) => {
+    const [px, py] = [x + 0.5, y + 0.5];
+    const ghost = fromSegment(px, py, HINGE, LOWERED) < 1.6;
+    return scene(x, y) ?? (onArrow(px, py, 25, 44, 9) ? ARROW : null) ?? plate(px, py, RAISED) ?? (ghost ? GHOST : null) ?? [0, 0, 0, 0];
+  };
+  texture(rampOutput, "lower", lower, 0, RAMP_SIZE, RAMP_SIZE);
+  texture(rampOutput, "raise", raise, 0, RAMP_SIZE, RAMP_SIZE);
 }
 
 // The rocket's LED strips (see LedStripBlock): a milky diffuser over a row of LEDs, white so that the strip's tint
@@ -8842,4 +8896,104 @@ function consoleTextures() {
   }
 }
 consoleTextures();
+// The freighter's outside fittings (see the outside fittings in generate_resources.mjs), weathered, working metal:
+// mid-grey steel panels edged in a darker seam with a rivet at each corner; dark gunmetal for their bases, collars and
+// frames, scuffed along a few scratches; copper pipe ringed by darker bands with a bright line down it; an amber
+// status lamp; a satellite dish's face, off-white in rings round a darker hub, and its back, grey ribbed out from its
+// middle; an antenna's beacon, red, blinking a second on and three off (two frames, the dark one held longer); a sensor
+// dome's cream radome in faint panels, and its band's cyan glow; heat-sink fins, light and dark by turns, and the
+// orange heat glowing at their roots; an exhaust grate's dark slots between bright bars; and a floodlight's lens,
+// warm white over the rings of its reflector.
+function hullFittingTextures() {
+  texture(blockOutput, "hull_fitting_steel", (x, y) => {
+    if (x === 0 || y === 0) return [0x6c, 0x72, 0x7a];
+    if ((x === 2 || x === 13) && (y === 2 || y === 13)) return [0xb0, 0xb6, 0xbe];
+    return y === 15 || x === 15 ? [0x7a, 0x80, 0x88] : [0x8c, 0x93, 0x9b];
+  }, 4);
+  texture(blockOutput, "hull_fitting_dark", (x, y) => {
+    if (x === 0 || y === 0) return [0x2c, 0x30, 0x36];
+    if ((x + 2 * y) % 17 === 0 || (3 * x - y + 32) % 23 === 0) return [0x52, 0x58, 0x60];
+    return [0x3c, 0x41, 0x48];
+  }, 4);
+  texture(blockOutput, "hull_pipe", (x, y) => {
+    if (y % 8 === 0 || y % 8 === 1) return [0x7c, 0x44, 0x26];
+    return x % 8 === 3 ? [0xe0, 0x9a, 0x68] : [0xb8, 0x6a, 0x3c];
+  }, 4);
+  texture(blockOutput, "hull_status_lamp", (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 4 ? [0xff, 0xe0, 0x90] : [0xff, 0xae, 0x2c]), 0);
+  texture(blockOutput, "satellite_dish_face", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out < 2) return [0x9a, 0xa0, 0xa6];
+    return Math.floor(out) % 3 === 0 ? [0xc6, 0xca, 0xc6] : [0xea, 0xec, 0xe6];
+  }, 2);
+  texture(blockOutput, "satellite_dish_back", (x, y) => {
+    const round = Math.atan2(y - 7.5, x - 7.5) / (Math.PI / 4);
+    return Math.abs(round - Math.round(round)) < 0.12 ? [0x8e, 0x94, 0x9a] : [0xb6, 0xbc, 0xc2];
+  }, 3);
+  const BEACON_FRAMES = [[[0xff, 0x46, 0x34], [0xff, 0xd0, 0xc0]], [[0x58, 0x12, 0x10], [0x70, 0x1c, 0x18]]];
+  texture(blockOutput, "antenna_lamp", (x, y) => {
+    const [rim, core] = BEACON_FRAMES[Math.floor(y / SIZE)];
+    return Math.hypot(x - 7.5, (y % SIZE) - 7.5) < 4 ? core : rim;
+  }, 0, SIZE, SIZE * BEACON_FRAMES.length);
+  const beat = { animation: { frames: [{ index: 0, time: 20 }, { index: 1, time: 60 }] } };
+  writeFileSync(resolve(blockOutput, "antenna_lamp.png.mcmeta"), JSON.stringify(beat, null, 2) + "\n");
+  texture(blockOutput, "sensor_dome", (x, y) => (x % 8 === 0 || y % 8 === 0 ? [0xd0, 0xce, 0xc4] : [0xea, 0xe8, 0xe0]), 2);
+  texture(blockOutput, "sensor_glow", (x, y) => (y % 4 === 1 || y % 4 === 2 ? [0xc8, 0xfc, 0xff] : [0x4c, 0xe0, 0xf4]), 0);
+  texture(blockOutput, "heat_sink_fin", (x, y) => {
+    if (y === 0 || y === 15) return [0x5c, 0x62, 0x6a];
+    return x % 2 === 0 ? [0x9c, 0xa2, 0xaa] : [0x80, 0x86, 0x8e];
+  }, 3);
+  texture(blockOutput, "heat_glow", (x, y) => ((x + y) % 4 === 0 ? [0xff, 0xd0, 0x70] : [0xff, 0x86, 0x2a]), 0);
+  texture(blockOutput, "exhaust_grate", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return [0x40, 0x44, 0x4a];
+    return y % 3 === 0 ? [0x76, 0x7c, 0x84] : [0x14, 0x16, 0x1a];
+  }, 2);
+  texture(blockOutput, "floodlight_lens", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    return Math.floor(out) % 3 === 2 ? [0xf2, 0xe2, 0xba] : [0xff, 0xf8, 0xe8];
+  }, 0);
+}
+hullFittingTextures();
+
+// The freighter's hull plates (see FreighterPlating): a dark gunmetal plate edged in a darker seam, rivets along its top
+// and bottom; a riveted seam in her cover's pale grey, two rows of rivets either side of a darker joint; a welded
+// patch, a dull plate set into her pale grey, its weld bead round it, a rivet at each corner and a scorch across it;
+// and hazard stripes, yellow and black on the slant, worn here and there to grey.
+function hullPlateTextures() {
+  texture(blockOutput, "hull_plate_dark", (x, y) => {
+    if (x === 0 || y === 0) return [0x40, 0x46, 0x4e];
+    if ((y === 2 || y === 13) && x % 4 === 2) return [0x80, 0x88, 0x92];
+    return (x * 5 + y * 3) % 29 === 0 ? [0x6a, 0x72, 0x7c] : [0x5a, 0x61, 0x6a];
+  }, 4);
+  texture(blockOutput, "hull_plate_riveted", (x, y) => {
+    if (x === 7 || x === 8) return [0xa4, 0xaa, 0xb2];
+    if ((x === 4 || x === 11) && y % 4 === 1) return [0x9a, 0xa0, 0xa8];
+    return [0xc6, 0xcb, 0xd1];
+  }, 3);
+  texture(blockOutput, "hull_plate_patched", (x, y) => {
+    const inPatch = x >= 3 && x <= 12 && y >= 4 && y <= 12;
+    const onBead = inPatch && (x === 3 || x === 12 || y === 4 || y === 12);
+    if (onBead) return [0x6e, 0x6a, 0x62];
+    if ((x === 4 || x === 11) && (y === 5 || y === 11)) return [0x7c, 0x78, 0x70];
+    if (inPatch) return Math.abs(x - y) <= 1 ? [0x6a, 0x66, 0x5c] : [0x9a, 0x98, 0x8c];
+    return [0xc4, 0xc9, 0xcf];
+  }, 5);
+  texture(blockOutput, "hazard_plate", (x, y) => {
+    if ((x * 7 + y * 11) % 23 === 0) return [0x8a, 0x86, 0x7a];
+    return Math.floor((x + y) / 4) % 2 === 0 ? [0xf0, 0xbc, 0x1c] : [0x24, 0x24, 0x26];
+  }, 5);
+}
+hullPlateTextures();
+
+// The freighter's outside lights (see FreighterLights): her light band, a bright cyan-white line along the middle of a
+// dark plate; and a light strip's glowing diffuser.
+function hullLightTextures() {
+  texture(blockOutput, "hull_light_band", (x, y) => {
+    if (y === 7 || y === 8) return [0xec, 0xfe, 0xff];
+    if (y === 6 || y === 9) return [0x8a, 0xec, 0xff];
+    if (y === 5 || y === 10) return [0x4a, 0x56, 0x62];
+    return x === 0 ? [0x2a, 0x30, 0x38] : [0x34, 0x3a, 0x44];
+  }, 2);
+  texture(blockOutput, "hull_light_strip", (x, y) => (y >= 6 && y <= 9 ? [0xec, 0xfe, 0xff] : [0x8a, 0xec, 0xff]), 0);
+}
+hullLightTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);

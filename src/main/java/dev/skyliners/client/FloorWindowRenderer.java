@@ -5,24 +5,21 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.skyliners.floorwindow.FloorWindowBlock;
 import dev.skyliners.floorwindow.FloorWindowBlockEntity;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.Minecraft;
+import java.util.WeakHashMap;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -64,8 +61,10 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
     private static final int STEEL_DARK = 0xFF5C636B;
     private static final int GLASS = 0x40A8D8F0;
     private static final int GLINT = 0x70F4FCFF;
-    /** The look of each floor a window blends into: the texture of its top and whether that is tinted, found once. */
-    private static final Map<BlockState, Look> LOOKS = new HashMap<>();
+    /** How often the light round each block of a window is looked at again, in ticks. */
+    private static final long LIGHT_EVERY = 10;
+    /** Each block of a window's light at its corners over and under it, and when it was looked at, in ticks. */
+    private static final Map<FloorWindowBlockEntity, Lit> LIT = new WeakHashMap<>();
 
     static {
         for (int face = 0; face <= FACES; face++) {
@@ -74,8 +73,8 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         }
     }
 
-    /** A floor's top: its texture, and the tint it takes, if any. */
-    private record Look(TextureAtlasSprite sprite, int tintIndex) {
+    /** A block of a window's light at the corners of its top and underside, and when it was looked at, in ticks. */
+    private record Lit(Corners over, Corners under, long at) {
     }
 
     /** A strip of floor across a block, from one point along it to another, and at each where it starts and stops. */
@@ -90,32 +89,45 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         if (!(state.getBlock() instanceof FloorWindowBlock) || !Sight.ahead(pose.last(), reach)) {
             return;
         }
-        double opened = window.toward(DrawingClock.ticks(partialTick), state.getValue(FloorWindowBlock.OPEN), IRIS_PER_TICK);
-        double iris = FloorWindowBlock.RADIUS * opened * opened * (3 - 2 * opened);
+        FloorWindowBlockEntity middleBlock = middleOf(window);
+        boolean open = middleBlock.getBlockState().getValue(FloorWindowBlock.OPEN);
+        double opened = middleBlock.toward(DrawingClock.ticks(partialTick), open, IRIS_PER_TICK);
+        double radius = FloorWindowBlock.RADIUS * opened * opened * (3 - 2 * opened);
         PoseStack.Pose at = pose.last();
-        Look look = look(window.floor());
-        int colour = tint(window, look);
-        Corners over = corners(window, 1, light);
-        Corners under = corners(window, -1, light);
+        FloorLook look = FloorLook.of(window.floor());
+        int colour = look.colour(window.floor(), window.getLevel(), window.getBlockPos());
+        Lit lit = lit(window, light);
+        Corners over = lit.over();
+        Corners under = lit.under();
         VertexConsumer cover = buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
-        for (Strip strip : floor(window.toMiddle().getX() + 0.5, window.toMiddle().getZ() + 0.5, iris)) {
+        for (Strip strip : floor(window.toMiddle().getX() + 0.5, window.toMiddle().getZ() + 0.5, radius)) {
             strip(cover, at, over, under, colour, look.sprite(), strip);
         }
         if (!middle) {
             return;
         }
+        int lightOver = over.at(0.5F, 0.5F);
         VertexConsumer steel = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
-        ring(steel, at, light);
-        if (iris < SHUT) {
+        ring(steel, at, lightOver);
+        if (radius < SHUT) {
             return;
         }
-        irisWall(steel, at, light, iris);
-        shaft(steel, at, light, window.shaft());
+        irisWall(steel, at, lightOver, radius);
+        shaft(steel, at, lightOver, window.shaft());
         VertexConsumer glass = buffers.getBuffer(RenderType.entityTranslucent(FlatQuads.WHITE));
-        glass(glass, at, light, iris);
+        glass(glass, at, lightOver, radius);
         for (double glint : GLINTS) {
-            glint(glass, at, light, iris, glint);
+            glint(glass, at, lightOver, radius, glint);
         }
+    }
+
+    /**
+     * The window's middle block, whose iris every block of the window draws, so all of them open and shut as one, even
+     * where one of them was out of sight for a while; the block itself where its middle is gone.
+     */
+    private static FloorWindowBlockEntity middleOf(FloorWindowBlockEntity window) {
+        Level level = window.getLevel();
+        return level != null && level.getBlockEntity(window.middle()) instanceof FloorWindowBlockEntity middle ? middle : window;
     }
 
     /** The middle block draws the whole window; every other block only its own. */
@@ -135,11 +147,14 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         if (iris < SHUT) {
             return List.of(new Strip(0, 1, 0, 1, 0, 1));
         }
-        List<Double> cuts = cuts(middleX, middleZ, iris);
+        double[] cuts = cuts(middleX, middleZ, iris);
         List<Strip> strips = new ArrayList<>();
-        for (int cut = 0; cut + 1 < cuts.size(); cut++) {
-            float near = cuts.get(cut).floatValue();
-            float far = cuts.get(cut + 1).floatValue();
+        for (int cut = 0; cut + 1 < cuts.length; cut++) {
+            if (cuts[cut + 1] <= cuts[cut]) {
+                continue;
+            }
+            float near = (float) cuts[cut];
+            float far = (float) cuts[cut + 1];
             double nearHalf = halfWidth(middleZ, iris, near);
             double farHalf = halfWidth(middleZ, iris, far);
             if (nearHalf <= 0 && farHalf <= 0) {
@@ -154,23 +169,26 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
 
     /**
      * Where the floor of a block is cut across: its edges, every sixteenth of it, where the circle reaches furthest
-     * along the block, and where it crosses the block's two edges along it; in order, each once.
+     * along the block, and where it crosses the block's two edges along it; in order, each kept within the block.
      */
-    private static List<Double> cuts(double middleX, double middleZ, double iris) {
-        List<Double> cuts = new ArrayList<>();
+    private static double[] cuts(double middleX, double middleZ, double iris) {
+        double[] cuts = new double[STRIPS + 7];
+        int count = 0;
         for (int strip = 0; strip <= STRIPS; strip++) {
-            cuts.add((double) strip / STRIPS);
+            cuts[count++] = (double) strip / STRIPS;
         }
-        cuts.add(middleZ - iris);
-        cuts.add(middleZ + iris);
+        cuts[count++] = middleZ - iris;
+        cuts[count++] = middleZ + iris;
         for (int edge = 0; edge <= 1; edge++) {
-            double across = iris * iris - (edge - middleX) * (edge - middleX);
-            if (across > 0) {
-                cuts.add(middleZ - Math.sqrt(across));
-                cuts.add(middleZ + Math.sqrt(across));
-            }
+            double across = Math.max(0, iris * iris - (edge - middleX) * (edge - middleX));
+            cuts[count++] = middleZ - Math.sqrt(across);
+            cuts[count++] = middleZ + Math.sqrt(across);
         }
-        return cuts.stream().filter(cut -> cut >= 0 && cut <= 1).sorted().distinct().toList();
+        for (int cut = 0; cut < count; cut++) {
+            cuts[cut] = Mth.clamp(cuts[cut], 0, 1);
+        }
+        Arrays.sort(cuts, 0, count);
+        return Arrays.copyOf(cuts, count);
     }
 
     /** How far either side of the window's middle the iris's hole reaches across a block at a point along it. */
@@ -187,7 +205,8 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
      * A strip of the floor, on top lit as what stands over the block is and underneath as what lies under it, smoothly
      * across the block as a floor's own faces are; nothing where it has no width at either end.
      */
-    private static void strip(VertexConsumer cover, PoseStack.Pose at, Corners over, Corners under, int colour, TextureAtlasSprite sprite, Strip strip) {
+    private static void strip(VertexConsumer cover, PoseStack.Pose at, Corners over, Corners under, int colour, TextureAtlasSprite sprite,
+                              Strip strip) {
         if (strip.nearTo() <= strip.nearFrom() && strip.farTo() <= strip.farFrom()) {
             return;
         }
@@ -201,6 +220,17 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         corner(cover, at, under, colour, sprite, strip.farFrom(), 0, strip.far());
     }
 
+    /** A block of a window's light at its corners, looked at again every so often, as light round it seldom changes. */
+    private static Lit lit(FloorWindowBlockEntity window, int own) {
+        long now = DrawingClock.wholeTicks();
+        Lit known = LIT.get(window);
+        if (known == null || now - known.at() >= LIGHT_EVERY || now < known.at()) {
+            known = new Lit(corners(window, 1, own), corners(window, -1, own), now);
+            LIT.put(window, known);
+        }
+        return known;
+    }
+
     /**
      * The light at the four corners of a block's top or underside, each the mean of the four blocks over or under the
      * floor that meet there, as smooth lighting has it, so the window's floor shades into the floor round it with no
@@ -211,14 +241,15 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         int[] sky = new int[9];
         BlockPos middle = window.getBlockPos().above(beside);
         for (int cell = 0; cell < 9; cell++) {
-            int light = window.getLevel() == null ? own : LevelRenderer.getLightColor(window.getLevel(), middle.offset(cell % 3 - 1, 0, cell / 3 - 1));
+            BlockPos at = middle.offset(cell % 3 - 1, 0, cell / 3 - 1);
+            int light = window.getLevel() == null ? own : LevelRenderer.getLightColor(window.getLevel(), at);
             blocks[cell] = LightTexture.block(light);
             sky[cell] = LightTexture.sky(light);
         }
         return new Corners(cornerMean(blocks), cornerMean(sky));
     }
 
-    /** The mean at each of a block's four corners, near left, near right, far left, far right, of a grid of three by three. */
+    /** The mean at each of a block's corners, near left, near right, far left, far right, of a three by three grid. */
     private static float[] cornerMean(int[] grid) {
         float[] corners = new float[4];
         for (int corner = 0; corner < 4; corner++) {
@@ -229,15 +260,15 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         return corners;
     }
 
-    /** The light at the corners of a block's face, block and sky apart, each near left, near right, far left, far right. */
+    /** The light at the corners of a block's face, block and sky apart: near left, near right, far left, far right. */
     private record Corners(float[] block, float[] sky) {
         /** How far apart two levels of light are in the light map, and where its sky light is packed. */
         private static final float LEVEL = 16;
         private static final int SKY_SHIFT = 16;
 
         /**
-         * The light at a point of the face, from its near left corner, blended from its corners, packed as the light map
-         * takes it, in sixteenths of a level, so it shades smoothly between levels.
+         * The light at a point of the face, from its near left corner, blended from its corners, packed as the light
+         * map takes it, in sixteenths of a level, so it shades smoothly between levels.
          */
         int at(float x, float z) {
             return Math.round(blend(block, x, z) * LEVEL) | Math.round(blend(sky, x, z) * LEVEL) << SKY_SHIFT;
@@ -249,7 +280,8 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
     }
 
     /** A corner of a strip of the floor, on top or underneath, its texture laid as the block's own top is. */
-    private static void corner(VertexConsumer cover, PoseStack.Pose at, Corners light, int colour, TextureAtlasSprite sprite, float x, float y, float z) {
+    private static void corner(VertexConsumer cover, PoseStack.Pose at, Corners light, int colour, TextureAtlasSprite sprite, float x, float y,
+                               float z) {
         float u = sprite.getU0() + (sprite.getU1() - sprite.getU0()) * x;
         float v = sprite.getV0() + (sprite.getV1() - sprite.getV0()) * z;
         cover.addVertex(at, x, y, z).setColor(colour).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light.at(x, z))
@@ -282,7 +314,8 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         }
         double out = FloorWindowBlock.RADIUS;
         for (int face = 0; face < FACES; face++) {
-            FlatQuads.quad(steel, at, light, STEEL_DARK, (float) -COS[face], 0, (float) -SIN[face], x(face, out), -depth, z(face, out), x(face, out), 0,
+            FlatQuads.quad(steel, at, light, STEEL_DARK, (float) -COS[face], 0, (float) -SIN[face], x(face, out), -depth, z(face, out),
+                x(face, out), 0,
                 z(face, out), x(face + 1, out), 0, z(face + 1, out), x(face + 1, out), -depth, z(face + 1, out));
         }
     }
@@ -328,29 +361,5 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
 
     private static float z(int face, double out) {
         return (float) (0.5 + SIN[face] * out);
-    }
-
-    /** The look of a floor's top, found once for each floor: its texture and its tint. */
-    private static Look look(BlockState floor) {
-        return LOOKS.computeIfAbsent(floor, FloorWindowRenderer::lookOf);
-    }
-
-    private static Look lookOf(BlockState floor) {
-        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(floor);
-        List<BakedQuad> top = model.getQuads(floor, Direction.UP, RandomSource.create(0));
-        if (top.isEmpty()) {
-            return new Look(model.getParticleIcon(), -1);
-        }
-        BakedQuad quad = top.get(0);
-        return new Look(quad.getSprite(), quad.isTinted() ? quad.getTintIndex() : -1);
-    }
-
-    /** The colour a floor's top is drawn in where it stands: white, or its tint there, as grass is. */
-    private static int tint(FloorWindowBlockEntity window, Look look) {
-        if (look.tintIndex() < 0 || window.getLevel() == null) {
-            return 0xFFFFFFFF;
-        }
-        int rgb = Minecraft.getInstance().getBlockColors().getColor(window.floor(), window.getLevel(), window.getBlockPos(), look.tintIndex());
-        return 0xFF000000 | rgb;
     }
 }

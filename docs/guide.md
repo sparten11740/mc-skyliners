@@ -2031,7 +2031,7 @@ is built, and again once she is down on her fins after flying and her autopilot 
 autopilot to fly and they fold away before she lifts off: her countdown waits until they are all away and her doors
 shut, as they wait, with a chime, until nobody is on them, everyone aboard told so and the chime heard in her cockpit
 too; and they fold away by themselves as soon as she moves. With
-the server config's `rocket.airstairs` off she is built with a crew ladder instead, the pool's chrome ladder up a column
+the server config's `rocket.airstairs` off she is built with a ladder instead, the pool's chrome ladder up a column
 beside an open doorway three blocks wide, climbing to a step in front of it; a rocket built before keeps her ladder.
 
 Her doorway closes with sliding airlock doors: two leaves meeting in its middle, faced outside in her skin's own weave
@@ -2296,8 +2296,9 @@ streaming past for as long as it is away on any jump. In the tank's glass on her
 feeding hatch at chest height,
 and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
 the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it
-with an empty hand to reach in and touch it, and it wriggles and gives a soft, low purr, as it does now and then on its
-own; while the hatch stands open, moss can go to it straight from your hand. Nothing hurts it, pushes it or leads it
+with an empty hand and it slides open for you to reach in and touch it, and it wriggles and gives a soft, low purr, as
+it does now and then on its own. The hatch stays open until you shut it with an empty hand again; while it stands
+open, moss can go to it straight from your hand. Nothing hurts it, pushes it or leads it
 away, and it flies with her as a part of her. Over the top of the world, in space, it curls up into a tun, the dry,
 wrinkled barrel real tardigrades live through space in, with a bloop, and its screen goes slow and blue under a
 barrel's picture; back under y 300 it uncurls with a purr. Round the front of the room lab counters curve either side
@@ -2631,6 +2632,13 @@ Hyperspace Jump Console is among her blocks in the creative tab and works for an
 or a ceiling. The server config's `freighter.hyperspaceJump` switches the jump off; her console then has her flight
 readouts again where the jump button was.
 
+The tube out to her cockpit runs between ledges where its round wall meets her deck, and on them stands the fleet in
+miniature: models of the airliner, the zeppelin, the rocket and the freighter herself on their stands, their noses all
+pointing on to her cockpit, with planters of greenery and flowers between them. The tunnel down her port prong is a
+gallery: along its straight inner wall hang space posters, an earthrise, a black hole and the solar system, as big as
+murals in its low headroom, any hung clear of the floor lit from below. The server config's `freighter.gallery` leaves
+both bare.
+
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
@@ -2658,8 +2666,45 @@ whine spooling up, her engines' roar from her stern rising with her thrust, her 
 close over the ground, which shakes under anyone standing near, and a long rolling thunder as she goes by fast; aboard,
 all of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand clear under her as she lifts
 off and lands, and behind her mains or ahead of her retros as they fire: Create Propulsion's thrusters set alight
-whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her autopilot screen and the settings
+whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her computer speaks for her flight
+deck in a voice of its own, a gruff old man's through her worn, crackling intercom, a buzzing blip falling before each
+line, heard by everyone aboard and subtitled: set to fly, "Lifting off. Hold on to something bolted down."; coming
+down, "Coming down to land. Expect a bump. Or two."; and on her legs again, "We're down. Nothing fell off. That I
+know of." Sent up past the edge of space, as the rocket can be, everyone aboard is light a while as aboard the rocket,
+and her computer says "We're in space. Keep the windows shut.", then, as her gravity comes back on, "Gravity back on.
+Mind your landing." Her autopilot screen and the settings
 screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
+
+Her outside is a working ship's. On her top, to port of her stern, a big white satellite dish nearly four blocks across
+turns slowly round on its pedestal, tipped up at the sky; off her port bow stands a little farm of antenna masts, two
+more to starboard, each with a red lamp at its tip blinking a second on and three off; there are cream sensor domes with
+a cyan band round their foot, banks of heat-sink fins glowing orange at their roots either side of her stern over her
+engines, exhaust vents between them letting off white wisps, and runs of machinery, boxes, copper pipes and amber
+status lamps, out from her middle and along her prongs. Off her port rim a smaller dish on an arm sweeps from side to
+side beside a whip antenna; conduit, vents, fins and floodlights hang on her rim; and under her belly floodlights light
+the ground she comes down on, with a radome, another dish, a blade antenna and tanks. The Satellite Dish, Big Satellite
+Dish, Antenna Mast, Sensor Dome, Heat Sink, Exhaust Vent, Hull Machinery and Hull Floodlight are among her blocks in the
+creative tab, and each goes up wherever it is clicked against, in a shape of its own for each: standing on a floor,
+fixed to a wall (a dish on an arm, a mast as a whip on its hinge, fins out from a plate, a louvred vent, a run of
+conduit, a spotlight on a bracket) or hung under a ceiling (a dish turned down at the ground, a blade antenna, a radome,
+a nozzle, a tank, a landing light). The server config's `freighter.exterior` builds her without them.
+
+Her outer ring and rim are plated: riveted seams run out from her middle every 30 degrees, a few sectors between them
+are dark gunmetal, welded patches are scattered over the rest, and yellow and black hazard stripes ring her docking
+collars and run along the foot of her rim under her engines. The Dark, Riveted and Patched Hull Plates and the Hazard
+Plate are among her blocks in the creative tab, each a whole plate set by hand. The server config's `freighter.plating`
+leaves her skin one pale grey.
+
+By night she shows her lights: a glowing cyan band runs all round her rim, light strips line both walls of her loading
+gap and its back as a landing bay is lit and run along the outer edge of each prong, a red navigation light shines on
+her port beam, a green one on her starboard and a white one at her stern over her engines, white strobes double-flash on
+her prongs' tips, and red beacons blink on her top and under her belly. The Hull Light Band and the Hull Light Strip are
+among her blocks in the creative tab; the strip lies on a floor, runs under a hood along a wall or hangs as a channel
+under a ceiling, wherever it is clicked against. The server config's `freighter.outsideLights` builds her without them.
+
+While she flies her engines glow at her stern: a white-hot core in a wide blue halo over each of her mains, soft while her
+lift holds her up, brighter and wider the harder her mains push her ahead, shimmering as they burn, and fading out once
+she rests on her legs. The server config's `freighter.engineGlow` leaves it out.
 
 Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
 bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three
@@ -2670,28 +2715,42 @@ walls inside are the Padded Bulkhead, off-white quilting over grey ribs, in the 
 crafted from white wool round an iron ingot). The Model Freighter, a souvenir on its stand, is under Decorations.
 
 She is boarded up a ramp out of her starboard side. It lies in a well along the wall of her front right room, its plate
-the well's floor, a glass rail along the well's open side; at its head, on the wall, its panel has a lamp over two
-picture buttons: blue, a ramp coming down, to let it down, and green, an arrow up, to bring it up. Let down, its latches
-let go in a burst of steam, her computer says "Ramp lowering", the floor and her belly under it open, and the plate
-swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud; walk
-up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
+the well's floor, a glass rail along the well's open side; at its head, on the wall, its panel has a lamp over one big
+button that shows only what pressing it does: blue with a ramp coming down while the ramp is up, green with an arrow up
+while it is down; press it while the ramp is on its way and it turns round where it is. Let down, its latches let go in
+a burst of steam, her computer says "Ramp coming down. Mind the rust.", the floor and her belly under it open, and the
+plate swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud;
+walk up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
 waiting, blue down, red for a moment when it will not move, with a low note. It comes down by itself once she is built
-and once she has landed with her autopilot off, and folds away as soon as she is set to fly; her take-off waits on her
-legs until it is all away. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and
-if her take-off is waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls
-her take-off off with a low note, her autopilot switching off and the ramp staying down. From the ground, the amber
-button low on her starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where
-something stands in its way, such as ground rising under its foot. The server config's `freighter.ramp` builds her
-without it. The Ramp Call Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
+and once she has landed with her autopilot off and her computer has had its say, never talking over it, and folds away
+as soon as she is set to fly; her take-off waits on her legs until it is all away. Press its button while she is coming
+in to land and it clicks, its lamp blinking amber, and the ramp comes down by itself as soon as she has settled on her
+legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and if her take-off is
+waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls her take-off off with
+a low note, her autopilot switching off and the ramp staying down. From the ground, the amber button low on her
+starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where something stands in its
+way, such as ground rising under its foot. The server config's `freighter.ramp` builds her without it. The Ramp Call
+Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
 
-Up her core, through its doorway from the ring corridor on her bow side, a ladder climbs the core's back wall to the
-gunner's seat under her top dome, the gunner's head in its glass. Sit in it and her computer says "Turret ready": the
-laser cannon on the dome over you turns its twin barrels to whatever you look at, its servos whirring, all the way
-round and from level to near straight up. Hold attack to fire, red bolts from alternate barrels four times a second with a crack each, sparks
-wherever they strike; they hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard her, and
-never break a block, and attack does nothing else while you sit there, so the dome's glass is safe. Twenty bolts in a
-row and it overheats a moment with a hiss. The Laser Cannon is among her blocks in the creative tab; set down by hand
-near any seat, it works there too. The server config's `freighter.turrets` builds her without it and keeps every laser
+Up her core, through its doorway from the ring corridor on her bow side, a slim chrome crew ladder climbs the core's
+back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
+gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
+on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up
+to the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal atop the dome, high enough to
+see all round her past her rim and up into the sky, their glowing muzzles low in the view; sneak to get up and your own
+view is back at once. The barrels turn to whatever you look at, their servos whirring, all the way round and from a
+little below level to near straight up. The sight is drawn in thin amber lines on a dark frame: at the middle a ring
+round a cross, where the bolts land, which turns red with brackets closing in round it and a beep while it rests on a
+hostile mob in reach, and grey with a red X where the cannon cannot fire (into her own hull, or lower than its barrels
+go; pull the trigger there and it only clicks); to its right a thermometer that fills with every bolt, going from amber
+to red, and flashes with heat waves rising over it once the cannon has overheated; and to its left a ring showing her
+from above, her bow at the top, a beam out of her the way you face. Hold attack to fire, red bolts from alternate
+barrels four times a second with a crack each, sparks wherever they strike; they hurt hostile mobs only, never players,
+villagers, pets, animals or anyone aboard her, and never break a block, and attack does nothing else while you sit
+there, so the dome's glass is safe. Every bolt heats the cannon and it cools once you let go a moment: twenty bolts in a
+row and it overheats with a hiss, holding its fire a couple of seconds until it has cooled right down. The Laser Cannon
+is among her blocks in the creative tab; set down by hand near any seat, it works there too, its barrels resting the way
+you faced as you set it down. The server config's `freighter.turrets` builds her without it and keeps every laser
 cannon from firing.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
@@ -2733,7 +2792,9 @@ tools, spare-parts crates and barrels, and a cauldron of coolant. Her crew quart
 seats set a block back from it, bean bags, shelves of books and towels, a suitcase, planters and a med bay corner, a
 white-blanketed bunk with a vitals screen over its head. Her club has four cocktail tables with stools, neon signs on its walls,
 speakers either side of its bandstand, the rocket club's fog machine, a bean bag and a disco ball. Each stands where it
-has room; every room's doorway is kept clear, and nothing stands on her ramp's hatch.
+has room; every room's doorway is kept clear, and nothing stands on her ramp's hatch. Press any of her passenger
+screens to look out through her outside cameras: under her belly straight down at the ground, between her prongs out
+ahead, astern of her over her top, and one circling her; press again for the next, and Left Shift brings you back.
 The server config's `freighter.rooms` builds her rooms bare.
 
 Her lounge has a beach. In the middle of a patch of sand is a huge round floor window, nine blocks across, walked over
@@ -2749,8 +2810,10 @@ The floor window and its panel are in the creative tab too, and work anywhere. U
 it lays itself into that floor, the whole disc at once, each block taking on the look of the floor it replaced, grass,
 planks or tiles alike; it does not fit (a thud and a puff of smoke) where any block of the disc is something other than
 plain floor or open air. Set its panel down within twelve blocks to open and shut it, by hand or with a redstone pulse
-such as a button on the panel. Break any block of the window and it all comes out, the floor put back as it was and the
-window given back. Beach sand, potted palms, parasols, sun loungers and tiki torches are in the creative tab as well.
+such as a button on the panel: on a floor it stands on its post, and on a wall it sits flat in a steel rim. Break any
+block of the window and it all comes out, the floor put back as it was and the window given back. Beach sand, potted
+palms, parasols, sun loungers and tiki torches are in the creative tab as well; a tiki torch stands tall on a floor, or
+put on a wall it is held out from it on a bamboo bracket, its flame lower.
 
 Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal
 folds, in a glass tank standing out from the wall by the galley on a stand of cabinets, a dark hood over it, so it paces
@@ -2797,8 +2860,10 @@ config's `freighter.engineering` builds her without them.
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
 her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room
-through the doorway at her port quarter; the bandstand's footlights light its band. The server config's
-`freighter.lights` builds her without them.
+through the doorway at her port quarter; the bandstand's footlights light its band. No corner of her is left dark
+enough for monsters to spawn in: wherever her own lamps leave a spot someone could stand in unlit, a wall washer or a
+floor light lights it, and her crawlways, the passages by her thrusters and the spaces under her deck are lit dim but
+never black. The server config's `freighter.lights` builds her without them.
 
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning

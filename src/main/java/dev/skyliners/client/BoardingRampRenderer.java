@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -27,9 +29,10 @@ import org.joml.Quaternionf;
 
 /**
  * Draws the freighter's ramp panel (see {@link RampPanelBlock}) and the boarding ramp it keeps (see
- * {@link BoardingRamp}). The panel's face: the lamp across its top in the colour of how the ramp stands, blinking while it moves, and its two
- * picture buttons under it, blue to let the ramp down and green to bring it up, lit up as every touch panel's are (see
- * {@link TouchPanelArt}), one that can do nothing now dimmed. The ramp, out of plain coloured boxes, while its hatch is
+ * {@link BoardingRamp}). The panel's face: the lamp across its top in the colour of how the ramp stands, blinking
+ * while it moves, and its one big button under it, showing only what pressing it does (see {@link RampPanelBlock#ACTION}):
+ * blue with a ramp coming down while the ramp is up or coming up, green with an arrow up while it is down or coming
+ * down, so pressed while it moves it turns round, lit up as every touch panel's are (see {@link TouchPanelArt}). The ramp, out of plain coloured boxes, while its hatch is
  * open: the plate, grey ribbed deck plate edged in yellow and black hazard stripes on top and her skin's colour under
  * it, swinging down on its hinge tube at the head of the well; two hydraulic rams from brackets on the well's sides to
  * lugs on the plate's edges, lengthening as it falls; its foot lip unfolding at the end; and lamps at the well's head
@@ -41,8 +44,8 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final float FACE = -0.5F + RampPanelBlock.THICKNESS / 16F + 0.002F;
     /** The gap round each button and the lamp, in blocks. */
     private static final double GAP = 0.02;
-    /** How far out each way from its middle a button's picture reaches, as a share of the button's width. */
-    private static final double PICTURE = 0.4;
+    /** How far out each way from its middle the button's picture reaches, as a share of the button's height. */
+    private static final double PICTURE = 0.7;
     /** How often the panel's lamp and the ramp's lamps blink while it moves, in ticks a blink. */
     private static final int BLINK = 8;
     /** Lifts each layer of the panel's face off the one below it. */
@@ -55,30 +58,29 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final Map<RampPanelBlock.Button, Integer> COLOURS = Map.of(
         RampPanelBlock.Button.LOWER, 0xFF2F6FC0, RampPanelBlock.Button.RAISE, 0xFF2E9A4A);
     /**
-     * The plate: how far in from the well's sides its edges stand, how thick it is, how far its hazard stripes reach
-     * in from its edges and how long each is, how far apart its ribs are and how far they and its deck stand proud,
-     * all in blocks.
+     * The plate: how far in from the well's sides its edges stand, how thick it is, how deep the dark edge at its foot
+     * is, and how far its floor stands proud of it, all in blocks.
      */
     private static final float SIDE_GAP = 0.05F;
     private static final float THICK = 0.25F;
-    private static final float STRIPE = 0.2F;
-    private static final float STRIPE_LENGTH = 0.4F;
-    private static final float RIB_SPACING = 0.5F;
-    private static final float RIB = 0.05F;
     private static final float PLATE = 0.02F;
+    private static final float TOP_PROUD = 0.002F;
     /** What makes a block's tint, which has no alpha, a colour drawn solid. */
     private static final int OPAQUE = 0xFF000000;
+    /** The foot lip's grey steel, and the dark edge at the plate's foot. */
     private static final int DECK = 0xFF7A7F88;
-    private static final int RIB_GREY = 0xFF5C6169;
     private static final int EDGE = 0xFF2A2D33;
-    private static final int HAZARD_YELLOW = 0xFFE8B828;
-    private static final int HAZARD_BLACK = 0xFF1C1D20;
     /** The hinge tube along the plate's head: its half thickness, in blocks, and its steel. */
     private static final float HINGE_HALF = 0.14F;
     private static final int STEEL = 0xFF8A8F98;
     /** The foot lip: how long it is, in blocks, and how far it is turned back over the plate while folded, in degrees. */
     private static final float LIP = 0.6F;
     private static final float LIP_FOLDED = -175;
+    /**
+     * How far over the ground the plate's foot stops, in blocks: the lip's thickness, so the lip lies on the ground
+     * rather than in it, its top never in the same plane as the ground's, which flickers through it.
+     */
+    private static final double FOOT_CLEAR = THICK / 2 + 0.01;
     /**
      * The rams: how far along the plate their lugs are, as a share of its length; how far out from the head and how far
      * under the deck's top their brackets on the well's sides stand, in blocks; the barrel's length, and the barrel's
@@ -133,27 +135,15 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         boolean blinkedOff = status == RampPanelBlock.Status.BUSY && DrawingClock.wholeTicks() / BLINK % 2 == 1;
         TouchPanelArt.tile(shapes, matrix, RampPanelBlock.LAMP_TILE.inset(GAP), LAMPS.get(status), new TouchPanelArt.Look(false, false, !blinkedOff),
             LAYER);
-        int looked = TouchPanelArt.lookedAt(panel);
-        RampPanelBlock.Button[] buttons = RampPanelBlock.Button.values();
-        for (int button = 0; button < buttons.length; button++) {
-            TouchPanelArt.tile(shapes, matrix, RampPanelBlock.BUTTONS.get(button).inset(GAP), COLOURS.get(buttons[button]),
-                TouchPanelArt.Look.of(button, looked, -1, works(buttons[button], status)), LAYER);
-        }
-        for (int button = 0; button < buttons.length; button++) {
-            TouchPanel.Tile tile = RampPanelBlock.BUTTONS.get(button);
-            ResourceLocation picture = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID,
-                "textures/gui/ramp/" + buttons[button].name().toLowerCase(Locale.ROOT) + ".png");
-            ScreenDrawing.picture(buffers, matrix, picture, tile.middleX(), tile.middleY(), tile.width() * PICTURE, 4 * LAYER, WHITE);
-        }
+        BoardingRamp ramp = panel.ramp();
+        RampPanelBlock.Button action = RampPanelBlock.ACTION.action(ramp != null && ramp.down());
+        TouchPanel.Tile tile = RampPanelBlock.BUTTONS.get(0);
+        TouchPanelArt.tile(shapes, matrix, tile.inset(GAP), COLOURS.get(action),
+            TouchPanelArt.Look.of(0, TouchPanelArt.lookedAt(panel), -1, true), LAYER);
+        ResourceLocation picture = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID,
+            "textures/gui/ramp/" + action.name().toLowerCase(Locale.ROOT) + ".png");
+        ScreenDrawing.picture(buffers, matrix, picture, tile.middleX(), tile.middleY(), tile.height() * PICTURE, 4 * LAYER, WHITE);
         pose.popPose();
-    }
-
-    /** Whether a button does anything as the ramp stands: letting it down while it is up, bringing it up while down. */
-    private static boolean works(RampPanelBlock.Button button, RampPanelBlock.Status status) {
-        return switch (button) {
-            case LOWER -> status == RampPanelBlock.Status.READY || status == RampPanelBlock.Status.REFUSED;
-            case RAISE -> status == RampPanelBlock.Status.DOWN;
-        };
     }
 
     /**
@@ -175,7 +165,8 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         BlockPos foot = panel.getBlockPos().offset(head).relative(out, frame.run()).below(frame.rise() - 1);
         int light = SableClient.light(level, foot);
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
-        double angle = swing(ticks, frame.slope());
+        double slope = Math.toDegrees(Math.atan2(frame.rise() - FOOT_CLEAR, frame.run()));
+        double angle = swing(ticks, slope);
         float half = frame.width() / 2F - SIDE_GAP;
         int lamp = ticks >= BoardingRamp.OUT ? LAMP_WHITE : DrawingClock.wholeTicks() / BLINK % 2 == 0 ? LAMP_AMBER : 0;
         FlatQuads.box(consumer, pose.last(), light, STEEL, -half, -HINGE_HALF, -HINGE_HALF, half, HINGE_HALF, HINGE_HALF);
@@ -188,8 +179,13 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         plate(consumer, pose.last(), light, half, (float) frame.length(), skin(panel, frame));
         pose.translate(0, 0, frame.length());
         lamps(consumer, pose.last(), half, -LAMP_HALF, lamp);
-        pose.mulPose(Axis.XP.rotationDegrees(lip(ticks, frame.slope())));
+        pose.mulPose(Axis.XP.rotationDegrees(lip(ticks, slope)));
         FlatQuads.box(consumer, pose.last(), light, DECK, -half, -THICK / 2, 0, half, 0, LIP);
+        pose.popPose();
+        pose.pushPose();
+        pose.mulPose(Axis.XP.rotationDegrees((float) angle));
+        floorTop(buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS)), pose.last(), light, ramp.floor(), level, foot, half,
+            (float) frame.length());
         pose.popPose();
         pose.popPose();
     }
@@ -210,24 +206,47 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     }
 
     /**
-     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it, ribbed deck plate on top
-     * between hazard stripes along its edges.
+     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it and along its sides, a dark
+     * edge at its foot, and on top the floor it is part of while up (see {@link #floorTop}), so nothing changes as it
+     * folds away into the floor.
      */
     private static void plate(VertexConsumer consumer, PoseStack.Pose at, int light, float half, float length, int skin) {
-        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, -PLATE, length);
-        FlatQuads.box(consumer, at, light, DECK, -half + STRIPE, -PLATE, 0, half - STRIPE, 0, length);
-        for (float along = RIB_SPACING / 2; along < length; along += RIB_SPACING) {
-            FlatQuads.box(consumer, at, light, RIB_GREY, -half + STRIPE, 0, along - RIB / 2, half - STRIPE, RIB, along + RIB / 2);
-        }
-        int stripes = Math.round(length / STRIPE_LENGTH);
-        for (int stripe = 0; stripe < stripes; stripe++) {
-            int colour = stripe % 2 == 0 ? HAZARD_YELLOW : HAZARD_BLACK;
-            float from = stripe * STRIPE_LENGTH;
-            float to = Math.min(length, from + STRIPE_LENGTH);
-            FlatQuads.box(consumer, at, light, colour, -half, -PLATE, from, -half + STRIPE, 0, to);
-            FlatQuads.box(consumer, at, light, colour, half - STRIPE, -PLATE, from, half, 0, to);
-        }
+        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, 0, length);
         FlatQuads.box(consumer, at, light, EDGE, -half, -THICK, length - PLATE, half, 0, length);
+    }
+
+    /**
+     * The plate's top, the floor it is part of while up, laid block by block from its hinge out along it and from one
+     * side across, standing just proud of the plate, its texture as the floor's own blocks lay it.
+     */
+    private static void floorTop(VertexConsumer consumer, PoseStack.Pose at, int light, BlockState floor, Level level, BlockPos foot, float half,
+                                 float length) {
+        if (floor.isAir()) {
+            return;
+        }
+        FloorLook look = FloorLook.of(floor);
+        int colour = look.colour(floor, level, foot);
+        for (float near = 0; near < length; near++) {
+            float far = Math.min(length, near + 1);
+            for (float left = -half; left < half; left++) {
+                float right = Math.min(half, left + 1);
+                floorTile(consumer, at, light, colour, look, left, right, near, far);
+            }
+        }
+    }
+
+    /** One block's worth or less of the plate's floor, its texture from its corner as far as it reaches. */
+    private static void floorTile(VertexConsumer consumer, PoseStack.Pose at, int light, int colour, FloorLook look, float left, float right,
+                                  float near, float far) {
+        float u1 = look.u(right - left);
+        float v1 = look.v(far - near);
+        float u0 = look.u(0);
+        float v0 = look.v(0);
+        float y = TOP_PROUD;
+        consumer.addVertex(at, left, y, near).setColor(colour).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        consumer.addVertex(at, left, y, far).setColor(colour).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        consumer.addVertex(at, right, y, far).setColor(colour).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        consumer.addVertex(at, right, y, near).setColor(colour).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
     }
 
     /** A lamp either side at so far out from the ramp's middle line, glowing in a colour; none while blinked off. */

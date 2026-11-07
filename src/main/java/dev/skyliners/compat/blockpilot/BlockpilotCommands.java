@@ -24,6 +24,7 @@ import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.turret.LaserCannonBlockEntity;
 import dev.blockpilot.api.Action;
 import dev.blockpilot.api.ArgType;
 import dev.blockpilot.api.Args;
@@ -33,6 +34,7 @@ import dev.blockpilot.api.CommandException;
 import dev.blockpilot.api.CommandSpec;
 import dev.blockpilot.api.Fields;
 import dev.blockpilot.api.Result;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +47,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -56,8 +59,8 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * front of the player and waiting until it stands ({@code skyliners:build}), which of a zeppelin's blocks its
  * assembly would leave behind ({@code skyliners:assembly}), and a fingerprint of an airframe's layout, to show a change
  * to how it is laid out moves no block ({@code skyliners:layout}), and repainting the nearest zeppelin
- * ({@code skyliners:livery}). Only loaded when Blockpilot is installed (see
- * {@link dev.skyliners.compat.Blockpilot}).
+ * ({@code skyliners:livery}); and, on the client, whether the player sees from a laser cannon's sight
+ * ({@code skyliners:gunner}). Only loaded when Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
     /** How far from the player an autopilot is looked for, in blocks: past a zeppelin's length. */
@@ -69,6 +72,16 @@ public final class BlockpilotCommands {
      * {@link ZeppelinSize}'s: "full" is a word Blockpilot keeps for itself.
      */
     private static final List<String> SIZES = List.of("half", "whole");
+    /**
+     * Looking for dark spots: how far round the player across, below and above, in blocks; the least block light a
+     * spot should have; and the sky light from which a spot is out under the sky, even in a ship's shade, rather than
+     * shut in inside her, in light levels.
+     */
+    private static final int DARK_RADIUS = 48;
+    private static final int DARK_BELOW = 16;
+    private static final int DARK_ABOVE = 24;
+    private static final int DARK_LEAST = 4;
+    private static final int DARK_SKY = 1;
 
     private BlockpilotCommands() {
     }
@@ -100,6 +113,13 @@ public final class BlockpilotCommands {
             .field("clusters", "each lift cluster's total signal: ahead right, ahead left, astern right, astern left")
             .field("jets", "each jet's signal: nose right, nose left, tail right, tail left")
             .field("mass", "the freighter's mass in Sable's units"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("gunner", (context, args) -> gunner())
+            .needsWorld()
+            .group("skyliners")
+            .help("whether this client sees from a laser cannon's sight, sitting at it: where the sight is, and whether it is locked on to a hostile mob")
+            .field("on", "whether the view is the sight's")
+            .field("at", "where the sight is in the world")
+            .field("locked", "whether the sight rests on a hostile mob in reach"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -120,6 +140,15 @@ public final class BlockpilotCommands {
             .field("first", "where the first few left behind stand")
             .field("stuck", "other blocks in its frame it would leave behind pressed against it, holding it as it flies off")
             .field("first_stuck", "where the first few of those stand, and what they are"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("dark", (context, args) -> dark(args))
+            .onServer()
+            .group("skyliners")
+            .option("radius", "how far round the player to look across, in blocks (default " + DARK_RADIUS + ")", ArgType.INT)
+            .option("least", "the least block light a spot should have (default " + DARK_LEAST + ")", ArgType.INT)
+            .help("spots inside the mod's ships round the player someone could stand in, lit less than the least: how many, how many unlit")
+            .field("dark", "spots lit less than the least")
+            .field("unlit", "spots with no block light at all, where monsters can spawn")
+            .field("first", "where the first few of the darkest stand, lowest first"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("livery", (context, args) -> livery(args))
             .onServer()
             .group("skyliners")
@@ -143,6 +172,17 @@ public final class BlockpilotCommands {
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("skyliners:build zeppelin"));
+    }
+
+    /** What this client's player sees from a laser cannon's sight, on the client, as its gunner's view tells it. */
+    private static Result gunner() {
+        LaserCannonBlockEntity.Sighting sighting = LaserCannonBlockEntity.clientSighting.get();
+        if (sighting == null) {
+            return Result.ok(new Fields().tag("on", false));
+        }
+        Vec3 eye = sighting.eye();
+        return Result.ok(new Fields().tag("on", true).tag("at", round(eye.x) + "," + round(eye.y) + "," + round(eye.z))
+            .tag("locked", sighting.lockedOn()));
     }
 
     private static Result zeppelin() throws CommandException {
@@ -258,6 +298,45 @@ public final class BlockpilotCommands {
             .tag("first", first)
             .tag("stuck", stuck.size())
             .tag("first_stuck", firstStuck));
+    }
+
+    /**
+     * The spots round the player inside the mod's ships someone could stand in, a floor of the mod's under them that
+     * holds them, room for their head and out of the sky's light, lit by lamps less than the least asked for.
+     */
+    private static Result dark(Args args) throws CommandException {
+        ServerPlayer player = player();
+        ServerLevel level = player.serverLevel();
+        int radius = args.intOption("radius", DARK_RADIUS);
+        int least = args.intOption("least", DARK_LEAST);
+        BlockPos middle = player.blockPosition();
+        List<BlockPos> dark = new ArrayList<>();
+        int unlit = 0;
+        for (BlockPos at : BlockPos.betweenClosed(middle.offset(-radius, -DARK_BELOW, -radius), middle.offset(radius, DARK_ABOVE, radius))) {
+            int light = standableLight(level, at);
+            if (light >= 0 && light < least) {
+                dark.add(at.immutable());
+                unlit += light == 0 ? 1 : 0;
+            }
+        }
+        String first = dark.stream().limit(FIRST_LEFT).map(pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()).collect(Collectors.joining(" "));
+        return Result.ok(new Fields().tag("dark", dark.size()).tag("unlit", unlit).tag("first", first));
+    }
+
+    /**
+     * The block light at a spot someone could stand in inside one of the mod's ships, out of the sky's light; -1 for any
+     * other spot.
+     */
+    private static int standableLight(ServerLevel level, BlockPos at) {
+        BlockPos below = at.below();
+        boolean room = level.getBlockState(at).getCollisionShape(level, at).isEmpty()
+            && level.getBlockState(at.above()).getCollisionShape(level, at.above()).isEmpty();
+        boolean ours = BuiltInRegistries.BLOCK.getKey(level.getBlockState(below).getBlock()).getNamespace().equals(Skyliners.MOD_ID);
+        if (!room || !ours || !level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)
+            || level.getBrightness(LightLayer.SKY, at) >= DARK_SKY) {
+            return -1;
+        }
+        return level.getBrightness(LightLayer.BLOCK, at);
     }
 
     private static Result autopilot(CommandContext context, Args args) throws CommandException {

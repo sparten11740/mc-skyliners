@@ -1,0 +1,322 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "steel": "skyliners:block/hull_fitting_steel",
+    "dark": "skyliners:block/hull_fitting_dark",
+    "pipe": "skyliners:block/hull_pipe",
+    "lamp": "skyliners:block/hull_status_lamp",
+    "particle": "skyliners:block/hull_fitting_steel",
+    "beacon": "skyliners:block/antenna_lamp"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        2,
+        14
+      ],
+      "to": [
+        10.5,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark"
+        },
+        "south": {
+          "texture": "#dark"
+        },
+        "east": {
+          "texture": "#dark"
+        },
+        "west": {
+          "texture": "#dark"
+        },
+        "up": {
+          "texture": "#dark"
+        },
+        "down": {
+          "texture": "#dark"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        3,
+        11
+      ],
+      "to": [
+        9.5,
+        7,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        9.5,
+        4.5,
+        12
+      ],
+      "to": [
+        9.6,
+        5.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        7.4,
+        4.4,
+        -9
+      ],
+      "to": [
+        8.6,
+        5.6,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            10.4,
+            16,
+            11.6
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            10.4,
+            16,
+            11.6
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            7.4,
+            0,
+            8.6,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            7.4,
+            0,
+            8.6,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          5,
+          11
+        ],
+        "axis": "x",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        6.9,
+        3.9,
+        -11.5
+      ],
+      "to": [
+        9.1,
+        6.1,
+        -9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beacon",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#beacon",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#beacon",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            9,
+            9.9,
+            11.5,
+            12.1
+          ]
+        },
+        "west": {
+          "texture": "#beacon",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            4.5,
+            9.9,
+            7,
+            12.1
+          ]
+        },
+        "up": {
+          "texture": "#beacon",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            6.9,
+            4.5,
+            9.1,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#beacon",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            6.9,
+            9,
+            9.1,
+            11.5
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          5,
+          11
+        ],
+        "axis": "x",
+        "angle": 45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        9.5,
+        8,
+        12.5
+      ],
+      "to": [
+        10.5,
+        13,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    }
+  ]
+}

@@ -347,6 +347,11 @@ import dev.skyliners.entity.SlideRide;
 import dev.skyliners.entity.Spookie;
 import dev.skyliners.entity.Tardigrade;
 import dev.skyliners.entity.Trolley;
+import dev.skyliners.exterior.ExhaustVentBlock;
+import dev.skyliners.exterior.HullFittingBlock;
+import dev.skyliners.exterior.HullFittings;
+import dev.skyliners.exterior.SatelliteDishBlock;
+import dev.skyliners.exterior.SatelliteDishBlockEntity;
 import dev.skyliners.item.AirframeBlueprintItem;
 import dev.skyliners.item.BasketballItem;
 import dev.skyliners.item.BoardingPassItem;
@@ -479,6 +484,14 @@ public final class SkylinersRegistry {
     private static final int PRESSED_GLOW = 7;
     /** How brightly the self-destruct button glows while armed, in light levels: a red glow round it on the wall. */
     private static final int ARMED_GLOW = 9;
+    /** How brightly a sensor dome's band glows, in light levels: a faint cyan halo round it at night. */
+    private static final int SENSOR_GLOW = 4;
+    /** How brightly a hull floodlight lights what is round it, in light levels: as bright as a light gets. */
+    private static final int HULL_FLOODLIGHT_GLOW = 15;
+    /** How brightly the freighter's light band round her rim glows, in light levels: a bright ring at night. */
+    private static final int LIGHT_BAND_GLOW = 12;
+    /** How brightly a hull light strip glows, in light levels: enough to light a loading bay. */
+    private static final int LIGHT_STRIP_GLOW = 10;
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -918,16 +931,16 @@ public final class SkylinersRegistry {
     /** Her computer, after its falling blip: "Jump drive fault." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_FAULT =
         sound("freighter_computer_jump_fault");
-    /** Her computer, after its falling blip: "Ramp lowering." */
+    /** Her computer, after its falling blip, as her ramp's latches let go: "Ramp coming down. Mind the rust." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_RAMP_LOWERING =
         sound("freighter_computer_ramp_lowering");
-    /** Her computer, after its falling blip: "Turret ready." */
+    /** Her computer, after its falling blip, to her gunner sitting down: "Gun turret online. Try and hit something." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_TURRET_READY =
         sound("freighter_computer_turret_ready");
     /** Her computer, after its falling blip, counting down to a jump: "Jump in three, two, one." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_COUNTDOWN =
         sound("freighter_computer_jump_countdown");
-    /** Her computer, after its falling blip, saying her name: "Magpie ready." */
+    /** Her computer, after its falling blip, saying her name: "Magpie's awake. Barely." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_MAGPIE_READY =
         sound("freighter_computer_magpie_ready");
     /** Her computer as she jumps: "Jump drive spooling up. Hold on to something." */
@@ -947,6 +960,21 @@ public final class SkylinersRegistry {
     /** Her computer asked to jump to a pin close by: "That is practically next door. Just fly there." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_TOO_NEAR =
         sound("freighter_computer_jump_too_near");
+    /** Her computer for her flight deck, set to take off: "Lifting off. Hold on to something bolted down." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_TAKEOFF =
+        sound("freighter_computer_takeoff");
+    /** Her computer for her flight deck, coming down: "Coming down to land. Expect a bump. Or two." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_LANDING =
+        sound("freighter_computer_landing");
+    /** Her computer for her flight deck, down on her legs: "We're down. Nothing fell off. That I know of." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ARRIVAL =
+        sound("freighter_computer_arrival");
+    /** Her computer for her flight deck, reaching space: "We're in space. Keep the windows shut." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_SPACE =
+        sound("freighter_computer_space");
+    /** Her computer for her flight deck, her gravity coming back on in space: "Gravity back on. Mind your landing." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_GRAVITY =
+        sound("freighter_computer_gravity");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );
@@ -1381,6 +1409,88 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserCannonBlockEntity>> LASER_CANNON_ENTITY =
         BLOCK_ENTITIES.register("laser_cannon", () -> BlockEntityType.Builder.of(LaserCannonBlockEntity::new, LASER_CANNON.get()).build(null));
     public static final DeferredItem<BlockItem> LASER_CANNON_ITEM = ITEMS.registerSimpleBlockItem(LASER_CANNON);
+    /**
+     * The freighter's outside fittings (see {@link HullFittingBlock}), each put up on a floor, a wall or a ceiling in a
+     * shape of its own: her satellite dishes, small and big, turning on their mounts (see {@link SatelliteDishBlock}),
+     * her antenna masts with their blinking red lamps, her sensor domes, her banks of heat-sink fins, her exhaust vents
+     * letting off wisps, the boxes, pipes and tanks of her hull machinery, and her floodlights, lighting the ground
+     * under her.
+     */
+    public static final DeferredBlock<SatelliteDishBlock> SATELLITE_DISH = BLOCKS.registerBlock(
+        "satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.SATELLITE_DISH, HullFittings.SMALL_DISH),
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> SATELLITE_DISH_ITEM = ITEMS.registerSimpleBlockItem(SATELLITE_DISH);
+    public static final DeferredBlock<SatelliteDishBlock> BIG_SATELLITE_DISH = BLOCKS.registerBlock(
+        "big_satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.BIG_SATELLITE_DISH, HullFittings.BIG_DISH),
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> BIG_SATELLITE_DISH_ITEM = ITEMS.registerSimpleBlockItem(BIG_SATELLITE_DISH);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SatelliteDishBlockEntity>> SATELLITE_DISH_ENTITY = BLOCK_ENTITIES.register(
+        "satellite_dish", () -> BlockEntityType.Builder.of(SatelliteDishBlockEntity::new, SATELLITE_DISH.get(), BIG_SATELLITE_DISH.get()).build(null));
+    public static final DeferredBlock<HullFittingBlock> ANTENNA_MAST = BLOCKS.registerBlock(
+        "antenna_mast", properties -> new HullFittingBlock(properties, HullFittings.ANTENNA_MAST), metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> ANTENNA_MAST_ITEM = ITEMS.registerSimpleBlockItem(ANTENNA_MAST);
+    public static final DeferredBlock<HullFittingBlock> SENSOR_DOME = BLOCKS.registerBlock(
+        "sensor_dome", properties -> new HullFittingBlock(properties, HullFittings.SENSOR_DOME), metal(MapColor.SNOW).noOcclusion()
+            .lightLevel(state -> SENSOR_GLOW)
+    );
+    public static final DeferredItem<BlockItem> SENSOR_DOME_ITEM = ITEMS.registerSimpleBlockItem(SENSOR_DOME);
+    public static final DeferredBlock<HullFittingBlock> HEAT_SINK = BLOCKS.registerBlock(
+        "heat_sink", properties -> new HullFittingBlock(properties, HullFittings.HEAT_SINK), metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> HEAT_SINK_ITEM = ITEMS.registerSimpleBlockItem(HEAT_SINK);
+    public static final DeferredBlock<ExhaustVentBlock> EXHAUST_VENT = BLOCKS.registerBlock(
+        "exhaust_vent", ExhaustVentBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> EXHAUST_VENT_ITEM = ITEMS.registerSimpleBlockItem(EXHAUST_VENT);
+    public static final DeferredBlock<HullFittingBlock> HULL_MACHINERY = BLOCKS.registerBlock(
+        "hull_machinery", properties -> new HullFittingBlock(properties, HullFittings.HULL_MACHINERY), metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> HULL_MACHINERY_ITEM = ITEMS.registerSimpleBlockItem(HULL_MACHINERY);
+    public static final DeferredBlock<HullFittingBlock> HULL_FLOODLIGHT = BLOCKS.registerBlock(
+        "hull_floodlight", properties -> new HullFittingBlock(properties, HullFittings.HULL_FLOODLIGHT), metal(MapColor.COLOR_GRAY).noOcclusion()
+            .lightLevel(state -> HULL_FLOODLIGHT_GLOW)
+    );
+    public static final DeferredItem<BlockItem> HULL_FLOODLIGHT_ITEM = ITEMS.registerSimpleBlockItem(HULL_FLOODLIGHT);
+    /**
+     * The freighter's hull plates (see {@link ShellBlock}), laid in place of her cover outside where nobody inside sees
+     * it, cut to her curve as her cover is: dark gunmetal plate, a riveted seam, a welded patch and hazard stripes. Set
+     * by hand, each is a whole plate; broken, each gives itself back.
+     */
+    public static final DeferredBlock<ShellBlock> HULL_PLATE_DARK = BLOCKS.registerBlock(
+        "hull_plate_dark", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_PLATE_DARK_ITEM), metal(MapColor.COLOR_GRAY)
+    );
+    public static final DeferredItem<BlockItem> HULL_PLATE_DARK_ITEM = ITEMS.registerSimpleBlockItem(HULL_PLATE_DARK);
+    public static final DeferredBlock<ShellBlock> HULL_PLATE_RIVETED = BLOCKS.registerBlock(
+        "hull_plate_riveted", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_PLATE_RIVETED_ITEM), metal(MapColor.METAL)
+    );
+    public static final DeferredItem<BlockItem> HULL_PLATE_RIVETED_ITEM = ITEMS.registerSimpleBlockItem(HULL_PLATE_RIVETED);
+    public static final DeferredBlock<ShellBlock> HULL_PLATE_PATCHED = BLOCKS.registerBlock(
+        "hull_plate_patched", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_PLATE_PATCHED_ITEM), metal(MapColor.COLOR_LIGHT_GRAY)
+    );
+    public static final DeferredItem<BlockItem> HULL_PLATE_PATCHED_ITEM = ITEMS.registerSimpleBlockItem(HULL_PLATE_PATCHED);
+    public static final DeferredBlock<ShellBlock> HAZARD_PLATE = BLOCKS.registerBlock(
+        "hazard_plate", properties -> new ShellBlock(properties, SkylinersRegistry.HAZARD_PLATE_ITEM), metal(MapColor.COLOR_YELLOW)
+    );
+    public static final DeferredItem<BlockItem> HAZARD_PLATE_ITEM = ITEMS.registerSimpleBlockItem(HAZARD_PLATE);
+    /**
+     * The freighter's outside lights: the glowing band round her rim, a plate cut to her curve as her cover is (see
+     * {@link ShellBlock}), a bright cyan-white line along its middle, whole when set by hand; and the hull light strip
+     * (see {@link HullFittingBlock}), a lit channel lying on a floor, a hooded strip along a wall or a channel under a
+     * ceiling, along her prongs and her loading gap.
+     */
+    public static final DeferredBlock<ShellBlock> HULL_LIGHT_BAND = BLOCKS.registerBlock(
+        "hull_light_band", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_LIGHT_BAND_ITEM),
+        metal(MapColor.COLOR_CYAN).lightLevel(state -> LIGHT_BAND_GLOW)
+    );
+    public static final DeferredItem<BlockItem> HULL_LIGHT_BAND_ITEM = ITEMS.registerSimpleBlockItem(HULL_LIGHT_BAND);
+    public static final DeferredBlock<HullFittingBlock> HULL_LIGHT_STRIP = BLOCKS.registerBlock(
+        "hull_light_strip", properties -> new HullFittingBlock(properties, HullFittings.HULL_LIGHT_STRIP),
+        metal(MapColor.COLOR_CYAN).noOcclusion().lightLevel(state -> LIGHT_STRIP_GLOW)
+    );
+    public static final DeferredItem<BlockItem> HULL_LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(HULL_LIGHT_STRIP);
     /** The bandstand in the freighter's club, its band playing her song (see {@link BandstandBlock}). */
     public static final DeferredBlock<BandstandBlock> BANDSTAND = BLOCKS.registerBlock(
         "bandstand", BandstandBlock::new,
@@ -1458,10 +1568,11 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> CONSOLE_JUMP_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_JUMP);
     /**
      * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
-     * and walked over, glass under its iris, as strong as glass is not; and its panel, which opens and shuts it.
+     * and walked over, glass under its iris, as strong as glass is not and proof against blasts, as one blown out by a
+     * part would leave the rest of it behind; and its panel, which opens and shuts it.
      */
     public static final DeferredBlock<FloorWindowBlock> FLOOR_WINDOW = BLOCKS.registerBlock(
-        "floor_window", FloorWindowBlock::new, metal(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.GLASS).noOcclusion()
+        "floor_window", FloorWindowBlock::new, metal(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.GLASS).noOcclusion().explosionResistance(1200F)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FloorWindowBlockEntity>> FLOOR_WINDOW_ENTITY =
         BLOCK_ENTITIES.register("floor_window", () -> BlockEntityType.Builder.of(FloorWindowBlockEntity::new, FLOOR_WINDOW.get()).build(null));
@@ -2003,6 +2114,12 @@ public final class SkylinersRegistry {
         metal(MapColor.METAL).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> POOL_LADDER_ITEM = ITEMS.registerSimpleBlockItem(POOL_LADDER);
+    /** The freighter's slim chrome crew ladder up her core to her gunner's seat (see {@link RungLadderBlock}). */
+    public static final DeferredBlock<RungLadderBlock> CREW_LADDER = BLOCKS.registerBlock(
+        "crew_ladder", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.CREW_LADDER),
+        metal(MapColor.METAL).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> CREW_LADDER_ITEM = ITEMS.registerSimpleBlockItem(CREW_LADDER);
 
     /**
      * The gym hall's fittings: the wall bars and the climbing ropes, climbed as a ladder is, the mats in front of the
@@ -3000,6 +3117,20 @@ public final class SkylinersRegistry {
             RAMP_BUTTON_ITEM,
             LASER_CROSSBOW,
             LASER_CANNON_ITEM,
+            SATELLITE_DISH_ITEM,
+            BIG_SATELLITE_DISH_ITEM,
+            ANTENNA_MAST_ITEM,
+            SENSOR_DOME_ITEM,
+            HEAT_SINK_ITEM,
+            EXHAUST_VENT_ITEM,
+            HULL_MACHINERY_ITEM,
+            HULL_FLOODLIGHT_ITEM,
+            HULL_PLATE_DARK_ITEM,
+            HULL_PLATE_RIVETED_ITEM,
+            HULL_PLATE_PATCHED_ITEM,
+            HAZARD_PLATE_ITEM,
+            HULL_LIGHT_BAND_ITEM,
+            HULL_LIGHT_STRIP_ITEM,
             BANDSTAND_ITEM,
             SPOOKIE_HAMMOCK_ITEM,
             ENGINE_GRATING_ITEM,
@@ -3019,7 +3150,8 @@ public final class SkylinersRegistry {
             POTTED_PALM_ITEM,
             PARASOL_ITEM,
             SUN_LOUNGER_ITEM,
-            TIKI_TORCH_ITEM
+            TIKI_TORCH_ITEM,
+            CREW_LADDER_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

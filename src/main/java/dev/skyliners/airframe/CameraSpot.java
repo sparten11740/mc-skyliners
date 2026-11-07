@@ -68,8 +68,7 @@ public interface CameraSpot {
             case AIRLINER -> List.of(OutsideCamera.values());
             case ZEPPELIN -> List.of(ZeppelinCamera.values());
             case ROCKET -> List.of(RocketCamera.values());
-            // Her cameras come with her cockpit's camera display.
-            case FREIGHTER -> List.of();
+            case FREIGHTER -> List.of(FreighterCamera.values());
         };
     }
 

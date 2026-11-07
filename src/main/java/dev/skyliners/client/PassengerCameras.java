@@ -16,7 +16,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -44,6 +43,9 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * screen or the player is gone or out of reach. Only ever for the local player, on the client.
  */
 public final class PassengerCameras {
+    /** How loud the low thud is that says a screen has no camera to show here, and its pitch. */
+    private static final float NO_CAMERA_VOLUME = 0.6F;
+    private static final float NO_CAMERA_PITCH = 0.5F;
     /** Further than this from the screen, in blocks, the player has left the airliner or been left behind. */
     private static final double REACH = 32;
     /** The pitch of the click as the view changes. */
@@ -135,7 +137,10 @@ public final class PassengerCameras {
         return CameraSpot.of(craft).stream().filter(camera -> flyby || camera.orbitRadius() <= 0).toList();
     }
 
-    /** The local player has used a passenger screen: look through the first camera, if the airliner has them. */
+    /**
+     * The local player has used a passenger screen: look through the first camera, if the airframe it is aboard has
+     * any it shows, which one whose only camera circles has not with the flyby camera off.
+     */
     public static void use(PassengerScreenBlockEntity screen) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
@@ -154,6 +159,11 @@ public final class PassengerCameras {
         // other's.
         Viewing view = new Viewing(screen, frame, new Lens(player.level(), player.getEyeHeight()),
             minecraft.options.getCameraType(), player.getYRot(), player.getXRot());
+        if (view.cameras.isEmpty()) {
+            player.displayClientMessage(Component.translatable("message.skyliners.passenger_screen.no_camera_here"), true);
+            player.playSound(SoundEvents.NOTE_BLOCK_BASS.value(), NO_CAMERA_VOLUME, NO_CAMERA_PITCH);
+            return;
+        }
         view.mount(0);
         if (!place(view, minecraft.getTimer().getGameTimeDeltaPartialTick(true))) {
             return;
@@ -207,27 +217,7 @@ public final class PassengerCameras {
         if (seen == null) {
             return false;
         }
-        Vec3 forward = seen.forward();
-        float yaw = (float) Math.toDegrees(Math.atan2(-forward.x, forward.z));
-        float pitch = (float) Math.toDegrees(-Math.asin(Mth.clamp(forward.y, -1, 1)));
-        // Up and right for a camera looking that way held level, as Minecraft turns its camera; the camera's own up
-        // leans from the one toward the other by its roll.
-        double yawRadians = Math.toRadians(yaw);
-        double pitchRadians = Math.toRadians(pitch);
-        Vec3 right = new Vec3(-Math.cos(yawRadians), 0, -Math.sin(yawRadians));
-        Vec3 level = new Vec3(-Math.sin(pitchRadians) * Math.sin(yawRadians), Math.cos(pitchRadians), Math.sin(pitchRadians) * Math.cos(yawRadians));
-        view.roll = (float) Math.toDegrees(Math.atan2(seen.up().dot(right), seen.up().dot(level)));
-
-        Lens lens = view.lens;
-        Vec3 feet = seen.eye().subtract(0, lens.getEyeHeight(), 0);
-        lens.setPos(feet);
-        lens.xo = feet.x;
-        lens.yo = feet.y;
-        lens.zo = feet.z;
-        lens.setYRot(yaw);
-        lens.yRotO = yaw;
-        lens.setXRot(pitch);
-        lens.xRotO = pitch;
+        view.roll = view.lens.point(seen.eye(), seen.forward(), seen.up());
         return true;
     }
 

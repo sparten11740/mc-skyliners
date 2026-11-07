@@ -7,14 +7,14 @@
   "elements": [
     {
       "from": [
-        3,
+        2,
         0,
-        3
+        2
       ],
       "to": [
-        13,
-        4,
-        13
+        14,
+        2,
+        14
       ],
       "faces": {
         "north": {
@@ -39,14 +39,46 @@
     },
     {
       "from": [
-        4,
-        4,
-        4
+        5,
+        2,
+        5
       ],
       "to": [
-        12,
-        6,
-        12
+        11,
+        13,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mount"
+        },
+        "south": {
+          "texture": "#mount"
+        },
+        "east": {
+          "texture": "#mount"
+        },
+        "west": {
+          "texture": "#mount"
+        },
+        "up": {
+          "texture": "#mount"
+        },
+        "down": {
+          "texture": "#mount"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        13,
+        3
+      ],
+      "to": [
+        13,
+        16,
+        13
       ],
       "faces": {
         "north": {

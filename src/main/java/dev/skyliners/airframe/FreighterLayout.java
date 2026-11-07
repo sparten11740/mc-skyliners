@@ -33,6 +33,7 @@ import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.RobotBartenderBlock;
+import dev.skyliners.block.RungLadderBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.block.WallLightBlock;
@@ -40,6 +41,7 @@ import dev.skyliners.block.WindowDimmerBlock;
 import dev.skyliners.block.WindowDimmerBlockEntity;
 import dev.skyliners.club.BandstandBlock;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,9 +51,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
-import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -126,6 +126,8 @@ public final class FreighterLayout extends HullLayout {
     private static final double LINING_IN = 0.6;
     private static final int LINING_SEARCH = 4;
     private static final int MAIN_ROWS_UP = 2;
+    /** How far past her rim's face her engines' glow is drawn, in blocks: out in the air behind her mains' nozzles. */
+    private static final double NOZZLE_OUT = 0.6;
     /** Her retros in her prongs' tips, so far out either side of her middle line, in metres. */
     private static final double RETRO_OUT = 3.4;
     /**
@@ -212,13 +214,16 @@ public final class FreighterLayout extends HullLayout {
      */
     private static final int[] BUNK_HEADS = {9, 12, 15, 18};
     private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.PURPLE, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
+    /** The least light her crawlways and the spaces under her deck are lit by, in light levels: dim, but never black. */
+    private static final int PASSAGE_LIGHT = 4;
     /**
      * Her lounge's booth, in the room aft of her entry hall: a low table at this bearing and so far out from her axis,
-     * in the room's far corner, its middle kept for her beach, with a seat facing it on each side so many blocks from
-     * it, leg room between, in these colours by turns.
+     * in the room's far corner behind the partition across it, its middle kept for her beach (see {@link
+     * FreighterChillout}), with a seat facing it on each side that has room so many blocks from it, leg room between,
+     * in these colours by turns.
      */
-    private static final int LOUNGE_BEARING = 135;
-    private static final double LOUNGE_OUT = 19.8;
+    private static final int LOUNGE_BEARING = 137;
+    private static final double LOUNGE_OUT = 20.5;
     private static final int LOUNGE_SEAT_OUT = 2;
     private static final DyeColor[] LOUNGE_SEATS = {DyeColor.ORANGE, DyeColor.BROWN};
     /**
@@ -353,6 +358,16 @@ public final class FreighterLayout extends HullLayout {
         return FEET;
     }
 
+    /**
+     * Where her mains' nozzles are, for her engines' glow: so many blocks to her right of her disc's middle, up from it
+     * and astern of it, level with her control head as {@code FreighterFlight.middleOf} has her middle, each just past
+     * her rim's face.
+     */
+    public static List<Vec3> mainNozzles() {
+        double out = FreighterShape.RADIUS * SCALE + NOZZLE_OUT;
+        return Arrays.stream(MAIN_BEARINGS).mapToObj(FreighterLayout::way).map(way -> new Vec3(way[0] * out, MAIN_ROWS_UP - 1, way[1] * out)).toList();
+    }
+
     private static List<Offset> footPlates() {
         List<Offset> feet = new ArrayList<>();
         for (double[] leg : FreighterShape.LEGS) {
@@ -427,6 +442,9 @@ public final class FreighterLayout extends HullLayout {
         layout.robots();
         layout.ramp();
         layout.turret();
+        FreighterPlating.build(layout);
+        FreighterLights.build(layout);
+        FreighterExterior.build(layout);
         layout.bandstand();
         layout.clubBar();
         layout.quarters();
@@ -436,12 +454,16 @@ public final class FreighterLayout extends HullLayout {
         LoungeTank.build(layout, layout.deck);
         FreighterChillout.build(layout, layout.deck);
         FreighterPaintings.build(layout, layout.deck);
+        FreighterGallery.build(layout, layout.deck, layout.scale);
         FreighterEngineering.build(layout, layout.deck);
         FreighterEntryHall.build(layout, layout.deck);
         FreighterFurnishings.build(layout, layout.deck);
         FreighterSpookie.build(layout, layout.deck);
         FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side));
         layout.lights();
+        if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
+            DarkCorners.light(layout, LightTone.WARM, layout::leastLight);
+        }
         layout.countAir();
         return layout;
     }
@@ -1031,7 +1053,8 @@ public final class FreighterLayout extends HullLayout {
      * Her top turret, up her core: a ladder up the core's back wall from her deck to the top of the shaft under her top
      * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow, its back to the ladder,
      * their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
-     * and the laser cannon on the glass over them; none with the server config's {@code freighter.turrets} off.
+     * and the laser cannon on its pedestal on the glass over them, facing her bow, its sight seeing past her rim; none
+     * with the server config's {@code freighter.turrets} off.
      */
     private void turret() {
         int under = deck + 1;
@@ -1042,9 +1065,10 @@ public final class FreighterLayout extends HullLayout {
         if (!SkylinersConfig.FREIGHTER_TURRETS.get() || seat <= deck + 2) {
             return;
         }
-        BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
+        BlockState ladder = SkylinersRegistry.CREW_LADDER.get().defaultBlockState()
+            .setValue(RungLadderBlock.FACING, Direction.NORTH);
         for (int y = deck + 1; y <= seat; y++) {
-            set(0, y, CORE - 1, ladder);
+            set(0, y, CORE - 1, ladder.setValue(RungLadderBlock.TOP, y == seat));
         }
         BlockState floor = SkylinersRegistry.CABIN_FLOOR.get().defaultBlockState();
         for (int cell = 0; cell < 2 * CORE_INSIDE; cell++) {
@@ -1340,6 +1364,16 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
+     * The least light a block someone could stand in is lit by in her, in light levels: her rooms and ring corridor,
+     * over her deck inside her outer bulkhead, only never left unlit, as each keeps its own mood; her crawlways, her
+     * cockpit's way and the spaces under her deck so much more that none of them looks black.
+     */
+    private int leastLight(BlockPos at) {
+        boolean roomy = at.getY() > deck && Math.hypot(at.getX(), at.getZ()) < bulkhead;
+        return roomy ? DarkCorners.UNLIT : PASSAGE_LIGHT;
+    }
+
+    /**
      * Her corridor's wall washers round a room wall's bearing, between two doorways: one on the wall's line and one
      * either side of it, each on the corridor's outer wall, looked for outward across the corridor.
      */
@@ -1539,7 +1573,7 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /** The way along her deck at a bearing, clockwise from her bow, as x and z of a unit vector. */
-    private static double[] way(double bearing) {
+    static double[] way(double bearing) {
         double turn = Math.toRadians(bearing);
         return new double[]{Math.sin(turn), -Math.cos(turn)};
     }

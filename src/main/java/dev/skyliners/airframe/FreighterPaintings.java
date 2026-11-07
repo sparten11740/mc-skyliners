@@ -70,12 +70,23 @@ final class FreighterPaintings {
     /** Hangs a painting with its middle column at a column along the wall, if it fits there and can be seen. */
     private boolean hangAt(SpacePoster painting, Direction face, int x) {
         int row = deck + UP + painting.rowsUnderMiddle();
-        BlockPos middle = new BlockPos(x, row, face.getStepZ());
+        return hangWhole(layout, deck, painting, new BlockPos(x, row, face.getStepZ()), face);
+    }
+
+    /**
+     * Hangs a painting whole in a ship's layout whose deck's floor is the row given, its middle block at the position
+     * given looking out one way, if every block of it is open with the wall behind it and the room open before its
+     * middle, with a floor light under it (see {@link #uplight}) if it hangs clear of the floor; gives whether it hung.
+     */
+    static boolean hangWhole(HullLayout layout, int deck, SpacePoster painting, BlockPos middle, Direction face) {
         Map<BlockPos, BlockState> pieces = SkylinersRegistry.SPACE_POSTER.get().pieces(painting, middle, face);
-        boolean fits = inView(middle, face) && pieces.keySet().stream().allMatch(at -> onWall(at, face));
+        boolean fits = inView(layout, middle, face)
+            && pieces.keySet().stream().allMatch(at -> onWall(layout, at, face));
         if (fits) {
             pieces.forEach((at, piece) -> layout.set(at.getX(), at.getY(), at.getZ(), piece));
-            uplight(x, face.getStepZ());
+        }
+        if (fits && middle.getY() - painting.rowsUnderMiddle() > deck + 1) {
+            uplight(layout, deck, middle, face);
         }
         return fits;
     }
@@ -84,20 +95,23 @@ final class FreighterPaintings {
      * A floor light at the foot of the wall under a painting, shining up at it, in the column nearest its middle that
      * is open over her deck's floor, as a gallery lights its pictures: her rooms' wall washers leave a painting's
      * middle dim, and in her pink club all but dark. Warm white even there, so the picture shows its own colours;
-     * none where every column under it is taken.
+     * none where every column under it is taken. Its columns are tried out from the middle the same way along the wall
+     * whichever way the painting looks, toward east or south first.
      */
-    private void uplight(int middle, int z) {
+    private static void uplight(HullLayout layout, int deck, BlockPos middle, Direction face) {
+        Direction.Axis wall = face.getClockWise().getAxis();
+        Direction along = Direction.fromAxisAndDirection(wall, Direction.AxisDirection.POSITIVE);
         for (int column : UPLIGHT_COLUMNS) {
-            int x = middle + column;
-            if (layout.isOpen(x, deck + 1, z) && !layout.isOpen(x, deck, z)) {
-                layout.set(x, deck + 1, z, SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState());
+            BlockPos at = middle.relative(along, column);
+            if (layout.isOpen(at.getX(), deck + 1, at.getZ()) && !layout.isOpen(at.getX(), deck, at.getZ())) {
+                layout.set(at.getX(), deck + 1, at.getZ(), SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState());
                 return;
             }
         }
     }
 
     /** Whether the room is open before a painting's middle, so it can be seen. */
-    private boolean inView(BlockPos middle, Direction face) {
+    private static boolean inView(HullLayout layout, BlockPos middle, Direction face) {
         for (int out = 1; out <= IN_VIEW; out++) {
             BlockPos before = middle.relative(face, out);
             if (!layout.isOpen(before.getX(), before.getY(), before.getZ())) {
@@ -108,7 +122,7 @@ final class FreighterPaintings {
     }
 
     /** Whether a block of a painting looking out one way can hang at a position: open, with the wall behind it. */
-    private boolean onWall(BlockPos at, Direction face) {
+    private static boolean onWall(HullLayout layout, BlockPos at, Direction face) {
         BlockPos behind = at.relative(face.getOpposite());
         return layout.isOpen(at.getX(), at.getY(), at.getZ()) && !layout.isOpen(behind.getX(), behind.getY(), behind.getZ());
     }

@@ -54,6 +54,18 @@ public final class TouchPanel {
         }
     }
 
+    /**
+     * A button of two states that shows only what pressing it does now, as a light switch's picture says on or off:
+     * the action it does while what it works is off, and the one while it is on, its picture and colour that action's.
+     * Shared alike by the server, which does the action, and the client, which draws it, so the two always agree.
+     */
+    public record Toggle<A>(A whenOff, A whenOn) {
+        /** What pressing the button does, as what it works stands, off or on. */
+        public A action(boolean on) {
+            return on ? whenOn : whenOff;
+        }
+    }
+
     /** A panel's tiles in order, each known by its place in the list. */
     public record Layout(List<Tile> tiles) {
         public Layout {

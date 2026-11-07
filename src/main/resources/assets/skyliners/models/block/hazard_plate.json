@@ -1,0 +1,8 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "skin": "skyliners:block/hazard_plate",
+    "particle": "skyliners:block/hazard_plate"
+  }
+}

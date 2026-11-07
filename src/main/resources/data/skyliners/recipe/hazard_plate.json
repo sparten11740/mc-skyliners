@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "YPB",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "Y": {
+      "item": "minecraft:yellow_dye"
+    },
+    "B": {
+      "item": "minecraft:black_dye"
+    }
+  },
+  "result": {
+    "id": "skyliners:hazard_plate",
+    "count": 7
+  }
+}

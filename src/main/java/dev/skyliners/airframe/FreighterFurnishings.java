@@ -53,10 +53,10 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * parachute rack, a shelf of boots and a worktop with the zeppelin's franking machine on it; her entry hall crew
  * lockers along its wall, a shelf for boots, a terminal's check-in desk facing her ramp, two benches facing each other
  * with luggage by them, crates come aboard, a snack machine, the weather outside on a tower's weather screen, planters
- * and a screen; her lounge round its beach (see {@link FreighterChillout}) a snack machine, shelves of books with the fleet's
- * models on them, a screen and planters; engineering a workbench corner with a crafting table and a grindstone, a
- * smithing table and an anvil, the zeppelin's engine telegraph by her jump drive, two screens on stands either side of
- * it, shelves of jars and tools, spare-parts crates and barrels, a cauldron of coolant; her crew quarters lockers, a
+ * and a screen; her lounge round its beach (see {@link FreighterChillout}) a snack machine, shelves of books with the
+ * fleet's models on them, a screen and planters; engineering a workbench corner with a crafting table and a grindstone,
+ * a smithing table and an anvil, the zeppelin's engine telegraph by her jump drive, two screens on stands either side
+ * of it, shelves of jars and tools, spare-parts crates and barrels, a cauldron of coolant; her crew quarters lockers, a
  * table with two seats a block back from it, bean bags, shelves of books and towels, a suitcase, planters and a med bay
  * corner, a white-blanketed bunk with a vitals screen over its head; and her club four cocktail tables with stools,
  * neon signs on its walls, speakers either side of its bandstand, the rocket club's fog machine, a bean bag and a disco
@@ -180,7 +180,9 @@ final class FreighterFurnishings {
 
     /** Her lounge round her beach: a snack machine, shelves with the fleet's models, a screen and planters. */
     private void lounge() {
-        snackMachine(LOUNGE, 145, 12);
+        if (!snackMachine(LOUNGE, 145, 12)) {
+            snackMachine(LOUNGE, 132, 18);
+        }
         Block[] models = {SkylinersRegistry.MODEL_ROCKET.get(), SkylinersRegistry.MODEL_ZEPPELIN.get(), SkylinersRegistry.MODEL_AIRLINER.get()};
         for (int shelf = 0; shelf < models.length; shelf++) {
             Block model = models[shelf];
@@ -211,7 +213,8 @@ final class FreighterFurnishings {
         wallPiece(ENGINEERING, 155, 15, 1, shelf(ShelfUnitBlock.Kind.TOOLS));
         wallPiece(ENGINEERING, 158, 18, 1, facing -> Blocks.SMITHING_TABLE.defaultBlockState());
         floorPiece(ENGINEERING, 165, 16, 1, at -> Blocks.ANVIL.defaultBlockState().setValue(AnvilBlock.FACING, toward(at).getClockWise()));
-        floorPiece(ENGINEERING, 186, 18, 1, at -> Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
+        floorPiece(ENGINEERING, 186, 18, 1, at -> Blocks.WATER_CAULDRON.defaultBlockState()
+            .setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
         floorPiece(ENGINEERING, 205, 18, 1, at -> Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP));
         floorPiece(ENGINEERING, 208, 17, 1, at -> Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP));
         floorPiece(ENGINEERING, 195, 16, 1, at -> SkylinersRegistry.CARGO_CRATE.get().defaultBlockState()
@@ -372,14 +375,19 @@ final class FreighterFurnishings {
         }
     }
 
-    /** The snack machine, two blocks tall, against the nearest wall with room to stand before it. */
-    private void snackMachine(int room, double bearing, double out) {
+    /**
+     * The snack machine, two blocks tall, against the nearest wall with room to stand before it; gives whether it found
+     * room.
+     */
+    private boolean snackMachine(int room, double bearing, double out) {
         BlockPos lower = wallPiece(room, bearing, out, 1, 2, 2, at -> true,
             facing -> SnackMachineBlock.lower(SkylinersRegistry.SNACK_MACHINE.get(), facing));
-        if (lower != null) {
-            BlockState placed = layout.stateAt(lower.getX(), lower.getY(), lower.getZ());
-            layout.set(lower.getX(), lower.getY() + 1, lower.getZ(), SnackMachineBlock.upper(placed));
+        if (lower == null) {
+            return false;
         }
+        BlockState placed = layout.stateAt(lower.getX(), lower.getY(), lower.getZ());
+        layout.set(lower.getX(), lower.getY() + 1, lower.getZ(), SnackMachineBlock.upper(placed));
+        return true;
     }
 
     /** A stack of two speakers near where it is meant, facing toward her axis. */

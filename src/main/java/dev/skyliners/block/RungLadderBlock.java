@@ -22,17 +22,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A ladder of rungs fixed to a wall and climbed as any ladder is (it is in the climbable tag): the diving tower's
- * chrome pool ladder, the gym hall's wall bars (Sprossenwand), or the ladder up the foot end of an upper bunk (see
- * {@link BunkBlock.Tier}). Pieces stacked one on another make one ladder, and the TOP piece, with no more of it above,
- * finishes it off: the pool ladder's rails curl over into grab handles down onto the floor behind them, the wall bars'
- * top rung stands out from the wall on brackets, to hang from, and the bunk ladder's uprights hook over the upper
- * bunk's footboard. FACING is the way it faces, out from the wall it is fixed to. A bunk ladder has no wall: it stands
- * on the floor, or on its piece below, against the end of the bunk bed it climbs, and goes with it.
+ * chrome pool ladder, the gym hall's wall bars (Sprossenwand), the ladder up the foot end of an upper bunk (see
+ * {@link BunkBlock.Tier}), or the freighter's slim chrome crew ladder up her core. Pieces stacked one on another make
+ * one ladder, and the TOP piece, with no more of it above, finishes it off: the pool ladder's rails curl over into grab
+ * handles down onto the floor behind them, the wall bars' top rung stands out from the wall on brackets, to hang from,
+ * the bunk ladder's uprights hook over the upper bunk's footboard, and the crew ladder's rails carry on up into grab
+ * handles bent back to the wall. FACING is the way it faces, out from the wall it is fixed to. A bunk ladder has no
+ * wall: it stands on the floor, or on its piece below, against the end of the bunk bed it climbs, and goes with it.
  */
 public class RungLadderBlock extends LadderBlock implements Joining {
     private static final MapCodec<LadderBlock> POOL_LADDER_CODEC = simpleCodec(properties -> new RungLadderBlock(properties, Kind.POOL_LADDER));
     private static final MapCodec<LadderBlock> WALL_BARS_CODEC = simpleCodec(properties -> new RungLadderBlock(properties, Kind.WALL_BARS));
     private static final MapCodec<LadderBlock> BUNK_LADDER_CODEC = simpleCodec(properties -> new RungLadderBlock(properties, Kind.BUNK_LADDER));
+    private static final MapCodec<LadderBlock> CREW_LADDER_CODEC = simpleCodec(properties -> new RungLadderBlock(properties, Kind.CREW_LADDER));
     public static final BooleanProperty TOP = BooleanProperty.create("top");
 
     /**
@@ -49,7 +51,14 @@ public class RungLadderBlock extends LadderBlock implements Joining {
          * piece stands only half as high, under the upper bunk's footboard, so stepping off the bunk onto the ladder
          * the feet go down into it and hold on, instead of up onto it and over.
          */
-        BUNK_LADDER(Block.box(1, 0, 13, 15, 16, 16), Block.box(1, 0, 13, 15, 8, 16));
+        BUNK_LADDER(Block.box(1, 0, 13, 15, 16, 16), Block.box(1, 0, 13, 15, 8, 16)),
+        /**
+         * Two chrome rails close up against the wall with a ribbed steel rung between them every quarter block,
+         * standing out from the wall no more than three pixels, so it climbs a narrow shaft; its top piece's rails
+         * carry on up into grab handles to hold on to stepping off at the top, walked through as the rest of it is, so
+         * they are never in the way of the step off.
+         */
+        CREW_LADDER(Block.box(1, 0, 13, 15, 16, 16), Block.box(1, 0, 13, 15, 16, 16));
 
         private final Map<Direction, VoxelShape> pieces;
         private final Map<Direction, VoxelShape> tops;
@@ -74,6 +83,7 @@ public class RungLadderBlock extends LadderBlock implements Joining {
             case POOL_LADDER -> POOL_LADDER_CODEC;
             case WALL_BARS -> WALL_BARS_CODEC;
             case BUNK_LADDER -> BUNK_LADDER_CODEC;
+            case CREW_LADDER -> CREW_LADDER_CODEC;
         };
     }
 

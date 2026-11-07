@@ -127,7 +127,8 @@ show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mas
 the autopilot's block entity, which knows each kind of craft only through its `CraftFlight`, made by its `Craft`
 (`AirlinerFlight`, whose flying stays the block entity's own, `ZeppelinFlight`, and `RocketFlight` and `FreighterFlight`,
 both `StandingFlight`s, craft that stand on feet of their own, come straight down onto them and can climb to space): what the craft is
-wired to, how it is flown each tick, how it lands, switches off, saves and is shown to the clients, so a new kind of
+wired to, how it is flown each tick, how it lands, switches off, saves and is shown to the clients, and what is said
+aboard it for the flight deck's announcements (`says`: the rocket's arrival, the freighter's computer), so a new kind of
 craft is a new class and a constant there, the block entity left as it is; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled, until `ParkedShips` lets it go, parked with nobody near, noting where it stands to load the land under it when someone comes back, as Sable would not.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned
@@ -165,7 +166,8 @@ inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (
 the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels, as are the
 airliner's announcement panel and autopilot screen and her LED panels and console, `TouchPanelBlock`s laying out their
 tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which brightens the tile looked at and makes the one
-picked glow alike on every panel, and over the paint of the zeppelin's `LiveryBoardBlock`, `SkywritingBoardBlock` and
+picked glow alike on every panel (a button of two states, which shows only what pressing it does, is a
+`TouchPanel.Toggle`, as the freighter's ramp panel's is), and over the paint of the zeppelin's `LiveryBoardBlock`, `SkywritingBoardBlock` and
 `PictureBoardBlock`, whose buttons are painted on, as over the `LiverySelectorBlock`'s pictures); on the client
 `LiftSounds` plays a riding car's hum, and its
 music for whoever rides it or
@@ -221,7 +223,9 @@ a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem
 on three of the airliner's bulkheads, last of its fit-out and only where the bulkhead carries on past every side of the
 picture; `FreighterPaintings` on the freighter's two straight walls across her beam, each at the first place along its
 wall where it hangs whole, a `FloorLightBlock` under it.
-`airframe.fleetPaintings` switches all four.
+`airframe.fleetPaintings` switches all four. `FreighterGallery` hangs more space posters along the tunnel down the
+freighter's port prong through `FreighterPaintings.hangWhole`, and stands the fleet's `SouvenirModelBlock`s and
+`PlanterBlock`s along the ledges of the tube out to her cockpit; `freighter.gallery` switches both.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.
@@ -311,15 +315,23 @@ counted on the server and each client (`ToldTicks`), and once down the invisible
 block in two in four little steps, which the ground passes through (`SableFlight.rampDeck`); `BoardingRampRenderer`
 draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
-long off. `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
+long off. Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
+a landing it comes down only once her cockpit is `quiet`, so it and her announcements never talk over each other.
+`Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
 `LaserCrossbowItem` keeps its charge and heat on its stack as data components, which `LaserCrossbowLooks` draws, traces
 its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow colour tells
 `LaserBolts` to draw it amber rather than the path clearer's red. Her top turret is in `turret/`: the
-`LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from just past her dome to
-what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so its bolts land
-under their crosshair; it tells clients the aim now and then, which ease toward it (`HeadTurn`), and fires along it
+`LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from its `sight` (over and
+behind its swivel, square to their look, worked out the same on both sides from the seated player's turn, which is in
+her frame) to what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so
+its bolts land under the sight's crosshair; it holds fire while its barrels point into her own hull
+(`SableFlight.bodyAt`), keeps its heat, cooling after a rest, and tells clients its aim now and then and its heat with
+every bolt in its update tag, which ease toward the aim (`HeadTurn`) and count the heat down themselves; it fires
 while the gunner's `GunnerTrigger` says the attack key is held, which the client's `GunnerControls` sends and otherwise
-swallows; `LaserCannonRenderer` draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
+swallows. The client's `GunnerView` moves the seated gunner's view to the sight, a `Lens` placed every frame through
+`SableClient.view`, and looks along it each tick for a hostile mob to lock on to; `GunnerSight` draws the sight's
+reticle, thermometer and bearing ring with `GuiShapes`, which the `PilotHud` draws with too; `LaserCannonRenderer`
+draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
 crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
 block entity but is tracked on clients, where `ClubBand` starts its song for a player who comes near, counting its
 beat, and `BandstandRenderer` draws the three players swaying to it; `FreighterLayout.clubBar()` lays the rocket
@@ -346,8 +358,23 @@ floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindo
 what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under it. The client's
 `FloorWindowRenderer` draws the window, as its blocks have no model: every block the floor but for the iris's hole, in
 strips whose ends lie on the circle, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
-`HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+`HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. `DarkCorners` is her
+last pass: it spreads her lamps' light through her layout as the game does and lights every spot someone could stand
+in that is left unlit, her passages to a dim but never black level (`FreighterLayout.leastLight`), with a wall washer
+or a floor light; `skyliners:dark` measures the same in game. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
+`FreighterExterior` dresses her outside once her rooms stand with the fleet's outside fittings in `exterior/`, each a
+`HullFittingBlock` that a player puts up on a floor, a wall or a ceiling (MOUNT, through `Mounting`), a model of its own
+for each and an outline from `HullFittings`, in the open block just outside her solid skin, face to face with it so her
+assembly takes it along; its `SatelliteDishBlock` keeps its dish's pivots and size, which `SatelliteDishRenderer` turns
+it about by `DrawingClock`, and `ExhaustVentBlock` lets its wisps off where `SableFlight.toWorld` puts its mouth.
+`FreighterPlating` swaps her cover, where `FreighterPlating.unseen` says no room sees it, past her outer bulkhead and
+clear of her passages, for the hull plates, `ShellBlock`s of their own textures cut to the same shapes.
+`FreighterLights` lays her light band, a lit `ShellBlock` round her rim, her `HullFittingBlock` light strips along her
+loading gap and prongs, and her `NavLightBlock`s.
+On each client `FreighterEngineGlow` draws her engines' glow after the particles, from the shares her autopilot already
+shows for her roar and the nozzles `FreighterLayout.mainNozzles` gives, each flare brought toward the camera so the hull
+never cuts it, and passes over a freighter out of view.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.
@@ -375,7 +402,10 @@ speech synthesis model under the Apache License 2.0, in its British woman's voic
 with `npm install --prefix tools` (the model, some 300 MB, is fetched into `tools/node_modules` on the first run), or
 the voice is left as it is. FFmpeg plays it through the cabin's loudspeakers, their band, a bright middle and the
 speakers further along the cabin, and evens its level: the callouts compressed hard, crisp as warnings, the
-announcements through a loudness normaliser. The settings for all of it are together in `VOICE`, to tune it. Air traffic
+announcements through a loudness normaliser. The settings for all of it are together in `VOICE`, to tune it. The
+freighter's computer is Kokoro's deepest man's voice, Onyx, through her worn intercom (a narrow band, a boxy honk, a
+little grit and crushed bits, her corridors' short echo), its settings in `COMPUTER`; `sayAsFreighterComputer` says any
+line in it. Air traffic
 control is Windows' own speech synthesis, its man's voice ("Microsoft David"), so that part runs on Windows only,
 through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to 3000 Hz), compresses, clips and bit-crushes
 it a little, and the script lays it over the carrier's hiss with the odd crackle, between the squelch's click as the

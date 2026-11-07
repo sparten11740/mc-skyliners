@@ -64,10 +64,11 @@ public class RampPanelBlock extends HorizontalDirectionalBlock implements Entity
     private static final double LAMP = 0.25;
     /** Where the lamp's bottom edge is on the face, over the buttons, in blocks up from its foot. */
     private static final double LAMP_FOOT = 1 - MARGIN - LAMP * (1 - 2 * MARGIN);
-    /** The lamp across the top of the face, and its buttons side by side under it, in their order (see {@link TouchPanel}). */
+    /** The lamp across the top of the face, and its one big button under it (see {@link TouchPanel}). */
     public static final TouchPanel.Tile LAMP_TILE = new TouchPanel.Tile(MARGIN, LAMP_FOOT, 1 - MARGIN, 1 - MARGIN);
-    public static final TouchPanel.Layout BUTTONS = TouchPanel.Layout.row(Button.values().length,
-        new TouchPanel.Tile(MARGIN, MARGIN, 1 - MARGIN, LAMP_FOOT));
+    public static final TouchPanel.Layout BUTTONS = TouchPanel.Layout.row(1, new TouchPanel.Tile(MARGIN, MARGIN, 1 - MARGIN, LAMP_FOOT));
+    /** What its button does, shown on it: lets the ramp down while it is up, and brings it up while it is down. */
+    public static final TouchPanel.Toggle<Button> ACTION = new TouchPanel.Toggle<>(Button.LOWER, Button.RAISE);
     /** How bright its lamp glows, as block light, by how the ramp stands. */
     private static final Map<Status, Integer> GLOW = Map.of(Status.READY, 4, Status.BUSY, 6, Status.DOWN, 5, Status.REFUSED, 7);
     private static final Map<Direction, VoxelShape> SHAPES = Map.of(
@@ -125,12 +126,12 @@ public class RampPanelBlock extends HorizontalDirectionalBlock implements Entity
             return InteractionResult.PASS;
         }
         if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof RampPanelBlockEntity panel) {
-            panel.press(server, Button.values()[tile]);
+            panel.pressButton(server);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** The button a hit on the panel's face lands on, by its place in {@link Button}; -1 on its lamp, edge or back. */
+    /** Whether a hit on the panel's face lands on its button: 0 on it, -1 on its lamp, edge or back. */
     @Override
     public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
         return BUTTONS.at(TouchPanel.touched(state.getValue(FACING), pos, hit));

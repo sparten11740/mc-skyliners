@@ -1,0 +1,8 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "skin": "skyliners:block/hull_light_band",
+    "particle": "skyliners:block/hull_light_band"
+  }
+}

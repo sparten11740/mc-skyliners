@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -35,16 +36,16 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
  * panel.
  *
  * <p>Each of its blocks keeps where the window's middle block is and what floor it blends into (see {@link
- * FloorWindowBlockEntity}); the client's {@code FloorWindowRenderer} draws it all, as the block has no model of its own.
- * Laid as a whole from its item (see {@link FloorWindowItem}) into any floor, and taken out as a whole: breaking any of
- * its blocks puts back the floor it took the place of everywhere and gives the window back. OPEN is whether its iris is
- * open; FACING the way it was laid, so its offsets turn with it.
+ * FloorWindowBlockEntity}); the client's {@code FloorWindowRenderer} draws it all, as the block has no model of its
+ * own. Laid as a whole from its item (see {@link FloorWindowItem}) into any floor, and taken out as a whole: breaking
+ * any of its blocks puts back the floor it took the place of everywhere and gives the window back. OPEN is whether its
+ * iris is open; FACING the way it was laid, so its offsets turn with it.
  */
 public class FloorWindowBlock extends BaseEntityBlock {
     private static final MapCodec<FloorWindowBlock> CODEC = simpleCodec(FloorWindowBlock::new);
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    /** How far out from the middle of its middle block the window's glass reaches, to the inside of its ring, in blocks. */
+    /** How far out from the middle of its middle block the glass reaches, to the inside of its ring, in blocks. */
     public static final double RADIUS = 4.2;
     /** Every block of a window, as an offset from its middle block: each whose square reaches inside its glass. */
     private static final List<BlockPos> FOOTPRINT = footprintOf(RADIUS);
@@ -74,15 +75,18 @@ public class FloorWindowBlock extends BaseEntityBlock {
         return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
-    /** It lets the light through, open or shut, as the floor round it is lit through it from either side. */
+    /**
+     * Open, it lets the light through, as glass does; shut, it keeps it out as the floor it took the place of did, so a
+     * room under it stays as dark as before.
+     */
     @Override
     protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
-        return 0;
+        return state.getValue(OPEN) ? 0 : level.getMaxLightLevel();
     }
 
     @Override
     protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
-        return true;
+        return state.getValue(OPEN);
     }
 
     @Override
@@ -101,7 +105,7 @@ public class FloorWindowBlock extends BaseEntityBlock {
         return FOOTPRINT;
     }
 
-    /** The offsets of every block whose square reaches inside a circle so far out from the middle of the middle block. */
+    /** The offsets of every block whose square reaches inside a circle so far out from the middle block's middle. */
     private static List<BlockPos> footprintOf(double radius) {
         int reach = (int) Math.ceil(radius);
         List<BlockPos> blocks = new ArrayList<>();
@@ -117,7 +121,7 @@ public class FloorWindowBlock extends BaseEntityBlock {
         return List.copyOf(blocks);
     }
 
-    /** The blocks of the window whose middle block is the one given that stand there now, each with its block entity. */
+    /** The blocks of the window whose middle block is the one given that stand now, each with its block entity. */
     static List<FloorWindowBlockEntity> blocksOf(Level level, BlockPos middle) {
         List<FloorWindowBlockEntity> found = new ArrayList<>();
         for (BlockPos offset : FOOTPRINT) {
@@ -135,18 +139,24 @@ public class FloorWindowBlock extends BaseEntityBlock {
         return state.getBlock() instanceof FloorWindowBlock && state.getValue(OPEN);
     }
 
-    /** Opens or shuts the window whose middle block is the one given, every block of it at once, with the iris's whirr. */
+    /**
+     * Opens or shuts the window whose middle block is the one given, every block of it at once, with the iris's whirr;
+     * nothing where its middle block is gone, as one blown out leaves no glass to open onto.
+     */
     static void setOpen(ServerLevel level, BlockPos middle, boolean open) {
+        if (!(level.getBlockState(middle).getBlock() instanceof FloorWindowBlock)) {
+            return;
+        }
         for (FloorWindowBlockEntity window : blocksOf(level, middle)) {
             BlockState state = window.getBlockState();
             if (state.getValue(OPEN) != open) {
                 level.setBlock(window.getBlockPos(), state.setValue(OPEN, open), Block.UPDATE_CLIENTS);
             }
         }
-        level.playSound(null, middle, open ? SoundEvents.PISTON_EXTEND : SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, IRIS_VOLUME,
-            IRIS_PITCH);
-        level.playSound(null, middle, open ? SoundEvents.IRON_TRAPDOOR_OPEN : SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, IRIS_VOLUME,
-            HATCH_PITCH);
+        SoundEvent iris = open ? SoundEvents.PISTON_EXTEND : SoundEvents.PISTON_CONTRACT;
+        SoundEvent hatch = open ? SoundEvents.IRON_TRAPDOOR_OPEN : SoundEvents.IRON_TRAPDOOR_CLOSE;
+        level.playSound(null, middle, iris, SoundSource.BLOCKS, IRIS_VOLUME, IRIS_PITCH);
+        level.playSound(null, middle, hatch, SoundSource.BLOCKS, IRIS_VOLUME, HATCH_PITCH);
     }
 
     /**

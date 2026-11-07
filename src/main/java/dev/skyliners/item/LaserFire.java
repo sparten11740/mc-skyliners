@@ -2,6 +2,7 @@ package dev.skyliners.item;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.LaserBolt;
+import dev.skyliners.compat.SableFlight;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,7 +14,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -42,12 +45,16 @@ public final class LaserFire {
 
     /**
      * Where a beam from a point along a way, reaching so many blocks, lands, fired by someone it never lands on, and
-     * passing through anyone else it must not land on.
+     * passing through anyone else it must not land on. A beam that meets a ship's block is met among her blocks, in her
+     * plot; where it lands is taken back into the world, where the beam and whoever it may strike are. On the server, or
+     * on a client to show where one would land, as the freighter's gunner's sight does.
      */
-    public static HitResult trace(ServerLevel level, Entity shooter, Vec3 from, Vec3 way, double range, Predicate<Entity> catches) {
+    public static HitResult trace(Level level, Entity shooter, Vec3 from, Vec3 way, double range, Predicate<Entity> catches) {
         Vec3 far = from.add(way.normalize().scale(range));
-        HitResult block = level.clip(new ClipContext(from, far, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, shooter));
-        Vec3 end = block.getLocation();
+        BlockHitResult met = level.clip(new ClipContext(from, far, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, shooter));
+        Vec3 end = SableFlight.toWorld(level, met.getLocation());
+        HitResult block = met.getType() == HitResult.Type.MISS ? BlockHitResult.miss(end, met.getDirection(), met.getBlockPos())
+            : new BlockHitResult(end, met.getDirection(), met.getBlockPos(), met.isInside());
         AABB swept = new AABB(from, end).inflate(1.0);
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(shooter, from, end, swept, catches.and(LaserFire::catchesBeam),
             from.distanceToSqr(end));
