@@ -2652,7 +2652,9 @@ which strikes hostile mobs hard and throws them back in a shower of sparks; it n
 animals, and never breaks a block. Three quick shots and it vents steam for a few seconds, its lamps red, hissing if you
 try it, before it charges again. The server config's `freighter.laserCrossbow` switches it off, leaving it a click.
 
-Her club, the room through the doorway at her port bow, has a band: on a little dark-oak stage with footlights, a
+Her club, the room through the doorway at her port bow, has a bar along its straight wall, as the rocket's club has:
+a counter with stools and two drink taps, the robot bartender behind it selling mocktails, and back bars of bottles
+beside him; the server config's `freighter.clubBar` builds her without it. It has a band too: on a little dark-oak stage with footlights, a
 jazz trio of robots, cousins of her deck robots, white with teal, orange and violet bands and cyan visors, play her
 song, "Long Haul Swing", on upright bass, keyboard and drums, swaying and nodding to its swing as it swells up for
 whoever comes near and fading away as they go. The song plays as

@@ -9,13 +9,17 @@ import dev.skyliners.block.AirstairControllerBlockEntity;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.AutopilotScreenBlock;
 import dev.skyliners.block.AutopilotScreenBlockEntity;
+import dev.skyliners.block.BarCounterBlock;
 import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.CabinRailBlock;
 import dev.skyliners.block.DeckRobotBlock;
+import dev.skyliners.block.DisplayShelfBlock;
+import dev.skyliners.block.DrinkTapBlock;
 import dev.skyliners.block.LightTone;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
+import dev.skyliners.block.RobotBartenderBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.block.WallLightBlock;
@@ -162,6 +166,18 @@ public final class FreighterLayout extends HullLayout {
      * far out from her axis, in blocks, toward its far wall, its band facing back in over the room.
      */
     private static final double BANDSTAND_OUT = 16;
+    /**
+     * Her club's bar (as the rocket's club has one): its counter along the club's straight wall, the one between it and
+     * her crew quarters, so many blocks in from it, from so far out from her axis to so far, facing in over the room;
+     * stools before every other block of it; drink taps on it so far either side of its middle; the robot bartender
+     * behind its middle; and back-bar cabinets beside him, a tier of lit shelves on each, leaving the row over head
+     * height clear for the wall washers.
+     */
+    private static final int BAR_IN = 3;
+    private static final int BAR_FROM = 8;
+    private static final int BAR_TO = 14;
+    private static final int TAPS_APART = 2;
+    private static final int BACK_BAR_SHELVES = 1;
     /**
      * Her wall washers (see {@link WallLightBlock}): so many rows over her deck, over the head of anyone walking past;
      * three on the corridor's outer wall between each two doorways, at a room wall's bearing and so many degrees either
@@ -338,6 +354,7 @@ public final class FreighterLayout extends HullLayout {
         layout.ramp();
         layout.turret();
         layout.bandstand();
+        layout.clubBar();
         layout.lights();
         layout.countAir();
         return layout;
@@ -887,6 +904,69 @@ public final class FreighterLayout extends HullLayout {
         if (SkylinersConfig.FREIGHTER_BANDSTAND.get() && room && isOpen(x, deck + 1, z) && !isOpen(x, deck, z)) {
             set(x, deck + 1, z, SkylinersRegistry.BANDSTAND.get().defaultBlockState().setValue(BandstandBlock.FACING, facing));
         }
+    }
+
+    /**
+     * Her club's bar, along the club's straight wall, the counter facing in, wherever each of its blocks has room over
+     * her deck's floor; none with the server config's {@code freighter.clubBar} off.
+     */
+    private void clubBar() {
+        if (!SkylinersConfig.FREIGHTER_CLUB_BAR.get()) {
+            return;
+        }
+        int counterZ = -BAR_IN;
+        int middle = -(BAR_FROM + BAR_TO) / 2;
+        BlockState counter = SkylinersRegistry.BAR_COUNTER.get().defaultBlockState().setValue(BarCounterBlock.FACING, Direction.NORTH);
+        for (int x = -BAR_FROM; x >= -BAR_TO; x--) {
+            boolean placed = onFloor(x, counterZ, counter);
+            if (placed && (x - middle) % 2 == 0) {
+                onFloor(x, counterZ - 1, SkylinersRegistry.BAR_STOOL.get().defaultBlockState());
+            }
+        }
+        BlockState tap = SkylinersRegistry.DRINK_TAP.get().defaultBlockState().setValue(DrinkTapBlock.FACING, Direction.NORTH);
+        for (int side = -1; side <= 1; side += 2) {
+            int x = middle + side * TAPS_APART;
+            if (stateAt(x, deck + 1, counterZ).is(SkylinersRegistry.BAR_COUNTER.get()) && isOpen(x, deck + 2, counterZ)) {
+                set(x, deck + 2, counterZ, tap);
+            }
+        }
+        BlockState lower = RobotBartenderBlock.lower(SkylinersRegistry.ROBOT_BARTENDER.get(), Direction.NORTH);
+        // His upper half's room is looked at first, so his lower half is never laid without it.
+        if (isOpen(middle, deck + 2, counterZ + 1) && onFloor(middle, counterZ + 1, lower)) {
+            set(middle, deck + 2, counterZ + 1, RobotBartenderBlock.upper(lower));
+        }
+        backBar(middle, counterZ + 1);
+    }
+
+    /**
+     * Back-bar cabinets along a row either side of the bartender, out to the counter's ends, a tier of shelves on each.
+     */
+    private void backBar(int middle, int z) {
+        BlockState shelf = SkylinersRegistry.BACK_BAR.get().defaultBlockState().setValue(DisplayShelfBlock.FACING, Direction.NORTH);
+        for (int x = -BAR_FROM; x >= -BAR_TO; x--) {
+            boolean placed = x != middle && onFloor(x, z, shelf.setValue(DisplayShelfBlock.TIER, DisplayShelfBlock.Tier.CABINET));
+            if (placed) {
+                shelves(x, z, shelf.setValue(DisplayShelfBlock.TIER, DisplayShelfBlock.Tier.SHELVES));
+            }
+        }
+    }
+
+    /**
+     * The back bar's tiers of shelves over a cabinet, as many as {@link #BACK_BAR_SHELVES} and the room over it allow.
+     */
+    private void shelves(int x, int z, BlockState shelves) {
+        for (int tier = 1; tier <= BACK_BAR_SHELVES && isOpen(x, deck + 1 + tier, z); tier++) {
+            set(x, deck + 1 + tier, z, shelves);
+        }
+    }
+
+    /** Sets a block on her deck, at a column over her deck's floor, if it is open; gives whether it did. */
+    private boolean onFloor(int x, int z, BlockState state) {
+        if (!isOpen(x, deck + 1, z) || isOpen(x, deck, z)) {
+            return false;
+        }
+        set(x, deck + 1, z, state);
+        return true;
     }
 
     /**

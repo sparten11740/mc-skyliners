@@ -222,6 +222,8 @@ const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
+// How many blocks of counter her club's bar has at least.
+const CLUB_COUNTERS = 5;
 const BAND_AWAY = 40;
 const BAND_TICKS = 60;
 // A freighter's deck robots: how many she is built with, how far in front of one the player walks up to, and how far
@@ -1089,9 +1091,14 @@ function checkFreighterLights() {
   expect(Math.min(...corridor) >= CORRIDOR_LIT, "freighter: her ring corridor is lit all round", `block light ${corridor.join(", ")}`);
 }
 
-// A freighter's club band: standing before its bandstand, her song plays; gone well away from it, it falls silent.
+// A freighter's club: a bar with the robot bartender behind its counter, and a band; standing before its bandstand,
+// her song plays, and gone well away from it, it falls silent.
 function checkFreighterBand() {
   ship("freighter");
+  const counters = must("find skyliners:bar_counter 128 20").rows.length;
+  const bartender = must("find skyliners:robot_bartender 128 2").rows.length > 0;
+  expect(counters >= CLUB_COUNTERS && bartender, "freighter: her club has a bar, the robot bartender behind its counter",
+    `${counters} blocks of counter, ${bartender ? "a" : "no"} bartender`);
   const [stand] = must("find skyliners:bandstand 128 1").rows;
   expect(stand, "freighter: she is built with a bandstand in her club");
   if (!stand) {
@@ -1475,7 +1482,7 @@ const CHECKS = {
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
-  "freighter-band": { run: checkFreighterBand, about: "a freighter's club band plays her song to whoever stands before it, and falls silent as they go" },
+  "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

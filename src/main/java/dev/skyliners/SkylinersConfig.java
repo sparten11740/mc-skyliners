@@ -75,6 +75,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRETS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_BANDSTAND;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LIGHTS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_CLUB_BAR;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -670,6 +671,12 @@ public final class SkylinersConfig {
                 "warm white, pink in her club and a cool night blue in her crew quarters. Without them, her deck is dark."
             )
             .define("lights", true);
+        FREIGHTER_CLUB_BAR = builder
+            .comment(
+                "Whether the freighter's club is built with a bar along its straight wall: a counter with stools and drink taps,",
+                "the robot bartender behind it selling mocktails, and back-bar cabinets beside him."
+            )
+            .define("clubBar", true);
         builder.pop();
 
         SPEC = builder.build();
