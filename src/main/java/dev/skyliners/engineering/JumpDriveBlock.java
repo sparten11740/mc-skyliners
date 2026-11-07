@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -140,8 +141,12 @@ public class JumpDriveBlock extends HorizontalDirectionalBlock implements Entity
         }
     }
 
-    /** Thumped while it sputters: a clang, sparks, and it roars back to life and fires. */
+    /**
+     * Thumped while it sputters: a clang, sparks, and it roars back to life and fires. Its next cough is struck off
+     * first, as the level keeps only one waiting tick a block, so it would otherwise end its run early.
+     */
     private void thump(ServerLevel level, BlockPos pos, BlockState state) {
+        level.getBlockTicks().clearArea(new BoundingBox(pos));
         level.playSound(null, pos, SkylinersRegistry.JUMP_DRIVE_THUMP.get(), SoundSource.BLOCKS, VOLUME, 1.0F);
         step(level, pos, state, Drive.RUNNING, SkylinersRegistry.JUMP_DRIVE_JUMP.get(), RUN_TICKS);
     }
