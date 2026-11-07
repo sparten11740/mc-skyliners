@@ -823,6 +823,21 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   the gap beside the hatch, a dark steel hood over it and a moss pad on a worktop beside the hatch (babcad5d); and a
   floor light under each painting, the zeppelin's middle in the club from block light 3 to 10 (99c04cc6). Checked by
   freighter-tardigrade and fleet-on-freighter.
+- Then the Spookie (e28a4109, f867250b): the shaggy giant walking its rounds from its hammock in the crew quarters round
+  the open floor about her core and into four rooms, every stretch walked over her blocks as she is laid out; greets,
+  purrs, eats cookies, honks when struck and is never hurt (freighter-spookie). The tardigrade's visitor watching is
+  shared with it (WatchVisitors).
+- Jan: "the rooms look all very similar; make them more distinctive, add LED strips like on the rocket, at least 3
+  interactive custom elements per room that fit the theme". Done room by room:
+  - every room the rocket's LED strips along its walls in a colour and mode of its own, with its LED panel by the
+    doorway (e7313766; panels learnt wedges, as her rooms' boxes overlap), and a floor of its own (5db56e48, 6d9e457c;
+    the deck line block learnt to turn with its ship, c149f143), checked by freighter-leds;
+  - engineering: the jump drive (467e99ba), the breaker board switching each room's lights (b7a0d06a), the coolant
+    valve cranked to a blast of steam (d6113e0f), each with its play-test;
+  - entry hall: the laser crossbow's rack (a8f14d1b) beside its LED panel and her ramp's panel;
+  - cargo hold: the rocket's parcel scanner with a crate on its belt, beside its crates and LED panel;
+  - lounge (galley, tank, booth), club (bartender, taps, bandstand) and crew quarters (bunks' lights, Spookie) already
+    had three, each now with its LED panel too.
 
 ### For Jan to look at
 
