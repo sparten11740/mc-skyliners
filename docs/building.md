@@ -342,6 +342,8 @@ assembly takes it along; its `SatelliteDishBlock` keeps its dish's pivots and si
 it about by `DrawingClock`, and `ExhaustVentBlock` lets its wisps off where `SableFlight.toWorld` puts its mouth.
 `FreighterPlating` swaps her cover, where `FreighterPlating.unseen` says no room sees it, past her outer bulkhead and
 clear of her passages, for the hull plates, `ShellBlock`s of their own textures cut to the same shapes.
+`FreighterLights` lays her light band, a lit `ShellBlock` round her rim, her `HullFittingBlock` light strips along her
+loading gap and prongs, and her `NavLightBlock`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

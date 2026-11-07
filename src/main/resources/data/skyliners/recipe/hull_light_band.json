@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "GGG",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "id": "skyliners:hull_light_band",
+    "count": 6
+  }
+}

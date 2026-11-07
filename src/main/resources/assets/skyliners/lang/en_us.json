@@ -1141,6 +1141,8 @@
   "block.skyliners.hull_plate_riveted": "Riveted Hull Plate",
   "block.skyliners.hull_plate_patched": "Patched Hull Plate",
   "block.skyliners.hazard_plate": "Hazard Plate",
+  "block.skyliners.hull_light_band": "Hull Light Band",
+  "block.skyliners.hull_light_strip": "Hull Light Strip",
   "advancements.skyliners.first_flight.root.title": "First Flight",
   "advancements.skyliners.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.skyliners.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

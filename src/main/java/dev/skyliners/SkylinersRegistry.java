@@ -481,6 +481,10 @@ public final class SkylinersRegistry {
     private static final int SENSOR_GLOW = 4;
     /** How brightly a hull floodlight lights what is round it, in light levels: as bright as a light gets. */
     private static final int HULL_FLOODLIGHT_GLOW = 15;
+    /** How brightly the freighter's light band round her rim glows, in light levels: a bright ring at night. */
+    private static final int LIGHT_BAND_GLOW = 12;
+    /** How brightly a hull light strip glows, in light levels: enough to light a loading bay. */
+    private static final int LIGHT_STRIP_GLOW = 10;
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -1416,6 +1420,22 @@ public final class SkylinersRegistry {
         "hazard_plate", properties -> new ShellBlock(properties, SkylinersRegistry.HAZARD_PLATE_ITEM), metal(MapColor.COLOR_YELLOW)
     );
     public static final DeferredItem<BlockItem> HAZARD_PLATE_ITEM = ITEMS.registerSimpleBlockItem(HAZARD_PLATE);
+    /**
+     * The freighter's outside lights: the glowing band round her rim, a plate cut to her curve as her cover is (see
+     * {@link ShellBlock}), a bright cyan-white line along its middle, whole when set by hand; and the hull light strip
+     * (see {@link HullFittingBlock}), a lit channel lying on a floor, a hooded strip along a wall or a channel under a
+     * ceiling, along her prongs and her loading gap.
+     */
+    public static final DeferredBlock<ShellBlock> HULL_LIGHT_BAND = BLOCKS.registerBlock(
+        "hull_light_band", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_LIGHT_BAND_ITEM),
+        metal(MapColor.COLOR_CYAN).lightLevel(state -> LIGHT_BAND_GLOW)
+    );
+    public static final DeferredItem<BlockItem> HULL_LIGHT_BAND_ITEM = ITEMS.registerSimpleBlockItem(HULL_LIGHT_BAND);
+    public static final DeferredBlock<HullFittingBlock> HULL_LIGHT_STRIP = BLOCKS.registerBlock(
+        "hull_light_strip", properties -> new HullFittingBlock(properties, HullFittings.HULL_LIGHT_STRIP),
+        metal(MapColor.COLOR_CYAN).noOcclusion().lightLevel(state -> LIGHT_STRIP_GLOW)
+    );
+    public static final DeferredItem<BlockItem> HULL_LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(HULL_LIGHT_STRIP);
     /** The bandstand in the freighter's club, its band playing her song (see {@link BandstandBlock}). */
     public static final DeferredBlock<BandstandBlock> BANDSTAND = BLOCKS.registerBlock(
         "bandstand", BandstandBlock::new,
@@ -3035,6 +3055,8 @@ public final class SkylinersRegistry {
             HULL_PLATE_RIVETED_ITEM,
             HULL_PLATE_PATCHED_ITEM,
             HAZARD_PLATE_ITEM,
+            HULL_LIGHT_BAND_ITEM,
+            HULL_LIGHT_STRIP_ITEM,
             BANDSTAND_ITEM,
             SPOOKIE_HAMMOCK_ITEM,
             ENGINE_GRATING_ITEM,

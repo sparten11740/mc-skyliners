@@ -283,8 +283,8 @@ function rampFittings() {
   cubes.laser_cannon = null;
 }
 
-// The fleet's outside fittings (see HullFittingBlock), the freighter's dishes, masts, domes, fins, vents, machinery
-// and floodlights: each a model of its own for each way it is put up, drawn facing north, a wall's
+// The fleet's outside fittings (see HullFittingBlock), the freighter's dishes, masts, domes, fins, vents, machinery,
+// floodlights and light strips: each a model of its own for each way it is put up, drawn facing north, a wall's
 // against the south side of its block (see hullFittingModels), turned for each facing, unlit by the corner darkening
 // so a part past its block never draws black aboard. A satellite dish's mount is its block's model and its dish a model
 // of its own, drawn over it by SatelliteDishRenderer about the back of its hub, the big dish's three times as big on
@@ -429,6 +429,11 @@ function hullFittingModels() {
         solid([2.5, 6, 5], [13.5, 11, 11], "#steel"), solid([1.8, 6.5, 5.5], [2.5, 10.5, 10.5], "#dark"), solid([13.5, 6.5, 5.5], [14.2, 10.5, 10.5], "#dark"),
         solid([0, 12.5, 12], [16, 14, 13.5], "#pipe"), solid([7.25, 11, 9.5], [8.75, 12.5, 12.5], "#pipe"), glow([7.5, 5.9, 7.5], [8.5, 6, 8.5], "#lamp")],
     }],
+    ["hull_light_strip", { strip: `${ID}:block/hull_light_strip` }, {
+      floor: [solid([0, 0, 6], [16, 1, 10], "#dark"), glow([0, 1, 6.75], [16, 1.75, 9.25], "#strip")],
+      wall: [solid([0, 6.5, 15], [16, 9.5, 16], "#dark"), glow([0, 7, 13.5], [16, 9, 15], "#strip"), solid([0, 9, 12.5], [16, 10, 16], "#dark")],
+      ceiling: [solid([0, 15, 6], [16, 16, 10], "#dark"), glow([0, 14.25, 6.75], [16, 15, 9.25], "#strip")],
+    }],
     ["hull_floodlight", { lens: `${ID}:block/floodlight_lens` }, {
       floor: [solid([4, 0, 4], [12, 1.5, 12], "#dark"), solid([3, 1.5, 7], [4, 9, 9], "#dark"), solid([12, 1.5, 7], [13, 9, 9], "#dark"),
         solid([4, 1.5, 7], [12, 2.5, 9], "#dark"), solid([4, 4, 5], [12, 10, 12], "#steel", tilt([8, 7, 8.5], 22.5)),
@@ -446,7 +451,7 @@ function shifted(elements, dx, dy, dz) {
   return elements.map((element) => ({ ...element, from: by(element.from), to: by(element.to) }));
 }
 function hullFittingNames() {
-  return ["satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "hull_machinery", "hull_floodlight"];
+  return ["satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "hull_machinery", "hull_floodlight", "hull_light_strip"];
 }
 function hullFittingLang() {
   return {
@@ -482,6 +487,16 @@ function hullPlateLang() {
     "block.skyliners.hull_plate_riveted": "Riveted Hull Plate",
     "block.skyliners.hull_plate_patched": "Patched Hull Plate",
     "block.skyliners.hazard_plate": "Hazard Plate",
+  };
+}
+
+// The freighter's light band (see FreighterLights), a hull plate of its own, lit by the block's own light; and her
+// light strips, among the outside fittings (see hullFittingModels).
+hullPlate("hull_light_band");
+function hullLightLang() {
+  return {
+    "block.skyliners.hull_light_band": "Hull Light Band",
+    "block.skyliners.hull_light_strip": "Hull Light Strip",
   };
 }
 
@@ -10836,10 +10851,12 @@ shaped("heat_sink", ["BBB", "BBB", "ICI"], { B: "minecraft:iron_bars", I: "minec
 shaped("exhaust_vent", ["B", "H", "I"], { B: "minecraft:iron_bars", H: "minecraft:hopper", I: "minecraft:iron_ingot" }, 2);
 shaped("hull_machinery", ["CRC", "III"], { C: "minecraft:copper_ingot", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 2);
 shaped("hull_floodlight", ["IGI", " I "], { I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 2);
+shaped("hull_light_strip", ["GGG", "III"], { G: "minecraft:glowstone_dust", I: "minecraft:iron_ingot" }, 6);
 shaped("hull_plate_dark", ["PPP", "PDP", "PPP"], { P: `${ID}:airframe_panel`, D: "minecraft:gray_dye" }, 8);
 shaped("hull_plate_riveted", ["PPP", "PNP", "PPP"], { P: `${ID}:airframe_panel`, N: "minecraft:iron_nugget" }, 8);
 shaped("hull_plate_patched", ["PPP", "PCP", "PPP"], { P: `${ID}:airframe_panel`, C: "minecraft:copper_ingot" }, 8);
 shaped("hazard_plate", ["PPP", "YPB", "PPP"], { P: `${ID}:airframe_panel`, Y: "minecraft:yellow_dye", B: "minecraft:black_dye" }, 7);
+shaped("hull_light_band", ["PPP", "GGG", "PPP"], { P: `${ID}:airframe_panel`, G: "minecraft:glowstone_dust" }, 6);
 shaped("bandstand", ["NNN", "PPP"], { N: "minecraft:note_block", P: "minecraft:dark_oak_slab" }, 1);
 shaped("spookie_hammock", ["I I", "WWW", "I I"], { I: "minecraft:iron_bars", W: "minecraft:orange_wool" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
@@ -11583,6 +11600,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...girderDecorLang(),
   ...hullFittingLang(),
   ...hullPlateLang(),
+  ...hullLightLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

@@ -8903,4 +8903,17 @@ function hullPlateTextures() {
   }, 5);
 }
 hullPlateTextures();
+
+// The freighter's outside lights (see FreighterLights): her light band, a bright cyan-white line along the middle of a
+// dark plate; and a light strip's glowing diffuser.
+function hullLightTextures() {
+  texture(blockOutput, "hull_light_band", (x, y) => {
+    if (y === 7 || y === 8) return [0xec, 0xfe, 0xff];
+    if (y === 6 || y === 9) return [0x8a, 0xec, 0xff];
+    if (y === 5 || y === 10) return [0x4a, 0x56, 0x62];
+    return x === 0 ? [0x2a, 0x30, 0x38] : [0x34, 0x3a, 0x44];
+  }, 2);
+  texture(blockOutput, "hull_light_strip", (x, y) => (y >= 6 && y <= 9 ? [0xec, 0xfe, 0xff] : [0x8a, 0xec, 0xff]), 0);
+}
+hullLightTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);

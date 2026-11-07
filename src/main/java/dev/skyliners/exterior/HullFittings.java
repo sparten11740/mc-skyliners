@@ -45,6 +45,11 @@ public final class HullFittings {
     public static final HullFittingBlock.Outline HULL_FLOODLIGHT = new HullFittingBlock.Outline(Block.box(3, 0, 3, 13, 12, 13),
         Block.box(4, 3, 3, 12, 12, 16), Block.box(3, 8, 3, 13, 16, 13));
 
+    /**
+     * A hull light strip: a lit channel lying on a floor, a hooded strip along a wall, or a channel under a ceiling.
+     */
+    public static final HullFittingBlock.Outline HULL_LIGHT_STRIP = new HullFittingBlock.Outline(Block.box(0, 0, 6, 16, 2, 10),
+        Block.box(0, 6, 12.5, 16, 10, 16), Block.box(0, 14, 6, 16, 16, 10));
 
     private HullFittings() {
     }

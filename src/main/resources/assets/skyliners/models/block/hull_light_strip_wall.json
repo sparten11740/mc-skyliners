@@ -1,0 +1,171 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "steel": "skyliners:block/hull_fitting_steel",
+    "dark": "skyliners:block/hull_fitting_dark",
+    "pipe": "skyliners:block/hull_pipe",
+    "lamp": "skyliners:block/hull_status_lamp",
+    "particle": "skyliners:block/hull_fitting_steel",
+    "strip": "skyliners:block/hull_light_strip"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        6.5,
+        15
+      ],
+      "to": [
+        16,
+        9.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark"
+        },
+        "south": {
+          "texture": "#dark"
+        },
+        "east": {
+          "texture": "#dark"
+        },
+        "west": {
+          "texture": "#dark"
+        },
+        "up": {
+          "texture": "#dark"
+        },
+        "down": {
+          "texture": "#dark"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        7,
+        13.5
+      ],
+      "to": [
+        16,
+        9,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#strip",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#strip",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#strip",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#strip",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#strip",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#strip",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        -0.05,
+        9,
+        12.5
+      ],
+      "to": [
+        16.05,
+        10,
+        16.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            6,
+            16,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            6,
+            16,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            12.45,
+            6,
+            16,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            12.45,
+            6,
+            16,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            12.45,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            12.45,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}
