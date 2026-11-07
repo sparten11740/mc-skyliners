@@ -71,6 +71,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_EXTERIOR;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PLATING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_OUTSIDE_LIGHTS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
@@ -660,6 +661,12 @@ public final class SkylinersConfig {
                 "strobes on her prongs' tips and red beacons blinking on her top and under her belly."
             )
             .define("outsideLights", true);
+        FREIGHTER_ENGINE_GLOW = builder
+            .comment(
+                "Whether the freighter's engines glow blue-white at her stern while she flies, soft as her lift holds her up,",
+                "brighter and wider the harder her mains push her ahead, and out once she rests."
+            )
+            .define("engineGlow", true);
         FREIGHTER_CANOPY_DIMMER = builder
             .comment(
                 "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",

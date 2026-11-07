@@ -38,6 +38,7 @@ import dev.skyliners.block.WindowDimmerBlock;
 import dev.skyliners.block.WindowDimmerBlockEntity;
 import dev.skyliners.club.BandstandBlock;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,6 +56,7 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The freighter cut into blocks before she is put anywhere (see {@link Layout}), standing on the ground, her prongs to
@@ -114,6 +116,8 @@ public final class FreighterLayout extends HullLayout {
      */
     private static final int CANOPY_SPOKES = 4;
     private static final int MAIN_ROWS_UP = 2;
+    /** How far past her rim's face her engines' glow is drawn, in blocks: out in the air behind her mains' nozzles. */
+    private static final double NOZZLE_OUT = 0.6;
     /** Her retros in her prongs' tips, so far out either side of her middle line, in metres. */
     private static final double RETRO_OUT = 3.4;
     /**
@@ -338,6 +342,16 @@ public final class FreighterLayout extends HullLayout {
     /** Every block of her legs' foot plates, for her autopilot to look for ground to stand them on. */
     public static List<Offset> feet() {
         return FEET;
+    }
+
+    /**
+     * Where her mains' nozzles are, for her engines' glow: so many blocks to her right of her disc's middle, up from it
+     * and astern of it, level with her control head as {@code FreighterFlight.middleOf} has her middle, each just past
+     * her rim's face.
+     */
+    public static List<Vec3> mainNozzles() {
+        double out = FreighterShape.RADIUS * SCALE + NOZZLE_OUT;
+        return Arrays.stream(MAIN_BEARINGS).mapToObj(FreighterLayout::way).map(way -> new Vec3(way[0] * out, MAIN_ROWS_UP - 1, way[1] * out)).toList();
     }
 
     private static List<Offset> footPlates() {

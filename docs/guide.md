@@ -2642,6 +2642,10 @@ her prongs' tips, and red beacons blink on her top and under her belly. The Hull
 among her blocks in the creative tab; the strip lies on a floor, runs under a hood along a wall or hangs as a channel
 under a ceiling, wherever it is clicked against. The server config's `freighter.outsideLights` builds her without them.
 
+While she flies her engines glow at her stern: a white-hot core in a wide blue halo over each of her mains, soft while her
+lift holds her up, brighter and wider the harder her mains push her ahead, shimmering as they burn, and fading out once
+she rests on her legs. The server config's `freighter.engineGlow` leaves it out.
+
 Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
 bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three
 tall in the corridor's wall, out to her outer bulkhead, where her hull grows too low to stand in. Past the bulkhead the

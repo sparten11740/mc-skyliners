@@ -344,6 +344,9 @@ it about by `DrawingClock`, and `ExhaustVentBlock` lets its wisps off where `Sab
 clear of her passages, for the hull plates, `ShellBlock`s of their own textures cut to the same shapes.
 `FreighterLights` lays her light band, a lit `ShellBlock` round her rim, her `HullFittingBlock` light strips along her
 loading gap and prongs, and her `NavLightBlock`s.
+On each client `FreighterEngineGlow` draws her engines' glow after the particles, from the shares her autopilot already
+shows for her roar and the nozzles `FreighterLayout.mainNozzles` gives, each flare brought toward the camera so the hull
+never cuts it, and passes over a freighter out of view.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.
