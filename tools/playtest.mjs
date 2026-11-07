@@ -230,11 +230,12 @@ const BIG_MUNCH_HIGHEST = 0.9;
 const MOSS_PAD_NEAR = 3;
 // How bright the middle of each of her sisters' paintings is at least, as a block's light.
 const PAINTING_LIT = 8;
-// Her Spookie: how far from it someone stands to be greeted, in blocks; how long it may take to answer, in ticks; its
-// health, which nothing takes; how long its rounds are watched, in ticks, and how far it walks in that time at least,
-// in blocks, its feet on her deck all the while.
+// Her Spookie: how far from it someone stands to be greeted, in blocks; how long it may take to answer, in ticks; how
+// long after greeting someone it greets anyone again, in ticks; its health, which nothing takes; how long its rounds
+// are watched, in ticks, and how far it walks in that time at least, in blocks, its feet on her deck all the while.
 const SPOOKIE_NEAR = 3;
 const SPOOKIE_ANSWERS = 60;
+const SPOOKIE_GREETS_AGAIN = 1200;
 const SPOOKIE_HEALTH = 60;
 const SPOOKIE_WATCHED = 900;
 const SPOOKIE_WALKS = 3;
@@ -436,10 +437,17 @@ function board() {
   must(`fly off; server tp @p ${x} ${y + 1} ${z - 3}; wait 20t`);
 }
 
+// The sounds matching a pattern played in this world since a tick, after waiting so long first. The client's log keeps
+// sounds from a world played before, whose ticks can run past this one's, so those later than now are left out.
+function played(match, since, waitFirst = "") {
+  const reply = must(`${waitFirst}sounds since=${since} match=${match} limit=1000`);
+  return reply.rows.filter((sound) => sound.tick <= reply.tick);
+}
+
 // Waits for a sound to have been played since a tick; the first of them, or undefined.
 function heard(match, since, within) {
   for (let waited = 0; waited <= within; waited += LOOK_EVERY) {
-    const [row] = must(`wait ${LOOK_EVERY}t; sounds since=${since} match=${match} limit=1`).rows;
+    const [row] = played(match, since, `wait ${LOOK_EVERY}t; `);
     if (row) {
       return row;
     }
@@ -637,7 +645,7 @@ function checkTardigradeIceCream() {
   const left = must("inv").rows.find((row) => row.item === "skyliners:ice_cream")?.count;
   expect(left === 2, "tardigrade: fed through the hatch in survival, one ice cream is used up", `${left} left of 3`);
   const burp = heard("*tardigrade_burp*", since, BURP_WITHIN_TICKS);
-  const voices = must(`sounds since=${since} match=*tardigrade_burp*`).rows.map((row) => row.pitch);
+  const voices = played("*tardigrade_burp*", since).map((row) => row.pitch);
   expect(voices.includes(BIG_BURP_PITCH) && voices.length >= BIG_BURP_VOICES, "tardigrade: a massive burp, in two voices, an octave down", `pitches ${voices.join(" ")}`);
   const jump = heard("*tardigrade_jump*", since, NEXT_WITHIN_TICKS);
   expect(jump && burp && jump.tick > burp.tick, "tardigrade: it goes to hyperspace after the burp, not before", jump ? `${jump.tick - (burp?.tick ?? 0)} ticks after` : "no jump");
@@ -671,11 +679,11 @@ function checkBartendersAreNoRacket() {
   for (let pass = 0; pass < BARTENDER_PASSES; pass++) {
     must(`turn ${pass % 2 ? 90 : -90} 0; move forward ${BARTENDER_PASS_TICKS}t`);
   }
-  const reply = must(`sounds since=${since} match=*bartender_servo* limit=1000`);
-  const within = reply.tick - since;
+  const whirrs = played("*bartender_servo*", since).length;
+  const within = now() - since;
   const allowed = Math.ceil(within / BARTENDER_WHIRR_APART) + 1;
-  expect(reply.count >= 1, "bartenders: a crowd of them still whirrs", `${reply.count} whirrs`);
-  expect(reply.count <= allowed, "bartenders: a crowd of them is no racket", `${reply.count} whirrs in ${within} ticks, at most ${allowed} wanted`);
+  expect(whirrs >= 1, "bartenders: a crowd of them still whirrs", `${whirrs} whirrs`);
+  expect(whirrs <= allowed, "bartenders: a crowd of them is no racket", `${whirrs} whirrs in ${within} ticks, at most ${allowed} wanted`);
   must(`server fill ${fromX} ${ground} ${fromZ} ${toX} ${ground + 1} ${toZ} air`);
 }
 
@@ -699,7 +707,7 @@ function checkBartenderOnALeaningRocket() {
   let whirrs = 0;
   for (const [back, side] of LEANING_STANDS) {
     const since = must(`sable:tp ${at[0] - back},${at[1]},${at[2] + side}; wait 40t; messages limit=1`).tick;
-    whirrs += must(`wait ${LEANING_STILL_TICKS}t; sounds since=${since} match=*bartender_servo* limit=1000`).count;
+    whirrs += played("*bartender_servo*", since, `wait ${LEANING_STILL_TICKS}t; `).length;
   }
   expect(whirrs <= LEANING_WHIRRS, "bartender: standing still at the bar of a leaning rocket, it does not keep whirring", `${whirrs} whirrs, at most ${LEANING_WHIRRS} wanted`);
   must(`server tp @p 0 ${ground} 0`);
@@ -1252,28 +1260,34 @@ function checkFreighterSpookie() {
   const hammock = must("find skyliners:spookie_hammock 128 1").rows.length > 0;
   expect(hammock, "freighter: she is built with the Spookie's hammock in her crew quarters");
   const spookie = () => must("find skyliners:spookie 128 1").rows[0];
+  waitOutGreeting();
   const found = spookie();
   expect(Boolean(found), "freighter: her Spookie lives aboard");
   if (!found) {
     return;
   }
-  const [x, y, z] = found.at_abs;
+  const beside = () => {
+    const [x, y, z] = spookie()?.at_abs ?? found.at_abs;
+    must(`server tp @p ${x + SPOOKIE_NEAR} ${y} ${z}; wait 2t; face ${found.ref}`);
+  };
   emptyHands();
-  must(`server tp @p ${x + SPOOKIE_NEAR} ${y} ${z}; wait 2t; face ${found.ref}`);
+  beside();
   const greeted = now();
   expect(Boolean(heard("*spookie_greet*", greeted - LOOK_EVERY, SPOOKIE_ANSWERS)), "freighter: walked up to, her Spookie hoots hello");
   const touched = now();
   must(`use ${found.ref}`);
   expect(Boolean(heard("*spookie_happy*", touched, SPOOKIE_ANSWERS)), "freighter: touched, it purrs and hoots");
   survival();
-  must(`server give @p minecraft:cookie 2; select 0; face ${found.ref}`);
+  must("server give @p minecraft:cookie 2; select 0");
+  beside();
   const fed = now();
   must(`use ${found.ref}`);
   const stack = must("inv").rows.find((row) => row.item === "cookie" || row.item === "minecraft:cookie");
   const cookies = stack ? stack.count ?? 1 : 0;
   expect(cookies === 1 && Boolean(heard("*generic.eat*", fed, SPOOKIE_ANSWERS)), "freighter: fed a cookie, it eats it", `${cookies} of 2 left`);
+  beside();
   const struck = now();
-  must(`face ${found.ref}; attack x1`);
+  must("attack x1");
   const honked = heard("*spookie_alarm*", struck, SPOOKIE_ANSWERS);
   const health = spookie()?.hp;
   expect(Boolean(honked) && health === SPOOKIE_HEALTH, "freighter: struck, it honks in alarm and is never hurt", `health ${health}`);
@@ -1284,6 +1298,16 @@ function checkFreighterSpookie() {
   const walked = Math.hypot(to[0] - from[0], to[2] - from[2]);
   expect(walked >= SPOOKIE_WALKS && Math.abs(to[1] - from[1]) < 0.5, "freighter: it walks its rounds over her deck",
     `${walked.toFixed(1)} blocks, from y ${from[1]} to ${to[1]}`);
+}
+
+// Waits until a minute has gone by since the Spookie last greeted anyone, as on an earlier check's visit, since it
+// greets nobody again until then.
+function waitOutGreeting() {
+  const since = now() - SPOOKIE_GREETS_AGAIN;
+  const greetings = played("*spookie_greet*", since).map((row) => row.tick);
+  if (greetings.length > 0) {
+    must(`wait ${Math.max(...greetings) + SPOOKIE_GREETS_AGAIN - now() + LOOK_EVERY}t`, SPOOKIE_GREETS_AGAIN / 20 + 30);
+  }
 }
 
 // A freighter's rooms told apart: each has its ring of LED strips and its panel by the doorway, each set to a colour of
@@ -1523,7 +1547,7 @@ function checkCurtainParts() {
   const at = must("status").pos.map(round).join(",");
   expect(curtainOpen(middle, ground, site.z), "curtain: it parts as someone walks through it", `standing at ${at}`);
   expect(!curtainOpen(site.x, ground, site.z), "curtain: it stays shut away from them");
-  const swishes = must(`sounds since=${since} match=*wool.place* limit=20`).count;
+  const swishes = played("*wool.place*", since).length;
   expect(swishes >= 1, "curtain: it swishes as it parts", `${swishes} swishes`);
   must(`move forward ${CURTAIN_WALK_TICKS}t; wait ${CURTAIN_SHUTS_TICKS}t`);
   expect(!curtainOpen(middle, ground, site.z), "curtain: it shuts again behind them");
