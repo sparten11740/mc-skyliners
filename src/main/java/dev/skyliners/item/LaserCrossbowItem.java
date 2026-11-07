@@ -68,9 +68,6 @@ public class LaserCrossbowItem extends Item {
     private static final double MUZZLE_DOWN = 0.2;
     /** How far off its bolts are seen, in blocks. */
     private static final double BOLTS_SEEN = 96;
-    /** How many sparks fly where a bolt lands, and how fast, in blocks a tick. */
-    private static final int SPARKS = 14;
-    private static final double SPARK_SPEED = 0.2;
     /** How often it puffs steam as it vents, in ticks, and how many puffs. */
     private static final int STEAM_EVERY = 5;
     private static final int STEAM_PUFFS = 3;
@@ -78,12 +75,14 @@ public class LaserCrossbowItem extends Item {
     private static final float SHOT_VOLUME = 1.0F;
     private static final float CHARGE_VOLUME = 0.9F;
     private static final float VENT_VOLUME = 0.6F;
-    /** How high its venting steam hisses, as a share of the steam's own pitch: higher than the ramp's, a smaller valve. */
+    /**
+     * How high its venting steam hisses, as a share of the steam's own pitch: higher than the ramp's, a smaller valve.
+     */
     private static final float VENT_PITCH = 1.4F;
 
     /**
-     * How hot it is: how many shots it has fired in a row, as far as {@link #MOST_HEAT}, at which it vents, and the game
-     * tick of the last, from which it cools.
+     * How hot it is: how many shots it has fired in a row, as far as {@link #MOST_HEAT}, at which it vents, and the
+     * game tick of the last, from which it cools.
      */
     public record Heat(int shots, long at) {
         public static final Heat COLD = new Heat(0, 0);
@@ -172,17 +171,14 @@ public class LaserCrossbowItem extends Item {
     private static void fire(ServerLevel level, Player player, ItemStack stack) {
         Vec3 eye = player.getEyePosition();
         HitResult hit = LaserFire.trace(level, player, eye, RANGE);
-        Vec3 struck = hit.getLocation();
-        if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity target && hurts(target)) {
-            target.hurt(laser(level, player), DAMAGE);
-            Vec3 away = struck.subtract(eye).normalize();
-            target.knockback(THROW, -away.x, -away.z);
-        }
         Vec3 look = player.getLookAngle();
         Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
         Vec3 muzzle = eye.add(look.scale(MUZZLE_AHEAD)).add(right.scale(MUZZLE_RIGHT)).add(0, -MUZZLE_DOWN, 0);
-        PacketDistributor.sendToPlayersNear(level, null, muzzle.x, muzzle.y, muzzle.z, BOLTS_SEEN, new LaserBolt(muzzle, struck, LaserBolt.AMBER));
-        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, struck.x, struck.y, struck.z, SPARKS, 0.2, 0.2, 0.2, SPARK_SPEED);
+        LivingEntity hurt = LaserFire.strike(level, player, muzzle, hit, DAMAGE, LaserBolt.AMBER, BOLTS_SEEN);
+        if (hurt != null) {
+            Vec3 away = hit.getLocation().subtract(eye).normalize();
+            hurt.knockback(THROW, -away.x, -away.z);
+        }
         sound(level, player, SkylinersRegistry.LASER_CROSSBOW_SHOT.get(), SHOT_VOLUME, 0.95F + level.getRandom().nextFloat() * 0.1F);
         stack.set(SkylinersRegistry.LASER_CROSSBOW_CHARGED.get(), false);
         long now = level.getGameTime();
@@ -197,15 +193,6 @@ public class LaserCrossbowItem extends Item {
     /** A sound from where its holder's eyes are, heard by everyone near. */
     private static void sound(Level level, Entity holder, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, holder.getX(), holder.getEyeY(), holder.getZ(), sound, SoundSource.PLAYERS, volume, pitch);
-    }
-
-    /** Whether its bolt hurts what it lands on: a hostile mob, never a player, a villager, a pet or an animal. */
-    private static boolean hurts(LivingEntity target) {
-        return target instanceof Enemy && target.isAlive();
-    }
-
-    private static DamageSource laser(ServerLevel level, Entity shooter) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SkylinersRegistry.LASER_DAMAGE), shooter);
     }
 
     /**
