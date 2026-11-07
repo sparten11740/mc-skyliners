@@ -3,7 +3,6 @@ package dev.skyliners.turret;
 import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
-import dev.skyliners.block.HeadTurn;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.block.Loaded;
 import dev.skyliners.compat.SableFlight;
@@ -49,8 +48,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>The server works out the aim each tick: what the gunner looks at, along their look from the sight, and the way to
  * it from the cannon's pivot, turned into her frame, so its bolts land under the sight's crosshair at any range. It
- * tells the clients now and then, as it moves, and at each bolt, with its heat; each client eases its barrels toward
- * the aim (see {@link HeadTurn}) and counts the heat down itself as it cools.
+ * tells the clients now and then, as it moves, and at each bolt, with its heat; each client swings its barrels after
+ * the aim with their weight (see {@link HeavyTurn}), so on a quick turn the bolts reach the crosshair a moment before
+ * the barrels catch up, and counts the heat down itself as it cools.
  */
 public class LaserCannonBlockEntity extends BlockEntity {
     private static final Loaded<LaserCannonBlockEntity> LOADED = new Loaded<>(LaserCannonBlockEntity.class, true);
@@ -102,9 +102,12 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /** How often, at most, its aim is sent to the clients, in ticks, and how far it must have moved, in degrees. */
     private static final int AIM_SENT_EVERY = 4;
     private static final float AIM_SENT_FROM = 1;
-    /** How fast the clients' barrels follow its aim, a share of the way a tick, and at most so many degrees a tick. */
-    private static final float SWING_EASE = 0.45F;
-    private static final float SWING_STEP = 20;
+    /**
+     * How fast the clients' barrels swing after its aim at most, in degrees a tick, and how much faster or slower they
+     * may go each tick, in degrees a tick, so they gather speed and slow again as heavy guns do (see {@link HeavyTurn}).
+     */
+    private static final float SWING_FASTEST = 20;
+    private static final float SWING_GATHER = 3;
     /** How loud a bolt, its overheating and her computer's word are, as shares of full. */
     private static final float SHOT_VOLUME = 1.4F;
     private static final float OVERHEAT_VOLUME = 0.8F;
@@ -144,8 +147,8 @@ public class LaserCannonBlockEntity extends BlockEntity {
     private int rested = RESTED_TOLD;
     private int sinceTold;
     /** Its barrels as drawn on a client, easing toward its aim, put straight at it before first drawn. */
-    private final HeadTurn shownYaw = new HeadTurn(SWING_EASE, SWING_STEP, true);
-    private final HeadTurn shownPitch = new HeadTurn(SWING_EASE, SWING_STEP, false);
+    private final HeavyTurn shownYaw = new HeavyTurn(SWING_FASTEST, SWING_GATHER, true);
+    private final HeavyTurn shownPitch = new HeavyTurn(SWING_FASTEST, SWING_GATHER, false);
     private boolean drawn;
 
     /** Hears its servos on a client each tick; the client sets it, so the server never loads what it reaches for. */

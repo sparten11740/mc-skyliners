@@ -1199,6 +1199,7 @@ function checkFreighterTurret() {
   aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
   const aimed = aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
   expect(aimed?.locked === true, "freighter: aimed from her cannon's sight at a creeper, the sight locks on to it");
+  expect(heard("skyliners:ball_turret_hiss", sat, 0), "freighter: as her cannon swings round to aim, its hydraulics hiss");
   must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
   const [reply] = send(`server data get entity @e[type=creeper,limit=1,sort=nearest] Health`);
   const health = reply.ok === false ? 0 : Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1] ?? CREEPER_HEALTH);

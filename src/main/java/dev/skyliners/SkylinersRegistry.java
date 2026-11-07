@@ -912,6 +912,9 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_SHOT = sound("ball_turret_shot");
     /** A ball turret's servo while its gunner swings it, a seamless loop. */
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_SERVO = sound("ball_turret_servo");
+    /** A laser cannon's hydraulics: the hiss as a swing starts, and the clunk as its barrels lock at the end of one. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_HISS = sound("ball_turret_hiss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BALL_TURRET_LOCK = sound("ball_turret_lock");
     /** The laser crossbow fired: its coil twanging and a crackling bolt. */
     public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_SHOT = sound("laser_crossbow_shot");
     /** The laser crossbow cocked and charged: a ratchet, a rising whine and its latch. */

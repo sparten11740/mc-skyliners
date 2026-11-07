@@ -165,6 +165,8 @@
   "subtitles.skyliners.freighter_flyby": "Freighter thunders past",
   "subtitles.skyliners.ball_turret_shot": "Turret fires",
   "subtitles.skyliners.ball_turret_servo": "Turret turns",
+  "subtitles.skyliners.ball_turret_hiss": "Turret hydraulics hiss",
+  "subtitles.skyliners.ball_turret_lock": "Turret locks",
   "subtitles.skyliners.laser_crossbow_shot": "Laser crossbow fires",
   "subtitles.skyliners.laser_crossbow_reload": "Laser crossbow charges",
   "subtitles.skyliners.jump_drive_spool": "Jump drive spools up",

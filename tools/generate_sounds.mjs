@@ -4705,6 +4705,29 @@ const BALL_TURRET = {
   });
   writeSound("ball_turret_servo", servo, 0.5);
 }
+// The laser cannon's hydraulics: as a swing starts, a valve hissing open, noise high-passed over 2.5 kilohertz swelling
+// in 15 milliseconds and dying away over a third of a second, a low push of pressure under it; and as the barrels lock
+// at the end of a swing, a clunk, a 70 hertz thump dying in a tenth of a second with a short metallic tick over it.
+{
+  const hydraulicRandom = ownRandom(0x48797464);
+  const hissLength = Math.round(0.4 * RATE);
+  const hissNoise = highPassed(Float64Array.from({ length: hissLength }, () => hydraulicRandom() * 2 - 1), 2500);
+  const hiss = hissNoise.map((sample, i) => {
+    const t = i / RATE;
+    const swell = Math.min(1, t / 0.015) * Math.exp(-t / 0.12);
+    return 0.7 * swell * sample + 0.25 * Math.exp(-t / 0.08) * Math.sin(2 * Math.PI * 55 * t);
+  });
+  writeSound("ball_turret_hiss", hiss, 0.45);
+  const lockLength = Math.round(0.3 * RATE);
+  const lock = Float64Array.from({ length: lockLength }, (_, i) => {
+    const t = i / RATE;
+    const thump = Math.exp(-t / 0.05) * Math.sin(2 * Math.PI * 70 * t * (1 - 0.3 * t));
+    const tick = t < 0.02 ? (hydraulicRandom() * 2 - 1) * (1 - t / 0.02) : 0;
+    const ring = Math.exp(-t / 0.04) * Math.sin(2 * Math.PI * 1850 * t);
+    return 0.8 * thump + 0.35 * tick + 0.2 * ring;
+  });
+  writeSound("ball_turret_lock", lock, 0.6);
+}
 
 // The laser crossbow (see the plan's "The laser crossbow"), each sound with a random sequence of its own. Its shot:
 // the glowing coil it has for a string twanging as it is let go, a plucked string at 98 hertz; the bolt crackling off

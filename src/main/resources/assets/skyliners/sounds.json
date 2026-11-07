@@ -790,6 +790,22 @@
       }
     ]
   },
+  "ball_turret_hiss": {
+    "subtitle": "subtitles.skyliners.ball_turret_hiss",
+    "sounds": [
+      {
+        "name": "skyliners:ball_turret_hiss"
+      }
+    ]
+  },
+  "ball_turret_lock": {
+    "subtitle": "subtitles.skyliners.ball_turret_lock",
+    "sounds": [
+      {
+        "name": "skyliners:ball_turret_lock"
+      }
+    ]
+  },
   "laser_crossbow_shot": {
     "subtitle": "subtitles.skyliners.laser_crossbow_shot",
     "sounds": [

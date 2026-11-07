@@ -2353,6 +2353,8 @@ const FREIGHTER_SOUNDS = {
   // Her ball turrets firing, heard well off as guns are, and turning; and the laser crossbow fired and charged.
   ball_turret_shot: { subtitle: "Turret fires", heard: 64 },
   ball_turret_servo: { subtitle: "Turret turns" },
+  ball_turret_hiss: { subtitle: "Turret hydraulics hiss" },
+  ball_turret_lock: { subtitle: "Turret locks" },
   laser_crossbow_shot: { subtitle: "Laser crossbow fires", heard: 32 },
   laser_crossbow_reload: { subtitle: "Laser crossbow charges" },
   // Her jump drive, heard all through her: spooling up, sputtering as it fails, thumped back to life and jumping.
