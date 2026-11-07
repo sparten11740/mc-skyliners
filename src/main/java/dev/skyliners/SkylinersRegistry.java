@@ -73,6 +73,8 @@ import dev.skyliners.block.CrewLockerBlock;
 import dev.skyliners.block.CrewLockerBlockEntity;
 import dev.skyliners.block.CurtainBlock;
 import dev.skyliners.block.DeckClampBlock;
+import dev.skyliners.block.CrossbowRackBlock;
+import dev.skyliners.block.CrossbowRackBlockEntity;
 import dev.skyliners.block.DeckLineBlock;
 import dev.skyliners.block.DeckClampBlockEntity;
 import dev.skyliners.block.DiscoBallBlock;
@@ -1381,6 +1383,13 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CoolantValveBlockEntity>> COOLANT_VALVE_ENTITY =
         BLOCK_ENTITIES.register("coolant_valve", () -> BlockEntityType.Builder.of(CoolantValveBlockEntity::new, COOLANT_VALVE.get()).build(null));
     public static final DeferredItem<BlockItem> COOLANT_VALVE_ITEM = ITEMS.registerSimpleBlockItem(COOLANT_VALVE);
+    /** The laser crossbow's rack in the freighter's entry hall (see {@link CrossbowRackBlock}). */
+    public static final DeferredBlock<CrossbowRackBlock> CROSSBOW_RACK = BLOCKS.registerBlock(
+        "crossbow_rack", CrossbowRackBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.8F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrossbowRackBlockEntity>> CROSSBOW_RACK_ENTITY =
+        BLOCK_ENTITIES.register("crossbow_rack", () -> BlockEntityType.Builder.of(CrossbowRackBlockEntity::new, CROSSBOW_RACK.get()).build(null));
+    public static final DeferredItem<BlockItem> CROSSBOW_RACK_ITEM = ITEMS.registerSimpleBlockItem(CROSSBOW_RACK);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2892,7 +2901,8 @@ public final class SkylinersRegistry {
             ENGINE_GRATING_ITEM,
             JUMP_DRIVE_ITEM,
             BREAKER_BOARD_ITEM,
-            COOLANT_VALVE_ITEM
+            COOLANT_VALVE_ITEM,
+            CROSSBOW_RACK_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

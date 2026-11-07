@@ -167,49 +167,13 @@ final class FreighterLedStrips {
     @Nullable
     private BlockPos panelSpot(Room room) {
         double turn = Math.toRadians(room.middle());
-        double doorX = Math.sin(turn) * DOORWAY;
-        double doorZ = -Math.cos(turn) * DOORWAY;
-        BlockPos best = null;
-        double bestDistance = Double.MAX_VALUE;
-        int far = (int) Math.ceil(PANEL_TO);
-        for (int block = 0; block < (2 * far + 1) * (2 * far + 1); block++) {
-            BlockPos at = new BlockPos(block / (2 * far + 1) - far, deck + PANEL_UP, block % (2 * far + 1) - far);
-            double distance = Math.hypot(at.getX() + 0.5 - doorX, at.getZ() + 0.5 - doorZ);
-            if (distance < bestDistance && panelFits(room, at)) {
-                best = at;
-                bestDistance = distance;
-            }
-        }
-        return best;
-    }
-
-    /**
-     * Whether a room's panel fits at a block: in the room just in through its doorway, against her wall, and open
-     * before it.
-     */
-    private boolean panelFits(Room room, BlockPos at) {
-        double out = Math.hypot(at.getX(), at.getZ());
-        boolean near = out >= PANEL_FROM && out <= PANEL_TO && inRoom(room.wedge(), at);
-        return near && layout.isOpen(at.getX(), at.getY(), at.getZ()) && wallBehind(at) != null;
-    }
-
-    /** The side of a block her padded wall stands on, with the block on the side opposite open; null for none. */
-    @Nullable
-    private Direction wallBehind(BlockPos at) {
-        for (Direction side : Direction.Plane.HORIZONTAL) {
-            BlockPos before = at.relative(side.getOpposite());
-            BlockPos behind = at.relative(side);
-            boolean wall = layout.stateAt(behind.getX(), behind.getY(), behind.getZ()).is(SkylinersRegistry.PADDED_BULKHEAD.get());
-            if (wall && layout.isOpen(before.getX(), before.getY(), before.getZ())) {
-                return side;
-            }
-        }
-        return null;
+        return FreighterWalls.nearest(layout, deck + PANEL_UP, room.wedge(), PANEL_FROM, PANEL_TO, Math.sin(turn) * DOORWAY,
+            -Math.cos(turn) * DOORWAY, 1);
     }
 
     /** Sets the panel against its wall, facing into the room, and tells it its room once she stands. */
     private void setPanel(Room room, BlockPos panel, List<BlockPos> strips) {
-        Direction behind = wallBehind(panel);
+        Direction behind = FreighterWalls.wallBehind(layout, panel);
         layout.set(panel.getX(), panel.getY(), panel.getZ(),
             SkylinersRegistry.LED_PANEL.get().defaultBlockState().setValue(LedPanelBlock.FACING, behind.getOpposite()));
         BlockPos low = strips.get(0);

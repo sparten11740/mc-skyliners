@@ -1362,6 +1362,27 @@ function checkFreighterCoolantValve() {
   expect(after.venting === "false" && Number(after.pressure) === 0, "freighter: venting, it lets the pressure off", `pressure ${after.pressure}`);
 }
 
+// A freighter's crossbow rack in her entry hall: an empty hand takes the laser crossbow down, and holding it racks it
+// again.
+function checkFreighterCrossbowRack() {
+  ship("freighter");
+  const [rack] = must("find skyliners:crossbow_rack 128 1").rows;
+  expect(Boolean(rack), "freighter: she is built with the laser crossbow's rack in her entry hall");
+  if (!rack) {
+    return;
+  }
+  const at = rack.at_abs.join(",");
+  const [dx, dz] = STEPS[must(`block ${at}`).props.facing];
+  emptyHands();
+  must(`server tp @p ${rack.at_abs[0] + 0.5 + dx * 2.5} ${rack.at_abs[1] - 1} ${rack.at_abs[2] + 0.5 + dz * 2.5}; wait 5t; use ${at}; wait 5t`);
+  const held = () => must("inv").rows.some((row) => row.item === "skyliners:laser_crossbow");
+  expect(held() && must(`block ${at}`).props.loaded === "false", "freighter: an empty hand takes the crossbow down off its rack");
+  survival();
+  must(`use ${at}; wait 5t`);
+  expect(!held() && must(`block ${at}`).props.loaded === "true", "freighter: holding it, it is racked again");
+  creative();
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1742,6 +1763,7 @@ const CHECKS = {
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
+  "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

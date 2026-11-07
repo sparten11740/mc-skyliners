@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,loaded=false": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 0
+    },
+    "facing=north,loaded=true": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 0
+    },
+    "facing=east,loaded=false": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 90
+    },
+    "facing=east,loaded=true": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 90
+    },
+    "facing=south,loaded=false": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 180
+    },
+    "facing=south,loaded=true": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 180
+    },
+    "facing=west,loaded=false": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 270
+    },
+    "facing=west,loaded=true": {
+      "model": "skyliners:block/crossbow_rack",
+      "y": 270
+    }
+  }
+}
