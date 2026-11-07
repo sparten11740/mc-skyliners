@@ -23,6 +23,7 @@ import dev.skyliners.autopilot.ZeppelinAssembly;
 import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
+import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
 import dev.blockpilot.api.Action;
 import dev.blockpilot.api.ArgType;
@@ -57,9 +58,9 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * the nearest autopilot as its settings screen would ({@code skyliners:autopilot}), and laying an airframe down in
  * front of the player and waiting until it stands ({@code skyliners:build}), which of a zeppelin's blocks its
  * assembly would leave behind ({@code skyliners:assembly}), and a fingerprint of an airframe's layout, to show a change
- * to how it is laid out moves no block ({@code skyliners:layout}), and repainting the nearest zeppelin
- * ({@code skyliners:livery}). Only loaded when Blockpilot is installed (see
- * {@link dev.skyliners.compat.Blockpilot}).
+ * to how it is laid out moves no block ({@code skyliners:layout}), repainting the nearest zeppelin
+ * ({@code skyliners:livery}), and what the client last drew of a laser bolt ({@code skyliners:bolts}), the one command
+ * run on the client. Only loaded when Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
     /** How far from the player an autopilot is looked for, in blocks: past a zeppelin's length. */
@@ -156,6 +157,16 @@ public final class BlockpilotCommands {
             .field("blocks", "its blocks, the air inside its hull among them")
             .field("fingerprint", "of every block's position and state, and of where its block entities are set up")
             .example("skyliners:layout zeppelin"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("bolts", (context, args) -> bolts())
+            .needsWorld()
+            .group("skyliners")
+            .help("what this client last drew of the newest laser bolt it was sent: whose weapon it left, in how many frames, and from where")
+            .field("received", "how many laser bolts this client has been sent")
+            .field("holder", "the entity id of whoever held the weapon it left, -1 for a mounted gun")
+            .field("frames", "how many frames it has been drawn in")
+            .field("shown", "for how many ticks after it came it has been drawn")
+            .field("from_muzzle", "whether it was drawn leaving that weapon's muzzle as drawn, rather than where the server fired it from")
+            .field("from_camera", "where it was drawn leaving from, from the camera: blocks right, up and ahead as it looks"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("skyliners")
@@ -415,6 +426,18 @@ public final class BlockpilotCommands {
         int blocks = placement.positions().length;
         return () -> AirframeBuild.isRunning(level) ? null
             : Result.ok(new Fields().tag("blocks", blocks).tag("nose", nose.getX() + "," + nose.getY() + "," + nose.getZ()));
+    }
+
+    /** What this client last made of the newest laser bolt it was sent, on the client, as its drawing tells it. */
+    private static Result bolts() {
+        LaserBolt.Seen seen = LaserBolt.clientSeen.get();
+        if (seen == null) {
+            return Result.ok(new Fields().tag("received", 0));
+        }
+        Fields fields = new Fields().tag("received", seen.received()).tag("holder", seen.holder()).tag("frames", seen.frames())
+            .tag("shown", seen.shown()).tag("from_muzzle", seen.fromMuzzle());
+        Vec3 at = seen.fromCamera();
+        return Result.ok(at == null ? fields : fields.tag("from_camera", round(at.x) + "," + round(at.y) + "," + round(at.z)));
     }
 
     /** The player hosting the single player game Blockpilot drives. */

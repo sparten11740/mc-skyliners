@@ -203,7 +203,7 @@ public class LaserCrossbowItem extends Item {
 
     /**
      * Fires its bolt: whatever it lands on struck, hostile mobs only hurt and thrown back; the bolt drawn for everyone
-     * near, sparks where it lands, its shot heard.
+     * near, leaving the crossbow in its holder's hands, sparks where it lands, its shot heard.
      */
     private static void fire(ServerLevel level, Player player) {
         Vec3 eye = player.getEyePosition();
@@ -211,7 +211,7 @@ public class LaserCrossbowItem extends Item {
         Vec3 look = player.getLookAngle();
         Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
         Vec3 muzzle = eye.add(look.scale(MUZZLE_AHEAD)).add(right.scale(MUZZLE_RIGHT)).add(0, -MUZZLE_DOWN, 0);
-        LivingEntity hurt = LaserFire.strike(level, player, muzzle, hit, DAMAGE, LaserBolt.AMBER, BOLTS_SEEN);
+        LivingEntity hurt = LaserFire.strike(level, player, muzzle, hit, DAMAGE, LaserBolt.AMBER, BOLTS_SEEN, player);
         if (hurt != null) {
             Vec3 away = hit.getLocation().subtract(eye).normalize();
             hurt.knockback(THROW, -away.x, -away.z);

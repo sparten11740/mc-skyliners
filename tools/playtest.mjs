@@ -206,7 +206,9 @@ const SEATED_EYES = 1.62;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
-// full health, in half hearts; and how long it is left to cool after venting, in ticks.
+// full health, in half hearts; and how long it is left to cool after venting, in ticks. Its bolt: how soon after a shot it is looked for and how much later again, in ticks; how long it must have shown
+// by then at least, in ticks, more than the blink of four it once was; and how near the eye it must leave from, in
+// blocks, as the crossbow's muzzle is.
 const CROSSBOW_CHARGE_TICKS = 30;
 const CROSSBOW_HELD_LONG_TICKS = 60;
 const CROSSBOW_TARGET_AHEAD = 6;
@@ -214,6 +216,15 @@ const CROSSBOW_AIM_DOWN = 8;
 const CREEPER_HEALTH = 20;
 const COW_HEALTH = 10;
 const CROSSBOW_COOLED_TICKS = 100;
+const BOLT_LOOKED_FOR_TICKS = 3;
+const BOLT_LATER_TICKS = 15;
+const BOLT_SHOWN_TICKS = 8;
+const BOLT_NEAR_EYE = 1.5;
+// The laser crossbow aboard a flying freighter: how fast she flies along, in blocks a second, what share of that she
+// must have come up to, and how far down the player looks to fire at her floor, in degrees.
+const CROSSBOW_FLIGHT_SPEED = 20;
+const CROSSBOW_FLIGHT_UP_TO = 0.8;
+const CROSSBOW_FLIGHT_AIM_DOWN = 60;
 // A freighter's lights: how many wall washers she has at least, and how bright her club is before its stage at least,
 // as a block's light.
 const FREIGHTER_LIGHTS = 24;
@@ -1053,9 +1064,10 @@ function checkFreighterTurret() {
   expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing, the gunner breaks nothing, the dome's glass whole");
 }
 
-// The laser crossbow: charged by holding use, it fires an amber bolt that strikes a creeper hard and leaves a cow
-// unharmed; three quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the
-// world on easy, as a peaceful world takes hostile mobs away at once.
+// The laser crossbow: charged by holding use, it fires an amber bolt that the player sees leave the crossbow's muzzle
+// in front of them and that shows a while, not for a blink; it strikes a creeper hard and leaves a cow unharmed; three
+// quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the world on easy, as
+// a peaceful world takes hostile mobs away at once.
 function checkLaserCrossbow() {
   const x = nextSite++ * SITE_APART;
   creative();
@@ -1065,7 +1077,7 @@ function checkLaserCrossbow() {
   const charged = /laser_crossbow_charged\W*1b/.test(JSON.stringify(send("server data get entity @p SelectedItem")[0]));
   expect(charged && !heard("skyliners:laser_crossbow_shot", held, 0), "laser crossbow: held long past its click, it charges and does not fire by itself",
     charged ? "charged" : "not charged");
-  must("use; wait 10t");
+  seesItsBolt("laser crossbow: fired", "use");
   must("server difficulty easy");
   const struck = shootAt("creeper", x);
   must("server difficulty peaceful");
@@ -1081,6 +1093,21 @@ function checkLaserCrossbow() {
   expect(heard("skyliners:laser_crossbow_shot", cooled, 0), "laser crossbow: once cooled, it charges and fires again");
 }
 
+// Fires the laser crossbow in hand, charged, by a script ending in its use, and looks at its bolt as the player sees
+// it: drawn leaving the crossbow's muzzle in front of them, not where the server had them, and still shown a moment
+// later, not gone in a blink.
+function seesItsBolt(what, fire) {
+  const before = must("skyliners:bolts").received ?? 0;
+  const bolt = must(`${fire}; wait ${BOLT_LOOKED_FOR_TICKS}t; skyliners:bolts`);
+  const [right, up, ahead] = (bolt.from_camera ?? "0,0,-99").split(",").map(Number);
+  const fromEye = Math.hypot(right, up, ahead);
+  expect(bolt.received > before && bolt.from_muzzle === true && ahead > 0 && fromEye <= BOLT_NEAR_EYE,
+    `${what}, its bolt is drawn leaving the crossbow's muzzle in front of the player`,
+    `${bolt.received - before} sent, from the muzzle ${bolt.from_muzzle}, from the eye ${right}, ${up}, ${ahead}`);
+  const later = must(`wait ${BOLT_LATER_TICKS}t; skyliners:bolts`);
+  expect(later.shown >= BOLT_SHOWN_TICKS, `${what}, its bolt shows a while, not for a blink`, `shown ${later.shown} ticks`);
+}
+
 // Summons a mob that stands still in front of the player, charges the laser crossbow and fires it at the mob: its
 // health after, the mob then taken away.
 function shootAt(mob, x) {
@@ -1090,6 +1117,30 @@ function shootAt(mob, x) {
   must(`server kill @e[type=${mob}]; wait 5t`);
   const health = Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1]);
   return Number.isNaN(health) ? 0 : health;
+}
+
+// The laser crossbow fired aboard a freighter flying along: its bolt is drawn leaving the crossbow in the player's
+// hands as they ride along with her, not blocks behind, where the server had them as it fired, by the time it is drawn.
+function checkLaserCrossbowInFlight() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + FREIGHTER_CLIMB;
+  must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off to cruise");
+  if (!up) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:autopilot 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  must(`skyliners:autopilot fly altitude=${height} speed=${CROSSBOW_FLIGHT_SPEED} heading=${up.heading}`);
+  const going = waitForReport(freighterReport, (report) => report.ahead >= CROSSBOW_FLIGHT_SPEED * CROSSBOW_FLIGHT_UP_TO, FREIGHTER_UP_TICKS);
+  expect(going, "freighter: she flies along", `at ${freighterReport()?.ahead} blocks a second`);
+  must(`sable:tp ${at.join(",")}; wait 20t; server item replace entity @p weapon.mainhand with skyliners:laser_crossbow`);
+  must(`turn 0 ${CROSSBOW_FLIGHT_AIM_DOWN}; use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t`);
+  seesItsBolt("laser crossbow: fired aboard a freighter flying along", "use");
+  must("skyliners:autopilot land");
 }
 
 // A freighter that has learnt far too much drag, as one did once she had hunted round her height: set to cruise at 20
@@ -2003,7 +2054,8 @@ const CHECKS = {
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
-  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
+  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },
+  "laser-crossbow-flight": { run: checkLaserCrossbowInFlight, slow: true, about: "the laser crossbow's bolt, fired aboard a flying freighter, is seen leaving it" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },

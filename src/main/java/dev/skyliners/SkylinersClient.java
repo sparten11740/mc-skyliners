@@ -9,6 +9,7 @@ import dev.skyliners.block.DeckRobotBlockEntity;
 import dev.skyliners.block.DiscoBallBlockEntity;
 import dev.skyliners.block.EngineCoreBlockEntity;
 import dev.skyliners.block.FogMachineBlockEntity;
+import dev.skyliners.block.LaserBolt;
 import dev.skyliners.block.LookoutGlassBlockEntity;
 import dev.skyliners.block.PassengerScreenBlockEntity;
 import dev.skyliners.block.PropellerBlockEntity;
@@ -199,6 +200,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
+        LaserBolt.clientSeen = LaserBolts::seen;
         NeoForge.EVENT_BUS.addListener(FreighterEngineGlow::stage);
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
         NeoForge.EVENT_BUS.addListener(ClubBand::tick);

@@ -237,7 +237,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         Vec3 from = SableFlight.toWorld(level, muzzle);
         Vec3 along = SableFlight.toWorld(level, muzzle.add(way)).subtract(from);
         HitResult hit = LaserFire.trace(level, gunner, from, along, RANGE, entity -> !Aboard.isAboard(entity, this));
-        LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN);
+        LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN, null);
         level.playSound(null, from.x, from.y, from.z, SkylinersRegistry.BALL_TURRET_SHOT.get(), SoundSource.BLOCKS, SHOT_VOLUME,
             0.95F + level.getRandom().nextFloat() * 0.1F);
     }

@@ -296,9 +296,12 @@ block in two in four little steps, which the ground passes through (`SableFlight
 draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
 long off. `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
-`LaserCrossbowItem` keeps its charge and heat on its stack as data components, which `LaserCrossbowLooks` draws, traces
-its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow colour tells
-`LaserBolts` to draw it amber rather than the path clearer's red. Her top turret is in `turret/`: the
+`LaserCrossbowItem` keeps its charge and heat on its stack as data components, worked out on its holder's client as on
+the server, which `LaserCrossbowLooks` draws and `LaserCrossbowHands` poses in hand, as the game poses only its own
+crossbow; it traces its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow
+colour tells `LaserBolts` to draw it amber rather than the path clearer's red, whose holder has it drawn leaving the
+crossbow as each client draws it in their hands (`LaserCrossbowHands.muzzle`), and whose end lies among a ship's blocks
+where it strikes one, so it lands on her as she is drawn. Her top turret is in `turret/`: the
 `LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from just past her dome to
 what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so its bolts land
 under their crosshair; it tells clients the aim now and then, which ease toward it (`HeadTurn`), and fires along it
