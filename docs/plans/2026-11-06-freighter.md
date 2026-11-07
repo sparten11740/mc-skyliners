@@ -791,6 +791,10 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   band): the quick play-test suite (69 checks) and the freighter's slow checks (36, on the turret build, with
   freighter-band since) all hold. The jar is build/libs/skyliners-1.2.0-alpha.8+1.21.1-neoforge.jar; the desktop's
   share was not mounted, so it is not copied there.
+- Her deck lit (dba75a14): 43 wall washers round her corridor, her room walls and each room's far wall, pink in the
+  club and cool in the crew quarters, the bandstand's footlights lighting its band; her corridor measures block light
+  8 to 10 and the club 5 before its stage, checked by freighter-lights. The pair wanted the corridor brighter than the
+  first cut's single washer between doorways; it has three now.
 
 ### For Jan to look at
 
