@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,part=body": {
+      "model": "skyliners:block/deck_robot",
+      "y": 0
+    },
+    "facing=north,part=head": {
+      "model": "skyliners:block/deck_robot_head",
+      "y": 0
+    },
+    "facing=east,part=body": {
+      "model": "skyliners:block/deck_robot",
+      "y": 90
+    },
+    "facing=east,part=head": {
+      "model": "skyliners:block/deck_robot_head",
+      "y": 90
+    },
+    "facing=south,part=body": {
+      "model": "skyliners:block/deck_robot",
+      "y": 180
+    },
+    "facing=south,part=head": {
+      "model": "skyliners:block/deck_robot_head",
+      "y": 180
+    },
+    "facing=west,part=body": {
+      "model": "skyliners:block/deck_robot",
+      "y": 270
+    },
+    "facing=west,part=head": {
+      "model": "skyliners:block/deck_robot_head",
+      "y": 270
+    }
+  }
+}

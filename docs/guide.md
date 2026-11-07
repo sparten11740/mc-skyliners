@@ -2620,6 +2620,12 @@ to the cockpit, four blocks tall, and from her bow room along each prong, a craw
 walls inside are the Padded Bulkhead, off-white quilting over grey ribs, in the creative tab under Freighter (it can be
 crafted from white wool round an iron ingot). The Model Freighter, a souvenir on its stand, is under Decorations.
 
+Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
+robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning
+to follow you about; touch it and it trills back; and now and then, with someone near, it beeps happily to itself. The
+Deck Robot is among her blocks in the creative tab, to set down anywhere, and the server config's `freighter.robots`
+builds her without them.
+
 ### Settings
 
 The settings are changed in game in Mods → Create: Skyliners → Config. The client settings (`cameraShake`, `pilotHud`,

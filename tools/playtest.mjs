@@ -175,6 +175,13 @@ const PAD_REACH = 64;
 const LAKE_REACH = 70;
 const LAKE_TICKS = 1600;
 const LAKE_HOLD_WITHIN = 8;
+// A freighter's deck robots: how many she is built with, how far in front of one the player walks up to, and how far
+// off they start, in blocks; and how long its hello and its trill are given to be heard, in ticks.
+const FREIGHTER_ROBOTS = 2;
+const ROBOT_FRONT = 2;
+const ROBOT_AWAY = 30;
+const ROBOT_HEARD_TICKS = 80;
+const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
 // her resting place she is flying as it is pressed, in blocks; and how long whoever bailed out is given to float down,
@@ -852,6 +859,30 @@ function checkFreighterLake() {
     `${still.phase}, ${near(still).toFixed(1)} blocks from it, earlier ${near(holding).toFixed(1)}`);
 }
 
+// A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
+function checkFreighterRobot() {
+  ship("freighter");
+  const robots = must(`find skyliners:deck_robot 128 ${FREIGHTER_ROBOTS + 1}`).rows;
+  const floored = robots.filter((row) => must(`block ${row.at_abs[0]},${row.at_abs[1] - 1},${row.at_abs[2]}`).id !== "minecraft:air");
+  expect(robots.length === FREIGHTER_ROBOTS && floored.length === FREIGHTER_ROBOTS,
+    "freighter: she is built with a deck robot in each of two rooms, each standing on the deck",
+    `${robots.length} robots, ${floored.length} on the deck`);
+  const [robot] = robots;
+  if (!robot) {
+    return;
+  }
+  const [x, y, z] = robot.at_abs;
+  const facing = must(`block ${x},${y},${z}`).props?.facing ?? "north";
+  const [dx, dz] = STEPS[facing] ?? STEPS.north;
+  must(`server tp @p ${x + 0.5} ${y + ROBOT_AWAY} ${z + 0.5}; wait 40t`);
+  const since = now();
+  must(`server tp @p ${x + 0.5 + dx * ROBOT_FRONT} ${y} ${z + 0.5 + dz * ROBOT_FRONT}`);
+  expect(heard("skyliners:robot_chirp", since, ROBOT_HEARD_TICKS), "freighter: walked up to, her deck robot chirps hello");
+  const touched = now();
+  must(`use ${x},${y},${z}`);
+  expect(heard("skyliners:robot_trill", touched, ROBOT_HEARD_TICKS), "freighter: touched, her deck robot trills back");
+}
+
 // Lifts a freighter laid down off her legs to cruise, and puts the player aboard her, so she stays loaded flying off.
 function rideFreighterUp(head) {
   must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
@@ -1195,6 +1226,7 @@ const CHECKS = {
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
+  "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },

@@ -5,6 +5,7 @@ import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinCarpetBlock;
 import dev.skyliners.block.CabinSeatBlock;
 import dev.skyliners.block.CurtainBlock;
+import dev.skyliners.block.DeckRobotBlockEntity;
 import dev.skyliners.block.DiscoBallBlockEntity;
 import dev.skyliners.block.EngineCoreBlockEntity;
 import dev.skyliners.block.FogMachineBlockEntity;
@@ -55,6 +56,7 @@ import dev.skyliners.client.FlightStripBoardRenderer;
 import dev.skyliners.client.Floodlights;
 import dev.skyliners.client.FogMachineSounds;
 import dev.skyliners.client.FreighterRoar;
+import dev.skyliners.client.DeckRobotRenderer;
 import dev.skyliners.client.GearBayRenderer;
 import dev.skyliners.client.HelmRenderer;
 import dev.skyliners.client.HelmetBreathing;
@@ -307,6 +309,7 @@ public final class SkylinersClient {
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
         RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;
+        DeckRobotBlockEntity.clientTicker = DeckRobotRenderer::look;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -355,6 +358,7 @@ public final class SkylinersClient {
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(SkylinersRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.DECK_ROBOT_ENTITY.get(), DeckRobotRenderer::new);
         event.registerBlockEntityRenderer(SkylinersRegistry.GEAR_BAY_ENTITY.get(), context -> new GearBayRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LASER_TURRET_ENTITY.get(), context -> new LaserTurretRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());

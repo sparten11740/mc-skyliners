@@ -4287,6 +4287,19 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       return row === 2 ? core : gap;
     }, 1);
   }
+  // The freighter's deck robot (see DeckRobotBlock): a white body with a teal band round its middle and panel lines;
+  // its head teal over a white face; its wheels, chassis, neck and antenna dark grey; its visor a cyan glow, brightest
+  // along its middle.
+  texture(blockOutput, "deck_robot_body", (x, y) => {
+    if (y >= 6 && y <= 9) return y === 6 || y === 9 ? [0x1c, 0x86, 0x8c] : [0x2a, 0xb4, 0xb8];
+    if (x === 0 || x === 15 || y === 0 || y === 15) return [0xb8, 0xbe, 0xc4];
+    return [0xec, 0xf0, 0xf2];
+  }, 2);
+  // Its head's faces read rows 2 to 5 of its texture (it stands 10 to 14 pixels up): a teal cap over the top row, white
+  // below it, round its visor.
+  texture(blockOutput, "deck_robot_head", (x, y) => (y < 3 ? [0x2a, 0xb4, 0xb8] : x === 0 || x === 15 ? [0xb8, 0xbe, 0xc4] : [0xec, 0xf0, 0xf2]), 2);
+  texture(blockOutput, "deck_robot_dark", (x, y) => ((x + 2 * y) % 5 === 0 ? [0x30, 0x34, 0x3a] : [0x40, 0x44, 0x4c]), 2);
+  texture(blockOutput, "deck_robot_visor", (x, y) => (y >= 7 && y <= 8 ? [0xd8, 0xfc, 0xff] : [0x4c, 0xe0, 0xf4]), 0);
   texture(blockOutput, "club_wall", (x, y) => {
     const u = x % 4;
     const v = y % 4;

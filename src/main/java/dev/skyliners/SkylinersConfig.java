@@ -69,6 +69,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -627,6 +628,12 @@ public final class SkylinersConfig {
                 "hand, its four buttons from clear to all but black. Without it, her canopy is plain smoked glass."
             )
             .define("canopyDimmer", true);
+        FREIGHTER_ROBOTS = builder
+            .comment(
+                "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",
+                "hello to whoever comes up to them, their heads turning to follow, and beeping to themselves now and then."
+            )
+            .define("robots", true);
         builder.pop();
 
         SPEC = builder.build();

@@ -8,6 +8,7 @@ import dev.skyliners.autopilot.FreighterPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.AutopilotScreenBlock;
 import dev.skyliners.block.AutopilotScreenBlockEntity;
+import dev.skyliners.block.DeckRobotBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
@@ -113,6 +114,13 @@ public final class FreighterLayout extends HullLayout {
     private static final int PILOTS_OUT = 2;
     private static final int JUMP_BEHIND = 2;
     private static final int SCREEN_AHEAD = 2;
+    /**
+     * Her deck robots (see {@link dev.skyliners.block.DeckRobotBlock}): so far out from her axis, in blocks, a couple
+     * past the ring corridor's wall, at these bearings clockwise from her bow, in degrees: one in the cargo hold at her
+     * bow and one in engineering aft, each beside its room's doorway rather than in its way.
+     */
+    private static final double ROBOT_OUT = 9;
+    private static final int[] ROBOT_BEARINGS = {20, 200};
     /**
      * Her canopy's dimmer: how far over the pilots' seats' floor row it stands, at a seated pilot's hand, and how far
      * out past the seat's side it may stand at most, toward her skin, so the pilot reaches it from the seat, in blocks.
@@ -262,6 +270,7 @@ public final class FreighterLayout extends HullLayout {
         layout.engines();
         layout.engineGrille();
         layout.cockpit();
+        layout.robots();
         layout.countAir();
         return layout;
     }
@@ -703,6 +712,25 @@ public final class FreighterLayout extends HullLayout {
                 dimmer.story(from.rotate(rotation), to.rotate(rotation), 0);
             }
         });
+    }
+
+    /**
+     * Her deck robots, each standing on her deck in a room at its bearing, facing in toward the doorway and her axis,
+     * where there is room over a floor; none with the server config's {@code freighter.robots} off.
+     */
+    private void robots() {
+        if (!SkylinersConfig.FREIGHTER_ROBOTS.get()) {
+            return;
+        }
+        BlockState robot = SkylinersRegistry.DECK_ROBOT.get().defaultBlockState();
+        for (int bearing : ROBOT_BEARINGS) {
+            double[] way = way(bearing);
+            int x = (int) Math.round(way[0] * ROBOT_OUT);
+            int z = (int) Math.round(way[1] * ROBOT_OUT);
+            if (isOpen(x, deck + 1, z) && !isOpen(x, deck, z)) {
+                set(x, deck + 1, z, robot.setValue(DeckRobotBlock.FACING, Direction.getNearest(-way[0], 0, -way[1])));
+            }
+        }
     }
 
     /**

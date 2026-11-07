@@ -169,6 +169,42 @@ for (const [name, renderType] of Object.entries(cubes)) {
   cubes.dimming_glass = null;
 }
 
+// The freighter's deck robot (see DeckRobotBlock), our own design, drawn facing north: its body on three small wheels,
+// one ahead and two behind, a dark chassis plate and a white body with a teal band; and its head, a state the client's
+// DeckRobotRenderer draws turning about its neck at (8, 9, 8): a short neck, a teal and white head, a cyan visor across
+// its front lit full whatever the light round it, and a thin antenna.
+{
+  const body = [
+    solid([7, 0, 2.5], [9, 2, 4.5], "#dark"),
+    solid([3, 0, 10], [5, 2, 12], "#dark"),
+    solid([11, 0, 10], [13, 2, 12], "#dark"),
+    solid([4, 2, 4], [12, 3, 12], "#dark"),
+    solid([4.5, 3, 4.5], [11.5, 9, 11.5], "#body"),
+  ];
+  const visor = { texture: "#visor", neoforge_data: { block_light: 15, sky_light: 15 } };
+  const head = [
+    solid([7, 9, 7], [9, 10, 9], "#dark"),
+    solid([5, 10, 5], [11, 14, 11], "#head"),
+    { from: [5.5, 11.5, 4.8], to: [10.5, 12.5, 5], faces: { north: visor, east: visor, west: visor, up: visor, down: visor } },
+    solid([9.5, 14, 9], [10, 16, 9.5], "#dark"),
+  ];
+  const textures = {
+    body: `${ID}:block/deck_robot_body`, head: `${ID}:block/deck_robot_head`, dark: `${ID}:block/deck_robot_dark`,
+    visor: `${ID}:block/deck_robot_visor`, particle: `${ID}:block/deck_robot_body`,
+  };
+  write(`assets/${ID}/models/block/deck_robot.json`, { parent: "minecraft:block/block", textures, elements: body });
+  write(`assets/${ID}/models/block/deck_robot_head.json`, { parent: "minecraft:block/block", textures, elements: head });
+  write(`assets/${ID}/models/item/deck_robot.json`, { parent: "minecraft:block/block", textures, elements: [...body, ...head],
+    display: { gui: { rotation: [30, 225, 0], translation: [0, 0, 0], scale: [0.8, 0.8, 0.8] } } });
+  write(`assets/${ID}/blockstates/deck_robot.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [
+      [`facing=${facing},part=body`, { model: `${ID}:block/deck_robot`, y }],
+      [`facing=${facing},part=head`, { model: `${ID}:block/deck_robot_head`, y }],
+    ])),
+  });
+  dropsItself("deck_robot");
+}
+
 // The freighter's engine grille (see EngineGrilleBlock): a cube of its own texture for each of its glows, dark, idling and
 // at full, the glowing ones lit full whatever the light round them, as the cabin light glows at night; its item shows it
 // at full.
@@ -10214,6 +10250,7 @@ shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);
 shaped("lift_glass", [" G ", "GTG", " G "], { G: "minecraft:glass", T: "minecraft:tinted_glass" }, 4);
 shaped("padded_bulkhead", ["WWW", "WIW", "WWW"], { W: "minecraft:white_wool", I: "minecraft:iron_ingot" }, 8);
 shaped("engine_grille", ["BBB", "GGG", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 6);
+shaped("deck_robot", [" G ", "IRI", "I I"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10781,6 +10818,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "commands.skyliners.build_freighter": "Building a freighter of %s blocks, %s of them over blocks that were in the way",
   "block.skyliners.padded_bulkhead": "Padded Bulkhead",
   "block.skyliners.engine_grille": "Engine Grille",
+  "block.skyliners.deck_robot": "Deck Robot",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.skyliners.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.skyliners.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",

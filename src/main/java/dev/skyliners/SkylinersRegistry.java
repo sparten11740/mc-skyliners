@@ -86,6 +86,8 @@ import dev.skyliners.block.DropReleaseBlockEntity;
 import dev.skyliners.block.DutyFreeCounterBlock;
 import dev.skyliners.block.EngineCoreBlock;
 import dev.skyliners.block.EngineCoreBlockEntity;
+import dev.skyliners.block.DeckRobotBlock;
+import dev.skyliners.block.DeckRobotBlockEntity;
 import dev.skyliners.block.DimmingGlassBlock;
 import dev.skyliners.block.EngineGrilleBlock;
 import dev.skyliners.block.ExitSignBlock;
@@ -1269,6 +1271,13 @@ public final class SkylinersRegistry {
         "engine_grille", EngineGrilleBlock::new, metal(MapColor.COLOR_GRAY).lightLevel(EngineGrilleBlock::light)
     );
     public static final DeferredItem<BlockItem> ENGINE_GRILLE_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_GRILLE);
+    /** The freighter's deck robot, beeping about her corridors (see {@link DeckRobotBlock}). */
+    public static final DeferredBlock<DeckRobotBlock> DECK_ROBOT = BLOCKS.registerBlock(
+        "deck_robot", DeckRobotBlock::new, metal(MapColor.SNOW).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DeckRobotBlockEntity>> DECK_ROBOT_ENTITY =
+        BLOCK_ENTITIES.register("deck_robot", () -> BlockEntityType.Builder.of(DeckRobotBlockEntity::new, DECK_ROBOT.get()).build(null));
+    public static final DeferredItem<BlockItem> DECK_ROBOT_ITEM = ITEMS.registerSimpleBlockItem(DECK_ROBOT);
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
@@ -2759,7 +2768,8 @@ public final class SkylinersRegistry {
         )),
         new TabSection("freighter", List.of(
             PADDED_BULKHEAD_ITEM,
-            ENGINE_GRILLE_ITEM
+            ENGINE_GRILLE_ITEM,
+            DECK_ROBOT_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

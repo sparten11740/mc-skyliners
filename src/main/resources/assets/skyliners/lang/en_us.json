@@ -535,6 +535,7 @@
   "commands.skyliners.build_freighter": "Building a freighter of %s blocks, %s of them over blocks that were in the way",
   "block.skyliners.padded_bulkhead": "Padded Bulkhead",
   "block.skyliners.engine_grille": "Engine Grille",
+  "block.skyliners.deck_robot": "Deck Robot",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.skyliners.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.skyliners.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",
