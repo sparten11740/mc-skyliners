@@ -1,6 +1,5 @@
 package dev.skyliners.client;
 
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -8,22 +7,29 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.HyperspaceJump;
+import dev.skyliners.block.AutopilotBlock;
 import java.lang.ref.WeakReference;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -34,7 +40,9 @@ import org.joml.Vector4f;
  * fall back to points and are gone. Called off, they fade. Her computer says each step, in her own words, with her
  * drive's whine and its whump as she goes; so the picture and the sound both tell it, and nobody needs to read.
  *
- * <p>The streaks and the blue are drawn out past her glass, not over the whole view: on a sheet across the view {@link
+ * <p>The streaks are stars strewn round the way she flies, fixed to her and not to the viewer's head, so turning to
+ * look shows other streaks, as through a real window. They and the blue are drawn out past her glass, not over the
+ * whole view: the blue on a sheet across the view {@link
  * #SHEET} blocks ahead, after the world's solid blocks and before its glass, never hiding anything nearer, so her
  * cockpit's struts and console and whoever sits there stand in front of them and they are seen only through her glass,
  * covering the land beyond it. Only the flash as she jumps covers the whole view.
@@ -44,17 +52,24 @@ public final class HyperspaceOverlay {
     private static final int STARS = 220;
     /** How far ahead of the eye the sheet the streaks are drawn on lies, in blocks: out past her cockpit's glass. */
     private static final float SHEET = 8;
-    /** How far out from the view's middle the stars lie, as shares of its half diagonal, nearest and furthest. */
-    private static final float NEAREST = 0.04F;
-    private static final float FURTHEST = 1.1F;
-    /** How long a streak grows as her drive spools up and as she lets go, as a share of how far out its star lies. */
+    /** How long a streak grows as her drive spools up and as she lets go, as a share of its longest. */
     private static final float SPOOL_STRETCH = 0.9F;
     private static final float GO_STRETCH = 3.2F;
-    /** How fast the stars drift out from the middle as they stretch, as a share of how far out they lie each tick. */
-    private static final float DRIFT = 0.006F;
-    /** A streak's thickness, in GUI pixels, thinnest and thickest. */
-    private static final float THINNEST = 0.6F;
-    private static final float THICKEST = 1.8F;
+    /**
+     * Where the stars lie round the way she flies, from the eye, in blocks: how far out from that line, nearest and
+     * furthest, out past her hull from wherever aboard she is seen; and the stretch of the line they are strewn along,
+     * from behind the eye to ahead of it, through which they rush and come round again.
+     */
+    private static final float NEAREST = 14;
+    private static final float FURTHEST = 70;
+    private static final float BEHIND = 60;
+    private static final float AHEAD = 180;
+    /** How fast the stars rush back past her at full stretch, in blocks a tick, and how long a streak is then, in blocks. */
+    private static final float RUSH = 14;
+    private static final float LONGEST = 40;
+    /** A streak's width, in blocks, near and as much more again for every block out from the line. */
+    private static final float WIDTH = 0.12F;
+    private static final float WIDER = 0.004F;
     /** How long the flash and the streaks falling back take coming out of the jump, and a call off's fade, in ticks. */
     private static final int ARRIVE_TICKS = 18;
     private static final int CANCEL_TICKS = 12;
@@ -75,6 +90,8 @@ public final class HyperspaceOverlay {
     private static double began;
     private static int lasts;
     private static long seed;
+    /** The way the viewer looked as her drive began to spool, for the streaks of one who rides no ship. */
+    private static Vec3 lookedAhead = new Vec3(0, 0, 1);
     /** The tick to say she is out of the jump on, -1 for none due. */
     private static long arrivedLineAt = -1;
     /** The level the jump showing began in: changing world or dimension forgets it. */
@@ -91,6 +108,7 @@ public final class HyperspaceOverlay {
         }
         if (step.stage() == HyperspaceJump.Stage.SPOOL) {
             seed = minecraft.level.getGameTime();
+            lookedAhead = new Vec3(minecraft.gameRenderer.getMainCamera().getLookVector());
         }
         shownIn = new WeakReference<>(minecraft.level);
         stage = step.stage();
@@ -166,13 +184,16 @@ public final class HyperspaceOverlay {
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         float blue = DEEPEST_BLUE * shown * Math.min(1, stretch / SPOOL_STRETCH);
         sheet.quad(buffer, -1, -1, 1, 1, Math.round(blue * 255) << 24 | BLUE);
-        streaks(buffer, sheet, Minecraft.getInstance().getWindow(), (float) (now - began), stretch, shown);
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        streaks(buffer, event.getModelViewMatrix(), event.getCamera().getPosition(), ahead(partialTick), (float) (now - began), stretch, shown);
         BufferUploader.drawWithShader(buffer.buildOrThrow());
         RenderSystem.depthMask(true);
+        RenderSystem.enableCull();
         RenderSystem.disableBlend();
         view.popMatrix();
         RenderSystem.applyModelViewMatrix();
@@ -249,44 +270,65 @@ public final class HyperspaceOverlay {
     }
 
     /**
-     * The stars as streaks out from the view's middle, each from where its star lies, drifting out, to so far beyond
-     * it, the nearer the middle the thinner and dimmer, as if far ahead.
+     * The way she flies, in the world: her nose, as her autopilot's control head points, turned as Sable has her now;
+     * the way the viewer looked as her drive began to spool if they ride no ship.
      */
-    private static void streaks(BufferBuilder buffer, Sheet sheet, Window window, float age, float stretch, float shown) {
-        float width = window.getGuiScaledWidth();
-        float height = window.getGuiScaledHeight();
-        float middleX = width / 2F;
-        float middleY = height / 2F;
-        float reach = (float) Math.hypot(middleX, middleY);
+    private static Vec3 ahead(float partialTick) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        AutopilotBlockEntity autopilot = player == null ? null : SableClient.autopilot(player);
+        if (autopilot == null) {
+            return lookedAhead;
+        }
+        Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
+        SableClient.Placing placing = SableClient.placing(Vec3.atCenterOf(autopilot.getBlockPos()), partialTick);
+        if (placing == null) {
+            return Vec3.atLowerCornerOf(nose.getNormal());
+        }
+        Vector3d turned = placing.turn().transform(new Vector3d(nose.getStepX(), nose.getStepY(), nose.getStepZ()));
+        return new Vec3(turned.x, turned.y, turned.z).normalize();
+    }
+
+    /**
+     * The stars as streaks round the way she flies, from the eye: each strewn at its own angle round that line and
+     * distance out from it, rushing back past along it faster as she stretches into the jump, coming round again ahead,
+     * its streak trailing ahead of it, the further out the wider so it still shows.
+     */
+    private static void streaks(BufferBuilder buffer, Matrix4f view, Vec3 eye, Vec3 ahead, float age, float stretch, float shown) {
+        Vec3 up = Math.abs(ahead.y) > 0.95 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0);
+        Vec3 right = ahead.cross(up).normalize();
+        Vec3 over = right.cross(ahead).normalize();
+        float span = BEHIND + AHEAD;
+        float rushed = age * RUSH * (0.15F + stretch / GO_STRETCH);
+        float length = 1 + LONGEST * stretch / GO_STRETCH;
         RandomSource random = RandomSource.create(seed);
         for (int star = 0; star < STARS; star++) {
             float angle = random.nextFloat() * Mth.TWO_PI;
             float out = Mth.lerp(random.nextFloat(), NEAREST, FURTHEST);
+            float along = AHEAD - Mth.positiveModulo(random.nextFloat() * span + rushed, span);
             boolean cyan = random.nextInt(5) == 0;
-            float from = out * reach * (1 + DRIFT * age * (1 + stretch));
-            float to = from * (1 + stretch * out);
-            float thick = Mth.lerp(out, THINNEST, THICKEST);
-            int alpha = Math.round(255 * shown * Math.min(1, 0.35F + out));
-            int colour = alpha << 24 | (cyan ? STREAK_CYAN : STREAK);
-            streak(buffer, sheet, width, height, angle, from, Math.max(to, from + thick), thick, colour);
+            Vec3 round = right.scale(Mth.cos(angle) * out).add(over.scale(Mth.sin(angle) * out));
+            Vec3 head = ahead.scale(along).add(round);
+            Vec3 tail = ahead.scale(along + length).add(round);
+            int alpha = Math.round(255 * shown * Math.min(1, 0.4F + stretch / GO_STRETCH));
+            streak(buffer, view, head, tail, WIDTH + WIDER * out, alpha << 24 | (cyan ? STREAK_CYAN : STREAK));
         }
     }
 
     /**
-     * One streak out from the view's middle along an angle, between two distances from it, so thick, measured as the
-     * screen's own scaled pixels are.
+     * One streak between two points, from the eye, so wide, turned to face the eye, put in the eye's own frame by the
+     * view's turn.
      */
-    private static void streak(BufferBuilder buffer, Sheet sheet, float width, float height, float angle, float from, float to, float thick,
-                               int colour) {
-        float cos = Mth.cos(angle);
-        float sin = Mth.sin(angle);
-        float halfX = -sin * thick / 2;
-        float halfY = cos * thick / 2;
-        float toX = 2 / width;
-        float toY = -2 / height;
-        sheet.corner(buffer, (cos * from + halfX) * toX, (sin * from + halfY) * toY, colour);
-        sheet.corner(buffer, (cos * to + halfX) * toX, (sin * to + halfY) * toY, colour);
-        sheet.corner(buffer, (cos * to - halfX) * toX, (sin * to - halfY) * toY, colour);
-        sheet.corner(buffer, (cos * from - halfX) * toX, (sin * from - halfY) * toY, colour);
+    private static void streak(BufferBuilder buffer, Matrix4f view, Vec3 head, Vec3 tail, float width, int colour) {
+        Vector3f near = view.transformPosition((float) head.x, (float) head.y, (float) head.z, new Vector3f());
+        Vector3f far = view.transformPosition((float) tail.x, (float) tail.y, (float) tail.z, new Vector3f());
+        Vector3f side = new Vector3f(far).sub(near).cross(near);
+        if (side.lengthSquared() < 1e-6F) {
+            return;
+        }
+        side.normalize(width / 2);
+        buffer.addVertex(near.x + side.x, near.y + side.y, near.z + side.z).setColor(colour);
+        buffer.addVertex(far.x + side.x, far.y + side.y, far.z + side.z).setColor(colour);
+        buffer.addVertex(far.x - side.x, far.y - side.y, far.z - side.z).setColor(colour);
+        buffer.addVertex(near.x - side.x, near.y - side.y, near.z - side.z).setColor(colour);
     }
 }
