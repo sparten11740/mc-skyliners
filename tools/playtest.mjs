@@ -215,10 +215,12 @@ const CROSSBOW_COOLED_TICKS = 100;
 // A freighter's lights: how many wall washers she has at least, and how bright her club is before its stage at least,
 // as a block's light.
 const FREIGHTER_LIGHTS = 24;
-// How many bunks her crew quarters have at least, and how many seats her lounge's booth; how far each seat of it
-// stands from its table at least, a block of leg room between, and at most, so as to be one of its seats, in blocks.
+// How many bunks her crew quarters have at least, how many seats her lounge's booth, and how many any table of hers;
+// how far each seat stands from its table at least, a block of leg room between, and at most, so as to be one of its
+// seats, in blocks.
 const QUARTERS_BUNKS = 3;
 const LOUNGE_SEATED = 3;
+const TABLE_SEATED = 2;
 const LOUNGE_SEAT_OUT = 2;
 const BOOTH_REACH = 3;
 // Her small tardigrade: how many times the rocket's one's size it is, how long it may take to come to its hatch and
@@ -255,6 +257,16 @@ const ENGINEERING_SWITCH = "0.77,0.31,0.88";
 const VALVE_TURNS = 4;
 const VALVE_WHEEL = "0.5,0.4,0.55";
 const VALVE_VENTS = 120;
+// Her rooms filled out: for each kind of furniture, how many of its blocks she has at least, room by room, a two-block
+// piece counting twice and a baggage container four times.
+const FURNISHINGS = {
+  "cargo hold": { "skyliners:uld_container": 8, "skyliners:mail_sack": 1, "skyliners:parachute_rack": 1 },
+  "entry hall": { "skyliners:crew_locker": 6, "skyliners:economy_seat": 8, "skyliners:check_in_desk": 1, "skyliners:atis_screen": 1 },
+  lounge: { "skyliners:bean_bag": 3, "skyliners:snack_machine": 4, "skyliners:shelf_unit": 3 },
+  engineering: { "skyliners:engine_telegraph": 1, "minecraft:crafting_table": 1, "minecraft:grindstone": 1 },
+  "crew quarters": { "skyliners:lab_instrument": 2, "skyliners:lounge_table": 2, "skyliners:business_seat": 12 },
+  club: { "skyliners:cocktail_table": 2, "skyliners:neon_sign": 3, "skyliners:speaker": 4, "skyliners:fog_machine": 1 },
+};
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1195,18 +1207,19 @@ function checkFreighterBand() {
   expect(playing("skyliners:club_band") === 0, "freighter: gone well away from it, the song falls silent");
 }
 
-// A freighter's lounge booth: its seats stand a block of leg room back from its table, not jammed up against it.
+// A freighter's tables, her lounge's booth and her crew quarters' table: their seats stand a block of leg room back
+// from them, not jammed up against them, and her lounge's table has its seats round it.
 function checkLegRoom() {
-  const [tableRow] = must("find skyliners:lounge_table 128 1").rows;
-  if (!tableRow) {
+  const seats = must("find skyliners:business_seat[half=lower] 128 16").rows.map((row) => row.at_abs);
+  const apartFrom = ([tx, , tz]) => seats.map(([x, , z]) => Math.max(Math.abs(x - tx), Math.abs(z - tz))).filter((blocks) => blocks <= BOOTH_REACH);
+  const tables = must("find skyliners:lounge_table 128 8").rows.map((row) => apartFrom(row.at_abs));
+  if (tables.length === 0) {
     return;
   }
-  const [tx, , tz] = tableRow.at_abs;
-  const apart = must("find skyliners:business_seat[half=lower] 128 8").rows
-    .map(({ at_abs: [x, , z] }) => Math.max(Math.abs(x - tx), Math.abs(z - tz)))
-    .filter((blocks) => blocks <= BOOTH_REACH);
-  expect(apart.length >= LOUNGE_SEATED && Math.min(...apart) >= LOUNGE_SEAT_OUT, "freighter: her lounge's seats leave leg room before the table",
-    `seats ${apart.join(", ")} blocks from it`);
+  const seated = Math.max(...tables.map((apart) => apart.length)) >= LOUNGE_SEATED && tables.every((apart) => apart.length >= TABLE_SEATED);
+  const roomy = tables.every((apart) => apart.every((blocks) => blocks >= LOUNGE_SEAT_OUT));
+  expect(seated && roomy, "freighter: her tables' seats leave leg room before them",
+    tables.map((apart) => `seats ${apart.join(", ")} blocks from a table`).join("; "));
 }
 
 // A freighter's small tardigrade: a quarter the size of the rocket's, in the tank in her lounge, it comes to its hatch
@@ -1422,6 +1435,16 @@ function checkFreighterCrossbowRack() {
   must(`use ${at}; wait 5t`);
   expect(!held() && must(`block ${at}`).props.loaded === "true", "freighter: holding it, it is racked again");
   creative();
+}
+
+// A freighter's rooms filled out with furniture of their own, so none stands bare.
+function checkFreighterFurnishings() {
+  ship("freighter");
+  for (const [room, pieces] of Object.entries(FURNISHINGS)) {
+    const short = Object.entries(pieces).map(([block, least]) => [block, least, must(`find ${block} 128 ${least + 20}`).rows.length])
+      .filter(([, least, found]) => found < least);
+    expect(short.length === 0, `freighter: her ${room} is furnished`, short.map(([block, least, found]) => `${block} ${found} of ${least}`).join(", "));
+  }
 }
 
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
@@ -1805,6 +1828,7 @@ const CHECKS = {
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
+  "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

@@ -321,7 +321,9 @@ rings. Her `BreakerBoardBlock`, laid after her LED strips, which hand on where e
 room's panel went, keeps those panels' offsets in its `BreakerBoardBlockEntity` and changes their brightness; a switch is on
 while its room is lit, as `BreakerBoardRenderer` reads from the panel. Her `CoolantValveBlock` keeps its pressure in its block state,
 letting it off on scheduled ticks; `CoolantValveRenderer` turns its wheel and swings its gauge's needle toward it. `FreighterEntryHall` hangs the
-`CrossbowRackBlock` on her entry hall's wall, found as her LED panels' places are, by `FreighterWalls`. Her ramp keeps the row over its hatch clear with
+`CrossbowRackBlock` on her entry hall's wall, found as her LED panels' places are, by `FreighterWalls`. `FreighterFurnishings`
+fills her rooms out with the fleet's furniture, each piece nudged to the nearest free spot near where it is meant or
+hung on the nearest padded wall, never across a doorway. Her ramp keeps the row over its hatch clear with
 `HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's

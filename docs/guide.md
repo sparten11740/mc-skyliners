@@ -2673,6 +2673,20 @@ leg room before it, and a galley along its wall, worktops and stowage with an ov
 fridge, as the rocket's; and
 her cargo hold at her bow two walls of pallet racks loaded with boxes, drums and crates, care-package crates set down
 before them, and the rocket's parcel scanner with an empty crate waiting on its belt to be packed and scanned.
+Her rooms are filled out with the fleet's furniture too. Her cargo hold has two baggage containers by her bow, mail
+sacks, suitcases and crates stacked two high, a parachute rack, a shelf of boots and a worktop with the zeppelin's
+franking machine on it, for postcards and mail drops. Her entry hall has crew lockers along its wall, a shelf for
+boots, a check-in desk by her ramp that prints boarding passes as the terminal's does, two benches of seats facing
+each other with suitcases and a mail sack by them, crates come aboard, a snack machine, the tower's weather screen on
+its wall showing the weather outside, planters and a screen. Her lounge has bean bags round a cocktail table with a
+rubber duck on it, a snack machine, shelves of books with models of the airliner, the zeppelin and the rocket on them,
+a screen and planters. Engineering is a workshop: a workbench corner with a crafting table and a grindstone, a smithing
+table and an anvil, the zeppelin's engine telegraph and two screens on stands by her jump drive, shelves of jars and
+tools, spare-parts crates and barrels, and a cauldron of coolant. Her crew quarters have lockers, a table with two
+seats set a block back from it, bean bags, shelves of books and towels, a suitcase, planters and a med bay corner, a
+white-blanketed bunk with a vitals screen over its head. Her club has four cocktail tables with stools, neon signs on its walls,
+speakers either side of its bandstand, the rocket club's fog machine, a bean bag and a disco ball. Each stands where it
+has room; every room's doorway is kept clear, and nothing stands on her ramp's hatch.
 The server config's `freighter.rooms` builds her rooms bare.
 
 Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal

@@ -2,6 +2,7 @@ package dev.skyliners.airframe;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.LedPanelBlockEntity;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,6 +24,13 @@ final class FreighterWalls {
     @Nullable
     static BlockPos nearest(HullLayout layout, int y, LedPanelBlockEntity.Wedge room, double from, double to, double towardX, double towardZ,
         int roomBefore) {
+        return nearest(layout, y, room, from, to, towardX, towardZ, roomBefore, at -> true);
+    }
+
+    /** The same, among only the blocks that also pass the test given, as for room over them or out of a doorway. */
+    @Nullable
+    static BlockPos nearest(HullLayout layout, int y, LedPanelBlockEntity.Wedge room, double from, double to, double towardX, double towardZ,
+        int roomBefore, Predicate<BlockPos> also) {
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         int far = (int) Math.ceil(to);
@@ -30,7 +38,7 @@ final class FreighterWalls {
         for (int block = 0; block < across * across; block++) {
             BlockPos at = new BlockPos(block / across - far, y, block % across - far);
             double distance = Math.hypot(at.getX() + 0.5 - towardX, at.getZ() + 0.5 - towardZ);
-            if (distance < bestDistance && fits(layout, room, at, from, to) && openBefore(layout, at, roomBefore)) {
+            if (distance < bestDistance && fits(layout, room, at, from, to) && openBefore(layout, at, roomBefore) && also.test(at)) {
                 best = at;
                 bestDistance = distance;
             }
