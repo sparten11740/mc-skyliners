@@ -558,8 +558,9 @@ public final class FreighterPilot {
 
     /**
      * To a pin: far off, nose toward it at the speed set, slowing as she nears it so she reaches {@link #SLIDE} from it
-     * no faster than she settles onto a spot ({@link #MOST_SETTLING}); from there no more turning, sliding onto it on
-     * the heading she has.
+     * no faster than she settles onto a spot ({@link #MOST_SETTLING}), and only as fast as she points at it, so that
+     * pointing well away she turns almost where she is rather than circle it wider than she slides; from there no more
+     * turning, sliding onto it on the heading she has.
      */
     private Course toPin(Orders orders, SableFlight.State state, Vec3 middle) {
         Vec3 pin = new Vec3(orders.pinX(), middle.y, orders.pinZ());
@@ -567,8 +568,10 @@ public final class FreighterPilot {
         if (distance < SLIDE) {
             return toward(state, middle, pin, state.heading(), Math.min(orders.speed(), Math.sqrt(2 * BRAKING * distance)));
         }
+        double bearing = Steering.bearingTo(middle, pin.x, pin.z);
+        double pointing = Math.max(0, Math.cos(Math.toRadians(Mth.wrapDegrees(bearing - state.heading()))));
         double speed = Math.min(orders.speed(), Math.sqrt(2 * BRAKING * (distance - SLIDE)) + MOST_SETTLING);
-        return new Course(speed, 0, Steering.bearingTo(middle, pin.x, pin.z));
+        return new Course(speed * pointing, 0, bearing);
     }
 
     /**
