@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "  W",
+    "SSS"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:cyan_wool"
+    },
+    "S": {
+      "item": "minecraft:white_concrete"
+    }
+  },
+  "result": {
+    "id": "skyliners:sun_lounger",
+    "count": 1
+  }
+}

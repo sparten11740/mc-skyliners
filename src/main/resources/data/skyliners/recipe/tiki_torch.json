@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "T",
+    "B",
+    "B"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:torch"
+    },
+    "B": {
+      "item": "minecraft:bamboo"
+    }
+  },
+  "result": {
+    "id": "skyliners:tiki_torch",
+    "count": 2
+  }
+}

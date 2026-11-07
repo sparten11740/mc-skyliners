@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SS",
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:sand"
+    }
+  },
+  "result": {
+    "id": "skyliners:beach_sand",
+    "count": 4
+  }
+}

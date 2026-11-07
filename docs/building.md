@@ -323,7 +323,12 @@ while its room is lit, as `BreakerBoardRenderer` reads from the panel. Her `Cool
 letting it off on scheduled ticks; `CoolantValveRenderer` turns its wheel and swings its gauge's needle toward it. `FreighterEntryHall` hangs the
 `CrossbowRackBlock` on her entry hall's wall, found as her LED panels' places are, by `FreighterWalls`. `FreighterFurnishings`
 fills her rooms out with the fleet's furniture, each piece nudged to the nearest free spot near where it is meant or
-hung on the nearest padded wall, never across a doorway. Her ramp keeps the row over its hatch clear with
+hung on the nearest padded wall, never across a doorway. `FreighterChillout` lays her lounge's beach first: the round
+floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindowItem` and opened from
+`FloorWindowPanelBlock`; each `FloorWindowBlockEntity` keeps the offset to the window's middle, the floor it blends into,
+what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under it. The client's
+`FloorWindowRenderer` draws the window, as its blocks have no model: every block the floor but for the iris's hole, in
+strips whose ends lie on the circle, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
 `HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's

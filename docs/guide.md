@@ -2689,6 +2689,22 @@ speakers either side of its bandstand, the rocket club's fog machine, a bean bag
 has room; every room's doorway is kept clear, and nothing stands on her ramp's hatch.
 The server config's `freighter.rooms` builds her rooms bare.
 
+Her lounge has a beach. In the middle of a patch of sand is a huge round floor window, nine blocks across, walked over
+like the floor. Shut, it is the sand itself but for a thin steel ring round its edge. Press the big round button on its
+panel by the sand, painted with the window and an eye looking down, and an iris opens from the middle out, showing glass
+flush with the floor and a round steel shaft below it down to glass in her belly, so you watch the ground pass far below
+as she flies; press it again and it shuts. The panel's lamp is green while the window is open and amber while it is
+shut. Round the window stand striped sun loungers to lie on, a red and white parasol, potted palms and tiki torches with
+flames flickering on them. Her booth stands in the lounge's far corner. The server config's `freighter.beach` leaves the
+beach out.
+
+The floor window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
+it lays itself into that floor, the whole disc at once, each block taking on the look of the floor it replaced, grass,
+planks or tiles alike; it does not fit (a thud and a puff of smoke) where any block of the disc is something other than
+plain floor or open air. Set its panel down within twelve blocks to open and shut it, by hand or with a redstone pulse
+such as a button on the panel. Break any block of the window and it all comes out, the floor put back as it was and the
+window given back. Beach sand, potted palms, parasols, sun loungers and tiki torches are in the creative tab as well.
+
 Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal
 folds, in a glass tank standing out from the wall by the galley on a stand of cabinets, a dark hood over it, so it paces
 at the eye height of whoever stands before it. It does all the big one does, pacing, turning round, sleeping at night

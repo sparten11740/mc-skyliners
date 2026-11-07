@@ -1,0 +1,181 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "bamboo": "minecraft:block/bamboo_block",
+    "head": "minecraft:block/hay_block_side",
+    "flame": "skyliners:block/tiki_flame",
+    "particle": "minecraft:block/bamboo_block"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        14,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bamboo"
+        },
+        "south": {
+          "texture": "#bamboo"
+        },
+        "east": {
+          "texture": "#bamboo"
+        },
+        "west": {
+          "texture": "#bamboo"
+        },
+        "up": {
+          "texture": "#bamboo"
+        },
+        "down": {
+          "texture": "#bamboo"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        14,
+        6
+      ],
+      "to": [
+        10,
+        18,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#head",
+          "uv": [
+            6,
+            12,
+            10,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#head",
+          "uv": [
+            6,
+            12,
+            10,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#head",
+          "uv": [
+            6,
+            12,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#head",
+          "uv": [
+            6,
+            12,
+            10,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#head"
+        },
+        "down": {
+          "texture": "#head"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        18,
+        6.5
+      ],
+      "to": [
+        9.5,
+        19,
+        9.5
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#flame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            6.5,
+            13,
+            9.5,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#flame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            6.5,
+            13,
+            9.5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#flame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            6.5,
+            13,
+            9.5,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#flame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "uv": [
+            6.5,
+            13,
+            9.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#flame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#flame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}

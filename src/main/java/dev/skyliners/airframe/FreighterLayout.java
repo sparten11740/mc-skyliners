@@ -202,11 +202,11 @@ public final class FreighterLayout extends HullLayout {
     private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.PURPLE, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
     /**
      * Her lounge's booth, in the room aft of her entry hall: a low table at this bearing and so far out from her axis,
-     * the middle of the room, with a seat facing it on each side so many blocks from it, leg room between, in these
-     * colours by turns.
+     * in the room's far corner, its middle kept for her beach, with a seat facing it on each side so many blocks from
+     * it, leg room between, in these colours by turns.
      */
-    private static final int LOUNGE_BEARING = 120;
-    private static final double LOUNGE_OUT = 14;
+    private static final int LOUNGE_BEARING = 135;
+    private static final double LOUNGE_OUT = 19.8;
     private static final int LOUNGE_SEAT_OUT = 2;
     private static final DyeColor[] LOUNGE_SEATS = {DyeColor.ORANGE, DyeColor.BROWN};
     /**
@@ -419,6 +419,7 @@ public final class FreighterLayout extends HullLayout {
         layout.cargoHold();
         layout.galley();
         LoungeTank.build(layout, layout.deck);
+        FreighterChillout.build(layout, layout.deck);
         FreighterPaintings.build(layout, layout.deck);
         FreighterEngineering.build(layout, layout.deck);
         FreighterEntryHall.build(layout, layout.deck);

@@ -82,6 +82,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_LED_STRIPS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_FINISHES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINEERING;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_BEACH;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -708,6 +709,12 @@ public final class SkylinersConfig {
                 "each room in a colour and a way of lighting of its own, and an LED panel by each room's doorway to set them."
             )
             .define("ledStrips", true);
+        FREIGHTER_BEACH = builder
+            .comment(
+                "Whether the freighter's lounge has its beach: a huge round floor window in the middle of a patch of sand, opened",
+                "from its panel to watch the ground pass far below her, sun loungers round it under a parasol, palms and tiki torches."
+            )
+            .define("beach", true);
         FREIGHTER_FINISHES = builder
             .comment(
                 "Whether each of the freighter's rooms has a floor of its own: a steel deck with loading lines in her cargo hold,",

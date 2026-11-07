@@ -257,12 +257,20 @@ const ENGINEERING_SWITCH = "0.77,0.31,0.88";
 const VALVE_TURNS = 4;
 const VALVE_WHEEL = "0.5,0.4,0.55";
 const VALVE_VENTS = 120;
+// A round floor window: how many blocks it has at least; how long its iris is given to open or shut, in ticks; how
+// many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
+// for, in blocks.
+const FLOOR_WINDOW_BLOCKS = 60;
+const IRIS_TICKS = 40;
+const BEACH_LOUNGERS = 2;
+const BEACH_PALMS = 2;
+const BELLY_BELOW = 3;
 // Her rooms filled out: for each kind of furniture, how many of its blocks she has at least, room by room, a two-block
 // piece counting twice and a baggage container four times.
 const FURNISHINGS = {
   "cargo hold": { "skyliners:uld_container": 8, "skyliners:mail_sack": 1, "skyliners:parachute_rack": 1 },
   "entry hall": { "skyliners:crew_locker": 6, "skyliners:economy_seat": 8, "skyliners:check_in_desk": 1, "skyliners:atis_screen": 1 },
-  lounge: { "skyliners:bean_bag": 3, "skyliners:snack_machine": 4, "skyliners:shelf_unit": 3 },
+  lounge: { "skyliners:snack_machine": 4, "skyliners:shelf_unit": 3, "skyliners:sun_lounger": 2 },
   engineering: { "skyliners:engine_telegraph": 1, "minecraft:crafting_table": 1, "minecraft:grindstone": 1 },
   "crew quarters": { "skyliners:lab_instrument": 2, "skyliners:lounge_table": 2, "skyliners:business_seat": 12 },
   club: { "skyliners:cocktail_table": 2, "skyliners:neon_sign": 3, "skyliners:speaker": 4, "skyliners:fog_machine": 1 },
@@ -1447,6 +1455,71 @@ function checkFreighterFurnishings() {
   }
 }
 
+// A round floor window laid from its item into the ground anywhere: every block of it blends into the grass it took
+// the place of; its panel, set down by it, opens and shuts it; and broken, it all comes out, the grass put back where
+// it was and the window given back.
+function checkFloorWindow() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  const [x, z] = [site.x, site.z];
+  const middle = `${x},${ground - 1},${z}`;
+  creative();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${ground} ${z - 3.5} 0 40; wait 40t`);
+  must("server give @p skyliners:floor_window 1; server give @p skyliners:floor_window_panel 1; wait 5t; select 0");
+  // The window lays itself into the ground under where it is aimed, which Blockpilot's place does not look for.
+  send(`place skyliners:floor_window ${x},${ground},${z}`);
+  must("wait 10t");
+  const laid = must("find skyliners:floor_window 12 100").rows.length;
+  const floor = must(`server data get block ${x + 2} ${ground - 1} ${z + 1} Floor.Name`).rows[0]?.line ?? "";
+  expect(laid >= FLOOR_WINDOW_BLOCKS && floor.includes("grass_block"), "floor window: laid into the ground, the whole of it blends into the grass",
+    `${laid} blocks, ${floor}`);
+  must(`server tp @p ${x + 0.5} ${ground} ${z - 8.5} 0 30; wait 10t; select 1; place skyliners:floor_window_panel ${x},${ground},${z - 6}; wait 10t`);
+  const panel = `${x},${ground},${z - 6}`;
+  must(`use ${panel}; wait ${IRIS_TICKS}t`);
+  expect(must(`block ${middle}`).props?.open === "true", "floor window: its panel set down by it opens it");
+  must(`use ${panel}; wait ${IRIS_TICKS}t`);
+  expect(must(`block ${middle}`).props?.open === "false", "floor window: pressed again, it shuts");
+  survival();
+  must(`select 2; server tp @p ${x + 1.5} ${ground} ${z - 6.5} 0 50; wait 10t; mine ${x},${ground - 1},${z - 4}; wait 20t`);
+  const left = must("find skyliners:floor_window 12 100").rows.length;
+  const back = must(`block ${middle}`).id;
+  const given = must("server data get entity @e[type=item,limit=1,sort=nearest] Item.id").rows[0]?.line ?? "";
+  expect(left === 0 && back.endsWith("grass_block") && given.includes("floor_window"), "floor window: broken, it all comes out, the grass put back and the window given back",
+    `${left} blocks left, ${back} in its middle, ${given || "nothing"} dropped`);
+  creative();
+}
+
+// A freighter's beach in her lounge: her round floor window in the middle of its sand, blending into it, loungers,
+// palms, tiki torches and a parasol round it, and its panel, which opens the window onto its shaft down to the glass in
+// her belly.
+function checkFreighterBeach() {
+  ship("freighter");
+  const windows = must("find skyliners:floor_window 128 100").rows.map((row) => row.at_abs);
+  expect(windows.length >= FLOOR_WINDOW_BLOCKS, "freighter: her lounge has its round floor window", `${windows.length} blocks`);
+  const count = (id) => must(`find skyliners:${id} 128 10`).rows.length;
+  const pieces = { loungers: count("sun_lounger"), palms: count("potted_palm"), torches: count("tiki_torch"), parasols: count("parasol") };
+  expect(pieces.loungers >= BEACH_LOUNGERS && pieces.palms >= BEACH_PALMS && pieces.torches >= 1 && pieces.parasols >= 1,
+    "freighter: round it, her beach's loungers, palms, tiki torches and parasol", JSON.stringify(pieces));
+  const [panel] = must("find skyliners:floor_window_panel 128 1").rows;
+  expect(Boolean(panel) && windows.length > 0, "freighter: her window's panel stands by it");
+  if (!panel || windows.length === 0) {
+    return;
+  }
+  const middle = [0, 1, 2].map((axis) => Math.round(windows.reduce((sum, at) => sum + at[axis], 0) / windows.length));
+  const data = (path) => must(`server data get block ${middle.join(" ")} ${path}`).rows[0]?.line ?? "";
+  const shaft = Number(data("Shaft").split(" ").at(-1));
+  expect(data("Floor.Name").includes("beach_sand") && shaft > 0, "freighter: shut, it blends into the sand, its shaft running down to her belly",
+    `${data("Floor.Name")}; shaft ${shaft}`);
+  const [dx, dz] = STEPS[must(`block ${panel.at_abs.join(",")}`).props?.facing ?? "north"];
+  const [px, py, pz] = panel.at_abs;
+  must(`server tp @p ${px + 0.5 + dx * 1.5} ${py} ${pz + 0.5 + dz * 1.5}; wait 10t; use ${panel.at_abs.join(",")}; wait ${IRIS_TICKS}t`);
+  expect(must(`block ${middle.join(",")}`).props?.open === "true", "freighter: pressed, her window's panel opens it");
+  const below = [...Array(shaft + BELLY_BELOW).keys()].map((down) => must(`block ${middle[0]},${middle[1] - 1 - down},${middle[2]}`).id);
+  expect(below.includes("skyliners:smoked_glass"), "freighter: down its shaft, her belly is glass", below.join(", "));
+  must(`use ${panel.at_abs.join(",")}; wait ${IRIS_TICKS}t`);
+  expect(must(`block ${middle.join(",")}`).props?.open === "false", "freighter: pressed again, it shuts");
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1829,6 +1902,8 @@ const CHECKS = {
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
+  "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
+  "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

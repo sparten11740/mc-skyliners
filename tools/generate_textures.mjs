@@ -8694,4 +8694,71 @@ rocketControlTextures();
     return CLEAR;
   }, 0);
 }
+// The round floor window (see FloorWindowBlock): its item's picture, a steel ring round faintly blue glass with a glint
+// across it, set into a square of warm floor; its panel's sloping face, brushed steel round a big round button painted
+// with the window, a dark eye looking down through its glass, the lamp round the button green while the window is open
+// and amber while it is shut; and the panel's steel post.
+function floorWindowTextures() {
+  const STEEL = [0x9a, 0xa1, 0xa8];
+  const STEEL_DARK = [0x5c, 0x63, 0x6b];
+  const GLASS = [0xa8, 0xd8, 0xf0];
+  const GLINT = [0xe8, 0xf8, 0xff];
+  const FLOOR = [0xc8, 0xa8, 0x78];
+  texture(itemOutput, "floor_window", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out > 7.2) return FLOOR;
+    if (out > 6) return out > 6.8 ? STEEL_DARK : STEEL;
+    return Math.abs(x - y) < 1.2 && x > 3 && x < 10 ? GLINT : GLASS;
+  }, 0);
+  const face = (lamp) => (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out > 6.6) return (x + y) % 5 === 0 ? STEEL_DARK : STEEL;
+    if (out > 5.4) return lamp;
+    if (out > 4.6) return STEEL_DARK;
+    const eye = Math.abs(y - 8) < 1.6 - Math.abs(x - 7.5) * 0.35;
+    if (eye) return Math.hypot(x - 7.5, y - 8) < 1 ? [0x14, 0x18, 0x22] : [0xf4, 0xf6, 0xfa];
+    return Math.abs(x - y) < 1 && x < 6 ? GLINT : GLASS;
+  };
+  texture(blockOutput, "floor_window_panel_open", face([0x40, 0xf0, 0x70]), 0);
+  texture(blockOutput, "floor_window_panel_shut", face([0xf8, 0xa8, 0x28]), 0);
+  texture(blockOutput, "floor_window_panel_post", (x) => (x % 4 === 0 ? STEEL_DARK : STEEL), 2);
+}
+floorWindowTextures();
+
+// The freighter's beach in her lounge (see the beach in generate_resources.mjs): warm sand with the odd pale shell; a
+// palm's ringed trunk, its pot of terracotta with a lighter rim, and a frond, a midrib out from the trunk at its left
+// edge and leaflets either side of it, tapering to its tip, clear between them, and one crossing over the others,
+// tapering to both its ends; a sun lounger's cushion, striped turquoise and white along it; a parasol's canopy, red and
+// white stripes, paler underneath; and a tiki torch's flame, glowing yellow at its heart to orange at its edge.
+function beachTextures() {
+  texture(blockOutput, "beach_sand", (x, y) => {
+    if ((x * 7 + y * 13) % 41 === 0) return [0xf8, 0xe8, 0xe0];
+    return (x * 3 + y * 5) % 11 === 0 ? [0xd8, 0xbc, 0x84] : [0xe8, 0xd2, 0x9c];
+  }, 6);
+  texture(blockOutput, "palm_trunk", (x, y) => (y % 3 === 0 ? [0x6a, 0x48, 0x2a] : x === 0 || x === 15 ? [0x7a, 0x56, 0x34] : [0x9a, 0x72, 0x48]), 4);
+  texture(blockOutput, "palm_pot", () => [0xb8, 0x5c, 0x38], 4);
+  texture(blockOutput, "palm_pot_rim", () => [0xd0, 0x76, 0x4c], 3);
+  texture(blockOutput, "palm_frond", (x, y) => {
+    const off = Math.abs(y - 7.5);
+    const reach = 7.5 * (1 - x / 17);
+    if (off < 0.8) return [0x4a, 0x7a, 0x28];
+    if (off > reach || (x + Math.floor(off)) % 3 === 0) return CLEAR;
+    return off > reach - 1.2 ? [0x3c, 0x8c, 0x30] : [0x58, 0xb0, 0x3c];
+  }, 0);
+  texture(blockOutput, "palm_frond_crossing", (x, y) => {
+    const off = Math.abs(y - 7.5);
+    const reach = 7 * (1 - Math.abs(x - 7.5) / 8.5);
+    if (off < 0.8) return [0x4a, 0x7a, 0x28];
+    if (off > reach || (Math.abs(x - 7.5) + off) % 3 < 1) return CLEAR;
+    return off > reach - 1.2 ? [0x3c, 0x8c, 0x30] : [0x58, 0xb0, 0x3c];
+  }, 0);
+  texture(blockOutput, "lounger_cushion", (x) => (Math.floor(x / 2) % 2 ? [0xf4, 0xf6, 0xf2] : [0x30, 0xc4, 0xbc]), 2);
+  texture(blockOutput, "parasol_canopy", (x, y) => (Math.floor((x + y) / 3) % 2 ? [0xf4, 0xf0, 0xe8] : [0xe0, 0x3c, 0x34]), 2);
+  texture(blockOutput, "parasol_underside", (x, y) => (Math.floor((x + y) / 3) % 2 ? [0xf8, 0xf4, 0xec] : [0xf0, 0x80, 0x70]), 1);
+  texture(blockOutput, "tiki_flame", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    return out < 3 ? [0xff, 0xf0, 0x80] : out < 5.5 ? [0xff, 0xb8, 0x30] : [0xf0, 0x70, 0x18];
+  }, 0);
+}
+beachTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -20,7 +20,6 @@ import dev.skyliners.block.NeonSignBlock;
 import dev.skyliners.block.ParachuteRackBlock;
 import dev.skyliners.block.PassengerScreenBlock;
 import dev.skyliners.block.PlanterBlock;
-import dev.skyliners.block.RubberDuckBlock;
 import dev.skyliners.block.ScreenStandBlock;
 import dev.skyliners.block.ShelfUnitBlock;
 import dev.skyliners.block.SnackMachineBlock;
@@ -54,14 +53,14 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * parachute rack, a shelf of boots and a worktop with the zeppelin's franking machine on it; her entry hall crew
  * lockers along its wall, a shelf for boots, a terminal's check-in desk facing her ramp, two benches facing each other
  * with luggage by them, crates come aboard, a snack machine, the weather outside on a tower's weather screen, planters
- * and a screen; her lounge a corner of bean bags round a cocktail table with a rubber duck on it, a snack machine,
- * shelves of books with the fleet's models on them, a screen and planters; engineering a workbench corner with a
- * crafting table and a grindstone, a smithing table and an anvil, the zeppelin's engine telegraph by her jump drive,
- * two screens on stands either side of it, shelves of jars and tools, spare-parts crates and barrels, a cauldron of
- * coolant; her crew quarters lockers, a table with two seats a block back from it, bean bags, shelves of books and
- * towels, a suitcase, planters and a med bay corner, a white-blanketed bunk with a vitals screen over its head; and her
- * club four cocktail tables with stools, neon signs on its walls, speakers either side of its bandstand, the rocket
- * club's fog machine, a bean bag and a disco ball.
+ * and a screen; her lounge round its beach (see {@link FreighterChillout}) a snack machine, shelves of books with the fleet's
+ * models on them, a screen and planters; engineering a workbench corner with a crafting table and a grindstone, a
+ * smithing table and an anvil, the zeppelin's engine telegraph by her jump drive, two screens on stands either side of
+ * it, shelves of jars and tools, spare-parts crates and barrels, a cauldron of coolant; her crew quarters lockers, a
+ * table with two seats a block back from it, bean bags, shelves of books and towels, a suitcase, planters and a med bay
+ * corner, a white-blanketed bunk with a vitals screen over its head; and her club four cocktail tables with stools,
+ * neon signs on its walls, speakers either side of its bandstand, the rocket club's fog machine, a bean bag and a disco
+ * ball.
  *
  * <p>Each piece goes in where it has room, nudged to the nearest free spot near where it is meant to stand, or on the
  * nearest padded wall with room before it (see {@link FreighterWalls}); never across a room's doorway, which stays
@@ -179,15 +178,8 @@ final class FreighterFurnishings {
             .setValue(PassengerScreenBlock.FACING, facing));
     }
 
-    /** Her lounge: bean bags round a cocktail table, a snack machine, shelves with the fleet's models, a screen. */
+    /** Her lounge round her beach: a snack machine, shelves with the fleet's models, a screen and planters. */
     private void lounge() {
-        BlockPos table = floorPiece(LOUNGE, 135, 16, 1, at -> SkylinersRegistry.COCKTAIL_TABLE.get().defaultBlockState());
-        if (table != null) {
-            beanBag(table.east(), DyeColor.ORANGE, table);
-            beanBag(table.west(), DyeColor.BROWN, table);
-            beanBag(table.south(), DyeColor.YELLOW, table);
-            onTop(table, facing -> SkylinersRegistry.RUBBER_DUCK.get().defaultBlockState().setValue(RubberDuckBlock.FACING, facing));
-        }
         snackMachine(LOUNGE, 145, 12);
         Block[] models = {SkylinersRegistry.MODEL_ROCKET.get(), SkylinersRegistry.MODEL_ZEPPELIN.get(), SkylinersRegistry.MODEL_AIRLINER.get()};
         for (int shelf = 0; shelf < models.length; shelf++) {
@@ -358,15 +350,6 @@ final class FreighterFurnishings {
         floorPiece(room, bearing, out, 1, at -> PlanterBlock.planted(SkylinersRegistry.PLANTER.get(), plant, toward(at)));
     }
 
-    /** A bean bag at a block, facing a table, where it has room. */
-    private void beanBag(BlockPos at, DyeColor colour, BlockPos table) {
-        if (free(at, 1) && !inDoorway(at)) {
-            Direction facing = Direction.getNearest(table.getX() - at.getX(), 0, table.getZ() - at.getZ());
-            layout.set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.BEAN_BAG.get().defaultBlockState()
-                .setValue(BeanBagBlock.FACING, facing).setValue(BeanBagBlock.COLOR, colour));
-        }
-    }
-
     /** A business seat, both halves, at a block, facing the way given, where it has room. */
     private void businessSeat(BlockPos at, Direction facing) {
         if (free(at, 2) && !inDoorway(at)) {
@@ -526,7 +509,7 @@ final class FreighterFurnishings {
     }
 
     /** Whether a block lies in a room: in its wedge round her axis, past the open floor about her core. */
-    private static boolean inRoom(int room, BlockPos at) {
+    static boolean inRoom(int room, BlockPos at) {
         LedPanelBlockEntity.Wedge wedge = new LedPanelBlockEntity.Wedge(BlockPos.ZERO, room, room + ROOM_TURN);
         return Math.hypot(at.getX(), at.getZ()) >= FreighterLayout.CORRIDOR && wedge.contains(at);
     }
@@ -555,7 +538,7 @@ final class FreighterFurnishings {
      * Whether a block lies in a room's way in: its middle near the middle line of the room's doorway, from the ring out
      * into the room, measured round the arc at its distance out, near enough the straight distance so close in.
      */
-    private static boolean inDoorway(BlockPos at) {
+    static boolean inDoorway(BlockPos at) {
         double x = at.getX() + 0.5;
         double z = at.getZ() + 0.5;
         double out = Math.hypot(x, z);

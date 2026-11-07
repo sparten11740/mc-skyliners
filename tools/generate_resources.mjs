@@ -122,6 +122,7 @@ const cubes = {
   club_wall: null,
   padded_bulkhead: null,
   engine_grating: null,
+  beach_sand: null,
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light", "flight_deck_stripe"]);
@@ -406,6 +407,111 @@ function rampFittings() {
   write(`assets/${ID}/models/item/crossbow_rack.json`, { parent: `${ID}:block/crossbow_rack` });
   dropsItself("crossbow_rack");
   cubes.crossbow_rack = null;
+}
+
+// The round floor window (see FloorWindowBlock): no model of its own, FloorWindowRenderer drawing it all, but glass
+// when it is broken; its item a flat picture of it. It drops nothing by itself, as the window gives itself back once
+// whichever of its blocks is broken. Its panel (see FloorWindowPanelBlock): a steel foot, post and head, and on top a
+// big round button painted with the window, glowing whatever the light round it, its lamp green or amber.
+{
+  write(`assets/${ID}/models/block/floor_window.json`, { textures: { particle: "minecraft:block/glass" } });
+  write(`assets/${ID}/blockstates/floor_window.json`, {
+    variants: Object.fromEntries(Object.keys(yRot).flatMap((facing) => [false, true]
+      .map((open) => [`facing=${facing},open=${open}`, { model: `${ID}:block/floor_window` }]))),
+  });
+  write(`assets/${ID}/models/item/floor_window.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/floor_window` } });
+  cubes.floor_window = null;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  for (const open of [false, true]) {
+    const face = `${ID}:block/floor_window_panel_${open ? "open" : "shut"}`;
+    write(`assets/${ID}/models/block/floor_window_panel_${open ? "open" : "shut"}.json`, {
+      parent: "minecraft:block/block",
+      textures: { post: `${ID}:block/floor_window_panel_post`, foot: `${ID}:block/lab_chrome`, face, particle: `${ID}:block/floor_window_panel_post` },
+      elements: [solid([4, 0, 4], [12, 1, 12], "#foot"), solid([6.5, 1, 6.5], [9.5, 10, 9.5], "#post"), solid([3.5, 10, 3.5], [12.5, 13, 12.5], "#post"),
+        { from: [3.5, 13, 3.5], to: [12.5, 14, 12.5], shade: false,
+          faces: { up: { texture: "#face", ...lit }, north: { texture: "#post" }, south: { texture: "#post" }, east: { texture: "#post" },
+            west: { texture: "#post" }, down: { texture: "#post" } } }],
+    });
+  }
+  write(`assets/${ID}/blockstates/floor_window_panel.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((open) => [false, true]
+      .map((powered) => [`facing=${facing},open=${open},powered=${powered}`, { model: `${ID}:block/floor_window_panel_${open ? "open" : "shut"}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/floor_window_panel.json`, { parent: `${ID}:block/floor_window_panel_shut` });
+  dropsItself("floor_window_panel");
+  cubes.floor_window_panel = null;
+}
+
+// The freighter's beach in her lounge. A potted palm (see TropicalPieceBlock): a terracotta pot with a lighter rim and
+// earth in it, a ringed trunk leaning a little as it rises a block and a half, and fronds spreading from its crown,
+// four drooping out to its sides and two more crossing over them, drawn on both faces and clear between their leaflets.
+// A parasol: a dark weighted foot, a white pole and a red and white striped canopy two and a half blocks across in
+// three tiers over it, as high as a model reaches, over the heads of whoever walks under it, paler underneath. A sun
+// lounger (see SunLoungerBlock): a white frame on four short legs, a striped cushion along it, its back raised at its
+// south end, facing north. A tiki torch (see TikiTorchBlock): a bamboo pole, a woven head and its flame glowing on top
+// whatever the light round it. All reach past their blocks, so none is drawn with ambient occlusion, which goes dark
+// aboard.
+{
+  const frond = (from, to, uv, rotation) => ({ from, to, rotation,
+    faces: { up: { texture: "#frond", uv }, down: { texture: "#frond", uv } } });
+  const crossing = (angle) => ({ from: [-1, 27, 6], to: [17, 27.05, 10], rotation: { origin: [8, 27, 8], axis: "y", angle },
+    faces: { up: { texture: "#crossing", uv: [0, 0, 16, 16] }, down: { texture: "#crossing", uv: [0, 0, 16, 16] } } });
+  write(`assets/${ID}/models/block/potted_palm.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    render_type: "minecraft:cutout",
+    textures: { pot: `${ID}:block/palm_pot`, rim: `${ID}:block/palm_pot_rim`, earth: "minecraft:block/coarse_dirt", trunk: `${ID}:block/palm_trunk`,
+      frond: `${ID}:block/palm_frond`, crossing: `${ID}:block/palm_frond_crossing`, particle: `${ID}:block/palm_frond` },
+    elements: [solid([5, 0, 5], [11, 4.5, 11], "#pot"), solid([4.5, 4, 4.5], [11.5, 5.5, 11.5], "#rim"), solid([5.5, 5.5, 5.5], [10.5, 5.6, 10.5], "#earth"),
+      solid([7, 5.5, 7], [9, 16, 9], "#trunk"), solid([7.5, 16, 7.3], [9.5, 25, 9.3], "#trunk"), solid([7, 25, 6.8], [10, 27, 9.8], "#trunk"),
+      frond([10, 26, 5.5], [22, 26.05, 10.5], [0, 0, 16, 16], { origin: [10, 26, 8], axis: "z", angle: -22.5 }),
+      frond([-5, 26, 5.5], [7, 26.05, 10.5], [16, 0, 0, 16], { origin: [7, 26, 8], axis: "z", angle: 22.5 }),
+      { ...frond([5.5, 26, -5], [10.5, 26.05, 7], [0, 0, 16, 16], { origin: [8, 26, 7], axis: "x", angle: 22.5 }), faces: {
+        up: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 270 }, down: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 90 } } },
+      { ...frond([5.5, 26, 10], [10.5, 26.05, 22], [0, 0, 16, 16], { origin: [8, 26, 10], axis: "x", angle: -22.5 }), faces: {
+        up: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 90 }, down: { texture: "#frond", uv: [0, 0, 16, 16], rotation: 270 } } },
+      crossing(45), crossing(-45)],
+  });
+  write(`assets/${ID}/models/block/parasol.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { foot: "minecraft:block/polished_deepslate", pole: "minecraft:block/white_concrete", canopy: `${ID}:block/parasol_canopy`,
+      under: `${ID}:block/parasol_underside`, particle: `${ID}:block/parasol_canopy` },
+    elements: [solid([5, 0, 5], [11, 1, 11], "#foot"), solid([7.5, 1, 7.5], [8.5, 29, 8.5], "#pole"),
+      ...[[-12, 29, 28], [-5, 30, 21], [2, 31, 14]].map(([from, y, to]) => ({ from: [from, y, from], to: [to, y + 1, to],
+        faces: { up: { texture: "#canopy", uv: [0, 0, 16, 16] }, down: { texture: "#under", uv: [0, 0, 16, 16] },
+          north: { texture: "#canopy", uv: [0, 0, 16, 1] }, south: { texture: "#canopy", uv: [0, 0, 16, 1] },
+          east: { texture: "#canopy", uv: [0, 0, 16, 1] }, west: { texture: "#canopy", uv: [0, 0, 16, 1] } } }))],
+  });
+  write(`assets/${ID}/models/block/sun_lounger.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { frame: "minecraft:block/white_concrete", cushion: `${ID}:block/lounger_cushion`, particle: `${ID}:block/lounger_cushion` },
+    elements: [...[[2, 2], [13, 2], [2, 13], [13, 13]].map(([x, z]) => solid([x, 0, z], [x + 1, 3, z + 1], "#frame")),
+      solid([1, 3, 0.5], [15, 5, 15.5], "#frame"), solid([1.5, 5, 0.5], [14.5, 6.5, 10], "#cushion"),
+      solid([1.5, 5, 10], [14.5, 6.5, 16.5], "#cushion", { origin: [8, 5, 10], axis: "x", angle: -45 })],
+  });
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  write(`assets/${ID}/models/block/tiki_torch.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { bamboo: "minecraft:block/bamboo_block", head: "minecraft:block/hay_block_side", flame: `${ID}:block/tiki_flame`,
+      particle: "minecraft:block/bamboo_block" },
+    elements: [solid([7, 0, 7], [9, 14, 9], "#bamboo"), solid([6, 14, 6], [10, 18, 10], "#head"),
+      { from: [6.5, 18, 6.5], to: [9.5, 19, 9.5], shade: false,
+        faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#flame", ...lit }])) }],
+  });
+  for (const name of ["potted_palm", "parasol", "sun_lounger"]) {
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${name}`, y }])),
+    });
+  }
+  write(`assets/${ID}/blockstates/tiki_torch.json`, { variants: { "": { model: `${ID}:block/tiki_torch` } } });
+  for (const name of ["potted_palm", "parasol", "sun_lounger", "tiki_torch"]) {
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    dropsItself(name);
+    cubes[name] = null;
+  }
 }
 
 // The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
@@ -1521,6 +1627,13 @@ function zeppelinControlsLang() {
     "block.skyliners.breaker_board": "Breaker Board",
     "block.skyliners.coolant_valve": "Coolant Valve",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
+    "block.skyliners.floor_window": "Floor Window",
+    "block.skyliners.floor_window_panel": "Floor Window Panel",
+    "block.skyliners.beach_sand": "Beach Sand",
+    "block.skyliners.potted_palm": "Potted Palm",
+    "block.skyliners.parasol": "Parasol",
+    "block.skyliners.sun_lounger": "Sun Lounger",
+    "block.skyliners.tiki_torch": "Tiki Torch",
     "block.skyliners.deck_clamp": "Docking Clamp",
     "block.skyliners.carrier_lever": "Clamp Release Lever",
     "entity.skyliners.crane_hook": "Crane Hook",
@@ -10314,6 +10427,10 @@ FITTINGS.push(...rampFittings());
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
 FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve", "crossbow_rack");
+// The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
+FITTINGS.push("floor_window", "floor_window_panel");
+// Her beach's palms, parasol, loungers and torches are fitted into her lounge too, set down and taken up by hand.
+FITTINGS.push("potted_palm", "parasol", "sun_lounger", "tiki_torch");
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10445,6 +10562,13 @@ shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
 shaped("engine_grating", ["BBB", "BGB", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 8);
 shaped("crossbow_rack", ["PGP", "PPP"], { P: "minecraft:dark_oak_planks", G: "minecraft:gold_nugget" }, 1);
+shaped("floor_window", ["IGI", "GGG", "IGI"], { I: "minecraft:iron_ingot", G: "minecraft:glass" }, 1);
+shaped("beach_sand", ["SS", "SS"], { S: "minecraft:sand" }, 4);
+shaped("potted_palm", [" J ", " J ", " P "], { J: "minecraft:jungle_sapling", P: "minecraft:flower_pot" }, 1);
+shaped("parasol", ["WWW", " S ", " S "], { W: "minecraft:red_wool", S: "minecraft:stick" }, 1);
+shaped("sun_lounger", ["  W", "SSS"], { W: "minecraft:cyan_wool", S: "minecraft:white_concrete" }, 1);
+shaped("tiki_torch", ["T", "B", "B"], { T: "minecraft:torch", B: "minecraft:bamboo" }, 2);
+shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);

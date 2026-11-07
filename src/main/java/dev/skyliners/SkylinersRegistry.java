@@ -278,18 +278,21 @@ import dev.skyliners.block.SprinklerBlockEntity;
 import dev.skyliners.block.SteelGirderBlock;
 import dev.skyliners.block.SuitcaseBlock;
 import dev.skyliners.block.SuitcaseBlockEntity;
+import dev.skyliners.block.SunLoungerBlock;
 import dev.skyliners.block.SurfacePanelBlock;
 import dev.skyliners.block.TailCameraDisplayBlock;
 import dev.skyliners.block.TailCameraDisplayBlockEntity;
 import dev.skyliners.block.ThrustLeverBlock;
 import dev.skyliners.block.ThrustLeverBlockEntity;
 import dev.skyliners.block.ThrustRelayBlock;
+import dev.skyliners.block.TikiTorchBlock;
 import dev.skyliners.block.TillerBlock;
 import dev.skyliners.block.TowerRadarBlock;
 import dev.skyliners.block.TowerRadarBlockEntity;
 import dev.skyliners.block.TowerRadioBlock;
 import dev.skyliners.block.TransponderBlock;
 import dev.skyliners.block.TransponderBlockEntity;
+import dev.skyliners.block.TropicalPieceBlock;
 import dev.skyliners.block.UldContainerBlock;
 import dev.skyliners.block.VacuumToiletBlock;
 import dev.skyliners.block.WallLightBlock;
@@ -371,6 +374,10 @@ import dev.skyliners.engineering.CoolantValveBlock;
 import dev.skyliners.engineering.CoolantValveBlockEntity;
 import dev.skyliners.engineering.JumpDriveBlock;
 import dev.skyliners.engineering.JumpDriveBlockEntity;
+import dev.skyliners.floorwindow.FloorWindowBlock;
+import dev.skyliners.floorwindow.FloorWindowBlockEntity;
+import dev.skyliners.floorwindow.FloorWindowItem;
+import dev.skyliners.floorwindow.FloorWindowPanelBlock;
 import dev.skyliners.spookie.SpookieHammockBlock;
 import dev.skyliners.spookie.SpookieHammockBlockEntity;
 import dev.skyliners.turret.LaserCannonBlock;
@@ -1390,6 +1397,44 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrossbowRackBlockEntity>> CROSSBOW_RACK_ENTITY =
         BLOCK_ENTITIES.register("crossbow_rack", () -> BlockEntityType.Builder.of(CrossbowRackBlockEntity::new, CROSSBOW_RACK.get()).build(null));
     public static final DeferredItem<BlockItem> CROSSBOW_RACK_ITEM = ITEMS.registerSimpleBlockItem(CROSSBOW_RACK);
+    /**
+     * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
+     * and walked over, glass under its iris, as strong as glass is not; and its panel, which opens and shuts it.
+     */
+    public static final DeferredBlock<FloorWindowBlock> FLOOR_WINDOW = BLOCKS.registerBlock(
+        "floor_window", FloorWindowBlock::new, metal(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.GLASS).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FloorWindowBlockEntity>> FLOOR_WINDOW_ENTITY =
+        BLOCK_ENTITIES.register("floor_window", () -> BlockEntityType.Builder.of(FloorWindowBlockEntity::new, FLOOR_WINDOW.get()).build(null));
+    public static final DeferredItem<FloorWindowItem> FLOOR_WINDOW_ITEM = ITEMS.register("floor_window",
+        () -> new FloorWindowItem(FLOOR_WINDOW.get(), new Item.Properties()));
+    public static final DeferredBlock<FloorWindowPanelBlock> FLOOR_WINDOW_PANEL = BLOCKS.registerBlock(
+        "floor_window_panel", FloorWindowPanelBlock::new, metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion().lightLevel(state -> 4)
+    );
+    public static final DeferredItem<BlockItem> FLOOR_WINDOW_PANEL_ITEM = ITEMS.registerSimpleBlockItem(FLOOR_WINDOW_PANEL);
+    /**
+     * The freighter's beach in her lounge: sand to stand on, which never falls, as light as her carpet; potted palms and
+     * parasols (see {@link TropicalPieceBlock}); sun loungers (see {@link SunLoungerBlock}); and tiki torches (see
+     * {@link TikiTorchBlock}).
+     */
+    public static final DeferredBlock<Block> BEACH_SAND = BLOCKS.registerSimpleBlock("beach_sand",
+        BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.5F).sound(SoundType.SAND));
+    public static final DeferredItem<BlockItem> BEACH_SAND_ITEM = ITEMS.registerSimpleBlockItem(BEACH_SAND);
+    public static final DeferredBlock<TropicalPieceBlock> POTTED_PALM = BLOCKS.registerBlock("potted_palm",
+        properties -> new TropicalPieceBlock(properties, TropicalPieceBlock.PALM),
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.5F).sound(SoundType.AZALEA_LEAVES).noOcclusion());
+    public static final DeferredItem<BlockItem> POTTED_PALM_ITEM = ITEMS.registerSimpleBlockItem(POTTED_PALM);
+    public static final DeferredBlock<TropicalPieceBlock> PARASOL = BLOCKS.registerBlock("parasol",
+        properties -> new TropicalPieceBlock(properties, TropicalPieceBlock.PARASOL),
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.5F).sound(SoundType.WOOL).noOcclusion());
+    public static final DeferredItem<BlockItem> PARASOL_ITEM = ITEMS.registerSimpleBlockItem(PARASOL);
+    public static final DeferredBlock<SunLoungerBlock> SUN_LOUNGER = BLOCKS.registerBlock("sun_lounger", SunLoungerBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(0.5F).sound(SoundType.BAMBOO_WOOD).noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(SkylinersRegistry::never));
+    public static final DeferredItem<BlockItem> SUN_LOUNGER_ITEM = ITEMS.registerSimpleBlockItem(SUN_LOUNGER);
+    public static final DeferredBlock<TikiTorchBlock> TIKI_TORCH = BLOCKS.registerBlock("tiki_torch", TikiTorchBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.3F).sound(SoundType.BAMBOO).noOcclusion().lightLevel(state -> 14));
+    public static final DeferredItem<BlockItem> TIKI_TORCH_ITEM = ITEMS.registerSimpleBlockItem(TIKI_TORCH);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2902,7 +2947,14 @@ public final class SkylinersRegistry {
             JUMP_DRIVE_ITEM,
             BREAKER_BOARD_ITEM,
             COOLANT_VALVE_ITEM,
-            CROSSBOW_RACK_ITEM
+            CROSSBOW_RACK_ITEM,
+            FLOOR_WINDOW_ITEM,
+            FLOOR_WINDOW_PANEL_ITEM,
+            BEACH_SAND_ITEM,
+            POTTED_PALM_ITEM,
+            PARASOL_ITEM,
+            SUN_LOUNGER_ITEM,
+            TIKI_TORCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

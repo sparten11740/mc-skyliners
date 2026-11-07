@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " J ",
+    " J ",
+    " P "
+  ],
+  "key": {
+    "J": {
+      "item": "minecraft:jungle_sapling"
+    },
+    "P": {
+      "item": "minecraft:flower_pot"
+    }
+  },
+  "result": {
+    "id": "skyliners:potted_palm",
+    "count": 1
+  }
+}
