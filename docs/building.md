@@ -281,7 +281,13 @@ where Create Propulsion sets fire to whatever stands in a thruster's exhaust. He
 her curve as the windscreen is and drawn denser for each darkness, which the rocket's window dimmer sets, as it does her
 oval windows, through the same `OvalWindowPieceBlock.DIM`. Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
-bartender does. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
+shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing
+counted on the server and each client (`ToldTicks`), and once down the invisible `RampDeckBlock`s laid, falling a
+block in two in four little steps, which the ground passes through (`SableFlight.rampDeck`); `BoardingRampRenderer`
+draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
+her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
+long off. `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

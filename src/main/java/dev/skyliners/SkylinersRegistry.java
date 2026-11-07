@@ -155,6 +155,10 @@ import dev.skyliners.block.LaunchPadHubBlock;
 import dev.skyliners.block.LiftFloorBlock;
 import dev.skyliners.block.OrreryBlock;
 import dev.skyliners.block.OrreryBlockEntity;
+import dev.skyliners.block.RampButtonBlock;
+import dev.skyliners.block.RampDeckBlock;
+import dev.skyliners.block.RampPanelBlock;
+import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.SampleCentrifugeBlock;
 import dev.skyliners.block.InstrumentPanelBlock;
 import dev.skyliners.block.IrrigationValveBlock;
@@ -1278,6 +1282,28 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DeckRobotBlockEntity>> DECK_ROBOT_ENTITY =
         BLOCK_ENTITIES.register("deck_robot", () -> BlockEntityType.Builder.of(DeckRobotBlockEntity::new, DECK_ROBOT.get()).build(null));
     public static final DeferredItem<BlockItem> DECK_ROBOT_ITEM = ITEMS.registerSimpleBlockItem(DECK_ROBOT);
+    /**
+     * What the freighter's boarding ramp is walked on once down (see {@link RampDeckBlock}): invisible slopes the ramp
+     * lays and takes up only, so they cannot be mined, blown up or moved, and drop nothing.
+     */
+    public static final DeferredBlock<RampDeckBlock> RAMP_DECK = BLOCKS.registerBlock(
+        "ramp_deck", SableFlight::rampDeck,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.METAL).isValidSpawn(SkylinersRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
+    );
+    /** The panel at the head of the freighter's ramp, which keeps it and works it (see {@link RampPanelBlock}). */
+    public static final DeferredBlock<RampPanelBlock> RAMP_PANEL = BLOCKS.registerBlock(
+        "ramp_panel", RampPanelBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().noLootTable().lightLevel(RampPanelBlock::glow)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RampPanelBlockEntity>> RAMP_PANEL_ENTITY =
+        BLOCK_ENTITIES.register("ramp_panel", () -> BlockEntityType.Builder.of(RampPanelBlockEntity::new, RAMP_PANEL.get()).build(null));
+    /** The button low on the freighter's starboard leg calling her ramp down from the ground (see {@link RampButtonBlock}). */
+    public static final DeferredBlock<RampButtonBlock> RAMP_BUTTON = BLOCKS.registerBlock(
+        "ramp_button", properties -> new RampButtonBlock(AIRLINER, properties),
+        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> RAMP_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(RAMP_BUTTON);
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
@@ -2769,7 +2795,8 @@ public final class SkylinersRegistry {
         new TabSection("freighter", List.of(
             PADDED_BULKHEAD_ITEM,
             ENGINE_GRILLE_ITEM,
-            DECK_ROBOT_ITEM
+            DECK_ROBOT_ITEM,
+            RAMP_BUTTON_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

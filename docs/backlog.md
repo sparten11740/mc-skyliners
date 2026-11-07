@@ -48,6 +48,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 - Her autopilot screen's landing picture could show it dimmed while she holds over a pin with no ground near it.
 - Seen from her seats, her canopy's struts are a frame of whole blocks where the cone's skin steps inward: a smooth
   lining of their own inside (M4, the cockpit's dress).
+- Her ramp refuses to come down where the ground under its foot rises: a foot lip that takes ground a block higher or
+  lower, as the plan has it, laying its last blocks of deck to meet it.
+- `BoardingRamp` and `BoardingAirstairs` each keep their own wait for someone to step off (held, a cooldown, the chime,
+  looking again): one shared piece beside `Hatch`, before a third door-like mechanism copies it again.
 
 ## Not yet checked
 

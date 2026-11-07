@@ -2620,6 +2620,21 @@ to the cockpit, four blocks tall, and from her bow room along each prong, a craw
 walls inside are the Padded Bulkhead, off-white quilting over grey ribs, in the creative tab under Freighter (it can be
 crafted from white wool round an iron ingot). The Model Freighter, a souvenir on its stand, is under Decorations.
 
+She is boarded up a ramp out of her starboard side. It lies in a well along the wall of her front right room, its plate
+the well's floor, a glass rail along the well's open side; at its head, on the wall, its panel has a lamp over two
+picture buttons: blue, a ramp coming down, to let it down, and green, an arrow up, to bring it up. Let down, its latches
+let go in a burst of steam, her computer says "Ramp lowering", the floor and her belly under it open, and the plate
+swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud; walk
+up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
+waiting, blue down, red for a moment when it will not move, with a low note. It comes down by itself once she is built
+and once she has landed with her autopilot off, and folds away as soon as she is set to fly; her take-off waits on her
+legs until it is all away. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and
+if her take-off is waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls
+her take-off off with a low note, her autopilot switching off and the ramp staying down. From the ground, the amber
+button low on her starboard leg, a ramp on its cap, calls it down, or folds it away. It will not come down where
+something stands in its way, such as ground rising under its foot. The server config's `freighter.ramp` builds her
+without it. The Ramp Call Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
+
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning
 to follow you about; touch it and it trills back; and now and then, with someone near, it beeps happily to itself. The

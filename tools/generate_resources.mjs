@@ -230,6 +230,42 @@ for (const [name, renderType] of Object.entries(cubes)) {
   cubes.engine_grille = null;
 }
 
+// The freighter's boarding ramp (see BoardingRamp): the invisible slopes its deck is walked on (see RampDeckBlock) only
+// give the particles feet kick up off its plate; the ramp lays and takes them up, so they have no item and drop nothing,
+// light as the rest of her but no part of her frame (see rampFittings). The panel at its head (see RampPanelBlock) is a
+// board two sixteenths thick at the back of its block, as the rover bay's panel is, its face in the colour of how the
+// ramp stands, painted as the rover panel's is; only the blueprint places it, so it has no item and drops nothing.
+{
+  write(`assets/${ID}/blockstates/ramp_deck.json`, { variants: { "": { model: `${ID}:block/ramp_deck` } } });
+  write(`assets/${ID}/models/block/ramp_deck.json`, { textures: { particle: `${ID}:block/airstair_tread` } });
+  cubes.ramp_deck = null;
+  const variants = {};
+  const FRONTS = { ready: "ready", busy: "busy", down: "out", refused: "refused" };
+  for (const [status, front] of Object.entries(FRONTS)) {
+    write(`assets/${ID}/models/block/ramp_panel_${status}.json`, {
+      parent: "minecraft:block/block",
+      textures: { front: `${ID}:block/rover_panel_front_${front}`, side: `${ID}:block/rover_panel_side`, particle: `${ID}:block/rover_panel_side` },
+      elements: [{
+        from: [0, 0, 14], to: [16, 16, 16],
+        faces: {
+          north: { texture: "#front" }, south: { texture: "#side" }, up: { texture: "#side", uv: [0, 14, 16, 16] },
+          down: { texture: "#side", uv: [0, 14, 16, 16] }, east: { texture: "#side", uv: [14, 0, 16, 16] }, west: { texture: "#side", uv: [0, 0, 2, 16] },
+        },
+      }],
+    });
+    for (const [facing, y] of Object.entries(yRot)) {
+      variants[`facing=${facing},status=${status}`] = { model: `${ID}:block/ramp_panel_${status}`, y };
+    }
+  }
+  write(`assets/${ID}/blockstates/ramp_panel.json`, { variants });
+  cubes.ramp_panel = null;
+}
+// Her ramp's call button, low on her starboard leg: a lit push-button, its amber cap showing her ramp let down.
+litButton("ramp_button");
+function rampFittings() {
+  return ["ramp_deck"];
+}
+
 // A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
 // through, which only the blueprint places, so it has no item and drops nothing (picked, it gives the catwalk), and the
 // hub in its middle, which also goes up by hand and gives itself back. They are ground, not airframe (see GROUND).
@@ -10101,6 +10137,7 @@ const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...roverFittings());
+FITTINGS.push(...rampFittings());
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10251,6 +10288,7 @@ shaped("lift_glass", [" G ", "GTG", " G "], { G: "minecraft:glass", T: "minecraf
 shaped("padded_bulkhead", ["WWW", "WIW", "WWW"], { W: "minecraft:white_wool", I: "minecraft:iron_ingot" }, 8);
 shaped("engine_grille", ["BBB", "GGG", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 6);
 shaped("deck_robot", [" G ", "IRI", "I I"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
+shaped("ramp_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button", I: "minecraft:iron_ingot" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10819,6 +10857,11 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.padded_bulkhead": "Padded Bulkhead",
   "block.skyliners.engine_grille": "Engine Grille",
   "block.skyliners.deck_robot": "Deck Robot",
+  "block.skyliners.ramp_deck": "Boarding Ramp",
+  "block.skyliners.ramp_panel": "Boarding Ramp Panel",
+  "block.skyliners.ramp_button": "Ramp Call Button",
+  "message.skyliners.freighter.takeoff_ramp": "Her take-off waits for everyone to step off the ramp",
+  "message.skyliners.freighter.takeoff_called_off": "Take-off called off: she was held on the ground too long",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.skyliners.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.skyliners.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",

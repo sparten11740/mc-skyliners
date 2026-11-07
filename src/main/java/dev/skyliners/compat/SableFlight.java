@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.Skyliners;
 import dev.skyliners.block.AirstairStepBlock;
 import dev.skyliners.block.Nearby;
+import dev.skyliners.block.RampDeckBlock;
 import dev.skyliners.block.RoverPlatformBlock;
 import dev.skyliners.block.SlideStepBlock;
 import dev.ryanhcode.sable.Sable;
@@ -514,6 +515,14 @@ public final class SableFlight {
     }
 
     /**
+     * The blocks the freighter's boarding ramp is walked on, letting the ground through as the airstairs' do (see
+     * {@link #airstairStep}), so a ramp let down onto rising ground never props her up.
+     */
+    public static RampDeckBlock rampDeck(BlockBehaviour.Properties properties) {
+        return SABLE ? Access.rampDeck(properties) : new RampDeckBlock(properties);
+    }
+
+    /**
      * How hard gravity pulls at a point in the world, in blocks a second each second, as Sable's physics has it there;
      * without Sable, as hard as Sable pulls by default.
      */
@@ -545,6 +554,22 @@ public final class SableFlight {
 
         static RoverPlatformBlock roverPlatform(BlockBehaviour.Properties properties) {
             return new PassingRoverPlatform(properties);
+        }
+
+        static RampDeckBlock rampDeck(BlockBehaviour.Properties properties) {
+            return new PassingRampDeck(properties);
+        }
+
+        /** A block of the freighter's ramp's deck the ground passes through, to Sable's physics. */
+        private static final class PassingRampDeck extends RampDeckBlock implements BlockWithSubLevelCollisionCallback {
+            PassingRampDeck(BlockBehaviour.Properties properties) {
+                super(properties);
+            }
+
+            @Override
+            public BlockSubLevelCollisionCallback sable$getCallback() {
+                return PASS_THROUGH;
+            }
         }
 
         /** An airstairs' step the ground passes through, to Sable's physics. */

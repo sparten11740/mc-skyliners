@@ -5,11 +5,16 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.FreighterPilot;
+import dev.skyliners.block.AirstairControllerBlockEntity;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.AutopilotScreenBlock;
 import dev.skyliners.block.AutopilotScreenBlockEntity;
+import dev.skyliners.block.BoardingRamp;
+import dev.skyliners.block.CabinRailBlock;
 import dev.skyliners.block.DeckRobotBlock;
 import dev.skyliners.block.PilotSeatBlock;
+import dev.skyliners.block.RampPanelBlock;
+import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.block.WindowDimmerBlock;
@@ -23,8 +28,10 @@ import java.util.function.IntPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
@@ -123,6 +130,27 @@ public final class FreighterLayout extends HullLayout {
      */
     private static final double ROBOT_OUT = 9;
     private static final int[] ROBOT_BEARINGS = {20, 200};
+    /**
+     * Her boarding ramp (see {@link BoardingRamp}), out of her starboard side through the room at her starboard bow,
+     * along the wall between it and the room aft of it, clear of her cockpit's tube ahead and her lift cluster: its
+     * head, where it is hinged, so many blocks to starboard of her axis, just past the corridor's wall; its middle
+     * column so many blocks ahead of her axis; and how many blocks wide it is. It falls one block in two from her deck
+     * to the ground under her feet. The panel working it stands on the wall beside its head, a block out from it and so
+     * many rows over her deck; a glass rail runs along its well's open side from a couple of blocks past its head.
+     */
+    private static final int RAMP_HEAD = 7;
+    private static final int RAMP_MIDDLE = -2;
+    private static final int RAMP_WIDTH = 3;
+    private static final int RAMP_PANEL_OUT = 1;
+    private static final int RAMP_PANEL_UP = 2;
+    private static final int RAIL_FROM = 2;
+    /**
+     * Her ramp's call button: on which of her legs (see {@link FreighterShape#LEGS}), her starboard one aft of the
+     * ramp's foot, and so many rows over the ground, on its strut's face toward the ramp, where someone standing
+     * reaches it.
+     */
+    private static final int RAMP_BUTTON_LEG = 1;
+    private static final int RAMP_BUTTON_UP = 2;
     /**
      * Her canopy's dimmer: how far over the pilots' seats' floor row it stands, at a seated pilot's hand, and how far
      * out past the seat's side it may stand at most, toward her skin, so the pilot reaches it from the seat, in blocks.
@@ -273,6 +301,7 @@ public final class FreighterLayout extends HullLayout {
         layout.engineGrille();
         layout.cockpit();
         layout.robots();
+        layout.ramp();
         layout.countAir();
         return layout;
     }
@@ -733,6 +762,111 @@ public final class FreighterLayout extends HullLayout {
             int z = (int) Math.round(way[1] * ROBOT_OUT);
             if (isOpen(x, deck + 1, z) && !isOpen(x, deck, z)) {
                 set(x, deck + 1, z, robot.setValue(DeckRobotBlock.FACING, Direction.getNearest(-way[0], 0, -way[1])));
+            }
+        }
+    }
+
+    /**
+     * Her boarding ramp, where its well holds nothing but her skin, her deck and her walls: the corridor's wall opened
+     * at its head, the glass rail along its well's open side, its panel on the wall beside its head, and the panel
+     * handed the ramp once it stands, its hatch every block of hers in its well's columns from her deck's floor down;
+     * none with the server config's {@code freighter.ramp} off.
+     */
+    private void ramp() {
+        int rise = deck + 1;
+        int reach = (int) Math.ceil(Math.hypot(2 * rise, rise));
+        int left = RAMP_MIDDLE - RAMP_WIDTH / 2;
+        if (!SkylinersConfig.FREIGHTER_RAMP.get() || !wellHolds(left, reach)) {
+            return;
+        }
+        openWellHead(left);
+        railAlongWell(left - 1, reach);
+        BlockPos panel = new BlockPos(RAMP_HEAD + RAMP_PANEL_OUT, deck + RAMP_PANEL_UP, left + RAMP_WIDTH - 1);
+        BlockState panelState = SkylinersRegistry.RAMP_PANEL.get().defaultBlockState().setValue(RampPanelBlock.FACING, Direction.NORTH);
+        set(panel.getX(), panel.getY(), panel.getZ(), panelState);
+        rampButton();
+        List<AirstairControllerBlockEntity.Step> hatch = new ArrayList<>();
+        for (int cell = 0; cell < reach * RAMP_WIDTH; cell++) {
+            hatchColumn(hatch, RAMP_HEAD + cell / RAMP_WIDTH, left + cell % RAMP_WIDTH, panel);
+        }
+        BlockPos head = new BlockPos(RAMP_HEAD, deck, RAMP_MIDDLE).subtract(panel);
+        fit(panel, (blockEntity, rotation) -> {
+            if (blockEntity instanceof RampPanelBlockEntity keeper) {
+                keeper.rigRamp(new BoardingRamp.Frame(head.rotate(rotation), rotation.rotate(Direction.EAST), RAMP_WIDTH, rise),
+                    hatch.stream().map(part -> turned(part, rotation)).toList());
+            }
+        });
+    }
+
+    /** A block of a hatch as it lies once she is placed, turned as she was. */
+    private static AirstairControllerBlockEntity.Step turned(AirstairControllerBlockEntity.Step part, Rotation rotation) {
+        return new AirstairControllerBlockEntity.Step(part.offset().rotate(rotation), part.state().rotate(rotation));
+    }
+
+    /** Her ramp's call button on her starboard leg's strut, facing ahead toward the ramp, where there is room for it. */
+    private void rampButton() {
+        double[] leg = FreighterShape.LEGS[RAMP_BUTTON_LEG];
+        int x = (int) Math.round(leg[0] * scale);
+        int z = (int) Math.round(leg[1] * scale) - 1;
+        if (isOpen(x, RAMP_BUTTON_UP, z) && stateAt(x, RAMP_BUTTON_UP, z + 1).is(SkylinersRegistry.LANDING_GEAR.get())) {
+            set(x, RAMP_BUTTON_UP, z, SkylinersRegistry.RAMP_BUTTON.get().defaultBlockState()
+                .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.NORTH));
+        }
+    }
+
+    /** Whether her ramp's well, from its head out as far as the plate reaches, holds only her skin, deck and walls. */
+    private boolean wellHolds(int left, int reach) {
+        for (int cell = 0; cell < reach * RAMP_WIDTH; cell++) {
+            if (!columnHatchable(RAMP_HEAD + cell / RAMP_WIDTH, left + cell % RAMP_WIDTH)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a column of her ramp's well holds only what may be its hatch, from her deck's floor down. */
+    private boolean columnHatchable(int x, int z) {
+        for (int y = 0; y <= deck; y++) {
+            BlockState there = stateAt(x, y, z);
+            if (!there.isAir() && !hatchable(there)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a block may be part of her ramp's hatch: her skin, her deck or a wall, nothing that works. */
+    private static boolean hatchable(BlockState state) {
+        return skin(state) || state.is(SkylinersRegistry.CABIN_FLOOR.get()) || state.is(SkylinersRegistry.PADDED_BULKHEAD.get());
+    }
+
+    /** Adds a column of her ramp's well to its hatch: every block of hers in it from her deck's floor down. */
+    private void hatchColumn(List<AirstairControllerBlockEntity.Step> hatch, int x, int z, BlockPos panel) {
+        for (int y = 0; y <= deck; y++) {
+            BlockState there = stateAt(x, y, z);
+            if (!there.isAir()) {
+                hatch.add(new AirstairControllerBlockEntity.Step(new BlockPos(x, y, z).subtract(panel), there));
+            }
+        }
+    }
+
+    /** Opens the corridor's wall where her ramp's well meets it, as high as a doorway, so the ramp leads into the ring. */
+    private void openWellHead(int left) {
+        for (int cell = 0; cell < RAMP_HEAD * RAMP_WIDTH; cell++) {
+            int x = cell / RAMP_WIDTH;
+            int z = left + cell % RAMP_WIDTH;
+            for (int y = deck + 1; y <= deck + DOOR_ROWS && onCircle(x, z, CORRIDOR); y++) {
+                cells.remove(new BlockPos(x, y, z));
+            }
+        }
+    }
+
+    /** The glass rail along her ramp's well's open side, standing along its edge toward the well, on her deck. */
+    private void railAlongWell(int z, int reach) {
+        BlockState rail = SkylinersRegistry.CABIN_RAIL.get().defaultBlockState().setValue(CabinRailBlock.SOUTH, true);
+        for (int x = RAMP_HEAD + RAIL_FROM; x < RAMP_HEAD + reach; x++) {
+            if (isOpen(x, deck + 1, z) && !isOpen(x, deck, z)) {
+                set(x, deck + 1, z, rail);
             }
         }
     }

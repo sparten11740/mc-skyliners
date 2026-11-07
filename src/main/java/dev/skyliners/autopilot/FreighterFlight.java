@@ -4,12 +4,15 @@ import dev.skyliners.Aboard;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.compat.SableFlight;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -41,8 +44,21 @@ public final class FreighterFlight extends StandingFlight {
      * her spot: shown as nothing, so they are not heard spooling up over and over, nor sent each time.
      */
     private static final double MAINS_SHOWN_FROM = 0.05;
+    /**
+     * What holds her take-off before her thrusters spool up, each asked on the server every tick it waits with her
+     * level and her autopilot's place: her ramp not yet all away, for one, which {@code Skyliners} registers once as
+     * the mod starts, so the autopilot need know nothing of ramps. Held, she waits on her legs, her thrusters quiet.
+     */
+    private static final List<BiPredicate<ServerLevel, BlockPos>> HOLDS = new CopyOnWriteArrayList<>();
+    /**
+     * How long her take-off may be held, in ticks (half a minute), before it is called off and her autopilot switched
+     * off: someone staying on her ramp keeps it from folding away, and she never lifts off with them on it.
+     */
+    private static final int TAKEOFF_HELD_LONGEST = 600;
 
     private final FreighterPilot pilot = new FreighterPilot();
+    /** How many ticks in a row her take-off has been held (see {@link #HOLDS}). */
+    private int heldFor;
     /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
     private final ShownShare lift = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
@@ -207,6 +223,36 @@ public final class FreighterFlight extends StandingFlight {
         mains.load(tag, "FreighterMains");
     }
 
+    /**
+     * Her take-off held too long: her autopilot switches off with a low note, and everyone aboard is told why, so she
+     * stays on her legs rather than waiting for ever.
+     */
+    private void callOffTakeoff(ServerLevel level, AutopilotBlockEntity autopilot) {
+        heldFor = 0;
+        autopilot.disengage(SoundEvents.NOTE_BLOCK_BASS.value());
+        for (ServerPlayer player : Aboard.players(autopilot)) {
+            player.displayClientMessage(Component.translatable("message.skyliners.freighter.takeoff_called_off"), true);
+        }
+    }
+
+    /** Holds her take-off before her thrusters spool up for as long as something says so (see {@link #HOLDS}). */
+    public static void holdTakeoffWhile(BiPredicate<ServerLevel, BlockPos> hold) {
+        HOLDS.add(hold);
+    }
+
+    /** Whether something holds her take-off this tick (see {@link #HOLDS}): set to take off, her autopilot at a place. */
+    private static boolean takeoffHeld(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase phase) {
+        if (phase != AutopilotBlockEntity.Phase.TAKEOFF) {
+            return false;
+        }
+        for (BiPredicate<ServerLevel, BlockPos> hold : HOLDS) {
+            if (hold.test(level, origin)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     void engage(AutopilotBlockEntity autopilot, SableFlight.State state) {
         pilot.begin(state);
@@ -222,8 +268,13 @@ public final class FreighterFlight extends StandingFlight {
     void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         double radio = aloft(level, autopilot, flight);
         autopilot.watchUnattended(level, flight, radio);
+        boolean held = takeoffHeld(level, autopilot.getBlockPos(), autopilot.phase);
+        heldFor = held ? heldFor + 1 : 0;
+        if (heldFor > TAKEOFF_HELD_LONGEST) {
+            callOffTakeoff(level, autopilot);
+        }
         AutopilotBlockEntity.Phase phase = autopilot.phase;
-        if (phase != AutopilotBlockEntity.Phase.OFF) {
+        if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin);
             AutopilotBlockEntity.Phase next = pilot.fly(level, autopilot.getBlockPos(), orders, flight, radio,

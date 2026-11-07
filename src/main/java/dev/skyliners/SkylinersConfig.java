@@ -70,6 +70,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -634,6 +635,12 @@ public final class SkylinersConfig {
                 "hello to whoever comes up to them, their heads turning to follow, and beeping to themselves now and then."
             )
             .define("robots", true);
+        FREIGHTER_RAMP = builder
+            .comment(
+                "Whether the freighter is built with her boarding ramp out of her starboard side, which a panel at its head",
+                "lets down to the ground on its rams and brings back up. Without it, her well's floor is plain deck."
+            )
+            .define("ramp", true);
         builder.pop();
 
         SPEC = builder.build();

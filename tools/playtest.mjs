@@ -175,6 +175,22 @@ const PAD_REACH = 64;
 const LAKE_REACH = 70;
 const LAKE_TICKS = 1600;
 const LAKE_HOLD_WITHIN = 8;
+// A freighter's boarding ramp: how long it is given to come down by itself once she stands, in ticks; how far it
+// falls, in blocks, which walking up it climbs, and how long the walk up from just past its foot takes, in ticks; how
+// many blocks up from its foot someone stands on it to hold her take-off; and how long she is watched held, in ticks.
+const RAMP_DOWN_TICKS = 300;
+const RAMP_RISE = 7;
+const RAMP_WALK_TICKS = 110;
+const RAMP_STAND_UP = 3;
+const RAMP_HELD_TICKS = 200;
+// How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
+// how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
+const FAST_RANDOM_TICKS = 4096;
+const RAMP_TICKED = 60;
+// How long after her ramp folds away its call button is pressed again, and how long her take-off may be held before
+// she calls it off, with a margin, in ticks.
+const CALL_AGAIN_TICKS = 20;
+const TAKEOFF_CALLED_OFF_TICKS = 700;
 // A freighter's deck robots: how many she is built with, how far in front of one the player walks up to, and how far
 // off they start, in blocks; and how long its hello and its trill are given to be heard, in ticks.
 const FREIGHTER_ROBOTS = 2;
@@ -783,6 +799,86 @@ function checkFreighterFlight() {
   }
 }
 
+// A freighter's boarding ramp: laid down, it comes down by itself and is walked up from the ground with the walk key
+// alone, as a player boards her, its deck staying laid however often its blocks look whether they are leftovers; her
+// call button on her leg folds it away and brings it down again; set to fly with someone standing on it, she waits on
+// her legs, the ramp chiming for them to step off, and calls her take-off off after a while, the ramp left down; set
+// to fly again with nobody on it, it folds away and she lifts off.
+function checkFreighterRamp() {
+  layDown("freighter");
+  const [panel] = must("find skyliners:ramp_panel 128 1").rows;
+  expect(panel, "freighter: she is built with her ramp's panel");
+  if (!panel) {
+    return;
+  }
+  const lamp = () => must(`block ${panel.at_abs.join(",")} side=server`).props?.status;
+  const lampTurns = (status, within) => waitForReport(() => ({ status: lamp() }), (read) => read.status === status, within);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: laid down, her ramp comes down by itself", `lamp ${lamp()}`);
+  const deck = must("find skyliners:ramp_deck 128 200 side=server").rows.map((row) => row.at_abs);
+  if (deck.length === 0) {
+    return;
+  }
+  const lowest = Math.min(...deck.map(([, y]) => y));
+  const facing = must(`block ${deck.find(([, y]) => y === lowest).join(",")} side=server`).props?.facing ?? "north";
+  const [dx, dz, yaw] = CLIMBS[facing];
+  const outermost = Math.min(...deck.map(([x, , z]) => x * dx + z * dz));
+  const foot = deck.filter(([x, y, z]) => y === lowest && x * dx + z * dz === outermost).sort((a, b) => a[0] - b[0] || a[2] - b[2]);
+  const [footX, , footZ] = foot[Math.floor(foot.length / 2)];
+  survival();
+  must(`server tp @p ${footX + 0.5 - dx} ${ground} ${footZ + 0.5 - dz}; turn ${yaw} 0; wait 25t`);
+  const there = must(`move forward ${RAMP_WALK_TICKS}t; status`);
+  creative();
+  const climbed = round(there.pos[1] - ground);
+  expect(climbed >= RAMP_RISE, "freighter: her ramp is walked up from the ground with the walk key alone", `climbed ${climbed}, to ${there.pos.map(round).join(",")}`);
+  must(`server gamerule randomTickSpeed ${FAST_RANDOM_TICKS}; wait ${RAMP_TICKED}t; server gamerule randomTickSpeed 3`);
+  const stays = must("find skyliners:ramp_deck 128 200 side=server").rows.length;
+  expect(stays === deck.length, "freighter: her ramp's deck stays laid, however often its blocks look whether they are leftovers",
+    `${stays} of ${deck.length} blocks`);
+  callRampFromTheGround(lamp, lampTurns);
+  holdFreighterOnHerRamp(deck, footX + dx * 2 * RAMP_STAND_UP, lowest + RAMP_STAND_UP, footZ + dz * 2 * RAMP_STAND_UP, lamp);
+}
+
+// Presses a freighter's ramp call button on her leg from the ground: her ramp folds away, and comes down again.
+function callRampFromTheGround(lamp, lampTurns) {
+  const [button] = must("find skyliners:ramp_button 128 1").rows;
+  expect(button, "freighter: she is built with her ramp's call button on her leg");
+  if (!button) {
+    return;
+  }
+  const [bx, , bz] = button.at_abs;
+  const [fx, fz] = STEPS[must(`block ${button.at_abs.join(",")}`).props?.facing ?? "north"];
+  must(`server tp @p ${bx + 0.5 + fx * 2} ${ground} ${bz + 0.5 + fz * 2}; wait 20t; use ${button.at_abs.join(",")}`);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: her call button folds her ramp away", `lamp ${lamp()}`);
+  must(`wait ${CALL_AGAIN_TICKS}t; use ${button.at_abs.join(",")}`);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: pressed again, it brings her ramp back down", `lamp ${lamp()}`);
+}
+
+// Sets a freighter to fly with the player standing on her ramp at a block of its deck: she waits on her legs, chiming,
+// and calls her take-off off after a while, her ramp left down; set to fly again from aboard, she lifts off.
+function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
+  if (!deck.some(([atX, atY, atZ]) => atX === x && atY === y && atZ === z)) {
+    return;
+  }
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`server tp @p ${x + 0.5} ${y + 1} ${z + 0.5}; wait 20t`);
+  const since = now();
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0; wait ${RAMP_HELD_TICKS}t`, BUILD_SECONDS);
+  const held = freighterReport();
+  expect(held?.phase === "takeoff" && held.lift === 0, "freighter: set to fly with someone on her ramp, she waits on her legs",
+    `${held?.phase}, lift ${held?.lift}`);
+  expect(heard("block.note_block.bell", since, 0), "freighter: her ramp chimes for them to step off");
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [{ at: panelAboard }] = must(`sable:find ${freighter} skyliners:ramp_panel 1 side=server`).rows;
+  const lampAboard = () => must(`block ${panelAboard.join(",")} side=server`).props?.status;
+  const off = waitForReport(freighterReport, (report) => report.phase === "off", TAKEOFF_CALLED_OFF_TICKS);
+  expect(off && lampAboard() === "down", "freighter: held a long while, she calls her take-off off, her ramp left down",
+    `${freighterReport()?.phase}, lamp ${lampAboard()}`);
+  must(`sable:tp ${freighter} skyliners:autopilot; wait 20t; skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`);
+  const up = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: set to fly again with nobody on it, her ramp folds away and she lifts off", up ? "" : `still ${freighterReport()?.phase}`);
+  must("skyliners:autopilot off");
+}
+
 // A freighter that has learnt far too much drag, as one did once she had hunted round her height: set to cruise at 20
 // blocks a second, her mains pushed her on to almost three times that, and as her drag was learnt only near the speed
 // set, nothing could unlearn it. Ridden along, so she stays loaded flying away: she must stay near the speed set and
@@ -1226,6 +1322,7 @@ const CHECKS = {
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
+  "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

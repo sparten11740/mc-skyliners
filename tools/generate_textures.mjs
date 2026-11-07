@@ -431,6 +431,13 @@ const litCap = (picture) => (glow, glyph) => (x, y) => (picture[y - 5]?.[x - 5] 
   texture(blockOutput, "airstair_button_pressed", cap([0xff, 0xec, 0xa8], [0xa8, 0x6c, 0x10]), 1);
   texture(blockOutput, "airstair_button_bezel", (x, y) => (y % 3 === 0 ? [0x6e, 0x74, 0x7c] : [0x4a, 0x50, 0x57]), 2);
 }
+// The freighter's ramp call button (see RampButtonBlock), in the airstair button's bezel and amber: on its cap her belly
+// along the top and her ramp let down from it to the right in dark amber; pressed, the cap glows nearly white.
+{
+  const cap = litCap(["######", "##....", ".##...", "..##..", "...##.", "....##"]);
+  texture(blockOutput, "ramp_button", cap([0xf6, 0xae, 0x22], [0x5a, 0x34, 0x08]), 1);
+  texture(blockOutput, "ramp_button_pressed", cap([0xff, 0xec, 0xa8], [0xa8, 0x6c, 0x10]), 1);
+}
 // The door button beside each hull door (see DoorButtonBlock), in the airstair button's bezel: its cap sky blue, unlike
 // the airstairs' amber, with a door on it in dark blue, a tall slab with its handle by its right edge, where the cap's
 // light shows through; pressed, the cap glows brighter, nearly white, the door a deeper blue on it.
@@ -4673,6 +4680,22 @@ const LIFT_ICONS = {
   };
   for (const [name, rows] of Object.entries(ROVER_PICTURES)) {
     texture(roverOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : rows[y][x] === "g" ? [0x40, 0xe0, 0x60, 0xff] : [0, 0, 0, 0]), 0);
+  }
+  // The freighter's ramp panel (see BoardingRampRenderer): its buttons' pictures in white, as the rover panel's are:
+  // the ramp let down from her belly to the ground beside an arrow pointing down, and the ramp drawn up flush under
+  // her belly over an arrow pointing up.
+  const rampOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/ramp");
+  mkdirSync(rampOutput, { recursive: true });
+  const RAMP_PICTURES = {
+    lower: ["################", "###.........##..", "..##........##..", "...##.......##..", "....##....######", ".....##....####.",
+      "......##....##..", ".......##.......", "........##......", ".........##.....", "..........##....", "...........##...",
+      "............##..", ".............##.", "..............##", "################"],
+    raise: ["################", "################", "................", ".......##.......", "......####......", ".....######.....",
+      "....########....", ".......##.......", ".......##.......", ".......##.......", ".......##.......", "................",
+      "................", "................", "................", "################"],
+  };
+  for (const [name, rows] of Object.entries(RAMP_PICTURES)) {
+    texture(rampOutput, name, (x, y) => (rows[y][x] === "#" ? [0xff, 0xff, 0xff, 0xff] : [0, 0, 0, 0]), 0);
   }
 }
 

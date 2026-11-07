@@ -9,6 +9,7 @@ import dev.skyliners.block.LaserBolt;
 import dev.skyliners.block.LiftPanelInteraction;
 import dev.skyliners.block.LookIntoMicroscope;
 import dev.skyliners.autopilot.AssemblyFailed;
+import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.LaunchShock;
 import dev.skyliners.autopilot.OpenAutopilotScreen;
 import dev.skyliners.autopilot.ParkedShips;
@@ -20,6 +21,7 @@ import dev.skyliners.autopilot.RocketPilot;
 import dev.skyliners.autopilot.RocketDustRing;
 import dev.skyliners.autopilot.RocketPlume;
 import dev.skyliners.autopilot.SpaceGravity;
+import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.RocketStairsBlockEntity;
 import dev.skyliners.block.RoverBayBlockEntity;
 import dev.skyliners.block.SetTransponder;
@@ -135,6 +137,7 @@ public final class Skyliners {
         RoverDrivers.register();
         RocketPilot.holdCountdownWhile(RoverBayBlockEntity::holdsCountdown);
         RocketPilot.holdCountdownWhile(RocketStairsBlockEntity::holdsCountdown);
+        FreighterFlight.holdTakeoffWhile(RampPanelBlockEntity::holdsTakeoff);
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);

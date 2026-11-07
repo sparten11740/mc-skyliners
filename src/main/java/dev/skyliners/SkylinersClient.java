@@ -25,6 +25,7 @@ import dev.skyliners.client.BlastFlash;
 import dev.skyliners.client.BlastPuffParticle;
 import dev.skyliners.client.BlueIceChunkRenderer;
 import dev.skyliners.client.BlueprintPreview;
+import dev.skyliners.client.BoardingRampRenderer;
 import dev.skyliners.client.CabinArchModel;
 import dev.skyliners.client.CameraShake;
 import dev.skyliners.client.CarriedAboard;
@@ -372,6 +373,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.LIVERY_SELECTOR_ENTITY.get(), context -> new LiverySelectorRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_BOARD_ENTITY.get(), context -> new LiftBoardRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.ROVER_PANEL_ENTITY.get(), context -> new RoverPanelRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.RAMP_PANEL_ENTITY.get(), context -> new BoardingRampRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.WINDOW_DIMMER_ENTITY.get(), context -> new WindowDimmerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
