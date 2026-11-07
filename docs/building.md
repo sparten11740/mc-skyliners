@@ -131,6 +131,12 @@ wired to, how it is flown each tick, how it lands, switches off, saves and is sh
 aboard it for the flight deck's announcements (`says`: the rocket's arrival, the freighter's computer), so a new kind of
 craft is a new class and a constant there, the block entity left as it is; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled, until `ParkedShips` lets it go, parked with nobody near, noting where it stands to load the land under it when someone comes back, as Sable would not.
+Whatever the craft, `Impacts` hears it run into something, ticked by the autopilot's block entity with the ship as a
+whole (`SableFlight.body`: her centre of mass, how fast it moves and the box round her): a change in that velocity in
+one tick, gravity taken out, of more than any craft's lift, engines or an airliner's brakes make is summed as one hit
+and heard by how hard, a thud or a crunch and a groan after it, from the side of her box the push came from, and
+`ImpactJolt` kicks the view of those aboard through `CameraShake`; slowed hard across the ground just after such a
+push, she grinds, the scrape played again each second while she slides.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned
 by `RocketFlightDeck` (where each seat, screen and console goes), its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or

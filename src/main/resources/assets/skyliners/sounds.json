@@ -1558,6 +1558,50 @@
       }
     ]
   },
+  "impact_crunch": {
+    "subtitle": "subtitles.skyliners.impact_crunch",
+    "sounds": [
+      {
+        "name": "skyliners:impact_crunch",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "impact_groan": {
+    "subtitle": "subtitles.skyliners.impact_groan",
+    "sounds": [
+      {
+        "name": "skyliners:zeppelin_creak_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "skyliners:zeppelin_creak_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "skyliners:zeppelin_creak_3",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "impact_thud": {
+    "subtitle": "subtitles.skyliners.impact_thud",
+    "sounds": [
+      {
+        "name": "skyliners:impact_thud",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "impact_scrape": {
+    "subtitle": "subtitles.skyliners.impact_scrape",
+    "sounds": [
+      {
+        "name": "skyliners:impact_scrape",
+        "attenuation_distance": 64
+      }
+    ]
+  },
   "laser_hiss": {
     "subtitle": "subtitles.skyliners.laser_hiss",
     "sounds": [

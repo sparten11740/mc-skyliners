@@ -2865,6 +2865,14 @@ public final class SkylinersRegistry {
     /** The sound of a zeppelin's hull heard aboard her, and a girder groaning in it (see the client's HullAmbience). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HULL = sound("zeppelin_hull");
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_CREAK = sound("zeppelin_creak");
+    /**
+     * A ship running into something (see {@link dev.skyliners.impact.Impacts}): the crunch and boom of a hard hit and
+     * her hull groaning after it, the thud of a bump, and the grind of her hull sliding along.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_CRUNCH = sound("impact_crunch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_GROAN = sound("impact_groan");
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_THUD = sound("impact_thud");
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_SCRAPE = sound("impact_scrape");
     /** Sleigh bells, rung from a festive zeppelin's engines as they turn (see the client's SleighBells). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SLEIGH_BELLS = sound("sleigh_bells");
     public static final DeferredItem<BlockItem> ZEPPELIN_FABRIC_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_FABRIC);

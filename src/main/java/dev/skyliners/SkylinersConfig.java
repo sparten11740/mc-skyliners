@@ -11,6 +11,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.IntValue BLOCKS_PER_TICK;
     public static final ModConfigSpec.EnumValue<ShellStyle> SHELL_STYLE;
     public static final ModConfigSpec.BooleanValue FLEET_PAINTINGS;
+    public static final ModConfigSpec.BooleanValue IMPACT_SOUNDS;
     public static final ModConfigSpec.BooleanValue CURTAINS_PART;
     public static final ModConfigSpec.ConfigValue<String> WING_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENGINE_BLOCK;
@@ -141,6 +142,14 @@ public final class SkylinersConfig {
                 "and the rocket round the freighter's deck. Ships already built keep theirs."
             )
             .define("fleetPaintings", true);
+        IMPACT_SOUNDS = builder
+            .comment(
+                "Whether a ship is heard running into something, the ground, a mountainside or another ship: a crunch and",
+                "a boom for a hard hit, louder and lower the harder, with a short shake of the view aboard and the hull",
+                "groaning after it, a thud for a bump, and a grinding scrape while she slides on along what she hit.",
+                "Gentle landings make none of them."
+            )
+            .define("impactSounds", true);
         builder.pop();
 
         builder.push("flight");

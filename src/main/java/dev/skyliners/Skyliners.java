@@ -59,6 +59,7 @@ import dev.skyliners.entity.SlideRide;
 import dev.skyliners.entity.Spookie;
 import dev.skyliners.entity.Tardigrade;
 import dev.skyliners.horn.ShipHorn;
+import dev.skyliners.impact.ImpactJolt;
 import dev.skyliners.lookout.LookoutSpot;
 import dev.skyliners.parachute.OpenParachute;
 import dev.skyliners.parachute.Parachute;
@@ -181,7 +182,7 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("35")
+        event.registrar("36")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -236,6 +237,8 @@ public final class Skyliners {
             .playToClient(ThrownClearPayload.TYPE, ThrownClearPayload.STREAM_CODEC,
                 (payload, context) -> ThrownClear.thrown())
             .playToClient(HyperspaceJump.TYPE, HyperspaceJump.STREAM_CODEC,
-                (payload, context) -> HyperspaceOverlay.told(payload));
+                (payload, context) -> HyperspaceOverlay.told(payload))
+            .playToClient(ImpactJolt.TYPE, ImpactJolt.STREAM_CODEC,
+                (payload, context) -> CameraShake.impact(payload.strength()));
     }
 }

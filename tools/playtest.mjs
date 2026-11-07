@@ -154,6 +154,15 @@ const FREIGHTER_AWAY_TICKS = 60;
 // How long each of her computer's lines for her flight deck is given to be heard, in ticks, the take-off one waiting
 // for the player to board her and hear it.
 const FREIGHTER_VOICE_TICKS = 300;
+// A freighter dropped onto the ground: how long she is given to settle once assembled, and to groan after landing, in
+// ticks; how high she is lifted to fall, in blocks, some 23 blocks a second as she lands; how long she is given to be
+// heard striking it, in ticks; and how fast she is then shoved along it, in blocks a second, to be heard grinding.
+const IMPACT_SETTLE_TICKS = 60;
+const IMPACT_DROP = 25;
+const IMPACT_HEARD_TICKS = 100;
+const IMPACT_SHOVE = 15;
+// Any sound of a ship striking something: a crunch, the groan after it, a thud or a scrape.
+const IMPACT_SOUND = "skyliners:impact_*";
 // A freighter that has learnt far too much drag: how much, as her pilot keeps it; the speed she is set to cruise at
 // and how fast she may go at most meanwhile, half as fast again as she unlearns it, in blocks a second; how long she is watched, in ticks; how near the
 // speed set she must be by then, in blocks a second; and how much drag she may still have learnt then.
@@ -606,6 +615,8 @@ function heard(match, since, within) {
 }
 
 const playing = (match) => must(`sounds playing match=${match}`).count;
+// A sound played, as said in a check's detail: which, at what tick, how loud and how high.
+const soundOf = (row) => `${row.id} at tick ${row.tick}, volume ${row.volume}, pitch ${row.pitch}`;
 
 function checkAirstairsReachTheGround() {
   walksUp("furnished");
@@ -1005,6 +1016,7 @@ function checkFreighterFlight() {
   const site = layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
   const height = head[1] + FREIGHTER_CLIMB;
+  const start = now();
   must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
   const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - height) < FREIGHTER_HOLD_WITHIN,
     FREIGHTER_UP_TICKS);
@@ -1031,7 +1043,31 @@ function checkFreighterFlight() {
   if (down) {
     expect(Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: she stands on her legs again",
       `control head at ${down.altitude}, built at ${head[1]}`);
+    expect(!heard(IMPACT_SOUND, start, 0), "freighter: lifting off her legs and settling back on them, she is never heard striking the ground");
   }
+}
+
+// A ship set down hard is heard striking the ground, and grinding along it: a freighter, assembled and switched off
+// where she stands, lifted and let fall onto it, crunches, heard from the ground beside her; shoved along it, as a
+// collision would, she grinds, heard aboard her. Her own landings, gentle, make no such sound (see
+// checkFreighterFlight, landFreighterAt and checkFlightAndLanding).
+function checkImpactSounds() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  must(`skyliners:autopilot off; wait ${IMPACT_SETTLE_TICKS}t`);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const since = now();
+  must(`server sable physics translation ${freighter} add 0 ${IMPACT_DROP} 0 global`);
+  expect(heard("skyliners:impact_crunch", since, IMPACT_HEARD_TICKS), "impact: dropped onto the ground, she crunches into it",
+    played(IMPACT_SOUND, since).map(soundOf).join(", "));
+  const groans = played("skyliners:impact_groan", since, `wait ${IMPACT_SETTLE_TICKS}t; `);
+  expect(groans.length === 1, "impact: her hull groans once after it", groans.map(soundOf).slice(0, 3).join(", "));
+  const { at } = must(`sable:find ${freighter} skyliners:autopilot 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; fly off; wait ${LOOK_EVERY}t`);
+  const shoved = now();
+  must(`server sable physics impulse ${freighter} linear ${freighterReport().mass * IMPACT_SHOVE} 0 0 global`);
+  expect(heard("skyliners:impact_scrape", shoved, IMPACT_HEARD_TICKS), "impact: shoved along the ground, she grinds along it",
+    played(IMPACT_SOUND, shoved).map(soundOf).join(", "));
 }
 
 // The freighter's computer speaks for her flight deck, in its own voice: set to fly with the player aboard in her
@@ -2437,6 +2473,7 @@ function rideFreighterUp(head) {
 
 // Sends a freighter to land at a pin and says whether she came down level near it; her report once down.
 function landFreighterAt(head, x, z, where) {
+  const since = now();
   must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${DRAG_CRUISE} pin=${x},${z} land=true`);
   const down = waitForReport(freighterReport, (report) => report.phase === "off", PAD_DOWN_TICKS);
   const last = down ?? freighterReport();
@@ -2449,6 +2486,7 @@ function landFreighterAt(head, x, z, where) {
   expect(lean < PAD_LEVEL_WITHIN, `freighter: she stands level on her legs ${where}`, `leaning ${lean} degrees, middle ${down.middle}, pad ${down.pad}`);
   const [mx, mz] = String(down.middle).split(",").map(Number);
   expect(Math.hypot(mx - x, mz - z) <= PAD_REACH + 2, "freighter: she comes down near the pin", `${Math.hypot(mx - x, mz - z).toFixed(1)} blocks from it`);
+  expect(!heard(IMPACT_SOUND, since, 0), `freighter: she settles ${where} without a bump or a crunch`);
   return down;
 }
 
@@ -2597,6 +2635,7 @@ function flyAndLand() {
   layDown("airliner");
   board();
   must("config skyliners server autopilot.controlSurfaces true");
+  const start = now();
   must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
   must(`wait ${CLIMB_OUT_TICKS}t`, BUILD_SECONDS);
   const cruising = must("sable:info here brief");
@@ -2605,6 +2644,8 @@ function flyAndLand() {
   must("skyliners:autopilot land");
   const landed = waitForMessage("*Landed*", since, LANDING_TICKS);
   expect(landed, "flight: it lands and stops");
+  expect(!heard(IMPACT_SOUND, start, 0), "flight: taking off, landing and rolling out on its wheels, it is never heard striking anything",
+    played(IMPACT_SOUND, start).map(soundOf).join(", "));
   if (landed) {
     walkUpFlownStairs();
   }
@@ -2801,6 +2842,7 @@ const CHECKS = {
   "freighter-fixed-legs": { run: checkFreighterFixedLegs, slow: true, about: "a freighter built with fixed legs, as before they drew up, flies and lands on them as ever" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
+  "impact-sounds": { run: checkImpactSounds, about: "a freighter dropped onto the ground crunches and groans, and shoved along it grinds", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
   "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down, her ramp never talking over it", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },

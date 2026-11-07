@@ -2436,6 +2436,23 @@ function freighterSounds() {
 function freighterSoundsLang() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { subtitle }]) => [`subtitles.${ID}.${name}`, subtitle]));
 }
+// A ship running into something (see Impacts): a hard hit's crunch and boom, her hull groaning after it as a zeppelin's
+// girders groan, a bump's thud and her hull grinding as she slides along, each heard so many blocks off at its
+// plainest, as Impacts has it (its CRUNCH_HEARD, GROAN_HEARD, THUD_HEARD and SCRAPE_HEARD), and farther as it plays
+// louder.
+const IMPACT_SOUNDS = {
+  impact_crunch: { subtitle: "Ship crashes", heard: 96 },
+  impact_groan: { subtitle: "Hull groans", heard: 48, files: ["zeppelin_creak_1", "zeppelin_creak_2", "zeppelin_creak_3"] },
+  impact_thud: { subtitle: "Ship bumps", heard: 32 },
+  impact_scrape: { subtitle: "Hull scrapes", heard: 64 },
+};
+function impactSounds() {
+  return Object.fromEntries(Object.entries(IMPACT_SOUNDS).map(([name, { heard, files = [name] }]) => [name,
+    { subtitle: `subtitles.${ID}.${name}`, sounds: files.map((file) => ({ name: `${ID}:${file}`, attenuation_distance: heard })) }]));
+}
+function impactLang() {
+  return Object.fromEntries(Object.entries(IMPACT_SOUNDS).map(([name, { subtitle }]) => [`subtitles.${ID}.${name}`, subtitle]));
+}
 // A rocket's exhaust plume, the clouds round her lift-off and her shockwave's dust share the blast's soft cloud picture
 // (see the client's BlastPuffParticle), each kind tinting it.
 for (const kind of ["exhaust", "cloud", "dust"]) {
@@ -2493,6 +2510,7 @@ write(`assets/${ID}/particles/fog_puff.json`, { textures: [`${ID}:fog_puff`] });
   Object.assign(sounds, crewLockerSounds());
   Object.assign(sounds, gearSounds());
   Object.assign(sounds, airPocketSounds());
+  Object.assign(sounds, impactSounds());
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
   Object.assign(sounds, roverSounds());
@@ -11858,6 +11876,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...crewLockerLang(),
   ...gearLang(),
   ...airPocketLang(),
+  ...impactLang(),
   ...laserLang(),
   ...selfDestructLang(),
   ...rocketControlLang(),
