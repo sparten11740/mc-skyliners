@@ -151,6 +151,12 @@ public final class FreighterLayout extends HullLayout {
     private static final double NOSE_JET_AHEAD = 19;
     private static final double TAIL_JET_OUT = 0.8;
     private static final double TAIL_JET_ASTERN = 10.8;
+    /** The way each of her jets pushes, in their order: her nose's pair, port then starboard, then her tail's. */
+    private static final Direction[] JET_PUSHES = {Direction.EAST, Direction.WEST, Direction.EAST, Direction.WEST};
+    /** How many of her jets, the first, are her nose's, in her prongs: her port prong's and her starboard prong's. */
+    private static final int NOSE_JETS = 2;
+    private static final int PORT_NOSE_JET = 0;
+    private static final int STARBOARD_NOSE_JET = 1;
     /**
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
      * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
@@ -448,6 +454,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterFloors.build(layout, layout.deck, layout.side);
         layout.legs();
         layout.engines();
+        layout.engineBays();
         layout.engineGrille();
         layout.cockpit();
         layout.robots();
@@ -467,12 +474,14 @@ public final class FreighterLayout extends HullLayout {
         FreighterChillout.build(layout, layout.deck);
         FreighterPaintings.build(layout, layout.deck);
         FreighterGallery.build(layout, layout.deck, layout.scale);
+        FreighterSmugglerDen.build(layout, layout.deck, layout.jets[STARBOARD_NOSE_JET]);
         FreighterEngineering.build(layout, layout.deck);
         FreighterEntryHall.build(layout, layout.deck);
         FreighterFurnishings.build(layout, layout.deck);
         FreighterSpookie.build(layout, layout.deck);
         FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side));
         FreighterPortholes.build(layout, layout.deck, layout.scale);
+        FreighterLookout.build(layout, layout.deck, layout.jets[PORT_NOSE_JET]);
         layout.lights();
         if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
             DarkCorners.light(layout, LightTone.WARM, layout::leastLight);
@@ -850,10 +859,22 @@ public final class FreighterLayout extends HullLayout {
         int noseZ = (int) Math.round(-NOSE_JET_AHEAD * scale);
         int tailX = (int) Math.round(TAIL_JET_OUT * scale);
         int tailZ = (int) Math.round(TAIL_JET_ASTERN * scale);
-        jets[0] = jet(engine.get(), -noseX, noseZ, Direction.EAST);
-        jets[1] = jet(engine.get(), noseX, noseZ, Direction.WEST);
-        jets[2] = jet(engine.get(), -tailX, tailZ, Direction.EAST);
-        jets[3] = jet(engine.get(), tailX, tailZ, Direction.WEST);
+        jets[0] = jet(engine.get(), -noseX, noseZ, JET_PUSHES[0]);
+        jets[1] = jet(engine.get(), noseX, noseZ, JET_PUSHES[1]);
+        jets[2] = jet(engine.get(), -tailX, tailZ, JET_PUSHES[2]);
+        jets[3] = jet(engine.get(), tailX, tailZ, JET_PUSHES[3]);
+    }
+
+    /**
+     * Her engine bays in her prongs' tips (see {@link FreighterEngineBays}): a bulkhead across each tip round her
+     * retro's relay, and a casing round each of her nose jets.
+     */
+    private void engineBays() {
+        FreighterEngineBays bays = new FreighterEngineBays(this, deck);
+        retros.forEach(bays::bulkhead);
+        for (int jet = 0; jet < NOSE_JETS; jet++) {
+            bays.casing(jets[jet], JET_PUSHES[jet]);
+        }
     }
 
     /**

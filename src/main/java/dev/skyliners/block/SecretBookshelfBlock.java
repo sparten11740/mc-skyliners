@@ -120,10 +120,11 @@ public class SecretBookshelfBlock extends DoorBlock {
     }
 
     /**
-     * Whether anyone stands in the doorway over the lower half here. Aboard an assembled airliner the door stands
-     * among its blocks while whoever is in it is in the world, so each is looked at in the door's own blocks.
+     * Whether anyone stands in the doorway over the lower half here, of this or any secret door two blocks tall (see
+     * {@link SecretPanelBlock}). Aboard an assembled airliner the door stands among its blocks while whoever is in it
+     * is in the world, so each is looked at in the door's own blocks.
      */
-    private static boolean inDoorway(ServerLevel level, BlockPos lower) {
+    static boolean inDoorway(ServerLevel level, BlockPos lower) {
         AABB doorway = new AABB(lower).expandTowards(0, 1, 0);
         Vec3 middle = SableFlight.toWorld(level, doorway.getCenter());
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(middle, middle).inflate(DOORWAY_REACH))) {

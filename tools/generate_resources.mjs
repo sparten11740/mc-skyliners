@@ -4545,6 +4545,11 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     ]))),
   });
   write(`assets/${ID}/models/item/${door}.json`, { parent: `${ID}:block/${door}_bottom` });
+  dropsFromLowerHalf(door);
+  cubes[door] = null;
+}
+// A door's loot: only its lower half gives it back, as with doors.
+function dropsFromLowerHalf(door) {
   write(`data/${ID}/loot_table/blocks/${door}.json`, {
     type: "minecraft:block",
     pools: [{
@@ -4557,7 +4562,112 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     }],
     random_sequence: `${ID}:blocks/${door}`,
   });
-  cubes[door] = null;
+}
+// The freighter's smugglers' hold (see FreighterSmugglerDen). The secret panel, a door underneath: shut, a whole block
+// of its own darker, scuffed plate front and back, riveted hull plate round its edges like the wall it stands in, one
+// model for either half; open, vanilla's door leaf shapes in its plate, turned as vanilla turns its doors'. The loose
+// rivet, drawn on the floor as a lit button is and turned as one: a brass head, its crown gleaming at full brightness
+// whatever the light round it; pressed, nearly flush; in the hand, bigger. Its loot: the stash in the den's chest and
+// the contraband in its barrel.
+{
+  const panel = "secret_panel";
+  const face = { texture: "#panel" };
+  write(`assets/${ID}/models/block/${panel}.json`, {
+    parent: "minecraft:block/block",
+    textures: { panel: `${ID}:block/${panel}`, plate: `${ID}:block/hull_plate_riveted`, particle: `${ID}:block/${panel}` },
+    elements: [{
+      from: [0, 0, 0], to: [16, 16, 16],
+      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) =>
+        [side, { ...(side === "north" || side === "south" ? face : { texture: "#plate" }), cullface: side }])),
+    }],
+  });
+  for (const half of ["bottom", "top"]) {
+    for (const hinge of ["left", "right"]) {
+      write(`assets/${ID}/models/block/${panel}_${half}_${hinge}_open.json`, {
+        parent: `minecraft:block/door_${half}_${hinge}_open`,
+        textures: { bottom: `${ID}:block/${panel}`, top: `${ID}:block/${panel}` },
+      });
+    }
+  }
+  write(`assets/${ID}/blockstates/${panel}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [["lower", "bottom"], ["upper", "top"]].flatMap(([half, model]) =>
+      ["left", "right"].flatMap((hinge) => [
+        [`facing=${facing},half=${half},hinge=${hinge},open=false`, { model: `${ID}:block/${panel}`, y }],
+        [`facing=${facing},half=${half},hinge=${hinge},open=true`, { model: `${ID}:block/${panel}_${model}_${hinge}_open`, y: hinge === "right" ? (y + 180) % 360 : y }],
+      ])))),
+  });
+  write(`assets/${ID}/models/item/${panel}.json`, { parent: `${ID}:block/${panel}` });
+  dropsFromLowerHalf(panel);
+  cubes[panel] = null;
+
+  const rivet = "loose_rivet";
+  const textures = { brass: `${ID}:block/${rivet}`, particle: `${ID}:block/${rivet}` };
+  for (const pressed of [false, true]) {
+    const model = boxes(textures, pressed
+      ? [[[6.5, 0, 6.5], [9.5, 0.5, 9.5], "#brass"], [[7, 0.5, 7], [9, 0.75, 9], "#brass", true]]
+      : [[[6.5, 0, 6.5], [9.5, 1, 9.5], "#brass"], [[7, 1, 7], [9, 1.5, 9], "#brass", true]]);
+    for (const wall of ["", "_wall"]) {
+      write(`assets/${ID}/models/block/${rivet}${wall}${pressed ? "_pressed" : ""}.json`, model);
+    }
+  }
+  litButtonState(rivet);
+  write(`assets/${ID}/models/block/${rivet}_inventory.json`, boxes(textures, [
+    [[5, 5, 7.5], [11, 11, 9], "#brass"],
+    [[6, 6, 6.5], [10, 10, 7.5], "#brass", true],
+  ]));
+  write(`assets/${ID}/models/item/${rivet}.json`, { parent: `${ID}:block/${rivet}_inventory` });
+  dropsItself(rivet);
+  cubes[rivet] = null;
+
+  const pools = (entries) => entries.map(([name, count]) => ({
+    rolls: 1.0, bonus_rolls: 0.0,
+    entries: [{ type: "minecraft:item", name, functions: [{ function: "minecraft:set_count", count }] }],
+  }));
+  const uniform = (min, max) => ({ type: "minecraft:uniform", min, max });
+  write(`data/${ID}/loot_table/chests/smuggler_stash.json`, {
+    type: "minecraft:chest",
+    pools: pools([
+      ["minecraft:cookie", uniform(6, 12)],
+      ["minecraft:emerald", uniform(2, 5)],
+      ["minecraft:spyglass", 1],
+      [`${ID}:nebula_fizz`, 1],
+    ]).concat([{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item", name: "minecraft:firework_rocket",
+        functions: [
+          { function: "minecraft:set_count", count: 3 },
+          {
+            function: "minecraft:set_components",
+            components: { "minecraft:fireworks": { flight_duration: 1, explosions: [{ shape: "burst", colors: [0xffd040, 0x40e080], has_twinkle: true }] } },
+          },
+        ],
+      }],
+    }]),
+    random_sequence: `${ID}:chests/smuggler_stash`,
+  });
+  write(`data/${ID}/loot_table/chests/smuggler_contraband.json`, {
+    type: "minecraft:chest",
+    pools: pools([
+      ["minecraft:cocoa_beans", uniform(4, 8)],
+      ["minecraft:sugar", uniform(4, 8)],
+      ["minecraft:glow_berries", uniform(3, 6)],
+      ["minecraft:honey_bottle", uniform(1, 2)],
+      ["minecraft:amethyst_shard", uniform(2, 4)],
+    ]),
+    random_sequence: `${ID}:chests/smuggler_contraband`,
+  });
+}
+// Two riveted hull plates hinged on redstone; a gold nugget on a stone button.
+function smugglerHoldRecipes() {
+  shaped("secret_panel", ["P", "R", "P"], { P: `${ID}:hull_plate_riveted`, R: "minecraft:redstone" }, 1);
+  shaped("loose_rivet", ["G", "B"], { G: "minecraft:gold_nugget", B: "minecraft:stone_button" }, 1);
+}
+function smugglerHoldLang() {
+  return {
+    "block.skyliners.secret_panel": "Secret Panel",
+    "block.skyliners.loose_rivet": "Loose Rivet",
+  };
 }
 // The ball pit: a plain cube of balls, its faces shown inside it too, so someone sunk in it sees balls all round. It
 // sounds its own steps from inside, as powder snow does.
@@ -11259,6 +11369,7 @@ shaped("cabin_partition", ["PPP", "PDP", "PPP"], { P: "minecraft:birch_planks", 
 shaped("cabin_arch", ["PDP", "P P"], { P: `${ID}:cabin_partition`, D: "minecraft:white_dye" }, 4);
 shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "minecraft:glowstone_dust" }, 2);
 holdAndTailRecipes();
+smugglerHoldRecipes();
 // The vacuum toilet: a bucket for its bowl in iron.
 shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecraft:bucket" }, 1);
 flightDeckRecipes();
@@ -11863,6 +11974,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...DUTY_FREE_LANG,
   ...cabinDecorLang,
   ...holdAndTailLang(),
+  ...smugglerHoldLang(),
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
   ...cockpitDoorLang(),

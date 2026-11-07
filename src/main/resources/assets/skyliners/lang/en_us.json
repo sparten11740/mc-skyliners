@@ -696,6 +696,8 @@
   "message.skyliners.golden_suitcase.found": "A golden suitcase! %s of %s found",
   "advancements.skyliners.first_flight.lost_and_found.title": "Lost and Found",
   "advancements.skyliners.first_flight.lost_and_found.description": "Find the three golden suitcases hidden in an airliner's hold",
+  "block.skyliners.secret_panel": "Secret Panel",
+  "block.skyliners.loose_rivet": "Loose Rivet",
   "block.skyliners.vacuum_toilet": "Vacuum Toilet",
   "block.skyliners.lav_ice": "Blue Lav Ice",
   "entity.skyliners.blue_ice_chunk": "Blue Ice",

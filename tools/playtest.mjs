@@ -424,6 +424,24 @@ const POINTING = { up: [0, 1, 0], down: [0, -1, 0], north: [0, 0, -1], south: [0
 // a black hole, four by three, and the solar system, five by two.
 const ROOMS_REACH = 22.5;
 const GALLERY_POSTER_BLOCKS = 34;
+// A freighter's prongs: how many thrusters stand in their tips, her two retros and her two nose jets, the furthest of
+// her thrusters from her middle; how far back toward her middle from one, down the tunnel, the player stands to aim at
+// it, in blocks; how far round a point down each tunnel it is looked over for unlit spots, and how far back from her
+// retro that point is, in blocks.
+const PRONG_THRUSTERS = 4;
+const AIM_BACK = 3.5;
+const PRONG_LIT_REACH = 18;
+const PRONG_LIT_BACK = 12;
+// Her smugglers' hold: how far before the secret panel the player stands to knock and to press the rivet, and how far
+// behind it in the den, in blocks; how long the rivet is given to chime once the player is near it, and how long the
+// panel takes to shut by itself once nobody is in its doorway, in ticks.
+const PANEL_STAND = 3;
+const DEN_STAND = 1.5;
+const CHIME_WITHIN = 200;
+const PANEL_SHUTS = 230;
+// Her port prong's lookout: how many blocks of seats it has at least, one seat by a porthole and three in the nook at
+// its tip, two blocks each.
+const LOOKOUT_SEAT_BLOCKS = 8;
 // The beach's pieces that go up on a wall as well as on a floor.
 const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
@@ -2068,6 +2086,13 @@ function checkFreighterLit() {
   must(`server tp @p ${x + 0.5} ${y} ${z + 0.5 - JUMP_DRIVE_ASTERN}; wait 40t`);
   const unlit = must(`skyliners:dark radius=${LIT_REACH} least=1`);
   expect(Number(unlit.dark) === 0, "freighter: no spot inside her is left unlit, where monsters could spawn", `${unlit.dark} unlit, first ${unlit.first || "none"}`);
+  const { middle, tips } = prongThrusters();
+  for (const retro of tips.slice(0, 2)) {
+    must(`server tp @p ${backToward(middle, retro, PRONG_LIT_BACK).join(" ")}; wait 20t`);
+    const prong = must(`skyliners:dark radius=${PRONG_LIT_REACH} least=1`);
+    expect(Number(prong.dark) === 0, "freighter: no spot down either of her prongs' tunnels is left unlit, out to their tips",
+      `${prong.dark} unlit, first ${prong.first || "none"}`);
+  }
 }
 
 // A freighter's passenger screens, used aboard her once she flies: one shows the view from her outside cameras, where
@@ -2343,6 +2368,123 @@ function checkFreighterGallery() {
   expect(models.length === 4, "freighter: the fleet's four models stand along the tube out to her cockpit", models.join(", "));
   const posters = outside("space_poster").length;
   expect(posters >= GALLERY_POSTER_BLOCKS, "freighter: space posters hang along the tunnel down her port prong", `${posters} blocks of posters`);
+}
+
+// A freighter's middle and her prongs' tips: the laser cannon on her axis, and the thrusters in the tips, her retros and
+// nose jets, the furthest of all her thrusters from her middle, the furthest first.
+function prongThrusters() {
+  const [{ at_abs: middle }] = must("find skyliners:laser_cannon 128 1").rows;
+  const reach = (at) => Math.hypot(at[0] - middle[0], at[2] - middle[2]);
+  const thrusters = must("find createpropulsion:creative_thruster 128 100").rows.map((row) => row.at_abs).sort((a, b) => reach(b) - reach(a));
+  return { middle, tips: thrusters.slice(0, PRONG_THRUSTERS) };
+}
+
+// A point so many blocks back from a block toward a freighter's middle, down the length of her prong, at the block's
+// floor: where someone stands in the tunnel looking out along it to the block.
+function backToward(middle, at, blocks) {
+  const [dx, dz] = [middle[0] - at[0], middle[2] - at[2]];
+  const along = Math.abs(dz) >= Math.abs(dx) ? [0, Math.sign(dz)] : [Math.sign(dx), 0];
+  return [at[0] + 0.5 + along[0] * blocks, at[1], at[2] + 0.5 + along[1] * blocks];
+}
+
+// A freighter's thrusters in her prongs' tips, her retros and her nose jets, boxed in behind her engine bays: aimed at
+// from down the tunnel, the crosshair rests on the bay, never on a thruster, and a survival player's pickaxe at what it
+// rests on breaks nothing. Her nose jets stood bare on the tunnels' floors before, creative blocks there for the taking.
+function checkFreighterEngineBays() {
+  ship("freighter");
+  const { middle, tips } = prongThrusters();
+  expect(tips.length === PRONG_THRUSTERS, "freighter: she has her retros and nose jets in her prongs' tips", `${tips.length} found`);
+  for (const at of tips) {
+    must(`server tp @p ${backToward(middle, at, AIM_BACK).join(" ")}; wait 10t; face ${at.join(",")}; wait 5t`);
+    const look = must("status");
+    expect(Boolean(look.aim) && !look.aim.includes("thruster"), `freighter: from down her prong's tunnel, the thruster at ${at.join(",")} is out of reach`,
+      `the crosshair rests on ${look.aim ?? "nothing"}`);
+    if (!look.aim_at) {
+      continue;
+    }
+    const hit = look.aim_at.map(Math.floor).join(",");
+    survival();
+    send(`?mine ${hit} timeout=3s`);
+    creative();
+    expect(must(`block ${hit} side=server`).id === look.aim, "freighter: a pickaxe at her engine bay before it breaks nothing", `${look.aim} at ${hit}`);
+  }
+}
+
+// A freighter's smugglers' hold, as a child would find it: down her starboard prong the tunnel ends at a wall whose one
+// brass rivet chimes now and then as you stand near it; knocked on, the panel beside it sounds hollow but stays shut;
+// the rivet pressed, the panel swings open with a hiss onto a den with a chest of loot; it shuts again by itself once
+// nobody stands in its doorway; and from inside it is pushed open by hand, so nobody is ever shut in.
+function checkFreighterSmugglerHold() {
+  ship("freighter");
+  const [rivet] = must("find skyliners:loose_rivet 128 1").rows;
+  const panels = must("find skyliners:secret_panel 128 2").rows.map((row) => row.at_abs);
+  expect(Boolean(rivet) && panels.length === 2, "freighter: a wall across her starboard prong has a secret panel and a loose rivet",
+    `${rivet ? "a rivet" : "no rivet"}, ${panels.length} blocks of panel`);
+  if (!rivet || panels.length < 2) {
+    return;
+  }
+  const lower = panels.reduce((low, at) => (at[1] < low[1] ? at : low));
+  const at = lower.join(",");
+  const open = () => must(`block ${at} side=server`).props?.open === "true";
+  const [dx, dz] = STEPS[must(`block ${at}`).props?.facing ?? "north"];
+  emptyHands();
+  const near = now();
+  must(`server tp @p ${lower[0] + 0.5 - dx * PANEL_STAND} ${lower[1]} ${lower[2] + 0.5 - dz * PANEL_STAND}; wait 10t; face ${rivet.at_abs.join(",")}`);
+  expect(Boolean(heard("*amethyst_block.chime*", near, CHIME_WITHIN)), "freighter: standing near, her loose rivet chimes, a hint a child can hear");
+  const knocked = now();
+  must(`use ${at}; wait 10t`);
+  expect(Boolean(heard("*note_block.basedrum*", knocked, LOOK_EVERY)) && !open(), "freighter: knocked on, the panel sounds hollow and stays shut");
+  const pressed = now();
+  must(`use ${rivet.at_abs.join(",")}; wait 10t`);
+  expect(open() && Boolean(heard("*fire.extinguish*", pressed, LOOK_EVERY)), "freighter: her loose rivet pressed, the secret panel swings open with a hiss");
+  const [chest] = must("find minecraft:chest 16 1 side=server").rows;
+  const loot = chest ? must(`server data get block ${chest.at_abs.join(" ")} LootTable`).rows[0]?.line ?? "" : "";
+  expect(loot.includes("smuggler_stash"), "freighter: behind it, her smugglers' den has a chest of loot", loot || "no chest");
+  must(`wait ${PANEL_SHUTS}t`);
+  expect(!open(), "freighter: with nobody in its doorway, the panel shuts again by itself");
+  must(`server tp @p ${lower[0] + 0.5 + dx * DEN_STAND} ${lower[1]} ${lower[2] + 0.5 + dz * DEN_STAND}; wait 10t; use ${at}; wait 10t`);
+  expect(open(), "freighter: from inside her den, the panel is pushed open by hand");
+}
+
+// The secret panel and the loose rivet set up by hand away from any ship, as a player makes a secret door: the panel
+// stands in a gap in a stone wall and the rivet goes on the wall beside it; pressed, the rivet swings the panel open,
+// and pressed again shuts it. The rivet goes on a floor and under a ceiling too, a rivet's head on each.
+function checkSecretPanelByHand() {
+  const x = nextSite++ * SITE_APART;
+  creative();
+  must(`server tp @p ${x + 0.5} ${ground} -3.5 0 10; wait ${CHUNKS_TICKS}t`);
+  must(`server fill ${x - 2} ${ground} 0 ${x + 2} ${ground + 2} 0 stone; server fill ${x} ${ground} 0 ${x} ${ground + 1} 0 air; server setblock ${x - 3} ${ground + 2} -2 stone`);
+  emptyHands();
+  must("server give @p skyliners:secret_panel 1; server give @p skyliners:loose_rivet 3; wait 5t; select 0");
+  send(`place skyliners:secret_panel ${x},${ground},0`);
+  must("wait 5t; select 1");
+  send(`place skyliners:loose_rivet ${x + 1},${ground + 1},-1`);
+  send(`place skyliners:loose_rivet ${x + 3},${ground},-2`);
+  send(`place skyliners:loose_rivet ${x - 3},${ground + 1},-2`);
+  const faces = [[x + 1, ground + 1, -1], [x + 3, ground, -2], [x - 3, ground + 1, -2]].map((spot) => must(`block ${spot.join(",")} side=server`).props?.face);
+  expect(faces.join(" ") === "wall floor ceiling", "loose rivet: put up by hand, it goes on a wall, a floor and a ceiling", faces.join(", "));
+  const panel = () => must(`block ${x},${ground},0 side=server`);
+  expect(panel().id === "skyliners:secret_panel", "secret panel: set by hand into a gap in a wall, it stands there", panel().id);
+  must(`use ${x + 1},${ground + 1},-1; wait 10t`);
+  expect(panel().props?.open === "true", "secret panel: the rivet beside it pressed, it swings open");
+  must(`wait 30t; use ${x + 1},${ground + 1},-1; wait 10t`);
+  expect(panel().props?.open === "false", "secret panel: the rivet pressed again, it shuts");
+}
+
+// A freighter's port prong a lookout: a seat faces a porthole down its tunnel, and at its tip, past her nose jet's
+// casing, a row of seats faces a screen of her outside cameras. Her port retro is the one further from her cockpit's
+// control head, out on her starboard side, and what is nearer her starboard retro, her cockpit among it, is left out.
+function checkFreighterLookout() {
+  ship("freighter");
+  const { middle, tips } = prongThrusters();
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const away = (from, at) => Math.hypot(at[0] - from[0], at[2] - from[2]);
+  const [starboard, port] = tips.slice(0, 2).sort((a, b) => away(head, a) - away(head, b));
+  const inPort = (at) => away(middle, at) > ROOMS_REACH && away(port, at) < away(starboard, at);
+  const seats = must("find skyliners:business_seat 128 300").rows.map((row) => row.at_abs).filter(inPort);
+  const screens = must("find skyliners:passenger_screen 128 50").rows.map((row) => row.at_abs).filter(inPort);
+  expect(seats.length >= LOOKOUT_SEAT_BLOCKS && screens.length >= 1, "freighter: her port prong is a lookout, seats by its portholes and a nook at its tip facing a screen",
+    `${seats.length} blocks of seats, ${screens.length} screens`);
 }
 
 // The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
@@ -2833,6 +2975,10 @@ const CHECKS = {
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
+  "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
+  "freighter-smuggler-hold": { run: checkFreighterSmugglerHold, about: "a freighter's loose rivet chimes, its panel knocks hollow, opens onto a den of loot, shuts by itself and opens from inside" },
+  "secret-panel": { run: checkSecretPanelByHand, about: "a secret panel set into a wall by hand opens and shuts at its loose rivet, and a rivet goes on a wall, a floor and a ceiling" },
+  "freighter-lookout": { run: checkFreighterLookout, about: "a freighter's port prong has seats by its portholes and a nook at its tip facing a screen" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built in her own hull with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
