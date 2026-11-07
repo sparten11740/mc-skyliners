@@ -206,7 +206,8 @@ const SEATED_EYES = 1.62;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
-// full health, in half hearts; and how long it is left to cool after venting, in ticks. Its bolt: how soon after a shot it is looked for and how much later again, in ticks; how long it must have shown
+// full health, in half hearts; how long it is left to cool after venting, in ticks; and how many shots in a row vent
+// it. Its bolt: how soon after a shot it is looked for and how much later again, in ticks; how long it must have shown
 // by then at least, in ticks, more than the blink of four it once was; and how near the eye it must leave from, in
 // blocks, as the crossbow's muzzle is.
 const CROSSBOW_CHARGE_TICKS = 30;
@@ -216,6 +217,7 @@ const CROSSBOW_AIM_DOWN = 8;
 const CREEPER_HEALTH = 20;
 const COW_HEALTH = 10;
 const CROSSBOW_COOLED_TICKS = 100;
+const CROSSBOW_HEAT = 3;
 const BOLT_LOOKED_FOR_TICKS = 3;
 const BOLT_LATER_TICKS = 15;
 const BOLT_SHOWN_TICKS = 8;
@@ -1067,7 +1069,8 @@ function checkFreighterTurret() {
 // The laser crossbow: charged by holding use, it fires an amber bolt that the player sees leave the crossbow's muzzle
 // in front of them and that shows a while, not for a blink; it strikes a creeper hard and leaves a cow unharmed; three
 // quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the world on easy, as
-// a peaceful world takes hostile mobs away at once.
+// a peaceful world takes hostile mobs away at once. The quick shots go in one script: sent one by one, the time between
+// them let it cool before the third.
 function checkLaserCrossbow() {
   const x = nextSite++ * SITE_APART;
   creative();
@@ -1084,9 +1087,13 @@ function checkLaserCrossbow() {
   expect(struck < CREEPER_HEALTH, "laser crossbow: charged and fired, its bolt strikes a creeper", `health ${struck} of ${CREEPER_HEALTH}`);
   const spared = shootAt("cow", x);
   expect(spared === COW_HEALTH, "laser crossbow: its bolt never hurts a cow", `health ${spared} of ${COW_HEALTH}`);
-  const since = now();
-  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
-  expect(!heard("skyliners:laser_crossbow_shot", since, 0), "laser crossbow: after three quick shots it vents, and does not fire");
+  must(`wait ${CROSSBOW_COOLED_TICKS}t`);
+  const quick = now();
+  const shot = `use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 5t`;
+  must(`${Array(CROSSBOW_HEAT + 1).fill(shot).join("; ")}; wait 10t`);
+  const shots = played("skyliners:laser_crossbow_shot", quick).length;
+  expect(shots === CROSSBOW_HEAT && heard("minecraft:block.fire.extinguish", quick, 0),
+    "laser crossbow: three quick shots and it vents, hissing, and does not fire a fourth", `${shots} shots`);
   must(`wait ${CROSSBOW_COOLED_TICKS}t`);
   const cooled = now();
   must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
