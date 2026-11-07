@@ -2662,6 +2662,10 @@ loud as the game's Jukebox/Note Blocks volume sets, and the client config's `clu
 among her blocks in the creative tab, to set down anywhere, and the server config's `freighter.bandstand` builds her
 without it.
 
+Her crew quarters, the room through the doorway at her port quarter, have four bunks against their wall, each in its
+own blanket with its reading light on, and her lounge, aft of the entry hall, a booth: a low table among four seats.
+The server config's `freighter.rooms` builds her rooms bare.
+
 Her deck is lit by wall washers over head height, small dark lamps each throwing a fan of light up the wall: round
 her ring corridor between its doorways, along the walls between her rooms and on each room's far wall, warm white, pink
 in her club and a cool night blue in her crew quarters, the room through the doorway at her port quarter; the

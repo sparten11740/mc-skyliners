@@ -11,7 +11,9 @@ import dev.skyliners.block.AutopilotScreenBlock;
 import dev.skyliners.block.AutopilotScreenBlockEntity;
 import dev.skyliners.block.BarCounterBlock;
 import dev.skyliners.block.BoardingRamp;
+import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinRailBlock;
+import dev.skyliners.block.CabinSeatBlock;
 import dev.skyliners.block.DeckRobotBlock;
 import dev.skyliners.block.DisplayShelfBlock;
 import dev.skyliners.block.DrinkTapBlock;
@@ -35,12 +37,15 @@ import java.util.function.IntPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
@@ -178,6 +183,23 @@ public final class FreighterLayout extends HullLayout {
     private static final int BAR_TO = 14;
     private static final int TAPS_APART = 2;
     private static final int BACK_BAR_SHELVES = 1;
+    /**
+     * Her crew quarters' bunks (see {@link BunkBlock}): single bunks against the wall between the quarters and her
+     * club, facing in, each with its head so many blocks out along it from her axis and its foot a block further in,
+     * the reading lights on and each blanket in the next of these colours; single, so the wall washers over them keep
+     * their room.
+     */
+    private static final int[] BUNK_HEADS = {9, 12, 15, 18};
+    private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.PURPLE, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
+    /**
+     * Her lounge's booth, in the room aft of her entry hall: a low table at this bearing and so far out from her axis,
+     * the middle of the room, with a seat facing it on each side, in these colours by turns.
+     */
+    private static final int LOUNGE_BEARING = 120;
+    private static final double LOUNGE_OUT = 14;
+    private static final DyeColor[] LOUNGE_SEATS = {DyeColor.ORANGE, DyeColor.BROWN};
+    /** The sides of her lounge's table its seats stand at, in turn. */
+    private static final Direction[] LOUNGE_SIDES = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
     /**
      * Her wall washers (see {@link WallLightBlock}): so many rows over her deck, over the head of anyone walking past;
      * three on the corridor's outer wall between each two doorways, at a room wall's bearing and so many degrees either
@@ -355,6 +377,8 @@ public final class FreighterLayout extends HullLayout {
         layout.turret();
         layout.bandstand();
         layout.clubBar();
+        layout.quarters();
+        layout.lounge();
         layout.lights();
         layout.countAir();
         return layout;
@@ -962,11 +986,72 @@ public final class FreighterLayout extends HullLayout {
 
     /** Sets a block on her deck, at a column over her deck's floor, if it is open; gives whether it did. */
     private boolean onFloor(int x, int z, BlockState state) {
-        if (!isOpen(x, deck + 1, z) || isOpen(x, deck, z)) {
+        if (!floorFree(x, z)) {
             return false;
         }
         set(x, deck + 1, z, state);
         return true;
+    }
+
+    /** Whether a column has its block over her deck open, over a floor. */
+    private boolean floorFree(int x, int z) {
+        return isOpen(x, deck + 1, z) && !isOpen(x, deck, z);
+    }
+
+    /**
+     * Her crew quarters' single bunks along the wall they share with her club, facing into the quarters, where each
+     * bunk's head and foot have room over her deck's floor; none with the server config's {@code freighter.rooms} off.
+     */
+    private void quarters() {
+        if (!SkylinersConfig.FREIGHTER_ROOMS.get()) {
+            return;
+        }
+        // Laid out nose north, her crew quarters lie south of the wall they share with her club, which runs along z 0.
+        Direction facing = Direction.SOUTH;
+        int z = 1;
+        Direction foot = BunkBlock.footward(facing);
+        for (int bunk = 0; bunk < BUNK_HEADS.length; bunk++) {
+            int x = -BUNK_HEADS[bunk];
+            int footX = x + foot.getStepX();
+            if (!floorFree(x, z) || !floorFree(footX, z)) {
+                continue;
+            }
+            BlockState head = SkylinersRegistry.BUNK.get().defaultBlockState().setValue(BunkBlock.FACING, facing)
+                .setValue(BunkBlock.COLOR, BLANKETS[bunk % BLANKETS.length]).setValue(BunkBlock.LIT, true)
+                .setValue(BunkBlock.TIER, BunkBlock.Tier.SINGLE);
+            set(x, deck + 1, z, head);
+            set(footX, deck + 1, z, head.setValue(BunkBlock.PART, BedPart.FOOT));
+        }
+    }
+
+    /**
+     * Her lounge's booth: a low table in the room's middle and a seat facing it on each side that has room over her
+     * deck's floor; none with the server config's {@code freighter.rooms} off.
+     */
+    private void lounge() {
+        if (!SkylinersConfig.FREIGHTER_ROOMS.get()) {
+            return;
+        }
+        double[] way = way(LOUNGE_BEARING);
+        int x = (int) Math.round(way[0] * LOUNGE_OUT);
+        int z = (int) Math.round(way[1] * LOUNGE_OUT);
+        if (!onFloor(x, z, SkylinersRegistry.LOUNGE_TABLE.get().defaultBlockState())) {
+            return;
+        }
+        for (int seat = 0; seat < LOUNGE_SIDES.length; seat++) {
+            Direction side = LOUNGE_SIDES[seat];
+            loungeSeat(x + side.getStepX(), z + side.getStepZ(), side.getOpposite(), LOUNGE_SEATS[seat % LOUNGE_SEATS.length]);
+        }
+    }
+
+    /** A seat of her lounge's booth, both its halves, facing the table, where it has room over her deck's floor. */
+    private void loungeSeat(int x, int z, Direction facing, DyeColor colour) {
+        if (!floorFree(x, z) || !isOpen(x, deck + 2, z)) {
+            return;
+        }
+        BlockState seat = CabinSeatBlock.seat(SkylinersRegistry.BUSINESS_SEAT.get(), colour, facing);
+        set(x, deck + 1, z, seat);
+        set(x, deck + 2, z, seat.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER));
     }
 
     /**
