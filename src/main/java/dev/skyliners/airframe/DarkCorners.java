@@ -2,6 +2,7 @@ package dev.skyliners.airframe;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.LightTone;
+import dev.skyliners.block.OvalWindowPieceBlock;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -173,10 +174,14 @@ final class DarkCorners {
         return open && place(dark, SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState());
     }
 
-    /** Whether a block is a wall a lamp can be fixed to, its face whole on the side looking the way given. */
+    /**
+     * Whether a block is a wall a lamp can be fixed to, its face whole on the side looking the way given; never a
+     * window (see {@link OvalWindowPieceBlock}), whose glass the lamp would cover.
+     */
     private boolean solidWall(BlockPos at, Direction face) {
         BlockState wall = layout.stateAt(at.getX(), at.getY(), at.getZ());
-        return !wall.isAir() && wall.isFaceSturdy(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, face);
+        boolean window = wall.getBlock() instanceof OvalWindowPieceBlock;
+        return !wall.isAir() && !window && wall.isFaceSturdy(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, face);
     }
 
     /** Sets a light in a block and spreads its light from there. */

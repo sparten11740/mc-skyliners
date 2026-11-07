@@ -778,7 +778,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<OvalWindowBlock> OVAL_WINDOW = BLOCKS.registerBlock("oval_window", OvalWindowBlock::new, glass());
     /** The oval window lying flat in a floor or a roof, set there by hand from the Oval Window. */
     public static final DeferredBlock<FlatOvalWindowBlock> FLAT_OVAL_WINDOW = BLOCKS.registerBlock("flat_oval_window", FlatOvalWindowBlock::new, glass());
-    /** The porthole, a small round window a block across, set into walls, floors and roofs by hand. */
+    /** The porthole, a small round window a block across, along the freighter's passages and set in walls by hand. */
     public static final DeferredBlock<PortholeBlock> PORTHOLE = BLOCKS.registerBlock("porthole", PortholeBlock::new, glass());
     /** The porthole lying flat in a floor or a roof, set there by hand from the Porthole. */
     public static final DeferredBlock<FlatPortholeBlock> FLAT_PORTHOLE = BLOCKS.registerBlock("flat_porthole", FlatPortholeBlock::new, glass());

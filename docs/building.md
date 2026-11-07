@@ -228,6 +228,9 @@ wall where it hangs whole, a `FloorLightBlock` under it.
 `airframe.fleetPaintings` switches all four. `FreighterGallery` hangs more space posters along the tunnel down the
 freighter's port prong through `FreighterPaintings.hangWhole`, and stands the fleet's `SouvenirModelBlock`s and
 `PlanterBlock`s along the ledges of the tube out to her cockpit; `freighter.gallery` switches both.
+`FreighterPortholes` sets `PortholeBlock`s, as if set by hand, into flat stretches of her cover down the outer walls of
+her prong tunnels and both sides of her tube, where open sky lies straight out past them; `freighter.portholes`
+switches them.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.
@@ -346,7 +349,7 @@ strips whose ends lie on the circle, and the middle block the round parts, as `O
 `HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. `DarkCorners` is her
 last pass: it spreads her lamps' light through her layout as the game does and lights every spot someone could stand
 in that is left unlit, her passages to a dim but never black level (`FreighterLayout.leastLight`), with a wall washer
-or a floor light; `skyliners:dark` measures the same in game. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+or a floor light, never on a window's glass; `skyliners:dark` measures the same in game. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 `FreighterExterior` dresses her outside once her rooms stand with the fleet's outside fittings in `exterior/`, each a
 `HullFittingBlock` that a player puts up on a floor, a wall or a ceiling (MOUNT, through `Mounting`), a model of its own

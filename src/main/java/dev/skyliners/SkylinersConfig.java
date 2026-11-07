@@ -73,6 +73,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_OUTSIDE_LIGHTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
@@ -675,6 +676,13 @@ public final class SkylinersConfig {
                 "out to her cockpit. Without it, both are bare."
             )
             .define("gallery", true);
+        FREIGHTER_PORTHOLES = builder
+            .comment(
+                "Whether the freighter is built with portholes along her long passages, small round windows looking out to the",
+                "sky down the outer wall of the tunnel in each prong and down both sides of the tube out to her cockpit.",
+                "Without them, those walls are bare."
+            )
+            .define("portholes", true);
         FREIGHTER_CANOPY_DIMMER = builder
             .comment(
                 "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",

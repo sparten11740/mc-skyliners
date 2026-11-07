@@ -1,7 +1,7 @@
 package dev.skyliners.airframe;
 
 import dev.skyliners.SkylinersRegistry;
-import dev.skyliners.block.OvalWindowBlock;
+import dev.skyliners.block.OvalWindowPieceBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import java.util.ArrayList;
@@ -91,7 +91,7 @@ abstract class HullLayout implements Layout {
 
     /** Whether a block is the skin: the cover, cut to the curve or whole, or a window in it. */
     static boolean skin(BlockState state) {
-        return state.getBlock() instanceof ShellBlock || state.getBlock() instanceof OvalWindowBlock;
+        return state.getBlock() instanceof ShellBlock || state.getBlock() instanceof OvalWindowPieceBlock;
     }
 
     /**

@@ -16,7 +16,8 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  * running back through the block behind a steel lip. It is always as one set by hand (see {@link StandingWindowBlock}):
  * standing in a wall, looking out toward whoever sets it, or laid by the same item in a floor or a roof (see {@link
  * FlatPortholeBlock}), it fills its block, flush on both sides, and round its glass, outside and in, it looks like the
- * wall beside it. It dims as the rocket's windows do, and broken it gives itself back.
+ * wall beside it. It dims as the rocket's windows do, and broken it gives itself back. The freighter has them down her
+ * long passages (see {@code airframe.FreighterPortholes}).
  */
 public class PortholeBlock extends StandingWindowBlock {
     private static final MapCodec<PortholeBlock> CODEC = simpleCodec(PortholeBlock::new);

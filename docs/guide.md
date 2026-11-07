@@ -2591,7 +2591,13 @@ miniature: models of the airliner, the zeppelin, the rocket and the freighter he
 pointing on to her cockpit, with planters of greenery and flowers between them. The tunnel down her port prong is a
 gallery: along its straight inner wall hang space posters, an earthrise, a black hole and the solar system, as big as
 murals in its low headroom, any hung clear of the floor lit from below. The server config's `freighter.gallery` leaves
-both bare.
+both bare. Both passages have portholes (see the Porthole, below) looking out to the sky, at least five blocks apart:
+down the outer wall of the tunnel in each prong at a standing person's eyes, one in each flat stretch of her stepped
+side, and down both sides of the tube where it stands out in the open past her rim, a row higher above the ledges on
+its outer side, where its round wall stands straight. Each sits flush in her skin, her hull's panels running on round
+it outside and the passage's wall inside, and lets daylight into the passage; none is set where it would look at her
+own hull close by, as beside her cockpit's pod, nor on the prongs' inner walls along her loading gap. The server
+config's `freighter.portholes` leaves them out.
 
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight

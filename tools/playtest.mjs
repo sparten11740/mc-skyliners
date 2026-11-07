@@ -281,6 +281,10 @@ const HAND_SET_WINDOWS = [["oval_window", 3, 4, 12], ["porthole", 1, 1, 1]];
 const WINDOW_WALLS_APART = 8;
 const WINDOW_STAND_OFF = 2.5;
 const WINDOW_REACH = 8;
+// A freighter's portholes: how many she has at least, along both prongs and both sides of her cockpit's tube, and how
+// much of the sky's light reaches the block inside each at least, as a block's light.
+const FREIGHTER_PORTHOLES = 8;
+const PORTHOLE_DAYLIGHT = 10;
 // How far round her middle a freighter is looked over for unlit spots, in blocks, and how far astern of it her jump
 // drive stands, to find her middle by.
 const LIT_REACH = 40;
@@ -1730,6 +1734,26 @@ function layIntoFloor(id, x) {
   creative();
 }
 
+// A freighter's portholes along her long passages: she is built with them down both sides of her, looking out each
+// way, and each lets the sky's light into the passage inside it, which her skin kept dark there before.
+function checkFreighterPortholes() {
+  ship("freighter");
+  const portholes = must(`find skyliners:porthole 128 ${FREIGHTER_PORTHOLES * 4}`).rows.map((row) => row.at_abs);
+  const facings = portholes.map((at) => must(`block ${at.join(",")}`).props?.facing ?? "north");
+  const ways = new Set(facings);
+  expect(portholes.length >= FREIGHTER_PORTHOLES && ways.size >= 2, "freighter: she is built with portholes down both sides of her",
+    `${portholes.length} portholes, looking ${[...ways].join(" and ")}`);
+  const dark = portholes.filter((at, i) => skyLightInside(at, facings[i]) < PORTHOLE_DAYLIGHT);
+  expect(portholes.length > 0 && dark.length === 0, "freighter: each porthole lets daylight into the passage inside it",
+    dark.length ? `dark inside ${dark.map((at) => at.join(",")).join(" ")}` : "");
+}
+
+// How much of the sky's light reaches the block inside a window looking out the way given, as a block's light.
+function skyLightInside(at, facing) {
+  const [dx, dz] = STEPS[facing];
+  return must(`block ${at[0] - dx},${at[1]},${at[2] - dz} light`).sky ?? 0;
+}
+
 // A round floor window laid from its item into the ground anywhere: every block of it blends into the grass it took
 // the place of; its panel, set down by it, opens and shuts it; and broken, it all comes out, the grass put back where
 // it was and the window given back.
@@ -2251,6 +2275,7 @@ const CHECKS = {
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
+  "freighter-portholes": { run: checkFreighterPortholes, about: "a freighter has portholes down her prongs and her cockpit's tube, each letting daylight in" },
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
