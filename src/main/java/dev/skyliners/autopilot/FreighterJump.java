@@ -217,7 +217,7 @@ public final class FreighterJump {
      * long enough, she lets go; a moment later she jumps. Called off if she has stopped flying along before she goes.
      */
     void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State state, Vec3 middle, FreighterPilot pilot, @Nullable BlockPos drive) {
-        settle(level);
+        settle(level, autopilot);
         if (!jumping) {
             return;
         }
@@ -331,13 +331,16 @@ public final class FreighterJump {
     /**
      * For a few ticks after she jumps, anyone aboard her as she went, or the seat they sat in, who is not where they
      * were among her blocks is put back there, their motion stopped as hers is: Sable carries those standing on her as
-     * a rule, so most are where they were, and moved twice they would be left a jump's length off her.
+     * a rule, so most are where they were, and moved twice they would be left a jump's length off her. From the tick
+     * after she jumps, whatever she carried there lets go of the speed she carried it at, a jump's length a tick (see
+     * {@link SableFlight#letGoAboard}).
      */
-    private void settle(ServerLevel level) {
+    private void settle(ServerLevel level, AutopilotBlockEntity autopilot) {
         if (settling <= 0) {
             return;
         }
         settling--;
+        SableFlight.letGoAboard(autopilot);
         if (settling >= SETTLE_TICKS) {
             return;
         }

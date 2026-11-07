@@ -63,6 +63,11 @@ public final class SableClient {
      */
     private static final double CARRIED_SPEED = 1;
     /**
+     * The fastest a player may go on with what a ship they leave gave them, in blocks a tick: some five times what any
+     * ship flies at. Past it, it is a ship moved straight across the world, as a hyperspace jump moves her, not flown.
+     */
+    private static final double MOST_INHERITED = 32;
+    /**
      * The game's climb: the speed a ladder lifts a climber at and the fastest they slide down one, in blocks a tick,
      * and the share of their speed the air leaves them each tick.
      */
@@ -84,6 +89,11 @@ public final class SableClient {
      * moves with the airliner, so there they are carried again. And Sable looks for the ladder they climb where their
      * not yet carried position lands in the airliner as it lies now, a few blocks aft of the ladder in flight, so the
      * climb is done again here against the airliner as it lies, as the game would do it.
+     *
+     * <p>And a ship moved straight across the world, as a hyperspace jump moves her, carries whoever is aboard all that
+     * way in one tick, which Sable then keeps them going at once they are not carried any more, a jump's length a tick,
+     * its collisions searching all of that each tick so the game all but stops: so what they go on with is let go
+     * when it is more than {@link #MOST_INHERITED}.
      */
     static void keepAboard(LocalPlayer player) {
         if (SABLE) {
@@ -327,6 +337,10 @@ public final class SableClient {
         }
 
         static void keepAboard(LocalPlayer player) {
+            Vector3d inherited = ((LivingEntityMovementExtension) player).sable$getInheritedVelocity();
+            if (inherited.lengthSquared() > MOST_INHERITED * MOST_INHERITED) {
+                inherited.zero();
+            }
             if (player.isPassenger() || player.isSpectator() || player.isSleeping() || player.isFallFlying()) {
                 return;
             }

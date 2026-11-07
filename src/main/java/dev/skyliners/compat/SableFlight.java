@@ -82,6 +82,8 @@ public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
     /** How hard Sable's gravity pulls where nothing else is set, in blocks a second each second. */
     private static final double DEFAULT_GRAVITY = 11;
+    /** How far round an airframe's blocks those it carried are looked for when it lets go of them, in blocks. */
+    private static final double LET_GO_MARGIN = 4;
 
     private SableFlight() {
     }
@@ -439,6 +441,18 @@ public final class SableFlight {
     public static void letGo(LivingEntity entity) {
         if (SABLE) {
             Access.letGo(entity);
+        }
+    }
+
+    /**
+     * Lets go of the speed the assembled airframe the block entity is part of carried everything alive in and round it
+     * at, on the server (see {@link #letGo}): moved straight across the world, as a hyperspace jump moves her, it
+     * carries them all that way in a tick, and kept going at that a tick once off her, each would search all of it
+     * for something to hit every tick.
+     */
+    public static void letGoAboard(BlockEntity blockEntity) {
+        if (SABLE && blockEntity.getLevel() instanceof ServerLevel) {
+            Access.letGoAboard(blockEntity);
         }
     }
 
@@ -970,6 +984,15 @@ public final class SableFlight {
 
         static void letGo(LivingEntity entity) {
             ((LivingEntityMovementExtension) entity).sable$getInheritedVelocity().zero();
+        }
+
+        static void letGoAboard(BlockEntity blockEntity) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe)) {
+                return;
+            }
+            var bounds = airframe.boundingBox();
+            AABB round = new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()).inflate(LET_GO_MARGIN);
+            blockEntity.getLevel().getEntitiesOfClass(LivingEntity.class, round).forEach(Access::letGo);
         }
 
         /** Tells the clients at once that the entity moved between the world and an airliner's blocks. */
