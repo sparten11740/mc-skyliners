@@ -440,6 +440,7 @@ public final class FreighterLayout extends HullLayout {
         LoungeTank.build(layout, layout.deck);
         FreighterChillout.build(layout, layout.deck);
         FreighterPaintings.build(layout, layout.deck);
+        FreighterGallery.build(layout, layout.deck, layout.scale);
         FreighterEngineering.build(layout, layout.deck);
         FreighterEntryHall.build(layout, layout.deck);
         FreighterFurnishings.build(layout, layout.deck);

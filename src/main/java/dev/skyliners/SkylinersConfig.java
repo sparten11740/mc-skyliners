@@ -72,6 +72,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_PLATING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_OUTSIDE_LIGHTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
@@ -667,6 +668,13 @@ public final class SkylinersConfig {
                 "brighter and wider the harder her mains push her ahead, and out once she rests."
             )
             .define("engineGlow", true);
+        FREIGHTER_GALLERY = builder
+            .comment(
+                "Whether the freighter's long passages are galleries: space posters along the tunnel down her port prong, an",
+                "earthrise, a black hole and the solar system, and the fleet's models with planters along the ledges of the tube",
+                "out to her cockpit. Without it, both are bare."
+            )
+            .define("gallery", true);
         FREIGHTER_CANOPY_DIMMER = builder
             .comment(
                 "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",

@@ -323,6 +323,11 @@ const FITTINGS_PUT_UP = [
 const STAND_AWAY = 24;
 const STAND_APART = 3;
 const STAND_HIGH = 5;
+// How far out from a freighter's axis her rooms' walls and what hangs on them reach at most, in blocks, past which her
+// cockpit's tube and her prongs' tunnels lie; and how many blocks of posters her gallery has at least: an earthrise and
+// a black hole, four by three, and the solar system, five by two.
+const ROOMS_REACH = 22.5;
+const GALLERY_POSTER_BLOCKS = 34;
 // The beach's pieces that go up on a wall as well as on a floor.
 const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
@@ -1673,6 +1678,19 @@ function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   }
 }
 
+// A freighter's galleries: the fleet's models, the freighter's own among them, along the tube out to her cockpit, and
+// space posters on the wall of the tunnel down her port prong, both farther out from her middle than any room's wall
+// (her lounge's shelves have models too, and the walls across her beam the fleet's paintings).
+function checkFreighterGallery() {
+  ship("freighter");
+  const [{ at_abs: middle }] = must("find skyliners:laser_cannon 128 1").rows;
+  const outside = (id) => must(`find skyliners:${id} 128 200`).rows.filter(({ at_abs: at }) => Math.hypot(at[0] - middle[0], at[2] - middle[2]) > ROOMS_REACH);
+  const models = ["model_airliner", "model_zeppelin", "model_rocket", "model_freighter"].filter((id) => outside(id).length > 0);
+  expect(models.length === 4, "freighter: the fleet's four models stand along the tube out to her cockpit", models.join(", "));
+  const posters = outside("space_poster").length;
+  expect(posters >= GALLERY_POSTER_BLOCKS, "freighter: space posters hang along the tunnel down her port prong", `${posters} blocks of posters`);
+}
+
 // The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
 // their own there: a torch standing tall or held out on a bracket, a panel on its post or flat in its rim.
 function checkBeachOnWalls() {
@@ -2078,6 +2096,7 @@ const CHECKS = {
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
+  "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },

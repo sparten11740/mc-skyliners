@@ -2586,6 +2586,13 @@ glass dims: the window dimmer at the pilot's left hand, the rocket's, has four b
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
 through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
 
+The tube out to her cockpit runs between ledges where its round wall meets her deck, and on them stands the fleet in
+miniature: models of the airliner, the zeppelin, the rocket and the freighter herself on their stands, their noses all
+pointing on to her cockpit, with planters of greenery and flowers between them. The tunnel down her port prong is a
+gallery: along its straight inner wall hang space posters, an earthrise, a black hole and the solar system, as big as
+murals in its low headroom, any hung clear of the floor lit from below. The server config's `freighter.gallery` leaves
+both bare.
+
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
