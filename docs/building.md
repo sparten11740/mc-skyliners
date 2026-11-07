@@ -220,7 +220,7 @@ a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem
 `ZeppelinPaintings` at the head of the zeppelin's dining room, on a panelled wall of its own; and `CabinPaintings` high
 on three of the airliner's bulkheads, last of its fit-out and only where the bulkhead carries on past every side of the
 picture; `FreighterPaintings` on the freighter's two straight walls across her beam, each at the first place along its
-wall where it hangs whole.
+wall where it hangs whole, a `FloorLightBlock` under it.
 `airframe.fleetPaintings` switches all four.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face

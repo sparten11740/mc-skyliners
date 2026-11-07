@@ -228,6 +228,8 @@ const SMALL_COMES_WITHIN = 600;
 const BIG_MUNCH_HIGHEST = 0.9;
 // How far from her small tardigrade's hatch the pad of moss beside it stands at most, in blocks.
 const MOSS_PAD_NEAR = 3;
+// How bright the middle of each of her sisters' paintings is at least, as a block's light.
+const PAINTING_LIT = 8;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1187,13 +1189,19 @@ function checkFreighterTardigrade() {
 }
 
 // The freighter carries her sisters' paintings, as each of them carries hers: the airliner, the zeppelin and the
-// rocket each hang whole on her deck.
+// rocket each hang whole on her deck, and each is lit, the zeppelin's in her pink club too.
 function checkFleetOnTheFreighter() {
   ship("freighter");
+  const sisters = ["airliner", "zeppelin", "rocket"];
   const piecesOf = (poster) => must(`find skyliners:space_poster[poster=${poster}] 128 ${PAINTING_PIECES + 1}`).rows.length;
-  const hung = ["airliner", "zeppelin", "rocket"].map((poster) => [poster, piecesOf(poster)]);
+  const hung = sisters.map((poster) => [poster, piecesOf(poster)]);
   expect(hung.every(([, pieces]) => pieces === PAINTING_PIECES), "freighter: her sisters' paintings hang whole on her deck",
     hung.map(([poster, pieces]) => `${poster} ${pieces} of ${PAINTING_PIECES}`).join(", "));
+  const middleOf = (poster) => must(`find skyliners:space_poster[poster=${poster},row=1,column=2] 128 1`).rows[0]?.at_abs.join(",");
+  const lightAt = (at) => (at ? must(`block ${at} light`).block_light ?? 0 : 0);
+  const lit = sisters.map((poster) => [poster, lightAt(middleOf(poster))]);
+  expect(lit.every(([, light]) => light >= PAINTING_LIT), "freighter: each of her sisters' paintings is lit",
+    lit.map(([poster, light]) => `${poster} ${light}`).join(", "));
 }
 
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.

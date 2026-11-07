@@ -14,7 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * the others: the airliner in her entry hall, the first room anyone coming up her ramp sees, the zeppelin in her club
  * past the end of its bar, and the rocket over the bunks in her crew quarters. Her only flat walls are the two straight
  * across her beam, along z 0 in her layout nose north, between her entry hall and her lounge to starboard and between
- * her club and her crew quarters to port, so each hangs on a face of one of those, a row over her deck.
+ * her club and her crew quarters to port, so each hangs on a face of one of those, a row over her deck, a floor light
+ * at the foot of the wall under it shining up at it.
  *
  * <p>Each hangs whole or not at all, at the first place along its wall where every block of it is open with the wall
  * behind it and the room open before it, so it stays out of whatever stands there; every block touches the wall face
@@ -25,6 +26,8 @@ final class FreighterPaintings {
     private static final int UP = 2;
     /** How many blocks before a painting's middle must be open for it to be seen. */
     private static final int IN_VIEW = 2;
+    /** The columns its floor light may stand in, in turn: under its middle, then out either side of it, in blocks. */
+    private static final int[] UPLIGHT_COLUMNS = {0, 1, -1, 2, -2};
     /**
      * Which painting hangs on which face of the wall along z 0, the way it looks out, and how far out along the wall
      * its middle column may stand, the first that fits taken: to starboard (east) for her entry hall, to port (west)
@@ -72,8 +75,25 @@ final class FreighterPaintings {
         boolean fits = inView(middle, face) && pieces.keySet().stream().allMatch(at -> onWall(at, face));
         if (fits) {
             pieces.forEach((at, piece) -> layout.set(at.getX(), at.getY(), at.getZ(), piece));
+            uplight(x, face.getStepZ());
         }
         return fits;
+    }
+
+    /**
+     * A floor light at the foot of the wall under a painting, shining up at it, in the column nearest its middle that
+     * is open over her deck's floor, as a gallery lights its pictures: her rooms' wall washers leave a painting's
+     * middle dim, and in her pink club all but dark. Warm white even there, so the picture shows its own colours;
+     * none where every column under it is taken.
+     */
+    private void uplight(int middle, int z) {
+        for (int column : UPLIGHT_COLUMNS) {
+            int x = middle + column;
+            if (layout.isOpen(x, deck + 1, z) && !layout.isOpen(x, deck, z)) {
+                layout.set(x, deck + 1, z, SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState());
+                return;
+            }
+        }
     }
 
     /** Whether the room is open before a painting's middle, so it can be seen. */

@@ -1133,7 +1133,7 @@ and the freighter by her pool, on the shaft;
 in a rocket built larger than the default one or both of her sisters may hang in her cargo bay instead, and a smaller one
 goes without. The freighter carries all three of her sisters round her deck: the airliner in her entry hall, over the
 well of her ramp as you come up it, the zeppelin in her club past the end of its bar, and the rocket over the bunks in
-her crew quarters.
+her crew quarters, each lit from below by a floor light at the foot of the wall.
 They fly with the ship as a part of her.
 
 Nothing bumps into one; break any part of a painting and the whole of it comes down and is given back. The Airliner,
