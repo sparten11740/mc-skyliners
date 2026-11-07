@@ -799,6 +799,10 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   counter, stools, taps, bartender and back bar (6250daa7); four bunks with their reading lights in her crew quarters
   and a booth, a low table among four seats, in her lounge (4c8a4a21); and pallet racks and crates in her cargo hold
   (b87eb397). Checked by freighter-band and freighter-rooms. Engineering, the med bay and the galley are still bare.
+- Before handing out 1.2.0-alpha.9 (alpha.8 with her deck lit, the club's bar, bunks, the lounge's booth and the
+  cargo hold stocked): the quick play-test suite (76 checks) and the freighter's slow checks (41: flight, drag, pad,
+  lake, ramp and turret) all hold. The jar is build/libs/skyliners-1.2.0-alpha.9+1.21.1-neoforge.jar, with a copy
+  kept apart from later builds; still not copied to the desktop, whose share was not mounted.
 
 ### For Jan to look at
 
