@@ -4242,14 +4242,14 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const deck = (x, y) => (x === 0 || y === 0 ? DECK_SEAM : DECK);
   texture(blockOutput, "flight_deck", deck, 6);
   texture(blockOutput, "flight_deck_stripe", (x, y) => (x >= 5 && x <= 10 && y > 0 ? DECK_LINE : deck(x, y)), 4);
-  // The freighter's engineering floor: a grid of dark steel bars, lit along their top edges, over slots with a warm
-  // amber glow down in them, brightest in each slot's middle, as of her engines' heat below.
+  // The freighter's engineering floor: a grid of dark steel bars, four slots to a block, lit along their top edges,
+  // each slot dark down in it but for a small warm amber glow in its middle, as of her engines' heat below.
   const BAR = [0x46, 0x4c, 0x54];
   const BAR_LIT = [0x6a, 0x72, 0x7c];
   texture(blockOutput, "engine_grating", (x, y) => {
-    if (x % 4 === 0 || y % 4 === 0) return y % 4 === 0 && x % 4 !== 0 ? BAR_LIT : BAR;
-    const middle = (x % 4 === 2 ? 1 : 0) + (y % 4 === 2 ? 1 : 0);
-    return [[0x24, 0x16, 0x10], [0x5c, 0x2c, 0x12], [0xc8, 0x6c, 0x22]][middle];
+    if (x % 8 === 0 || y % 8 === 0) return y % 8 === 0 && x % 8 !== 0 ? BAR_LIT : BAR;
+    const off = Math.max(Math.abs(x % 8 - 4), Math.abs(y % 8 - 4));
+    return off === 0 ? [0xe0, 0x80, 0x28] : off === 1 ? [0x8a, 0x40, 0x14] : [0x1e, 0x17, 0x13];
   }, 3);
   // The secret techno room: black speaker cabinets, a big cone and a little horn on their fronts, a grille on their
   // sides; the DJ deck's top with its two turntables and the mixer between them, its sides black with a line of neon;
