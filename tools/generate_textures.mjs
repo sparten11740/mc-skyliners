@@ -4004,7 +4004,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const OVAL_RIM = [0xa4, 0xac, 0xb6];
   const OVAL_RIM_LIT = [0xdc, 0xe2, 0xe8];
   const OVAL_DIMS = [[0xb8, 0xc4, 0xcc, 0x38], [0x50, 0x57, 0x5e, 0x88], [0x24, 0x28, 0x2c, 0xc0], [0x0c, 0x0e, 0x10, 0xe8]];
-  // How many of the glass texture's pixels a window pixel is across: enough for the highlight's edge to read smooth.
+  // How many of the glass texture's pixels a window pixel is across: enough for the highlight's edge to read smooth on
+  // the rocket's window; a smaller window, seen as close, takes more of them (its "glassScale").
   const GLASS_SCALE = 4;
   // The sky the glass catches toward its edge, and how much of it at the very edge.
   const OVAL_SKY = [0xdc, 0xec, 0xf8];
@@ -4028,6 +4029,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // and its hole and lip, so every pixel cut away lies under them and every one left stands clear of the glass and the
   // hole.
   const ROCKET_WINDOW = { name: "oval_window", columns: 3, rows: 4, wide: 21, tall: 29, bulge: 6, frameCut: 1.3, insideCut: 2.05 };
+  // The porthole (see PortholeBlock), a block across and round, its glass drawn twice as fine, as it is seen close up.
+  const PORTHOLE_WINDOW = { name: "porthole", columns: 1, rows: 1, wide: 5.5, tall: 5.5, bulge: 2, frameCut: 0.8, insideCut: 1.75, glassScale: 8 };
   const mix = (a, b, share) => a.map((c, i) => Math.round(c + (b[i] - c) * share));
   const halfway = (() => {
     const sun = Math.hypot(...SUN);
@@ -4038,7 +4041,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // A window's glass at each step of its dimming, and the frame and the inner face of each of its blocks, named by its
   // column and row from the top left as seen from outside where it has more than one; gives each block's column, row
   // and where its inner face is wall, for the rocket's rooms to paint.
-  const ovalWindowTextures = ({ name, columns, rows, wide, tall, bulge, frameCut, insideCut }) => {
+  const ovalWindowTextures = ({ name, columns, rows, wide, tall, bulge, frameCut, insideCut, glassScale = GLASS_SCALE }) => {
     const middleX = (columns * SIZE) / 2;
     const middleY = (rows * SIZE) / 2;
     // How far a pixel lies outside the oval's edge, in pixels, negative inside: the oval's equation over its slope.
@@ -4073,7 +4076,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       return [...mix(glass.slice(0, 3), HIGHLIGHT, lit), Math.round(Math.max(glass[3], alpha))];
     };
     OVAL_DIMS.forEach((tint, dim) => texture(blockOutput, `${name}_glass_dim${dim}`,
-      (x, y) => domeGlass((x + 0.5) / GLASS_SCALE, (y + 0.5) / GLASS_SCALE, tint), 0, columns * SIZE * GLASS_SCALE, rows * SIZE * GLASS_SCALE));
+      (x, y) => domeGlass((x + 0.5) / glassScale, (y + 0.5) / glassScale, tint), 0, columns * SIZE * glassScale, rows * SIZE * glassScale));
     const pieces = [];
     for (let column = 0; column < columns; column++) {
       for (let row = 0; row < rows; row++) {
@@ -4089,6 +4092,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return pieces;
   };
   OVAL_WALLS.push(...ovalWindowTextures(ROCKET_WINDOW));
+  ovalWindowTextures(PORTHOLE_WINDOW);
   // The collar from its inner edge down (the dark rubber gasket the glass sits in, then polished steel catching the
   // light and dulling toward the skin), the lip round the hole inside from the reveal out, and the reveal from the
   // inner face in, each the same all the way round.
@@ -4113,6 +4117,19 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (out > 0.66) return FRAME_DARK;
     if (Math.hypot(dx + 1.4, dy + 2.6) < 1.2) return HIGHLIGHT;
     return mix([0x50, 0x60, 0x6e], OVAL_SKY, (out / 0.66) ** 2 * OVAL_SKY_EDGE);
+  }, FRAME_DARK, () => null);
+  // In the hand, the Porthole: round, in a collar thicker for its size than the Oval Window's, its glint high on its
+  // left.
+  const PORTHOLE_ICON = 6.5;
+  outlinedIcon("porthole", (x, y) => {
+    const dx = x + 0.5 - SIZE / 2;
+    const dy = y + 0.5 - SIZE / 2;
+    const out = Math.hypot(dx, dy) / PORTHOLE_ICON;
+    if (out > 1) return null;
+    if (out > 0.72) return dx + dy < 0 ? OVAL_RIM_LIT : OVAL_RIM;
+    if (out > 0.58) return FRAME_DARK;
+    if (Math.hypot(dx + 1.2, dy + 1.4) < 1) return HIGHLIGHT;
+    return mix([0x50, 0x60, 0x6e], OVAL_SKY, (out / 0.58) ** 2 * OVAL_SKY_EDGE);
   }, FRAME_DARK, () => null);
   // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
   // Livery lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with its white

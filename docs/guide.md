@@ -2667,6 +2667,15 @@ to the cockpit, four blocks tall, and from her bow room along each prong, a craw
 walls inside are the Padded Bulkhead, off-white quilting over grey ribs, in the creative tab under Freighter (it can be
 crafted from white wool round an iron ingot). The Model Freighter, a souvenir on its stand, is under Decorations.
 
+The Porthole, beside the Padded Bulkhead in the creative tab (two are crafted from a block of glass in a ring of four
+iron nuggets), is the rocket's Oval Window made small: a round window a block across, its glass domed a little out of a
+steel collar with a dark rubber gasket, the sun glinting high on it, and inside a steel-lined recess running back to the
+glass behind a steel lip. Set by hand into a wall it fills its block, flush with the wall on both sides, its dome toward
+whoever sets it; set into a hole in a floor or a roof it lies flat in it, its dome toward them. Round its glass, outside
+and in, it looks like the wall, floor or roof beside it, whatever that is built of, as the Oval Window does, and it dims
+as the rocket's windows do: use it to darken its glass a step, a chime falling as it darkens, and once more from dark
+to clear it again. Broken, it gives itself back.
+
 She is boarded up a ramp out of her starboard side. It lies in a well along the wall of her front right room, its plate
 the well's floor, a glass rail along the well's open side; at its head, on the wall, its panel has a lamp over one big
 button that shows only what pressing it does: blue with a ramp coming down while the ramp is up, green with an arrow up

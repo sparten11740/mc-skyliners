@@ -1,0 +1,164 @@
+{
+  "variants": {
+    "along=north,dim=0,facing=down": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,dim=0,facing=up": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,dim=0,facing=down": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,dim=0,facing=up": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,dim=0,facing=down": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,dim=0,facing=up": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,dim=0,facing=down": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,dim=0,facing=up": {
+      "model": "skyliners:block/porthole_dim0",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,dim=1,facing=down": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,dim=1,facing=up": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,dim=1,facing=down": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,dim=1,facing=up": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,dim=1,facing=down": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,dim=1,facing=up": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,dim=1,facing=down": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,dim=1,facing=up": {
+      "model": "skyliners:block/porthole_dim1",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,dim=2,facing=down": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,dim=2,facing=up": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,dim=2,facing=down": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,dim=2,facing=up": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,dim=2,facing=down": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,dim=2,facing=up": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,dim=2,facing=down": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,dim=2,facing=up": {
+      "model": "skyliners:block/porthole_dim2",
+      "x": 270,
+      "y": 90
+    },
+    "along=north,dim=3,facing=down": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 90,
+      "y": 0
+    },
+    "along=north,dim=3,facing=up": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 270,
+      "y": 180
+    },
+    "along=east,dim=3,facing=down": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 90,
+      "y": 90
+    },
+    "along=east,dim=3,facing=up": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 270,
+      "y": 270
+    },
+    "along=south,dim=3,facing=down": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 90,
+      "y": 180
+    },
+    "along=south,dim=3,facing=up": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 270,
+      "y": 0
+    },
+    "along=west,dim=3,facing=down": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 90,
+      "y": 270
+    },
+    "along=west,dim=3,facing=up": {
+      "model": "skyliners:block/porthole_dim3",
+      "x": 270,
+      "y": 90
+    }
+  }
+}

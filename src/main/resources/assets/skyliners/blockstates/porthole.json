@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "dim=0,facing=north": {
+      "model": "skyliners:block/porthole_dim0",
+      "y": 0
+    },
+    "dim=0,facing=east": {
+      "model": "skyliners:block/porthole_dim0",
+      "y": 90
+    },
+    "dim=0,facing=south": {
+      "model": "skyliners:block/porthole_dim0",
+      "y": 180
+    },
+    "dim=0,facing=west": {
+      "model": "skyliners:block/porthole_dim0",
+      "y": 270
+    },
+    "dim=1,facing=north": {
+      "model": "skyliners:block/porthole_dim1",
+      "y": 0
+    },
+    "dim=1,facing=east": {
+      "model": "skyliners:block/porthole_dim1",
+      "y": 90
+    },
+    "dim=1,facing=south": {
+      "model": "skyliners:block/porthole_dim1",
+      "y": 180
+    },
+    "dim=1,facing=west": {
+      "model": "skyliners:block/porthole_dim1",
+      "y": 270
+    },
+    "dim=2,facing=north": {
+      "model": "skyliners:block/porthole_dim2",
+      "y": 0
+    },
+    "dim=2,facing=east": {
+      "model": "skyliners:block/porthole_dim2",
+      "y": 90
+    },
+    "dim=2,facing=south": {
+      "model": "skyliners:block/porthole_dim2",
+      "y": 180
+    },
+    "dim=2,facing=west": {
+      "model": "skyliners:block/porthole_dim2",
+      "y": 270
+    },
+    "dim=3,facing=north": {
+      "model": "skyliners:block/porthole_dim3",
+      "y": 0
+    },
+    "dim=3,facing=east": {
+      "model": "skyliners:block/porthole_dim3",
+      "y": 90
+    },
+    "dim=3,facing=south": {
+      "model": "skyliners:block/porthole_dim3",
+      "y": 180
+    },
+    "dim=3,facing=west": {
+      "model": "skyliners:block/porthole_dim3",
+      "y": 270
+    }
+  }
+}

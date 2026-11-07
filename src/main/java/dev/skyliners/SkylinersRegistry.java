@@ -99,6 +99,7 @@ import dev.skyliners.block.FlagHalyardBlock;
 import dev.skyliners.block.FlagHalyardBlockEntity;
 import dev.skyliners.block.FlagstaffBlock;
 import dev.skyliners.block.FlatOvalWindowBlock;
+import dev.skyliners.block.FlatPortholeBlock;
 import dev.skyliners.block.FloodlightBlock;
 import dev.skyliners.block.FloorLightBlock;
 import dev.skyliners.block.FrankingMachineBlock;
@@ -222,6 +223,7 @@ import dev.skyliners.block.PlugDoorBlockEntity;
 import dev.skyliners.block.PoolCopingBlock;
 import dev.skyliners.block.PoolMosaicBlock;
 import dev.skyliners.block.PoolStepsBlock;
+import dev.skyliners.block.PortholeBlock;
 import dev.skyliners.block.PropellerBlock;
 import dev.skyliners.block.PropellerBlockEntity;
 import dev.skyliners.block.RadioBlockEntity;
@@ -776,6 +778,10 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<OvalWindowBlock> OVAL_WINDOW = BLOCKS.registerBlock("oval_window", OvalWindowBlock::new, glass());
     /** The oval window lying flat in a floor or a roof, set there by hand from the Oval Window. */
     public static final DeferredBlock<FlatOvalWindowBlock> FLAT_OVAL_WINDOW = BLOCKS.registerBlock("flat_oval_window", FlatOvalWindowBlock::new, glass());
+    /** The porthole, a small round window a block across, set into walls, floors and roofs by hand. */
+    public static final DeferredBlock<PortholeBlock> PORTHOLE = BLOCKS.registerBlock("porthole", PortholeBlock::new, glass());
+    /** The porthole lying flat in a floor or a roof, set there by hand from the Porthole. */
+    public static final DeferredBlock<FlatPortholeBlock> FLAT_PORTHOLE = BLOCKS.registerBlock("flat_porthole", FlatPortholeBlock::new, glass());
     /**
      * The rocket's lift: its machine at the top of the glass shaft, its landing doors, the call buttons by the doors
      * (picture boards on ships built before) and the boards on the car's back wall, the car that rides the shaft, and
@@ -1560,7 +1566,9 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     /** The rocket's oval window, to set into any wall by hand, where it looks like the wall beside it. */
-    public static final DeferredItem<OvalWindowItem> OVAL_WINDOW_ITEM = ITEMS.register("oval_window", () -> new OvalWindowItem(new Item.Properties()));
+    public static final DeferredItem<OvalWindowItem> OVAL_WINDOW_ITEM = ITEMS.register("oval_window", () -> new OvalWindowItem(OVAL_WINDOW.get(), new Item.Properties()));
+    /** The porthole, to set into any wall, floor or roof by hand, where it looks like the wall beside it. */
+    public static final DeferredItem<OvalWindowItem> PORTHOLE_ITEM = ITEMS.register("porthole", () -> new OvalWindowItem(PORTHOLE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> SHAFT_DECOR_ITEM = ITEMS.registerSimpleBlockItem(SHAFT_DECOR);
     /**
      * What hangs under the rocket's ceiling girders, themed to each room: banners, a chain hoist, pots and pans, fairy
@@ -3053,6 +3061,7 @@ public final class SkylinersRegistry {
         )),
         new TabSection("freighter", List.of(
             PADDED_BULKHEAD_ITEM,
+            PORTHOLE_ITEM,
             ENGINE_GRILLE_ITEM,
             DECK_ROBOT_ITEM,
             RAMP_BUTTON_ITEM,

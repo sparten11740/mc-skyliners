@@ -270,7 +270,8 @@ public final class SkylinersClient {
             SkylinersRegistry.ZEPPELIN_COVER.get(), SkylinersRegistry.ZEPPELIN_FABRIC.get(), SkylinersRegistry.ROCKET_LINED_COVER.get(),
             SkylinersRegistry.ROCKET_LINING_PANEL.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(OvalWindowWall::tint,
-            SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get()));
+            SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get(), SkylinersRegistry.PORTHOLE.get(),
+            SkylinersRegistry.FLAT_PORTHOLE.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.

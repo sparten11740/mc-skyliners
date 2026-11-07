@@ -5676,21 +5676,24 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // are marked as set by hand: it fills its whole block, its frame on the block's outer side and its glass standing out
 // of it, and its frame looks like the wall beside it (see OvalWindowWall), keeping the weave where no wall is found;
 // the whole window, taken away, gives back the window itself from the middle of its bottom row. In the hand: its icon.
+// The porthole (see PortholeBlock), a block across and round, is drawn by the same loader at its own size (the
+// model's "window"), always as one set by hand, and lying flat as the oval window does; it gives itself back.
 {
   const variants = {};
   const edge = `${ID}:block/zeppelin_skin`;
-  // A window block's model: its glass and the rest, from its textures, the wall round its oval inside tinted or not.
-  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint, setByHand = false) => ({
+  // A window block's model: its glass and the rest, from its textures, the wall round its oval inside tinted or not,
+  // at the size named (the rocket's window's if none).
+  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint, setByHand = false, window = undefined) => ({
     loader: "neoforge:composite",
     textures: { particle: glass },
     children: {
       glass: {
-        loader: `${ID}:oval_window`, part: "glass", render_type: "minecraft:translucent", column, row, ...(setByHand ? { set_by_hand: true } : {}),
-        textures: { glass, particle: glass },
+        loader: `${ID}:oval_window`, ...(window ? { window } : {}), part: "glass", render_type: "minecraft:translucent", column, row,
+        ...(setByHand ? { set_by_hand: true } : {}), textures: { glass, particle: glass },
       },
       frame: {
-        loader: `${ID}:oval_window`, part: "frame", render_type: "minecraft:cutout_mipped", column, row, ...(insideTint === undefined ? {} : { inside_tint: insideTint }),
-        ...(setByHand ? { set_by_hand: true } : {}), textures: { ...rest, particle: glass },
+        loader: `${ID}:oval_window`, ...(window ? { window } : {}), part: "frame", render_type: "minecraft:cutout_mipped", column, row,
+        ...(insideTint === undefined ? {} : { inside_tint: insideTint }), ...(setByHand ? { set_by_hand: true } : {}), textures: { ...rest, particle: glass },
       },
     },
   });
@@ -5768,6 +5771,31 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   });
   write(`assets/${ID}/models/item/oval_window.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/oval_window` } });
   cubes.oval_window = null;
+  const portholeVariants = {};
+  const flatPortholeVariants = {};
+  for (let dim = 0; dim < 4; dim++) {
+    const model = `${ID}:block/porthole_dim${dim}`;
+    write(`assets/${ID}/models/block/porthole_dim${dim}.json`, ovalWindowModel(0, 0, {
+      glass: `${ID}:block/porthole_glass_dim${dim}`, frame: `${ID}:block/porthole_frame`, inside: `${ID}:block/porthole_inside`,
+      rim: `${ID}:block/oval_window_rim`, lip: `${ID}:block/oval_window_lip`, reveal: `${ID}:block/oval_window_reveal`, edge,
+    }, undefined, true, "porthole"));
+    for (const [facing, y] of Object.entries(yRot)) {
+      portholeVariants[`dim=${dim},facing=${facing}`] = { model, y };
+      flatPortholeVariants[`along=${facing},dim=${dim},facing=down`] = { model, x: 90, y };
+      flatPortholeVariants[`along=${facing},dim=${dim},facing=up`] = { model, x: 270, y: (y + 180) % 360 };
+    }
+  }
+  write(`assets/${ID}/blockstates/porthole.json`, { variants: portholeVariants });
+  write(`assets/${ID}/blockstates/flat_porthole.json`, { variants: flatPortholeVariants });
+  for (const name of ["porthole", "flat_porthole"]) {
+    write(`data/${ID}/loot_table/blocks/${name}.json`, {
+      type: "minecraft:block",
+      pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:porthole` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+      random_sequence: `${ID}:blocks/${name}`,
+    });
+  }
+  write(`assets/${ID}/models/item/porthole.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/porthole` } });
+  cubes.porthole = null;
 }
 // The rocket's lift (see LiftMachineBlockEntity). Its machine: a steel housing over the shaft. Its landing doors: a
 // pane of smoked glass in a steel frame across the middle of the doorway, a block wide and two tall; open, it has slid
@@ -10897,6 +10925,8 @@ shaped("hull_light_band", ["PPP", "GGG", "PPP"], { P: `${ID}:airframe_panel`, G:
 shaped("bandstand", ["NNN", "PPP"], { N: "minecraft:note_block", P: "minecraft:dark_oak_slab" }, 1);
 shaped("spookie_hammock", ["I I", "WWW", "I I"], { I: "minecraft:iron_bars", W: "minecraft:orange_wool" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
+// Two portholes from a pane of glass in a ring of iron.
+shaped("porthole", [" N ", "NGN", " N "], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 2);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("passenger_screen", ["GGG", "PRP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 3);
@@ -11093,6 +11123,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",
+  "block.skyliners.porthole": "Porthole",
+  "block.skyliners.flat_porthole": "Porthole",
   "block.skyliners.lift_machine": "Lift Machine",
   "block.skyliners.lift_floor": "Lift Car Floor",
   "block.skyliners.lift_call_button": "Lift Call Button",

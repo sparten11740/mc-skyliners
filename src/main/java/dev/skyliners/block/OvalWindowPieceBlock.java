@@ -85,8 +85,14 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
                        float hole, float lip) {
         /** The rocket's big oval window, three blocks wide and four tall. */
         public static final Size ROCKET = new Size("rocket", 3, 4, 21, 29, 0.8F, 6, 2.6F, 1.2F, 1.7F);
+        /**
+         * The porthole, a block across and round: its glass two thirds of the block, domed a little lower than hers for
+         * its size, its collar and lip no narrower than a block texture's pixels leave room for over the wall's cut
+         * edge, so no stepped pixel of it shows past them.
+         */
+        public static final Size PORTHOLE = new Size("porthole", 1, 1, 5.5F, 5.5F, 0.5F, 2, 1.6F, 1, 1.5F);
         /** Every size a window's model can name. */
-        private static final List<Size> ALL = List.of(ROCKET);
+        private static final List<Size> ALL = List.of(ROCKET, PORTHOLE);
 
         /**
          * The size a window's model names, so a model naming one that does not exist fails to load rather than drawing

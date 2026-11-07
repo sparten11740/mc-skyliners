@@ -274,6 +274,13 @@ const VALVE_VENTS = 120;
 // many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
 // for, in blocks.
 const FLOOR_WINDOW_BLOCKS = 60;
+// Windows set by hand: each kind, with how many blocks wide and tall its opening is and how many pieces it has; how far
+// apart their walls stand, how far in front of a wall the player stands and how far round a window its pieces are
+// looked for, in blocks.
+const HAND_SET_WINDOWS = [["oval_window", 3, 4, 12], ["porthole", 1, 1, 1]];
+const WINDOW_WALLS_APART = 8;
+const WINDOW_STAND_OFF = 2.5;
+const WINDOW_REACH = 8;
 // How far round her middle a freighter is looked over for unlit spots, in blocks, and how far astern of it her jump
 // drive stands, to find her middle by.
 const LIT_REACH = 40;
@@ -1654,6 +1661,75 @@ function checkFreighterScreens() {
   must("key left_shift 5t; wait 10t");
 }
 
+// The Oval Window and the Porthole, each set by hand into an opening in a stone wall as a player would: each goes in
+// whole, its dome toward whoever set it, dims at a touch with its chime, and broken in survival comes out whole, giving
+// back one of itself. A porthole set into a hole in a floor lies flat in it, and comes out as a porthole too.
+function checkHandSetWindows() {
+  const x0 = nextSite++ * SITE_APART;
+  creative();
+  must(`server tp @p ${x0} ${ground} ${-WINDOW_STAND_OFF}; wait ${CHUNKS_TICKS}t`);
+  HAND_SET_WINDOWS.forEach(([id, wide, tall, pieces], i) => setIntoWall(id, x0 + i * WINDOW_WALLS_APART, wide, tall, pieces));
+  layIntoFloor("porthole", x0 + HAND_SET_WINDOWS.length * WINDOW_WALLS_APART);
+}
+
+// How many blocks of a window, in a state if given, stand round the player.
+function windowPieces(id, state = "") {
+  return must(`find skyliners:${id}${state} ${WINDOW_REACH} 50`).rows.length;
+}
+
+// How many of a window's items lie on the ground round the player or are in their inventory.
+function windowsGivenBack(id) {
+  const lying = send(`?server execute if entity @e[type=item,distance=..${WINDOW_REACH},nbt={Item:{id:"skyliners:${id}"}}]`).at(-1).result ?? 0;
+  const held = send(`?server clear @p skyliners:${id} 0`).at(-1).result ?? 0;
+  return Number(lying) + Number(held);
+}
+
+// One window set by hand into an opening in a stone wall, a row of stone under it, the player in front of it to the
+// north; whether it goes in whole, dims, and comes out whole.
+function setIntoWall(id, x, wide, tall, pieces) {
+  const sill = ground + 1;
+  must(`server fill ${x - 2} ${ground} 0 ${x + wide + 1} ${sill + tall + 1} 0 stone; server fill ${x} ${sill} 0 ${x + wide - 1} ${sill + tall - 1} 0 air`);
+  emptyHands();
+  must(`server give @p skyliners:${id} 1; wait 5t; select 0; server tp @p ${x + wide / 2} ${sill + 1} ${-WINDOW_STAND_OFF} 0 35; wait 10t`);
+  send(`place skyliners:${id} ${x},${sill},0`);
+  must("wait 5t");
+  const facing = must(`block ${x},${sill},0`).props?.facing;
+  const name = id.replaceAll("_", " ");
+  expect(windowPieces(id) === pieces && facing === "north", `${name}: set by hand into a wall, it goes in whole, its dome toward whoever set it`,
+    `${windowPieces(id)} of ${pieces} pieces, facing ${facing}`);
+  const used = now();
+  must(`use ${x},${sill},0; wait 5t`);
+  expect(windowPieces(id, "[dim=1]") === pieces && Boolean(heard("*note_block.chime*", used, LOOK_EVERY)), `${name}: touched, all of its glass dims a step with a chime`,
+    `${windowPieces(id, "[dim=1]")} of ${pieces} pieces dimmed`);
+  survival();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${ground} ${-WINDOW_STAND_OFF} 0 20; wait 10t; mine ${x},${sill},0 timeout=10s; wait 20t`);
+  const given = windowsGivenBack(id);
+  expect(windowPieces(id) === 0 && given === 1, `${name}: broken in survival, it all comes out and gives back one ${name}`,
+    `${windowPieces(id)} pieces left, ${given} given back`);
+  creative();
+}
+
+// A porthole set by hand into a hole in a stone floor, the player over it; whether it lies flat in it, its dome up
+// toward them, and comes out as a porthole.
+function layIntoFloor(id, x) {
+  const floor = ground + 3;
+  must(`server fill ${x - 2} ${floor} -2 ${x + 2} ${floor} 2 stone; server fill ${x} ${floor} 0 ${x} ${floor} 0 air`);
+  emptyHands();
+  must(`server give @p skyliners:${id} 1; wait 5t; select 0; server tp @p ${x + 0.5} ${floor + 2} 1.5 180 70; wait 10t`);
+  send(`place skyliners:${id} ${x},${floor},0`);
+  must("wait 5t");
+  const laid = must(`block ${x},${floor},0`);
+  expect(laid.id === `skyliners:flat_${id}` && laid.props?.facing !== "down", "porthole: set by hand into a hole in a floor, it lies flat, its dome up",
+    `${laid.id} facing ${laid.props?.facing ?? "up"}`);
+  survival();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${floor + 1} -1.5 0 50; wait 10t; mine ${x},${floor},0 timeout=10s; wait 20t`);
+  const given = windowsGivenBack(id);
+  expect(windowPieces(`flat_${id}`) === 0 && given === 1, "porthole: broken out of a floor, it gives back one porthole", `${given} given back`);
+  creative();
+}
+
 // A round floor window laid from its item into the ground anywhere: every block of it blends into the grass it took
 // the place of; its panel, set down by it, opens and shuts it; and broken, it all comes out, the grass put back where
 // it was and the window given back.
@@ -2176,6 +2252,7 @@ const CHECKS = {
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
+  "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },

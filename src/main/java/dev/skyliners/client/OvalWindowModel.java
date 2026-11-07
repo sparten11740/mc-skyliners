@@ -89,6 +89,15 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private static final int COVER_TINT = 0;
     /** How far in front of the faces they lie on the frame over the skin and the lip inside stand, in pixels. */
     private static final float OVER = 0.02F;
+    /**
+     * How far in from its sprite's sides a ring's face takes its texture across the ring, as a share of the texture:
+     * half a texel of a block texture, so the edge between two faces, crossing the screen at a slant, never picks up
+     * the sprite beside it in the atlas, as a dotted hairline along the window's diagonals.
+     */
+    private static final float INSET = 1 / 32F;
+    /** Where on its texture each corner of a ring's face lies: across the whole texture, and from its darkest on. */
+    private static final float[][] STRIP = inset(new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}});
+    private static final float[][] DARK_STRIP = inset(new float[][]{{0, DARKEST}, {0, 1}, {1, 1}, {1, DARKEST}});
 
     /**
      * How big its window is and how its glass and steel are measured round its oval, from {@code "window"}: the
@@ -305,7 +314,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             Vector3f out = outward(k == 0 || k == 1 ? from : to, k == 0 || k == 3 ? 0 : reach);
             normals[k] = out.mul(fall).add(0, 0, -1).normalize();
         }
-        face(builder, rim, points, normals, new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+        face(builder, rim, points, normals, STRIP, turn);
     }
 
     /**
@@ -315,20 +324,19 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private void recessFaces(IModelBuilder<?> builder, TextureAtlasSprite reveal, TextureAtlasSprite lip, int step, Transformation turn) {
         double from = angle(step);
         double to = angle(step + 1);
-        float[][] dark = {{0, DARKEST}, {0, 1}, {1, 1}, {1, DARKEST}};
         float skin = skin();
         float collar = size.collar();
         float hole = size.hole();
         float lipped = hole + size.lip();
         Point[] gasket = {round(0, from, skin - collar), round(0, from, skin), round(0, to, skin), round(0, to, skin - collar)};
-        ringFace(builder, reveal, gasket, inward(from, 0), inward(to, 0), dark, turn);
+        ringFace(builder, reveal, gasket, inward(from, 0), inward(to, 0), DARK_STRIP, turn);
         Point[] back = {round(0, from, skin), round(hole, from, skin), round(hole, to, skin), round(0, to, skin)};
-        ringFace(builder, reveal, back, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), dark, turn);
+        ringFace(builder, reveal, back, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), DARK_STRIP, turn);
         Point[] lining = {round(hole, from, BLOCK), round(hole, from, skin), round(hole, to, skin), round(hole, to, BLOCK)};
-        ringFace(builder, reveal, lining, inward(from, hole), inward(to, hole), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+        ringFace(builder, reveal, lining, inward(from, hole), inward(to, hole), STRIP, turn);
         Point[] lipFace = {round(hole, from, BLOCK + OVER), round(lipped, from, BLOCK + OVER), round(lipped, to, BLOCK + OVER),
             round(hole, to, BLOCK + OVER)};
-        ringFace(builder, lip, lipFace, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+        ringFace(builder, lip, lipFace, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), STRIP, turn);
     }
 
     /** A face of a ring, if this piece draws it: its first two corners face as at its start, the rest as at its end. */
@@ -485,6 +493,15 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             sum.add(corner.normal());
         }
         return Direction.getNearest(sum.x(), sum.y(), sum.z());
+    }
+
+    /** Texture corners moved in from the sprite's sides across the ring by {@link #INSET}. */
+    private static float[][] inset(float[][] uv) {
+        float[][] inset = new float[uv.length][];
+        for (int k = 0; k < uv.length; k++) {
+            inset[k] = new float[]{INSET + uv[k][0] * (1 - 2 * INSET), uv[k][1]};
+        }
+        return inset;
     }
 
     private static float square(float value) {

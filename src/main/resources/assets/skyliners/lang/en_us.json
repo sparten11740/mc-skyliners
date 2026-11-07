@@ -50,6 +50,8 @@
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",
+  "block.skyliners.porthole": "Porthole",
+  "block.skyliners.flat_porthole": "Porthole",
   "block.skyliners.lift_machine": "Lift Machine",
   "block.skyliners.lift_floor": "Lift Car Floor",
   "block.skyliners.lift_call_button": "Lift Call Button",

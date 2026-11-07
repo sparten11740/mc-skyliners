@@ -30,11 +30,11 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
- * How an oval window set by hand ({@link OvalWindowBlock.Wall#MATCHED}, or one lying flat) takes on the look of the
- * wall, floor or roof it is set into, all three its wall here. Where the rocket's windows show her cover's weave
- * (outside round the collar, on the inner face round the lip, and on the window's outer edges), such a window shows the
- * faces of the wall beside it instead. They are cut round the collar and the lip just as the weave is, and laid on as
- * the wall lays them, so the wall seems to run on up to the steel.
+ * How a round or oval window set by hand (the oval window, {@link OvalWindowBlock.Wall#MATCHED}, or lying flat, and
+ * every porthole) takes on the look of the wall, floor or roof it is set into, all three its wall here. Where the
+ * rocket's windows show her cover's weave (outside round the collar, on the inner face round the lip, and on the
+ * window's outer edges), such a window shows the faces of the wall beside it instead. They are cut round the collar and
+ * the lip just as the weave is, and laid on as the wall lays them, so the wall seems to run on up to the steel.
  *
  * <p>Each piece looks like the nearest block of the wall beside the window, to the left and right of its rows, so a
  * wall of courses or stripes runs on through the window's corners as it does beside them, and a sill or lintel of
