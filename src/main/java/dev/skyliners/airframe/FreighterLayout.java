@@ -149,11 +149,12 @@ public final class FreighterLayout extends HullLayout {
     private static final double TAIL_JET_ASTERN = 10.8;
     /**
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
-     * pilots' seats a block behind it, the pilots so far either side of the head, the jump seats so far behind them,
-     * and the autopilot screen's middle so far to the head's right and so many rows up, on the ledge of her skin at the
-     * co-pilot's right hand, where it leaves the view ahead through her canopy clear.
+     * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
+     * pilots so far either side of the head, the jump seats so far behind them, and the autopilot screen's middle so
+     * far to the head's right and so many rows up, on the ledge of her skin at the co-pilot's right hand, where it
+     * leaves the view ahead through her canopy clear.
      */
-    private static final int SEATS_BEHIND = 1;
+    private static final int SEATS_BEHIND = 2;
     private static final int PILOTS_OUT = 2;
     private static final int JUMP_BEHIND = 2;
     private static final int SCREEN_OUT = 4;
@@ -848,7 +849,7 @@ public final class FreighterLayout extends HullLayout {
      * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its cone,
      * the pilot's seat on its left and the co-pilot's on its right, a sidestick at each outboard hand, the jump seats
      * behind them, and the autopilot screen at the co-pilot's right, facing in, linked to the head; the head wired once
-     * it stands; and her canopy's dimmer and lining.
+     * it stands; her canopy's dimmer and lining; and her console curving round before the seats.
      */
     private void cockpit() {
         int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
@@ -870,6 +871,7 @@ public final class FreighterLayout extends HullLayout {
         autopilotScreen(new BlockPos(x + SCREEN_OUT, y + SCREEN_UP, z - AutopilotScreenBlock.COLUMNS / 2), Direction.WEST);
         canopyDimmer(new BlockPos(x - PILOTS_OUT - 1, y + DIMMER_UP, z));
         canopyLining();
+        FreighterConsole.build(this, at);
     }
 
     /**

@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "facing=north,mount=floor": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/console_engines"
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/console_engines"
+    }
+  }
+}

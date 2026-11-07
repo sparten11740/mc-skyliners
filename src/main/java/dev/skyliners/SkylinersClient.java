@@ -34,6 +34,7 @@ import dev.skyliners.client.CanopyLiningRenderer;
 import dev.skyliners.client.CarriedAboard;
 import dev.skyliners.client.CloudlessCabin;
 import dev.skyliners.client.ClubBand;
+import dev.skyliners.client.ConsoleRenderer;
 import dev.skyliners.client.CockpitDisplayRenderer;
 import dev.skyliners.client.BubbleLevelRenderer;
 import dev.skyliners.client.CockpitDoorRenderer;
@@ -447,6 +448,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.SPRINKLER_ENTITY.get(), context -> new SprinklerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
         event.registerBlockEntityRenderer(SkylinersRegistry.CANOPY_LINING_ENTITY.get(), context -> new CanopyLiningRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.CONSOLE_ENTITY.get(), context -> new ConsoleRenderer());
         event.registerEntityRenderer(SkylinersRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);

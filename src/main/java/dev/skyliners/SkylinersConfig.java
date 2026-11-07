@@ -70,6 +70,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_CONSOLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
@@ -650,6 +651,13 @@ public final class SkylinersConfig {
                 "by block. Without it, her canopy is drawn block by block from inside as from outside."
             )
             .define("smoothCanopy", true);
+        FREIGHTER_CONSOLE = builder
+            .comment(
+                "Whether the freighter's cockpit has its console: a half-round desk curving round her pilots' seats, live",
+                "readouts of her speed, height, climb and heading, her engines and a sweeping scanner, banks of toggles that",
+                "click, and a big boost button that fires her mains flat out a while. Without it, her seats face her canopy bare."
+            )
+            .define("console", true);
         FREIGHTER_ROBOTS = builder
             .comment(
                 "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",

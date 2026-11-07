@@ -258,6 +258,17 @@ const CANOPY_SETTLE = 20;
 const DIMMER_FACE = 0.12;
 const DIMMER_DARKEST = [0.8, 0.15];
 const DIMMER_CLEAR = [0.2, 0.75];
+// Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
+const CONSOLE_SLICES = { console_switches: 2, console_readouts: 2, console_boost: 1, console_scanner: 1, console_engines: 1 };
+const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost"];
+// Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
+// much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
+// speed, in ticks, and how near, in blocks a second.
+const BOOST_CRUISE = 10;
+const BOOST_WATCH_TICKS = 160;
+const BOOST_GAIN = 10;
+const BOOST_SETTLE_TICKS = 600;
+const BOOST_SETTLED_WITHIN = 3;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -1414,15 +1425,105 @@ function checkFreighterCanopy() {
   }
   const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
   const facing = must(`block ${dimmer.at_abs.join(",")}`).props.facing ?? "east";
-  // Her pilot sits on her left, two blocks from the head.
-  const [lx, lz] = WAYS[CLOCKWISE[CLOCKWISE[CLOCKWISE[nose]]]];
-  const seat = [head.at_abs[0] + 2 * lx, head.at_abs[1], head.at_abs[2] + 2 * lz];
+  const seat = pilotSeat();
   const clear = skyThroughCanopy(seat, nose);
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_DARKEST);
   const dimmed = skyThroughCanopy(seat, nose);
   expect(dimmed < clear * CANOPY_DIMMED_SHARE, "freighter: dimmed, the sky ahead through her canopy darkens from her seat",
     `luma ${round(clear)} clear, ${round(dimmed)} dimmed`);
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
+}
+
+// A freighter's console: her modules curve round her seats, each a slice of one ring; on the ground her boost button
+// will not boost, saying so with a low note; and a bank of toggles clicks a toggle up under the hand.
+function checkFreighterConsole() {
+  ship("freighter");
+  const slices = Object.entries(CONSOLE_SLICES).map(([kind, count]) => [kind, count, must(`find skyliners:${kind} 128 ${count + 1}`).rows]);
+  for (const [kind, count, rows] of slices) {
+    expect(rows.length === count, `freighter: her console has its ${kind.replace("console_", "")}`, `${rows.length} of ${count}`);
+  }
+  const all = slices.flatMap(([, , rows]) => rows.map((row) => row.at_abs));
+  const curved = all.filter((at) => send(`server data get block ${at.join(" ")} Facet.Inner`)[0].ok !== false);
+  expect(curved.length === all.length, "freighter: each module is a slice of her half-round console", `${curved.length} of ${all.length}`);
+  const [boost] = must("find skyliners:console_boost 128 1").rows;
+  if (boost) {
+    const pressed = now();
+    useModule(boost.at_abs);
+    const refused = must(`messages since=${pressed} kind=actionbar match=*boosts*only* limit=1`).rows.length > 0;
+    expect(refused && played("*note_block.bass*", pressed).length > 0, "freighter: on the ground her boost button says no, with a low note");
+  }
+  const [toggles] = must("find skyliners:console_switches 128 1").rows;
+  if (toggles) {
+    const before = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
+    const flipped = now();
+    useModule(toggles.at_abs);
+    const after = must(`server data get block ${toggles.at_abs.join(" ")} Toggles`).result ?? 0;
+    expect(after !== before && played("*lever.click*", flipped).length > 0, "freighter: a toggle on her console clicks over", `${before} to ${after}`);
+  }
+}
+
+// Uses a console module on the ground as her pilot would, from her seat.
+function useModule(at) {
+  const seat = pilotSeat();
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t; use ${at.join(",")}; wait 10t`);
+  must("key press key.sneak 10t; wait 10t");
+}
+
+// Where a freighter's pilot sits, standing on the ground near the player: on her left, two blocks from her control head.
+function pilotSeat() {
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
+  const [lx, lz] = WAYS[CLOCKWISE[CLOCKWISE[CLOCKWISE[nose]]]];
+  return [head.at_abs[0] + 2 * lx, head.at_abs[1], head.at_abs[2] + 2 * lz];
+}
+
+// A freighter's boost: cruising, its button fires her mains flat out a while, her roar going up and her speed with
+// it, and afterwards she slows back to her speed; pressed again straight after, it rests, saying so.
+function checkFreighterBoost() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.ahead - BOOST_CRUISE) < 1,
+    FREIGHTER_UP_TICKS);
+  expect(cruising, "freighter: she lifts off and cruises at the speed set");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:console_boost 1 side=server`).rows[0];
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*speed_boost*", pressed, LOOK_EVERY)), "freighter: her boost button roars into it");
+  const rows = must(`sample skyliners:freighter every 20t x${BOOST_WATCH_TICKS / 20}`, BUILD_SECONDS).rows;
+  const fastest = Math.max(...rows.map((row) => row.ahead));
+  expect(fastest >= BOOST_CRUISE + BOOST_GAIN, "freighter: boosting, she surges ahead", `fastest ${round(fastest)}, set ${BOOST_CRUISE}`);
+  const again = now();
+  must(`use ${at.join(",")}`);
+  expect(must(`messages since=${again} kind=actionbar match=*resting* limit=1`).rows.length > 0, "freighter: pressed again at once, the boost rests");
+  const settled = waitForReport(freighterReport, (report) => Math.abs(report.ahead - BOOST_CRUISE) < BOOST_SETTLED_WITHIN, BOOST_SETTLE_TICKS);
+  expect(settled, "freighter: afterwards she slows back to her speed", settled ? `at ${settled.ahead}` : "");
+  must("skyliners:autopilot land");
+}
+
+// The console's modules set up by hand: each kind stands on a floor as a desk, fixed to a wall as a plate and hung
+// under a ceiling as a wedge, each facing whoever put it up.
+function checkConsoleMounts() {
+  creative();
+  const x = nextSite++ * SITE_APART;
+  const z = 0;
+  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t; server fill ${x - 6} ${ground} ${z - 4} ${x + 6} ${ground + 3} ${z - 4} stone`);
+  must(`server fill ${x - 6} ${ground + 3} ${z - 3} ${x + 6} ${ground + 3} ${z - 1} stone`);
+  CONSOLE_KINDS.forEach((kind) => must(`server give @p skyliners:${kind}`));
+  const tries = [["floor", ground, z, 30], ["wall", ground + 1, z - 3, 0], ["ceiling", ground + 2, z - 2, -50]];
+  for (const [mount, y, at, pitch] of tries) {
+    for (const [i, kind] of CONSOLE_KINDS.entries()) {
+      const spot = x - 4 + 2 * i;
+      must(`server tp @p ${spot + 0.5} ${ground} ${z + 1.5} 180 ${pitch}; wait 5t; place skyliners:${kind} ${spot},${y},${at}`);
+      const state = must(`block ${spot},${y},${at}`);
+      expect(state.props?.mount === mount && state.props?.facing === "south", `${kind}: put up on a ${mount}, it is put up so, facing whoever put it up`,
+        `${state.props?.mount} facing ${state.props?.facing}`);
+    }
+  }
 }
 
 // A freighter's jump drive in engineering: used, it spools up and fires, or sputters until thumped, when it fires; and
@@ -1976,6 +2077,9 @@ const CHECKS = {
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
+  "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
+  "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
+  "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },

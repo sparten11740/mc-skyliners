@@ -1,0 +1,108 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "casing": "skyliners:block/console_casing",
+    "deck": "skyliners:block/console_deck",
+    "screen": "skyliners:block/console_engines_screen",
+    "particle": "skyliners:block/console_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#deck"
+        },
+        "down": {
+          "texture": "#casing"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        10,
+        9
+      ],
+      "to": [
+        16,
+        19,
+        12
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          10,
+          12
+        ]
+      },
+      "faces": {
+        "north": {
+          "texture": "#screen",
+          "uv": [
+            0,
+            7,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            0,
+            7,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            4,
+            7,
+            7,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            9,
+            7,
+            12,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#casing"
+        },
+        "down": {
+          "texture": "#casing"
+        }
+      }
+    }
+  ]
+}

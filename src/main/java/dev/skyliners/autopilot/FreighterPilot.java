@@ -173,6 +173,11 @@ public final class FreighterPilot {
     private static final int RUN_DOWN_TICKS = 20;
     private static final int SETTLED_TICKS = 20;
     /**
+     * How much slower than the speed set, in blocks a second, she may be asked to go before a boost stops firing her
+     * mains flat out: she slows for a pin as she nears it, and boosting on she would race past it.
+     */
+    private static final double BOOST_SLOWER = 0.5;
+    /**
      * How far the signal asked of a set of thrusters together must move from the one they were set to before they are
      * set anew, in steps: rounded afresh each tick, a hover wobbling between two steps would set a thruster back and
      * forth several times a second, and each change is sent to every client. Held wider, or paced to a change every few
@@ -256,10 +261,20 @@ public final class FreighterPilot {
 
     /**
      * What the autopilot is set to fly: its phase, the height and speed set, the heading, and how it goes, on the
-     * heading, round a circle about a middle so wide, or to a pin there, landing at it or not.
+     * heading, round a circle about a middle so wide, or to a pin there, landing at it or not; and where her boost
+     * stands.
      */
     record Orders(AutopilotBlockEntity.Phase phase, double altitude, double speed, double heading,
-                  AutopilotBlockEntity.Lateral lateral, double pinX, double pinZ, double radius, boolean landAtPin) {
+                  AutopilotBlockEntity.Lateral lateral, double pinX, double pinZ, double radius, boolean landAtPin, Boost boost) {
+    }
+
+    /**
+     * Her boost as her pilot flies it (see {@link FreighterFlight#boost}): none; firing, her mains flat out and her
+     * retros quiet while she goes no slower than she is set to, so she never races at a pin she is braking for; or
+     * settling after it as she slows back, when she learns nothing of her drag from it.
+     */
+    enum Boost {
+        NONE, FIRING, SETTLING
     }
 
     /**
@@ -483,13 +498,14 @@ public final class FreighterPilot {
             lookForPad(level, phase, orders, state, middle);
             Course course = course(phase, orders, state, middle);
             double climb = easedClimb(climbWanted(phase, orders, state, radio));
-            boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE;
+            boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE && orders.boost() == Boost.NONE;
+            boolean boosting = orders.boost() == Boost.FIRING && course.ahead() >= orders.speed() - BOOST_SLOWER;
             level(motion.tilt());
             lift(level, origin, liftShare(state, going, mass, climb, learning),
                 split(motion.tilt().front(), motion.frontRate(), balance.ahead() + learnt.pitch),
                 split(motion.tilt().right(), motion.rightRate(), balance.right() + learnt.roll));
             move(level, origin, state, going, mass, learning, course.ahead(), course.across(),
-                turn(course.heading(), state.heading(), motion.yawRate(), learning));
+                turn(course.heading(), state.heading(), motion.yawRate(), learning), boosting);
         }
         settled = touchingFor > RUN_DOWN_TICKS && Math.abs(going.y) < STILL ? settled + 1 : 0;
         if (settled >= SETTLED_TICKS) {
@@ -539,7 +555,7 @@ public final class FreighterPilot {
     private void runDown(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, Balance balance) {
         double runDown = Math.max(0, 1 - (double) touchingFor / RUN_DOWN_TICKS);
         lift(level, origin, runDown * hoverShare(state, mass), balance.ahead(), balance.right());
-        move(level, origin, state, going, mass, false, 0, 0, 0);
+        move(level, origin, state, going, mass, false, 0, 0, 0, false);
     }
 
     /**
@@ -802,12 +818,12 @@ public final class FreighterPilot {
 
     /**
      * Her mains, retros and jets for the speed she wants ahead and across, and a turn: what pushes her ahead or holds
-     * her back, against the drag she learns while cruising, is shared out over her mains or her retros; what pushes her
-     * across, half on her nose's jets and half on her tail's, with the turn added at her nose and taken away at her
-     * tail.
+     * her back, against the drag she learns while cruising, is shared out over her mains or her retros, or boosting,
+     * her mains flat out and her retros quiet; what pushes her across, half on her nose's jets and half on her tail's,
+     * with the turn added at her nose and taken away at her tail.
      */
     private void move(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, boolean learning,
-                      double ahead, double across, double turn) {
+                      double ahead, double across, double turn, boolean boosting) {
         lastAhead = ahead;
         lastAcross = across;
         Vec3 front = flat(state.nose());
@@ -825,8 +841,8 @@ public final class FreighterPilot {
             double step = DRAG_RATE / SharedConstants.TICKS_PER_SECOND * Math.min(error, DRAG_LEARNING_ERROR) / goingAhead;
             learnt.drag = Mth.clamp(learnt.drag + step, LEAST_DRAG, MOST_DRAG);
         }
-        mainsTotal = held(Math.max(0, shove) * FULL * wiring.mains().size(), mainsTotal);
-        double braking = Math.max(0, -shove) * mostMains() / Math.max(1, mostRetros());
+        mainsTotal = boosting ? FULL * wiring.mains().size() : held(Math.max(0, shove) * FULL * wiring.mains().size(), mainsTotal);
+        double braking = boosting ? 0 : Math.max(0, -shove) * mostMains() / Math.max(1, mostRetros());
         retrosTotal = held(Math.min(1, braking) * FULL * wiring.retros().size(), retrosTotal);
         spread(level, origin, wiring.mains(), mainsTotal);
         spread(level, origin, wiring.retros(), retrosTotal);

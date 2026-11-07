@@ -2591,13 +2591,36 @@ as smooth, the whole cone darkening evenly to all but black. From outside she lo
 cover and her glass smoked. The server config's `freighter.smoothCanopy` draws her canopy block by block from inside
 too, as freighters built before it are.
 
+Before her seats her console curves round in a half circle, from in front of the pilot round ahead of the control head
+to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky
+controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
+turned toward her middle so whichever seat you fly from it faces you. Left to right: a bank of toggles, her flight
+readouts, the boost button, the scanner, her flight readouts again, her engines and another bank of toggles. Every
+reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons, her
+height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
+with north marked red; gauges of her lift thrusters' push in cyan, her mains' in amber and her boost, whose levers on
+the desk move with them; and a round scope whose beam sweeps round, her pin an amber diamond pulsing at its bearing and
+whoever is near a green dot lit as the beam passes. Click the scope and it pings, a ring going out over it with a chime;
+click a readout or the engines and they beep, every lamp lit for a moment; click a toggle and it clicks up or down, its
+square on the screen over it lighting in its colour. While she flies along, the big red button in its hazard-striped
+ring fires her mains flat out for eight seconds: her roar goes up at her stern and she surges ahead, holding her height
+and her heading, its screen's chevrons flashing orange over a bar running down; then she slows back to her speed, the
+chevrons red in a ring of segments lighting one by one as it rests for ten seconds, and green again when it is ready.
+On the ground, lifting off, landing or resting, it only says no with a low note. Before she is assembled, her screens
+show the power sign pulsing amber and only one lamp blinks. Each module is among her blocks in the creative tab (Flight
+Readout Console, Scanner Console, Engine Console, Toggle Console and Boost Console) and works on its own: put down on a
+floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down toward you, and it reads
+the nearest autopilot, showing the standby picture with none; the scope sweeps for whoever is near wherever it stands,
+pointing the way its desk does. The server config's `freighter.console` builds her without it.
+
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
 tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
-control head stands between the pilot's seat and the co-pilot's, jump seats behind them, and the autopilot screen on
-the wall at the co-pilot's right hand, so the view ahead through her canopy is clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
+control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
+before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
+clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
 anywhere, and climbs to her height, her deck level all the way. Set a speed of nothing, she hovers there. Given a pin,
 she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for the

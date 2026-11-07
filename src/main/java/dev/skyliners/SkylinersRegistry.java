@@ -370,6 +370,9 @@ import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.console.ConsoleBlock;
+import dev.skyliners.console.ConsoleBlockEntity;
+import dev.skyliners.console.ConsoleKind;
 import dev.skyliners.engineering.BreakerBoardBlock;
 import dev.skyliners.engineering.BreakerBoardBlockEntity;
 import dev.skyliners.engineering.CoolantValveBlock;
@@ -452,6 +455,8 @@ public final class SkylinersRegistry {
      * the airliner, in its way as it takes off.
      */
     private static final float ONLY_EVER_PLACED = Float.MAX_VALUE;
+    /** How brightly the freighter's console modules' screens and lamps light what is round them, in light levels. */
+    private static final int CONSOLE_GLOW = 4;
     /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see AirframeBlueprintItem). */
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
@@ -1415,6 +1420,23 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrossbowRackBlockEntity>> CROSSBOW_RACK_ENTITY =
         BLOCK_ENTITIES.register("crossbow_rack", () -> BlockEntityType.Builder.of(CrossbowRackBlockEntity::new, CROSSBOW_RACK.get()).build(null));
     public static final DeferredItem<BlockItem> CROSSBOW_RACK_ITEM = ITEMS.registerSimpleBlockItem(CROSSBOW_RACK);
+    /**
+     * The freighter's cockpit console (see {@link ConsoleBlock}): its modules, each its own block, curving round her
+     * pilots' seats as one half-round desk and put up anywhere by hand, sharing one kind of block entity.
+     */
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_READOUTS = consoleModule("console_readouts", ConsoleKind.READOUTS);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_SCANNER = consoleModule("console_scanner", ConsoleKind.SCANNER);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_ENGINES = consoleModule("console_engines", ConsoleKind.ENGINES);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_SWITCHES = consoleModule("console_switches", ConsoleKind.SWITCHES);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_BOOST = consoleModule("console_boost", ConsoleKind.BOOST);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConsoleBlockEntity>> CONSOLE_ENTITY =
+        BLOCK_ENTITIES.register("console", () -> BlockEntityType.Builder.of(ConsoleBlockEntity::new, CONSOLE_READOUTS.get(),
+            CONSOLE_SCANNER.get(), CONSOLE_ENGINES.get(), CONSOLE_SWITCHES.get(), CONSOLE_BOOST.get()).build(null));
+    public static final DeferredItem<BlockItem> CONSOLE_READOUTS_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_READOUTS);
+    public static final DeferredItem<BlockItem> CONSOLE_SCANNER_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SCANNER);
+    public static final DeferredItem<BlockItem> CONSOLE_ENGINES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_ENGINES);
+    public static final DeferredItem<BlockItem> CONSOLE_SWITCHES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SWITCHES);
+    public static final DeferredItem<BlockItem> CONSOLE_BOOST_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_BOOST);
     /**
      * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
      * and walked over, glass under its iris, as strong as glass is not; and its panel, which opens and shuts it.
@@ -2966,6 +2988,11 @@ public final class SkylinersRegistry {
             BREAKER_BOARD_ITEM,
             COOLANT_VALVE_ITEM,
             CROSSBOW_RACK_ITEM,
+            CONSOLE_READOUTS_ITEM,
+            CONSOLE_SCANNER_ITEM,
+            CONSOLE_ENGINES_ITEM,
+            CONSOLE_SWITCHES_ITEM,
+            CONSOLE_BOOST_ITEM,
             FLOOR_WINDOW_ITEM,
             FLOOR_WINDOW_PANEL_ITEM,
             BEACH_SAND_ITEM,
@@ -3085,6 +3112,12 @@ public final class SkylinersRegistry {
      */
     private static BlockBehaviour.Properties metal(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).isValidSpawn(SkylinersRegistry::never);
+    }
+
+    /** A module of the freighter's cockpit console, of a kind: dark metal, its screens and lamps glowing a little. */
+    private static DeferredBlock<ConsoleBlock> consoleModule(String name, ConsoleKind kind) {
+        return BLOCKS.registerBlock(name, properties -> new ConsoleBlock(properties, kind),
+            metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(state -> CONSOLE_GLOW));
     }
 
     /** A mocktail's nourishment, a sip's, drunk whenever it is wanted, the lift it gives added to it. */

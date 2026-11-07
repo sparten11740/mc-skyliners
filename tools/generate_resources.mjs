@@ -359,6 +359,36 @@ function rampFittings() {
   cubes.jump_drive = null;
 }
 
+// The freighter's cockpit console (see ConsoleBlock), our own design: each module drawn by its renderer alone
+// (ConsoleRenderer), whichever way it faces and however it is put up, its block's model only its particle; its item a
+// little desk, its worn casing under a screen leaning back over its top, showing a picture of what it shows.
+const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost"];
+{
+  const MOUNTS = ["floor", "wall", "ceiling"];
+  for (const kind of CONSOLE_KINDS) {
+    const name = `console_${kind}`;
+    write(`assets/${ID}/models/block/${name}.json`, { textures: { particle: `${ID}:block/console_casing` } });
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(MOUNTS.flatMap((mount) => Object.keys(yRot).map((facing) => [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${name}` }]))),
+    });
+    const casing = { texture: "#casing" };
+    write(`assets/${ID}/models/item/${name}.json`, {
+      parent: "minecraft:block/block",
+      textures: { casing: `${ID}:block/console_casing`, deck: `${ID}:block/console_deck`, screen: `${ID}:block/console_${kind}_screen`,
+        particle: `${ID}:block/console_casing` },
+      elements: [
+        { from: [0, 0, 1], to: [16, 10, 16], faces: { north: casing, south: casing, east: casing, west: casing, up: { texture: "#deck" }, down: casing } },
+        {
+          from: [0, 10, 9], to: [16, 19, 12], rotation: { angle: -22.5, axis: "x", origin: [8, 10, 12] },
+          faces: { north: { texture: "#screen" }, south: casing, east: casing, west: casing, up: casing, down: casing },
+        },
+      ],
+    });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
 // The freighter's breaker board in engineering (see BreakerBoardBlock): a steel panel two pixels deep against the wall
 // behind it, a darker frame round its face, its six switches drawn over it by BreakerBoardRenderer; drawn facing north.
 {
@@ -1633,6 +1663,15 @@ function zeppelinControlsLang() {
     "block.skyliners.breaker_board": "Breaker Board",
     "block.skyliners.coolant_valve": "Coolant Valve",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
+    "block.skyliners.console_readouts": "Flight Readout Console",
+    "block.skyliners.console_scanner": "Scanner Console",
+    "block.skyliners.console_engines": "Engine Console",
+    "block.skyliners.console_switches": "Toggle Console",
+    "block.skyliners.console_boost": "Boost Console",
+    "message.skyliners.console.boost_boosting": "Boost!",
+    "message.skyliners.console.boost_resting": "The boost is resting",
+    "message.skyliners.console.boost_not_flying": "She boosts only while she flies along",
+    "message.skyliners.console.boost_no_ship": "No freighter here to boost",
     "block.skyliners.floor_window": "Floor Window",
     "block.skyliners.floor_window_panel": "Floor Window Panel",
     "block.skyliners.beach_sand": "Beach Sand",
@@ -10445,6 +10484,8 @@ FITTINGS.push(...rampFittings());
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
 FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve", "crossbow_rack");
+// Her console's modules are fitted into her cockpit, and set up by hand anywhere.
+FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
 FITTINGS.push("floor_window", "floor_window_panel");
 // Her beach's palms, parasol, loungers and torches are fitted into her lounge too, set down and taken up by hand.
@@ -10591,6 +10632,12 @@ shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
+// Her console's modules: a screen of glass over iron, each with what it works in its middle.
+const CONSOLE_PARTS = { readouts: "minecraft:clock", scanner: "minecraft:compass", engines: "minecraft:comparator", switches: "minecraft:lever",
+  boost: "minecraft:blaze_powder" };
+for (const [kind, part] of Object.entries(CONSOLE_PARTS)) {
+  shaped(`console_${kind}`, ["GGG", "IPI", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", P: part, R: "minecraft:redstone" }, 1);
+}
 shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);
 shaped("techno_deck", ["NJN", "CCC"], { N: "minecraft:note_block", J: "minecraft:jukebox", C: "minecraft:black_concrete" }, 1);
 shaped("secret_hatch", ["T", "G"], { T: "minecraft:iron_trapdoor", G: `${ID}:zeppelin_catwalk` }, 1);
