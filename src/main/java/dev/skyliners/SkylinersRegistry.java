@@ -336,6 +336,7 @@ import dev.skyliners.entity.LiftCar;
 import dev.skyliners.entity.PaperPlane;
 import dev.skyliners.entity.Rover;
 import dev.skyliners.entity.SlideRide;
+import dev.skyliners.entity.Spookie;
 import dev.skyliners.entity.Tardigrade;
 import dev.skyliners.entity.Trolley;
 import dev.skyliners.item.AirframeBlueprintItem;
@@ -361,6 +362,8 @@ import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.spookie.SpookieHammockBlock;
+import dev.skyliners.spookie.SpookieHammockBlockEntity;
 import dev.skyliners.turret.LaserCannonBlock;
 import dev.skyliners.turret.LaserCannonBlockEntity;
 import java.util.List;
@@ -1331,6 +1334,21 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BandstandBlockEntity>> BANDSTAND_ENTITY =
         BLOCK_ENTITIES.register("bandstand", () -> BlockEntityType.Builder.of(BandstandBlockEntity::new, BANDSTAND.get()).build(null));
     public static final DeferredItem<BlockItem> BANDSTAND_ITEM = ITEMS.registerSimpleBlockItem(BANDSTAND);
+    /**
+     * The freighter's Spookie (see {@link Spookie}), a shaggy giant of her crew, and its hammock in her crew quarters,
+     * which keeps it (see {@link SpookieHammockBlock}).
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<Spookie>> SPOOKIE = ENTITY_TYPES.register(
+        "spookie", () -> EntityType.Builder.<Spookie>of(Spookie::new, MobCategory.MISC).sized(0.8F, 2.6F).eyeHeight(2.2F)
+            .clientTrackingRange(10).fireImmune().build("spookie")
+    );
+    public static final DeferredBlock<SpookieHammockBlock> SPOOKIE_HAMMOCK = BLOCKS.registerBlock(
+        "spookie_hammock", SpookieHammockBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SpookieHammockBlockEntity>> SPOOKIE_HAMMOCK_ENTITY =
+        BLOCK_ENTITIES.register("spookie_hammock", () -> BlockEntityType.Builder.of(SpookieHammockBlockEntity::new, SPOOKIE_HAMMOCK.get()).build(null));
+    public static final DeferredItem<BlockItem> SPOOKIE_HAMMOCK_ITEM = ITEMS.registerSimpleBlockItem(SPOOKIE_HAMMOCK);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2837,7 +2855,8 @@ public final class SkylinersRegistry {
             RAMP_BUTTON_ITEM,
             LASER_CROSSBOW,
             LASER_CANNON_ITEM,
-            BANDSTAND_ITEM
+            BANDSTAND_ITEM,
+            SPOOKIE_HAMMOCK_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

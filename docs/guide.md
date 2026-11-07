@@ -2680,6 +2680,17 @@ hardly rocks her. Its feeding hatch is in the middle of the tank's end facing in
 beside the hatch a worktop has a pad of moss on it, what it eats, and the cabinet under the hatch holds more: use the
 hatch with moss in hand and it comes to munch it. The server config's `freighter.tardigrade` builds her without it.
 
+Her Spookie lives aboard too: a shaggy giant of her crew, two and a half blocks tall, slate blue-grey fur with a cream
+mane over its shoulders, a charcoal face with two small tusks and big amber eyes that glow in the dark, brass goggles
+pushed up on its brow, long tufted ears and a hi-vis orange tool harness. It walks its rounds: from its big striped
+hammock in her crew quarters out round the open floor about her core, looking into her club, her cargo hold, her lounge
+and engineering on the way, and home again to rest. Come up to it and it greets you, throwing its arms up with a rising
+hoot and a chuff; touch it and it purrs and hoots, its ears pricked up; give it a cookie, sweet berries or honey and it
+gulps it down and purrs. Strike it and it is never hurt: it honks in alarm, its ears laid flat back, and turns its back
+on you. Nothing pushes it, and it never wanders off her deck. The Spookie's Hammock is among her blocks in the creative
+tab; set down by hand it keeps a Spookie of its own, standing beside it. The server config's `freighter.spookie` builds
+her without them.
+
 Her deck is lit by wall washers over head height, small dark lamps each throwing a fan of light up the wall: round
 her ring corridor between its doorways, along the walls between her rooms and on each room's far wall, warm white, pink
 in her club and a cool night blue in her crew quarters, the room through the doorway at her port quarter; the

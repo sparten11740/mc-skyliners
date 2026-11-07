@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyliners:block/spookie_hammock",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "skyliners:block/spookie_hammock",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyliners:block/spookie_hammock",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyliners:block/spookie_hammock",
+      "y": 270
+    }
+  }
+}

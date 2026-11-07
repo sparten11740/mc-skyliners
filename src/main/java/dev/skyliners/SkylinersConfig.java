@@ -78,6 +78,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_CLUB_BAR;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROOMS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TARDIGRADE;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SPOOKIE;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -692,6 +693,12 @@ public final class SkylinersConfig {
                 "cabinet stand by its north wall, with a feeding hatch, a pad of moss beside it and more in the cabinet under it."
             )
             .define("tardigrade", true);
+        FREIGHTER_SPOOKIE = builder
+            .comment(
+                "Whether the freighter has her Spookie, a shaggy giant of her crew, and its hammock in her crew quarters: it walks",
+                "its rounds of her ring corridor and rooms, greets whoever comes near, purrs when touched or fed, and is never hurt."
+            )
+            .define("spookie", true);
         builder.pop();
 
         SPEC = builder.build();

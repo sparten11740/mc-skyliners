@@ -54,6 +54,7 @@ import dev.skyliners.client.TransponderScreen;
 import dev.skyliners.compat.Blockpilot;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.entity.SlideRide;
+import dev.skyliners.entity.Spookie;
 import dev.skyliners.entity.Tardigrade;
 import dev.skyliners.horn.ShipHorn;
 import dev.skyliners.lookout.LookoutSpot;
@@ -105,6 +106,7 @@ public final class Skyliners {
 
         modEventBus.addListener(Skyliners::onRegisterPayloads);
         modEventBus.addListener(Tardigrade::onAttributes);
+        modEventBus.addListener(Spookie::onAttributes);
         // A lift panel carried in an elevator's cabin is touched through Create, which only knows blocks it is told of.
         modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(
             () -> MovingInteractionBehaviour.REGISTRY.register(SkylinersRegistry.LIFT_PANEL.get(), new LiftPanelInteraction())));

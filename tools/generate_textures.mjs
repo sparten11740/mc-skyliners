@@ -5946,6 +5946,119 @@ const LIFT_ICONS = {
   texture(itemOutput, "laser_crossbow_venting", crossbow([0x9a, 0x62, 0x14], [0xf0, 0x30, 0x20], new Map([...steam].map((at) => [at, STEAM]))), 0);
 }
 
+// The freighter's Spookie (see SpookieModel, whose boxes take their faces from the places here): slate blue-grey fur
+// flecked with silver tips, a moss-green cast down its back and lichen-pale dapples on its forearms; a cream mane over
+// its shoulders; a bare charcoal face with big amber eyes, a wide flat nose and two small ivory tusks; long ears, dusky
+// inside, tufted silver; a hi-vis orange harness with a reflective stripe and a belt; leather bracers over charcoal
+// hands; brass goggles with blue lenses on a leather strap; a leather satchel with a brass buckle and a steel wrench.
+// Its eyes again on a sheet of their own, alone and bright, for the glow drawn over it. And its hammock's canvas,
+// orange and cream stripes along it with a dark hem.
+{
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/entity");
+  const FUR = [0x5d, 0x6b, 0x7a];
+  const TIP = [0xa8, 0xb4, 0xc0];
+  const MOSS = [0x5f, 0x74, 0x5a];
+  const DAPPLE = [0xb8, 0xc4, 0xa8];
+  const DARK_FUR = [0x3a, 0x44, 0x50];
+  const MANE = [0xe8, 0xdc, 0xc0];
+  const MANE_STREAK = [0xcf, 0xc0, 0x9e];
+  const FACE = [0x2e, 0x2c, 0x2e];
+  const NOSE = [0x16, 0x14, 0x16];
+  const EYE = [0xff, 0xb0, 0x30];
+  const PUPIL = [0x24, 0x14, 0x08];
+  const TUSK = [0xee, 0xe6, 0xcc];
+  const EAR_INSIDE = [0x6a, 0x50, 0x58];
+  const TUFT = [0xd0, 0xd8, 0xe0];
+  const HI_VIS = [0xff, 0x7a, 0x10];
+  const REFLECTIVE = [0xd8, 0xe0, 0xe8];
+  const LEATHER = [0x6b, 0x45, 0x28];
+  const BRASS = [0xc8, 0x9a, 0x3c];
+  const LENS = [0x7f, 0xc8, 0xd8];
+  const STEEL = [0x9a, 0xa4, 0xae];
+  const SOLE = [0x3a, 0x36, 0x38];
+  const EYE_GLOW = [0xff, 0xc0, 0x40, 0xff];
+  // A smooth-ish noise from 0 to 1 of its own, so the textures above are unchanged.
+  const speck = (x, y) => {
+    let h = Math.imul(x * 2654435761 + y * 40503, 0x9e3779b1) ^ 0x51ed;
+    h = Math.imul(h ^ (h >>> 13), 0x85ebca6b);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+  const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * t));
+  const fur = (x, y, base = FUR) => (speck(x, y) > 0.94 ? mix(base, TIP, 0.6) : speck(x + 7, y + 3) < 0.06 ? mix(base, DARK_FUR, 0.4) : base);
+  // A box's faces on the texture, as the game lays them out from its corner: its top and bottom, then its right side,
+  // front, left side and back, each as a rectangle and where a pixel falls in it.
+  const faceOf = ([u, v, w, h, d], x, y) => {
+    const faces = [
+      ["up", u + d, v, w, d], ["down", u + d + w, v, w, d],
+      ["right", u, v + d, d, h], ["front", u + d, v + d, w, h], ["left", u + d + w, v + d, d, h], ["back", u + 2 * d + w, v + d, w, h],
+    ];
+    for (const [name, fu, fv, fw, fh] of faces) {
+      if (x >= fu && x < fu + fw && y >= fv && y < fv + fh) return { name, fx: x - fu, fy: y - fv, fw, fh };
+    }
+    return null;
+  };
+  const torso = (face, x, y) => {
+    const strap = face.fx === 3 || face.fx === 4 || face.fx === face.fw - 4 || face.fx === face.fw - 5;
+    const harnessed = face.name === "front" || face.name === "back";
+    if (harnessed && face.fy >= 11 && face.fy <= 12) return face.fy === 11 ? HI_VIS : LEATHER;
+    if (harnessed && strap) return face.fy === 9 ? REFLECTIVE : HI_VIS;
+    return face.name === "back" ? fur(x, y, mix(FUR, MOSS, 0.55)) : fur(x, y);
+  };
+  const mane = (face, x, y) => {
+    if (face.name === "back" || face.name === "down") return fur(x, y, mix(FUR, MOSS, 0.55));
+    return speck(x, y) < 0.2 || face.fx % 3 === 1 && face.fy > face.fh - 3 ? MANE_STREAK : MANE;
+  };
+  const head = (face, x, y) => {
+    if (face.name !== "front") return fur(x, y);
+    const eye = face.fy >= 4 && face.fy <= 5 && (face.fx === 1 || face.fx === 2 || face.fx === 6 || face.fx === 7);
+    if (eye) return face.fy === 5 && (face.fx === 2 || face.fx === 6) ? PUPIL : EYE;
+    return face.fy >= 4 ? FACE : fur(x, y);
+  };
+  const snout = (face) => {
+    if (face.name === "front" && face.fy === 0 && (face.fx === 1 || face.fx === 3)) return NOSE;
+    if (face.name === "front" && face.fy === face.fh - 1) return NOSE;
+    return face.name === "up" ? NOSE : FACE;
+  };
+  const ear = (face, x, y) => (face.name === "front" && face.fy >= 1 ? EAR_INSIDE : fur(x, y));
+  const arm = (face, x, y) => {
+    if (face.name === "down" || face.fy >= 18) return face.fy >= 21 && face.fx % 2 === 0 ? NOSE : FACE;
+    if (face.fy >= 14) return face.fy === 15 && face.fx === 1 ? BRASS : LEATHER;
+    if (face.fy >= 8 && speck(x + 3, y + 11) < 0.25) return DAPPLE;
+    return fur(x, y);
+  };
+  const leg = (face, x, y) => (face.fy >= 11 ? fur(x, y, mix(FUR, DARK_FUR, 0.45)) : fur(x, y));
+  const satchel = (face) => (face.name === "left" && face.fy === 2 && face.fx >= 1 && face.fx <= 2 ? BRASS : LEATHER);
+  const lens = (face) => (face.name === "front" ? (face.fx === 0 && face.fy === 0 ? REFLECTIVE : LENS) : BRASS);
+  // Each box: its corner on the texture, its width, height and depth, and how it is painted, as SpookieModel has them.
+  const BOXES = [
+    [[0, 0, 14, 15, 8], torso], [[44, 0, 16, 8, 10], mane], [[28, 44, 3, 6, 4], satchel], [[42, 44, 2, 9, 1], () => STEEL],
+    [[0, 25, 9, 10, 9], head], [[36, 25, 5, 4, 2], snout], [[36, 31, 9, 2, 1], () => DARK_FUR], [[56, 25, 1, 2, 1], () => TUSK],
+    [[56, 31, 10, 2, 1], () => LEATHER], [[78, 34, 2, 2, 1], lens], [[78, 25, 3, 5, 1], ear], [[86, 25, 1, 2, 1], (face, x, y) => fur(x, y)],
+    [[90, 25, 1, 2, 1], () => TUFT],
+    [[96, 0, 4, 24, 5], arm], [[88, 31, 6, 16, 6], leg], [[0, 44, 6, 2, 8], () => SOLE],
+  ];
+  const painted = (x, y) => {
+    for (const [box, paint] of BOXES) {
+      const face = faceOf(box, x, y);
+      if (face) return { face, paint };
+    }
+    return null;
+  };
+  texture(entityOutput, "spookie", (x, y) => {
+    const found = painted(x, y);
+    return found ? found.paint(found.face, x, y) : CLEAR;
+  }, 3, 128, 64);
+  texture(entityOutput, "spookie_eyes", (x, y) => {
+    const found = painted(x, y);
+    return found && found.paint === head && head(found.face, x, y) === EYE ? EYE_GLOW : CLEAR;
+  }, 0, 128, 64);
+  texture(blockOutput, "spookie_hammock", (x, y) => {
+    if (y === 0 || y === 15) return [0x8a, 0x4a, 0x1a];
+    const stripe = Math.floor((y - 1) / 3) % 2 === 0 ? [0xe8, 0x6a, 0x1a] : [0xee, 0xe2, 0xc8];
+    return (x + y) % 4 === 0 ? mix(stripe, [0x40, 0x30, 0x20], 0.12) : stripe;
+  }, 3);
+}
+
 // The rocket's lab. Her tardigrade (see TardigradeModel, which takes its boxes' faces from these patches): soft
 // peach skin all over, mottled in soft blotches with fine darker bumps, as a water bear's cuticle is under a
 // microscope; its folds between the segments a darker tan with creases across them; its claws pale ivory; its mouth a

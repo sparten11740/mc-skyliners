@@ -230,6 +230,14 @@ const BIG_MUNCH_HIGHEST = 0.9;
 const MOSS_PAD_NEAR = 3;
 // How bright the middle of each of her sisters' paintings is at least, as a block's light.
 const PAINTING_LIT = 8;
+// Her Spookie: how far from it someone stands to be greeted, in blocks; how long it may take to answer, in ticks; its
+// health, which nothing takes; how long its rounds are watched, in ticks, and how far it walks in that time at least,
+// in blocks, its feet on her deck all the while.
+const SPOOKIE_NEAR = 3;
+const SPOOKIE_ANSWERS = 60;
+const SPOOKIE_HEALTH = 60;
+const SPOOKIE_WATCHED = 900;
+const SPOOKIE_WALKS = 3;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1204,6 +1212,47 @@ function checkFleetOnTheFreighter() {
     lit.map(([poster, light]) => `${poster} ${light}`).join(", "));
 }
 
+// A freighter's Spookie: it lives aboard, kept by its hammock in her crew quarters; walked up to, it greets them; touched,
+// it purrs; fed a cookie, it eats it; struck, it honks and is never hurt; and it walks its rounds over her deck.
+function checkFreighterSpookie() {
+  ship("freighter");
+  const hammock = must("find skyliners:spookie_hammock 128 1").rows.length > 0;
+  expect(hammock, "freighter: she is built with the Spookie's hammock in her crew quarters");
+  const spookie = () => must("find skyliners:spookie 128 1").rows[0];
+  const found = spookie();
+  expect(Boolean(found), "freighter: her Spookie lives aboard");
+  if (!found) {
+    return;
+  }
+  const [x, y, z] = found.at_abs;
+  emptyHands();
+  must(`server tp @p ${x + SPOOKIE_NEAR} ${y} ${z}; wait 2t; face ${found.ref}`);
+  const greeted = now();
+  expect(Boolean(heard("*spookie_greet*", greeted - LOOK_EVERY, SPOOKIE_ANSWERS)), "freighter: walked up to, her Spookie hoots hello");
+  const touched = now();
+  must(`use ${found.ref}`);
+  expect(Boolean(heard("*spookie_happy*", touched, SPOOKIE_ANSWERS)), "freighter: touched, it purrs and hoots");
+  survival();
+  must(`server give @p minecraft:cookie 2; select 0; face ${found.ref}`);
+  const fed = now();
+  must(`use ${found.ref}`);
+  const stack = must("inv").rows.find((row) => row.item === "cookie" || row.item === "minecraft:cookie");
+  const cookies = stack ? stack.count ?? 1 : 0;
+  expect(cookies === 1 && Boolean(heard("*generic.eat*", fed, SPOOKIE_ANSWERS)), "freighter: fed a cookie, it eats it", `${cookies} of 2 left`);
+  const struck = now();
+  must(`face ${found.ref}; attack x1`);
+  const honked = heard("*spookie_alarm*", struck, SPOOKIE_ANSWERS);
+  const health = spookie()?.hp;
+  expect(Boolean(honked) && health === SPOOKIE_HEALTH, "freighter: struck, it honks in alarm and is never hurt", `health ${health}`);
+  creative();
+  const from = spookie().at_abs;
+  must(`wait ${SPOOKIE_WATCHED}t`);
+  const to = spookie()?.at_abs ?? from;
+  const walked = Math.hypot(to[0] - from[0], to[2] - from[2]);
+  expect(walked >= SPOOKIE_WALKS && Math.abs(to[1] - from[1]) < 0.5, "freighter: it walks its rounds over her deck",
+    `${walked.toFixed(1)} blocks, from y ${from[1]} to ${to[1]}`);
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -1579,6 +1628,7 @@ const CHECKS = {
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
+  "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

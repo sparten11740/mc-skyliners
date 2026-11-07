@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "I I",
+    "WWW",
+    "I I"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "W": {
+      "item": "minecraft:orange_wool"
+    }
+  },
+  "result": {
+    "id": "skyliners:spookie_hammock",
+    "count": 1
+  }
+}

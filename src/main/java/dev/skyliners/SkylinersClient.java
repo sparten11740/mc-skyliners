@@ -120,6 +120,8 @@ import dev.skyliners.client.SleepParticle;
 import dev.skyliners.client.SleighBells;
 import dev.skyliners.client.SlideRenderer;
 import dev.skyliners.client.SpaceSky;
+import dev.skyliners.client.SpookieModel;
+import dev.skyliners.client.SpookieRenderer;
 import dev.skyliners.client.SporeParticle;
 import dev.skyliners.client.SprinklerRenderer;
 import dev.skyliners.client.TabBanners;
@@ -313,6 +315,11 @@ public final class SkylinersClient {
             TardigradeModel::createBodyLayer));
         modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerEntityRenderer(SkylinersRegistry.TARDIGRADE.get(),
             TardigradeRenderer::new));
+        // The freighter's Spookie: its model and its renderer.
+        modEventBus.addListener((EntityRenderersEvent.RegisterLayerDefinitions event) -> event.registerLayerDefinition(SpookieModel.LAYER,
+            SpookieModel::createBodyLayer));
+        modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerEntityRenderer(SkylinersRegistry.SPOOKIE.get(),
+            SpookieRenderer::new));
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);

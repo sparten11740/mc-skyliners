@@ -412,6 +412,7 @@ public final class FreighterLayout extends HullLayout {
         layout.galley();
         LoungeTank.build(layout, layout.deck);
         FreighterPaintings.build(layout, layout.deck);
+        FreighterSpookie.build(layout, layout.deck);
         layout.lights();
         layout.countAir();
         return layout;

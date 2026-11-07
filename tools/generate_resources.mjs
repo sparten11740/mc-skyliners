@@ -297,6 +297,43 @@ function rampFittings() {
   cubes.bandstand = null;
 }
 
+// The Spookie's hammock in the freighter's crew quarters (see SpookieHammockBlock): a striped orange and cream canvas
+// sling three blocks long, sagging deep in the middle of its own block, hung from a wooden spreader bar at each end,
+// each bar on a rope slanting down from the top of a steel post standing a block out from the hammock's block. Its
+// parts past its block, near two blocks tall, are drawn without ambient occlusion so they do not go dark aboard. Its
+// item shows it small.
+{
+  // A stretch of the sling, from one end to the other along it and from its underside to its top, each stretch's top
+  // the underside of the one nearer the bar, so the canvas runs on unbroken as it sags.
+  const sling = (from, to, low, high) => solid([from, low, 1.5], [to, high, 14.5], "#cloth");
+  const rope = (x) => solid([x - 4.24, 20.5, 7.5], [x + 4.24, 21.5, 8.5], "#rope", { angle: x < 8 ? -45 : 45, axis: "z", origin: [x, 21, 8] });
+  write(`assets/${ID}/models/block/spookie_hammock.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { cloth: `${ID}:block/spookie_hammock`, post: `${ID}:block/habitat_kerb`, rope: "minecraft:block/brown_wool", particle: `${ID}:block/spookie_hammock` },
+    elements: [
+      solid([-15, 0, 6], [-12, 30, 10], "#post"), solid([28, 0, 6], [31, 30, 10], "#post"),
+      rope(-9), rope(25),
+      solid([-6, 17, 1], [-5, 19, 15], "#post"), solid([21, 17, 1], [22, 19, 15], "#post"),
+      sling(-5, -1, 15, 17), sling(-1, 3, 12, 15), sling(3, 6, 10, 12), sling(6, 10, 8, 10), sling(10, 13, 10, 12), sling(13, 17, 12, 15),
+      sling(17, 21, 15, 17),
+    ],
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3] },
+      ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.15, 0.15, 0.15] },
+      fixed: { rotation: [0, 0, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.2, 0.2, 0.2] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.25, 0.25, 0.25] },
+    },
+  });
+  write(`assets/${ID}/blockstates/spookie_hammock.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/spookie_hammock`, y }])),
+  });
+  write(`assets/${ID}/models/item/spookie_hammock.json`, { parent: `${ID}:block/spookie_hammock` });
+  dropsItself("spookie_hammock");
+  cubes.spookie_hammock = null;
+}
+
 // The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
 // (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
 // charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
@@ -6555,6 +6592,8 @@ function labLang() {
     "block.skyliners.lab_instrument": "Lab Instrument",
     "block.skyliners.habitat_floor": "Tank Floor",
     "entity.skyliners.tardigrade": "Tardigrade",
+    "entity.skyliners.spookie": "Spookie",
+    "block.skyliners.spookie_hammock": "Spookie's Hammock",
     "subtitles.skyliners.tardigrade_mrrp": "Tardigrade purrs",
     "subtitles.skyliners.tardigrade_bloop": "Tardigrade curls up",
     "subtitles.skyliners.tardigrade_snore": "Tardigrade snores",
@@ -10190,6 +10229,8 @@ FITTINGS.push(...roverFittings());
 FITTINGS.push(...rampFittings());
 // The club's bandstand is fitted into her club, set down and taken up by hand.
 FITTINGS.push("bandstand");
+// The Spookie's hammock is fitted into her crew quarters.
+FITTINGS.push("spookie_hammock");
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -10262,9 +10303,9 @@ write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight); the
 // rocket's rover, stowed in its cradle (see Rover); and her lab's tardigrade (see Tardigrade).
 write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`, `${ID}:lift_car`,
-  `${ID}:rover`, `${ID}:tardigrade`]));
+  `${ID}:rover`, `${ID}:tardigrade`, `${ID}:spookie`]));
 // A lift's car lives among its ship's blocks and goes with them: taken away, it goes too.
-write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`, `${ID}:tardigrade`]));
+write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`, `${ID}:tardigrade`, `${ID}:spookie`]));
 // What the sky crane's hook lifts (see CraneHook): animals and vehicles, never players, villagers or monsters; and in its
 // net, chests, barrels and care packages with all they hold. A camel it catches but cannot lift: too heavy.
 write(`data/${ID}/tags/entity_type/crane_loads.json`, tag(["horse", "donkey", "mule", "llama", "trader_llama", "camel", "skeleton_horse",
@@ -10344,6 +10385,7 @@ shaped("ramp_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "mine
 shaped("laser_crossbow", [" A ", "RCR", " O "], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", C: "minecraft:crossbow", O: "minecraft:copper_ingot" }, 1);
 shaped("laser_cannon", ["ARA", "IDI", "III"], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", I: "minecraft:iron_ingot", D: "minecraft:dispenser" }, 1);
 shaped("bandstand", ["NNN", "PPP"], { N: "minecraft:note_block", P: "minecraft:dark_oak_slab" }, 1);
+shaped("spookie_hammock", ["I I", "WWW", "I I"], { I: "minecraft:iron_bars", W: "minecraft:orange_wool" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);

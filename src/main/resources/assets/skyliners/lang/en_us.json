@@ -1054,6 +1054,8 @@
   "block.skyliners.lab_instrument": "Lab Instrument",
   "block.skyliners.habitat_floor": "Tank Floor",
   "entity.skyliners.tardigrade": "Tardigrade",
+  "entity.skyliners.spookie": "Spookie",
+  "block.skyliners.spookie_hammock": "Spookie's Hammock",
   "subtitles.skyliners.tardigrade_mrrp": "Tardigrade purrs",
   "subtitles.skyliners.tardigrade_bloop": "Tardigrade curls up",
   "subtitles.skyliners.tardigrade_snore": "Tardigrade snores",
