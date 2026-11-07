@@ -1324,7 +1324,9 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> LASER_CANNON_ITEM = ITEMS.registerSimpleBlockItem(LASER_CANNON);
     /** The bandstand in the freighter's club, its band playing her song (see {@link BandstandBlock}). */
     public static final DeferredBlock<BandstandBlock> BANDSTAND = BLOCKS.registerBlock(
-        "bandstand", BandstandBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion()
+        "bandstand", BandstandBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion()
+            .lightLevel(state -> BandstandBlock.FOOTLIGHTS)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BandstandBlockEntity>> BANDSTAND_ENTITY =
         BLOCK_ENTITIES.register("bandstand", () -> BlockEntityType.Builder.of(BandstandBlockEntity::new, BANDSTAND.get()).build(null));

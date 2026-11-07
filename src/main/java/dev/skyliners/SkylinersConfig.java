@@ -74,6 +74,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRETS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_BANDSTAND;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_LIGHTS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -663,6 +664,12 @@ public final class SkylinersConfig {
                 "robot jazz trio playing her song to anyone who comes near."
             )
             .define("bandstand", true);
+        FREIGHTER_LIGHTS = builder
+            .comment(
+                "Whether the freighter is built with wall washers round her ring corridor and her rooms, over head height:",
+                "warm white, pink in her club and a cool night blue in her crew quarters. Without them, her deck is dark."
+            )
+            .define("lights", true);
         builder.pop();
 
         SPEC = builder.build();

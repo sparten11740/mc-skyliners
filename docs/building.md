@@ -298,7 +298,9 @@ while the gunner's `GunnerTrigger` says the attack key is held, which the client
 swallows; `LaserCannonRenderer` draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
 crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
 block entity but is tracked on clients, where `ClubBand` starts its song for a player who comes near, counting its
-beat, and `BandstandRenderer` draws the three players swaying to it. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+beat, and `BandstandRenderer` draws the three players swaying to it. Her deck is lit by the rocket's `WallLightBlock`s, which
+`FreighterLayout.lights()` fixes to her padded walls round her corridor and rooms, stepping out from each wall to the
+first block with room. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

@@ -12,11 +12,13 @@ import dev.skyliners.block.AutopilotScreenBlockEntity;
 import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.CabinRailBlock;
 import dev.skyliners.block.DeckRobotBlock;
+import dev.skyliners.block.LightTone;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
+import dev.skyliners.block.WallLightBlock;
 import dev.skyliners.block.WindowDimmerBlock;
 import dev.skyliners.block.WindowDimmerBlockEntity;
 import dev.skyliners.club.BandstandBlock;
@@ -156,12 +158,33 @@ public final class FreighterLayout extends HullLayout {
     private static final int RAMP_BUTTON_LEG = 1;
     private static final int RAMP_BUTTON_UP = 2;
     /**
-     * Her club's bandstand (see {@link BandstandBlock}): in the room through the doorway at her port bow, at this
-     * bearing clockwise from her bow, in degrees, the room's middle line, so far out from her axis, in blocks, toward its
-     * far wall, its band facing back in over the room.
+     * Her club's bandstand (see {@link BandstandBlock}): in her club, on its middle line ({@link #CLUB_BEARING}), so
+     * far out from her axis, in blocks, toward its far wall, its band facing back in over the room.
      */
-    private static final int BANDSTAND_BEARING = 300;
     private static final double BANDSTAND_OUT = 16;
+    /**
+     * Her wall washers (see {@link WallLightBlock}): so many rows over her deck, over the head of anyone walking past;
+     * three on the corridor's outer wall between each two doorways, at a room wall's bearing and so many degrees either
+     * side of it, looked for from so far out from her axis outward;
+     * along each room wall, either side of it, at so many blocks out, in the first block that far along it, stepping
+     * out from it this far at a time up to this far, that has room for it beside the wall; and one on each room's far
+     * wall, her outer bulkhead, in its middle, so far out. The room at this bearing, her club, is lit pink, and the one
+     * at this, her crew quarters, a cool night blue; the rest warm white.
+     */
+    private static final int LIGHT_UP = 3;
+    private static final double CORRIDOR_LIGHT_FROM = 4.5;
+    private static final int[] CORRIDOR_LIGHT_OFFS = {-14, 0, 14};
+    private static final double[] ROOM_LIGHTS_OUT = {11, 17};
+    private static final double LIGHT_STEP_OUT = 0.5;
+    private static final double LIGHT_FURTHEST_OUT = 2.5;
+    private static final double ROOM_END_LIGHT_OUT = 21.6;
+    private static final int CLUB_BEARING = 300;
+    private static final int QUARTERS_BEARING = 240;
+    /**
+     * Half the turn a room spans, in degrees: a room wall's light on either side of it is in the room half this far
+     * round.
+     */
+    private static final int ROOM_HALF_TURN = 30;
     /**
      * Her canopy's dimmer: how far over the pilots' seats' floor row it stands, at a seated pilot's hand, and how far
      * out past the seat's side it may stand at most, toward her skin, so the pilot reaches it from the seat, in blocks.
@@ -315,6 +338,7 @@ public final class FreighterLayout extends HullLayout {
         layout.ramp();
         layout.turret();
         layout.bandstand();
+        layout.lights();
         layout.countAir();
         return layout;
     }
@@ -853,7 +877,7 @@ public final class FreighterLayout extends HullLayout {
      * a floor for its three players; none with the server config's {@code freighter.bandstand} off.
      */
     private void bandstand() {
-        double[] way = way(BANDSTAND_BEARING);
+        double[] way = way(CLUB_BEARING);
         int x = (int) Math.round(way[0] * BANDSTAND_OUT);
         int z = (int) Math.round(way[1] * BANDSTAND_OUT);
         Direction facing = Direction.getNearest(-way[0], 0, -way[1]);
@@ -863,6 +887,83 @@ public final class FreighterLayout extends HullLayout {
         if (SkylinersConfig.FREIGHTER_BANDSTAND.get() && room && isOpen(x, deck + 1, z) && !isOpen(x, deck, z)) {
             set(x, deck + 1, z, SkylinersRegistry.BANDSTAND.get().defaultBlockState().setValue(BandstandBlock.FACING, facing));
         }
+    }
+
+    /**
+     * Her wall washers round her ring corridor and her rooms, each where there is room for it and its light up the wall
+     * beside one of her padded walls; none with the server config's {@code freighter.lights} off.
+     */
+    private void lights() {
+        if (!SkylinersConfig.FREIGHTER_LIGHTS.get()) {
+            return;
+        }
+        for (int wall : ROOM_WALLS) {
+            corridorLights(wall);
+            for (double out : ROOM_LIGHTS_OUT) {
+                wallLight(wall, out, -1, toneAt(wall - ROOM_HALF_TURN));
+                wallLight(wall, out, 1, toneAt(wall + ROOM_HALF_TURN));
+            }
+        }
+        for (int room : DOORWAYS) {
+            wallLight(room, ROOM_END_LIGHT_OUT, 0, toneAt(room));
+        }
+    }
+
+    /**
+     * Her corridor's wall washers round a room wall's bearing, between two doorways: one on the wall's line and one
+     * either side of it, each on the corridor's outer wall, looked for outward across the corridor.
+     */
+    private void corridorLights(int wall) {
+        for (int off : CORRIDOR_LIGHT_OFFS) {
+            boolean lit = false;
+            for (double out = CORRIDOR_LIGHT_FROM; out <= CORRIDOR && !lit; out += LIGHT_STEP_OUT) {
+                lit = wallLight(wall + off, out, 0, LightTone.WARM);
+            }
+        }
+    }
+
+    /** The tone a room at a bearing is lit in: pink in her club, a cool night blue in her crew quarters, else warm. */
+    private static LightTone toneAt(double bearing) {
+        // Her rooms' middles are a room's turn apart round her, from her bow: the nearest is the room it is in.
+        int room = (int) Math.round(Math.floorMod(Math.round(bearing), 360) / (2.0 * ROOM_HALF_TURN)) * 2 * ROOM_HALF_TURN % 360;
+        return room == CLUB_BEARING ? LightTone.PINK : room == QUARTERS_BEARING ? LightTone.COOL : LightTone.WARM;
+    }
+
+    /**
+     * A wall washer at a bearing so far out from her axis, {@link #LIGHT_UP} rows over her deck: stepping out to one
+     * side of that line, clockwise or not (none for the spot itself), to the first block with room for it and its light
+     * up the wall, beside one of her padded walls, fixed to that wall and shining away from it. Gives whether it found
+     * one.
+     */
+    private boolean wallLight(double bearing, double out, int side, LightTone tone) {
+        double[] way = way(bearing);
+        double[] across = {-way[1], way[0]};
+        double furthest = side == 0 ? 0 : LIGHT_FURTHEST_OUT;
+        for (double step = 0; step <= furthest; step += LIGHT_STEP_OUT) {
+            int x = (int) Math.round(way[0] * out + across[0] * side * step);
+            int z = (int) Math.round(way[1] * out + across[1] * side * step);
+            if (wallLightAt(x, deck + LIGHT_UP, z, tone)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Fixes a wall washer in a block to the padded wall beside it, shining away from it, if the block and the one over
+     * it are open; gives whether it did.
+     */
+    private boolean wallLightAt(int x, int y, int z, LightTone tone) {
+        if (!isOpen(x, y, z) || !isOpen(x, y + 1, z)) {
+            return false;
+        }
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (stateAt(x + side.getStepX(), y, z + side.getStepZ()).is(SkylinersRegistry.PADDED_BULKHEAD.get())) {
+                set(x, y, z, SkylinersRegistry.WALL_LIGHT.get().shining(side.getOpposite(), tone));
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Takes her core's walls out of a row, the top dome's, where they would stand between the gunner and the glass. */

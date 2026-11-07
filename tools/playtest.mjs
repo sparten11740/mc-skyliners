@@ -212,6 +212,13 @@ const CROSSBOW_AIM_DOWN = 8;
 const CREEPER_HEALTH = 20;
 const COW_HEALTH = 10;
 const CROSSBOW_COOLED_TICKS = 100;
+// A freighter's lights: how many wall washers she has at least, and how bright her club is before its stage at least,
+// as a block's light.
+const FREIGHTER_LIGHTS = 24;
+const CLUB_LIT = 5;
+// How far out from her axis the middle of her ring corridor is, in blocks, and how bright it is there at least.
+const CORRIDOR_MIDDLE = 4;
+const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
@@ -1062,6 +1069,26 @@ function checkFreighterLake() {
 }
 
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
+// A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage
+// and her ring corridor all round, so nobody walks her deck in the dark.
+function checkFreighterLights() {
+  ship("freighter");
+  const lights = must("find skyliners:wall_light 128 100").rows.length;
+  expect(lights >= FREIGHTER_LIGHTS, "freighter: she is built with wall washers round her corridor and rooms", `${lights} of them`);
+  const [stand] = must("find skyliners:bandstand 128 1").rows;
+  if (!stand) {
+    return;
+  }
+  const [x, y, z] = stand.at_abs;
+  const [dx, dz] = STEPS[must(`block ${x},${y},${z}`).props?.facing ?? "north"];
+  const lit = must(`block ${x + dx * BAND_NEAR},${y + 1},${z + dz * BAND_NEAR} light`).block_light ?? 0;
+  expect(lit >= CLUB_LIT, "freighter: her club is lit before its stage", `block light ${lit}`);
+  const [{ at_abs: [axisX, , axisZ] }] = must("find skyliners:laser_cannon 128 1").rows;
+  const corridor = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([ax, az]) =>
+    must(`block ${axisX + ax * CORRIDOR_MIDDLE},${y + 1},${axisZ + az * CORRIDOR_MIDDLE} light`).block_light ?? 0);
+  expect(Math.min(...corridor) >= CORRIDOR_LIT, "freighter: her ring corridor is lit all round", `block light ${corridor.join(", ")}`);
+}
+
 // A freighter's club band: standing before its bandstand, her song plays; gone well away from it, it falls silent.
 function checkFreighterBand() {
   ship("freighter");
@@ -1447,6 +1474,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
+  "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club band plays her song to whoever stands before it, and falls silent as they go" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },

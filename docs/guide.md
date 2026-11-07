@@ -2660,6 +2660,11 @@ loud as the game's Jukebox/Note Blocks volume sets, and the client config's `clu
 among her blocks in the creative tab, to set down anywhere, and the server config's `freighter.bandstand` builds her
 without it.
 
+Her deck is lit by wall washers over head height, small dark lamps each throwing a fan of light up the wall: round
+her ring corridor between its doorways, along the walls between her rooms and on each room's far wall, warm white, pink
+in her club and a cool night blue in her crew quarters, the room through the doorway at her port quarter; the
+bandstand's footlights light its band. The server config's `freighter.lights` builds her without them.
+
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning
 to follow you about; touch it and it trills back; and now and then, with someone near, it beeps happily to itself. The

@@ -23,6 +23,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class BandstandBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<BandstandBlock> CODEC = simpleCodec(BandstandBlock::new);
+    /** How brightly its footlights light the band and the room round it, as a block's light level. */
+    public static final int FOOTLIGHTS = 9;
     /** Its stage, to stand on, and the band on it, to bump into: a slab with the players' bodies over its middle. */
     private static final VoxelShape SHAPE = Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(4, 3, 4, 12, 14, 12));
 
