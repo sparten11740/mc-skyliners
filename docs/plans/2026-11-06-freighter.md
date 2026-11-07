@@ -144,7 +144,7 @@ liveries tint it unchanged.
 | Starboard aft, 90°–150° | Lounge and galley | the horseshoe couch round the Holo Game Table, the small tardigrade's porthole tank, the turrets' scoreboard, a wall of blinking screens; the galley a tight U off it; the starboard docking airlock at about 100° |
 | Aft, 150°–210° | Engineering | the jump drive's core, a cage of stacked glowing rings through floor and ceiling; the dented thump plate; coolant pipes, shelves, a half-dismantled robot throwing sparks; a window aft onto the engines' glow; an escape pod past the bulkhead either side |
 | Port aft, 210°–270° | Crew quarters and med bay | bunk alcoves in the curving hull behind curtains, lockers, the Spookie's oversized hammock; the med bay's bunk under a scanner arm; the port docking airlock at about 260° |
-| Port fore, 270°–330° | The Spacers' Club | a scruffy amber, smoky bar: counter, stools, taps, the robot bartender, tables, neon; a bandstand of three battered dome-headed automatons on horn, squeezebox and steel drum playing "Long Haul Swing" |
+| Port fore, 270°–330° | The Spacers' Club | a scruffy amber, smoky bar: counter, stools, taps, the robot bartender, tables, neon; a bandstand of a robot jazz trio of the deck robots' family on upright bass, keyboard and drums playing "Long Haul Swing" |
 | Core | The turrets' well | a rung ladder up to the top gun and down to the belly gun |
 
 - **Finding the way without reading:** every room opens off the ring through a hatchway with a picture plate, the
@@ -782,6 +782,11 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   above their eyes, missing the crosshair at range: it now aims at what the look reaches. The crossbow and the cannon
   share one rule for what a laser hurts (`LaserFire.strike`). Checked by freighter-turret; one early run of it missed
   and could not be made to miss again in three runs.
+
+- Her club's band: a robot jazz trio of the deck robots' family on a lit stage, playing "Long Haul Swing" to whoever
+  comes near. First drawn as three dome-headed automatons on horn, squeezebox and drum, as the plan had it; the pair
+  found that line-up in a spaceport bar too close to the film's cantina band, against the Rights section's "any close
+  copy of its feel", so they became boxy robots of our own on bass, keyboard and drums.
 
 ### For Jan to look at
 
