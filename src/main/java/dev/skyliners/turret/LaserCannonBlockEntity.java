@@ -312,7 +312,8 @@ public class LaserCannonBlockEntity extends BlockEntity {
 
     /**
      * A bolt from the muzzle of its next barrel along its aim: hostile mobs hurt, never anyone aboard her; drawn for
-     * every client near, sparks where it strikes, and its shot heard.
+     * every client near, sparks where it strikes and a blast where it meets a block (see {@link TurretBlast}), and its
+     * shot heard.
      */
     private void bolt(ServerLevel level) {
         Vec3 way = way(yaw, pitch);
@@ -323,6 +324,9 @@ public class LaserCannonBlockEntity extends BlockEntity {
         Vec3 along = SableFlight.toWorld(level, muzzle.add(way)).subtract(from);
         HitResult hit = LaserFire.trace(level, gunner, from, along, RANGE, notAboard());
         LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN, null);
+        if (SkylinersConfig.FREIGHTER_TURRET_BLASTS.get()) {
+            TurretBlast.at(level, gunner, from, hit, notAboard());
+        }
         level.playSound(null, from.x, from.y, from.z, SkylinersRegistry.BALL_TURRET_SHOT.get(), SoundSource.BLOCKS, SHOT_VOLUME,
             0.95F + level.getRandom().nextFloat() * 0.1F);
     }

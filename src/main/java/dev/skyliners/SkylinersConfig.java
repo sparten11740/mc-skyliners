@@ -73,6 +73,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_OUTSIDE_LIGHTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMOOTH_CANOPY;
@@ -740,6 +741,12 @@ public final class SkylinersConfig {
                 "attack, their bolts strike hostile mobs, never players, villagers, pets, animals or anyone aboard."
             )
             .define("turrets", true);
+        FREIGHTER_TURRET_BLASTS = builder
+            .comment(
+                "Whether a laser cannon's bolt blasts out the blocks round where it strikes, as TNT would and by the world's",
+                "rules for TNT, but never a block of any ship, and hurting only hostile mobs. Without it, bolts break nothing."
+            )
+            .define("turretBlasts", true);
         FREIGHTER_BANDSTAND = builder
             .comment(
                 "Whether the freighter is built with a bandstand in her club, the room through the doorway at her port bow, its",

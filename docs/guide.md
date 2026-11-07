@@ -2763,24 +2763,25 @@ Button is among her blocks in the creative tab; set on any freighter, it works h
 Up her core, through its doorway from the ring corridor on her bow side, a slim chrome crew ladder climbs the core's
 back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
 gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
-on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up
-to the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal on the hub where the dome's
-ribs meet, high enough to
-see all round her past her rim and up into the sky, their glowing muzzles low in the view; sneak to get up and your own
-view is back at once. The barrels turn to whatever you look at, their servos whirring, all the way round and from a
-little below level to near straight up. The sight is drawn in thin amber lines on a dark frame: at the middle a ring
-round a cross, where the bolts land, which turns red with brackets closing in round it and a beep while it rests on a
-hostile mob in reach, and grey with a red X where the cannon cannot fire (into her own hull, or lower than its barrels
-go; pull the trigger there and it only clicks); to its right a thermometer that fills with every bolt, going from amber
-to red, and flashes with heat waves rising over it once the cannon has overheated; and to its left a ring showing her
-from above, her bow at the top, a beam out of her the way you face. Hold attack to fire, red bolts from alternate
-barrels four times a second with a crack each, sparks wherever they strike; they hurt hostile mobs only, never players,
-villagers, pets, animals or anyone aboard her, and never break a block, and attack does nothing else while you sit
-there, so the dome's glass is safe. Every bolt heats the cannon and it cools once you let go a moment: twenty bolts in a
-row and it overheats with a hiss, holding its fire a couple of seconds until it has cooled right down. The Laser Cannon
-is among her blocks in the creative tab; set down by hand near any seat, it works there too, its barrels resting the way
-you faced as you set it down. The server config's `freighter.turrets` builds her without it and keeps every laser
-cannon from firing.
+on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up to
+the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal on the hub where the dome's ribs
+meet, high enough to see all round her past her rim and up into the sky, their glowing muzzles low in the view; sneak to
+get up and your own view is back at once. The barrels turn to whatever you look at, their servos whirring, all the way
+round and from a little below level to near straight up. The sight is drawn in thin amber lines on a dark frame: at the
+middle a ring round a cross, where the bolts land, which turns red with brackets closing in round it and a beep while it
+rests on a hostile mob in reach, and grey with a red X where the cannon cannot fire (into her own hull, or lower than
+its barrels go; pull the trigger there and it only clicks); to its right a thermometer that fills with every bolt, going
+from amber to red, and flashes with heat waves rising over it once the cannon has overheated; and to its left a ring
+showing her from above, her bow at the top, a beam out of her the way you face. Hold attack to fire, red bolts from
+alternate barrels four times a second with a crack each, sparks wherever they strike, and where one meets a block it
+goes off in a small blast that knocks out the blocks round it, as TNT does by the world's own rules for TNT, but never a
+block of any ship, her own least of all; bolts and blasts alike hurt hostile mobs only, never players, villagers, pets,
+animals or anyone aboard her, and attack does nothing else while you sit there, so the dome's glass is safe. Every bolt
+heats the cannon and it cools once you let go a moment: twenty bolts in a row and it overheats with a hiss, holding its
+fire a couple of seconds until it has cooled right down. The Laser Cannon is among her blocks in the creative tab; set
+down by hand near any seat, it works there too, its barrels resting the way you faced as you set it down. The server
+config's `freighter.turrets` builds her without it and keeps every laser cannon from firing, and
+`freighter.turretBlasts` keeps their bolts from blasting any block.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
 copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing

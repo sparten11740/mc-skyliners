@@ -200,6 +200,8 @@ const TAKEOFF_CALLED_OFF_TICKS = 700;
 // a creeper is hung to shoot at, in blocks; and how long attack is held, in ticks, several bolts' worth.
 const LADDER_CLIMB_TICKS = 100;
 const TURRET_TARGET_UP = 10;
+// How many of the nine blocks of stone shot at may still stand once her cannon's bolts have blasted it.
+const TURRET_BLASTED_LEFT = 5;
 const TURRET_TARGET_AHEAD = 10;
 const TURRET_FIRE_TICKS = 30;
 // How far down the gunner looks at her hull, in degrees, past the fifteen her cannon's barrels go, and how long the
@@ -1192,11 +1194,25 @@ function checkFreighterTurret() {
   const health = reply.ok === false ? 0 : Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1] ?? CREEPER_HEALTH);
   must("server kill @e[type=creeper]; server difficulty peaceful");
   expect(health < CREEPER_HEALTH, "freighter: holding attack, her cannon strikes a creeper in the sky where the sight looks", `health ${health} of ${CREEPER_HEALTH}`);
-  expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing, the gunner breaks nothing, the dome's glass whole");
+  turretBlastsBlocks(creeper);
+  expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing, the gunner breaks none of her, the dome's glass whole");
   turretHoldsFireLow();
   turretOverheats();
   const gotUp = send(`key down left_shift; wait ${VIEW_BACK_TICKS}t; skyliners:gunner; key up left_shift; wait 5t`).find((reply) => "on" in reply);
   expect(gotUp?.on === false, "freighter: sneaking to get up from her gunner's seat gives the player their own view back at once");
+}
+
+// A block of stone hung in the sky where the creeper was, three by three, aimed at from her cannon's sight and shot:
+// her bolts blast it away, or most of it.
+function turretBlastsBlocks([cx, cy, cz]) {
+  const [x, y, z] = [Math.floor(cx), Math.floor(cy) + 1, Math.floor(cz)];
+  must(`server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} stone; wait ${TURRET_COOLED_TICKS}t`);
+  aimFromSight([x + 0.5, y + 0.5, z + 1]);
+  aimFromSight([x + 0.5, y + 0.5, z + 1]);
+  must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 10t`);
+  const left = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => must(`block ${x + dx},${y + dy},${z}`).id)).filter((id) => id === "minecraft:stone").length;
+  must(`server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} air`);
+  expect(left < TURRET_BLASTED_LEFT, "freighter: her cannon's bolts blast away a block of stone they strike", `${left} of 9 stone left`);
 }
 
 // Looked down at her hull, lower than her cannon's barrels go, it holds its fire: the trigger only clicks.
@@ -2679,7 +2695,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
-  "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
+  "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },
   "laser-crossbow-flight": { run: checkLaserCrossbowInFlight, slow: true, about: "the laser crossbow's bolt, fired aboard a flying freighter, is seen leaving it" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
