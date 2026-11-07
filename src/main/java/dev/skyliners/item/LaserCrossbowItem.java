@@ -6,39 +6,43 @@ import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.LaserBolt;
 import io.netty.buffer.ByteBuf;
+import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The laser crossbow, the freighter's own weapon, our own design: a gunmetal and dark-wood stock, two swept arms and a
- * glowing amber coil for its string. Hold use to charge it, a ratchet and a rising whine, until it clicks, and let go:
- * it is charged, its coil glowing bright; use it again to fire an amber bolt the way its holder looks (see
- * {@link LaserFire}), which strikes hostile mobs hard and throws them back, in a shower of sparks wherever it lands. It
- * never breaks, burns or moves a block, and never hurts players, villagers, pets or animals. Three quick shots and it
- * vents steam a few seconds, its lamps red, before it charges again. The server config's
+ * The laser crossbow, the freighter's own weapon, our own design: a gunmetal receiver on a dark-wood stock, two swept
+ * arms tipped with emitters and an amber string of light between them, and a glowing coil round its prod. Hold use to
+ * charge it, a ratchet and a rising whine, its coil glowing brighter, until it clicks, and let go: it is charged, its
+ * string drawn back and glowing near white, its lamps green; use it again to fire an amber bolt the way its holder
+ * looks (see {@link LaserFire}), which strikes hostile mobs hard and throws them back, in a shower of sparks wherever
+ * it lands. It never breaks, burns or moves a block, and never hurts players, villagers, pets or animals. Three quick
+ * shots and it vents steam a few seconds, its lamps red, before it charges again. The server config's
  * {@code freighter.laserCrossbow} switches it off.
+ *
+ * <p>Its charge and its heat are kept on its stack. Its holder's client works both out at once, as the server does, as
+ * it is let go charged and as it fires, so that it is drawn charged without waiting for the server to say so, and is
+ * told through {@link #clientFired}, which the client sets, the moment it fires, to kick it back then (see
+ * {@code client/LaserCrossbowHands}): the game's time, which the server keeps, runs unevenly on a client.
  */
 public class LaserCrossbowItem extends Item {
     /**
@@ -94,6 +98,12 @@ public class LaserCrossbowItem extends Item {
             ByteBufCodecs.VAR_INT, Heat::shots, ByteBufCodecs.VAR_LONG, Heat::at, Heat::new);
     }
 
+    /**
+     * Set by the client, on its own thread: its own player has fired a laser crossbow from a hand. Nothing anywhere
+     * else, as on a dedicated server.
+     */
+    public static Consumer<InteractionHand> clientFired = hand -> { };
+
     public LaserCrossbowItem(Properties properties) {
         super(properties);
     }
@@ -108,6 +118,23 @@ public class LaserCrossbowItem extends Item {
         return stack.getOrDefault(SkylinersRegistry.LASER_CROSSBOW_HEAT.get(), Heat.COLD).shots();
     }
 
+    /** The game tick of its last shot, while it has not cooled since; 0 once cool. */
+    public static long lastShot(ItemStack stack) {
+        return stack.getOrDefault(SkylinersRegistry.LASER_CROSSBOW_HEAT.get(), Heat.COLD).at();
+    }
+
+    /**
+     * How far it is through charging, so far through this tick, from 0 to 1 once it may be let go, while someone is
+     * holding use with it; 0 otherwise.
+     */
+    public static float charging(ItemStack stack, @Nullable LivingEntity user, float partialTick) {
+        if (user == null || !user.isUsingItem() || user.getUseItem() != stack) {
+            return 0;
+        }
+        float held = user.getTicksUsingItem() + partialTick;
+        return Math.min(1, held / CHARGE_TICKS);
+    }
+
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity user) {
         return HELD_AT_MOST;
@@ -119,8 +146,10 @@ public class LaserCrossbowItem extends Item {
     }
 
     /**
-     * Used: charged, it fires; venting or switched off, it only hisses or clicks; otherwise it starts charging, as long
-     * as use is held.
+     * Used: charged, it fires, and is spent on its holder's client too at once, which kicks it back, the server's own
+     * stack then sent to put the client right should it not have been charged there; venting or switched off, it only
+     * hisses or clicks; otherwise it starts charging, as long as use is held. It is never swung as it fires, as the
+     * game's own crossbow is not.
      */
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -131,9 +160,12 @@ public class LaserCrossbowItem extends Item {
         }
         if (charged(stack)) {
             if (level instanceof ServerLevel server) {
-                fire(server, player, stack);
+                fire(server, player);
+            } else {
+                clientFired.accept(hand);
             }
-            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+            spend(level, player, stack);
+            return InteractionResultHolder.consume(stack);
         }
         if (!level.isClientSide) {
             sound(level, player, SkylinersRegistry.LASER_CROSSBOW_RELOAD.get(), CHARGE_VOLUME, 1.0F);
@@ -149,11 +181,16 @@ public class LaserCrossbowItem extends Item {
         }
     }
 
-    /** Let go after it clicked: it is charged. */
+    /**
+     * Let go after it clicked: it is charged. Let go too soon for the server, which may count a tick or two fewer than
+     * its holder's client did, the client, which charges it itself, is told how it stands.
+     */
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity user, int remaining) {
-        if (!level.isClientSide && HELD_AT_MOST - remaining >= CHARGE_TICKS) {
+        if (HELD_AT_MOST - remaining >= CHARGE_TICKS) {
             stack.set(SkylinersRegistry.LASER_CROSSBOW_CHARGED.get(), true);
+        } else if (user instanceof ServerPlayer player) {
+            player.inventoryMenu.sendAllDataToRemote();
         }
     }
 
@@ -166,9 +203,9 @@ public class LaserCrossbowItem extends Item {
 
     /**
      * Fires its bolt: whatever it lands on struck, hostile mobs only hurt and thrown back; the bolt drawn for everyone
-     * near, sparks where it lands, its shot heard; then it is spent, and a shot hotter, venting after the last of them.
+     * near, sparks where it lands, its shot heard.
      */
-    private static void fire(ServerLevel level, Player player, ItemStack stack) {
+    private static void fire(ServerLevel level, Player player) {
         Vec3 eye = player.getEyePosition();
         HitResult hit = LaserFire.trace(level, player, eye, RANGE);
         Vec3 look = player.getLookAngle();
@@ -180,12 +217,19 @@ public class LaserCrossbowItem extends Item {
             hurt.knockback(THROW, -away.x, -away.z);
         }
         sound(level, player, SkylinersRegistry.LASER_CROSSBOW_SHOT.get(), SHOT_VOLUME, 0.95F + level.getRandom().nextFloat() * 0.1F);
+    }
+
+    /**
+     * Fired, on the server and its holder's client alike: it is spent, and a shot hotter, venting after the last of
+     * them, with a hiss of steam.
+     */
+    private static void spend(Level level, Player player, ItemStack stack) {
         stack.set(SkylinersRegistry.LASER_CROSSBOW_CHARGED.get(), false);
         long now = level.getGameTime();
         Heat before = stack.getOrDefault(SkylinersRegistry.LASER_CROSSBOW_HEAT.get(), Heat.COLD);
         int shots = now - before.at() <= IN_A_ROW ? before.shots() + 1 : 1;
         stack.set(SkylinersRegistry.LASER_CROSSBOW_HEAT.get(), new Heat(shots, now));
-        if (shots >= MOST_HEAT) {
+        if (shots >= MOST_HEAT && !level.isClientSide) {
             sound(level, player, SkylinersRegistry.RAMP_STEAM.get(), VENT_VOLUME, VENT_PITCH);
         }
     }

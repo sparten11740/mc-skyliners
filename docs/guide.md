@@ -2684,14 +2684,19 @@ near any seat, it works there too. The server config's `freighter.turrets` build
 cannon from firing.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
-copper ingot), is her own weapon. Hold use to charge it, a ratchet and a rising whine, until it clicks, and let go: its
-coil glows bright and its lamps green. Use it again to fire an amber bolt the way you look, up to 48 blocks, which
-strikes hostile mobs hard and throws them back in a shower of sparks; it never hurts players, villagers, pets or
-animals, and never breaks a block. Three quick shots and it vents steam for a few seconds, its lamps red, hissing if you
-try it, before it charges again. The server config's `freighter.laserCrossbow` switches it off, leaving it a click. Its
-rack hangs on the wall of her entry hall, just in from the corridor, the crossbow lying across its two brass pegs: use
-it with an empty hand to take the crossbow down, and use it holding the crossbow to rack it again; an empty rack shows
-its bare pegs. The Crossbow Rack is among her blocks in the creative tab, put up empty.
+copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing
+emitters and a string of amber light between them, a copper-wound coil round its prod. Hold use to charge it, a ratchet
+and a rising whine: you raise it to aim as its coil glows warmer and then hot, until it clicks. Let go and it stays
+charged, its string drawn back in a V glowing near white and the three lamps at the back of its sight green; anyone
+watching sees you aim it in both hands. Use it again to fire: it kicks back with a flash at its muzzle, and an amber
+bolt flies from it the way you look, up to 48 blocks, leaving a glowing trail that fades, seen leaving your crossbow by
+you and everyone near, on the ground or aboard a ship in flight. It strikes hostile mobs hard and throws them back in a
+shower of sparks; it never hurts players, villagers, pets or animals, and never breaks a block. Three quick shots and it
+vents steam for a few seconds, its lamps red, hissing if you try it, before it charges again. The server config's
+`freighter.laserCrossbow` switches it off, leaving it a click. Its rack hangs on the wall of her entry hall, just in
+from the corridor, the crossbow lying across its two brass pegs: use it with an empty hand to take the crossbow down,
+and use it holding the crossbow to rack it again; an empty rack shows its bare pegs. The Crossbow Rack is among her
+blocks in the creative tab, put up empty.
 
 Her club, the room through the doorway at her port bow, has a bar along its straight wall, as the rocket's club has:
 a counter with stools and two drink taps, the robot bartender behind it selling mocktails, and back bars of bottles

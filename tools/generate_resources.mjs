@@ -731,23 +731,115 @@ function hullLightLang() {
   }
 }
 
-// The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
-// (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
-// charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
+// The freighter's laser crossbow (see LaserCrossbowItem), our own design, drawn muzzle north with its rail up, as it is
+// aimed: a gunmetal receiver on a dark-wood stock and pistol grip, a steel rail along its top with a glowing channel
+// for the bolt, an emitter at its muzzle, a trigger in its guard, and a sight housing at the back whose face shows the
+// one aiming its three heat lamps. Across its front, its prod, a coil wound in copper round it, and two arms, straight
+// out and then swept back, each tipped with an emitter pod glowing inward, an amber string of light between them.
+// Resting, its string lies straight across the pods; charged, it is drawn back to its latch in a V. As it charges its
+// coil, string and emitters glow brighter in three steps, near white once charged, its lamps then green; venting, its
+// lamps are red (see LaserCrossbowLooks). Its glowing parts glow whatever the light round them. Held, it is posed by
+// LaserCrossbowHands: these transforms are for that pose, its muzzle along the aiming arm.
 {
-  for (const look of ["charged", "venting"]) {
-    write(`assets/${ID}/models/item/laser_crossbow_${look}.json`, {
-      parent: "minecraft:item/handheld", textures: { layer0: `${ID}:item/laser_crossbow_${look}` },
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const sides = ["north", "south", "east", "west", "up", "down"];
+  const round = (value) => Math.round(value * 1000) / 1000;
+  // A box glowing all over whatever the light round it, shaded by no side.
+  const glowing = (from, to, texture, rotation) => ({ ...solid(from, to, texture, rotation), shade: false,
+    faces: Object.fromEntries(sides.map((side) => [side, { texture, ...lit }])) });
+  // A box of one texture with one face glowing in another.
+  const glowingFace = (from, to, texture, side, glow) => {
+    const box = solid(from, to, texture);
+    box.faces[side] = { texture: glow, ...lit };
+    return box;
+  };
+  // How far each arm's swept outer part is turned back, in degrees, and where its tip lies, in pixels: the string is
+  // drawn back from both tips at that angle again, to its latch on the rail.
+  const SWEEP = 22.5;
+  const turn = (SWEEP * Math.PI) / 180;
+  const tipX = 13 + 3 * Math.cos(turn);
+  const tipZ = 2 + 3 * Math.sin(turn);
+  const halfString = (tipX - 8) / Math.cos(turn);
+  const latchZ = tipZ + halfString * Math.sin(turn);
+  const body = [
+    solid([6, 6.5, 0], [10, 9.5, 4], "#metal"),
+    glowing([5.85, 6.35, 0.75], [10.15, 9.65, 3.25], "#coil"),
+    solid([5.7, 6.2, 1.25], [10.3, 9.8, 1.75], "#copper"),
+    solid([5.7, 6.2, 2.25], [10.3, 9.8, 2.75], "#copper"),
+    solid([6.5, 6.5, 4], [9.5, 9, 11], "#metal"),
+    solid([7, 9, -0.5], [9, 9.5, 11], "#trim"),
+    glowing([7.6, 9.5, -0.25], [8.4, 9.55, 9.25], "#channel"),
+    glowingFace([7.25, 8.5, -1.75], [8.75, 10, -0.5], "#metal", "north", "#emitter"),
+    solid([7.65, 9.5, 0.25], [8.35, 10.75, 0.85], "#trim"),
+    solid([7.4, 9.5, round(latchZ - 0.5)], [8.6, 9.9, round(latchZ + 0.5)], "#trim"),
+    solid([7, 9.5, 9.25], [9, 10.75, 11], "#metal"),
+    ...[7.15, 7.75, 8.35].map((x) => glowing([x, 9.85, 11], [x + 0.5, 10.4, 11.3], "#lamp")),
+    solid([7, 6, 11], [9, 9.25, 16.5], "#wood"),
+    solid([7, 4.25, 12.5], [9, 6, 16.5], "#wood"),
+    solid([6.75, 4, 16.5], [9.25, 9.5, 17.25], "#metal"),
+    solid([7.25, 2, 8.75], [8.75, 6.5, 10.5], "#wood", { origin: [8, 6.5, 9.6], axis: "x", angle: -22.5 }),
+    solid([7.6, 4, 6.75], [8.4, 4.5, 9.25], "#metal"),
+    solid([7.6, 4.5, 6.75], [8.4, 6.5, 7.25], "#metal"),
+    solid([7.8, 4.9, 8], [8.2, 6.5, 8.5], "#trim"),
+    solid([10, 8.75, 1.25], [13, 10.25, 2.75], "#metal"),
+    solid([3, 8.75, 1.25], [6, 10.25, 2.75], "#metal"),
+    solid([13, 9, 1.5], [16, 10, 2.5], "#metal", { origin: [13, 9.5, 2], axis: "y", angle: -SWEEP }),
+    solid([0, 9, 1.5], [3, 10, 2.5], "#metal", { origin: [3, 9.5, 2], axis: "y", angle: SWEEP }),
+    glowingFace([round(tipX - 0.7), 8.5, round(tipZ - 0.7)], [round(tipX + 0.7), 10.5, round(tipZ + 0.7)], "#metal", "west", "#emitter"),
+    glowingFace([round(16 - tipX - 0.7), 8.5, round(tipZ - 0.7)], [round(16 - tipX + 0.7), 10.5, round(tipZ + 0.7)], "#metal", "east", "#emitter"),
+  ];
+  const slack = [glowing([round(16 - tipX + 0.7), 9.55, round(tipZ - 0.2)], [round(tipX - 0.7), 9.95, round(tipZ + 0.2)], "#string")];
+  const length = round(halfString);
+  const drawn = [
+    glowing([8, 9.55, round(latchZ - 0.2)], [8 + length, 9.95, round(latchZ + 0.2)], "#string", { origin: [8, 9.75, round(latchZ)], axis: "y", angle: SWEEP }),
+    glowing([8 - length, 9.55, round(latchZ - 0.2)], [8, 9.95, round(latchZ + 0.2)], "#string", { origin: [8, 9.75, round(latchZ)], axis: "y", angle: -SWEEP }),
+  ];
+  // Laid on a wall, as in a frame or on its rack, it shows its top, its muzzle to the right.
+  const display = {
+    ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.5, 0.5, 0.5] },
+    fixed: { rotation: [-90, 90, 0], translation: [0, 0, 0], scale: [1, 1, 1] },
+    thirdperson_righthand: { rotation: [0, 0, 0], translation: [0, 2.5, -2], scale: [0.8, 0.8, 0.8] },
+    firstperson_righthand: { rotation: [3, 4, 0], translation: [-0.5, 2, -1], scale: [0.52, 0.52, 0.52] },
+  };
+  for (const [shape, string] of [["slack", slack], ["drawn", drawn]]) {
+    write(`assets/${ID}/models/item/laser_crossbow_${shape}.json`, { display, elements: [...body, ...string] });
+  }
+  // Each look in the hand, on the ground and on a wall is the model; among the slots it is its icon, which reads better
+  // so small (see generate_textures.mjs).
+  const looks = [
+    ["laser_crossbow", "slack", "rest", "dark"],
+    ["laser_crossbow_warm", "slack", "warm", "dark"],
+    ["laser_crossbow_hot", "slack", "hot", "dark"],
+    ["laser_crossbow_charged", "drawn", "charged", "green"],
+    ["laser_crossbow_venting", "slack", "rest", "red"],
+  ];
+  for (const [name, shape, glow, lamp] of looks) {
+    const glowing = `${ID}:item/laser_crossbow_glow_${glow}`;
+    write(`assets/${ID}/models/item/${name}.json`, {
+      loader: "neoforge:separate_transforms",
+      gui_light: "front",
+      base: {
+        parent: `${ID}:item/laser_crossbow_${shape}`,
+        textures: {
+          metal: `${ID}:item/laser_crossbow_metal`, trim: `${ID}:item/laser_crossbow_trim`, wood: `${ID}:item/laser_crossbow_wood`,
+          copper: `${ID}:item/laser_crossbow_copper`, coil: glowing, string: glowing, emitter: glowing,
+          channel: `${ID}:item/laser_crossbow_glow_${glow === "charged" ? "charged" : "rest"}`, lamp: `${ID}:item/laser_crossbow_lamp_${lamp}`,
+          particle: `${ID}:item/laser_crossbow_metal`,
+        },
+      },
+      perspectives: {
+        gui: { parent: "minecraft:item/generated", loader: "neoforge:item_layers", textures: { layer0: `${ID}:item/${name}`, particle: `${ID}:item/${name}` } },
+      },
+      ...(name === "laser_crossbow" ? {
+        overrides: [
+          { predicate: { [`${ID}:charge`]: 0.34 }, model: `${ID}:item/laser_crossbow_warm` },
+          { predicate: { [`${ID}:charge`]: 0.67 }, model: `${ID}:item/laser_crossbow_hot` },
+          { predicate: { [`${ID}:charged`]: 1 }, model: `${ID}:item/laser_crossbow_charged` },
+          { predicate: { [`${ID}:venting`]: 1 }, model: `${ID}:item/laser_crossbow_venting` },
+        ],
+      } : {}),
     });
   }
-  write(`assets/${ID}/models/item/laser_crossbow.json`, {
-    parent: "minecraft:item/handheld",
-    textures: { layer0: `${ID}:item/laser_crossbow` },
-    overrides: [
-      { predicate: { [`${ID}:charged`]: 1 }, model: `${ID}:item/laser_crossbow_charged` },
-      { predicate: { [`${ID}:venting`]: 1 }, model: `${ID}:item/laser_crossbow_venting` },
-    ],
-  });
 }
 
 // A launch pad's blocks (see LaunchPad): the grate over its flame pit, the zeppelin's aluminium catwalk grating to look
