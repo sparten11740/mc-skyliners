@@ -131,8 +131,13 @@ public final class BoardingRamp {
         return frame;
     }
 
+    /** The floor its plate is part of while it is up, the top of its hatch, which its plate shows on top as it moves. */
+    public BlockState floor() {
+        return hatch.top();
+    }
+
     /** Whether it is down, or on its way down. */
-    boolean down() {
+    public boolean down() {
         return deploying;
     }
 

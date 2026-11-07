@@ -9,21 +9,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -70,18 +65,12 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
     private static final long LIGHT_EVERY = 10;
     /** Each block of a window's light at its corners over and under it, and when it was looked at, in ticks. */
     private static final Map<FloorWindowBlockEntity, Lit> LIT = new WeakHashMap<>();
-    /** The random a floor's model is asked for its top with: the same every time, so its look is too. */
-    private static final RandomSource SAME = RandomSource.create();
 
     static {
         for (int face = 0; face <= FACES; face++) {
             COS[face] = Math.cos(Mth.TWO_PI * face / FACES);
             SIN[face] = Math.sin(Mth.TWO_PI * face / FACES);
         }
-    }
-
-    /** A floor's top: its texture, and the tint it takes, if any. */
-    private record Look(TextureAtlasSprite sprite, int tintIndex) {
     }
 
     /** A block of a window's light at the corners of its top and underside, and when it was looked at, in ticks. */
@@ -105,8 +94,8 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         double opened = middleBlock.toward(DrawingClock.ticks(partialTick), open, IRIS_PER_TICK);
         double radius = FloorWindowBlock.RADIUS * opened * opened * (3 - 2 * opened);
         PoseStack.Pose at = pose.last();
-        Look look = look(window.floor());
-        int colour = tint(window, look);
+        FloorLook look = FloorLook.of(window.floor());
+        int colour = look.colour(window.floor(), window.getLevel(), window.getBlockPos());
         Lit lit = lit(window, light);
         Corners over = lit.over();
         Corners under = lit.under();
@@ -372,30 +361,5 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
 
     private static float z(int face, double out) {
         return (float) (0.5 + SIN[face] * out);
-    }
-
-    /**
-     * The look of a floor's top, its texture and its tint, from its model as it is now, so it follows the textures
-     * through a reload of them: a lookup in the models' own table and their list of quads, cheap enough for every block
-     * of a window each frame.
-     */
-    private static Look look(BlockState floor) {
-        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(floor);
-        SAME.setSeed(0);
-        List<BakedQuad> top = model.getQuads(floor, Direction.UP, SAME);
-        if (top.isEmpty()) {
-            return new Look(model.getParticleIcon(), -1);
-        }
-        BakedQuad quad = top.get(0);
-        return new Look(quad.getSprite(), quad.isTinted() ? quad.getTintIndex() : -1);
-    }
-
-    /** The colour a floor's top is drawn in where it stands: white, or its tint there, as grass is. */
-    private static int tint(FloorWindowBlockEntity window, Look look) {
-        if (look.tintIndex() < 0 || window.getLevel() == null) {
-            return 0xFFFFFFFF;
-        }
-        int rgb = Minecraft.getInstance().getBlockColors().getColor(window.floor(), window.getLevel(), window.getBlockPos(), look.tintIndex());
-        return 0xFF000000 | rgb;
     }
 }

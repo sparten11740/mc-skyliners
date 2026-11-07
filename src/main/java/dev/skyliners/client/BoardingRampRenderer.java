@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -55,24 +57,18 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final Map<RampPanelBlock.Button, Integer> COLOURS = Map.of(
         RampPanelBlock.Button.LOWER, 0xFF2F6FC0, RampPanelBlock.Button.RAISE, 0xFF2E9A4A);
     /**
-     * The plate: how far in from the well's sides its edges stand, how thick it is, how far its hazard stripes reach
-     * in from its edges and how long each is, how far apart its ribs are and how far they and its deck stand proud,
-     * all in blocks.
+     * The plate: how far in from the well's sides its edges stand, how thick it is, how deep the dark edge at its foot
+     * is, and how far its floor stands proud of it, all in blocks.
      */
     private static final float SIDE_GAP = 0.05F;
     private static final float THICK = 0.25F;
-    private static final float STRIPE = 0.2F;
-    private static final float STRIPE_LENGTH = 0.4F;
-    private static final float RIB_SPACING = 0.5F;
-    private static final float RIB = 0.05F;
     private static final float PLATE = 0.02F;
+    private static final float TOP_PROUD = 0.002F;
     /** What makes a block's tint, which has no alpha, a colour drawn solid. */
     private static final int OPAQUE = 0xFF000000;
+    /** The foot lip's grey steel, and the dark edge at the plate's foot. */
     private static final int DECK = 0xFF7A7F88;
-    private static final int RIB_GREY = 0xFF5C6169;
     private static final int EDGE = 0xFF2A2D33;
-    private static final int HAZARD_YELLOW = 0xFFE8B828;
-    private static final int HAZARD_BLACK = 0xFF1C1D20;
     /** The hinge tube along the plate's head: its half thickness, in blocks, and its steel. */
     private static final float HINGE_HALF = 0.14F;
     private static final int STEEL = 0xFF8A8F98;
@@ -197,6 +193,11 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         pose.mulPose(Axis.XP.rotationDegrees(lip(ticks, slope)));
         FlatQuads.box(consumer, pose.last(), light, DECK, -half, -THICK / 2, 0, half, 0, LIP);
         pose.popPose();
+        pose.pushPose();
+        pose.mulPose(Axis.XP.rotationDegrees((float) angle));
+        floorTop(buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS)), pose.last(), light, ramp.floor(), level, foot, half,
+            (float) frame.length());
+        pose.popPose();
         pose.popPose();
     }
 
@@ -216,24 +217,47 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     }
 
     /**
-     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it, ribbed deck plate on top
-     * between hazard stripes along its edges.
+     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it and along its sides, a dark
+     * edge at its foot, and on top the floor it is part of while up (see {@link #floorTop}), so nothing changes as it
+     * folds away into the floor.
      */
     private static void plate(VertexConsumer consumer, PoseStack.Pose at, int light, float half, float length, int skin) {
-        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, -PLATE, length);
-        FlatQuads.box(consumer, at, light, DECK, -half + STRIPE, -PLATE, 0, half - STRIPE, 0, length);
-        for (float along = RIB_SPACING / 2; along < length; along += RIB_SPACING) {
-            FlatQuads.box(consumer, at, light, RIB_GREY, -half + STRIPE, 0, along - RIB / 2, half - STRIPE, RIB, along + RIB / 2);
-        }
-        int stripes = Math.round(length / STRIPE_LENGTH);
-        for (int stripe = 0; stripe < stripes; stripe++) {
-            int colour = stripe % 2 == 0 ? HAZARD_YELLOW : HAZARD_BLACK;
-            float from = stripe * STRIPE_LENGTH;
-            float to = Math.min(length, from + STRIPE_LENGTH);
-            FlatQuads.box(consumer, at, light, colour, -half, -PLATE, from, -half + STRIPE, 0, to);
-            FlatQuads.box(consumer, at, light, colour, half - STRIPE, -PLATE, from, half, 0, to);
-        }
+        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, 0, length);
         FlatQuads.box(consumer, at, light, EDGE, -half, -THICK, length - PLATE, half, 0, length);
+    }
+
+    /**
+     * The plate's top, the floor it is part of while up, laid block by block from its hinge out along it and from one
+     * side across, standing just proud of the plate, its texture as the floor's own blocks lay it.
+     */
+    private static void floorTop(VertexConsumer consumer, PoseStack.Pose at, int light, BlockState floor, Level level, BlockPos foot, float half,
+                                 float length) {
+        if (floor.isAir()) {
+            return;
+        }
+        FloorLook look = FloorLook.of(floor);
+        int colour = look.colour(floor, level, foot);
+        for (float near = 0; near < length; near++) {
+            float far = Math.min(length, near + 1);
+            for (float left = -half; left < half; left++) {
+                float right = Math.min(half, left + 1);
+                floorTile(consumer, at, light, colour, look, left, right, near, far);
+            }
+        }
+    }
+
+    /** One block's worth or less of the plate's floor, its texture from its corner as far as it reaches. */
+    private static void floorTile(VertexConsumer consumer, PoseStack.Pose at, int light, int colour, FloorLook look, float left, float right,
+                                  float near, float far) {
+        float u1 = look.u(right - left);
+        float v1 = look.v(far - near);
+        float u0 = look.u(0);
+        float v0 = look.v(0);
+        float y = TOP_PROUD;
+        consumer.addVertex(at, left, y, near).setColor(colour).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        consumer.addVertex(at, left, y, far).setColor(colour).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        consumer.addVertex(at, right, y, far).setColor(colour).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        consumer.addVertex(at, right, y, near).setColor(colour).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
     }
 
     /** A lamp either side at so far out from the ramp's middle line, glowing in a colour; none while blinked off. */
