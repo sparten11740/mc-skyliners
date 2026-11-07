@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PNP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "skyliners:airframe_panel"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "id": "skyliners:hull_plate_riveted",
+    "count": 8
+  }
+}

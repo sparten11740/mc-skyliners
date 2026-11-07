@@ -414,6 +414,7 @@ public final class FreighterLayout extends HullLayout {
         layout.robots();
         layout.ramp();
         layout.turret();
+        FreighterPlating.build(layout);
         FreighterExterior.build(layout);
         layout.bandstand();
         layout.clubBar();

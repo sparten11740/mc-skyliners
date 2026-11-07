@@ -2629,6 +2629,12 @@ fixed to a wall (a dish on an arm, a mast as a whip on its hinge, fins out from 
 conduit, a spotlight on a bracket) or hung under a ceiling (a dish turned down at the ground, a blade antenna, a radome,
 a nozzle, a tank, a landing light). The server config's `freighter.exterior` builds her without them.
 
+Her outer ring and rim are plated: riveted seams run out from her middle every 30 degrees, a few sectors between them
+are dark gunmetal, welded patches are scattered over the rest, and yellow and black hazard stripes ring her docking
+collars and run along the foot of her rim under her engines. The Dark, Riveted and Patched Hull Plates and the Hazard
+Plate are among her blocks in the creative tab, each a whole plate set by hand. The server config's `freighter.plating`
+leaves her skin one pale grey.
+
 Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
 bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three
 tall in the corridor's wall, out to her outer bulkhead, where her hull grows too low to stand in. Past the bulkhead the

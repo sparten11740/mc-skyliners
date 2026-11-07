@@ -1395,6 +1395,27 @@ public final class SkylinersRegistry {
             .lightLevel(state -> HULL_FLOODLIGHT_GLOW)
     );
     public static final DeferredItem<BlockItem> HULL_FLOODLIGHT_ITEM = ITEMS.registerSimpleBlockItem(HULL_FLOODLIGHT);
+    /**
+     * The freighter's hull plates (see {@link ShellBlock}), laid in place of her cover outside where nobody inside sees
+     * it, cut to her curve as her cover is: dark gunmetal plate, a riveted seam, a welded patch and hazard stripes. Set
+     * by hand, each is a whole plate; broken, each gives itself back.
+     */
+    public static final DeferredBlock<ShellBlock> HULL_PLATE_DARK = BLOCKS.registerBlock(
+        "hull_plate_dark", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_PLATE_DARK_ITEM), metal(MapColor.COLOR_GRAY)
+    );
+    public static final DeferredItem<BlockItem> HULL_PLATE_DARK_ITEM = ITEMS.registerSimpleBlockItem(HULL_PLATE_DARK);
+    public static final DeferredBlock<ShellBlock> HULL_PLATE_RIVETED = BLOCKS.registerBlock(
+        "hull_plate_riveted", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_PLATE_RIVETED_ITEM), metal(MapColor.METAL)
+    );
+    public static final DeferredItem<BlockItem> HULL_PLATE_RIVETED_ITEM = ITEMS.registerSimpleBlockItem(HULL_PLATE_RIVETED);
+    public static final DeferredBlock<ShellBlock> HULL_PLATE_PATCHED = BLOCKS.registerBlock(
+        "hull_plate_patched", properties -> new ShellBlock(properties, SkylinersRegistry.HULL_PLATE_PATCHED_ITEM), metal(MapColor.COLOR_LIGHT_GRAY)
+    );
+    public static final DeferredItem<BlockItem> HULL_PLATE_PATCHED_ITEM = ITEMS.registerSimpleBlockItem(HULL_PLATE_PATCHED);
+    public static final DeferredBlock<ShellBlock> HAZARD_PLATE = BLOCKS.registerBlock(
+        "hazard_plate", properties -> new ShellBlock(properties, SkylinersRegistry.HAZARD_PLATE_ITEM), metal(MapColor.COLOR_YELLOW)
+    );
+    public static final DeferredItem<BlockItem> HAZARD_PLATE_ITEM = ITEMS.registerSimpleBlockItem(HAZARD_PLATE);
     /** The bandstand in the freighter's club, its band playing her song (see {@link BandstandBlock}). */
     public static final DeferredBlock<BandstandBlock> BANDSTAND = BLOCKS.registerBlock(
         "bandstand", BandstandBlock::new,
@@ -3010,6 +3031,10 @@ public final class SkylinersRegistry {
             EXHAUST_VENT_ITEM,
             HULL_MACHINERY_ITEM,
             HULL_FLOODLIGHT_ITEM,
+            HULL_PLATE_DARK_ITEM,
+            HULL_PLATE_RIVETED_ITEM,
+            HULL_PLATE_PATCHED_ITEM,
+            HAZARD_PLATE_ITEM,
             BANDSTAND_ITEM,
             SPOOKIE_HAMMOCK_ITEM,
             ENGINE_GRATING_ITEM,

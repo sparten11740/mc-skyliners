@@ -461,6 +461,30 @@ function hullFittingLang() {
   };
 }
 
+// The freighter's hull plates (see FreighterPlating): skin cut to her curve as her cover is, baked by the "shell"
+// loader, each of its own texture; set by hand, a whole plate, its item shown as one. Part of her hull as her cover is,
+// so held fast aboard her; each gives itself back.
+for (const name of ["hull_plate_dark", "hull_plate_riveted", "hull_plate_patched", "hazard_plate"]) {
+  hullPlate(name);
+}
+function hullPlate(name) {
+  write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
+  write(`assets/${ID}/models/block/${name}.json`, {
+    loader: `${ID}:shell`, render_type: "minecraft:solid", textures: { skin: `${ID}:block/${name}`, particle: `${ID}:block/${name}` },
+  });
+  write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/${name}` } });
+  dropsItself(name);
+  cubes[name] = null;
+}
+function hullPlateLang() {
+  return {
+    "block.skyliners.hull_plate_dark": "Dark Hull Plate",
+    "block.skyliners.hull_plate_riveted": "Riveted Hull Plate",
+    "block.skyliners.hull_plate_patched": "Patched Hull Plate",
+    "block.skyliners.hazard_plate": "Hazard Plate",
+  };
+}
+
 // The freighter's club bandstand (see BandstandBlock): its stage, a low dark-oak platform with a brass edge along its
 // front; its band is drawn over it by BandstandRenderer. Its item shows the stage.
 {
@@ -10812,6 +10836,10 @@ shaped("heat_sink", ["BBB", "BBB", "ICI"], { B: "minecraft:iron_bars", I: "minec
 shaped("exhaust_vent", ["B", "H", "I"], { B: "minecraft:iron_bars", H: "minecraft:hopper", I: "minecraft:iron_ingot" }, 2);
 shaped("hull_machinery", ["CRC", "III"], { C: "minecraft:copper_ingot", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 2);
 shaped("hull_floodlight", ["IGI", " I "], { I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 2);
+shaped("hull_plate_dark", ["PPP", "PDP", "PPP"], { P: `${ID}:airframe_panel`, D: "minecraft:gray_dye" }, 8);
+shaped("hull_plate_riveted", ["PPP", "PNP", "PPP"], { P: `${ID}:airframe_panel`, N: "minecraft:iron_nugget" }, 8);
+shaped("hull_plate_patched", ["PPP", "PCP", "PPP"], { P: `${ID}:airframe_panel`, C: "minecraft:copper_ingot" }, 8);
+shaped("hazard_plate", ["PPP", "YPB", "PPP"], { P: `${ID}:airframe_panel`, Y: "minecraft:yellow_dye", B: "minecraft:black_dye" }, 7);
 shaped("bandstand", ["NNN", "PPP"], { N: "minecraft:note_block", P: "minecraft:dark_oak_slab" }, 1);
 shaped("spookie_hammock", ["I I", "WWW", "I I"], { I: "minecraft:iron_bars", W: "minecraft:orange_wool" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
@@ -11554,6 +11582,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...clubBarLang(),
   ...girderDecorLang(),
   ...hullFittingLang(),
+  ...hullPlateLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

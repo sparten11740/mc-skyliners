@@ -69,6 +69,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GRILLE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_EXTERIOR;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_PLATING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CANOPY_DIMMER;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
@@ -644,6 +645,13 @@ public final class SkylinersConfig {
                 "off wisps, boxes and pipes of machinery on her prongs and floodlights under her. Without them, her hull is bare."
             )
             .define("exterior", true);
+        FREIGHTER_PLATING = builder
+            .comment(
+                "Whether the freighter's outer ring and rim are plated: riveted seams running out from her middle, sectors of",
+                "dark gunmetal plate, welded patches, and hazard stripes round her docking collars and under her engines.",
+                "Without it, her hull is one pale grey skin."
+            )
+            .define("plating", true);
         FREIGHTER_CANOPY_DIMMER = builder
             .comment(
                 "Whether the freighter's canopy is built of glass a window dimmer darkens, with a dimmer at her pilot's left",

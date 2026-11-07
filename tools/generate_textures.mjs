@@ -8873,4 +8873,34 @@ function hullFittingTextures() {
   }, 0);
 }
 hullFittingTextures();
+
+// The freighter's hull plates (see FreighterPlating): a dark gunmetal plate edged in a darker seam, rivets along its top
+// and bottom; a riveted seam in her cover's pale grey, two rows of rivets either side of a darker joint; a welded
+// patch, a dull plate set into her pale grey, its weld bead round it, a rivet at each corner and a scorch across it;
+// and hazard stripes, yellow and black on the slant, worn here and there to grey.
+function hullPlateTextures() {
+  texture(blockOutput, "hull_plate_dark", (x, y) => {
+    if (x === 0 || y === 0) return [0x40, 0x46, 0x4e];
+    if ((y === 2 || y === 13) && x % 4 === 2) return [0x80, 0x88, 0x92];
+    return (x * 5 + y * 3) % 29 === 0 ? [0x6a, 0x72, 0x7c] : [0x5a, 0x61, 0x6a];
+  }, 4);
+  texture(blockOutput, "hull_plate_riveted", (x, y) => {
+    if (x === 7 || x === 8) return [0xa4, 0xaa, 0xb2];
+    if ((x === 4 || x === 11) && y % 4 === 1) return [0x9a, 0xa0, 0xa8];
+    return [0xc6, 0xcb, 0xd1];
+  }, 3);
+  texture(blockOutput, "hull_plate_patched", (x, y) => {
+    const inPatch = x >= 3 && x <= 12 && y >= 4 && y <= 12;
+    const onBead = inPatch && (x === 3 || x === 12 || y === 4 || y === 12);
+    if (onBead) return [0x6e, 0x6a, 0x62];
+    if ((x === 4 || x === 11) && (y === 5 || y === 11)) return [0x7c, 0x78, 0x70];
+    if (inPatch) return Math.abs(x - y) <= 1 ? [0x6a, 0x66, 0x5c] : [0x9a, 0x98, 0x8c];
+    return [0xc4, 0xc9, 0xcf];
+  }, 5);
+  texture(blockOutput, "hazard_plate", (x, y) => {
+    if ((x * 7 + y * 11) % 23 === 0) return [0x8a, 0x86, 0x7a];
+    return Math.floor((x + y) / 4) % 2 === 0 ? [0xf0, 0xbc, 0x1c] : [0x24, 0x24, 0x26];
+  }, 5);
+}
+hullPlateTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);
