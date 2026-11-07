@@ -259,22 +259,24 @@ waters what grows round it; and the `IrrigationValveBlock` that sets them off.
 The freighter is drawn in `FreighterShape`'s metres, her hull the union of her parts' solids, and cut into blocks by
 `FreighterLayout`, always at scale 2.4, round one deck: her skin cut by `SurfaceCut` and glazed round her cockpit's cone
 and her domes, her outer bulkhead, her core, ring corridor and room walls of `PADDED_BULKHEAD`, the passages out past
-the bulkhead to her cockpit and along her prongs walled off from the void beside them, her landing legs, her
-thrusters and her cockpit's control head, seats and autopilot screen, the head wired to her thrusters' relays and her
-legs' feet as a `FreighterPilot.Wiring`. `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her
-lift from the mass Sable weighs and a trim it learns, split over her four clusters by her tilt and by where Sable puts
-her centre of mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the
-heading she wants, round a circle or onto a pin with the zeppelin's `Steering`, flying by how her middle moves rather
-than her control head out in her cockpit's pod, and her height over the ground from the lowest of her legs' feet
-(`Legs`, which the rocket's fins share). `FreighterFlight` shows the clients how hard her lift thrusters and her
-mains fire, two `ShownShare`s, and where her disc's middle is from her control head, from which `FreighterRoar` plays
-her engines' roar at her stern, her lift jets' blast under her belly, their thump and her mains' spooling up as they
-light, her hum aboard, the ground shaking near her and her thunder going by; and `EngineGlow` lights her
-`EngineGrilleBlock`s across her stern from the same shares, laid in place of her skin round her mains and wired to her
-head with her thrusters, changing them seldom, as each change redraws her round them. Her jets fire inside her, so
-she never runs them at a third of full or more, where Create Propulsion sets fire to whatever stands in a thruster's
-exhaust. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out the
-air inside their hulls, their features `ShipPiece`s.
+the bulkhead to her cockpit and along her prongs walled off from the void beside them, her landing legs, her thrusters
+and her cockpit's control head, seats and autopilot screen, the head wired to her thrusters' relays and her legs' feet
+as a `FreighterPilot.Wiring`. `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her lift from the
+mass Sable weighs and a trim it learns, split over her four clusters by her tilt and by where Sable puts her centre of
+mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the heading she wants,
+round a circle or onto a pin with the zeppelin's `Steering`, flying by how her middle moves rather than her control head
+out in her cockpit's pod, and her height over the ground from the lowest of her legs' feet (`Legs`, which the rocket's
+fins share). `FreighterFlight` shows the clients how hard her lift thrusters and her mains fire, two `ShownShare`s, and
+where her disc's middle is from her control head, from which `FreighterRoar` plays her engines' roar at her stern, her
+lift jets' blast under her belly, their thump and her mains' spooling up as they light, her hum aboard, the ground
+shaking near her and her thunder going by; and `EngineGlow` lights her `EngineGrilleBlock`s across her stern from the
+same shares, laid in place of her skin round her mains and wired to her head with her thrusters, changing them seldom,
+as each change redraws her round them; `LiftPlumes` shows her lift thrusters' plumes only close over the ground
+(`Thrusters.plume`), since every puff is sent to every player near. Her pilot smooths what it reads of how fast she
+tilts, turns and moves, and holds each set of thrusters at a signal until it is asked a step and more away, so they are
+not set back and forth with every jitter. Her jets fire inside her, so she never runs them at a third of full or more,
+where Create Propulsion sets fire to whatever stands in a thruster's exhaust. She and the rocket are both `HullLayout`s,
+which keeps their blocks, fittings and glazing and works out the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

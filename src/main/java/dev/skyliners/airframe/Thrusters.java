@@ -45,25 +45,34 @@ public final class Thrusters {
      * neighbours.
      */
     public static void leavePlumeOut(Level level, BlockPos relay) {
-        for (Direction pushes : Direction.Plane.HORIZONTAL) {
+        plume(level, relay, EngineFlames.NONE, Direction.Plane.HORIZONTAL);
+    }
+
+    /**
+     * Sets the plume of the thruster a relay drives, pushing any of the ways given, to the flames given, as its own
+     * setting would: the freighter's lift thrusters show theirs only close over the ground, since every puff of it is
+     * sent to every player near.
+     */
+    public static void plume(Level level, BlockPos relay, EngineFlames flames, Iterable<Direction> ways) {
+        for (Direction pushes : ways) {
             BlockPos at = relay.relative(pushes.getOpposite());
             BlockState state = level.getBlockState(at);
             if (state.hasProperty(BlockStateProperties.FACING) && state.getValue(BlockStateProperties.FACING) == pushes) {
-                leavePlumeOut(level, at, state);
+                setPlume(level, at, state, flames);
             }
         }
     }
 
-    private static void leavePlumeOut(Level level, BlockPos at, BlockState state) {
+    private static void setPlume(Level level, BlockPos at, BlockState state, EngineFlames flames) {
         BlockEntity thruster = level.getBlockEntity(at);
         if (thruster == null) {
             return;
         }
         HolderLookup.Provider registries = level.registryAccess();
         CompoundTag data = thruster.saveWithoutMetadata(registries);
-        int none = EngineFlames.NONE.thrusterPlume();
-        if (data.getInt("plumeType") != none) {
-            data.putInt("plumeType", none);
+        int plume = flames.thrusterPlume();
+        if (data.getInt("plumeType") != plume) {
+            data.putInt("plumeType", plume);
             thruster.loadWithComponents(data, registries);
             thruster.setChanged();
             level.sendBlockUpdated(at, state, state, Block.UPDATE_CLIENTS);

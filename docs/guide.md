@@ -2581,28 +2581,28 @@ the ground. Her cockpit is a pod out on a tube at her front right edge, its cone
 of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go.
 
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
-her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her
-weight sits; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs' tips
-hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
+her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
+sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
+see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
+tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
 control head stands between the pilot's seat and the co-pilot's, jump seats behind them and the autopilot screen ahead.
 Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
 anywhere, and climbs to her height, her deck level all the way. Set a speed of nothing, she hovers there. Given a pin,
-she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for
-the last of the way, hovering over it or, set to land there, coming straight down onto it. Told to land, or switched
-off in the air, she comes straight down where she is first, as the rocket does, sinking fast to ten blocks over the
-ground and gently from there, her thrusters running down evenly once her legs touch so she never skates, and switches
-herself off with a bell. Across her stern, round her six mains, her engine grille glows with her engines: deep blue
-while her thrusters hold her up, bright cyan as her mains push her ahead, and dark once she is down, glowing as brightly
-by night. The server config's `freighter.engineGrille` builds her without it, her stern plain hull. The Engine Grille is
-among her blocks in the creative tab; set by hand it stays dark. She is heard from far off: a deep thump as her lift
-thrusters light, her mains' whine spooling up, her engines' roar from her stern rising with her thrust, her lift jets
-blasting under her loudest close over the ground, which shakes under anyone standing near, and a long rolling thunder as
-she goes by fast; aboard, all of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand
-clear under her as she lifts off and lands, and behind her mains or ahead of her retros as they fire: Create
-Propulsion's thrusters set alight whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her
-autopilot screen and the settings screen show her in pictures of her own: a saucer lifting off on a blue glow, landing,
-climbing and turning.
+she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for the
+last of the way, hovering over it or, set to land there, coming straight down onto it. Told to land, or switched off in
+the air, she comes straight down where she is first, as the rocket does, sinking fast to ten blocks over the ground and
+gently from there, her thrusters running down evenly once her legs touch so she never skates, and switches herself off
+with a bell. Across her stern, round her six mains, her engine grille glows with her engines: deep blue while her
+thrusters hold her up, bright cyan as her mains push her ahead, and dark once she is down, glowing as brightly by night.
+The server config's `freighter.engineGrille` builds her without it, her stern plain hull. The Engine Grille is among her
+blocks in the creative tab; set by hand it stays dark. She is heard from far off: a deep thump as her lift thrusters
+light, her mains' whine spooling up, her engines' roar from her stern rising with her thrust, her lift jets blasting
+under her loudest close over the ground, which shakes under anyone standing near, and a long rolling thunder as she goes
+by fast; aboard, all of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand clear under
+her as she lifts off and lands, and behind her mains or ahead of her retros as they fire: Create Propulsion's thrusters
+set alight whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her autopilot screen and
+the settings screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
 
 Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
 bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three

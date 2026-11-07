@@ -54,6 +54,9 @@ public final class FreighterPilot {
      * Never 5 or more.
      */
     private static final int JET_MOST_SIGNAL = 4;
+    /** Her jets' two pairs, her nose's and her tail's, in the order she holds and reports them. */
+    private static final int NOSE_PAIR = 0;
+    private static final int TAIL_PAIR = 1;
     /**
      * Lifting off: how long her thrusters spool up on the ground, in ticks, and the share of the lift that would hold
      * her up they give meanwhile, so she rises the moment they are given the rest; how high she rises straight up
@@ -172,9 +175,16 @@ public final class FreighterPilot {
     /**
      * How far the signal asked of a set of thrusters together must move from the one they were set to before they are
      * set anew, in steps: rounded afresh each tick, a hover wobbling between two steps would set a thruster back and
-     * forth several times a second, and each change is sent to every client.
+     * forth several times a second, and each change is sent to every client. Held wider, or paced to a change every few
+     * ticks, she hunts round her height and level, and her thrusters change more often, not less.
      */
     private static final double SIGNAL_HOLD = 0.75;
+    /**
+     * How much of each new reading of how fast she tilts, turns and moves is taken each tick, the rest kept from
+     * before: read from one tick to the next, they jitter, and her thrusters would follow every jitter, each change
+     * sent to every client.
+     */
+    private static final double SMOOTHING = 0.3;
     /** How short a way flattened onto the ground may be before it counts as none: one pointing straight up or down. */
     private static final double NO_WAY = 1e-9;
 
@@ -284,6 +294,7 @@ public final class FreighterPilot {
      * in degrees a second.
      */
     private record Motion(Tilt tilt, double frontRate, double rightRate, double yawRate) {
+        static final Motion STILL = new Motion(Tilt.LEVEL, 0, 0, 0);
     }
 
     /** How her lift is split for her weight to be held up where it sits, as shares moved ahead and to her right. */
@@ -341,6 +352,12 @@ public final class FreighterPilot {
     /** Her tilt and heading the tick before, to tell how fast each changes. */
     private Tilt lastTilt = Tilt.LEVEL;
     private double lastHeading;
+    /** How fast she tilts, turns and moves, smoothed (see {@link #SMOOTHING}); none to begin with. */
+    private Motion smoothed = Motion.STILL;
+    @Nullable
+    private Vec3 smoothedGoing;
+    /** Her jets' pairs' signed signals as last set, her nose's and her tail's, positive pushing to her right. */
+    private final int[] jetsHeld = new int[2];
     /** The climb she wanted last tick, eased toward the one she wants now. */
     private double easedClimb;
     /** The signals each set of her thrusters was last set to together: her clusters, her mains and her retros. */
@@ -407,6 +424,8 @@ public final class FreighterPilot {
         startCounting();
         lastTilt = Tilt.of(state);
         lastHeading = state.heading();
+        smoothed = Motion.STILL;
+        smoothedGoing = null;
         easedClimb = state.velocity().y;
     }
 
@@ -439,7 +458,7 @@ public final class FreighterPilot {
         AutopilotBlockEntity.Phase phase = orders.phase();
         Motion motion = motion(state);
         Vec3 middle = middle(state);
-        Vec3 going = going(state, middle, motion);
+        Vec3 going = smoothedGoing(going(state, middle, motion));
         lastClimb = going.y;
         Balance balance = balance(state, middle, centreOfMass);
         if (phase == AutopilotBlockEntity.Phase.TAKEOFF && spooled < SPOOL_TICKS) {
@@ -476,7 +495,15 @@ public final class FreighterPilot {
         double yawRate = Mth.wrapDegrees(state.heading() - lastHeading) * SharedConstants.TICKS_PER_SECOND;
         lastTilt = tilt;
         lastHeading = state.heading();
-        return new Motion(tilt, frontRate, rightRate, yawRate);
+        smoothed = new Motion(tilt, Mth.lerp(SMOOTHING, smoothed.frontRate(), frontRate), Mth.lerp(SMOOTHING, smoothed.rightRate(), rightRate),
+            Mth.lerp(SMOOTHING, smoothed.yawRate(), yawRate));
+        return smoothed;
+    }
+
+    /** How fast her middle moves, smoothed as her rates are (see {@link #SMOOTHING}). */
+    private Vec3 smoothedGoing(Vec3 going) {
+        smoothedGoing = smoothedGoing == null ? going : smoothedGoing.lerp(going, SMOOTHING);
+        return smoothedGoing;
     }
 
     /**
@@ -745,21 +772,23 @@ public final class FreighterPilot {
         double speedingAcross = Mth.clamp(SPEED_GAIN * (across - goingAcross), -MOST_ACCELERATION, MOST_ACCELERATION);
         double sideways = mass * speedingAcross / Math.max(1, 2 * mostJet());
         Jets jets = wiring.jets();
-        pair(level, origin, jets.noseRight(), jets.noseLeft(), sideways + turn, 0);
-        pair(level, origin, jets.tailRight(), jets.tailLeft(), sideways - turn, 2);
+        pair(level, origin, jets.noseRight(), jets.noseLeft(), sideways + turn, NOSE_PAIR);
+        pair(level, origin, jets.tailRight(), jets.tailLeft(), sideways - turn, TAIL_PAIR);
     }
 
     /**
-     * A pair of opposite jets for a push one way, as a share of full: the one pushing that way fires, their signals
-     * noted from the first given on.
+     * A pair of opposite jets, her nose's or her tail's, for a push one way, as a share of full: the one pushing that
+     * way fires, the pair's signal held as a set of thrusters' is (see {@link #held}), their signals noted for her
+     * report, pushing right then left.
      */
     private void pair(ServerLevel level, BlockPos origin, @Nullable BlockPos rightward, @Nullable BlockPos leftward, double push,
-                      int first) {
-        int signal = (int) Math.round(Mth.clamp(Math.abs(push), 0, 1) * JET_MOST_SIGNAL);
-        jetSignals[first] = push > 0 ? signal : 0;
-        jetSignals[first + 1] = push < 0 ? signal : 0;
-        drive(level, origin, rightward, jetSignals[first]);
-        drive(level, origin, leftward, jetSignals[first + 1]);
+                      int pair) {
+        int signed = held(Mth.clamp(push, -1, 1) * JET_MOST_SIGNAL, jetsHeld[pair]);
+        jetsHeld[pair] = signed;
+        jetSignals[2 * pair] = Math.max(0, signed);
+        jetSignals[2 * pair + 1] = Math.max(0, -signed);
+        drive(level, origin, rightward, jetSignals[2 * pair]);
+        drive(level, origin, leftward, jetSignals[2 * pair + 1]);
     }
 
     private static void drive(ServerLevel level, BlockPos origin, @Nullable BlockPos relay, int signal) {
@@ -826,6 +855,7 @@ public final class FreighterPilot {
         lastShare = 0;
         Arrays.fill(clusterTotals, 0);
         Arrays.fill(jetSignals, 0);
+        Arrays.fill(jetsHeld, 0);
         mainsTotal = 0;
         retrosTotal = 0;
     }

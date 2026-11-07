@@ -734,6 +734,15 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   and a landing: five changes of 99 blocks, no server tick over 50 ms. The same profile shows her thrusters' own block
   updates at 58 a second (one main 8.75 a second) and some 860 particle packets a second from Create Propulsion's
   plumes reaching the client: next to cut.
+- Cutting it, measured over the same 90-second flight each time (lift-off and hover, a push at 20 b/s, a landing):
+  her jets held as her other thrusters are, the rates her pilot reads smoothed, and her lift plumes shown only within
+  16 blocks of the ground. Thruster updates 5,601 down to about 4,100, particle packets 866 a second down to about 350,
+  the plume's particle tick 2.6 down to 1.1 ms; hover height within 0.9 blocks RMS over two runs (0.56 before), level
+  and heading as good or better; she reaches 18.2 of 20 b/s in the push's 20 seconds against 19.8 before. Holding
+  her thrusters' signals wider, or pacing their changes, made her hunt and change them more: reverted.
+- A runaway found doing it: a freighter that had learnt too much drag raced past the speed set (58, then 81 b/s on a
+  20 set) and could never unlearn it. Fixed (9d3d0aa7) with a play-test check, freighter-drag, seen to fail without
+  the fix and to hold with it.
 
 ### For Jan to look at
 
@@ -742,5 +751,9 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
 - The club's song, "Long Haul Swing" (`club_band`), wants a check by ear against the film's cantina tune: its notes
   and rhythm are our own (D minor, an F major bridge, 32 bars at 160 swung), but no machine can judge how close its
   feel is. The robots' trill wants a listen too, to be sure it is no sliding whistle like the film's robot's.
+- Hovering high, her lift thrusters' plumes are now left out (the plan's decision 38, and half the particles anyone
+  near her is sent): from the side nothing then shows she is held up but her hum and roar, her grille glowing astern
+  (run/blockpilot/screenshots/2026-11-07_01.16.10.853.png). Showing them higher is one number, `LiftPlumes`'
+  `SHOWN_UNDER`.
 - Two leftovers of mine to clear, refused to me as irreversible: `git stash drop` of "freighter-m2-flight (before the
   pilot abstraction)", superseded by cd630624, and `git worktree remove --force` of the scratch worktree `wt-a`.
