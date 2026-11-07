@@ -79,23 +79,26 @@ final class FreighterLedStrips {
     private final HullLayout layout;
     private final int deck;
     private final int reach;
+    private final int ahead;
 
-    private FreighterLedStrips(HullLayout layout, int deck, int reach) {
+    private FreighterLedStrips(HullLayout layout, int deck, int reach, int ahead) {
         this.layout = layout;
         this.deck = deck;
         this.reach = reach;
+        this.ahead = ahead;
     }
 
     /**
-     * Lays the strips and panels in a freighter's layout whose deck's floor is the row given, reaching so far out;
+     * Lays the strips and panels in a freighter's layout whose deck's floor is the row given, reaching so far out to
+     * either side and astern, and so far ahead, out past her disc to her prongs' tips and her cockpit's pod;
      * gives where each room's panel went, in the order her cargo hold, entry hall, lounge, engineering, crew quarters
      * and club, null where a room has none, or none at all with the strips switched off.
      */
-    static List<BlockPos> build(HullLayout layout, int deck, int reach) {
+    static List<BlockPos> build(HullLayout layout, int deck, int reach, int ahead) {
         if (!SkylinersConfig.FREIGHTER_LED_STRIPS.get()) {
             return List.of();
         }
-        FreighterLedStrips strips = new FreighterLedStrips(layout, deck, reach);
+        FreighterLedStrips strips = new FreighterLedStrips(layout, deck, reach, ahead);
         List<BlockPos> panels = new ArrayList<>();
         ROOMS.forEach(room -> panels.add(strips.room(room)));
         return panels;
@@ -114,8 +117,9 @@ final class FreighterLedStrips {
         List<BlockPos> strips = new ArrayList<>();
         LedPanelBlockEntity.Wedge wedge = room.wedge();
         int across = 2 * reach + 1;
-        for (int block = 0; block < across * across; block++) {
-            BlockPos at = new BlockPos(block / across - reach, deck + 1, block % across - reach);
+        int along = reach - ahead + 1;
+        for (int block = 0; block < across * along; block++) {
+            BlockPos at = new BlockPos(block / along - reach, deck + 1, block % along + ahead);
             BlockState strip = inRoom(wedge, at) ? strip(at, room.setting().brightness()) : null;
             if (strip != null) {
                 layout.set(at.getX(), at.getY(), at.getZ(), strip);

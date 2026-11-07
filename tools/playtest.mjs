@@ -375,6 +375,13 @@ const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
+// How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
+// round her control head her cockpit's floor is looked over for carpet, in blocks.
+const TIP_STRIPS_BACK = 3;
+const TIP_STRIPS_NEAR = 4;
+const COCKPIT_FLOOR_NEAR = 5;
+// How far behind her control head her pilots' seats stand, in blocks, where her cockpit's floor is looked over from.
+const SEATS_BEHIND_HEAD = 2;
 // How many blocks of counter her club's bar has at least.
 const CLUB_COUNTERS = 5;
 const BAND_AWAY = 40;
@@ -1652,6 +1659,21 @@ function checkFreighterLeds() {
   expect(colours.size === panels.length, "freighter: each room's strips are a colour of their own", [...colours].join(", "));
   const floors = new Set(panels.map(([x, y, z]) => must(`block ${x},${y - 2},${z}`).id));
   expect(floors.size >= OWN_FLOORS, "freighter: her rooms have floors of their own", [...floors].join(", "));
+  const [{ at_abs: middle }] = must("find skyliners:laser_cannon 128 1").rows;
+  const { along, bow } = bowOf(middle);
+  const across = 2 - along;
+  const engines = prongEngines(middle);
+  const prongs = [-1, 1].map((side) => engines.filter((at) => Math.sign(at[across] - middle[across]) === side));
+  const tips = prongs.filter((prong) => prong.length > 0).map((prong) => prong.reduce((a, b) => ((b[along] - a[along]) * bow > 0 ? b : a)));
+  const unlit = tips.filter((at) => !stripsNear(backFrom(at, along, bow, TIP_STRIPS_BACK)));
+  expect(tips.length === 2 && unlit.length === 0, "freighter: her bow room's strips run down both prongs' tunnels to their tips, not stopping half way",
+    `${tips.length} prong tips${unlit.map((at) => `, none near the tip at ${at.join(",")}`).join("")}`);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const seat = backFrom(head, along, bow, SEATS_BEHIND_HEAD);
+  must(`server tp @p ${seat[0]} ${seat[1]} ${seat[2]}; wait 10t`);
+  const carpet = must(`find skyliners:cabin_floor ${COCKPIT_FLOOR_NEAR} 1`).rows;
+  expect(carpet.length === 0, "freighter: her cockpit has one floor, no patch of carpet left before her console",
+    carpet.map((row) => row.at_abs.join(",")).join("; "));
 }
 
 // The yaw and pitch that look from an eye at a point, as the turn command takes them, in degrees.
@@ -2213,6 +2235,18 @@ function checkFreighterBeach() {
   expect(below.includes("skyliners:smoked_glass"), "freighter: down its shaft, her belly is glass", below.join(", "));
   must(`use ${panel.at_abs.join(",")}; wait ${IRIS_TICKS}t`);
   expect(must(`block ${middle.join(",")}`).props?.open === "false", "freighter: pressed again, it shuts");
+}
+
+// The middle of the block so many blocks back toward her stern from a block of a freighter, her bow lying along the axis
+// and the way given, as bowOf finds them; on the same row, where someone standing there has their feet.
+function backFrom(at, along, bow, back) {
+  return at.map((value, axis) => (axis === 1 ? value : value + 0.5 - (axis === along ? bow * back : 0)));
+}
+
+// Whether an LED strip lies near a point, standing there.
+function stripsNear(stand) {
+  must(`server tp @p ${stand.join(" ")}; wait 10t`);
+  return must(`find skyliners:led_strip ${TIP_STRIPS_NEAR} 1`).rows.length > 0;
 }
 
 // Which way a freighter's bow lies from her middle, whichever way she was laid down: the axis, 0 for x or 2 for z, and
@@ -2801,7 +2835,7 @@ const CHECKS = {
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
-  "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
+  "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own, out to her prongs' tips and her cockpit" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },

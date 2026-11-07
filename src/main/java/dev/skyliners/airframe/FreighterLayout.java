@@ -445,7 +445,7 @@ public final class FreighterLayout extends HullLayout {
         layout.core();
         layout.corridor();
         layout.roomWalls();
-        FreighterFloors.build(layout, layout.deck, layout.side);
+        FreighterFloors.build(layout, layout.deck, layout.side, layout.front);
         layout.legs();
         layout.engines();
         layout.engineGrille();
@@ -471,7 +471,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterEntryHall.build(layout, layout.deck);
         FreighterFurnishings.build(layout, layout.deck);
         FreighterSpookie.build(layout, layout.deck);
-        FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side));
+        FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side, layout.front));
         FreighterPortholes.build(layout, layout.deck, layout.scale);
         layout.lights();
         if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
