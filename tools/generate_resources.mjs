@@ -123,7 +123,7 @@ const cubes = {
   padded_bulkhead: null,
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
-const OWN_BLOCKSTATES = new Set(["cabin_light"]);
+const OWN_BLOCKSTATES = new Set(["cabin_light", "flight_deck_stripe"]);
 const OWN_MODELS = new Set(["cabin_floor", "airframe_panel", "zeppelin_fabric", "flight_deck_stripe"]);
 for (const [name, renderType] of Object.entries(cubes)) {
   if (!OWN_BLOCKSTATES.has(name)) {
@@ -1223,10 +1223,14 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/crane_winch.json`, { parent: `${ID}:block/crane_winch_hold` });
   dropsItself("crane_winch");
   cubes.crane_winch = null;
-  // The flight deck's lines are painted on its top only: its sides are the plain deck's.
+  // The flight deck's lines are painted on its top only: its sides are the plain deck's. Its line runs north and south,
+  // turned a quarter where it runs east and west (see DeckLineBlock).
   write(`assets/${ID}/models/block/flight_deck_stripe.json`, {
     parent: "minecraft:block/cube_bottom_top",
     textures: { top: `${ID}:block/flight_deck_stripe`, bottom: `${ID}:block/flight_deck`, side: `${ID}:block/flight_deck` },
+  });
+  write(`assets/${ID}/blockstates/flight_deck_stripe.json`, {
+    variants: { "axis=z": { model: `${ID}:block/flight_deck_stripe` }, "axis=x": { model: `${ID}:block/flight_deck_stripe`, y: 90 } },
   });
   // The flying carrier's docking clamp (see DeckClampBlock): a block of the flight deck with a pair of yellow jaws lying
   // flat in it, or raised round a plane's wheels when closed, and a lamp between them, red open and green closed; and

@@ -1,7 +1,11 @@
 {
   "variants": {
-    "": {
+    "axis=z": {
       "model": "skyliners:block/flight_deck_stripe"
+    },
+    "axis=x": {
+      "model": "skyliners:block/flight_deck_stripe",
+      "y": 90
     }
   }
 }

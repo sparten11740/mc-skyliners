@@ -73,6 +73,7 @@ import dev.skyliners.block.CrewLockerBlock;
 import dev.skyliners.block.CrewLockerBlockEntity;
 import dev.skyliners.block.CurtainBlock;
 import dev.skyliners.block.DeckClampBlock;
+import dev.skyliners.block.DeckLineBlock;
 import dev.skyliners.block.DeckClampBlockEntity;
 import dev.skyliners.block.DiscoBallBlock;
 import dev.skyliners.block.DiscoBallBlockEntity;
@@ -2523,7 +2524,7 @@ public final class SkylinersRegistry {
         BLOCK_ENTITIES.register("crane_winch", () -> BlockEntityType.Builder.of(CraneWinchBlockEntity::new, CRANE_WINCH.get()).build(null));
     /** The flying carrier's flight deck on a zeppelin's crown: its plain deck, its white lines, its clamps and lever. */
     public static final DeferredBlock<Block> FLIGHT_DECK = BLOCKS.registerSimpleBlock("flight_deck", metal(MapColor.COLOR_GRAY));
-    public static final DeferredBlock<Block> FLIGHT_DECK_STRIPE = BLOCKS.registerSimpleBlock("flight_deck_stripe", metal(MapColor.SNOW));
+    public static final DeferredBlock<DeckLineBlock> FLIGHT_DECK_STRIPE = BLOCKS.registerBlock("flight_deck_stripe", DeckLineBlock::new, metal(MapColor.SNOW));
     public static final DeferredBlock<DeckClampBlock> DECK_CLAMP = BLOCKS.registerBlock("deck_clamp", DeckClampBlock::new, metal(MapColor.COLOR_GRAY));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DeckClampBlockEntity>> DECK_CLAMP_ENTITY =
         BLOCK_ENTITIES.register("deck_clamp", () -> BlockEntityType.Builder.of(DeckClampBlockEntity::new, DECK_CLAMP.get()).build(null));
