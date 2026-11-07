@@ -154,9 +154,11 @@ const FREIGHTER_AWAY_TICKS = 60;
 // How long each of her computer's lines for her flight deck is given to be heard, in ticks, the take-off one waiting
 // for the player to board her and hear it.
 const FREIGHTER_VOICE_TICKS = 300;
-// A freighter dropped onto the ground: how long she is given to settle once assembled, and to groan after landing, in
-// ticks; how high she is lifted to fall, in blocks, some 23 blocks a second as she lands; how long she is given to be
-// heard striking it, in ticks; and how fast she is then shoved along it, in blocks a second, to be heard grinding.
+// A freighter dropped onto the ground: how long her control head takes to be found aboard her once she is assembled,
+// far too short a time for her to lift off, and how long she is given to settle, and to groan after landing, in ticks;
+// how high she is lifted to fall, in blocks, some 23 blocks a second as she lands; how long she is given to be heard
+// striking it, in ticks; and how fast she is then shoved along it, in blocks a second, to be heard grinding.
+const IMPACT_ABOARD_TICKS = 2;
 const IMPACT_SETTLE_TICKS = 60;
 const IMPACT_DROP = 25;
 const IMPACT_HEARD_TICKS = 100;
@@ -1123,8 +1125,16 @@ function checkFreighterFlight() {
 // checkFreighterFlight, landFreighterAt and checkFlightAndLanding).
 function checkImpactSounds() {
   layDown("freighter");
-  must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
-  must(`skyliners:autopilot off; wait ${IMPACT_SETTLE_TICKS}t`);
+  // Switched off in the same script as she is assembled, before she can lift off, once her control head has taken
+  // its first tick aboard: off in the air, she would come down on her thrusters and stay engaged until down, held up
+  // through the drop and the shove, as she was on a busy machine. Waited for all the same.
+  must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0; wait ${IMPACT_ABOARD_TICKS}t; skyliners:autopilot off`, BUILD_SECONDS);
+  const off = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(off, "impact: a freighter assembled and switched off stands on her legs", off ? "" : `still ${freighterReport()?.phase}`);
+  if (!off) {
+    return;
+  }
+  must(`wait ${IMPACT_SETTLE_TICKS}t`);
   const freighter = findShipFlying("skyliners:engine_grille");
   const since = now();
   must(`server sable physics translation ${freighter} add 0 ${IMPACT_DROP} 0 global`);
