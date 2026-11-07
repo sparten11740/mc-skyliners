@@ -367,14 +367,14 @@ const ROBOT_HEARD_TICKS = 80;
 // put up on is, how far apart along it they go, and how high it is, in blocks; and how far above her control head she
 // is sent to look for any of her outside left on the ground, in blocks.
 const EXTERIOR_PIECES = [
-  ["big_satellite_dish", 1], ["satellite_dish", 2], ["antenna_mast", 6], ["sensor_dome", 3], ["heat_sink", 12], ["exhaust_vent", 5],
-  ["hull_machinery", 20], ["hull_floodlight", 6],
+  ["big_satellite_dish", 1], ["satellite_dish", 2], ["antenna_mast", 6], ["sensor_dome", 3], ["heat_sink", 12], ["exhaust_vent", 7],
+  ["vent_grille", 30], ["hull_machinery", 20], ["hull_floodlight", 6],
   ["hull_plate_dark", 40], ["hull_plate_riveted", 20], ["hull_plate_patched", 10], ["hazard_plate", 20],
   ["hull_light_strip", 60], ["hull_light_band", 60], ["nav_light", 7],
 ];
 const FITTINGS_PUT_UP = [
-  "satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "hull_machinery", "hull_floodlight",
-  "hull_light_strip",
+  "satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "vent_grille", "hull_machinery",
+  "hull_floodlight", "hull_light_strip",
 ];
 const STAND_AWAY = 24;
 const STAND_APART = 3;

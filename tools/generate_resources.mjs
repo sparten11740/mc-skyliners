@@ -302,13 +302,13 @@ function rampFittings() {
   cubes.laser_cannon = null;
 }
 
-// The fleet's outside fittings (see HullFittingBlock), the freighter's dishes, masts, domes, fins, vents, machinery,
-// floodlights and light strips: each a model of its own for each way it is put up, drawn facing north, a wall's
-// against the south side of its block (see hullFittingModels), turned for each facing, unlit by the corner darkening
-// so a part past its block never draws black aboard. A satellite dish's mount is its block's model and its dish a model
-// of its own, drawn over it by SatelliteDishRenderer about the back of its hub, the big dish's three times as big on
-// heavier mounts; their items show the dish on its post. Fitted onto her hull, so breakable, and light as the rest of
-// her is (see FITTINGS); each drops itself.
+// The fleet's outside fittings (see HullFittingBlock), the freighter's dishes, masts, domes, fins, vents and grilles,
+// machinery, floodlights and light strips: each a model of its own for each way it is put up, drawn facing north, a
+// wall's against the south side of its block (see hullFittingModels), turned for each facing, unlit by the corner
+// darkening so a part past its block never draws black aboard. A satellite dish's mount is its block's model and its
+// dish a model of its own, drawn over it by SatelliteDishRenderer about the back of its hub, the big dish's three times
+// as big on heavier mounts; their items show the dish on its post. Fitted onto her hull, so breakable, and light as the
+// rest of her is (see FITTINGS); each drops itself.
 {
   const textures = {
     steel: `${ID}:block/hull_fitting_steel`, dark: `${ID}:block/hull_fitting_dark`, pipe: `${ID}:block/hull_pipe`,
@@ -437,6 +437,18 @@ function hullFittingModels() {
       ceiling: [solid([3, 14, 3], [13, 16, 13], "#dark"), solid([4.5, 7, 4.5], [11.5, 14, 11.5], "#steel"), solid([4.2, 10, 4.2], [11.8, 11, 11.8], "#dark"),
         faced([3.5, 4.5, 3.5], [12.5, 7, 12.5], { down: "#grate", all: "#dark" })],
     }],
+    ["vent_grille", { grate: `${ID}:block/exhaust_grate` }, {
+      floor: [faced([1, 0, 1], [15, 1, 15], { up: "#grate", all: "#dark" }), solid([1, 1, 1], [15, 2, 2], "#dark"), solid([1, 1, 14], [15, 2, 15], "#dark"),
+        solid([1, 1, 2], [2, 2, 14], "#dark"), solid([14, 1, 2], [15, 2, 14], "#dark"),
+        ...[3, 5.25, 7.5, 9.75, 12].map((z) => solid([2, 1, z], [14, 1.75, z + 1], "#steel"))],
+      wall: [faced([1, 1, 15], [15, 15, 16], { north: "#grate", all: "#dark" }), solid([1, 14, 13.5], [15, 15, 15], "#dark"),
+        solid([1, 1, 14], [2, 14, 15], "#dark"), solid([14, 1, 14], [15, 14, 15], "#dark"), solid([2, 1, 14], [14, 2, 15], "#dark"),
+        ...[3, 5.25, 7.5, 9.75, 12].map((y) => solid([2, y, 13.5], [14, y + 1, 15], "#steel", tilt([8, y + 0.5, 15], 22.5)))],
+      ceiling: [faced([2, 15, 2], [14, 16, 14], { down: "#grate", all: "#dark" }), solid([6.5, 13.5, 6.5], [9.5, 15, 9.5], "#steel"),
+        solid([2.5, 14.25, 7.5], [6.5, 15, 8.5], "#steel"), solid([9.5, 14.25, 7.5], [13.5, 15, 8.5], "#steel"),
+        solid([7.5, 14.25, 2.5], [8.5, 15, 6.5], "#steel"), solid([7.5, 14.25, 9.5], [8.5, 15, 13.5], "#steel"),
+        glow([7.25, 13.4, 7.25], [8.75, 13.5, 8.75], "#lamp")],
+    }],
     ["hull_machinery", { valve: "minecraft:block/red_concrete" }, {
       floor: [solid([1.5, 0, 6], [9.5, 6, 14.5], "#steel"), solid([2.5, 6, 7], [8.5, 6.4, 13.5], "#dark"), glow([4, 3, 5.9], [6, 4.5, 6], "#lamp"),
         solid([10.5, 0, 7], [14.5, 4.5, 11], "#dark"), solid([0, 0.5, 2], [16, 2.5, 4], "#pipe"), solid([11.5, 2.5, 2], [13.5, 7, 4], "#pipe"),
@@ -470,7 +482,8 @@ function shifted(elements, dx, dy, dz) {
   return elements.map((element) => ({ ...element, from: by(element.from), to: by(element.to) }));
 }
 function hullFittingNames() {
-  return ["satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "hull_machinery", "hull_floodlight", "hull_light_strip"];
+  return ["satellite_dish", "big_satellite_dish", "antenna_mast", "sensor_dome", "heat_sink", "exhaust_vent", "vent_grille", "hull_machinery", "hull_floodlight",
+    "hull_light_strip"];
 }
 function hullFittingLang() {
   return {
@@ -480,6 +493,7 @@ function hullFittingLang() {
     "block.skyliners.sensor_dome": "Sensor Dome",
     "block.skyliners.heat_sink": "Heat Sink",
     "block.skyliners.exhaust_vent": "Exhaust Vent",
+    "block.skyliners.vent_grille": "Vent Grille",
     "block.skyliners.hull_machinery": "Hull Machinery",
     "block.skyliners.hull_floodlight": "Hull Floodlight",
   };
@@ -11076,6 +11090,7 @@ shaped("antenna_mast", ["R", "B", "I"], { R: "minecraft:redstone_torch", B: "min
 shaped("sensor_dome", [" Q ", "QPQ", "III"], { Q: "minecraft:quartz", P: "minecraft:ender_pearl", I: "minecraft:iron_ingot" }, 1);
 shaped("heat_sink", ["BBB", "BBB", "ICI"], { B: "minecraft:iron_bars", I: "minecraft:iron_ingot", C: "minecraft:copper_ingot" }, 2);
 shaped("exhaust_vent", ["B", "H", "I"], { B: "minecraft:iron_bars", H: "minecraft:hopper", I: "minecraft:iron_ingot" }, 2);
+shaped("vent_grille", ["BB", "NN"], { B: "minecraft:iron_bars", N: "minecraft:iron_nugget" }, 4);
 shaped("hull_machinery", ["CRC", "III"], { C: "minecraft:copper_ingot", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 2);
 shaped("hull_floodlight", ["IGI", " I "], { I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 2);
 shaped("hull_light_strip", ["GGG", "III"], { G: "minecraft:glowstone_dust", I: "minecraft:iron_ingot" }, 6);

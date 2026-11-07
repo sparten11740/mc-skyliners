@@ -21,10 +21,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * it along as she lifts off, the block of her skin it stands against made whole (see {@link #pad}), so it meets her
  * hull rather than standing over her skin's cut. Her top carries a big satellite dish turning port of her stern, a farm
  * of antenna masts off her port bow and a pair to starboard, sensor domes, banks of heat-sink fins either side of her
- * stern over her engines with exhaust vents between them, and runs of machinery out from her middle; her prongs' flat
- * tops more runs of machinery and fins, vents, a mast and a dome; her upright rim a small dish sweeping off her port
- * side, whip antennas, runs of conduit, vents, fins and floodlights; and under her belly and her prongs floodlights, a
- * radome, a small dish, a blade antenna and tanks. Each is where it keeps clear of her ramp, her legs,
+ * stern over her engines with exhaust vents between them and banks of vent grilles inboard of them, and runs of
+ * machinery out from her middle with runs of grilles beside them; her prongs' flat tops more runs of machinery, fins
+ * and grilles, vents, a mast and a dome; her upright rim a small dish sweeping off her port side, whip antennas, runs
+ * of conduit and of grilles, vents, fins and floodlights; and under her belly and her prongs floodlights, a radome, a
+ * small dish, a blade antenna, tanks and grilles under her engines. Each is where it keeps clear of her ramp, her legs,
  * her thrusters' plumes and her cannon's level sweep over her top, and stands on solid hull, never glass, her grille or
  * an engine: where it would not, or another piece already stands there, it is left out. None with the server config's
  * {@code freighter.exterior} off.
@@ -56,28 +57,38 @@ final class FreighterExterior {
         bank(SkylinersRegistry.HEAT_SINK, 188, 210, 10.6),
         List.of(top(SkylinersRegistry.EXHAUST_VENT, 180, 9.6), top(SkylinersRegistry.EXHAUST_VENT, 176, 8.6),
             top(SkylinersRegistry.EXHAUST_VENT, 184, 8.6), top(SkylinersRegistry.EXHAUST_VENT, 245, 9.2),
-            top(SkylinersRegistry.EXHAUST_VENT, 250, 9.8)),
+            top(SkylinersRegistry.EXHAUST_VENT, 250, 9.8), top(SkylinersRegistry.EXHAUST_VENT, 158, 7.6),
+            top(SkylinersRegistry.EXHAUST_VENT, 202, 7.6)),
+        bank(SkylinersRegistry.VENT_GRILLE, 154, 170, 9.4),
+        bank(SkylinersRegistry.VENT_GRILLE, 190, 206, 9.4),
         run(SkylinersRegistry.HULL_MACHINERY, 95, 5.5, 8.5),
         run(SkylinersRegistry.HULL_MACHINERY, 262, 5.0, 8.0),
         run(SkylinersRegistry.HULL_MACHINERY, 30, 5.0, 7.5),
+        run(SkylinersRegistry.VENT_GRILLE, 100, 5.5, 8.0),
+        run(SkylinersRegistry.VENT_GRILLE, 267, 5.0, 7.5),
         prongRun(SkylinersRegistry.HEAT_SINK, -3.7, -12.2, -13.4),
         prongRun(SkylinersRegistry.HULL_MACHINERY, -3.7, -14.6, -16.2),
         prongRun(SkylinersRegistry.EXHAUST_VENT, -3.6, -17.6, -18.4),
         List.of(prong(SkylinersRegistry.ANTENNA_MAST, 3.7, -12.9), prong(SkylinersRegistry.SENSOR_DOME, 3.6, -17.2),
             prong(SkylinersRegistry.EXHAUST_VENT, 3.6, -18.4)),
         prongRun(SkylinersRegistry.HULL_MACHINERY, 3.7, -14.2, -15.8),
+        prongRun(SkylinersRegistry.VENT_GRILLE, -2.6, -12.4, -13.6),
+        prongRun(SkylinersRegistry.VENT_GRILLE, 2.6, -16.4, -17.6),
         List.of(rim(SkylinersRegistry.SATELLITE_DISH, -1, -1.0), rim(SkylinersRegistry.ANTENNA_MAST, -1, -2.6),
             rim(SkylinersRegistry.HULL_FLOODLIGHT, -1, -5.8), rim(SkylinersRegistry.HULL_FLOODLIGHT, 1, -1.0),
             rim(SkylinersRegistry.ANTENNA_MAST, 1, -5.4), rim(SkylinersRegistry.EXHAUST_VENT, 1, 6.0),
             rim(SkylinersRegistry.HEAT_SINK, -1, 6.0)),
         rimRun(SkylinersRegistry.HULL_MACHINERY, -1, -3.8, -4.6),
         rimRun(SkylinersRegistry.HULL_MACHINERY, 1, -2.2, -3.8),
+        rimRun(SkylinersRegistry.VENT_GRILLE, -1, 5.4, 4.6),
+        rimRun(SkylinersRegistry.VENT_GRILLE, 1, 5.4, 4.6),
         List.of(under(SkylinersRegistry.HULL_FLOODLIGHT, 45, 10.3), under(SkylinersRegistry.HULL_FLOODLIGHT, 135, 10.3),
             under(SkylinersRegistry.HULL_FLOODLIGHT, 225, 10.3), under(SkylinersRegistry.HULL_FLOODLIGHT, 315, 10.3),
             underProng(SkylinersRegistry.HULL_FLOODLIGHT, -3.6, -20.0), underProng(SkylinersRegistry.HULL_FLOODLIGHT, 3.6, -20.0),
             under(SkylinersRegistry.SENSOR_DOME, 270, 5.0), under(SkylinersRegistry.SATELLITE_DISH, 200, 5.0),
             under(SkylinersRegistry.ANTENNA_MAST, 160, 5.0), under(SkylinersRegistry.HULL_MACHINERY, 330, 5.0),
-            under(SkylinersRegistry.HULL_MACHINERY, 20, 5.0))
+            under(SkylinersRegistry.HULL_MACHINERY, 20, 5.0), under(SkylinersRegistry.VENT_GRILLE, 170, 8.0),
+            under(SkylinersRegistry.VENT_GRILLE, 190, 8.0))
     ).flatMap(List::stream).toList();
 
     private FreighterExterior() {

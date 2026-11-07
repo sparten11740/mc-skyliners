@@ -1428,8 +1428,8 @@ public final class SkylinersRegistry {
      * The freighter's outside fittings (see {@link HullFittingBlock}), each put up on a floor, a wall or a ceiling in a
      * shape of its own: her satellite dishes, small and big, turning on their mounts (see {@link SatelliteDishBlock}),
      * her antenna masts with their blinking red lamps, her sensor domes, her banks of heat-sink fins, her exhaust vents
-     * letting off wisps, the boxes, pipes and tanks of her hull machinery, and her floodlights, lighting the ground
-     * under her.
+     * and flush vent grilles letting off wisps, the boxes, pipes and tanks of her hull machinery, and her floodlights,
+     * lighting the ground under her.
      */
     public static final DeferredBlock<SatelliteDishBlock> SATELLITE_DISH = BLOCKS.registerBlock(
         "satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.SATELLITE_DISH, HullFittings.SMALL_DISH),
@@ -1457,9 +1457,15 @@ public final class SkylinersRegistry {
     );
     public static final DeferredItem<BlockItem> HEAT_SINK_ITEM = ITEMS.registerSimpleBlockItem(HEAT_SINK);
     public static final DeferredBlock<ExhaustVentBlock> EXHAUST_VENT = BLOCKS.registerBlock(
-        "exhaust_vent", ExhaustVentBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+        "exhaust_vent", properties -> new ExhaustVentBlock(properties, HullFittings.EXHAUST_VENT, ExhaustVentBlock.STACK_MOUTH),
+        metal(MapColor.COLOR_GRAY).noOcclusion()
     );
     public static final DeferredItem<BlockItem> EXHAUST_VENT_ITEM = ITEMS.registerSimpleBlockItem(EXHAUST_VENT);
+    public static final DeferredBlock<ExhaustVentBlock> VENT_GRILLE = BLOCKS.registerBlock(
+        "vent_grille", properties -> new ExhaustVentBlock(properties, HullFittings.VENT_GRILLE, ExhaustVentBlock.GRILLE_MOUTH),
+        metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> VENT_GRILLE_ITEM = ITEMS.registerSimpleBlockItem(VENT_GRILLE);
     public static final DeferredBlock<HullFittingBlock> HULL_MACHINERY = BLOCKS.registerBlock(
         "hull_machinery", properties -> new HullFittingBlock(properties, HullFittings.HULL_MACHINERY), metal(MapColor.COLOR_GRAY).noOcclusion()
     );
@@ -3138,6 +3144,7 @@ public final class SkylinersRegistry {
             SENSOR_DOME_ITEM,
             HEAT_SINK_ITEM,
             EXHAUST_VENT_ITEM,
+            VENT_GRILLE_ITEM,
             HULL_MACHINERY_ITEM,
             HULL_FLOODLIGHT_ITEM,
             HULL_PLATE_DARK_ITEM,
