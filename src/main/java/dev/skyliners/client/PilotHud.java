@@ -3,7 +3,6 @@ package dev.skyliners.client;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.skyliners.SkylinersClientConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
@@ -29,7 +28,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -769,52 +767,22 @@ public final class PilotHud {
         }
 
         void triangle(float ax, float ay, float bx, float by, float cx, float cy, int colour) {
-            quad(ax, ay, bx, by, cx, cy, cx, cy, colour);
+            GuiShapes.triangle(graphics, matrix, ax, ay, bx, by, cx, cy, colour);
         }
 
         /** A line as a thin quad. */
         void line(float ax, float ay, float bx, float by, float width, int colour) {
-            float length = (float) Math.hypot(bx - ax, by - ay);
-            if (length < 1e-4F) {
-                return;
-            }
-            float nx = -(by - ay) / length * width / 2;
-            float ny = (bx - ax) / length * width / 2;
-            quad(ax - nx, ay - ny, bx - nx, by - ny, bx + nx, by + ny, ax + nx, ay + ny, colour);
+            GuiShapes.line(graphics, matrix, ax, ay, bx, by, width, colour);
         }
 
         /** A ring a unit wide, as a run of short lines. */
         void ring(float cx, float cy, float radius, int colour) {
-            for (int side = 0; side < MARKER_SIDES; side++) {
-                double from = 2 * Math.PI * side / MARKER_SIDES;
-                double to = 2 * Math.PI * (side + 1) / MARKER_SIDES;
-                line(cx + radius * (float) Math.cos(from), cy + radius * (float) Math.sin(from), cx + radius * (float) Math.cos(to),
-                    cy + radius * (float) Math.sin(to), 1, colour);
-            }
+            GuiShapes.arc(graphics, matrix, cx, cy, radius, 0, 2 * Math.PI, MARKER_SIDES, 1, colour);
         }
 
-        /** A convex quad, its corners taken round the way the GUI's own shapes go, as the other way is culled. */
+        /** A convex quad. */
         void quad(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy, int colour) {
-            if (colour >>> 24 == 0) {
-                return;
-            }
-            float turning = ax * by - bx * ay + bx * cy - cx * by + cx * dy - dx * cy + dx * ay - ax * dy;
-            VertexConsumer shapes = graphics.bufferSource().getBuffer(RenderType.gui());
-            if (turning > 0) {
-                vertex(shapes, dx, dy, colour);
-                vertex(shapes, cx, cy, colour);
-                vertex(shapes, bx, by, colour);
-                vertex(shapes, ax, ay, colour);
-            } else {
-                vertex(shapes, ax, ay, colour);
-                vertex(shapes, bx, by, colour);
-                vertex(shapes, cx, cy, colour);
-                vertex(shapes, dx, dy, colour);
-            }
-        }
-
-        private void vertex(VertexConsumer shapes, float x, float y, int colour) {
-            shapes.addVertex(matrix, x, y, 0).setColor(colour);
+            GuiShapes.quad(graphics, matrix, ax, ay, bx, by, cx, cy, dx, dy, colour);
         }
 
         void text(String text, float x, float y, int colour, Align align) {

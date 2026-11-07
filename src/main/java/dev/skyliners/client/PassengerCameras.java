@@ -16,7 +16,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -218,27 +217,7 @@ public final class PassengerCameras {
         if (seen == null) {
             return false;
         }
-        Vec3 forward = seen.forward();
-        float yaw = (float) Math.toDegrees(Math.atan2(-forward.x, forward.z));
-        float pitch = (float) Math.toDegrees(-Math.asin(Mth.clamp(forward.y, -1, 1)));
-        // Up and right for a camera looking that way held level, as Minecraft turns its camera; the camera's own up
-        // leans from the one toward the other by its roll.
-        double yawRadians = Math.toRadians(yaw);
-        double pitchRadians = Math.toRadians(pitch);
-        Vec3 right = new Vec3(-Math.cos(yawRadians), 0, -Math.sin(yawRadians));
-        Vec3 level = new Vec3(-Math.sin(pitchRadians) * Math.sin(yawRadians), Math.cos(pitchRadians), Math.sin(pitchRadians) * Math.cos(yawRadians));
-        view.roll = (float) Math.toDegrees(Math.atan2(seen.up().dot(right), seen.up().dot(level)));
-
-        Lens lens = view.lens;
-        Vec3 feet = seen.eye().subtract(0, lens.getEyeHeight(), 0);
-        lens.setPos(feet);
-        lens.xo = feet.x;
-        lens.yo = feet.y;
-        lens.zo = feet.z;
-        lens.setYRot(yaw);
-        lens.yRotO = yaw;
-        lens.setXRot(pitch);
-        lens.xRotO = pitch;
+        view.roll = view.lens.point(seen.eye(), seen.forward(), seen.up());
         return true;
     }
 
