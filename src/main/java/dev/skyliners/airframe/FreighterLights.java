@@ -17,7 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * of her loading gap and across its back, as a landing bay is lit, and along the outer edge of each prong's top; a red
  * navigation light on her port beam and a green one on her starboard, a white one at her stern over her engines; white
  * strobes on her prongs' tips; and red beacons blinking on her top and under her belly (see {@link NavLightBlock}).
- * None with the server config's {@code freighter.outsideLights} off.
+ * Each strip and light meets her hull face to face, on a block of her skin made whole (see
+ * {@link FreighterExterior#pad}). None with the server config's {@code freighter.outsideLights} off.
  */
 final class FreighterLights {
     /** The row her light band runs along, in blocks over her feet's soles: the top row of her upright rim. */
@@ -98,7 +99,7 @@ final class FreighterLights {
     private static void alongGapWall(FreighterLayout layout, int side, int z) {
         for (int x = 0; Math.abs(x) <= layout.airBox().maxX(); x += side) {
             if (!layout.isOpen(x, GAP_ROW, z)) {
-                strip(layout, x == 0 ? null : new BlockPos(x - side, GAP_ROW, z), x, z, Mount.WALL, side > 0 ? Direction.WEST : Direction.EAST);
+                strip(layout, x == 0 ? null : new BlockPos(x, GAP_ROW, z), Mount.WALL, side > 0 ? Direction.WEST : Direction.EAST);
                 return;
             }
         }
@@ -108,21 +109,22 @@ final class FreighterLights {
     private static void acrossGapBack(FreighterLayout layout, int x, int tip) {
         for (int z = tip; z < 0; z++) {
             if (!layout.isOpen(x, GAP_ROW, z)) {
-                strip(layout, z == tip ? null : new BlockPos(x, GAP_ROW, z - 1), x, z, Mount.WALL, Direction.NORTH);
+                strip(layout, z == tip ? null : new BlockPos(x, GAP_ROW, z), Mount.WALL, Direction.NORTH);
                 return;
             }
         }
     }
 
     /**
-     * A strip where given, against the block of hers it is fixed to, if that is her solid hull and the strip's own
-     * block lies in the open sky.
+     * A strip fixed to the block of hers given, facing out from it, where her hull holds it (see
+     * {@link FreighterExterior#against}); none where null.
      */
-    private static void strip(FreighterLayout layout, @Nullable BlockPos at, int againstX, int againstZ, Mount mount, Direction facing) {
-        if (at == null || !FreighterExterior.holds(layout, againstX, at.getY(), againstZ) || FreighterExterior.outside(layout, at) == null) {
-            return;
+    private static void strip(FreighterLayout layout, @Nullable BlockPos wall, Mount mount, Direction facing) {
+        BlockPos at = wall == null ? null : FreighterExterior.against(layout, wall, facing.getOpposite());
+        if (at != null) {
+            layout.set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.HULL_LIGHT_STRIP.get().mounted(mount, facing));
+            FreighterExterior.pad(layout, at, facing.getOpposite());
         }
-        layout.set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.HULL_LIGHT_STRIP.get().mounted(mount, facing));
     }
 
     /** A strip along the outer edge of each prong's top, from where it meets her disc to near its tip. */
@@ -141,6 +143,7 @@ final class FreighterLights {
         BlockPos at = FreighterExterior.onTop(layout, x, z);
         if (at != null) {
             layout.set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.HULL_LIGHT_STRIP.get().mounted(Mount.FLOOR, facing));
+            FreighterExterior.pad(layout, at, Direction.DOWN);
         }
     }
 
@@ -160,7 +163,7 @@ final class FreighterLights {
         beam(layout, 1, NavLightBlock.Kind.GREEN);
         BlockPos stern = outermost(layout, 180, BAND_ROW + 1);
         if (stern != null) {
-            light(layout, stern.south(), Direction.SOUTH, NavLightBlock.Kind.WHITE);
+            light(layout, FreighterExterior.against(layout, stern, Direction.NORTH), Direction.SOUTH, NavLightBlock.Kind.WHITE);
         }
         int strobeX = (int) Math.round((FreighterShape.PRONG_OUT_TIP - STROBE_IN) * FreighterLayout.SCALE);
         int strobeZ = (int) Math.round((FreighterShape.PRONG_TIP + STROBE_IN) * FreighterLayout.SCALE);
@@ -175,16 +178,21 @@ final class FreighterLights {
     /** A navigation light on her rim's top row on one beam, port (-1) or starboard (1), shining out from her. */
     private static void beam(FreighterLayout layout, int side, NavLightBlock.Kind kind) {
         BlockPos rim = outermost(layout, side > 0 ? 90 : 270, BAND_ROW);
-        if (rim != null && FreighterExterior.holds(layout, rim.getX(), rim.getY(), rim.getZ())) {
-            light(layout, FreighterExterior.outside(layout, rim.east(side)), side > 0 ? Direction.EAST : Direction.WEST, kind);
+        Direction out = side > 0 ? Direction.EAST : Direction.WEST;
+        if (rim != null) {
+            light(layout, FreighterExterior.against(layout, rim, out.getOpposite()), out, kind);
         }
     }
 
-    /** A navigation light of a kind where given, shining the way given, if that block is open; none where null. */
+    /**
+     * A navigation light of a kind where given, where her hull holds it (see {@link FreighterExterior#against}),
+     * shining the way given; none where null.
+     */
     private static void light(FreighterLayout layout, @Nullable BlockPos at, Direction shines, NavLightBlock.Kind kind) {
-        if (at != null && layout.isOpen(at.getX(), at.getY(), at.getZ())) {
+        if (at != null) {
             layout.set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.NAV_LIGHT.get().defaultBlockState()
                 .setValue(NavLightBlock.FACING, shines).setValue(NavLightBlock.KIND, kind));
+            FreighterExterior.pad(layout, at, shines.getOpposite());
         }
     }
 }

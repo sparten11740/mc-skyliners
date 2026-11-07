@@ -2581,7 +2581,8 @@ built at the same size, whatever the server config's scale: a disc 60 blocks acr
 upright rim, with two flat prongs reaching forward either side of a loading gap, 84 blocks long in all from their tips
 to her stern, standing on five landing legs, a strut down to a square foot plate each from a leg bay set into her belly,
 a block of gunmetal housing ringed in hazard stripes, her belly a couple of blocks off the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
-of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go. Her canopy's
+of struts; a glass dome stands on her top and another under her belly, four dark gunmetal ribs running over each from
+her hull to its crown, where her ball turrets will go. Her canopy's
 glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
 through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
@@ -2694,15 +2695,18 @@ Her outside is a working ship's. On her top, to port of her stern, a big white s
 turns slowly round on its pedestal, tipped up at the sky; off her port bow stands a little farm of antenna masts, two
 more to starboard, each with a red lamp at its tip blinking a second on and three off; there are cream sensor domes with
 a cyan band round their foot, banks of heat-sink fins glowing orange at their roots either side of her stern over her
-engines, exhaust vents between them letting off white wisps, and runs of machinery, boxes, copper pipes and amber
-status lamps, out from her middle and along her prongs. Off her port rim a smaller dish on an arm sweeps from side to
-side beside a whip antenna; conduit, vents, fins and floodlights hang on her rim; and under her belly floodlights light
-the ground she comes down on, with a radome, another dish, a blade antenna and tanks. The Satellite Dish, Big Satellite
-Dish, Antenna Mast, Sensor Dome, Heat Sink, Exhaust Vent, Hull Machinery and Hull Floodlight are among her blocks in the
-creative tab, and each goes up wherever it is clicked against, in a shape of its own for each: standing on a floor,
-fixed to a wall (a dish on an arm, a mast as a whip on its hinge, fins out from a plate, a louvred vent, a run of
-conduit, a spotlight on a bracket) or hung under a ceiling (a dish turned down at the ground, a blade antenna, a radome,
-a nozzle, a tank, a landing light). The server config's `freighter.exterior` builds her without them.
+engines, exhaust vents between them and flush vent grilles inboard of them letting off white wisps, and runs of
+machinery, boxes, copper pipes and amber status lamps, out from her middle and along her prongs, more grilles beside
+them. Off her port rim a smaller dish on an arm sweeps from side to side beside a whip antenna; conduit, vents, louvred
+grilles, fins and floodlights hang on her rim; and under her belly floodlights light the ground she comes down on, with
+a radome, another dish, a blade antenna, tanks and grilles under her engines. Each piece meets her hull face to face,
+standing on a block of her skin made whole for it where her curve would have left a gap under it. The Satellite Dish,
+Big Satellite Dish, Antenna Mast, Sensor Dome, Heat Sink, Exhaust Vent, Vent Grille, Hull Machinery and Hull Floodlight
+are among her blocks in the creative tab, and each goes up wherever it is clicked against, in a shape of its own for
+each: standing on a floor (the grille a slatted deck grating), fixed to a wall (a dish on an arm, a mast as a whip on
+its hinge, fins out from a plate, a louvred vent, a hooded grille, a run of conduit, a spotlight on a bracket) or hung
+under a ceiling (a dish turned down at the ground, a blade antenna, a radome, a nozzle, an intake with a hub on its
+struts, a tank, a landing light). The server config's `freighter.exterior` builds her without them.
 
 Her outer ring and rim are plated: riveted seams run out from her middle every 30 degrees, a few sectors between them
 are dark gunmetal, welded patches are scattered over the rest, and yellow and black hazard stripes ring her docking
@@ -2760,7 +2764,8 @@ Up her core, through its doorway from the ring corridor on her bow side, a slim 
 back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
 gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
 on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up
-to the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal atop the dome, high enough to
+to the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal on the hub where the dome's
+ribs meet, high enough to
 see all round her past her rim and up into the sky, their glowing muzzles low in the view; sneak to get up and your own
 view is back at once. The barrels turn to whatever you look at, their servos whirring, all the way round and from a
 little below level to near straight up. The sight is drawn in thin amber lines on a dark frame: at the middle a ring

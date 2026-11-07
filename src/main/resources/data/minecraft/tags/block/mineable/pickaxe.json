@@ -35,6 +35,7 @@
     "skyliners:sensor_dome",
     "skyliners:heat_sink",
     "skyliners:exhaust_vent",
+    "skyliners:vent_grille",
     "skyliners:hull_machinery",
     "skyliners:hull_light_strip",
     "skyliners:hull_floodlight",

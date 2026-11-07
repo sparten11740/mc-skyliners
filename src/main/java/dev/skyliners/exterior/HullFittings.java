@@ -38,6 +38,12 @@ public final class HullFittings {
     /** An exhaust vent: a stack with its rain cap, a louvred box on a wall, or a nozzle pointing down. */
     public static final HullFittingBlock.Outline EXHAUST_VENT = new HullFittingBlock.Outline(Block.box(3, 0, 3, 13, 16, 13),
         Block.box(1.5, 2, 8.5, 14.5, 15, 16), Block.box(3, 4.5, 3, 13, 16, 13));
+    /**
+     * A vent grille, flush with what holds it: a slatted grating lying on a floor, a hooded louvred grille on a wall,
+     * or an intake with a hub on its struts under a ceiling.
+     */
+    public static final HullFittingBlock.Outline VENT_GRILLE = new HullFittingBlock.Outline(Block.box(1, 0, 1, 15, 2, 15),
+        Block.box(1, 1, 13.5, 15, 15, 16), Block.box(2, 13.5, 2, 14, 16, 14));
     /** Hull machinery: a box of works with its pipes on a floor, a run of conduit on a wall, or a tank hung up. */
     public static final HullFittingBlock.Outline HULL_MACHINERY = new HullFittingBlock.Outline(Block.box(0, 0, 1.5, 16, 8, 16),
         Block.box(0, 0, 10.5, 16, 16, 16), Block.box(0, 5.5, 4.5, 16, 16, 14));

@@ -3,6 +3,8 @@ package dev.skyliners.airframe;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.Mount;
+import dev.skyliners.block.ShellBlock;
+import dev.skyliners.block.ShellGeometry;
 import dev.skyliners.exterior.HullFittingBlock;
 import java.util.List;
 import java.util.function.Supplier;
@@ -16,15 +18,17 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The freighter's outside fitted out with the fleet's outside fittings (see {@link HullFittingBlock}), laid once the
  * rest of her stands: each piece in the open sky just outside her skin and face to face with it, so her assembly takes
- * it along as she lifts off. Her top carries a big satellite dish turning port of her stern, a farm of antenna masts
- * off her port bow and a pair to starboard, sensor domes, banks of heat-sink fins either side of her stern over her
- * engines with exhaust vents between them, and runs of machinery out from her middle; her prongs' flat tops more runs
- * of machinery and fins, vents, a mast and a dome; her upright rim a small dish sweeping off her port side, whip
- * antennas, runs of conduit, vents, fins and floodlights; and under her belly and her prongs floodlights, a radome, a
- * small dish, a blade antenna and tanks. Each is where it keeps clear of her ramp, her legs, her thrusters' plumes and
- * her cannon's level sweep over her top, and stands on solid hull, never glass, her grille or an engine: where it would
- * not, or another piece already stands there, it is left out. None with the server config's {@code freighter.exterior}
- * off.
+ * it along as she lifts off, the block of her skin it stands against made whole (see {@link #pad}), so it meets her
+ * hull rather than standing over her skin's cut. Her top carries a big satellite dish turning port of her stern, a farm
+ * of antenna masts off her port bow and a pair to starboard, sensor domes, banks of heat-sink fins either side of her
+ * stern over her engines with exhaust vents between them and banks of vent grilles inboard of them, and runs of
+ * machinery out from her middle with runs of grilles beside them; her prongs' flat tops more runs of machinery, fins
+ * and grilles, vents, a mast and a dome; her upright rim a small dish sweeping off her port side, whip antennas, runs
+ * of conduit and of grilles, vents, fins and floodlights; and under her belly and her prongs floodlights, a radome, a
+ * small dish, a blade antenna, tanks and grilles under her engines. Each is where it keeps clear of her ramp, her legs,
+ * her thrusters' plumes and her cannon's level sweep over her top, and stands on solid hull, never glass, her grille or
+ * an engine: where it would not, or another piece already stands there, it is left out. None with the server config's
+ * {@code freighter.exterior} off.
  */
 final class FreighterExterior {
     /** How far over the ground under her feet her rim's fittings are fixed, in metres: the middle of her rim. */
@@ -53,28 +57,38 @@ final class FreighterExterior {
         bank(SkylinersRegistry.HEAT_SINK, 188, 210, 10.6),
         List.of(top(SkylinersRegistry.EXHAUST_VENT, 180, 9.6), top(SkylinersRegistry.EXHAUST_VENT, 176, 8.6),
             top(SkylinersRegistry.EXHAUST_VENT, 184, 8.6), top(SkylinersRegistry.EXHAUST_VENT, 245, 9.2),
-            top(SkylinersRegistry.EXHAUST_VENT, 250, 9.8)),
+            top(SkylinersRegistry.EXHAUST_VENT, 250, 9.8), top(SkylinersRegistry.EXHAUST_VENT, 158, 7.6),
+            top(SkylinersRegistry.EXHAUST_VENT, 202, 7.6)),
+        bank(SkylinersRegistry.VENT_GRILLE, 154, 170, 9.4),
+        bank(SkylinersRegistry.VENT_GRILLE, 190, 206, 9.4),
         run(SkylinersRegistry.HULL_MACHINERY, 95, 5.5, 8.5),
         run(SkylinersRegistry.HULL_MACHINERY, 262, 5.0, 8.0),
         run(SkylinersRegistry.HULL_MACHINERY, 30, 5.0, 7.5),
+        run(SkylinersRegistry.VENT_GRILLE, 100, 5.5, 8.0),
+        run(SkylinersRegistry.VENT_GRILLE, 267, 5.0, 7.5),
         prongRun(SkylinersRegistry.HEAT_SINK, -3.7, -12.2, -13.4),
         prongRun(SkylinersRegistry.HULL_MACHINERY, -3.7, -14.6, -16.2),
         prongRun(SkylinersRegistry.EXHAUST_VENT, -3.6, -17.6, -18.4),
         List.of(prong(SkylinersRegistry.ANTENNA_MAST, 3.7, -12.9), prong(SkylinersRegistry.SENSOR_DOME, 3.6, -17.2),
             prong(SkylinersRegistry.EXHAUST_VENT, 3.6, -18.4)),
         prongRun(SkylinersRegistry.HULL_MACHINERY, 3.7, -14.2, -15.8),
+        prongRun(SkylinersRegistry.VENT_GRILLE, -2.6, -12.4, -13.6),
+        prongRun(SkylinersRegistry.VENT_GRILLE, 2.6, -16.4, -17.6),
         List.of(rim(SkylinersRegistry.SATELLITE_DISH, -1, -1.0), rim(SkylinersRegistry.ANTENNA_MAST, -1, -2.6),
             rim(SkylinersRegistry.HULL_FLOODLIGHT, -1, -5.8), rim(SkylinersRegistry.HULL_FLOODLIGHT, 1, -1.0),
             rim(SkylinersRegistry.ANTENNA_MAST, 1, -5.4), rim(SkylinersRegistry.EXHAUST_VENT, 1, 6.0),
             rim(SkylinersRegistry.HEAT_SINK, -1, 6.0)),
         rimRun(SkylinersRegistry.HULL_MACHINERY, -1, -3.8, -4.6),
         rimRun(SkylinersRegistry.HULL_MACHINERY, 1, -2.2, -3.8),
+        rimRun(SkylinersRegistry.VENT_GRILLE, -1, 5.4, 4.6),
+        rimRun(SkylinersRegistry.VENT_GRILLE, 1, 5.4, 4.6),
         List.of(under(SkylinersRegistry.HULL_FLOODLIGHT, 45, 10.3), under(SkylinersRegistry.HULL_FLOODLIGHT, 135, 10.3),
             under(SkylinersRegistry.HULL_FLOODLIGHT, 225, 10.3), under(SkylinersRegistry.HULL_FLOODLIGHT, 315, 10.3),
             underProng(SkylinersRegistry.HULL_FLOODLIGHT, -3.6, -20.0), underProng(SkylinersRegistry.HULL_FLOODLIGHT, 3.6, -20.0),
             under(SkylinersRegistry.SENSOR_DOME, 270, 5.0), under(SkylinersRegistry.SATELLITE_DISH, 200, 5.0),
             under(SkylinersRegistry.ANTENNA_MAST, 160, 5.0), under(SkylinersRegistry.HULL_MACHINERY, 330, 5.0),
-            under(SkylinersRegistry.HULL_MACHINERY, 20, 5.0))
+            under(SkylinersRegistry.HULL_MACHINERY, 20, 5.0), under(SkylinersRegistry.VENT_GRILLE, 170, 8.0),
+            under(SkylinersRegistry.VENT_GRILLE, 190, 8.0))
     ).flatMap(List::stream).toList();
 
     private FreighterExterior() {
@@ -161,45 +175,89 @@ final class FreighterExterior {
         if (at == null) {
             return;
         }
-        Direction facing = Direction.getNearest(at.getX(), 0, at.getZ());
+        Direction outFromRim = at.getX() > 0 ? Direction.EAST : Direction.WEST;
+        Direction facing = spot.mount() == Mount.WALL ? outFromRim : Direction.getNearest(at.getX(), 0, at.getZ());
+        Direction against = switch (spot.mount()) {
+            case FLOOR -> Direction.DOWN;
+            case CEILING -> Direction.UP;
+            case WALL -> facing.getOpposite();
+        };
         layout.set(at.getX(), at.getY(), at.getZ(), spot.piece().get().mounted(spot.mount(), facing));
+        pad(layout, at, against);
     }
 
-    /** The open block over the topmost of her blocks in a column, where that is solid hull; null where it is not. */
+    /**
+     * Makes the block of her skin a piece stands against, the way given from the piece, whole where it was cut to her
+     * curve: a pad the piece meets face to face. Standing on the edge of its block over the cut, it would show a gap
+     * all round under it.
+     */
+    static void pad(FreighterLayout layout, BlockPos piece, Direction toward) {
+        BlockPos at = piece.relative(toward);
+        BlockState skin = layout.stateAt(at.getX(), at.getY(), at.getZ());
+        if (ShellBlock.shape(skin) != ShellGeometry.WHOLE && ShellBlock.takes(skin, ShellGeometry.WHOLE)) {
+            layout.set(at.getX(), at.getY(), at.getZ(), ShellBlock.withShape(skin, ShellGeometry.WHOLE));
+        }
+    }
+
+    /** Where a piece stands on the topmost of her blocks in a column (see {@link #against}); null where it cannot. */
     @Nullable
     static BlockPos onTop(FreighterLayout layout, int x, int z) {
         for (int y = layout.airBox().maxY(); y > 0; y--) {
             if (!layout.isOpen(x, y, z)) {
-                return holds(layout, x, y, z) ? outside(layout, new BlockPos(x, y + 1, z)) : null;
+                return against(layout, new BlockPos(x, y, z), Direction.DOWN);
             }
         }
         return null;
     }
 
-    /** The open block under the lowest of her blocks in a column, where that is solid hull; null where it is not. */
+    /** Where a piece hangs under the lowest of her blocks in a column (see {@link #against}); null where it cannot. */
     @Nullable
     static BlockPos underneath(FreighterLayout layout, int x, int z) {
         for (int y = LOWEST_HANGING + 1; y <= layout.airBox().maxY(); y++) {
             if (!layout.isOpen(x, y, z)) {
-                return holds(layout, x, y, z) && layout.isOpen(x, y - 1, z) ? outside(layout, new BlockPos(x, y - 1, z)) : null;
+                return against(layout, new BlockPos(x, y, z), Direction.UP);
             }
         }
         return null;
     }
 
     /**
-     * The open block just outside her rim on one side of her, level with its middle, so far astern, walking in from
-     * past her; null where the first of her blocks met is not her solid hull.
+     * Where a piece is fixed to her rim on one side of her, level with its middle, so far astern, walking in from past
+     * her (see {@link #against}); null where it cannot be.
      */
     @Nullable
     private static BlockPos beside(FreighterLayout layout, int side, int z) {
         int y = (int) Math.round(RIM_UP * FreighterLayout.SCALE);
         for (int x = side * layout.airBox().maxX(); x != 0; x -= side) {
             if (!layout.isOpen(x, y, z)) {
-                return holds(layout, x, y, z) ? outside(layout, new BlockPos(x + side, y, z)) : null;
+                return against(layout, new BlockPos(x, y, z), side > 0 ? Direction.WEST : Direction.EAST);
             }
         }
         return null;
+    }
+
+    /**
+     * Where a piece goes against the first of her blocks met walking in toward her a way: the open block before it,
+     * where that block is her solid hull; or, where it is only a sliver of her skin, its middle out in the open sky
+     * over her curve, in place of the sliver, against her hull behind it. So a piece stands at most half a block off
+     * her true surface once the block it stands against is made whole (see {@link #pad}), rather than as much as a
+     * block over a sliver. Null where neither is her solid hull, or the block before it is taken.
+     */
+    @Nullable
+    static BlockPos against(FreighterLayout layout, BlockPos first, Direction walking) {
+        BlockPos behind = first.relative(walking);
+        if (sliver(layout, first) && holds(layout, behind.getX(), behind.getY(), behind.getZ())) {
+            return first;
+        }
+        BlockPos before = first.relative(walking.getOpposite());
+        boolean free = layout.isOpen(before.getX(), before.getY(), before.getZ());
+        return free && holds(layout, first.getX(), first.getY(), first.getZ()) ? outside(layout, before) : null;
+    }
+
+    /** Whether a block of hers is only a sliver of her solid hull, cut to her curve, its middle in the open sky. */
+    private static boolean sliver(FreighterLayout layout, BlockPos at) {
+        BlockState there = layout.stateAt(at.getX(), at.getY(), at.getZ());
+        return ShellBlock.shape(there) != ShellGeometry.WHOLE && holds(layout, at.getX(), at.getY(), at.getZ()) && outside(layout, at) != null;
     }
 
     /**
