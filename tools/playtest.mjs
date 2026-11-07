@@ -226,6 +226,8 @@ const BOOTH_REACH = 3;
 const SMALL_TARDIGRADE = 0.25;
 const SMALL_COMES_WITHIN = 600;
 const BIG_MUNCH_HIGHEST = 0.9;
+// How far from her small tardigrade's hatch the pad of moss beside it stands at most, in blocks.
+const MOSS_PAD_NEAR = 3;
 // How many pallet rack bays and crates her cargo hold has at least.
 const HOLD_RACKS = 8;
 const HOLD_CRATES = 2;
@@ -1168,6 +1170,9 @@ function checkFreighterTardigrade() {
   const scale = must("server execute as @e[type=skyliners:tardigrade] run attribute @s minecraft:generic.scale get").rows[0]?.line ?? "";
   const size = Number(scale.split(" ").at(-1));
   expect(size === SMALL_TARDIGRADE, "freighter: a small tardigrade lives in it, a quarter the rocket's one's size", `size ${size}`);
+  const pad = must("find minecraft:moss_carpet 128 20").rows.find(({ at_abs: [x, y, z] }) =>
+    y === hatchRow.at_abs[1] && Math.max(Math.abs(x - hatchRow.at_abs[0]), Math.abs(z - hatchRow.at_abs[2])) <= MOSS_PAD_NEAR);
+  expect(Boolean(pad), "freighter: a pad of moss stands beside its hatch, to show what it eats", pad ? `at ${pad.at_abs.join(",")}` : "none");
   const hatch = hatchRow.at_abs.join(",");
   const [dx, dz] = CLIMBS[must(`block ${hatch}`).props.facing];
   const [hx, hy, hz] = hatchRow.at_abs;

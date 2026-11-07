@@ -249,8 +249,8 @@ pacing the line the plan found for it (in `#sable:retain_in_sub_level`, so it li
 space; on the client `TardigradeModel` and `TardigradeRenderer` draw it, `SleepParticle` its "z"s asleep and
 `SporeParticle` the spores of its jumps. A tardigrade's size is the game's scale attribute (`Tardigrade.setSize`), which
 the hatch sets as it makes one and which scales its reach, its clouds, its stride and its voice with it: the
-freighter's `LoungeTank` lays a small tank of the same glass on a stand of galley cabinets in her lounge, its hatch
-keeping one a quarter the size. `LabBays` lays the food lab and the wet bench
+freighter's `LoungeTank` lays a small tank of the same glass on a stand of galley cabinets in her lounge, under a
+hood, a pad of moss beside its hatch, which keeps one a quarter the size. `LabBays` lays the food lab and the wet bench
 either side of the shaft: the `BioreactorBlock`s, which grow their steaks on scheduled ticks of their own and hand them
 out, and the `LabGrowerBlock`s, the hydroponic rack and the algae column, all `LabMachineBlock`s two blocks tall; the
 `LabPartitionBlock`s and the `LabPipeBlock`s; and the galley's cupboards and the lavatory's basin. A

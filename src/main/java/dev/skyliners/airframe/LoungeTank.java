@@ -15,44 +15,52 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The freighter's small tardigrade's tank, in her lounge: a glass tank two blocks wide and five long, standing out
+ * The freighter's small tardigrade's tank, in her lounge: a glass tank three blocks wide and five long, standing out
  * from the lounge's north wall into the room on a stand of galley cabinets, so the creature paces at the eye height of
  * anyone standing before it. Its glass is the rocket's tank's (see {@link HabitatGlassBlock}), moss over its floor and
- * lit soft along its top; its feeding hatch at its south end, facing into the room, the creature's vitals over it,
- * and moss to feed it with in the cabinet under the hatch. The hatch keeps the creature (see
- * {@link HabitatHatchBlockEntity}), made a quarter of the rocket's one's size, which paces the tank's west half from
- * its far end to the hatch and turns round in its middle.
+ * lit soft along its top, under a dark steel hood; its feeding hatch in the middle of its south end, facing into the
+ * room, the creature's vitals over it. Beside the hatch stands a worktop with a pad of moss on it, plain to see, to
+ * show what the creature eats, and the cabinet under the hatch holds more. The hatch keeps the creature (see
+ * {@link HabitatHatchBlockEntity}), made a quarter of the rocket's one's size, which paces the tank's middle from its
+ * far end to the hatch and turns round halfway.
  *
  * <p>Laid out nose north, as the rest of her: the lounge lies south of the wall it shares with her entry hall, which
- * runs along z 0. Open at its top, under her hull rising over the lounge, as nothing makes the creature climb. Built
- * only where every block of it is open over her deck's floor, and not at all with the server config's
+ * runs along z 0. Its hood goes over each column where her hull leaves room. Built only where every block of the rest
+ * is open over her deck's floor, with room before the hatch to stand, and not at all with the server config's
  * {@code freighter.tardigrade} off.
  */
 final class LoungeTank {
     /** How many times the rocket's tardigrade's size the small one is: about a block and a half long. */
     private static final double SIZE = 0.25;
-    /** The tank's columns, from west to east and from its north end, against the wall, to its south end. */
+    /**
+     * The tank's columns, from west to east, the hatch's in the middle, and from its north end, against the wall, to
+     * its south end; and the column of the worktop with the moss pad, beside the tank's south end on its west.
+     */
     private static final int WEST = 17;
-    private static final int EAST = 18;
+    private static final int MIDDLE = 18;
+    private static final int EAST = 19;
     private static final int NORTH = 1;
     private static final int SOUTH = 5;
+    private static final int MOSS_PAD = WEST - 1;
     /** How many moss carpets the cabinet under the hatch holds, to feed the creature with. */
     private static final int FEED = 16;
     /**
-     * The creature's line along the west column's middle, from its north end to its south end, as far in from the
+     * The creature's line along the middle column's middle, from its north end to its south end, as far in from the
      * tank's ends as the creature's head and tail reach and with its mouth at the hatch at the south end; and where it
-     * turns round, in the tank's middle, where nothing is within its length all round. In the layout's blocks, a
-     * block's corner at its whole numbers, its feet on the stand.
+     * turns round, halfway along it, where nothing is within its length all round. In the layout's blocks, a block's
+     * corner at its whole numbers, its feet on the stand.
      */
-    private static final double LINE_X = WEST + 0.5;
+    private static final double LINE_X = MIDDLE + 0.5;
     private static final double LINE_FROM = NORTH + 0.9;
     private static final double LINE_TO = SOUTH - 0.575;
-    private static final Vec3 TURN = new Vec3(EAST, 0, (NORTH + SOUTH + 1) / 2.0);
+    private static final Vec3 TURN = new Vec3(LINE_X, 0, (NORTH + SOUTH + 1) / 2.0);
 
     private final HullLayout layout;
     private final int deck;
@@ -71,12 +79,12 @@ final class LoungeTank {
     }
 
     /**
-     * Whether every column of the tank has her deck's floor under it and three rows open over that, and there is room
-     * before the hatch to stand and feed the creature.
+     * Whether every column of the tank and the moss pad's has her deck's floor under it and three rows open over that,
+     * and there is room before the hatch to stand and feed the creature.
      */
     private boolean fits() {
         boolean free = IntStream.rangeClosed(WEST, EAST).allMatch(x -> IntStream.rangeClosed(NORTH, SOUTH).allMatch(z -> columnFree(x, z)));
-        return free && columnFree(WEST, SOUTH + 1);
+        return free && columnFree(MOSS_PAD, SOUTH) && columnFree(MIDDLE, SOUTH + 1);
     }
 
     private boolean columnFree(int x, int z) {
@@ -90,15 +98,21 @@ final class LoungeTank {
                 layColumn(x, z);
             }
         }
-        BlockPos hatch = new BlockPos(WEST, deck + 2, SOUTH);
+        BlockPos hatch = new BlockPos(MIDDLE, deck + 2, SOUTH);
         layout.set(hatch.getX(), hatch.getY(), hatch.getZ(), SkylinersRegistry.HABITAT_HATCH.get().defaultBlockState()
             .setValue(HabitatHatchBlock.FACING, Direction.SOUTH));
-        layout.set(WEST, deck + 3, SOUTH, SkylinersRegistry.LAB_INSTRUMENT.get().of(LabInstrumentBlock.Kind.VITALS, Direction.SOUTH));
-        layout.fit(new BlockPos(WEST, deck + 1, SOUTH), LoungeTank::stockFeed);
+        layout.set(MIDDLE, deck + 3, SOUTH, SkylinersRegistry.LAB_INSTRUMENT.get().of(LabInstrumentBlock.Kind.VITALS, Direction.SOUTH));
+        layout.fit(new BlockPos(MIDDLE, deck + 1, SOUTH), LoungeTank::stockFeed);
+        BlockState worktop = SkylinersRegistry.GALLEY_WORKTOP.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, Direction.SOUTH);
+        layout.set(MOSS_PAD, deck + 1, SOUTH, worktop);
+        layout.set(MOSS_PAD, deck + 2, SOUTH, Blocks.MOSS_CARPET.defaultBlockState());
         keep(hatch);
     }
 
-    /** A column of the tank: its cabinet, facing out of the tank's side or its south end, and its two rows of glass. */
+    /**
+     * A column of the tank: its cabinet, facing out of the tank's side or its south end, its two rows of glass, and its
+     * hood over them where her hull leaves room.
+     */
     private void layColumn(int x, int z) {
         Direction out = z == SOUTH ? Direction.SOUTH : x == WEST ? Direction.WEST : Direction.EAST;
         layout.set(x, deck + 1, z, SkylinersRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, out));
@@ -106,6 +120,9 @@ final class LoungeTank {
         Set<Direction> sides = panes(x, z);
         layout.set(x, deck + 2, z, glass.panes(sides, HabitatGlassBlock.Row.FLOOR));
         layout.set(x, deck + 3, z, glass.panes(sides, HabitatGlassBlock.Row.TOP));
+        if (layout.isOpen(x, deck + 4, z)) {
+            layout.set(x, deck + 4, z, Blocks.POLISHED_DEEPSLATE_SLAB.defaultBlockState());
+        }
     }
 
     /** The ways out of the tank a column of it has glass on: every way that is not another column of it. */

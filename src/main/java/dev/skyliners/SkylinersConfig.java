@@ -689,7 +689,7 @@ public final class SkylinersConfig {
         FREIGHTER_TARDIGRADE = builder
             .comment(
                 "Whether the freighter's lounge has a small tardigrade, a quarter the size of the rocket's, in a glass tank on a",
-                "cabinet by its north wall, with a feeding hatch and moss to feed it in the cabinet under the hatch."
+                "cabinet stand by its north wall, with a feeding hatch, a pad of moss beside it and more in the cabinet under it."
             )
             .define("tardigrade", true);
         builder.pop();
