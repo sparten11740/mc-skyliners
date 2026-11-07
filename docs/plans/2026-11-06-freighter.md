@@ -761,6 +761,10 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
 - The club's song, "Long Haul Swing" (`club_band`), wants a check by ear against the film's cantina tune: its notes
   and rhythm are our own (D minor, an F major bridge, 32 bars at 160 swung), but no machine can judge how close its
   feel is. The robots' trill wants a listen too, to be sure it is no sliding whistle like the film's robot's.
+- Her canopy (ask 14) has four struts square to the blocks and a ring, clean from outside
+  (run/blockpilot/screenshots/2026-11-07_02.35.36.788.png); from her seats the struts are still a frame of whole
+  blocks, and from the pilot's seat the autopilot screen fills half the forward view
+  (run/blockpilot/screenshots/2026-11-07_02.37.19.689.png): both are M4's, the cockpit's dress.
 - Hovering high, her lift thrusters' plumes are now left out (the plan's decision 38, and half the particles anyone
   near her is sent): from the side nothing then shows she is held up but her hum and roar, her grille glowing astern
   (run/blockpilot/screenshots/2026-11-07_01.16.10.853.png). Showing them higher is one number, `LiftPlumes`'

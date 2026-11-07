@@ -46,6 +46,8 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   taller than her belly's clearance she rests on it with her legs in the air and never switches off. A guard for any
   landing she cannot finish (some seconds touching without settling: climb back a few blocks, hold, and say so).
 - Her autopilot screen's landing picture could show it dimmed while she holds over a pin with no ground near it.
+- Seen from her seats, her canopy's struts are a frame of whole blocks where the cone's skin steps inward: a smooth
+  lining of their own inside (M4, the cockpit's dress).
 
 ## Not yet checked
 

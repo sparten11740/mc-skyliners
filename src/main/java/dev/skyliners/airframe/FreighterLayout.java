@@ -75,6 +75,11 @@ public final class FreighterLayout extends HullLayout {
     private static final int[][] PLUS = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
     /** Her main engines along her stern's rim, at these bearings in degrees, so many rows over her deck. */
     private static final int[] MAIN_BEARINGS = {165, 171, 177, 183, 189, 195};
+    /**
+     * How many struts run along her cockpit's cone, evenly round it from straight up: four, square to the blocks, so
+     * each runs straight along a row of them; between them her canopy is glass, with a ring of strut half way along.
+     */
+    private static final int CANOPY_SPOKES = 4;
     private static final int MAIN_ROWS_UP = 2;
     /** Her retros in her prongs' tips, so far out either side of her middle line, in metres. */
     private static final double RETRO_OUT = 3.4;
@@ -285,8 +290,8 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Whether her skin is glass at a point, in blocks: on her cockpit's cone and its front, but for its struts, eight
-     * spokes and a ring half way along; and on her turrets' domes.
+     * Whether her skin is glass at a point, in blocks: on her cockpit's cone and its front, but for its struts (see
+     * {@link #CANOPY_SPOKES}); and on her turrets' domes.
      */
     private boolean glazed(double x, double y, double z) {
         double mx = x / scale;
@@ -306,7 +311,7 @@ public final class FreighterLayout extends HullLayout {
             return true;
         }
         double round = Math.atan2(y - FreighterShape.POD_UP, x - FreighterShape.TUBE_OUT);
-        double spoke = Math.PI / 4;
+        double spoke = 2 * Math.PI / CANOPY_SPOKES;
         double off = Math.abs(round - spoke * Math.round(round / spoke));
         return off * Math.hypot(x - FreighterShape.TUBE_OUT, y - FreighterShape.POD_UP) * scale < 0.5;
     }
