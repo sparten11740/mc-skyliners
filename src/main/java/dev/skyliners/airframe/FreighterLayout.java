@@ -677,7 +677,8 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Her landing legs (see {@link FreighterShape#LEGS}): each a strut of landing gear down from her belly to a foot
-     * plate on the ground, three blocks square, that she stands on.
+     * plate on the ground, three blocks square, that she stands on, the strut meeting her belly in a solid block (see
+     * {@link #legTop}).
      */
     private void legs() {
         BlockState strut = SkylinersRegistry.LANDING_GEAR.get().defaultBlockState();
@@ -685,13 +686,26 @@ public final class FreighterLayout extends HullLayout {
         for (double[] leg : FreighterShape.LEGS) {
             int x = (int) Math.round(leg[0] * scale);
             int z = (int) Math.round(leg[1] * scale);
-            for (int y = 1; isOpen(x, y, z) && surface.depth(x, y + 0.5, z) > 0; y++) {
+            int y = 1;
+            for (; isOpen(x, y, z) && surface.depth(x, y + 0.5, z) > 0; y++) {
                 set(x, y, z, strut);
             }
             for (int i = 0; i < 9; i++) {
                 set(x + i % 3 - 1, 0, z + i / 3 - 1, foot);
             }
             feet.add(new BlockPos(x, 0, z));
+            legTop(new BlockPos(x, y, z), strut);
+        }
+    }
+
+    /**
+     * Where a leg's strut meets her belly, the strut stopped under a block: that block made a block more of strut, in
+     * place of her skin there, which is cut to her belly's curve and so often leaves the underside of its block open,
+     * the strut stopping short of the skin the eye sees; left as it is where something else of hers stands there.
+     */
+    private void legTop(BlockPos over, BlockState strut) {
+        if (isOpen(over.getX(), over.getY(), over.getZ()) || skin(stateAt(over.getX(), over.getY(), over.getZ()))) {
+            set(over.getX(), over.getY(), over.getZ(), strut);
         }
     }
 
