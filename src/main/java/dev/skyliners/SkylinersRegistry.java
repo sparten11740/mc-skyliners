@@ -936,6 +936,21 @@ public final class SkylinersRegistry {
     /** Her computer, after its falling blip, saying her name: "Magpie's awake. Barely." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_MAGPIE_READY =
         sound("freighter_computer_magpie_ready");
+    /** Her computer for her flight deck, set to take off: "Lifting off. Hold on to something bolted down." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_TAKEOFF =
+        sound("freighter_computer_takeoff");
+    /** Her computer for her flight deck, coming down: "Coming down to land. Expect a bump. Or two." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_LANDING =
+        sound("freighter_computer_landing");
+    /** Her computer for her flight deck, down on her legs: "We're down. Nothing fell off. That I know of." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ARRIVAL =
+        sound("freighter_computer_arrival");
+    /** Her computer for her flight deck, reaching space: "We're in space. Keep the windows shut." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_SPACE =
+        sound("freighter_computer_space");
+    /** Her computer for her flight deck, her gravity coming back on in space: "Gravity back on. Mind your landing." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_GRAVITY =
+        sound("freighter_computer_gravity");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, SkylinersRegistry.COCKPIT_WINDOW), glass()
     );

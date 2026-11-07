@@ -2188,13 +2188,19 @@ const FREIGHTER_SOUNDS = {
   radar_dish_whirr: { subtitle: "Radar dish whirrs", heard: 24 },
   hidden_hatch_open: { subtitle: "Hidden hatch slides open" },
   hidden_hatch_close: { subtitle: "Hidden hatch slides shut" },
-  // Her computer's voice, each line subtitled with what it says.
+  // Her computer's voice, each line subtitled with what it says, her own words for the flight deck's announcements
+  // with their gist.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
   freighter_computer_jump_fault: { subtitle: "Computer: Jump drive fault", aboard: true },
   freighter_computer_ramp_lowering: { subtitle: "Computer: Ramp coming down", aboard: true },
   freighter_computer_turret_ready: { subtitle: "Computer: Gun turret online", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
+  freighter_computer_takeoff: { subtitle: "Computer: Lifting off, hold on", aboard: true },
+  freighter_computer_landing: { subtitle: "Computer: Coming down to land", aboard: true },
+  freighter_computer_arrival: { subtitle: "Computer: We're down", aboard: true },
+  freighter_computer_space: { subtitle: "Computer: We're in space", aboard: true },
+  freighter_computer_gravity: { subtitle: "Computer: Gravity back on", aboard: true },
 };
 function freighterSounds() {
   return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {

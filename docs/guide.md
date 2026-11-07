@@ -2612,7 +2612,13 @@ whine spooling up, her engines' roar from her stern rising with her thrust, her 
 close over the ground, which shakes under anyone standing near, and a long rolling thunder as she goes by fast; aboard,
 all of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand clear under her as she lifts
 off and lands, and behind her mains or ahead of her retros as they fire: Create Propulsion's thrusters set alight
-whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her autopilot screen and the settings
+whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her computer speaks for her flight
+deck in a voice of its own, a gruff old man's through her worn, crackling intercom, a buzzing blip falling before each
+line, heard by everyone aboard and subtitled: set to fly, "Lifting off. Hold on to something bolted down."; coming
+down, "Coming down to land. Expect a bump. Or two."; and on her legs again, "We're down. Nothing fell off. That I
+know of." Sent up past the edge of space, as the rocket can be, everyone aboard is light a while as aboard the rocket,
+and her computer says "We're in space. Keep the windows shut.", then, as her gravity comes back on, "Gravity back on.
+Mind your landing." Her autopilot screen and the settings
 screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
 
 Her outside is a working ship's. On her top, to port of her stern, a big white satellite dish nearly four blocks across

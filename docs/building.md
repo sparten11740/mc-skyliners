@@ -127,7 +127,8 @@ show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mas
 the autopilot's block entity, which knows each kind of craft only through its `CraftFlight`, made by its `Craft`
 (`AirlinerFlight`, whose flying stays the block entity's own, `ZeppelinFlight`, and `RocketFlight` and `FreighterFlight`,
 both `StandingFlight`s, craft that stand on feet of their own, come straight down onto them and can climb to space): what the craft is
-wired to, how it is flown each tick, how it lands, switches off, saves and is shown to the clients, so a new kind of
+wired to, how it is flown each tick, how it lands, switches off, saves and is shown to the clients, and what is said
+aboard it for the flight deck's announcements (`says`: the rocket's arrival, the freighter's computer), so a new kind of
 craft is a new class and a constant there, the block entity left as it is; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled, until `ParkedShips` lets it go, parked with nobody near, noting where it stands to load the land under it when someone comes back, as Sable would not.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned

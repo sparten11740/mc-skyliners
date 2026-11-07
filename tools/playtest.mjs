@@ -151,6 +151,9 @@ const FREIGHTER_LEVEL_WITHIN = 2;
 const FREIGHTER_WATCH_TICKS = 200;
 const FREIGHTER_AWAY = 400;
 const FREIGHTER_AWAY_TICKS = 60;
+// How long each of her computer's lines for her flight deck is given to be heard, in ticks, the take-off one waiting
+// for the player to board her and hear it.
+const FREIGHTER_VOICE_TICKS = 300;
 // A freighter that has learnt far too much drag: how much, as her pilot keeps it; the speed she is set to cruise at
 // and how fast she may go at most meanwhile, half as fast again as she unlearns it, in blocks a second; how long she is watched, in ticks; how near the
 // speed set she must be by then, in blocks a second; and how much drag she may still have learnt then.
@@ -930,6 +933,34 @@ function checkFreighterFlight() {
     expect(Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: she stands on her legs again",
       `control head at ${down.altitude}, built at ${head[1]}`);
   }
+}
+
+// The freighter's computer speaks for her flight deck, in its own voice: set to fly with the player aboard in her
+// entry hall, by her ramp, it, not the airliner's flight deck, says she is lifting off; told to land, that she is
+// coming down; and on her legs again, that she is down.
+function checkFreighterVoice() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const since = now();
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:crossbow_rack 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 10t`);
+  expect(heard("skyliners:freighter_computer_takeoff", since, FREIGHTER_VOICE_TICKS), "freighter: set to fly, her computer says she lifts off");
+  expect(!heard("skyliners:announcement_takeoff", since, 0), "freighter: and the airliner's take-off announcement is not made aboard her");
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off with the player aboard");
+  if (!up) {
+    return;
+  }
+  const landing = now();
+  must("skyliners:autopilot land");
+  expect(heard("skyliners:freighter_computer_landing", landing, FREIGHTER_VOICE_TICKS), "freighter: told to land, her computer says she comes down");
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: she comes down and switches off");
+  const arrival = heard("skyliners:freighter_computer_arrival", landing, FREIGHTER_VOICE_TICKS);
+  expect(arrival, "freighter: on her legs again, her computer says she is down");
+  expect(!heard("skyliners:announcement_*", since, 0), "freighter: none of the airliner's announcements is made aboard her");
 }
 
 // A freighter's boarding ramp: laid down, it comes down by itself and is walked up from the ground with the walk key
@@ -2038,6 +2069,7 @@ const CHECKS = {
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
+  "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };
 

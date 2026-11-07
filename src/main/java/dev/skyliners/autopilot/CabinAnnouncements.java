@@ -1,7 +1,6 @@
 package dev.skyliners.autopilot;
 
 import dev.skyliners.Aboard;
-import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.Announcement;
 import dev.skyliners.block.CabinLightsBlock;
 import dev.skyliners.block.SeatbeltSwitchBlockEntity;
@@ -24,7 +23,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * asks for. Everyone aboard hears it, wherever they are in the cabin, as they move about. Crews switch the seatbelt
  * signs on for take-off and landing, which here also opens the curtains (see {@link SeatbeltSwitchBlockEntity}), and
  * off again once parked, letting everyone up; the announcements that call for it do the same at the airliner's seatbelt
- * switch, and the one for a sleep turns its cabin lights down.
+ * switch, and the one for a sleep turns its cabin lights down. A craft may make them in words and a voice of its own
+ * (see {@link CraftFlight#says}), as the freighter's computer does.
  *
  * <p>One at a time, and not over and over: one asked for while anything else is said on the flight deck (another
  * announcement, a callout or air traffic control, all sharing its {@link Airtime}), or while a callout is foreseen
@@ -160,10 +160,9 @@ public final class CabinAnnouncements {
         return true;
     }
 
-    /** What an announcement says aboard this craft: a rocket arrives as a spacecraft, not as an aircraft. */
+    /** What an announcement says aboard this craft, in its own words if it has them (see {@link CraftFlight#says}). */
     private static Holder<SoundEvent> sound(Announcement announcement, BlockEntity autopilot) {
-        boolean rocket = autopilot instanceof AutopilotBlockEntity pilot && pilot.craft() == Craft.ROCKET;
-        return rocket && announcement == Announcement.ARRIVAL ? SkylinersRegistry.ANNOUNCEMENT_ARRIVAL_ROCKET : announcement.sound;
+        return autopilot instanceof AutopilotBlockEntity pilot ? pilot.says(announcement.sound) : announcement.sound;
     }
 
     /** The announcement being made is cut short for a callout: stopped for everyone who heard it, and over. */

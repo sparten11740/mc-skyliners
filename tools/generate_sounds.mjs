@@ -5156,8 +5156,9 @@ writeSound("hidden_hatch_close", hiddenHatch(HIDDEN_HATCH.closing, ownRandom(0x4
 // she is never taken for the flight deck, launch control or the bartender; heard through her tired intercom: a cheap
 // speaker's narrow band and boxy honk, its old amplifier driven into a little grit and a touch of an old digital link's
 // crushed bits, and the short ringing of her steel corridors, then compressed and limited so every word carries. Before
-// each line her blip, two tones falling, buzzing as the intercom does. Magpie, the name she answers to on the radio, is
-// spoken as her own. Any line said through sayAsFreighterComputer is in this voice. Tune it here.
+// each line her blip, two tones falling, buzzing as the intercom does. She speaks for her flight deck too (see
+// FreighterFlight's COMPUTER_SAYS), and Magpie, the name she answers to on the radio, is spoken as her own. Any line
+// said through sayAsFreighterComputer is in this voice. Tune it here.
 const COMPUTER = {
   voice: "am_onyx",
   pace: 1,
@@ -5207,8 +5208,21 @@ const COMPUTER_LINES = {
   freighter_computer_jump_countdown: "Jump in three, | two, | one.",
   freighter_computer_magpie_ready: "Magpie's awake. | Barely.",
 };
-/** The longest a line may run, its blip and all, in seconds, a countdown's beats among them. */
+// Her computer's words in place of the flight deck's announcements (see FreighterFlight): set to take off, coming down
+// to land, down on her legs again, reaching space and her gravity coming back on there.
+const COMPUTER_ANNOUNCEMENTS = {
+  freighter_computer_takeoff: "Lifting off. | Hold on to something bolted down.",
+  freighter_computer_landing: "Coming down to land. | Expect a bump. | Or two.",
+  freighter_computer_arrival: "We're down. | Nothing fell off. | That I know of.",
+  freighter_computer_space: "We're in space. | Keep the windows shut.",
+  freighter_computer_gravity: "Gravity back on. | Mind your landing.",
+};
+/**
+ * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
+ * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
+ */
 const COMPUTER_LONGEST = 4.5;
+const COMPUTER_ANNOUNCEMENT_LONGEST = 6;
 
 /**
  * Says lines in the freighter's computer's voice (see COMPUTER), each after her blip, and writes each as the sound it
@@ -5232,6 +5246,7 @@ async function sayAsFreighterComputer(speaker, lines, longest) {
 }
 if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
