@@ -204,6 +204,18 @@ const RAMP_ABOVE_GROUND = 2;
 const RAMP_UNDER_OUT = 9;
 const RAMP_UNDER_TICKS = 150;
 const RAMP_STEP_ASIDE = 4;
+// Walking at a freighter's furniture: how far out to start, in blocks, and how long to walk, in ticks, enough to reach
+// it; how far from its middle along the way walked the player must have been stopped, in blocks: her jump drive's
+// rings, round its core, and not its column; the body of a player of her band, in front of the side of its stage, and
+// not past its middle; and a sun lounger's raised back, walked at from closer in, behind its middle.
+const BUMP_FROM = 3;
+const BUMP_TICKS = 30;
+const DRIVE_RINGS_OUT = 1;
+const BAND_PLAYER_OUT = 0.4;
+const LOUNGER_FROM = 2;
+const LOUNGER_BACK_OUT = 0.6;
+// How far the player must have walked at all, in blocks, for a stop to be the lounger's and not where they started.
+const BUMP_MOVED = 0.5;
 // Where on a console module of a freighter its desk is aimed at, as a point of its block from 0 to 1 across, up and
 // along: the middle of its desk's top, which is drawn a little over four fifths of a block up at its back.
 const DESK_TOP_AT = "0.5,0.8,0.5";
@@ -1842,6 +1854,64 @@ function checkFreighterCockpitReach() {
   must("key press key.sneak 10t; wait 10t");
 }
 
+// Walks at a block of a freighter from so far out along a way, at the height of its foot, with the walk key alone;
+// how far from the block's middle along that way the player then stands, in blocks. In survival, so nothing is flown.
+function bumpInto(at, [wx, wz], out = BUMP_FROM) {
+  const [x, y, z] = at;
+  const [cx, cz] = [x + 0.5, z + 0.5];
+  const yaw = Math.atan2(wx, -wz) * 180 / Math.PI;
+  survival();
+  const there = must(`server tp @p ${cx + wx * out} ${y} ${cz + wz * out}; turn ${yaw} 0; wait 10t; move forward ${BUMP_TICKS}t; status`);
+  creative();
+  return { along: round((there.pos[0] - cx) * wx + (there.pos[2] - cz) * wz), up: round(there.pos[1] - y) };
+}
+
+// Whether a column of blocks out from a block along a way, at its height and the two over it, is open floor to walk.
+function clearWay([x, y, z], [wx, wz], out) {
+  const cells = [];
+  for (let step = 1; step <= out; step++) {
+    cells.push([x + wx * step, y, z + wz * step], [x + wx * step, y + 1, z + wz * step]);
+  }
+  return cells.every((cell) => must(`block ${cell.join(",")} side=server`).id === "air");
+}
+
+// A freighter's furniture is as solid as it is drawn: walked at, her jump drive's rings stop the player short of its
+// column, the band's players on the side thirds of the stage stop them short of the stage's middle, and a sun lounger's
+// raised back stops them from behind rather than being walked over. With the fault all three were walked through.
+function checkFreighterSolid() {
+  ship("freighter");
+  const [drive] = must("find skyliners:jump_drive 128 1").rows;
+  const way = drive && Object.values(STEPS).find((step) => clearWay(drive.at_abs, step, BUMP_FROM + 1));
+  if (way) {
+    const { along } = bumpInto(drive.at_abs, way);
+    expect(along >= DRIVE_RINGS_OUT && along < BUMP_FROM - BUMP_MOVED, "freighter: walked at, her jump drive's rings stop the player",
+      `${along} blocks from its middle`);
+  } else {
+    expect(false, "freighter: she has a jump drive with open floor round it to walk at it from");
+  }
+  const [stage] = must("find skyliners:bandstand 128 1").rows;
+  if (stage) {
+    const facing = must(`block ${stage.at_abs.join(",")}`).props.facing ?? "north";
+    const [ax, az] = STEPS[CLOCKWISE[facing]];
+    const side = [stage.at_abs[0] + ax, stage.at_abs[1], stage.at_abs[2] + az];
+    const open = clearWay(side, STEPS[facing], BUMP_FROM);
+    const { along } = open ? bumpInto(side, STEPS[facing]) : { along: NaN };
+    expect(open && along >= BAND_PLAYER_OUT && along < BUMP_FROM - BUMP_MOVED,
+      "freighter: walked at the band from the club, the player on the side of the stage stops them",
+      open ? `${along} blocks in front of the side's middle` : "no open floor in front of it to walk from");
+  }
+  const behindOf = (at) => STEPS[CLOCKWISE[CLOCKWISE[must(`block ${at.join(",")}`).props.facing ?? "north"]]];
+  const lounger = must("find skyliners:sun_lounger 128 8").rows.map((row) => row.at_abs)
+    .find((at) => clearWay(at, behindOf(at), LOUNGER_FROM));
+  if (lounger) {
+    const { along, up } = bumpInto(lounger, behindOf(lounger), LOUNGER_FROM);
+    expect(along >= LOUNGER_BACK_OUT && along < LOUNGER_FROM - BUMP_MOVED && up < 1,
+      "freighter: walked at a sun lounger from behind, its raised back stops the player", `${along} blocks behind its middle, ${up} up`);
+  } else {
+    expect(false, "freighter: she has a sun lounger with open floor behind it to walk at it from");
+  }
+}
+
 // Whether the console module at a block has its slice of the ring, asked twice a second apart: a server still busy
 // with a ship just built may let a question go unanswered.
 function sliceOfRing(at) {
@@ -2864,6 +2934,7 @@ const CHECKS = {
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
+  "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
