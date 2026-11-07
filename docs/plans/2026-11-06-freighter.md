@@ -787,6 +787,10 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
   comes near. First drawn as three dome-headed automatons on horn, squeezebox and drum, as the plan had it; the pair
   found that line-up in a spaceport bar too close to the film's cantina band, against the Rights section's "any close
   copy of its feel", so they became boxy robots of our own on bass, keyboard and drums.
+- Before handing out 1.2.0-alpha.8 (robots, the clear cockpit view, the ramp, the crossbow, the top turret, the club
+  band): the quick play-test suite (69 checks) and the freighter's slow checks (36, on the turret build, with
+  freighter-band since) all hold. The jar is build/libs/skyliners-1.2.0-alpha.8+1.21.1-neoforge.jar; the desktop's
+  share was not mounted, so it is not copied there.
 
 ### For Jan to look at
 
