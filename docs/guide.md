@@ -2660,11 +2660,17 @@ it outside and the passage's wall inside, and lets daylight into the passage; no
 own hull close by, as beside her cockpit's pod, nor on the prongs' inner walls along her loading gap. The server
 config's `freighter.portholes` leaves them out.
 
+Out at each prong's tip her retro and her nose jet are boxed into an engine bay: a bulkhead of glowing engine grating
+closes off the very tip, her retro's relay set into it, and her nose jet sits in a casing two blocks high, grating
+below and a hazard-striped top, with a narrow way left past it. Nobody walking down a prong comes face to face with a
+thruster or can reach one, and like her hull the bays cannot be broken.
+
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
 sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
 see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
-tips hold her back; jets hidden at her nose and her tail turn her and push her sideways. In her cockpit the autopilot's
+tips hold her back; jets hidden at her nose, in her prongs' engine bays, and at her tail turn her and push her
+sideways. In her cockpit the autopilot's
 control head stands between the pilot's seat and the co-pilot's, jump seats behind them, her console curving round
 before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
 clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs

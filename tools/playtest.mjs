@@ -413,6 +413,14 @@ const POINTING = { up: [0, 1, 0], down: [0, -1, 0], north: [0, 0, -1], south: [0
 // a black hole, four by three, and the solar system, five by two.
 const ROOMS_REACH = 22.5;
 const GALLERY_POSTER_BLOCKS = 34;
+// A freighter's prongs: how many thrusters stand in their tips, her two retros and her two nose jets, the furthest of
+// her thrusters from her middle; how far back toward her middle from one, down the tunnel, the player stands to aim at
+// it, in blocks; how far round a point down each tunnel it is looked over for unlit spots, and how far back from her
+// retro that point is, in blocks.
+const PRONG_THRUSTERS = 4;
+const AIM_BACK = 3.5;
+const PRONG_LIT_REACH = 18;
+const PRONG_LIT_BACK = 12;
 // The beach's pieces that go up on a wall as well as on a floor.
 const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
@@ -2030,6 +2038,13 @@ function checkFreighterLit() {
   must(`server tp @p ${x + 0.5} ${y} ${z + 0.5 - JUMP_DRIVE_ASTERN}; wait 40t`);
   const unlit = must(`skyliners:dark radius=${LIT_REACH} least=1`);
   expect(Number(unlit.dark) === 0, "freighter: no spot inside her is left unlit, where monsters could spawn", `${unlit.dark} unlit, first ${unlit.first || "none"}`);
+  const { middle, tips } = prongThrusters();
+  for (const retro of tips.slice(0, 2)) {
+    must(`server tp @p ${backToward(middle, retro, PRONG_LIT_BACK).join(" ")}; wait 20t`);
+    const prong = must(`skyliners:dark radius=${PRONG_LIT_REACH} least=1`);
+    expect(Number(prong.dark) === 0, "freighter: no spot down either of her prongs' tunnels is left unlit, out to their tips",
+      `${prong.dark} unlit, first ${prong.first || "none"}`);
+  }
 }
 
 // A freighter's passenger screens, used aboard her once she flies: one shows the view from her outside cameras, where
@@ -2302,6 +2317,46 @@ function checkFreighterGallery() {
   expect(models.length === 4, "freighter: the fleet's four models stand along the tube out to her cockpit", models.join(", "));
   const posters = outside("space_poster").length;
   expect(posters >= GALLERY_POSTER_BLOCKS, "freighter: space posters hang along the tunnel down her port prong", `${posters} blocks of posters`);
+}
+
+// A freighter's middle and her prongs' tips: the laser cannon on her axis, and the thrusters in the tips, her retros and
+// nose jets, the furthest of all her thrusters from her middle, the furthest first.
+function prongThrusters() {
+  const [{ at_abs: middle }] = must("find skyliners:laser_cannon 128 1").rows;
+  const reach = (at) => Math.hypot(at[0] - middle[0], at[2] - middle[2]);
+  const thrusters = must("find createpropulsion:creative_thruster 128 100").rows.map((row) => row.at_abs).sort((a, b) => reach(b) - reach(a));
+  return { middle, tips: thrusters.slice(0, PRONG_THRUSTERS) };
+}
+
+// A point so many blocks back from a block toward a freighter's middle, down the length of her prong, at the block's
+// floor: where someone stands in the tunnel looking out along it to the block.
+function backToward(middle, at, blocks) {
+  const [dx, dz] = [middle[0] - at[0], middle[2] - at[2]];
+  const along = Math.abs(dz) >= Math.abs(dx) ? [0, Math.sign(dz)] : [Math.sign(dx), 0];
+  return [at[0] + 0.5 + along[0] * blocks, at[1], at[2] + 0.5 + along[1] * blocks];
+}
+
+// A freighter's thrusters in her prongs' tips, her retros and her nose jets, boxed in behind her engine bays: aimed at
+// from down the tunnel, the crosshair rests on the bay, never on a thruster, and a survival player's pickaxe at what it
+// rests on breaks nothing. Her nose jets stood bare on the tunnels' floors before, creative blocks there for the taking.
+function checkFreighterEngineBays() {
+  ship("freighter");
+  const { middle, tips } = prongThrusters();
+  expect(tips.length === PRONG_THRUSTERS, "freighter: she has her retros and nose jets in her prongs' tips", `${tips.length} found`);
+  for (const at of tips) {
+    must(`server tp @p ${backToward(middle, at, AIM_BACK).join(" ")}; wait 10t; face ${at.join(",")}; wait 5t`);
+    const look = must("status");
+    expect(Boolean(look.aim) && !look.aim.includes("thruster"), `freighter: from down her prong's tunnel, the thruster at ${at.join(",")} is out of reach`,
+      `the crosshair rests on ${look.aim ?? "nothing"}`);
+    if (!look.aim_at) {
+      continue;
+    }
+    const hit = look.aim_at.map(Math.floor).join(",");
+    survival();
+    send(`?mine ${hit} timeout=3s`);
+    creative();
+    expect(must(`block ${hit} side=server`).id === look.aim, "freighter: a pickaxe at her engine bay before it breaks nothing", `${look.aim} at ${hit}`);
+  }
 }
 
 // The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
@@ -2787,6 +2842,7 @@ const CHECKS = {
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
+  "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
