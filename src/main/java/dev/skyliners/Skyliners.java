@@ -72,6 +72,7 @@ import dev.skyliners.selfdestruct.BlastPayload;
 import dev.skyliners.selfdestruct.SelfDestruct;
 import dev.skyliners.selfdestruct.SelfDestructAlarmPayload;
 import dev.skyliners.selfdestruct.ThrownClearPayload;
+import dev.skyliners.turret.GunnerTrigger;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
@@ -176,10 +177,11 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("32")
+        event.registrar("33")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
+            .playToServer(GunnerTrigger.TYPE, GunnerTrigger.STREAM_CODEC, GunnerTrigger::handle)
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
             .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
             .playToServer(LookoutSpot.TYPE, LookoutSpot.STREAM_CODEC, LookoutSpot::handle)

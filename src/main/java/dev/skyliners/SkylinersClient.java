@@ -28,6 +28,7 @@ import dev.skyliners.client.BlueprintPreview;
 import dev.skyliners.client.BoardingRampRenderer;
 import dev.skyliners.client.CabinArchModel;
 import dev.skyliners.client.CameraShake;
+import dev.skyliners.client.CannonServo;
 import dev.skyliners.client.CarriedAboard;
 import dev.skyliners.client.CloudlessCabin;
 import dev.skyliners.client.CockpitDisplayRenderer;
@@ -46,6 +47,7 @@ import dev.skyliners.client.Earshot;
 import dev.skyliners.client.FallingCrateRenderer;
 import dev.skyliners.client.GiantRubberDuckRenderer;
 import dev.skyliners.client.GreatShadow;
+import dev.skyliners.client.GunnerControls;
 import dev.skyliners.client.HullAmbience;
 import dev.skyliners.client.EngineRenderer;
 import dev.skyliners.client.EngineSounds;
@@ -64,6 +66,7 @@ import dev.skyliners.client.HelmetBreathing;
 import dev.skyliners.client.HelmetVisor;
 import dev.skyliners.client.KeptLooks;
 import dev.skyliners.client.LaserBolts;
+import dev.skyliners.client.LaserCannonRenderer;
 import dev.skyliners.client.LaserCrossbowLooks;
 import dev.skyliners.client.LaserTurretRenderer;
 import dev.skyliners.client.LedLights;
@@ -139,6 +142,7 @@ import dev.skyliners.client.ZeppelinEngineSounds;
 import dev.skyliners.client.ZeppelinPaint;
 import dev.skyliners.entity.LiftCar;
 import dev.skyliners.parachute.SafetyCanopy;
+import dev.skyliners.turret.LaserCannonBlockEntity;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
@@ -184,6 +188,8 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
+        NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
+        NeoForge.EVENT_BUS.addListener(GunnerControls::input);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
@@ -313,6 +319,7 @@ public final class SkylinersClient {
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
         RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;
         DeckRobotBlockEntity.clientTicker = DeckRobotRenderer::look;
+        LaserCannonBlockEntity.clientTicker = CannonServo::listen;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -376,6 +383,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_BOARD_ENTITY.get(), context -> new LiftBoardRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.ROVER_PANEL_ENTITY.get(), context -> new RoverPanelRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.RAMP_PANEL_ENTITY.get(), context -> new BoardingRampRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.LASER_CANNON_ENTITY.get(), context -> new LaserCannonRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.WINDOW_DIMMER_ENTITY.get(), context -> new WindowDimmerRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());

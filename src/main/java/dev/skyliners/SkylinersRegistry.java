@@ -359,6 +359,8 @@ import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.turret.LaserCannonBlock;
+import dev.skyliners.turret.LaserCannonBlockEntity;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -1299,12 +1301,25 @@ public final class SkylinersRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RampPanelBlockEntity>> RAMP_PANEL_ENTITY =
         BLOCK_ENTITIES.register("ramp_panel", () -> BlockEntityType.Builder.of(RampPanelBlockEntity::new, RAMP_PANEL.get()).build(null));
-    /** The button low on the freighter's starboard leg calling her ramp down from the ground (see {@link RampButtonBlock}). */
+    /**
+     * The button low on the freighter's starboard leg calling her ramp down from the ground (see {@link
+     * RampButtonBlock}).
+     */
     public static final DeferredBlock<RampButtonBlock> RAMP_BUTTON = BLOCKS.registerBlock(
         "ramp_button", properties -> new RampButtonBlock(AIRLINER, properties),
         BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> RAMP_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(RAMP_BUTTON);
+    /**
+     * The freighter's laser cannon on her top dome, aimed and fired from the gunner's seat (see {@link
+     * LaserCannonBlock}).
+     */
+    public static final DeferredBlock<LaserCannonBlock> LASER_CANNON = BLOCKS.registerBlock(
+        "laser_cannon", LaserCannonBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserCannonBlockEntity>> LASER_CANNON_ENTITY =
+        BLOCK_ENTITIES.register("laser_cannon", () -> BlockEntityType.Builder.of(LaserCannonBlockEntity::new, LASER_CANNON.get()).build(null));
+    public static final DeferredItem<BlockItem> LASER_CANNON_ITEM = ITEMS.registerSimpleBlockItem(LASER_CANNON);
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
@@ -2809,7 +2824,8 @@ public final class SkylinersRegistry {
             ENGINE_GRILLE_ITEM,
             DECK_ROBOT_ITEM,
             RAMP_BUTTON_ITEM,
-            LASER_CROSSBOW
+            LASER_CROSSBOW,
+            LASER_CANNON_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

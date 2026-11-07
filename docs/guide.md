@@ -2635,6 +2635,16 @@ button low on her starboard leg, a ramp on its cap, calls it down, or folds it a
 something stands in its way, such as ground rising under its foot. The server config's `freighter.ramp` builds her
 without it. The Ramp Call Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
 
+Up her core, through its doorway from the ring corridor on her bow side, a ladder climbs the core's back wall to the
+gunner's seat under her top dome, the gunner's head in its glass. Sit in it and her computer says "Turret ready": the
+laser cannon on the dome over you turns its twin barrels to whatever you look at, its servos whirring, all the way
+round and from level to near straight up. Hold attack to fire, red bolts from alternate barrels four times a second with a crack each, sparks
+wherever they strike; they hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard her, and
+never break a block, and attack does nothing else while you sit there, so the dome's glass is safe. Twenty bolts in a
+row and it overheats a moment with a hiss. The Laser Cannon is among her blocks in the creative tab; set down by hand
+near any seat, it works there too. The server config's `freighter.turrets` builds her without it and keeps every laser
+cannon from firing.
+
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone
 and a copper ingot), is her own weapon. Hold use to charge it, a ratchet and a rising whine, until it clicks, and let
 go: its coil glows bright and its lamps green. Use it again to fire an amber bolt the way you look, up to 48 blocks,

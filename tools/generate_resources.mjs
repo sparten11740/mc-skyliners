@@ -266,6 +266,21 @@ function rampFittings() {
   return ["ramp_deck"];
 }
 
+// The freighter's laser cannon (see LaserCannonBlock): its mount, a low gunmetal drum in the middle of its block, its
+// swivel and barrels drawn over it by LaserCannonRenderer; its item shows the mount.
+{
+  const bezel = `${ID}:block/airstair_button_bezel`;
+  write(`assets/${ID}/models/block/laser_cannon.json`, {
+    parent: "minecraft:block/block",
+    textures: { mount: bezel, particle: bezel },
+    elements: [solid([3, 0, 3], [13, 4, 13], "#mount"), solid([4, 4, 4], [12, 6, 12], "#mount")],
+  });
+  write(`assets/${ID}/blockstates/laser_cannon.json`, { variants: { "": { model: `${ID}:block/laser_cannon` } } });
+  write(`assets/${ID}/models/item/laser_cannon.json`, { parent: `${ID}:block/laser_cannon` });
+  dropsItself("laser_cannon");
+  cubes.laser_cannon = null;
+}
+
 // The freighter's laser crossbow (see LaserCrossbowItem): a flat picture, held raised and pointing ahead as a tool is
 // (the game's own crossbow is laid sideways by the game's own code, not its model), drawn with its coil glowing once
 // charged and its lamps red, steam over it, as it vents (see LaserCrossbowLooks).
@@ -10309,6 +10324,7 @@ shaped("engine_grille", ["BBB", "GGG", "BBB"], { B: "minecraft:iron_bars", G: "m
 shaped("deck_robot", [" G ", "IRI", "I I"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("ramp_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button", I: "minecraft:iron_ingot" }, 1);
 shaped("laser_crossbow", [" A ", "RCR", " O "], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", C: "minecraft:crossbow", O: "minecraft:copper_ingot" }, 1);
+shaped("laser_cannon", ["ARA", "IDI", "III"], { A: "minecraft:amethyst_shard", R: "minecraft:redstone", I: "minecraft:iron_ingot", D: "minecraft:dispenser" }, 1);
 shaped("oval_window", ["NGN", "GGG", "NGN"], { G: "minecraft:glass", N: "minecraft:iron_nugget" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -10881,6 +10897,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.ramp_panel": "Boarding Ramp Panel",
   "block.skyliners.ramp_button": "Ramp Call Button",
   "item.skyliners.laser_crossbow": "Laser Crossbow",
+  "block.skyliners.laser_cannon": "Laser Cannon",
   "message.skyliners.freighter.takeoff_ramp": "Her take-off waits for everyone to step off the ramp",
   "message.skyliners.freighter.takeoff_called_off": "Take-off called off: she was held on the ground too long",
   "item.skyliners.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",

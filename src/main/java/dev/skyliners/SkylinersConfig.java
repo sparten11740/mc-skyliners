@@ -72,6 +72,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_TURRETS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -648,6 +649,13 @@ public final class SkylinersConfig {
                 "villagers, pets or animals, and never a block. Without it, it only clicks."
             )
             .define("laserCrossbow", true);
+        FREIGHTER_TURRETS = builder
+            .comment(
+                "Whether the freighter is built with her laser cannon on her top dome, a gunner's seat under its glass reached",
+                "by a ladder up her core, and whether laser cannons fire: aimed by the seated gunner's look, fired by holding",
+                "attack, their bolts strike hostile mobs, never players, villagers, pets, animals or anyone aboard."
+            )
+            .define("turrets", true);
         builder.pop();
 
         SPEC = builder.build();

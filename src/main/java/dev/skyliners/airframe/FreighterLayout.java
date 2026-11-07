@@ -28,7 +28,9 @@ import java.util.function.IntPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -62,6 +64,7 @@ public final class FreighterLayout extends HullLayout {
     static final double BULKHEAD = 9.5;
     /** The core round the turrets' ladder: its walls so many blocks out from her axis, three blocks of well inside. */
     static final int CORE = 2;
+    private static final int CORE_INSIDE = 2 * CORE - 1;
     /** How far out from her axis the ring corridor's outer wall stands, in blocks: three blocks of corridor or more. */
     static final double CORRIDOR = 6.5;
     /** The walls between her six rooms, at these bearings in degrees clockwise from her bow. */
@@ -302,6 +305,7 @@ public final class FreighterLayout extends HullLayout {
         layout.cockpit();
         layout.robots();
         layout.ramp();
+        layout.turret();
         layout.countAir();
         return layout;
     }
@@ -803,7 +807,52 @@ public final class FreighterLayout extends HullLayout {
         return new AirstairControllerBlockEntity.Step(part.offset().rotate(rotation), part.state().rotate(rotation));
     }
 
-    /** Her ramp's call button on her starboard leg's strut, facing ahead toward the ramp, where there is room for it. */
+    /**
+     * Her top turret, up her core: a ladder up the core's back wall from her deck to the top of the shaft under her top
+     * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow, its back to the ladder,
+     * their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
+     * and the laser cannon on the glass over them; none with the server config's {@code freighter.turrets} off.
+     */
+    private void turret() {
+        int under = deck + 1;
+        while (isOpen(0, under + 1, 0)) {
+            under++;
+        }
+        int seat = under - 1;
+        if (!SkylinersConfig.FREIGHTER_TURRETS.get() || seat <= deck + 2) {
+            return;
+        }
+        BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
+        for (int y = deck + 1; y <= seat; y++) {
+            set(0, y, CORE - 1, ladder);
+        }
+        BlockState floor = SkylinersRegistry.CABIN_FLOOR.get().defaultBlockState();
+        for (int cell = 0; cell < 2 * CORE_INSIDE; cell++) {
+            set(cell % CORE_INSIDE - 1, seat - 1, cell / CORE_INSIDE - 1, floor);
+        }
+        openDomeRow(under);
+        seat(0, seat, 0, PilotSeatBlock.Stick.NONE);
+        int crown = under + 1;
+        while (!isOpen(0, crown, 0) && crown < top) {
+            crown++;
+        }
+        set(0, crown, 0, SkylinersRegistry.LASER_CANNON.get().defaultBlockState());
+    }
+
+    /** Takes her core's walls out of a row, the top dome's, where they would stand between the gunner and the glass. */
+    private void openDomeRow(int y) {
+        int across = 2 * CORE + 1;
+        for (int cell = 0; cell < across * across; cell++) {
+            BlockPos at = new BlockPos(cell % across - CORE, y, cell / across - CORE);
+            if (stateAt(at.getX(), y, at.getZ()).is(SkylinersRegistry.PADDED_BULKHEAD.get())) {
+                cells.remove(at);
+            }
+        }
+    }
+
+    /**
+     * Her ramp's call button on her starboard leg's strut, facing ahead toward the ramp, where there is room for it.
+     */
     private void rampButton() {
         double[] leg = FreighterShape.LEGS[RAMP_BUTTON_LEG];
         int x = (int) Math.round(leg[0] * scale);
@@ -850,7 +899,9 @@ public final class FreighterLayout extends HullLayout {
         }
     }
 
-    /** Opens the corridor's wall where her ramp's well meets it, as high as a doorway, so the ramp leads into the ring. */
+    /**
+     * Opens the corridor's wall where her ramp's well meets it, as high as a doorway, so the ramp leads into the ring.
+     */
     private void openWellHead(int left) {
         for (int cell = 0; cell < RAMP_HEAD * RAMP_WIDTH; cell++) {
             int x = cell / RAMP_WIDTH;

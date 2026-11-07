@@ -290,7 +290,13 @@ her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhi
 long off. `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
 `LaserCrossbowItem` keeps its charge and heat on its stack as data components, which `LaserCrossbowLooks` draws, traces
 its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow colour tells
-`LaserBolts` to draw it amber rather than the path clearer's red. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+`LaserBolts` to draw it amber rather than the path clearer's red. Her top turret is in `turret/`: the
+`LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from just past her dome to
+what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so its bolts land
+under their crosshair; it tells clients the aim now and then, which ease toward it (`HeadTurn`), and fires along it
+while the gunner's `GunnerTrigger` says the attack key is held, which the client's `GunnerControls` sends and otherwise
+swallows; `LaserCannonRenderer` draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
+crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

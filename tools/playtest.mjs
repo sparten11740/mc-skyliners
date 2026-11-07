@@ -191,6 +191,16 @@ const RAMP_TICKED = 60;
 // she calls it off, with a margin, in ticks.
 const CALL_AGAIN_TICKS = 20;
 const TAKEOFF_CALLED_OFF_TICKS = 700;
+// A freighter's top turret: how long the walk up her core's ladder takes, in ticks; how far up and ahead of her cannon
+// a creeper is hung to shoot at, in blocks; and how long attack is held, in ticks, several bolts' worth.
+const LADDER_CLIMB_TICKS = 100;
+const TURRET_TARGET_UP = 10;
+const TURRET_TARGET_AHEAD = 10;
+const TURRET_FIRE_TICKS = 30;
+// How far a creeper's middle stands over its feet, and a seated player's eyes over where they are, in blocks, for the
+// gunner to look at it: the cannon aims at what the gunner looks at.
+const CREEPER_MIDDLE = 0.85;
+const SEATED_EYES = 1.62;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
@@ -890,6 +900,47 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   must("skyliners:autopilot off");
 }
 
+// A freighter's top turret: the ladder up her core is climbed from her deck with the walk key alone to the gunner's
+// seat under her dome, where her computer says the turret is ready; holding attack fires her laser cannon where the
+// gunner looks, striking a creeper in the sky, and breaks nothing, the dome's glass over the gunner whole after.
+function checkFreighterTurret() {
+  layDown("freighter");
+  const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
+  expect(cannon, "freighter: she is built with a laser cannon on her top dome");
+  if (!cannon) {
+    return;
+  }
+  const [x, y, z] = cannon.at_abs;
+  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
+    .sort((a, b) => a[1] - b[1])[0];
+  const ladder = must("find minecraft:ladder 128 20").rows.map((row) => row.at_abs).sort((a, b) => a[1] - b[1])[0];
+  if (!seat || !ladder) {
+    expect(false, "freighter: she has a gunner's seat under her dome and a ladder up to it");
+    return;
+  }
+  const [climbX, climbZ, yaw] = CLIMBS[must(`block ${ladder.join(",")}`).props?.facing === "north" ? "south" : "north"];
+  survival();
+  must(`server tp @p ${ladder[0] + 0.5} ${ladder[1]} ${ladder[2] + 0.5 - climbZ * 0.2}; turn ${yaw} 0; wait 20t`);
+  const there = must(`move forward ${LADDER_CLIMB_TICKS}t; status`);
+  creative();
+  expect(there.pos[1] >= seat[1], "freighter: her core's ladder is climbed from her deck to her gunner's seat", `reached ${round(there.pos[1])}, seat at ${seat[1]}`);
+  const sat = now();
+  must(`use ${seat.join(",")}; wait 20t`);
+  expect(heard("skyliners:freighter_computer_turret_ready", sat, 0), "freighter: sat at her cannon, her computer says the turret is ready");
+  const glass = must(`block ${x},${y - 1},${z}`).id;
+  must(`server difficulty easy; server summon creeper ${x + 0.5} ${y + TURRET_TARGET_UP} ${z + 0.5 - TURRET_TARGET_AHEAD} {NoAI:1b,PersistenceRequired:1b}`);
+  const { pos: [eyeX, feetY, eyeZ] } = must("status");
+  const [toX, toY, toZ] = [x + 0.5 - eyeX, y + TURRET_TARGET_UP + CREEPER_MIDDLE - feetY - SEATED_EYES, z + 0.5 - TURRET_TARGET_AHEAD - eyeZ];
+  const toward = Math.round(Math.atan2(-toX, toZ) * 180 / Math.PI);
+  const up = Math.round(Math.atan2(toY, Math.hypot(toX, toZ)) * 180 / Math.PI);
+  must(`turn ${toward} ${-up}; wait 20t; key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
+  const [reply] = send(`server data get entity @e[type=creeper,limit=1,sort=nearest] Health`);
+  const health = reply.ok === false ? 0 : Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1] ?? CREEPER_HEALTH);
+  must("server kill @e[type=creeper]; server difficulty peaceful; key left_shift 5t");
+  expect(health < CREEPER_HEALTH, "freighter: holding attack, her cannon strikes a creeper in the sky where the gunner looks", `health ${health} of ${CREEPER_HEALTH}`);
+  expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing, the gunner breaks nothing, the dome's glass whole");
+}
+
 // The laser crossbow: charged by holding use, it fires an amber bolt that strikes a creeper hard and leaves a cow
 // unharmed; three quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the
 // world on easy, as a peaceful world takes hostile mobs away at once.
@@ -1373,6 +1424,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
+  "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
