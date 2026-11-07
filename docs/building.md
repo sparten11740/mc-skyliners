@@ -269,7 +269,13 @@ The freighter is drawn in `FreighterShape`'s metres, her hull the union of her p
 and her domes, her outer bulkhead, her core, ring corridor and room walls of `PADDED_BULKHEAD`, the passages out past
 the bulkhead to her cockpit and along her prongs walled off from the void beside them, her landing legs, her thrusters
 and her cockpit's control head, seats and autopilot screen, the head wired to her thrusters' relays and her legs' feet
-as a `FreighterPilot.Wiring`. `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her lift from the
+as a `FreighterPilot.Wiring`, and to her leg bays. Each leg's strut meets her belly in its `LegBayBlock`, laid in place
+of the skin over the strut, which her belly's curve cuts open underneath (`FreighterLayout.legTop`); its
+`LegBayBlockEntity` takes the leg's blocks away as it draws up and puts them back as it locks down, the same
+`RetractableLegBlockEntity` as the airliner's `GearBayBlockEntity`, with its own timings, sounds and reach, and
+`LegBayRenderer` draws its strut telescoping and its foot tucked under her belly. `FreighterLegs`, her flight's own,
+raises them once she climbs or cruises well clear of the ground and lowers them otherwise, and her pilot holds her
+landing at its hover until they are down (`FreighterPilot.Orders.legsDown`). `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her lift from the
 mass Sable weighs and a trim it learns, split over her four clusters by her tilt and by where Sable puts her centre of
 mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the heading she wants,
 round a circle or onto a pin with the zeppelin's `Steering`, set to land near a pin coming down on the nearest clear,

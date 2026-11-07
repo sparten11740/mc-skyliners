@@ -2579,8 +2579,8 @@ Freighter Blueprint, under Blueprints in the creative tab, lays her down just pa
 toward you, and operators can build one with `/skyliners build <pos> <north|east|south|west> freighter`. She is always
 built at the same size, whatever the server config's scale: a disc 60 blocks across, a low dome over and under a short
 upright rim, with two flat prongs reaching forward either side of a loading gap, 84 blocks long in all from their tips
-to her stern, standing on five landing legs, a strut down to a square foot plate each, her belly a couple of blocks off
-the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
+to her stern, standing on five landing legs, a strut down to a square foot plate each from a leg bay set into her belly,
+a block of gunmetal housing ringed in hazard stripes, her belly a couple of blocks off the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
 of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go. Her canopy's
 glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
@@ -2594,7 +2594,16 @@ tips hold her back; jets hidden at her nose and her tail turn her and push her s
 control head stands between the pilot's seat and the co-pilot's, jump seats behind them, and the autopilot screen on
 the wall at the co-pilot's right hand, so the view ahead through her canopy is clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
-anywhere, and climbs to her height, her deck level all the way. Set a speed of nothing, she hovers there. Given a pin,
+anywhere, and climbs to her height, her deck level all the way. Once her feet are sixteen blocks over the ground her legs
+draw up into her belly, with a clunk and a hydraulic whine heard on her deck and on the ground under her: each strut's
+sleeves unlock and draw in, it telescopes up into its bay over six seconds, and its foot plate comes up with it to tuck
+flat under her belly, her ramp's call button going up with its leg. They come down again, five seconds and a heavy
+thunk as they lock, as soon as she comes down to land, flies lower than twelve blocks over the ground, or below
+sixteen sinks fast enough to reach it before they would be down; and she hovers ten blocks up until they are down and
+locked, so she
+always lands on her feet. The server config's `freighter.retractingLegs` builds her with her legs fixed, as a freighter
+built before her legs drew up has them; switched off later, legs already built still come down but no longer go up. Set
+a speed of nothing, she hovers there. Given a pin,
 she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for the
 last of the way, hovering over it or, set to land there, coming straight down near it. Set to land, she looks as she
 comes for clear, level ground within 64 blocks of the pin, all five of her legs' feet on dry, bare ground no more than a

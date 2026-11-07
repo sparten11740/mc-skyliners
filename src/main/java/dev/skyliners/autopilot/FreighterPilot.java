@@ -256,10 +256,12 @@ public final class FreighterPilot {
 
     /**
      * What the autopilot is set to fly: its phase, the height and speed set, the heading, and how it goes, on the
-     * heading, round a circle about a middle so wide, or to a pin there, landing at it or not.
+     * heading, round a circle about a middle so wide, or to a pin there, landing at it or not; and whether her legs are
+     * down to land on (see {@link FreighterLegs}).
      */
     record Orders(AutopilotBlockEntity.Phase phase, double altitude, double speed, double heading,
-                  AutopilotBlockEntity.Lateral lateral, double pinX, double pinZ, double radius, boolean landAtPin) {
+                  AutopilotBlockEntity.Lateral lateral, double pinX, double pinZ, double radius, boolean landAtPin,
+                  boolean legsDown) {
     }
 
     /**
@@ -606,14 +608,15 @@ public final class FreighterPilot {
 
     /**
      * The climb she wants, in blocks a second: lifting off, straight up slowly; climbing and cruising, toward the
-     * height set; coming down, sinking fast to {@link #PAD_HOVER} over the ground, then at her landing speed. Nearing a
-     * height she eases off soon enough to stop at it as gently as {@link #CLIMB_EASE} lets her.
+     * height set; coming down, sinking fast to {@link #PAD_HOVER} over the ground, then at her landing speed, but with
+     * her legs not yet down only to that height, where she hovers until they are, and no lower. Nearing a height she
+     * eases off soon enough to stop at it as gently as {@link #CLIMB_EASE} lets her.
      */
     private static double climbWanted(AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, double radio) {
         return switch (phase) {
             case TAKEOFF -> LIFT_OFF_CLIMB;
-            case DESCENT -> -Math.max(LANDING_SINK, approach(radio - PAD_HOVER, MOST_SINK));
-            case LAND -> -LANDING_SINK;
+            case DESCENT -> -Math.max(orders.legsDown() ? LANDING_SINK : 0, approach(radio - PAD_HOVER, MOST_SINK));
+            case LAND -> orders.legsDown() ? -LANDING_SINK : 0;
             default -> {
                 double toGo = orders.altitude() - state.position().y;
                 yield Math.signum(toGo) * approach(Math.abs(toGo), toGo > 0 ? MOST_CLIMB : MOST_SINK);
@@ -639,8 +642,8 @@ public final class FreighterPilot {
 
     /**
      * The phase she goes on in: up off the ground once clear of it, climbing until near the height set, and cruising;
-     * over a pin and still a while, coming down if set to land there; down to her hovering height over the ground,
-     * landing the rest of the way.
+     * over a pin and still a while, coming down if set to land there; down to her hovering height over the ground with
+     * her legs down, landing the rest of the way.
      */
     private AutopilotBlockEntity.Phase next(AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, Vec3 going,
                                             Vec3 middle, double radio) {
@@ -648,7 +651,7 @@ public final class FreighterPilot {
             case TAKEOFF -> radio > CLEAR ? AutopilotBlockEntity.Phase.CLIMB : phase;
             case CLIMB -> Math.abs(orders.altitude() - state.position().y) < AT_HEIGHT ? AutopilotBlockEntity.Phase.CRUISE : phase;
             case CRUISE -> arrived(orders, going, middle) && orders.landAtPin() ? comeDownAtPin(orders) : phase;
-            case DESCENT -> radio <= PAD_HOVER + 1 ? AutopilotBlockEntity.Phase.LAND : phase;
+            case DESCENT -> radio <= PAD_HOVER + 1 && orders.legsDown() ? AutopilotBlockEntity.Phase.LAND : phase;
             default -> phase;
         };
     }

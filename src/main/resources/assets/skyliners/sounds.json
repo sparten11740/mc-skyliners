@@ -701,6 +701,24 @@
       }
     ]
   },
+  "freighter_legs_up": {
+    "subtitle": "subtitles.skyliners.freighter_legs_up",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_legs_up",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "freighter_legs_down": {
+    "subtitle": "subtitles.skyliners.freighter_legs_down",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_legs_down",
+        "attenuation_distance": 24
+      }
+    ]
+  },
   "freighter_engine_idle": {
     "subtitle": "subtitles.skyliners.freighter_engine_idle",
     "sounds": [

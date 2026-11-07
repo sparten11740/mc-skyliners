@@ -105,12 +105,13 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("freighter", (context, args) -> freighter())
             .onServer()
             .group("skyliners")
-            .help("what the nearest freighter's autopilot is doing: phase, height, climb, speed ahead and across, heading, tilt, mass, lift, trims, thrusters")
+            .help("what the nearest freighter's autopilot is doing: phase, height, climb, speed ahead and across, heading, tilt, mass, lift, trims, thrusters, legs")
             .field("phase", "the autopilot's phase")
             .field("lift", "the share of full lift her lift thrusters are set to")
             .field("clusters", "each lift cluster's total signal: ahead right, ahead left, astern right, astern left")
             .field("jets", "each jet's signal: nose right, nose left, tail right, tail left")
-            .field("mass", "the freighter's mass in Sable's units"));
+            .field("mass", "the freighter's mass in Sable's units")
+            .field("legs", "where her landing legs are: down, raising, up or lowering, moving apart, or fixed"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -254,7 +255,8 @@ public final class BlockpilotCommands {
             .tag("clusters", report.clusters())
             .tag("mains", report.mains())
             .tag("retros", report.retros())
-            .tag("jets", report.jets()));
+            .tag("jets", report.jets())
+            .tag("legs", freighter.legsShown(autopilot)));
     }
 
     private static Result assembly() throws CommandException {

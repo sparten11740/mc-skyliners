@@ -2,8 +2,10 @@ package dev.skyliners.autopilot;
 
 import dev.skyliners.Aboard;
 import dev.skyliners.block.AutopilotBlock;
+import dev.skyliners.block.RetractableLegBlockEntity;
 import dev.skyliners.compat.SableFlight;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
@@ -22,8 +24,9 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The freighter in her autopilot's hands (see {@link StandingFlight}): she lifts straight off her legs and comes
- * straight down onto them, flown by {@link FreighterPilot}; she lands by herself once nobody has been aboard a while;
- * and she can climb to space as the rocket does. How hard her lift thrusters and her mains fire is shown to the
+ * straight down onto them, flown by {@link FreighterPilot}, her legs drawn up into her belly as she flies and let down
+ * before she lands (see {@link FreighterLegs}); she lands by herself once nobody has been aboard a while; and she can
+ * climb to space as the rocket does. How hard her lift thrusters and her mains fire is shown to the
  * clients, who play her engines' roar by it (see the client's FreighterRoar), and where her disc's middle is among her
  * blocks goes with her, for them to place it.
  */
@@ -55,8 +58,18 @@ public final class FreighterFlight extends StandingFlight {
      * off: someone staying on her ramp keeps it from folding away, and she never lifts off with them on it.
      */
     private static final int TAKEOFF_HELD_LONGEST = 600;
+    /**
+     * How long her landing waits for her legs to come down at most, in ticks (ten seconds, twice as long as they take):
+     * one that cannot lock, with something in its way, would otherwise keep her hovering for ever, so she comes down
+     * without it, as an airliner may land on its belly.
+     */
+    private static final int LEGS_AWAITED_LONGEST = 200;
 
     private final FreighterPilot pilot = new FreighterPilot();
+    /** Her landing legs, drawn up as she flies and let down to land. */
+    private final FreighterLegs legs = new FreighterLegs();
+    /** How many ticks in a row her landing has waited for her legs (see {@link #LEGS_AWAITED_LONGEST}). */
+    private int legsAwaited;
     /** How many ticks in a row her take-off has been held (see {@link #HOLDS}). */
     private int heldFor;
     /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
@@ -87,6 +100,23 @@ public final class FreighterFlight extends StandingFlight {
     public void configure(FreighterPilot.Wiring wiring) {
         pilot.configure(wiring);
         knowMiddle(wiring);
+    }
+
+    /** Wired when she is built: her leg bays, as offsets from her control head (see {@link FreighterLegs}). */
+    public void wireLegs(List<BlockPos> bays) {
+        legs.configure(bays);
+    }
+
+    /**
+     * Where her landing legs are, for play-testing: down, raising, up or lowering, all together; moving with them
+     * apart; fixed with none that draw up.
+     */
+    public String legsShown(AutopilotBlockEntity autopilot) {
+        if (legs.count() == 0 || autopilot.getLevel() == null) {
+            return "fixed";
+        }
+        RetractableLegBlockEntity.Motion motion = legs.motion(autopilot.getLevel(), autopilot.getBlockPos());
+        return motion == null ? "moving" : motion.name().toLowerCase(Locale.ROOT);
     }
 
     /** Where her disc's middle is, from what her pilot is wired to. */
@@ -181,16 +211,21 @@ public final class FreighterFlight extends StandingFlight {
     @Override
     void turn(Rotation turn) {
         pilot.turn(turn);
+        legs.turn(turn);
     }
 
     @Override
     void save(CompoundTag tag) {
-        tag.put("Freighter", pilot.save());
+        CompoundTag freighter = pilot.save();
+        legs.save(freighter);
+        tag.put("Freighter", freighter);
     }
 
     @Override
     void load(CompoundTag tag, Rotation turn) {
-        pilot.load(tag.getCompound("Freighter"), turn);
+        CompoundTag freighter = tag.getCompound("Freighter");
+        pilot.load(freighter, turn);
+        legs.load(freighter, turn);
         if (!middleKnown) {
             knowMiddle(pilot.wiring());
         }
@@ -274,9 +309,11 @@ public final class FreighterFlight extends StandingFlight {
             callOffTakeoff(level, autopilot);
         }
         AutopilotBlockEntity.Phase phase = autopilot.phase;
+        boolean legsDown = legsDown(level, autopilot, phase);
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
-                autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin);
+                autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,
+                legsDown);
             AutopilotBlockEntity.Phase next = pilot.fly(level, autopilot.getBlockPos(), orders, flight, radio,
                 SableFlight.mass(autopilot), SableFlight.centreOfMass(autopilot));
             if (next == AutopilotBlockEntity.Phase.OFF) {
@@ -287,6 +324,7 @@ public final class FreighterFlight extends StandingFlight {
             }
             sayNoGround(level, autopilot, pilot.noGroundAtPin(orders));
         }
+        legs.tick(level, autopilot.getBlockPos(), autopilot.phase, radio, flight.velocity().y);
         long now = level.getGameTime();
         boolean liftShown = lift.take(pilot.report().lift(), now);
         double mainsShare = pilot.mainsShare();
@@ -297,6 +335,17 @@ public final class FreighterFlight extends StandingFlight {
         glow.tick(level, autopilot.getBlockPos(), pilot.wiring().grille(), lift.shown(), mains.shown(), now);
         liftPlumes.tick(level, autopilot.getBlockPos(), pilot.wiring().clusters(), radio);
         watchArrival(autopilot, flight, radio);
+    }
+
+    /**
+     * Whether her legs are down for her to land on: all down and locked, or awaited too long as she comes down to land
+     * (see {@link #LEGS_AWAITED_LONGEST}).
+     */
+    private boolean legsDown(ServerLevel level, AutopilotBlockEntity autopilot, AutopilotBlockEntity.Phase phase) {
+        boolean down = legs.down(level, autopilot.getBlockPos());
+        boolean landing = phase == AutopilotBlockEntity.Phase.DESCENT || phase == AutopilotBlockEntity.Phase.LAND;
+        legsAwaited = landing && !down ? legsAwaited + 1 : 0;
+        return down || legsAwaited > LEGS_AWAITED_LONGEST;
     }
 
     /**

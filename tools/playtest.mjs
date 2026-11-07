@@ -321,6 +321,13 @@ const STAND_AWAY = 24;
 const STAND_APART = 3;
 const STAND_HIGH = 5;
 const EXTERIOR_CLIMB = 30;
+// A freighter's landing legs: how many she stands on; how long they are given to draw up once she is cruising, in
+// ticks; how often her landing is looked at, in ticks; and how near the ground her feet count as touching it, in blocks
+// over where her control head stood on it.
+const FREIGHTER_LEGS = 5;
+const LEGS_UP_TICKS = 300;
+const LEGS_LOOK_EVERY = 5;
+const LEGS_TOUCHING = 2.5;
 const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
@@ -1634,6 +1641,74 @@ function checkFreighterExteriorLiftOff() {
   expect(left.length === 0, "freighter: lifting off, she leaves none of her outside behind", left.join(", "));
 }
 
+// How many blocks of her legs a freighter flying carries, by id: their struts, their foot plates and her ramp's call
+// button on one of them.
+function legBlocks(freighter) {
+  const count = (id, most) => must(`sable:find ${freighter} skyliners:${id} ${most} side=server`).rows.length;
+  return { struts: count("landing_gear", 100), feet: count("zeppelin_fabric", 100), button: count("ramp_button", 1) };
+}
+
+// A freighter's landing legs, watched from the ground: she is built with a bay where each leg meets her belly; once
+// she is well clear of the ground her legs draw up into it, no strut, foot plate or call button left hanging under
+// her; set to land, they are down again before her feet touch the ground, and she stands level on them, every block of
+// them back. Her legs used to hang under her all through every flight.
+function checkFreighterLegs() {
+  layDown("freighter");
+  const bays = found("leg_bay");
+  expect(bays === FREIGHTER_LEGS, "freighter: she is built with a bay where each of her legs meets her belly", `${bays} bays`);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const built = legBlocks(freighter);
+  const raised = waitForReport(freighterReport, (report) => report.legs === "up", FREIGHTER_UP_TICKS + LEGS_UP_TICKS);
+  const flying = freighterReport();
+  expect(raised, "freighter: well clear of the ground, her legs draw up into her belly", `legs ${flying?.legs}, ${flying?.phase} at ${flying?.altitude}`);
+  const hanging = legBlocks(freighter);
+  expect(hanging.struts + hanging.feet + hanging.button === 0, "freighter: her legs up, no strut, foot plate or call button hangs under her",
+    `${hanging.struts} struts, ${hanging.feet} foot plates, ${hanging.button} button`);
+  waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  must("skyliners:autopilot land");
+  const touching = waitForReport(freighterReport, (report) => report.altitude - head[1] < LEGS_TOUCHING, FREIGHTER_DOWN_TICKS);
+  expect(touching?.legs === "down", "freighter: set to land, her legs are down before her feet touch the ground",
+    `legs ${touching?.legs} at ${touching?.altitude}, her control head stood at ${head[1]}`);
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: she lands and switches herself off", down ? "" : `still ${freighterReport()?.phase}`);
+  if (!down) {
+    return;
+  }
+  const lean = Math.max(Math.abs(down.tilt_front), Math.abs(down.tilt_right));
+  expect(lean < FREIGHTER_LEVEL_WITHIN && Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: she stands level on her legs",
+    `leaning ${lean} degrees, control head at ${down.altitude}, built at ${head[1]}`);
+  const back = legBlocks(freighter);
+  expect(back.struts === built.struts && back.feet === built.feet && back.button === built.button,
+    "freighter: every block of her legs is back, her ramp's call button among them",
+    `${back.struts} of ${built.struts} struts, ${back.feet} of ${built.feet} foot plates, ${back.button} of ${built.button} button`);
+}
+
+// A freighter built with her legs fixed, the server config's freighter.retractingLegs off, as one built before her legs
+// drew up has them: she has no bays, flies with her legs down all the while and comes down on them as ever.
+function checkFreighterFixedLegs() {
+  must("config skyliners server freighter.retractingLegs false");
+  try {
+    layDown("freighter");
+    expect(found("leg_bay") === 0, "freighter: her legs fixed, she is built with no leg bays");
+    const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+    must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+    const freighter = findShipFlying("skyliners:engine_grille");
+    const built = legBlocks(freighter);
+    const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+    const flying = legBlocks(freighter);
+    expect(up && up.legs === "fixed" && flying.struts === built.struts && flying.feet === built.feet,
+      "freighter: her legs fixed, she climbs to the height set with them down", `${up?.phase}, legs ${up?.legs}, ${flying.struts} of ${built.struts} struts`);
+    must("skyliners:autopilot land");
+    const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+    expect(down && Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: her legs fixed, she lands on them and switches herself off",
+      `${down?.phase ?? freighterReport()?.phase}, control head at ${down?.altitude}, built at ${head[1]}`);
+  } finally {
+    must("config reset");
+  }
+}
+
 // A freighter's deck robot: walked up to, it chirps hello; touched, it trills back.
 function checkFreighterRobot() {
   ship("freighter");
@@ -2022,6 +2097,8 @@ const CHECKS = {
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },
+  "freighter-legs": { run: checkFreighterLegs, slow: true, about: "a freighter's legs draw up into her belly once she is clear, and are down again before she lands on them" },
+  "freighter-fixed-legs": { run: checkFreighterFixedLegs, slow: true, about: "a freighter built with fixed legs, as before they drew up, flies and lands on them as ever" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

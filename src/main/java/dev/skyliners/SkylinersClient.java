@@ -73,6 +73,7 @@ import dev.skyliners.client.LaserCannonRenderer;
 import dev.skyliners.client.LaserCrossbowLooks;
 import dev.skyliners.client.LaserTurretRenderer;
 import dev.skyliners.client.LedLights;
+import dev.skyliners.client.LegBayRenderer;
 import dev.skyliners.client.LiftPanelRenderer;
 import dev.skyliners.client.LiftRide;
 import dev.skyliners.client.LightningFlash;
@@ -399,6 +400,7 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.DECK_ROBOT_ENTITY.get(), DeckRobotRenderer::new);
         event.registerBlockEntityRenderer(SkylinersRegistry.GEAR_BAY_ENTITY.get(), context -> new GearBayRenderer());
+        event.registerBlockEntityRenderer(SkylinersRegistry.LEG_BAY_ENTITY.get(), context -> new LegBayRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.LASER_TURRET_ENTITY.get(), context -> new LaserTurretRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());

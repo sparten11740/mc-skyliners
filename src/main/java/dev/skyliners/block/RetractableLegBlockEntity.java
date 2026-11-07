@@ -35,9 +35,10 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * One retractable leg, worked from its top, where it meets the hull: the blocks of the leg below it, which it takes
- * away as the leg goes up into the belly and puts back as it comes down and locks, as the airliner's gear legs do,
- * swinging up on their wheels (see {@link GearBayBlockEntity}). Each kind says how long it takes each way, what it
- * sounds like and how far below its lowest block it reaches; the rest is the same for every kind.
+ * away as the leg goes up into the belly and puts back as it comes down and locks. The airliner's gear legs swing up on
+ * their wheels (see {@link GearBayBlockEntity}); the freighter's landing legs draw straight up into her belly (see
+ * {@link LegBayBlockEntity}). Each kind says how long it takes each way, what it sounds like and how far below its
+ * lowest block it reaches; the rest is the same for both.
  *
  * <p>Its blocks go as it starts up, so none hang under a leg drawn moving, and come back once it is all the way down,
  * if its foot has room under it; let down with the ship resting on its belly, it holds there until the ship is lifted
@@ -68,6 +69,11 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
      * the height the airliner's callouts count it on the ground at, its tires squashed or not.
      */
     private static final double ON_GROUND = 1.5;
+    /**
+     * How long a client still draws the leg's blocks once it has locked down, in ticks: its real blocks are back by
+     * then, but the client takes a frame or so to draw them, and the leg would flash out of sight in between.
+     */
+    private static final int DRAWN_AFTER_LOCK = 3;
     /** The legs loaded, so the controls' and the autopilot's links into a stowed leg are not taken for broken ones. */
     private static final Loaded<RetractableLegBlockEntity> LOADED = new Loaded<>(RetractableLegBlockEntity.class);
 
@@ -78,6 +84,12 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
     private Motion motion = Motion.DOWN;
     /** How far through its movement the leg is, in ticks. */
     private int ticks;
+    /**
+     * On a client, the blocks it drew coming down, kept for {@link #DRAWN_AFTER_LOCK} once it has locked, and how many
+     * ticks longer they are drawn.
+     */
+    private List<Part> lastDrawn = List.of();
+    private int drawnFor;
 
     protected RetractableLegBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -98,6 +110,11 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
     /** How many rows below its lowest block the leg reaches down: its tires below their mounts, or none for a foot. */
     protected abstract int reachBelow();
 
+    /** The pitch its sound plays at: as recorded, unless the kind of leg sets each of its legs apart. */
+    protected float pitch() {
+        return 1.0F;
+    }
+
     /** Wired when the ship is built: the blocks of the leg below its top, as offsets from it. */
     public void configure(List<BlockPos> leg) {
         this.leg = List.copyOf(leg);
@@ -112,6 +129,22 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
     /** The blocks taken away while the leg is not down, which the client draws moving. */
     public List<Part> stowed() {
         return stowed;
+    }
+
+    /**
+     * What a client draws of the leg: the blocks taken away while it is not down, and those it drew coming down for a
+     * moment after it has locked, where they stand again (see {@link #DRAWN_AFTER_LOCK}).
+     */
+    public List<Part> drawn() {
+        if (motion != Motion.DOWN) {
+            return stowed;
+        }
+        return drawnFor > 0 ? lastDrawn : List.of();
+    }
+
+    /** Whether a client still draws the leg a moment after it has locked down (see {@link #DRAWN_AFTER_LOCK}). */
+    public boolean justLocked() {
+        return motion == Motion.DOWN && drawnFor > 0;
     }
 
     /** How far up the leg has gone, from 0 down to 1 up, between ticks as drawn. */
@@ -172,7 +205,7 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
     private void start(ServerLevel level, Motion next, int from) {
         motion = next;
         ticks = from;
-        level.playSound(null, worldPosition, sound(next == Motion.RAISING), SoundSource.BLOCKS, volume(), 1.0F);
+        level.playSound(null, worldPosition, sound(next == Motion.RAISING), SoundSource.BLOCKS, volume(), pitch());
         changed();
     }
 
@@ -197,6 +230,7 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
         if (leg.motion.moving() && leg.ticks < last) {
             leg.ticks++;
         }
+        leg.drawnFor = Math.max(0, leg.drawnFor - 1);
     }
 
     /** All the way down: the leg's blocks back where they were and locked, once its foot has room under it. */
@@ -350,7 +384,13 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         Rotation turn = Turning.since(tag, getBlockState());
         leg = Turning.turn(Relays.read(tag.getList("Leg", Tag.TAG_INT_ARRAY)), turn);
+        Motion was = motion;
+        List<Part> drew = stowed;
         motion = parse(tag.getString("Motion"));
+        if (level != null && level.isClientSide && was == Motion.LOWERING && motion == Motion.DOWN) {
+            lastDrawn = drew;
+            drawnFor = DRAWN_AFTER_LOCK;
+        }
         ticks = tag.getInt("Ticks");
         List<Part> parts = new ArrayList<>();
         for (Tag entry : tag.getList("Stowed", Tag.TAG_COMPOUND)) {

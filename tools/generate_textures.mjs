@@ -8904,6 +8904,26 @@ function hullPlateTextures() {
 }
 hullPlateTextures();
 
+// The freighter's leg bays (see LegBayBlock), where each landing leg meets her belly: on its sides a housing of dark
+// gunmetal, riveted, with a band of hazard stripes along its foot, as round anything that moves; and from below its
+// socket, a steel collar round a dark well the strut's sleeves draw up into, a glint of chrome on its far wall.
+function legBayTextures() {
+  texture(blockOutput, "leg_bay_side", (x, y) => {
+    if (y >= 12) return Math.floor((x + y) / 3) % 2 === 0 ? [0xf0, 0xbc, 0x1c] : [0x24, 0x24, 0x26];
+    if (y === 11 || x === 0) return [0x34, 0x3a, 0x42];
+    if (y === 2 && x % 4 === 2) return [0x80, 0x88, 0x92];
+    return [0x4c, 0x53, 0x5c];
+  }, 4);
+  texture(blockOutput, "leg_bay_bottom", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out < 4.5) return x + y < 12 && out > 3 ? [0x9a, 0xa2, 0xac] : [0x16, 0x18, 0x1c];
+    if (out < 6.5) return out < 5.5 ? [0x8a, 0x90, 0x97] : [0x5c, 0x62, 0x69];
+    if (x === 0 || y === 0 || x === 15 || y === 15) return [0x34, 0x3a, 0x42];
+    return [0x4c, 0x53, 0x5c];
+  }, 3);
+}
+legBayTextures();
+
 // The freighter's outside lights (see FreighterLights): her light band, a bright cyan-white line along the middle of a
 // dark plate; and a light strip's glowing diffuser.
 function hullLightTextures() {

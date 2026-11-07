@@ -155,6 +155,8 @@ import dev.skyliners.block.LabPipeBlock;
 import dev.skyliners.block.LaunchPadBlockEntity;
 import dev.skyliners.block.LaunchPadGrateBlock;
 import dev.skyliners.block.LaunchPadHubBlock;
+import dev.skyliners.block.LegBayBlock;
+import dev.skyliners.block.LegBayBlockEntity;
 import dev.skyliners.block.LiftFloorBlock;
 import dev.skyliners.block.OrreryBlock;
 import dev.skyliners.block.OrreryBlockEntity;
@@ -659,6 +661,13 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<GearBayBlock> GEAR_BAY = BLOCKS.registerBlock("gear_bay", GearBayBlock::new, metal(MapColor.METAL));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GearBayBlockEntity>> GEAR_BAY_ENTITY =
         BLOCK_ENTITIES.register("gear_bay", () -> BlockEntityType.Builder.of(GearBayBlockEntity::new, GEAR_BAY.get()).build(null));
+    /**
+     * The top of one of the freighter's landing legs, set into her belly, with the hydraulics that draw the leg up and
+     * let it down (see {@link LegBayBlock}); only her blueprint places it, so it has no item and drops nothing.
+     */
+    public static final DeferredBlock<LegBayBlock> LEG_BAY = BLOCKS.registerBlock("leg_bay", LegBayBlock::new, metal(MapColor.METAL).noLootTable());
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LegBayBlockEntity>> LEG_BAY_ENTITY =
+        BLOCK_ENTITIES.register("leg_bay", () -> BlockEntityType.Builder.of(LegBayBlockEntity::new, LEG_BAY.get()).build(null));
     public static final DeferredBlock<Block> LANDING_GEAR_TIRE = BLOCKS.registerSimpleBlock(
         "landing_gear_tire",
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 3.0F).sound(SoundType.WOOL).isValidSpawn(SkylinersRegistry::never)
@@ -868,6 +877,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_HYDRAULICS = sound("ramp_hydraulics");
     /** Her boarding ramp's foot lip coming down onto the ground with a thud, its latch clicking home. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RAMP_THUD = sound("ramp_thud");
+    /**
+     * Her landing legs drawing up into her belly, the sleeves unlocking and the hydraulics whining up to the feet
+     * clunking home; and coming down, the whine falling to the struts locking with a heavy thunk.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_LEGS_UP = sound("freighter_legs_up");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_LEGS_DOWN = sound("freighter_legs_down");
     /** Her engines' hum as heard inside her hull, a seamless loop. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_ENGINE_IDLE = sound("freighter_engine_idle");
     /** Her engines' roar as heard outside, up to 160 blocks off, a seamless loop crossfaded over the hum by thrust. */

@@ -23,6 +23,7 @@ import dev.skyliners.block.GalleyFridgeBlock;
 import dev.skyliners.block.GalleyFridgeBlockEntity;
 import dev.skyliners.block.GalleyOvenBlock;
 import dev.skyliners.block.GalleyUnitBlock;
+import dev.skyliners.block.LegBayBlockEntity;
 import dev.skyliners.block.LightTone;
 import dev.skyliners.block.PalletRackBlock;
 import dev.skyliners.block.ParcelScannerBlock;
@@ -298,6 +299,8 @@ public final class FreighterLayout extends HullLayout {
     private final List<BlockPos> retros = new ArrayList<>();
     private final BlockPos[] jets = new BlockPos[4];
     private final List<BlockPos> feet = new ArrayList<>();
+    /** Her landing legs as laid, in the order of {@link FreighterShape#LEGS}. */
+    private final List<Leg> legs = new ArrayList<>();
     /** Her engine grille's blocks, for her autopilot to light. */
     private final List<BlockPos> grille = new ArrayList<>();
     /** The box round her canopy's dimming glass, its corners as it is laid; null before any is. */
@@ -337,6 +340,13 @@ public final class FreighterLayout extends HullLayout {
      * north (x east, z south), and so many up from her feet's soles.
      */
     public record Offset(int right, int astern, int up) {
+    }
+
+    /**
+     * One of her landing legs as laid: the block where it meets her belly, her leg bay where her legs draw up, and the
+     * blocks of the leg below it, which the bay takes away as it goes up.
+     */
+    private record Leg(BlockPos top, boolean retracts, List<BlockPos> parts) {
     }
 
     /** Every block of her legs' foot plates, for her autopilot to look for ground to stand them on. */
@@ -427,6 +437,7 @@ public final class FreighterLayout extends HullLayout {
         layout.cockpit();
         layout.robots();
         layout.ramp();
+        layout.wireLegs();
         layout.turret();
         FreighterPlating.build(layout);
         FreighterLights.build(layout);
@@ -683,30 +694,63 @@ public final class FreighterLayout extends HullLayout {
     private void legs() {
         BlockState strut = SkylinersRegistry.LANDING_GEAR.get().defaultBlockState();
         BlockState foot = SkylinersRegistry.ZEPPELIN_FABRIC.get().defaultBlockState();
+        boolean retracting = SkylinersConfig.FREIGHTER_RETRACTING_LEGS.get();
         for (double[] leg : FreighterShape.LEGS) {
             int x = (int) Math.round(leg[0] * scale);
             int z = (int) Math.round(leg[1] * scale);
+            List<BlockPos> parts = new ArrayList<>();
             int y = 1;
             for (; isOpen(x, y, z) && surface.depth(x, y + 0.5, z) > 0; y++) {
                 set(x, y, z, strut);
+                parts.add(new BlockPos(x, y, z));
             }
             for (int i = 0; i < 9; i++) {
-                set(x + i % 3 - 1, 0, z + i / 3 - 1, foot);
+                BlockPos plate = new BlockPos(x + i % 3 - 1, 0, z + i / 3 - 1);
+                set(plate.getX(), 0, plate.getZ(), foot);
+                parts.add(plate);
             }
             feet.add(new BlockPos(x, 0, z));
-            legTop(new BlockPos(x, y, z), strut);
+            legs.add(legTop(new BlockPos(x, y, z), retracting, parts));
         }
     }
 
     /**
-     * Where a leg's strut meets her belly, the strut stopped under a block: that block made a block more of strut, in
-     * place of her skin there, which is cut to her belly's curve and so often leaves the underside of its block open,
-     * the strut stopping short of the skin the eye sees; left as it is where something else of hers stands there.
+     * Where a leg's strut meets her belly, the strut stopped under a block: that block made solid, a block more of
+     * strut or her leg bay where her legs draw up, in place of her skin there, which is cut to her belly's curve and so
+     * often leaves the underside of its block open, the strut stopping short of the skin the eye sees; the strut's own
+     * top where something else of hers stands there. The leg with its blocks below that top.
      */
-    private void legTop(BlockPos over, BlockState strut) {
-        if (isOpen(over.getX(), over.getY(), over.getZ()) || skin(stateAt(over.getX(), over.getY(), over.getZ()))) {
-            set(over.getX(), over.getY(), over.getZ(), strut);
+    private Leg legTop(BlockPos over, boolean retracting, List<BlockPos> parts) {
+        boolean intoSkin = isOpen(over.getX(), over.getY(), over.getZ()) || skin(stateAt(over.getX(), over.getY(), over.getZ()));
+        BlockPos top = intoSkin ? over : over.below();
+        if (top.getY() < 1) {
+            return new Leg(top, false, parts);
         }
+        parts.remove(top);
+        BlockState mount = retracting ? SkylinersRegistry.LEG_BAY.get().defaultBlockState() : SkylinersRegistry.LANDING_GEAR.get().defaultBlockState();
+        set(top.getX(), top.getY(), top.getZ(), mount);
+        return new Leg(top, retracting, parts);
+    }
+
+    /** Hands each leg's bay the blocks of its leg once it stands, her ramp's call button among them on its leg. */
+    private void wireLegs() {
+        for (Leg leg : legs) {
+            if (!leg.retracts()) {
+                continue;
+            }
+            BlockPos top = leg.top();
+            List<BlockPos> parts = List.copyOf(leg.parts());
+            fit(top, (blockEntity, rotation) -> {
+                if (blockEntity instanceof LegBayBlockEntity bay) {
+                    bay.configure(offsets(top, parts, rotation));
+                }
+            });
+        }
+    }
+
+    /** Her leg bays, each where a leg that draws up meets her belly. */
+    private List<BlockPos> legBays() {
+        return legs.stream().filter(Leg::retracts).map(Leg::top).toList();
     }
 
     /**
@@ -1367,7 +1411,8 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her ramp's call button on her starboard leg's strut, facing ahead toward the ramp, where there is room for it.
+     * Her ramp's call button on her starboard leg's strut, facing ahead toward the ramp, where there is room for it:
+     * one of the leg's blocks, so it goes up and comes down with it.
      */
     private void rampButton() {
         double[] leg = FreighterShape.LEGS[RAMP_BUTTON_LEG];
@@ -1376,6 +1421,7 @@ public final class FreighterLayout extends HullLayout {
         if (isOpen(x, RAMP_BUTTON_UP, z) && stateAt(x, RAMP_BUTTON_UP, z + 1).is(SkylinersRegistry.LANDING_GEAR.get())) {
             set(x, RAMP_BUTTON_UP, z, SkylinersRegistry.RAMP_BUTTON.get().defaultBlockState()
                 .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.NORTH));
+            legs.get(RAMP_BUTTON_LEG).parts().add(new BlockPos(x, RAMP_BUTTON_UP, z));
         }
     }
 
@@ -1462,9 +1508,9 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Wires the control head once it stands: her thrusters' relays and her legs' feet as offsets from it, turned as she
-     * was placed, where her disc's middle is from it, how far its block stands above her legs' feet, and the box round
-     * her blocks.
+     * Wires the control head once it stands: her thrusters' relays, her legs' feet and her leg bays as offsets from it,
+     * turned as she was placed, where her disc's middle is from it, how far its block stands above her legs' feet, and
+     * the box round her blocks.
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = clusters.stream().map(cluster -> offsets(at, cluster, rotation)).toList();
@@ -1472,7 +1518,9 @@ public final class FreighterLayout extends HullLayout {
             offset(at, jets[2], rotation), offset(at, jets[3], rotation));
         FreighterPilot.Wiring wiring = new FreighterPilot.Wiring(turned, offsets(at, mains, rotation), offsets(at, retros, rotation),
             jetRelays, offsets(at, feet, rotation), offsets(at, grille, rotation), -at.getX(), at.getZ(), Math.round(LIFT_OUT * scale));
-        autopilot.wire(FreighterFlight.class, at.getY()).configure(wiring);
+        FreighterFlight flight = autopilot.wire(FreighterFlight.class, at.getY());
+        flight.configure(wiring);
+        flight.wireLegs(offsets(at, legBays(), rotation));
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-side, 0, front), new BlockPos(side, top, back)), rotation);
         autopilot.frame(frame.get(0), frame.get(1));
     }

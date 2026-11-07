@@ -87,6 +87,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_FINISHES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINEERING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_BEACH;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_RETRACTING_LEGS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -760,6 +761,13 @@ public final class SkylinersConfig {
                 "up to a blast of steam."
             )
             .define("engineering", true);
+        FREIGHTER_RETRACTING_LEGS = builder
+            .comment(
+                "Whether the freighter's landing legs draw up into her belly once she is well clear of the ground, their struts",
+                "telescoping up and their feet tucking under her, and come down again before she lands. Read when she is built: off,",
+                "her legs are fixed. Switched off later, legs already built still come down but no longer go up."
+            )
+            .define("retractingLegs", true);
         builder.pop();
 
         SPEC = builder.build();

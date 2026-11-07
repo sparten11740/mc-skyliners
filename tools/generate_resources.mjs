@@ -264,6 +264,19 @@ for (const [name, renderType] of Object.entries(cubes)) {
 }
 // Her ramp's call button, low on her starboard leg: a lit push-button, its amber cap showing her ramp let down.
 litButton("ramp_button");
+// The freighter's leg bays (see LegBayBlock), where each landing leg meets her belly: a block of riveted gunmetal
+// housing, its socket for the strut seen from below. Only the blueprint places one, so it has no item and drops nothing.
+{
+  write(`assets/${ID}/models/block/leg_bay.json`, {
+    parent: "minecraft:block/cube",
+    textures: {
+      down: `${ID}:block/leg_bay_bottom`, up: `${ID}:block/leg_bay_side`, particle: `${ID}:block/leg_bay_side`,
+      north: `${ID}:block/leg_bay_side`, south: `${ID}:block/leg_bay_side`, east: `${ID}:block/leg_bay_side`, west: `${ID}:block/leg_bay_side`,
+    },
+  });
+  facing("leg_bay");
+  cubes.leg_bay = null;
+}
 function rampFittings() {
   return ["ramp_deck"];
 }
@@ -2127,6 +2140,9 @@ const FREIGHTER_SOUNDS = {
   ramp_steam: { subtitle: "Ramp vents steam", heard: 32 },
   ramp_hydraulics: { subtitle: "Ramp hydraulics whine", heard: 32 },
   ramp_thud: { subtitle: "Ramp thuds down", heard: 32 },
+  // Her landing legs drawing up into her belly and coming down, heard on her deck over them and on the ground under her.
+  freighter_legs_up: { subtitle: "Landing legs retract", heard: 24 },
+  freighter_legs_down: { subtitle: "Landing legs extend", heard: 24 },
   // Her engines: their hum inside her hull, heard all through her; their roar, the show piece, heard up to
   // FREIGHTER_HEARD blocks off with her lift jets lighting, her mains spooling up and her pass at speed; her lift
   // jets themselves, as she lifts off and lands, nearer.
@@ -11435,6 +11451,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.ramp_deck": "Boarding Ramp",
   "block.skyliners.ramp_panel": "Boarding Ramp Panel",
   "block.skyliners.ramp_button": "Ramp Call Button",
+  "block.skyliners.leg_bay": "Landing Leg Bay",
   "item.skyliners.laser_crossbow": "Laser Crossbow",
   "block.skyliners.laser_cannon": "Laser Cannon",
   "block.skyliners.bandstand": "Bandstand",
