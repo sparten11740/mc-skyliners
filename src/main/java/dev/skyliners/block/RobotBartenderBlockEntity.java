@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -46,10 +45,8 @@ public class RobotBartenderBlockEntity extends BlockEntity {
      * How far its head is turned, now and a tick ago, in degrees: to its left of straight ahead, and up; and the
      * player it is looking at, if any. Only ever set on the client.
      */
-    private float headYaw;
-    private float headYawBefore;
-    private float headPitch;
-    private float headPitchBefore;
+    private final HeadTurn headYaw = new HeadTurn(HEAD_EASE, HEAD_STEP, false);
+    private final HeadTurn headPitch = new HeadTurn(HEAD_EASE, HEAD_STEP, false);
     @Nullable
     private UUID lookingAt;
 
@@ -96,8 +93,8 @@ public class RobotBartenderBlockEntity extends BlockEntity {
 
     /** Ticks it on the client: its head's turn a tick ago is kept for drawing between ticks, then it looks about. */
     void clientTick() {
-        headYawBefore = headYaw;
-        headPitchBefore = headPitch;
+        headYaw.tick();
+        headPitch.tick();
         clientTicker.accept(this);
     }
 
@@ -106,18 +103,18 @@ public class RobotBartenderBlockEntity extends BlockEntity {
      * slowing as it comes round, and never faster than a servo turns.
      */
     public void turnHead(float yaw, float pitch) {
-        headYaw += Mth.clamp((yaw - headYaw) * HEAD_EASE, -HEAD_STEP, HEAD_STEP);
-        headPitch += Mth.clamp((pitch - headPitch) * HEAD_EASE, -HEAD_STEP, HEAD_STEP);
+        headYaw.toward(yaw);
+        headPitch.toward(pitch);
     }
 
     /** How far its head is turned to its left at this partial tick, in degrees. */
     public float headYaw(float partialTick) {
-        return Mth.lerp(partialTick, headYawBefore, headYaw);
+        return headYaw.at(partialTick);
     }
 
     /** How far its head is tilted up at this partial tick, in degrees. */
     public float headPitch(float partialTick) {
-        return Mth.lerp(partialTick, headPitchBefore, headPitch);
+        return headPitch.at(partialTick);
     }
 
     /** The player it is looking at, as the client last found; null for nobody. */

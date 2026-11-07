@@ -316,7 +316,7 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         BlockPos pos = bartender.getBlockPos();
         Direction facing = bartender.getBlockState().getValue(RobotBartenderBlock.FACING);
         Vec3 neck = Vec3.atLowerCornerOf(pos).add(fromModel(facing, new Vec3(NECK_X / 16 - 0.5, NECK_Y / 16, NECK_Z / 16 - 0.5)).add(0.5, 0, 0.5));
-        Player nearest = nearest(level, pos, neck);
+        Player nearest = Onlookers.nearest(level, pos, neck, LOOK_RANGE);
         float age = level.getGameTime() - bartender.servedAt();
         if (age >= POURING && age < LET_GO) {
             bartender.turnHead(0, WATCH_GLASS);
@@ -351,21 +351,6 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         lastWhirr = now;
         Vec3 heard = SableClient.toWorld(level, neck);
         level.playLocalSound(heard.x, heard.y, heard.z, SkylinersRegistry.BARTENDER_SERVO.get(), SoundSource.BLOCKS, WHIRR_VOLUME, 1.0F, false);
-    }
-
-    /** The nearest player, not a spectator, whose eyes are in reach of the neck, both among the airliner's blocks. */
-    @Nullable
-    private static Player nearest(Level level, BlockPos pos, Vec3 neck) {
-        Player nearest = null;
-        double best = LOOK_RANGE * LOOK_RANGE;
-        for (Player player : level.players()) {
-            double distance = SableClient.toPlot(level, pos, player.getEyePosition(), false).distanceToSqr(neck);
-            if (!player.isSpectator() && distance < best) {
-                nearest = player;
-                best = distance;
-            }
-        }
-        return nearest;
     }
 
     /** A way in the bartender's model, drawn facing north, turned the way it faces among the blocks. */
