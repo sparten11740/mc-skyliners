@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -182,6 +183,11 @@ abstract class HullLayout implements Layout {
     @FunctionalInterface
     private interface Cell {
         void at(int x, int y, int z);
+    }
+
+    /** Every block of air inside the hull as it stands now, wherever nothing else stands. */
+    void forEachInterior(Consumer<BlockPos> each) {
+        forEachAir((x, y, z) -> each.accept(new BlockPos(x, y, z)));
     }
 
     /** Every block of air inside the hull: its own space, wherever nothing else stands. */

@@ -2755,8 +2755,10 @@ config's `freighter.engineering` builds her without them.
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
 her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room
-through the doorway at her port quarter; the bandstand's footlights light its band. The server config's
-`freighter.lights` builds her without them.
+through the doorway at her port quarter; the bandstand's footlights light its band. No corner of her is left dark
+enough for monsters to spawn in: wherever her own lamps leave a spot someone could stand in unlit, a wall washer or a
+floor light lights it, and her crawlways, the passages by her thrusters and the spaces under her deck are lit dim but
+never black. The server config's `freighter.lights` builds her without them.
 
 Two deck robots live aboard her, in the rooms through the doorways ahead of her and astern: little white and teal
 robots on three wheels, each with a round head and a cyan visor. Walk up to one and it chirps hello, its head turning

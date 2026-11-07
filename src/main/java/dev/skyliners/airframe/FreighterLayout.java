@@ -200,6 +200,8 @@ public final class FreighterLayout extends HullLayout {
      */
     private static final int[] BUNK_HEADS = {9, 12, 15, 18};
     private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.PURPLE, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
+    /** The least light her crawlways and the spaces under her deck are lit by, in light levels: dim, but never black. */
+    private static final int PASSAGE_LIGHT = 4;
     /**
      * Her lounge's booth, in the room aft of her entry hall: a low table at this bearing and so far out from her axis,
      * in the room's far corner, its middle kept for her beach, with a seat facing it on each side so many blocks from
@@ -427,6 +429,9 @@ public final class FreighterLayout extends HullLayout {
         FreighterSpookie.build(layout, layout.deck);
         FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side));
         layout.lights();
+        if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
+            DarkCorners.light(layout, LightTone.WARM, layout::leastLight);
+        }
         layout.countAir();
         return layout;
     }
@@ -1249,6 +1254,16 @@ public final class FreighterLayout extends HullLayout {
         for (int room : DOORWAYS) {
             wallLight(room, ROOM_END_LIGHT_OUT, 0, toneAt(room));
         }
+    }
+
+    /**
+     * The least light a block someone could stand in is lit by in her, in light levels: her rooms and ring corridor,
+     * over her deck inside her outer bulkhead, only never left unlit, as each keeps its own mood; her crawlways, her
+     * cockpit's way and the spaces under her deck so much more that none of them looks black.
+     */
+    private int leastLight(BlockPos at) {
+        boolean roomy = at.getY() > deck && Math.hypot(at.getX(), at.getZ()) < bulkhead;
+        return roomy ? DarkCorners.UNLIT : PASSAGE_LIGHT;
     }
 
     /**

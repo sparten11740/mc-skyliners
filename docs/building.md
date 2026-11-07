@@ -330,7 +330,10 @@ floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindo
 what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under it. The client's
 `FloorWindowRenderer` draws the window, as its blocks have no model: every block the floor but for the iris's hole, in
 strips whose ends lie on the circle, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
-`HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
+`HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. `DarkCorners` is her
+last pass: it spreads her lamps' light through her layout as the game does and lights every spot someone could stand
+in that is left unlit, her passages to a dim but never black level (`FreighterLayout.leastLight`), with a wall washer
+or a floor light; `skyliners:dark` measures the same in game. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out
 the air inside their hulls, their features `ShipPiece`s.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a

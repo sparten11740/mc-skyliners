@@ -33,6 +33,7 @@ import dev.blockpilot.api.CommandException;
 import dev.blockpilot.api.CommandSpec;
 import dev.blockpilot.api.Fields;
 import dev.blockpilot.api.Result;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +46,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -69,6 +71,16 @@ public final class BlockpilotCommands {
      * {@link ZeppelinSize}'s: "full" is a word Blockpilot keeps for itself.
      */
     private static final List<String> SIZES = List.of("half", "whole");
+    /**
+     * Looking for dark spots: how far round the player across, below and above, in blocks; the least block light a
+     * spot should have; and the sky light from which a spot is out under the sky, even in a ship's shade, rather than
+     * shut in inside her, in light levels.
+     */
+    private static final int DARK_RADIUS = 48;
+    private static final int DARK_BELOW = 16;
+    private static final int DARK_ABOVE = 24;
+    private static final int DARK_LEAST = 4;
+    private static final int DARK_SKY = 1;
 
     private BlockpilotCommands() {
     }
@@ -119,6 +131,15 @@ public final class BlockpilotCommands {
             .field("first", "where the first few left behind stand")
             .field("stuck", "other blocks in its frame it would leave behind pressed against it, holding it as it flies off")
             .field("first_stuck", "where the first few of those stand, and what they are"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("dark", (context, args) -> dark(args))
+            .onServer()
+            .group("skyliners")
+            .option("radius", "how far round the player to look across, in blocks (default " + DARK_RADIUS + ")", ArgType.INT)
+            .option("least", "the least block light a spot should have (default " + DARK_LEAST + ")", ArgType.INT)
+            .help("spots inside the mod's ships round the player someone could stand in, lit less than the least: how many, how many unlit")
+            .field("dark", "spots lit less than the least")
+            .field("unlit", "spots with no block light at all, where monsters can spawn")
+            .field("first", "where the first few of the darkest stand, lowest first"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("livery", (context, args) -> livery(args))
             .onServer()
             .group("skyliners")
@@ -256,6 +277,45 @@ public final class BlockpilotCommands {
             .tag("first", first)
             .tag("stuck", stuck.size())
             .tag("first_stuck", firstStuck));
+    }
+
+    /**
+     * The spots round the player inside the mod's ships someone could stand in, a floor of the mod's under them that
+     * holds them, room for their head and out of the sky's light, lit by lamps less than the least asked for.
+     */
+    private static Result dark(Args args) throws CommandException {
+        ServerPlayer player = player();
+        ServerLevel level = player.serverLevel();
+        int radius = args.intOption("radius", DARK_RADIUS);
+        int least = args.intOption("least", DARK_LEAST);
+        BlockPos middle = player.blockPosition();
+        List<BlockPos> dark = new ArrayList<>();
+        int unlit = 0;
+        for (BlockPos at : BlockPos.betweenClosed(middle.offset(-radius, -DARK_BELOW, -radius), middle.offset(radius, DARK_ABOVE, radius))) {
+            int light = standableLight(level, at);
+            if (light >= 0 && light < least) {
+                dark.add(at.immutable());
+                unlit += light == 0 ? 1 : 0;
+            }
+        }
+        String first = dark.stream().limit(FIRST_LEFT).map(pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()).collect(Collectors.joining(" "));
+        return Result.ok(new Fields().tag("dark", dark.size()).tag("unlit", unlit).tag("first", first));
+    }
+
+    /**
+     * The block light at a spot someone could stand in inside one of the mod's ships, out of the sky's light; -1 for any
+     * other spot.
+     */
+    private static int standableLight(ServerLevel level, BlockPos at) {
+        BlockPos below = at.below();
+        boolean room = level.getBlockState(at).getCollisionShape(level, at).isEmpty()
+            && level.getBlockState(at.above()).getCollisionShape(level, at.above()).isEmpty();
+        boolean ours = BuiltInRegistries.BLOCK.getKey(level.getBlockState(below).getBlock()).getNamespace().equals(Skyliners.MOD_ID);
+        if (!room || !ours || !level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)
+            || level.getBrightness(LightLayer.SKY, at) >= DARK_SKY) {
+            return -1;
+        }
+        return level.getBrightness(LightLayer.BLOCK, at);
     }
 
     private static Result autopilot(CommandContext context, Args args) throws CommandException {

@@ -263,6 +263,10 @@ const VALVE_VENTS = 120;
 // many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
 // for, in blocks.
 const FLOOR_WINDOW_BLOCKS = 60;
+// How far round her middle a freighter is looked over for unlit spots, in blocks, and how far astern of it her jump
+// drive stands, to find her middle by.
+const LIT_REACH = 40;
+const JUMP_DRIVE_ASTERN = 13;
 // How far before a passenger screen's face the player stands to press it, in blocks.
 const SCREEN_STAND = 2;
 const IRIS_TICKS = 40;
@@ -1461,6 +1465,16 @@ function checkFreighterFurnishings() {
   }
 }
 
+// A freighter lit all through: no spot inside her that someone could stand in is left unlit, where monsters could
+// spawn, as there were by her thrusters before, and none of her passages looks black.
+function checkFreighterLit() {
+  ship("freighter");
+  const [{ at_abs: [x, y, z] }] = must("find skyliners:jump_drive 128 1").rows;
+  must(`server tp @p ${x + 0.5} ${y} ${z + 0.5 - JUMP_DRIVE_ASTERN}; wait 40t`);
+  const unlit = must(`skyliners:dark radius=${LIT_REACH} least=1`);
+  expect(Number(unlit.dark) === 0, "freighter: no spot inside her is left unlit, where monsters could spawn", `${unlit.dark} unlit, first ${unlit.first || "none"}`);
+}
+
 // A freighter's passenger screens, used aboard her once she flies: one shows the view from her outside cameras, where
 // pressing one once crashed the game reaching for a camera she did not have.
 function checkFreighterScreens() {
@@ -1935,6 +1949,7 @@ const CHECKS = {
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
+  "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
