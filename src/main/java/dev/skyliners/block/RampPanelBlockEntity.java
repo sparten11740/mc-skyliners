@@ -170,6 +170,12 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
         return freighter != null && (freighter.phase() == AutopilotBlockEntity.Phase.LAND || freighter.phase() == AutopilotBlockEntity.Phase.DESCENT);
     }
 
+    /** Whether nothing is being said in her cockpit, nor waits to be (see {@link AutopilotBlockEntity#quiet}). */
+    private boolean cockpitQuiet(ServerLevel level) {
+        AutopilotBlockEntity freighter = AutopilotBlockEntity.framedBy(level, worldPosition, Craft.FREIGHTER);
+        return freighter == null || freighter.quiet();
+    }
+
     /**
      * Whether she flies: moving, or her autopilot set to fly, from the moment it is engaged until it has brought her
      * down and switched itself off.
@@ -197,8 +203,9 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
 
     /**
      * Folds the ramp away as she sets off, by her autopilot or otherwise; brings it down again once she is still on the
-     * ground after flying, her autopilot off, with the ground under its foot. Her take-off called off while someone
-     * held it from folding, it stays down.
+     * ground after flying, her autopilot off, with the ground under its foot, and her computer done saying she is down,
+     * so its own line as it unlatches never talks over her. Her take-off called off while someone held it from folding,
+     * it stays down.
      */
     private void watch(ServerLevel level) {
         if (promised && (!ramp.stowed() || flying(level) && !landing(level))) {
@@ -220,7 +227,7 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
             return;
         }
         stillLooks = flown && ramp.stowed() ? stillLooks + 1 : 0;
-        if (stillLooks < STILL_LOOKS) {
+        if (stillLooks < STILL_LOOKS || !cockpitQuiet(level)) {
             return;
         }
         promised = false;

@@ -15,7 +15,7 @@
 // Each check is written as a player would find the fault, not from how the code happens to work.
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -937,7 +937,8 @@ function checkFreighterFlight() {
 
 // The freighter's computer speaks for her flight deck, in its own voice: set to fly with the player aboard in her
 // entry hall, by her ramp, it, not the airliner's flight deck, says she is lifting off; told to land, that she is
-// coming down; and on her legs again, that she is down.
+// coming down; and on her legs again, that she is down, her ramp coming down saying so too without either line talking
+// over the other, as they once did.
 function checkFreighterVoice() {
   layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -961,6 +962,21 @@ function checkFreighterVoice() {
   const arrival = heard("skyliners:freighter_computer_arrival", landing, FREIGHTER_VOICE_TICKS);
   expect(arrival, "freighter: on her legs again, her computer says she is down");
   expect(!heard("skyliners:announcement_*", since, 0), "freighter: none of the airliner's announcements is made aboard her");
+  const ramp = heard("skyliners:freighter_computer_ramp_lowering", landing, FREIGHTER_VOICE_TICKS);
+  const [first, second] = [ramp, arrival].sort((a, b) => a?.tick - b?.tick);
+  const apart = ramp && arrival ? second.tick - first.tick : 0;
+  expect(ramp && arrival && apart >= soundTicks(first.id), "freighter: her ramp comes down saying so, and neither line talks over the other",
+    ramp && arrival ? `${first.id} for ${soundTicks(first.id)} ticks, ${second.id} ${apart} ticks after it began` : `ramp heard: ${Boolean(ramp)}`);
+}
+
+// How long one of the mod's sounds runs, in ticks, rounded down, from its Ogg Vorbis file (see VoiceLength): the sample
+// its last page ends on, over the sample rate its identification header gives.
+function soundTicks(sound) {
+  const [namespace, name] = sound.split(":");
+  const ogg = readFileSync(path.join(ROOT, "src/main/resources/assets", namespace, "sounds", `${name}.ogg`));
+  const rate = ogg.readUInt32LE(ogg.indexOf("\u0001vorbis", 0, "latin1") + 12);
+  const samples = Number(ogg.readBigUInt64LE(ogg.lastIndexOf("OggS", ogg.length, "latin1") + 6));
+  return Math.floor((samples * 20) / rate);
 }
 
 // A freighter's boarding ramp: laid down, it comes down by itself and is walked up from the ground with the walk key
@@ -2069,7 +2085,7 @@ const CHECKS = {
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
-  "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down", slow: true },
+  "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down, her ramp never talking over it", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };
 

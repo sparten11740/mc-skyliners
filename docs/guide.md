@@ -2669,7 +2669,8 @@ open, and the plate
 swings down on two hydraulic rams, whining, to the ground under her, its foot lip unfolding onto it with a thud; walk
 up it from the ground and on into her ring corridor. The panel's lamp says how it stands: green up, amber moving or
 waiting, blue down, red for a moment when it will not move, with a low note. It comes down by itself once she is built
-and once she has landed with her autopilot off, and folds away as soon as she is set to fly; her take-off waits on her
+and once she has landed with her autopilot off and her computer has had its say, never talking over it, and folds away
+as soon as she is set to fly; her take-off waits on her
 legs until it is all away. Press its button while she is coming in to land and it clicks, its lamp blinking amber, and
 the ramp comes down by itself as soon as she has settled on her legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and
 if her take-off is waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls
