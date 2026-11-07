@@ -202,10 +202,18 @@ const LADDER_CLIMB_TICKS = 100;
 const TURRET_TARGET_UP = 10;
 const TURRET_TARGET_AHEAD = 10;
 const TURRET_FIRE_TICKS = 30;
-// How far a creeper's middle stands over its feet, and a seated player's eyes over where they are, in blocks, for the
-// gunner to look at it: the cannon aims at what the gunner looks at.
+// How far down the gunner looks at her hull, in degrees, past the fifteen her cannon's barrels go, and how long the
+// trigger is pulled there, in ticks; how long it is held to overheat the cannon, past twenty bolts at four a second,
+// how long after that it is watched holding its fire, short of its cooling down, and how long it is let cool, in ticks.
+const TURRET_LOOK_DOWN = 40;
+const TURRET_HELD_TICKS = 20;
+const TURRET_OVERHEAT_TICKS = 110;
+const TURRET_HOT_WATCHED_TICKS = 20;
+const TURRET_COOLED_TICKS = 60;
+// How far a creeper's middle stands over its feet, in blocks, for the gunner to look at it from the sight: the cannon
+// aims at what the sight looks at; and how soon after sneaking the gunner's own view must be back, in ticks.
 const CREEPER_MIDDLE = 0.85;
-const SEATED_EYES = 1.62;
+const VIEW_BACK_TICKS = 2;
 // The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
 // past its click it does not fire by itself; how far in front of the
 // player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
@@ -1067,8 +1075,11 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
 }
 
 // A freighter's top turret: the ladder up her core is climbed from her deck with the walk key alone to the gunner's
-// seat under her dome, where her computer says the turret is ready; holding attack fires her laser cannon where the
-// gunner looks, striking a creeper in the sky, and breaks nothing, the dome's glass over the gunner whole after.
+// seat under her dome, where her computer says the turret is ready and the view goes up to her laser cannon's sight,
+// above its swivel; aimed from there at a creeper in the sky, the sight locks on to it and holding attack fires her
+// cannon where the sight looks, striking it, and breaks nothing, the dome's glass over the gunner whole after; looking
+// lower than its barrels go, the trigger only clicks; held down, it overheats, holds its fire and fires again once
+// cooled; sneaking gets the gunner up and gives them their own view back at once.
 function checkFreighterTurret() {
   layDown("freighter");
   const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
@@ -1090,21 +1101,91 @@ function checkFreighterTurret() {
   const there = must(`move forward ${LADDER_CLIMB_TICKS}t; status`);
   creative();
   expect(there.pos[1] >= seat[1], "freighter: her core's ladder is climbed from her deck to her gunner's seat", `reached ${round(there.pos[1])}, seat at ${seat[1]}`);
+  expect(gunnerSight() === undefined, "freighter: standing by her gunner's seat, the player sees from their own eyes");
   const sat = now();
-  must(`use ${seat.join(",")}; wait 20t`);
+  sitAt(seat);
   expect(heard("skyliners:freighter_computer_turret_ready", sat, 0), "freighter: sat at her cannon, her computer says the turret is ready");
+  const sight = gunnerSight();
+  expect(sight && sight.at[1] > y + 1, "freighter: sat at her cannon, the view goes up to its sight, above its swivel",
+    sight ? `sight at ${sight.at.join(",")}, cannon at ${y}` : "the view stayed with the player");
   const glass = must(`block ${x},${y - 1},${z}`).id;
-  must(`server difficulty easy; server summon creeper ${x + 0.5} ${y + TURRET_TARGET_UP} ${z + 0.5 - TURRET_TARGET_AHEAD} {NoAI:1b,PersistenceRequired:1b}`);
-  const { pos: [eyeX, feetY, eyeZ] } = must("status");
-  const [toX, toY, toZ] = [x + 0.5 - eyeX, y + TURRET_TARGET_UP + CREEPER_MIDDLE - feetY - SEATED_EYES, z + 0.5 - TURRET_TARGET_AHEAD - eyeZ];
-  const toward = Math.round(Math.atan2(-toX, toZ) * 180 / Math.PI);
-  const up = Math.round(Math.atan2(toY, Math.hypot(toX, toZ)) * 180 / Math.PI);
-  must(`turn ${toward} ${-up}; wait 20t; key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
+  const creeper = [x + 0.5, y + TURRET_TARGET_UP, z + 0.5 - TURRET_TARGET_AHEAD];
+  must(`server difficulty easy; server summon creeper ${creeper.join(" ")} {NoAI:1b,PersistenceRequired:1b}`);
+  // The sight moves a little as the look turns, so the aim is taken from it twice.
+  aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
+  const aimed = aimFromSight([creeper[0], creeper[1] + CREEPER_MIDDLE, creeper[2]]);
+  expect(aimed?.locked === true, "freighter: aimed from her cannon's sight at a creeper, the sight locks on to it");
+  must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
   const [reply] = send(`server data get entity @e[type=creeper,limit=1,sort=nearest] Health`);
   const health = reply.ok === false ? 0 : Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1] ?? CREEPER_HEALTH);
-  must("server kill @e[type=creeper]; server difficulty peaceful; key left_shift 5t");
-  expect(health < CREEPER_HEALTH, "freighter: holding attack, her cannon strikes a creeper in the sky where the gunner looks", `health ${health} of ${CREEPER_HEALTH}`);
+  must("server kill @e[type=creeper]; server difficulty peaceful");
+  expect(health < CREEPER_HEALTH, "freighter: holding attack, her cannon strikes a creeper in the sky where the sight looks", `health ${health} of ${CREEPER_HEALTH}`);
   expect(must(`block ${x},${y - 1},${z}`).id === glass, "freighter: firing, the gunner breaks nothing, the dome's glass whole");
+  turretHoldsFireLow();
+  turretOverheats();
+  const gotUp = send(`key down left_shift; wait ${VIEW_BACK_TICKS}t; skyliners:gunner; key up left_shift; wait 5t`).find((reply) => "on" in reply);
+  expect(gotUp?.on === false, "freighter: sneaking to get up from her gunner's seat gives the player their own view back at once");
+}
+
+// Looked down at her hull, lower than her cannon's barrels go, it holds its fire: the trigger only clicks.
+function turretHoldsFireLow() {
+  must(`turn 0 ${TURRET_LOOK_DOWN}; wait 10t`);
+  const pulled = now();
+  must(`key down key.attack; wait ${TURRET_HELD_TICKS}t; key up key.attack; wait 5t`);
+  expect(played("skyliners:ball_turret_shot", pulled).length === 0 && played("block.dispenser.fail", pulled).length > 0,
+    "freighter: looking down at her hull, lower than her cannon's barrels go, the trigger only clicks");
+}
+
+// Held down well past twenty bolts, her cannon overheats with a hiss and holds its fire a while, its sight's
+// thermometer flashing; let go and given a moment to cool, it fires again.
+function turretOverheats() {
+  must(`turn 0 ${-TURRET_TARGET_UP}; wait ${TURRET_COOLED_TICKS}t`);
+  const firing = now();
+  must(`key down key.attack; wait ${TURRET_OVERHEAT_TICKS}t`);
+  const hot = now();
+  must(`wait ${TURRET_HOT_WATCHED_TICKS}t; key up key.attack`);
+  const hissed = played("block.fire.extinguish", firing).length > 0;
+  const shotsWhileHot = played("skyliners:ball_turret_shot", hot).length;
+  expect(hissed && shotsWhileHot === 0, "freighter: fired twenty bolts in a row, her cannon overheats with a hiss and holds its fire",
+    `${hissed ? "hissed" : "no hiss"}, ${shotsWhileHot} shots while hot`);
+  must(`wait ${TURRET_COOLED_TICKS}t`);
+  const cooled = now();
+  must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 5t`);
+  expect(played("skyliners:ball_turret_shot", cooled).length > 0, "freighter: once her cannon has cooled, it fires again");
+}
+
+// Where the player sees from a laser cannon's sight, and whether it is locked on: undefined while they see from their
+// own eyes.
+function gunnerSight() {
+  const reply = must("skyliners:gunner");
+  return reply.on ? { at: String(reply.at).split(",").map(Number), locked: reply.locked } : undefined;
+}
+
+// Sits in a seat from where the player stands; if something stands in the way, from the floor beside it, where the
+// seat is in reach and in plain sight.
+function sitAt(seat) {
+  const [{ ok }] = send(`use ${seat.join(",")}; wait 20t`);
+  if (ok !== false) {
+    return;
+  }
+  const beside = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dz]) => [seat[0] + dx, seat[1], seat[2] + dz])
+    .find((spot) => must(`block ${spot.join(",")}`).id === "air" && must(`block ${spot[0]},${spot[1] - 1},${spot[2]}`).id !== "air");
+  if (beside) {
+    must(`server tp @p ${beside[0] + 0.5} ${beside[1]} ${beside[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 20t`);
+  }
+}
+
+// Turns the seated player to look at a point from the cannon's sight they see from; what the sight then says.
+function aimFromSight(point) {
+  const sight = gunnerSight();
+  if (!sight) {
+    return undefined;
+  }
+  const [toX, toY, toZ] = [point[0] - sight.at[0], point[1] - sight.at[1], point[2] - sight.at[2]];
+  const toward = Math.atan2(-toX, toZ) * 180 / Math.PI;
+  const up = Math.atan2(toY, Math.hypot(toX, toZ)) * 180 / Math.PI;
+  must(`turn ${round(toward)} ${round(-up)}; wait 10t`);
+  return gunnerSight();
 }
 
 // The laser crossbow: charged by holding use, it fires an amber bolt that strikes a creeper hard and leaves a cow

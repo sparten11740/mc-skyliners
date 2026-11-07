@@ -9,7 +9,8 @@ import org.joml.Matrix4f;
  * Flat shapes over the view that the GUI's own fills cannot draw, at any angle and in fractions of a pixel: quads,
  * triangles, lines and arcs, put into the GUI's shared buffer in the order they are drawn, as its fills are, and drawn
  * with the next of them. The GUI culls a shape whose corners go round the other way from its own, so each quad's are
- * taken round its way whichever way they were given. Drawn with by the pilots' head-up display ({@link PilotHud}).
+ * taken round its way whichever way they were given. Shared by the pilots' head-up display ({@link PilotHud}) and the
+ * gunner's sight ({@link GunnerSight}).
  */
 final class GuiShapes {
     private GuiShapes() {

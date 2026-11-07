@@ -10,8 +10,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * What a view from somewhere other than the player's eyes is drawn from, through one of the airliner's outside cameras
- * or the rover's: an entity of no size that is never added to the world, so nothing is drawn of it and nothing it
- * could suffer (blindness, darkness, a hurt shake) colours the view, its eyes as high as asked.
+ * or the freighter's gunner's sight: an entity of no size that is never added to the world, so nothing is drawn of it
+ * and nothing it could suffer (blindness, darkness, a hurt shake) colours the view, its eyes as high as asked.
  */
 final class Lens extends Marker {
     private final float eyes;

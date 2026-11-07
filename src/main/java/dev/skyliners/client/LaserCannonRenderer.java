@@ -11,17 +11,18 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Draws the freighter's laser cannon's swivel over its mount (see {@link LaserCannonBlockEntity}), out of plain
- * coloured boxes: a yoke turning round to its aim, and between its cheeks a housing tilting up with it, its twin
- * barrels reaching out ahead with their muzzles glowing red-hot. Its mount is its block's own model.
+ * Draws the freighter's laser cannon's swivel on its pedestal (see {@link LaserCannonBlockEntity}), out of plain
+ * coloured boxes: a yoke turning round to its aim, and between its cheeks a housing tilting up and down with it, its
+ * twin barrels reaching out ahead with their muzzles glowing red-hot. Its pedestal is its block's own model.
  */
 public class LaserCannonRenderer implements BlockEntityRenderer<LaserCannonBlockEntity> {
     /**
-     * The yoke: how far out its cheeks stand either side and how thick they are, and how high its base is, in blocks.
+     * The yoke: how far out its cheeks stand either side and how thick they are, and how high its base is, in blocks:
+     * on the top of the pedestal.
      */
     private static final float CHEEK_OUT = 0.42F;
     private static final float CHEEK = 0.07F;
-    private static final float YOKE_FOOT = 0.36F;
+    private static final float YOKE_FOOT = 1.0F;
     /** The housing between the cheeks: its half width, half height and half length, in blocks. */
     private static final float HOUSING_HALF_WIDTH = 0.36F;
     private static final float HOUSING_HALF_HEIGHT = 0.17F;

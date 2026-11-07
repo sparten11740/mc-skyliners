@@ -966,7 +966,8 @@ public final class FreighterLayout extends HullLayout {
      * Her top turret, up her core: a ladder up the core's back wall from her deck to the top of the shaft under her top
      * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow, its back to the ladder,
      * their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
-     * and the laser cannon on the glass over them; none with the server config's {@code freighter.turrets} off.
+     * and the laser cannon on its pedestal on the glass over them, facing her bow, its sight seeing past her rim; none
+     * with the server config's {@code freighter.turrets} off.
      */
     private void turret() {
         int under = deck + 1;

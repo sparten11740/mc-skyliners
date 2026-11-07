@@ -37,6 +37,12 @@ public final class HeadTurn {
         now += Mth.clamp(off * ease, -step, step);
     }
 
+    /** Puts it at a turn, in degrees, without turning there: where it stands as it is first drawn. */
+    public void snap(float turn) {
+        now = turn;
+        before = turn;
+    }
+
     /** Its turn at a partial tick, in degrees. */
     public float at(float partialTick) {
         return Mth.lerp(partialTick, before, now);

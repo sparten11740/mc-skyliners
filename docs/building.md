@@ -304,11 +304,17 @@ a landing it comes down only once her cockpit is `quiet`, so it and her announce
 `LaserCrossbowItem` keeps its charge and heat on its stack as data components, which `LaserCrossbowLooks` draws, traces
 its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow colour tells
 `LaserBolts` to draw it amber rather than the path clearer's red. Her top turret is in `turret/`: the
-`LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from just past her dome to
-what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so its bolts land
-under their crosshair; it tells clients the aim now and then, which ease toward it (`HeadTurn`), and fires along it
+`LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from its `sight` (over and
+behind its swivel, square to their look, worked out the same on both sides from the seated player's turn, which is in
+her frame) to what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so
+its bolts land under the sight's crosshair; it holds fire while its barrels point into her own hull
+(`SableFlight.bodyAt`), keeps its heat, cooling after a rest, and tells clients its aim now and then and its heat with
+every bolt in its update tag, which ease toward the aim (`HeadTurn`) and count the heat down themselves; it fires
 while the gunner's `GunnerTrigger` says the attack key is held, which the client's `GunnerControls` sends and otherwise
-swallows; `LaserCannonRenderer` draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
+swallows. The client's `GunnerView` moves the seated gunner's view to the sight, a `Lens` placed every frame through
+`SableClient.view`, and looks along it each tick for a hostile mob to lock on to; `GunnerSight` draws the sight's
+reticle, thermometer and bearing ring with `GuiShapes`, which the `PilotHud` draws with too; `LaserCannonRenderer`
+draws its swivel and barrels and `CannonServo` whirrs as they swing. Its bolts and the
 crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
 block entity but is tracked on clients, where `ClubBand` starts its song for a player who comes near, counting its
 beat, and `BandstandRenderer` draws the three players swaying to it; `FreighterLayout.clubBar()` lays the rocket
