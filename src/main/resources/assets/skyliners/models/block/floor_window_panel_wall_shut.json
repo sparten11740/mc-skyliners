@@ -1,0 +1,76 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "post": "skyliners:block/floor_window_panel_post",
+    "face": "skyliners:block/floor_window_panel_shut",
+    "particle": "skyliners:block/floor_window_panel_post"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        3,
+        15.5
+      ],
+      "to": [
+        13,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#post"
+        },
+        "south": {
+          "texture": "#post"
+        },
+        "east": {
+          "texture": "#post"
+        },
+        "west": {
+          "texture": "#post"
+        },
+        "up": {
+          "texture": "#post"
+        },
+        "down": {
+          "texture": "#post"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        3.5,
+        14.5
+      ],
+      "to": [
+        12.5,
+        12.5,
+        15.5
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#face",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#post"
+        },
+        "down": {
+          "texture": "#post"
+        },
+        "east": {
+          "texture": "#post"
+        },
+        "west": {
+          "texture": "#post"
+        }
+      }
+    }
+  ]
+}

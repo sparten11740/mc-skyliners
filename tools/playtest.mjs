@@ -320,6 +320,8 @@ const FITTINGS_PUT_UP = [
 const STAND_AWAY = 24;
 const STAND_APART = 3;
 const STAND_HIGH = 5;
+// The beach's pieces that go up on a wall as well as on a floor.
+const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
 const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
@@ -1607,12 +1609,13 @@ function found(id) {
   return reply.count ?? reply.rows.length;
 }
 
-// One fitting put up by hand as a player would: standing on the ground, on the stand's wall and under its overhang;
-// whether each took the shape for where it went.
-function putUpEveryWay(id, x, z) {
+// One fitting put up by hand as a player would, each way it goes up: standing on the ground, on the stand's wall and
+// under its overhang; whether each took the shape for where it went.
+function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   emptyHands();
   must(`server give @p skyliners:${id} 3; wait 5t; select 0`);
-  const spots = [["floor", x, ground, z - 3], ["wall", x, ground + 2, z + 2], ["ceiling", x, ground + STAND_HIGH - 1, z]];
+  const spots = [["floor", x, ground, z - 3], ["wall", x, ground + 2, z + 2], ["ceiling", x, ground + STAND_HIGH - 1, z]]
+    .filter(([mount]) => mounts.includes(mount));
   for (const [mount, sx, sy, sz] of spots) {
     must(`server tp @p ${sx + 0.5} ${ground} ${sz - 2.5} 0 20; wait 10t`);
     send(`place skyliners:${id} ${sx},${sy},${sz}`);
@@ -1621,6 +1624,15 @@ function putUpEveryWay(id, x, z) {
     const as = reply.props?.mount ?? "floor";
     expect(put.includes(id) && as === mount, `${id.replaceAll("_", " ")}: put up on a ${mount}, it takes its ${mount} shape`, `${put} mount=${as}`);
   }
+}
+
+// The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
+// their own there: a torch standing tall or held out on a bracket, a panel on its post or flat in its rim.
+function checkBeachOnWalls() {
+  const [x0, z0] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x0 + BEACH_ON_WALLS.length * STAND_APART} ${ground + STAND_HIGH} ${z0 + 3} stone`);
+  BEACH_ON_WALLS.forEach((id, i) => putUpEveryWay(id, x0 + i * STAND_APART, z0, ["floor", "wall"]));
 }
 
 // A freighter lifting off takes all of her outside along: no piece of it is left on the ground where she stood.
@@ -2019,6 +2031,7 @@ const CHECKS = {
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
+  "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-lift-off": { run: checkFreighterExteriorLiftOff, slow: true, about: "a freighter lifting off leaves none of her outside behind" },

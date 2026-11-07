@@ -629,7 +629,8 @@ function hullLightLang() {
 // The round floor window (see FloorWindowBlock): no model of its own, FloorWindowRenderer drawing it all, but glass
 // when it is broken; its item a flat picture of it. It drops nothing by itself, as the window gives itself back once
 // whichever of its blocks is broken. Its panel (see FloorWindowPanelBlock): a steel foot, post and head, and on top a
-// big round button painted with the window, glowing whatever the light round it, its lamp green or amber.
+// big round button painted with the window, glowing whatever the light round it, its lamp green or amber; fixed to a
+// wall, the same button facing out from it in a steel rim, flat to the wall, drawn facing north, its wall to the south.
 {
   write(`assets/${ID}/models/block/floor_window.json`, { textures: { particle: "minecraft:block/glass" } });
   write(`assets/${ID}/blockstates/floor_window.json`, {
@@ -650,9 +651,22 @@ function hullLightLang() {
             west: { texture: "#post" }, down: { texture: "#post" } } }],
     });
   }
+  for (const open of [false, true]) {
+    write(`assets/${ID}/models/block/floor_window_panel_wall_${open ? "open" : "shut"}.json`, {
+      parent: "minecraft:block/block",
+      textures: { post: `${ID}:block/floor_window_panel_post`, face: `${ID}:block/floor_window_panel_${open ? "open" : "shut"}`,
+        particle: `${ID}:block/floor_window_panel_post` },
+      elements: [solid([3, 3, 15.5], [13, 13, 16], "#post"),
+        { from: [3.5, 3.5, 14.5], to: [12.5, 12.5, 15.5], shade: false,
+          faces: { north: { texture: "#face", ...lit }, up: { texture: "#post" }, down: { texture: "#post" }, east: { texture: "#post" },
+            west: { texture: "#post" } } }],
+    });
+  }
+  const panelModel = (mount, open) => `${ID}:block/floor_window_panel_${mount === "wall" ? "wall_" : ""}${open ? "open" : "shut"}`;
   write(`assets/${ID}/blockstates/floor_window_panel.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((open) => [false, true]
-      .map((powered) => [`facing=${facing},open=${open},powered=${powered}`, { model: `${ID}:block/floor_window_panel_${open ? "open" : "shut"}`, y }])))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["floor", "wall"].flatMap((mount) => [false, true]
+      .flatMap((open) => [false, true].map((powered) => [`facing=${facing},mount=${mount},open=${open},powered=${powered}`,
+        { model: panelModel(mount, open), y }]))))),
   });
   write(`assets/${ID}/models/item/floor_window_panel.json`, { parent: `${ID}:block/floor_window_panel_shut` });
   dropsItself("floor_window_panel");
@@ -666,7 +680,8 @@ function hullLightLang() {
 // three tiers over it, as high as a model reaches, over the heads of whoever walks under it, paler underneath. A sun
 // lounger (see SunLoungerBlock): a white frame on four short legs, a striped cushion along it, its back raised at its
 // south end, facing north. A tiki torch (see TikiTorchBlock): a bamboo pole, a woven head and its flame glowing on top
-// whatever the light round it. All reach past their blocks, so none is drawn with ambient occlusion, which goes dark
+// whatever the light round it; fixed to a wall, a short pole held out from it on a bamboo bracket, facing north, its
+// wall to the south. All reach past their blocks, or nearly, so none is drawn with ambient occlusion, which goes dark
 // aboard.
 {
   const frond = (from, to, uv, rotation) => ({ from, to, rotation,
@@ -723,7 +738,20 @@ function hullLightLang() {
       variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${name}`, y }])),
     });
   }
-  write(`assets/${ID}/blockstates/tiki_torch.json`, { variants: { "": { model: `${ID}:block/tiki_torch` } } });
+  write(`assets/${ID}/models/block/tiki_torch_wall.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { bamboo: "minecraft:block/bamboo_block", head: "minecraft:block/hay_block_side", flame: `${ID}:block/tiki_flame`,
+      particle: "minecraft:block/bamboo_block" },
+    elements: [solid([6.5, 3, 15], [9.5, 9, 16], "#bamboo"), solid([7.25, 5, 9], [8.75, 6.5, 15], "#bamboo"), solid([7, 2, 7], [9, 11, 9], "#bamboo"),
+      solid([6, 11, 6], [10, 15, 10], "#head"),
+      { from: [6.5, 15, 6.5], to: [9.5, 16, 9.5], shade: false,
+        faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#flame", ...lit }])) }],
+  });
+  write(`assets/${ID}/blockstates/tiki_torch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [[`facing=${facing},mount=floor`, { model: `${ID}:block/tiki_torch` }],
+      [`facing=${facing},mount=wall`, { model: `${ID}:block/tiki_torch_wall`, ...(y ? { y } : {}) }]])),
+  });
   for (const name of ["potted_palm", "parasol", "sun_lounger", "tiki_torch"]) {
     write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
     dropsItself(name);

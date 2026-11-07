@@ -1,7 +1,31 @@
 {
   "variants": {
-    "": {
+    "facing=north,mount=floor": {
       "model": "skyliners:block/tiki_torch"
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/tiki_torch_wall"
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/tiki_torch"
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/tiki_torch_wall",
+      "y": 90
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/tiki_torch"
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/tiki_torch_wall",
+      "y": 180
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/tiki_torch"
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/tiki_torch_wall",
+      "y": 270
     }
   }
 }
