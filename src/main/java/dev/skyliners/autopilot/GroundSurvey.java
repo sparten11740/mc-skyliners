@@ -77,6 +77,14 @@ final class GroundSurvey {
         }
     }
 
+    /** Forgets every chunk read, so the next survey reads them afresh, as the ground may have changed since. */
+    void forget() {
+        pinChunk = Long.MIN_VALUE;
+        patches.clear();
+        last = null;
+        lastKey = Long.MIN_VALUE;
+    }
+
     /** Surveys round a pin: from scratch if the pin is in a chunk other than the one surveyed round so far. */
     void aim(int x, int z) {
         long chunk = ChunkPos.asLong(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z));

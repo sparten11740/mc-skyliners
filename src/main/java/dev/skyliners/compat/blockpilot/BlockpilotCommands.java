@@ -215,6 +215,8 @@ public final class BlockpilotCommands {
             .tag("climb", round(report.climb()))
             .tag("ahead", round(report.ahead()))
             .tag("across", round(report.across()))
+            .tag("pad", report.pad() == null ? "none" : report.pad().x() + "," + report.pad().z())
+            .tag("middle", Math.round(report.middle().x) + "," + Math.round(report.middle().z))
             .tag("climb_wanted", round(report.climbWanted()))
             .tag("ahead_wanted", round(report.aheadWanted()))
             .tag("across_wanted", round(report.acrossWanted()))

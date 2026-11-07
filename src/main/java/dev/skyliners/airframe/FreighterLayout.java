@@ -13,7 +13,9 @@ import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -105,6 +107,16 @@ public final class FreighterLayout extends HullLayout {
     private static final int JUMP_BEHIND = 2;
     private static final int SCREEN_AHEAD = 2;
 
+    /**
+     * How near her hull a block counts as under it, looking for ground to come down on, in blocks: a little wide, so a
+     * block just past her rim, or missed between columns as she is turned, still counts.
+     */
+    private static final double HULL_MARGIN = 1;
+    /** The columns under her hull, worked out once for each spacing asked (see {@link #underHull}). */
+    private static final Map<Integer, List<Offset>> UNDER_HULL = new ConcurrentHashMap<>();
+    /** Every block of her legs' foot plates (see {@link #feet}). */
+    private static final List<Offset> FEET = footPlates();
+
     private final double scale;
     /** Her deck's floor row. */
     private final int deck;
@@ -148,6 +160,69 @@ public final class FreighterLayout extends HullLayout {
         this.side = (int) Math.ceil(FreighterShape.SIDE_REACH * scale) + 1;
         this.top = (int) Math.ceil(FreighterShape.TOP_DOME_CROWN * scale) + 1;
         this.bulkhead = BULKHEAD * scale;
+    }
+
+    /**
+     * A point of hers from her disc's middle, in blocks: so many to her right and astern of it, as she is laid out nose
+     * north (x east, z south), and so many up from her feet's soles.
+     */
+    public record Offset(int right, int astern, int up) {
+    }
+
+    /** Every block of her legs' foot plates, for her autopilot to look for ground to stand them on. */
+    public static List<Offset> feet() {
+        return FEET;
+    }
+
+    private static List<Offset> footPlates() {
+        List<Offset> feet = new ArrayList<>();
+        for (double[] leg : FreighterShape.LEGS) {
+            int x = (int) Math.round(leg[0] * SCALE);
+            int z = (int) Math.round(leg[1] * SCALE);
+            for (int i = 0; i < 9; i++) {
+                feet.add(new Offset(x + i % 3 - 1, z + i / 3 - 1, 0));
+            }
+        }
+        return List.copyOf(feet);
+    }
+
+    /**
+     * The columns under her hull and within {@link #HULL_MARGIN} of it, every so many blocks across and along, from
+     * her disc's middle as {@link #feet} gives them, each with how high her hull's underside stands over her feet's
+     * soles there, in blocks, as near it: what must stand no higher for her to come down over it.
+     */
+    public static List<Offset> underHull(int every) {
+        return UNDER_HULL.computeIfAbsent(every, FreighterLayout::columnsUnderHull);
+    }
+
+    private static List<Offset> columnsUnderHull(int every) {
+        int side = (int) Math.ceil(FreighterShape.SIDE_REACH * SCALE + HULL_MARGIN);
+        int front = (int) Math.floor(FreighterShape.PRONG_TIP * SCALE - HULL_MARGIN);
+        int back = (int) Math.ceil(FreighterShape.RADIUS * SCALE + HULL_MARGIN);
+        List<Offset> columns = new ArrayList<>();
+        for (int x = -side; x <= side; x += every) {
+            for (int z = front; z <= back; z += every) {
+                int underside = underside(x, z);
+                if (underside >= 0) {
+                    columns.add(new Offset(x, z, underside));
+                }
+            }
+        }
+        return List.copyOf(columns);
+    }
+
+    /**
+     * How high her hull's underside stands over her feet's soles in a column, in blocks, within {@link #HULL_MARGIN} of
+     * it; -1 where she is not over it.
+     */
+    private static int underside(int x, int z) {
+        int top = (int) Math.ceil(FreighterShape.TOP_DOME_CROWN * SCALE);
+        for (int y = 0; y <= top; y++) {
+            if (FreighterShape.depth(x / SCALE, (y + 0.5) / SCALE, z / SCALE) * SCALE < HULL_MARGIN) {
+                return y;
+            }
+        }
+        return -1;
     }
 
     /** The floor row of a freighter's deck built at a scale. */

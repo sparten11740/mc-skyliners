@@ -266,12 +266,14 @@ public final class FreighterPilot {
      * What she is doing, for play-testing: the share of full lift she was last set to and her learnt trims, her tilt
      * across her front and to her right, in degrees, each lift cluster's signal, her mains' and retros', each jet's
      * (nose right, nose left, tail right, tail left), how fast her middle climbs and goes ahead and across, in blocks a
-     * second, and the climb, speed ahead and across and heading she last wanted.
+     * second, the climb, speed ahead and across and heading she last wanted, the spot she found near a pin to come down
+     * on or came down on last, its middle's column, null while she has found none, and where her disc's middle was last
+     * in the world.
      */
     public record Report(double lift, double trim, double pitchTrim, double rollTrim, double drag, double tiltFront,
                          double tiltRight, List<Integer> clusters, int mains, int retros, List<Integer> jets, double climb,
                          double ahead, double across, double climbWanted, double aheadWanted, double acrossWanted,
-                         double headingWanted) {
+                         double headingWanted, @Nullable PadSearch.Pad pad, Vec3 middle) {
     }
 
     /**
@@ -333,6 +335,8 @@ public final class FreighterPilot {
     }
 
     private Wiring wiring = Wiring.NONE;
+    /** Her looking for clear, level ground near a pin she is set to land at (see {@link PadSearch}). */
+    private final PadSearch pads = new PadSearch();
     /** How many lift thrusters she has, all her clusters' together. */
     private int liftThrusters;
     private final Learnt learnt = new Learnt();
@@ -365,7 +369,10 @@ public final class FreighterPilot {
     private int mainsTotal;
     private int retrosTotal;
     private final int[] jetSignals = new int[4];
-    /** What she last did and wanted, for her report. */
+    /** What she last did and wanted, for her report: the spot she last found near a pin among them. */
+    @Nullable
+    private PadSearch.Pad lastPad;
+    private Vec3 lastMiddle = Vec3.ZERO;
     private double lastShare;
     private double lastClimb;
     private double lastGoingAhead;
@@ -424,6 +431,8 @@ public final class FreighterPilot {
         startCounting();
         lastTilt = Tilt.of(state);
         lastHeading = state.heading();
+        pads.reset();
+        lastPad = null;
         smoothed = Motion.STILL;
         smoothedGoing = null;
         easedClimb = state.velocity().y;
@@ -458,6 +467,7 @@ public final class FreighterPilot {
         AutopilotBlockEntity.Phase phase = orders.phase();
         Motion motion = motion(state);
         Vec3 middle = middle(state);
+        lastMiddle = middle;
         Vec3 going = smoothedGoing(going(state, middle, motion));
         lastClimb = going.y;
         Balance balance = balance(state, middle, centreOfMass);
@@ -470,6 +480,7 @@ public final class FreighterPilot {
         if (touchingFor > 0) {
             runDown(level, origin, state, going, mass, balance);
         } else {
+            lookForPad(level, phase, orders, state, middle);
             Course course = course(phase, orders, state, middle);
             double climb = easedClimb(climbWanted(phase, orders, state, radio));
             boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE;
@@ -560,13 +571,16 @@ public final class FreighterPilot {
      * To a pin: far off, nose toward it at the speed set, slowing as she nears it so she reaches {@link #SLIDE} from it
      * no faster than she settles onto a spot ({@link #MOST_SETTLING}), and only as fast as she points at it, so that
      * pointing well away she turns almost where she is rather than circle it wider than she slides; from there no more
-     * turning, sliding onto it on the heading she has.
+     * turning, sliding onto it on the heading she has, or on the one the spot she found was looked at again with; and,
+     * once a spot looked at again has failed, sliding to the next on that heading from wherever she is.
      */
     private Course toPin(Orders orders, SableFlight.State state, Vec3 middle) {
-        Vec3 pin = new Vec3(orders.pinX(), middle.y, orders.pinZ());
+        Vec3 pin = target(orders, middle.y);
         double distance = Math.hypot(pin.x - middle.x, pin.z - middle.z);
-        if (distance < SLIDE) {
-            return toward(state, middle, pin, state.heading(), Math.min(orders.speed(), Math.sqrt(2 * BRAKING * distance)));
+        boolean fixed = orders.landAtPin() && (pads.verified() || pads.headingFixed());
+        if (distance < SLIDE || fixed) {
+            double holding = fixed ? pads.heading() : state.heading();
+            return toward(state, middle, pin, holding, Math.min(orders.speed(), Math.sqrt(2 * BRAKING * distance)));
         }
         double bearing = Steering.bearingTo(middle, pin.x, pin.z);
         double pointing = Math.max(0, Math.cos(Math.toRadians(Mth.wrapDegrees(bearing - state.heading()))));
@@ -641,17 +655,61 @@ public final class FreighterPilot {
 
     /** Over the pin: she holds it as her spot and comes down on it. */
     private AutopilotBlockEntity.Phase comeDownAtPin(Orders orders) {
-        spot = new Vec3(orders.pinX(), 0, orders.pinZ());
-        spotHeading = lastHeading;
+        spot = target(orders, 0);
+        spotHeading = pads.verified() ? pads.heading() : lastHeading;
         return AutopilotBlockEntity.Phase.DESCENT;
     }
 
-    /** Whether, flying to a pin, she has been over it and hardly drifting a while. */
+    /**
+     * Whether, flying to a pin, she has been over where she is going a while, hardly drifting, and, set to land, has a
+     * spot to come down on, looked at again pointing as she comes down (see {@link PadSearch}).
+     */
     private boolean arrived(Orders orders, Vec3 going, Vec3 middle) {
-        boolean over = orders.lateral() == AutopilotBlockEntity.Lateral.DESTINATION
-            && Math.hypot(orders.pinX() - middle.x, orders.pinZ() - middle.z) < OVER && Math.hypot(going.x, going.z) < STILL;
+        Vec3 target = target(orders, middle.y);
+        boolean known = !orders.landAtPin() || pads.verified();
+        boolean over = orders.lateral() == AutopilotBlockEntity.Lateral.DESTINATION && known
+            && Math.hypot(target.x - middle.x, target.z - middle.z) < OVER && Math.hypot(going.x, going.z) < STILL;
         overFor = over ? overFor + 1 : 0;
         return overFor >= OVER_TICKS;
+    }
+
+    /**
+     * Cruising to a pin she is set to land at, the ground round it read and spots tried for her to come down on (see
+     * {@link PadSearch}); once she slides onto the spot found, no longer turning (see {@link #SLIDE}), it is looked at
+     * again pointing as she points.
+     */
+    private void lookForPad(ServerLevel level, AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, Vec3 middle) {
+        if (phase != AutopilotBlockEntity.Phase.CRUISE || !landingAtPin(orders)) {
+            return;
+        }
+        pads.tick(level, middle, Mth.floor(orders.pinX()), Mth.floor(orders.pinZ()), state.heading());
+        PadSearch.Pad pad = pads.pad();
+        if (pad != null && Math.hypot(pad.x() + 0.5 - middle.x, pad.z() + 0.5 - middle.z) < SLIDE) {
+            pads.verify(state.heading());
+        }
+        lastPad = pads.pad() == null ? lastPad : pads.pad();
+    }
+
+    /** Whether she is set to land at a pin. */
+    private static boolean landingAtPin(Orders orders) {
+        return orders.landAtPin() && orders.lateral() == AutopilotBlockEntity.Lateral.DESTINATION;
+    }
+
+    /**
+     * Whether, set to land at a pin, she has looked at every spot round it with all their ground read and found none
+     * she fits: she holds over the pin.
+     */
+    boolean noGroundAtPin(Orders orders) {
+        return landingAtPin(orders) && pads.exhausted();
+    }
+
+    /**
+     * Where she flies to, at a height: the middle of the spot she found to come down on, set to land at a pin and
+     * having found one, or else the pin itself.
+     */
+    private Vec3 target(Orders orders, double y) {
+        PadSearch.Pad pad = orders.landAtPin() ? pads.pad() : null;
+        return pad == null ? new Vec3(orders.pinX(), y, orders.pinZ()) : new Vec3(pad.x() + 0.5, y, pad.z() + 0.5);
     }
 
     /**
@@ -868,6 +926,7 @@ public final class FreighterPilot {
         rest(level, origin);
         primed = false;
         spot = null;
+        pads.reset();
         startCounting();
         easedClimb = 0;
     }
@@ -875,7 +934,7 @@ public final class FreighterPilot {
     Report report() {
         return new Report(lastShare, learnt.lift, learnt.pitch, learnt.roll, learnt.drag, lastTilt.front(), lastTilt.right(),
             Arrays.stream(clusterTotals).boxed().toList(), mainsTotal, retrosTotal, Arrays.stream(jetSignals).boxed().toList(), lastClimb,
-            lastGoingAhead, lastGoingAcross, easedClimb, lastAhead, lastAcross, lastHeadingWanted);
+            lastGoingAhead, lastGoingAcross, easedClimb, lastAhead, lastAcross, lastHeadingWanted, lastPad, lastMiddle);
     }
 
     CompoundTag save() {

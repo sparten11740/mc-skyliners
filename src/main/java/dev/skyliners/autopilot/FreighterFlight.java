@@ -1,5 +1,6 @@
 package dev.skyliners.autopilot;
 
+import dev.skyliners.Aboard;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.compat.SableFlight;
 import java.util.List;
@@ -7,7 +8,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -42,6 +46,8 @@ public final class FreighterFlight extends StandingFlight {
     /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
     private final ShownShare lift = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
+    /** Whether she has said she finds no ground to come down on round the pin she holds over. */
+    private boolean toldNoGround;
     /** Her engine grille glowing with her engines, and her lift thrusters' plumes shown close over the ground. */
     private final EngineGlow glow = new EngineGlow();
     private final LiftPlumes liftPlumes = new LiftPlumes();
@@ -228,6 +234,7 @@ public final class FreighterFlight extends StandingFlight {
             } else {
                 autopilot.advance(next, AutopilotBlockEntity.Phase.DESCENT);
             }
+            sayNoGround(level, autopilot, pilot.noGroundAtPin(orders));
         }
         long now = level.getGameTime();
         boolean liftShown = lift.take(pilot.report().lift(), now);
@@ -239,6 +246,20 @@ public final class FreighterFlight extends StandingFlight {
         glow.tick(level, autopilot.getBlockPos(), pilot.wiring().grille(), lift.shown(), mains.shown(), now);
         liftPlumes.tick(level, autopilot.getBlockPos(), pilot.wiring().clusters(), radio);
         watchArrival(autopilot, flight, radio);
+    }
+
+    /**
+     * Set to land at a pin with no clear, level ground round it, she says so once to everyone aboard as she holds over
+     * it, the sky's lowest note saying it to those who cannot read: set another pin, or land her where she is.
+     */
+    private void sayNoGround(ServerLevel level, AutopilotBlockEntity autopilot, boolean noGround) {
+        if (noGround && !toldNoGround) {
+            Component message = Component.translatable("message.skyliners.autopilot.no_ground_freighter");
+            Aboard.players(autopilot).forEach(player -> player.displayClientMessage(message, false));
+            level.playSound(null, autopilot.getBlockPos(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS,
+                AutopilotBlockEntity.NOTE_VOLUME, AutopilotBlockEntity.NOTE_LOW);
+        }
+        toldNoGround = noGround;
     }
 
     @Override

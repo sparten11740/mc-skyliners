@@ -2590,19 +2590,24 @@ Set her to fly and she is assembled first, as the zeppelin and the rocket are; t
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
 anywhere, and climbs to her height, her deck level all the way. Set a speed of nothing, she hovers there. Given a pin,
 she turns toward it while it is far, speeds up, brakes on her retros as she nears it and slides sideways onto it for the
-last of the way, hovering over it or, set to land there, coming straight down onto it. Told to land, or switched off in
-the air, she comes straight down where she is first, as the rocket does, sinking fast to ten blocks over the ground and
-gently from there, her thrusters running down evenly once her legs touch so she never skates, and switches herself off
-with a bell. Across her stern, round her six mains, her engine grille glows with her engines: deep blue while her
-thrusters hold her up, bright cyan as her mains push her ahead, and dark once she is down, glowing as brightly by night.
-The server config's `freighter.engineGrille` builds her without it, her stern plain hull. The Engine Grille is among her
-blocks in the creative tab; set by hand it stays dark. She is heard from far off: a deep thump as her lift thrusters
-light, her mains' whine spooling up, her engines' roar from her stern rising with her thrust, her lift jets blasting
-under her loudest close over the ground, which shakes under anyone standing near, and a long rolling thunder as she goes
-by fast; aboard, all of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand clear under
-her as she lifts off and lands, and behind her mains or ahead of her retros as they fire: Create Propulsion's thrusters
-set alight whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her autopilot screen and
-the settings screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
+last of the way, hovering over it or, set to land there, coming straight down near it. Set to land, she looks as she
+comes for clear, level ground within 64 blocks of the pin, all five of her legs' feet on dry, bare ground no more than a
+block apart in height and nothing under the rest of her reaching up to her hull, turned the way she points, and comes
+down on the nearest such spot to the pin, looking at it once more pointing as she comes down; finding none, she holds
+over the pin and says so to everyone aboard, the sky's lowest note saying it to those who cannot read, until she is
+given another pin or told to land where she is. Told to land, or switched off in the air, she comes straight down where
+she is first, as the rocket does, sinking fast to ten blocks over the ground and gently from there, her thrusters
+running down evenly once her legs touch so she never skates, and switches herself off with a bell. Across her stern,
+round her six mains, her engine grille glows with her engines: deep blue while her thrusters hold her up, bright cyan as
+her mains push her ahead, and dark once she is down, glowing as brightly by night. The server config's
+`freighter.engineGrille` builds her without it, her stern plain hull. The Engine Grille is among her blocks in the
+creative tab; set by hand it stays dark. She is heard from far off: a deep thump as her lift thrusters light, her mains'
+whine spooling up, her engines' roar from her stern rising with her thrust, her lift jets blasting under her loudest
+close over the ground, which shakes under anyone standing near, and a long rolling thunder as she goes by fast; aboard,
+all of it comes through her hull as a low hum, and her deck shakes as she lifts off. Stand clear under her as she lifts
+off and lands, and behind her mains or ahead of her retros as they fire: Create Propulsion's thrusters set alight
+whoever stands in their exhaust. Her jets, inside her, never fire hard enough to. Her autopilot screen and the settings
+screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
 
 Inside she has one deck. In the middle, round her axis, a core three blocks across inside its walls, open toward her
 bow; round it a ring corridor; and out from the corridor six rooms, each through a doorway three blocks wide and three

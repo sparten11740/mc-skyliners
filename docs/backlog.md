@@ -42,6 +42,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 - Her mains read as black holes in her engine grille while they idle without a plume: a nozzle rim of their own.
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
 - An engine grille set by hand stays dark: a redstone signal could light it (dark, idling, full), for other builds.
+- Told to land where she is, or landing by herself with nobody aboard, she does not look for ground at all: on a block
+  taller than her belly's clearance she rests on it with her legs in the air and never switches off. A guard for any
+  landing she cannot finish (some seconds touching without settling: climb back a few blocks, hold, and say so).
+- Her autopilot screen's landing picture could show it dimmed while she holds over a pin with no ground near it.
 
 ## Not yet checked
 

@@ -160,6 +160,21 @@ const DRAG_FASTEST = 30;
 const DRAG_WATCH_SAMPLES = 60;
 const DRAG_SETTLED_WITHIN = 3;
 const DRAG_UNLEARNT = 0.02;
+// A freighter set to land at a pin with a block of stone on it: how far off the pin is from where she is built, in
+// blocks; how far the stone reaches round it and how high it stands, in blocks, higher than anything under her
+// hull; how long she is given to come down, in ticks; how far she may lean on her legs, in degrees; and how far from
+// the pin she may come down, in blocks (PadSearch's REACH).
+const PAD_PIN_AHEAD = 150;
+const PAD_STONE_REACH = 5;
+const PAD_STONE_HIGH = 9;
+const PAD_DOWN_TICKS = 2400;
+const PAD_LEVEL_WITHIN = 2;
+const PAD_REACH = 64;
+// A freighter set to land at a pin in a lake: how far round the pin the water reaches, past where she may come down,
+// in blocks; how long she is given to say she finds no ground, in ticks; and how near the pin she must hold, in blocks.
+const LAKE_REACH = 70;
+const LAKE_TICKS = 1600;
+const LAKE_HOLD_WITHIN = 8;
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
 // her resting place she is flying as it is pressed, in blocks; and how long whoever bailed out is given to float down,
@@ -789,6 +804,85 @@ function checkFreighterUnlearnsDrag() {
   must("skyliners:autopilot land");
 }
 
+// A freighter set to land at a pin with a block of stone standing on it, taller than anything under her hull: she
+// comes down beside it, level on her legs and near the pin, rather than onto it, leaning on it with her legs in the
+// air, as she would landing on the pin itself. Sent back to the same pin once a block has been built where she stood,
+// she looks again rather than come down on her old spot.
+function checkFreighterPad() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const [x, z] = [site.x, site.z - PAD_PIN_AHEAD];
+  must(`server fill ${x - PAD_STONE_REACH} ${ground} ${z - PAD_STONE_REACH} ${x + PAD_STONE_REACH} ${ground + PAD_STONE_HIGH - 1} ${z + PAD_STONE_REACH} stone`);
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const first = landFreighterAt(head, x, z, "beside the stone");
+  if (!first) {
+    return;
+  }
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`);
+  waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  const [px, pz] = String(first.pad).split(",").map(Number);
+  must(`server fill ${px - PAD_STONE_REACH} ${ground} ${pz - PAD_STONE_REACH} ${px + PAD_STONE_REACH} ${ground + PAD_STONE_HIGH - 1} ${pz + PAD_STONE_REACH} stone`);
+  const second = landFreighterAt(head, x, z, "beside the stone built where she stood");
+  if (second) {
+    expect(second.pad !== first.pad, "freighter: sent back to the same pin, she looks again", `first ${first.pad}, then ${second.pad}`);
+  }
+}
+
+// A freighter set to land at a pin in a lake, with no dry ground within reach of it: she holds over the pin and says
+// so, with the low note, rather than come down in the water.
+function checkFreighterLake() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const [x, z] = [site.x, site.z - PAD_PIN_AHEAD];
+  must(`server fill ${x - LAKE_REACH} ${ground - 1} ${z - LAKE_REACH} ${x + LAKE_REACH} ${ground - 1} ${z + LAKE_REACH} water`);
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const since = now();
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${DRAG_CRUISE} pin=${x},${z} land=true`);
+  expect(waitForMessage("*holding*", since, LAKE_TICKS), "freighter: set to land in a lake, she says she finds no ground");
+  expect(heard("minecraft:block.note_block.pling", since, 0), "freighter: and the low note says it to those who cannot read");
+  const near = (report) => Math.hypot(...String(report.middle).split(",").map(Number).map((at, i) => at - [x, z][i]));
+  const holding = waitForReport(freighterReport, (report) => near(report) <= LAKE_HOLD_WITHIN, LAKE_TICKS) ?? freighterReport();
+  must("wait 200t");
+  const still = freighterReport();
+  expect(still.phase === "cruise" && near(still) <= LAKE_HOLD_WITHIN, "freighter: she holds over the pin, not coming down",
+    `${still.phase}, ${near(still).toFixed(1)} blocks from it, earlier ${near(holding).toFixed(1)}`);
+}
+
+// Lifts a freighter laid down off her legs to cruise, and puts the player aboard her, so she stays loaded flying off.
+function rideFreighterUp(head) {
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off to fly to the pin");
+  if (!up) {
+    return false;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:autopilot 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  return true;
+}
+
+// Sends a freighter to land at a pin and says whether she came down level near it; her report once down.
+function landFreighterAt(head, x, z, where) {
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${DRAG_CRUISE} pin=${x},${z} land=true`);
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", PAD_DOWN_TICKS);
+  const last = down ?? freighterReport();
+  expect(down, `freighter: set to land at the pin, she comes down ${where} and switches off`,
+    down ? "" : `still ${last?.phase}, pad ${last?.pad}, middle ${last?.middle}, heading ${last?.heading}, going ${last?.ahead},${last?.across}`);
+  if (!down) {
+    return undefined;
+  }
+  const lean = Math.max(Math.abs(down.tilt_front), Math.abs(down.tilt_right));
+  expect(lean < PAD_LEVEL_WITHIN, `freighter: she stands level on her legs ${where}`, `leaning ${lean} degrees, middle ${down.middle}, pad ${down.pad}`);
+  const [mx, mz] = String(down.middle).split(",").map(Number);
+  expect(Math.hypot(mx - x, mz - z) <= PAD_REACH + 2, "freighter: she comes down near the pin", `${Math.hypot(mx - x, mz - z).toFixed(1)} blocks from it`);
+  return down;
+}
+
 // A rocket in flight: the countdown runs out, her engines fall silent with her, and whoever stood aboard floats down
 // unhurt under their parachute.
 function checkRocketSelfDestructInFlight() {
@@ -1100,6 +1194,8 @@ const CHECKS = {
   "rocket-self-destruct-flight": { run: checkRocketSelfDestructInFlight, about: "a rocket blows up in flight, her roar stops, and whoever was aboard floats down unhurt", slow: true },
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
+  "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
+  "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };

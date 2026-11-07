@@ -10731,6 +10731,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.skyliners.autopilot.no_engines": "This rocket has no engines to fly it with: build it again with Create Propulsion installed.",
   "message.skyliners.autopilot.coming_down_rocket": "Coming down here, catching ourselves on the engines",
   "message.skyliners.autopilot.coming_down_freighter": "Coming straight down here on her thrusters",
+  "message.skyliners.autopilot.no_ground_freighter": "No clear, level ground within 64 blocks of the pin: holding over it. Set another pin, or tell her to land where she is.",
   "message.skyliners.autopilot.assembling_freighter": "Assembling the freighter: she lifts off as soon as she is ready.",
   "message.skyliners.autopilot.no_thrusters": "This freighter has no thrusters to fly her with: build her again with Create Propulsion installed.",
   "message.skyliners.autopilot.off_once_down_freighter": "Autopilot off once she is down: only her thrusters hold her up, so she comes straight down here first and switches off on her legs.",

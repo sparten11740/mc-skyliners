@@ -743,6 +743,16 @@ What was done while Jan slept, in order, and what is left for him to look at. Ve
 - A runaway found doing it: a freighter that had learnt too much drag raced past the speed set (58, then 81 b/s on a
   20 set) and could never unlearn it. Fixed (9d3d0aa7) with a play-test check, freighter-drag, seen to fail without
   the fix and to hold with it.
+- Her pad search (decision 11): set to land at a pin she now comes down on the nearest clear, level spot within 64
+  blocks, her feet on dry, bare, level ground and nothing under her hull reaching it, looked at again pointing as she
+  comes down; with none, she holds over the pin and says so. Play-test checks freighter-pad (a block of stone on the
+  pin: she lands level beside it, and beside a second block built where she stood) and freighter-lake (a pin in a
+  lake: she holds and says so). Before the search she landed on the stone and never switched off. Seen failing on
+  the way, each now guarded by those checks: her rim a block over the stone (looked at every block now, a block wide
+  of her hull), her prongs swinging over it as her heading wanders a few degrees (looked at 5 degrees either side),
+  the ground read on a first flight trusted on the next, and her circling a spot beside her for ever (she now turns
+  toward a pin before speeding to it). The search costs her autopilot 0.20 ms a tick on average over a landing, 0.16
+  without it.
 
 ### For Jan to look at
 

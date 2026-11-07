@@ -264,14 +264,16 @@ and her cockpit's control head, seats and autopilot screen, the head wired to he
 as a `FreighterPilot.Wiring`. `FreighterFlight` is her `CraftFlight`, and `FreighterPilot` flies her: her lift from the
 mass Sable weighs and a trim it learns, split over her four clusters by her tilt and by where Sable puts her centre of
 mass (`SableFlight.centreOfMass`), her mains, retros and jets for the speed ahead and across and the heading she wants,
-round a circle or onto a pin with the zeppelin's `Steering`, flying by how her middle moves rather than her control head
-out in her cockpit's pod, and her height over the ground from the lowest of her legs' feet (`Legs`, which the rocket's
-fins share). `FreighterFlight` shows the clients how hard her lift thrusters and her mains fire, two `ShownShare`s, and
-where her disc's middle is from her control head, from which `FreighterRoar` plays her engines' roar at her stern, her
-lift jets' blast under her belly, their thump and her mains' spooling up as they light, her hum aboard, the ground
-shaking near her and her thunder going by; and `EngineGlow` lights her `EngineGrilleBlock`s across her stern from the
-same shares, laid in place of her skin round her mains and wired to her head with her thrusters, changing them seldom,
-as each change redraws her round them; `LiftPlumes` shows her lift thrusters' plumes only close over the ground
+round a circle or onto a pin with the zeppelin's `Steering`, set to land near a pin coming down on the nearest clear,
+level spot `PadSearch` finds round it over the airliner's `GroundSurvey`, from her feet and the columns under her hull
+that `FreighterLayout` gives (`feet`, `underHull`), flying by how her middle moves rather than her control head out in
+her cockpit's pod, and her height over the ground from the lowest of her legs' feet (`Legs`, which the rocket's fins
+share). `FreighterFlight` shows the clients how hard her lift thrusters and her mains fire, two `ShownShare`s, and where
+her disc's middle is from her control head, from which `FreighterRoar` plays her engines' roar at her stern, her lift
+jets' blast under her belly, their thump and her mains' spooling up as they light, her hum aboard, the ground shaking
+near her and her thunder going by; and `EngineGlow` lights her `EngineGrilleBlock`s across her stern from the same
+shares, laid in place of her skin round her mains and wired to her head with her thrusters, changing them seldom, as
+each change redraws her round them; `LiftPlumes` shows her lift thrusters' plumes only close over the ground
 (`Thrusters.plume`), since every puff is sent to every player near. Her pilot smooths what it reads of how fast she
 tilts, turns and moves, and holds each set of thrusters at a signal until it is asked a step and more away, so they are
 not set back and forth with every jitter. Her jets fire inside her, so she never runs them at a third of full or more,
