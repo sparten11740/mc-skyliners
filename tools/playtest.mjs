@@ -1127,6 +1127,23 @@ function checkFreighterRooms() {
   expect(racks >= HOLD_RACKS && crates >= HOLD_CRATES, "freighter: her cargo hold has its racks of cargo and crates", `${racks} rack bays, ${crates} crates`);
   const galley = ["skyliners:galley_fridge", "skyliners:galley_oven", "skyliners:coffee_machine"].filter((block) => must(`find ${block} 128 2`).rows.length === 0);
   expect(galley.length === 0, "freighter: her lounge has its galley, a fridge, an oven and a coffee machine", galley.length ? `no ${galley.join(", ")}` : "");
+  checkCargoScanner();
+}
+
+// A freighter's cargo hold's parcel scanner, a crate waiting on its belt: used, it sweeps the crate with its lasers.
+function checkCargoScanner() {
+  const [scanner] = must("find skyliners:parcel_scanner 128 1").rows;
+  const crate = scanner && must(`block ${scanner.at_abs[0]},${scanner.at_abs[1] + 1},${scanner.at_abs[2]}`).id === "skyliners:cargo_crate";
+  expect(Boolean(crate), "freighter: her cargo hold has the parcel scanner, a crate waiting on its belt");
+  if (!crate) {
+    return;
+  }
+  const at = scanner.at_abs.join(",");
+  const [dx, dz] = STEPS[must(`block ${at}`).props.facing];
+  must(`server tp @p ${scanner.at_abs[0] + 0.5 + dx * 2} ${scanner.at_abs[1]} ${scanner.at_abs[2] + 0.5 + dz * 2}; wait 5t`);
+  const used = now();
+  must(`use ${at}`);
+  expect(Boolean(heard("*scanner_sweep*", used, LOOK_EVERY)), "freighter: used, the parcel scanner sweeps its crate");
 }
 
 // A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage
@@ -1753,7 +1770,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and breaks nothing" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow strikes a creeper, never a cow, and vents after three quick shots" },
-  "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room and her hold its cargo" },
+  "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },

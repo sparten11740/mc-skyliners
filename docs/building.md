@@ -309,7 +309,7 @@ beat, and `BandstandRenderer` draws the three players swaying to it; `FreighterL
 club's bar, counter, stools, taps, bartender and back bar, along the club's straight wall, and `quarters()` and
 `lounge()` her bunks and booth, its seats a block of leg room back from the table,
 `galley()` the rocket mess's galley units along her lounge's wall, and `cargoHold()`
-her racks and crates. Her deck is lit by the rocket's `WallLightBlock`s, which
+her racks, crates and the rocket's parcel scanner. Her deck is lit by the rocket's `WallLightBlock`s, which
 `FreighterLayout.lights()` fixes to her padded walls round her corridor and rooms, stepping out from each wall to the
 first block with room. `FreighterLedStrips` rings each of her rooms with the rocket's `LedStripBlock`s and sets an
 `LedPanelBlock` by its doorway; as her rooms are wedges round her axis whose boxes overlap, its panel is told the

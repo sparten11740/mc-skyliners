@@ -2672,7 +2672,7 @@ own blanket with its reading light on; her lounge, aft of the entry hall, a boot
 leg room before it, and a galley along its wall, worktops and stowage with an oven, a coffee machine and a stocked
 fridge, as the rocket's; and
 her cargo hold at her bow two walls of pallet racks loaded with boxes, drums and crates, care-package crates set down
-before them.
+before them, and the rocket's parcel scanner with an empty crate waiting on its belt to be packed and scanned.
 The server config's `freighter.rooms` builds her rooms bare.
 
 Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal

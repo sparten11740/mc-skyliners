@@ -25,6 +25,7 @@ import dev.skyliners.block.GalleyOvenBlock;
 import dev.skyliners.block.GalleyUnitBlock;
 import dev.skyliners.block.LightTone;
 import dev.skyliners.block.PalletRackBlock;
+import dev.skyliners.block.ParcelScannerBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
@@ -220,6 +221,12 @@ public final class FreighterLayout extends HullLayout {
     private static final int RACK_BAYS = 2;
     private static final PalletRackBlock.Load[] RACK_LOADS = {PalletRackBlock.Load.BOXES, PalletRackBlock.Load.DRUMS, PalletRackBlock.Load.CRATES};
     private static final Crate[] CRATES = {new Crate(-2, -12, 0), new Crate(-1, -12, 1), new Crate(2, -13, 2), new Crate(-2, -14, 3)};
+    /** How far to starboard of her middle line her cargo hold's parcel scanner stands, in blocks. */
+    private static final int SCANNER_X = 3;
+    /** How far ahead of her axis it stands, in blocks, given as her layout's z, which runs astern. */
+    private static final int SCANNER_Z = -10;
+    /** The way its screen and the crate on its belt face: in over her middle line. */
+    private static final Direction SCANNER_FACING = Direction.WEST;
     /**
      * Her galley, in her lounge: a run of units along the wall between the lounge and her entry hall, facing into the
      * lounge, from so far out from her axis to so far: a worktop with the coffee machine on it at its inner end, an
@@ -1157,8 +1164,8 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her cargo hold's racks and crates, each where it has room over her deck's floor; none with the server config's
-     * {@code freighter.rooms} off.
+     * Her cargo hold's racks and crates and its parcel scanner, each where it has room over her deck's floor; none with
+     * the server config's {@code freighter.rooms} off.
      */
     private void cargoHold() {
         if (!SkylinersConfig.FREIGHTER_ROOMS.get()) {
@@ -1172,6 +1179,20 @@ public final class FreighterLayout extends HullLayout {
         for (Crate crate : CRATES) {
             onFloor(crate.x(), crate.z(), SkylinersRegistry.CARGO_CRATE.get().defaultBlockState()
                 .setValue(CargoCrateBlock.FACING, Direction.from2DDataValue(crate.turn())));
+        }
+        scanner();
+    }
+
+    /**
+     * Her cargo hold's parcel scanner, the rocket's (see {@link ParcelScannerBlock}), its screen facing in over her
+     * middle line, an empty care-package crate waiting on its belt to be packed and scanned; where it and the crate
+     * over it have room.
+     */
+    private void scanner() {
+        BlockState scanner = SkylinersRegistry.PARCEL_SCANNER.get().defaultBlockState().setValue(ParcelScannerBlock.FACING, SCANNER_FACING);
+        if (isOpen(SCANNER_X, deck + 2, SCANNER_Z) && onFloor(SCANNER_X, SCANNER_Z, scanner)) {
+            set(SCANNER_X, deck + 2, SCANNER_Z,
+                SkylinersRegistry.CARGO_CRATE.get().defaultBlockState().setValue(CargoCrateBlock.FACING, SCANNER_FACING));
         }
     }
 
