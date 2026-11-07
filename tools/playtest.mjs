@@ -421,6 +421,9 @@ const PRONG_THRUSTERS = 4;
 const AIM_BACK = 3.5;
 const PRONG_LIT_REACH = 18;
 const PRONG_LIT_BACK = 12;
+// Her port prong's lookout: how many blocks of seats it has at least, one seat by a porthole and three in the nook at
+// its tip, two blocks each.
+const LOOKOUT_SEAT_BLOCKS = 8;
 // The beach's pieces that go up on a wall as well as on a floor.
 const BEACH_ON_WALLS = ["tiki_torch", "floor_window_panel"];
 const EXTERIOR_CLIMB = 30;
@@ -2359,6 +2362,22 @@ function checkFreighterEngineBays() {
   }
 }
 
+// A freighter's port prong a lookout: a seat faces a porthole down its tunnel, and at its tip, past her nose jet's
+// casing, a row of seats faces a screen of her outside cameras. Her port retro is the one further from her cockpit's
+// control head, out on her starboard side, and what is nearer her starboard retro, her cockpit among it, is left out.
+function checkFreighterLookout() {
+  ship("freighter");
+  const { middle, tips } = prongThrusters();
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const away = (from, at) => Math.hypot(at[0] - from[0], at[2] - from[2]);
+  const [starboard, port] = tips.slice(0, 2).sort((a, b) => away(head, a) - away(head, b));
+  const inPort = (at) => away(middle, at) > ROOMS_REACH && away(port, at) < away(starboard, at);
+  const seats = must("find skyliners:business_seat 128 300").rows.map((row) => row.at_abs).filter(inPort);
+  const screens = must("find skyliners:passenger_screen 128 50").rows.map((row) => row.at_abs).filter(inPort);
+  expect(seats.length >= LOOKOUT_SEAT_BLOCKS && screens.length >= 1, "freighter: her port prong is a lookout, seats by its portholes and a nook at its tip facing a screen",
+    `${seats.length} blocks of seats, ${screens.length} screens`);
+}
+
 // The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
 // their own there: a torch standing tall or held out on a bracket, a panel on its post or flat in its rim.
 function checkBeachOnWalls() {
@@ -2843,6 +2862,7 @@ const CHECKS = {
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges and her port prong's tunnel space posters" },
   "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
+  "freighter-lookout": { run: checkFreighterLookout, about: "a freighter's port prong has seats by its portholes and a nook at its tip facing a screen" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },

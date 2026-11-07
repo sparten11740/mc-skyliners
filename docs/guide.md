@@ -2663,7 +2663,11 @@ config's `freighter.portholes` leaves them out.
 Out at each prong's tip her retro and her nose jet are boxed into an engine bay: a bulkhead of glowing engine grating
 closes off the very tip, her retro's relay set into it, and her nose jet sits in a casing two blocks high, grating
 below and a hazard-striped top, with a narrow way left past it. Nobody walking down a prong comes face to face with a
-thruster or can reach one, and like her hull the bays cannot be broken.
+thruster or can reach one, and like her hull the bays cannot be broken. The tunnel down her port prong is a lookout
+too: a seat faces each porthole down its outer wall, a block of leg room before it, and at its tip, past the jet's
+casing, three seats in a row face a passenger screen on the engine bulkhead, planters at either end, a front row in her
+nose; use the screen to look out through her outside cameras. The server config's `freighter.prongs` leaves the
+lookout out.
 
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight

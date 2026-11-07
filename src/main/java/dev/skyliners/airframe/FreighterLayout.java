@@ -154,6 +154,7 @@ public final class FreighterLayout extends HullLayout {
     private static final Direction[] JET_PUSHES = {Direction.EAST, Direction.WEST, Direction.EAST, Direction.WEST};
     /** How many of her jets, the first, are her nose's, in her prongs: her port prong's and her starboard prong's. */
     private static final int NOSE_JETS = 2;
+    private static final int PORT_NOSE_JET = 0;
     /**
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
      * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
@@ -477,6 +478,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterSpookie.build(layout, layout.deck);
         FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side));
         FreighterPortholes.build(layout, layout.deck, layout.scale);
+        FreighterLookout.build(layout, layout.deck, layout.jets[PORT_NOSE_JET]);
         layout.lights();
         if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
             DarkCorners.light(layout, LightTone.WARM, layout::leastLight);
