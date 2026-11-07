@@ -204,6 +204,9 @@ const RAMP_ABOVE_GROUND = 2;
 const RAMP_UNDER_OUT = 9;
 const RAMP_UNDER_TICKS = 150;
 const RAMP_STEP_ASIDE = 4;
+// Where on a console module of a freighter its desk is aimed at, as a point of its block from 0 to 1 across, up and
+// along: the middle of its desk's top, which is drawn a little over four fifths of a block up at its back.
+const DESK_TOP_AT = "0.5,0.8,0.5";
 // How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
@@ -1815,6 +1818,23 @@ function checkFreighterConsole() {
   }
 }
 
+// From a freighter's pilot's seat, each of her three big buttons on her console, climb, boost and jump, is pressed
+// where its desk is seen, over the desks between, so whoever flies her alone presses them all from where they sit.
+// With the fault each desk took clicks in the empty room over it up to the top of its block, so the jump button, round
+// on the co-pilot's side, could not be pressed from the pilot's seat past the scanner's.
+function checkFreighterCockpitReach() {
+  ship("freighter");
+  const seat = pilotSeat();
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t`);
+  for (const kind of ["climb", "boost", "jump"]) {
+    const [module] = must(`find skyliners:console_${kind} 128 1`).rows;
+    const reply = module ? send(`use ${module.at_abs.join(",")} at ${DESK_TOP_AT}; wait 10t`)[0] : undefined;
+    expect(module && reply.ok !== false, `freighter: from her pilot's seat, her ${kind} button is pressed where it is seen`,
+      module ? (reply.err ? `${reply.err} ${reply.arg ?? ""}` : "") : "no such button");
+  }
+  must("key press key.sneak 10t; wait 10t");
+}
+
 // Whether the console module at a block has its slice of the ring, asked twice a second apart: a server still busy
 // with a ship just built may let a question go unanswered.
 function sliceOfRing(at) {
@@ -2837,6 +2857,7 @@ const CHECKS = {
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
+  "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },

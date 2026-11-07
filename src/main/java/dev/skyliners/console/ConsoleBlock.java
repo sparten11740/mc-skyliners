@@ -51,8 +51,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final EnumProperty<Mount> MOUNT = MountedModule.MOUNT;
-    /** Its shapes drawn facing north: a desk filling its block, a plate against a wall, a wedge under a ceiling. */
-    private static final VoxelShape DESK = Block.box(0, 0, 0, 16, 16, 16);
+    /**
+     * Its shapes drawn facing north: a desk across its block as high as the desk's top is drawn at its back, so the one
+     * beyond it round her ring is pressed where it is seen over it rather than this one's empty room over its desk
+     * taking the click; a plate against a wall; a wedge under a ceiling.
+     */
+    private static final VoxelShape DESK = Block.box(0, 0, 0, 16, ConsoleShape.DESK_BACK * 16, 16);
     private static final VoxelShape PLATE = Block.box(0, 0, 13, 16, 16, 16);
     private static final VoxelShape WEDGE = Block.box(0, 8, 0, 16, 16, 16);
     private static final Map<Mount, Map<Direction, VoxelShape>> SHAPES = new EnumMap<>(Map.of(
