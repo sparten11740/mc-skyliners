@@ -201,10 +201,12 @@ public final class FreighterLayout extends HullLayout {
     private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.PURPLE, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
     /**
      * Her lounge's booth, in the room aft of her entry hall: a low table at this bearing and so far out from her axis,
-     * the middle of the room, with a seat facing it on each side, in these colours by turns.
+     * the middle of the room, with a seat facing it on each side so many blocks from it, leg room between, in these
+     * colours by turns.
      */
     private static final int LOUNGE_BEARING = 120;
     private static final double LOUNGE_OUT = 14;
+    private static final int LOUNGE_SEAT_OUT = 2;
     private static final DyeColor[] LOUNGE_SEATS = {DyeColor.ORANGE, DyeColor.BROWN};
     /**
      * Her cargo hold, the room at her bow: two walls of pallet racks (see {@link PalletRackBlock}) so many blocks
@@ -1054,8 +1056,8 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her lounge's booth: a low table in the room's middle and a seat facing it on each side that has room over her
-     * deck's floor; none with the server config's {@code freighter.rooms} off.
+     * Her lounge's booth: a low table in the room's middle and a seat facing it on each side, a block of leg room
+     * between, that has room over her deck's floor; none with the server config's {@code freighter.rooms} off.
      */
     private void lounge() {
         if (!SkylinersConfig.FREIGHTER_ROOMS.get()) {
@@ -1069,7 +1071,8 @@ public final class FreighterLayout extends HullLayout {
         }
         for (int seat = 0; seat < LOUNGE_SIDES.length; seat++) {
             Direction side = LOUNGE_SIDES[seat];
-            loungeSeat(x + side.getStepX(), z + side.getStepZ(), side.getOpposite(), LOUNGE_SEATS[seat % LOUNGE_SEATS.length]);
+            loungeSeat(x + side.getStepX() * LOUNGE_SEAT_OUT, z + side.getStepZ() * LOUNGE_SEAT_OUT, side.getOpposite(),
+                LOUNGE_SEATS[seat % LOUNGE_SEATS.length]);
         }
     }
 
