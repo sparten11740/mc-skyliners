@@ -2581,7 +2581,8 @@ built at the same size, whatever the server config's scale: a disc 60 blocks acr
 upright rim, with two flat prongs reaching forward either side of a loading gap, 84 blocks long in all from their tips
 to her stern, standing on five landing legs, a strut down to a square foot plate each from a leg bay set into her belly,
 a block of gunmetal housing ringed in hazard stripes, her belly a couple of blocks off the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
-of struts; a glass dome stands on her top and another under her belly, where her ball turrets will go. Her canopy's
+of struts; a glass dome stands on her top and another under her belly, four dark gunmetal ribs running over each from
+her hull to its crown, where her ball turrets will go. Her canopy's
 glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
 through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
@@ -2747,7 +2748,8 @@ Up her core, through its doorway from the ring corridor on her bow side, a slim 
 back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
 gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
 on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up
-to the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal atop the dome, high enough to
+to the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal on the hub where the dome's
+ribs meet, high enough to
 see all round her past her rim and up into the sky, their glowing muzzles low in the view; sneak to get up and your own
 view is back at once. The barrels turn to whatever you look at, their servos whirring, all the way round and from a
 little below level to near straight up. The sight is drawn in thin amber lines on a dark frame: at the middle a ring

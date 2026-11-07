@@ -68,11 +68,11 @@ import net.minecraft.world.phys.Vec3;
  * size. Only her blocks are kept: the air inside her hull is worked out from its shape as she is handed over.
  *
  * <p>Her hull is a skin of the zeppelin's cover, cut to her lens and her parts in the snapped style (see
- * {@link SurfaceCut}), glazed round her cockpit's cone and over her turrets' domes. Inside, one deck: a core round
- * the turrets' ladder on her axis, a ring corridor round it, and six rooms out to an outer bulkhead, where her hull
- * grows too low to stand in; past it, the wedge out to her rim is a closed void but where a passage crosses it to her
- * cockpit's tube or along her prongs, the bulkhead opening onto it and padded walls closing it off from the rest of the
- * void.
+ * {@link SurfaceCut}), glazed round her cockpit's cone and over her turrets' domes, gunmetal ribs over each dome.
+ * Inside, one deck: a core round the turrets' ladder on her axis, a ring corridor round it, and six rooms out to an
+ * outer bulkhead, where her hull grows too low to stand in; past it, the wedge out to her rim is a closed void but
+ * where a passage crosses it to her cockpit's tube or along her prongs, the bulkhead opening onto it and padded walls
+ * closing it off from the rest of the void.
  *
  * <p>Sable flies her as one body only as far as her blocks touch, face to face: her deck runs out to her skin and
  * every wall stands on it.
@@ -529,6 +529,8 @@ public final class FreighterLayout extends HullLayout {
                 canopyPane = onCanopy && canopyPane == null && !isOpen(x, y, z) ? new BlockPos(x, y, z) : canopyPane;
             } else if (smooth && onCone(x, y + 0.5, z)) {
                 canopyFrame(x, y, z);
+            } else if (FreighterShape.nearest(x / scale, (y + 0.5) / scale, z / scale) == FreighterShape.Part.DOME) {
+                domeRib(x, y, z);
             }
         }
     }
@@ -546,6 +548,14 @@ public final class FreighterLayout extends HullLayout {
         }
     }
 
+    /** A rib of one of her turrets' domes made dark gunmetal plate, cut to her curve as the cover there was. */
+    private void domeRib(int x, int y, int z) {
+        BlockState cover = stateAt(x, y, z);
+        if (cover.is(SkylinersRegistry.ZEPPELIN_COVER.get())) {
+            set(x, y, z, ShellBlock.withShape(SkylinersRegistry.HULL_PLATE_DARK.get().defaultBlockState(), ShellBlock.shape(cover)));
+        }
+    }
+
     /** Widens the box round her canopy's dimming glass to take in a block of it. */
     private void noteCanopy(boolean dimming, BlockPos at) {
         if (dimming) {
@@ -556,7 +566,7 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Whether her skin is glass at a point, in blocks: on her cockpit's cone and its front, but for its struts (see
-     * {@link #CANOPY_SPOKES}); and on her turrets' domes.
+     * {@link #CANOPY_SPOKES}); and on her turrets' domes, but for their ribs.
      */
     private boolean glazed(double x, double y, double z) {
         double mx = x / scale;
@@ -564,9 +574,19 @@ public final class FreighterLayout extends HullLayout {
         double mz = z / scale;
         FreighterShape.Part part = FreighterShape.nearest(mx, my, mz);
         if (part == FreighterShape.Part.DOME) {
-            return true;
+            return !onDomeRib(mx, mz);
         }
         return part == FreighterShape.Part.POD && mz < FreighterShape.CONE_FROM && !strut(mx, my, mz);
+    }
+
+    /**
+     * Whether a point on one of her turrets' domes, in metres, lies on one of its ribs: four running up it from her
+     * hull to its crown, where they meet, square to the blocks as her canopy's struts are, so each runs straight along
+     * a row of them. A dome stands only a few blocks proud of her hull, so a ring of ribs round its foot would hide most
+     * of its glass. Her gunner aims from her cannon's sight over the dome, so the ribs stand in nobody's way.
+     */
+    private boolean onDomeRib(double x, double z) {
+        return Math.min(Math.abs(x), Math.abs(z)) * scale < 0.5;
     }
 
     /** Whether a point on her cockpit's cone, in metres, lies on one of its struts. */
@@ -1111,8 +1131,8 @@ public final class FreighterLayout extends HullLayout {
      * Her top turret, up her core: a ladder up the core's back wall from her deck to the top of the shaft under her top
      * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow, its back to the ladder,
      * their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
-     * and the laser cannon on its pedestal on the dome's crown, made whole under it, over them, facing her bow, its
-     * sight seeing past her rim; none with the server config's {@code freighter.turrets} off.
+     * and the laser cannon on its pedestal on the hub where the dome's ribs meet over them, facing her bow, its sight
+     * seeing past her rim; none with the server config's {@code freighter.turrets} off.
      */
     private void turret() {
         int under = deck + 1;
