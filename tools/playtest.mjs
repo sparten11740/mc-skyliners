@@ -151,6 +151,15 @@ const FREIGHTER_LEVEL_WITHIN = 2;
 const FREIGHTER_WATCH_TICKS = 200;
 const FREIGHTER_AWAY = 400;
 const FREIGHTER_AWAY_TICKS = 60;
+// A freighter that has learnt far too much drag: how much, as her pilot keeps it; the speed she is set to cruise at
+// and how fast she may go at most meanwhile, half as fast again as she unlearns it, in blocks a second; how long she is watched, in ticks; how near the
+// speed set she must be by then, in blocks a second; and how much drag she may still have learnt then.
+const DRAG_TOO_MUCH = 0.04;
+const DRAG_CRUISE = 20;
+const DRAG_FASTEST = 30;
+const DRAG_WATCH_SAMPLES = 60;
+const DRAG_SETTLED_WITHIN = 3;
+const DRAG_UNLEARNT = 0.02;
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
 // her resting place she is flying as it is pressed, in blocks; and how long whoever bailed out is given to float down,
@@ -583,16 +592,19 @@ function checkBartenderOnALeaningRocket() {
 }
 
 // The rocket that has just been assembled, the one sub-level with a bartender aboard; other ships may be flying yet.
-function findRocketFlying() {
+// The sub-level of the ship flying near that carries a block only she does: her id, once she has assembled.
+function findShipFlying(marker) {
   for (let waited = 0; waited <= BUILD_SECONDS * 20; waited += LOOK_EVERY) {
     const ids = must(`wait ${LOOK_EVERY}t; sable:list`).rows.map((row) => row.id);
-    const rocket = ids.find((id) => must(`sable:find ${id} skyliners:robot_bartender 1 side=server`).rows.length > 0);
-    if (rocket) {
-      return rocket;
+    const ship = ids.find((id) => must(`sable:find ${id} ${marker} 1 side=server`).rows.length > 0);
+    if (ship) {
+      return ship;
     }
   }
   throw new Error("she never assembled");
 }
+
+const findRocketFlying = () => findShipFlying("skyliners:robot_bartender");
 
 function waitForLean(rocket) {
   for (let waited = 0; waited <= LEANING_WITHIN_TICKS; waited += LOOK_EVERY) {
@@ -747,6 +759,34 @@ function checkFreighterFlight() {
     expect(Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN, "freighter: she stands on her legs again",
       `control head at ${down.altitude}, built at ${head[1]}`);
   }
+}
+
+// A freighter that has learnt far too much drag, as one did once she had hunted round her height: set to cruise at 20
+// blocks a second, her mains pushed her on to almost three times that, and as her drag was learnt only near the speed
+// set, nothing could unlearn it. Ridden along, so she stays loaded flying away: she must stay near the speed set and
+// unlearn it.
+function checkFreighterUnlearnsDrag() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + FREIGHTER_CLIMB;
+  must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off to cruise");
+  if (!up) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:autopilot 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  must(`server data modify block ${at.join(" ")} Freighter.Drag set value ${DRAG_TOO_MUCH}d`);
+  must(`skyliners:autopilot fly altitude=${height} speed=${DRAG_CRUISE} heading=${up.heading}`);
+  const rows = must(`sample skyliners:freighter every 20t x${DRAG_WATCH_SAMPLES}`, BUILD_SECONDS).rows;
+  const fastest = Math.max(...rows.map((row) => row.ahead));
+  const last = rows[rows.length - 1];
+  expect(fastest <= DRAG_FASTEST, "freighter: having learnt too much drag, she is not pushed on far past the speed set", `fastest ${fastest}`);
+  expect(Math.abs(last.ahead - DRAG_CRUISE) <= DRAG_SETTLED_WITHIN, "freighter: she settles back near the speed set", `at ${last.ahead}`);
+  expect(last.drag <= DRAG_UNLEARNT, "freighter: she unlearns the drag", `drag ${last.drag}`);
+  must("skyliners:autopilot land");
 }
 
 // A rocket in flight: the countdown runs out, her engines fall silent with her, and whoever stood aboard floats down
@@ -1059,6 +1099,7 @@ const CHECKS = {
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },
   "rocket-self-destruct-flight": { run: checkRocketSelfDestructInFlight, about: "a rocket blows up in flight, her roar stops, and whoever was aboard floats down unhurt", slow: true },
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },
+  "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };

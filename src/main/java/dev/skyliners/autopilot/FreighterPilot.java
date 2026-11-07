@@ -111,11 +111,21 @@ public final class FreighterPilot {
     private static final double SPEED_GAIN = 0.6;
     private static final double MOST_ACCELERATION = 1.5;
     private static final double DRAG_RATE = 0.05;
-    private static final double MOST_DRAG = 2;
+    private static final double MOST_DRAG = 0.05;
     /**
-     * Her drag is learnt only going at least this fast ahead, within this of the speed she wants, in blocks a second,
-     * and with less than her mains' or retros' full push asked of them: steady, so what she learns is drag, not
-     * speeding up.
+     * The drag she starts with, as a share of her mains' full push for each block a second ahead, before she has
+     * learnt her own: what her mains were seen to push against, holding her at 20 blocks a second on about a fifth of
+     * their push; and the least she may learn, half of it, so she never forgets the air entirely and creeps up to
+     * speed.
+     */
+    private static final double FIRST_DRAG = 0.01;
+    private static final double LEAST_DRAG = 0.005;
+    /**
+     * Her drag is learnt only cruising, going at least this fast ahead, within this of the speed she wants, in blocks
+     * a second, and with less than her mains' or retros' full push asked of them: steady, so what she learns is drag,
+     * not speeding up, nor drifting back onto a spot; or going faster than she wants by more than that, when she has
+     * learnt too much drag and her mains push her on past the speed set, which she unlearns the faster the further
+     * past it she is.
      */
     private static final double DRAG_LEARNING_SPEED = 2;
     private static final double DRAG_LEARNING_ERROR = 1;
@@ -291,7 +301,7 @@ public final class FreighterPilot {
         double lift = 1;
         double pitch;
         double roll;
-        double drag;
+        double drag = FIRST_DRAG;
         double yaw;
 
         void save(CompoundTag tag) {
@@ -306,7 +316,7 @@ public final class FreighterPilot {
             lift = tag.contains("Trim") ? Mth.clamp(tag.getDouble("Trim"), 1 / MOST_TRIM, MOST_TRIM) : 1;
             pitch = Mth.clamp(tag.getDouble("PitchTrim"), -MOST_LEVEL_TRIM, MOST_LEVEL_TRIM);
             roll = Mth.clamp(tag.getDouble("RollTrim"), -MOST_LEVEL_TRIM, MOST_LEVEL_TRIM);
-            drag = Mth.clamp(tag.getDouble("Drag"), 0, MOST_DRAG);
+            drag = tag.contains("Drag") ? Mth.clamp(tag.getDouble("Drag"), LEAST_DRAG, MOST_DRAG) : FIRST_DRAG;
             yaw = Mth.clamp(tag.getDouble("YawTrim"), -MOST_YAW_TRIM, MOST_YAW_TRIM);
         }
     }
@@ -448,7 +458,7 @@ public final class FreighterPilot {
             lift(level, origin, liftShare(state, going, mass, climb, learning),
                 split(motion.tilt().front(), motion.frontRate(), balance.ahead() + learnt.pitch),
                 split(motion.tilt().right(), motion.rightRate(), balance.right() + learnt.roll));
-            move(level, origin, state, going, mass, course.ahead(), course.across(),
+            move(level, origin, state, going, mass, learning, course.ahead(), course.across(),
                 turn(course.heading(), state.heading(), motion.yawRate(), learning));
         }
         settled = touchingFor > RUN_DOWN_TICKS && Math.abs(going.y) < STILL ? settled + 1 : 0;
@@ -491,7 +501,7 @@ public final class FreighterPilot {
     private void runDown(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, Balance balance) {
         double runDown = Math.max(0, 1 - (double) touchingFor / RUN_DOWN_TICKS);
         lift(level, origin, runDown * hoverShare(state, mass), balance.ahead(), balance.right());
-        move(level, origin, state, going, mass, 0, 0, 0);
+        move(level, origin, state, going, mass, false, 0, 0, 0);
     }
 
     /**
@@ -704,11 +714,12 @@ public final class FreighterPilot {
 
     /**
      * Her mains, retros and jets for the speed she wants ahead and across, and a turn: what pushes her ahead or holds
-     * her back, against the drag she learns, is shared out over her mains or her retros; what pushes her across, half
-     * on her nose's jets and half on her tail's, with the turn added at her nose and taken away at her tail.
+     * her back, against the drag she learns while cruising, is shared out over her mains or her retros; what pushes her
+     * across, half on her nose's jets and half on her tail's, with the turn added at her nose and taken away at her
+     * tail.
      */
-    private void move(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, double ahead,
-                      double across, double turn) {
+    private void move(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, boolean learning,
+                      double ahead, double across, double turn) {
         lastAhead = ahead;
         lastAcross = across;
         Vec3 front = flat(state.nose());
@@ -719,9 +730,12 @@ public final class FreighterPilot {
         lastGoingAcross = goingAcross;
         double speeding = Mth.clamp(SPEED_GAIN * (ahead - goingAhead), -MOST_ACCELERATION, MOST_ACCELERATION);
         double shove = mass * speeding / Math.max(1, mostMains()) + learnt.drag * goingAhead;
-        if (Math.abs(goingAhead) > DRAG_LEARNING_SPEED && Math.abs(ahead - goingAhead) < DRAG_LEARNING_ERROR && Math.abs(shove) < 1) {
-            double step = DRAG_RATE / SharedConstants.TICKS_PER_SECOND * (ahead - goingAhead) / goingAhead;
-            learnt.drag = Mth.clamp(learnt.drag + step, 0, MOST_DRAG);
+        double error = ahead - goingAhead;
+        boolean steady = Math.abs(error) < DRAG_LEARNING_ERROR && Math.abs(shove) < 1;
+        boolean overrunning = error < -DRAG_LEARNING_ERROR;
+        if (learning && goingAhead > DRAG_LEARNING_SPEED && (steady || overrunning)) {
+            double step = DRAG_RATE / SharedConstants.TICKS_PER_SECOND * Math.min(error, DRAG_LEARNING_ERROR) / goingAhead;
+            learnt.drag = Mth.clamp(learnt.drag + step, LEAST_DRAG, MOST_DRAG);
         }
         mainsTotal = held(Math.max(0, shove) * FULL * wiring.mains().size(), mainsTotal);
         double braking = Math.max(0, -shove) * mostMains() / Math.max(1, mostRetros());
