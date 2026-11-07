@@ -1289,6 +1289,121 @@ function seamless(samples, seconds, fadeSeconds) {
   }
   writeSound("touchdown", samples, 0.85);
 }
+/** A sound driven into saturation, so hard (1 barely, more harder): its peaks rounded off, its body brought up. */
+function saturate(samples, drive) {
+  let peak = 0;
+  samples.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  return samples.map((s) => Math.tanh((drive * s) / peak));
+}
+/**
+ * Metal crumpling: from a time in seconds and for so long, a run of jerks, each a grain of the hull giving way, thick
+ * at first and thinning out, every one ringing the plates at their notes, so loud.
+ */
+function crumple(samples, start, length, noise, notes, gain) {
+  const jerks = new Float64Array(samples.length);
+  const begin = Math.round(start * RATE);
+  let next = begin;
+  while (next < Math.min(samples.length, begin + Math.round(length * RATE))) {
+    const share = (next - begin) / (length * RATE);
+    jerks[next] = (1 - share) * (0.4 + 0.6 * noise()) * (noise() < 0.5 ? -1 : 1);
+    next += Math.max(1, Math.round(RATE / (500 * (1 - share) + 25) * (0.3 + 1.4 * noise())));
+  }
+  for (const [note, q, weight] of notes) {
+    const rung = resonance(jerks, note, q);
+    for (let i = 0; i < samples.length; i++) {
+      samples[i] += gain * weight * rung[i];
+    }
+  }
+}
+// A ship running into something (see Impacts). A hard hit: the crack of her hull striking, a deep boom falling in pitch
+// as it dies, her plates crumpling in a thinning run of grinding jerks, the hull ringing at the inharmonic notes of
+// great plates struck, and the rumble of it all rolling on, with a little of the space round her, all of it driven hard
+// into saturation, as a crash overloads the ear. The server plays it louder and lower the harder she hit.
+{
+  const noise = ownRandom(0x43727368);
+  const length = 2.6;
+  const dry = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  let rumble = 0;
+  let grit = 0;
+  let gritLow = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (32 + 48 * Math.exp(-t / 0.12))) / RATE;
+    const boom = Math.min(1, t / 0.004) * Math.exp(-t / 0.45) * (Math.sin(phase) + 0.35 * Math.sin(2 * phase));
+    const crack = t < 0.02 ? (noise() * 2 - 1) * (1 - t / 0.02) : 0;
+    const white = noise() * 2 - 1;
+    rumble += 0.01 * (white - rumble);
+    gritLow += 0.35 * (white - gritLow);
+    grit += 0.08 * (white - grit);
+    const plates = [[147, 1.1], [233, 0.9], [391, 0.7], [587, 0.5], [812, 0.35], [1290, 0.2]]
+      .reduce((sum, [note, decay], k) => sum + Math.sin(2 * Math.PI * note * t + k) * Math.exp(-t / decay) / (k + 1), 0);
+    dry[i] = 1.6 * boom + 1.2 * crack + 6 * rumble * Math.exp(-t / 0.9) + 1.2 * (gritLow - grit) * Math.exp(-t / 0.18)
+      + 0.45 * plates * Math.min(1, t / 0.003);
+  }
+  crumple(dry, 0.01, 0.55, noise, [[420, 9, 1], [710, 11, 0.8], [1180, 12, 0.6], [2050, 14, 0.4], [3300, 16, 0.25]], 150);
+  const tail = Math.round(0.4 * RATE);
+  for (let i = dry.length - tail; i < dry.length; i++) {
+    dry[i] *= (dry.length - i) / tail;
+  }
+  writeSound("impact_crunch", saturate(hullEcho(dry, 0.18), 3), 0.9);
+}
+// A bump: a dull thump of the hull meeting something, a short clank of a plate, and a breath of rumble after it.
+{
+  const noise = ownRandom(0x54687564);
+  const samples = new Float64Array(Math.round(0.9 * RATE));
+  thunk(samples, 0, 70, 1, noise);
+  thunk(samples, 0.004, 110, 0.4, noise);
+  crumple(samples, 0.003, 0.05, noise, [[520, 12, 1], [1240, 14, 0.5]], 30);
+  let rumble = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    rumble += 0.015 * ((noise() * 2 - 1) - rumble);
+    samples[i] += 3 * rumble * Math.min(1, t / 0.02) * Math.exp(-t / 0.25);
+  }
+  writeSound("impact_thud", samples, 0.85);
+}
+// Her hull grinding as she slides along: metal dragged over rock or another hull, a stick-slip of jerks at a wavering
+// rate ringing her plates, the grit of it, a squeal wandering in pitch and the low drone of the whole hull shaking.
+// The server plays it again every second while she slides, so each starts and ends in a fade of SCRAPE_FADE seconds,
+// equal in power, that the next is laid over: SCRAPE_SECONDS less SCRAPE_FADE is Impacts' SCRAPE_EVERY.
+{
+  const SCRAPE_SECONDS = 1.2;
+  const SCRAPE_FADE = 0.2;
+  const noise = ownRandom(0x53637270);
+  const n = Math.round(SCRAPE_SECONDS * RATE);
+  const jerks = new Float64Array(n);
+  let slip = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    slip += (55 + 18 * Math.sin(2 * Math.PI * 1.7 * t) + 10 * Math.sin(2 * Math.PI * 4.3 * t + 1)) / RATE;
+    if (slip >= 1) {
+      slip -= 1 + 0.3 * (noise() - 0.5);
+      jerks[i] = 0.5 + 0.5 * noise();
+    }
+  }
+  const ringing = [[880, 10, 1], [1630, 12, 0.7], [2710, 14, 0.45]].map(([note, q, weight]) => resonance(jerks, note, q).map((s) => s * weight));
+  const samples = new Float64Array(n);
+  let low = 0;
+  let drone = 0;
+  let squeal = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const white = noise() * 2 - 1;
+    low += 0.3 * (white - low);
+    drone += 0.012 * (white - drone);
+    squeal += (2 * Math.PI * (2200 + 160 * Math.sin(2 * Math.PI * 0.9 * t) + 60 * Math.sin(2 * Math.PI * 3.1 * t))) / RATE;
+    const wobble = 0.7 + 0.3 * Math.sin(2 * Math.PI * 2.3 * t + 0.4);
+    const metal = ringing.reduce((sum, band) => sum + band[i], 0);
+    samples[i] = 120 * metal + 0.2 * (white - low) * wobble + 12 * drone + 0.05 * Math.sin(squeal) * wobble;
+  }
+  const fade = Math.round(SCRAPE_FADE * RATE);
+  for (let i = 0; i < fade; i++) {
+    samples[i] *= Math.sin((Math.PI / 2) * (i / fade));
+    samples[n - 1 - i] *= Math.sin((Math.PI / 2) * (i / fade));
+  }
+  writeSound("impact_scrape", samples, 0.75);
+}
 // The trim car rolling along its rail a block (see TrimWinchBlockEntity): a rumble of its wheels bumping over the
 // rail's joints, and the clink of its haul chain.
 {

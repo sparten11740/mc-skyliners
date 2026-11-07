@@ -1518,6 +1518,19 @@ engines' glow and contrails. Only the airliner's own thrusters are set: Create P
 built anywhere else are left alone. The control jets never leave a plume. An airliner built before this setting keeps
 the plumes it was built with, so it may show both until it is built again.
 
+### Crashes and bumps
+
+Every ship, airliner, zeppelin, rocket or freighter, is heard when she runs into something: the ground, a mountainside,
+a building or another ship. A hard hit crunches with a deep boom, louder, lower and heard farther the harder she hit,
+kicks the view of everyone aboard (unless the client setting `cameraShake` is off) and leaves her hull groaning a moment
+after; a bump thuds, with a smaller kick; and while she slides on along what she hit, the ground or another hull, she
+grinds until she stops or comes clear (an airliner braking hard on her wheels touches nothing, and so does not grind).
+Each is heard from where she struck by anyone near her, and by everyone aboard from that side of her however far along
+her they stand, and each has its subtitle. A ship bouncing is heard at most twice a second. Her own landings make none
+of them: an airliner touching down on her wheels and braking hard on them, or a zeppelin, rocket or freighter settling
+onto her legs or fins at the block or two a second her autopilot lands at, is not a bump. The server setting
+`impactSounds` turns them all off.
+
 ### First Flight advancements
 
 The First Flight tab of the advancements, there from the moment a world is joined without a toast or a word in chat,

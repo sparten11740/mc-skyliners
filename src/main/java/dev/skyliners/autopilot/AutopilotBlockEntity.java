@@ -26,6 +26,7 @@ import dev.skyliners.cabin.LightningStrikes;
 import dev.skyliners.cabin.Turbulence;
 import dev.skyliners.compat.PhysicsAssembler;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.impact.Impacts;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -608,6 +609,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final Turbulence turbulence = new Turbulence();
     private final AirPockets airPockets = new AirPockets();
     final LightningStrikes lightning = new LightningStrikes();
+    /** What is heard as the ship it is part of runs into something, whatever it is. */
+    private final Impacts impacts = new Impacts();
     /** The airstairs and slides it has put away before taking off, which it holds the brakes for till they are. */
     private final Stowing stowing = new Stowing();
     /** Hopping the airliner free when it is stuck. */
@@ -1565,9 +1568,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Each tick: a cabin announcement waiting for the one before it has its turn; and while the airliner is assembled,
-     * the callouts watch it, rough air and air pockets come and go, lightning strikes in a storm, the autopilot flies
-     * it if engaged, or keeps it from tipping over if not, and air traffic control talks to it.
+     * Each tick: a cabin announcement waiting for the one before it has its turn, and the ship is listened to for
+     * running into anything (see {@link Impacts}); and while the airliner is assembled, the callouts watch it, rough
+     * air and air pockets come and go, lightning strikes in a storm, the autopilot flies it if engaged, or keeps it
+     * from tipping over if not, and air traffic control talks to it.
      */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
         if (!(level instanceof ServerLevel serverLevel)) {
@@ -1575,6 +1579,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         autopilot.announcements.tick(autopilot);
         SableFlight.State flight = SableFlight.read(autopilot, autopilot.nose());
+        autopilot.impacts.tick(serverLevel, autopilot);
         if (flight == null) {
             // Disassembled under it: nothing left to fly, nor to hop free, and no air rushing out of it.
             if (autopilot.phase != Phase.OFF) {

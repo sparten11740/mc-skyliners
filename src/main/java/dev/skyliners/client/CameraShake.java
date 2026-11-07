@@ -18,7 +18,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * the world moves), and off with the client setting "cameraShake". An airliner blowing up shakes the view of everyone
  * near, aboard or not (see {@link BlastFlash}); a rocket's engines lighting shakes it as rough air does, for those
  * aboard her, and the ground shakes so under those standing near her while they fire low over it, her lift-off's
- * shockwave jolting them as a blast does as it passes (see {@link RocketRoar}).
+ * shockwave jolting them as a blast does as it passes (see {@link RocketRoar}). A ship running into something kicks
+ * the view of everyone aboard her, as hard as she hit (see {@link dev.skyliners.impact.Impacts}).
  */
 public final class CameraShake {
     /** The rumble's strength on the runway at full speed, and the speed (blocks a second) it reaches it at. */
@@ -67,6 +68,13 @@ public final class CameraShake {
     private static final float[] BLAST_PITCH = {2.6F, 0.8F, 2.2F, 6.3F};
     private static final float[] BLAST_ROLL = {1.3F, 0.4F, 1.4F, 4.4F};
     private static final float BLAST_MOST = 16;
+    /**
+     * A ship the player rides running into something: the view's kick at the hardest smash, in degrees, the share of
+     * it the view rolls by, and the share of the kick left each tick as it dies away, within half a second.
+     */
+    private static final float JOLT = 6;
+    private static final float JOLT_ROLL = 0.7F;
+    private static final float JOLT_FADE = 0.8F;
 
     private static final RandomSource RANDOM = RandomSource.create();
     /** Whether the airliner the player rides is on its wheels. */
@@ -85,6 +93,8 @@ public final class CameraShake {
     /** How hard the last blast shakes the view, and the ticks since it went off. */
     private static float blast;
     private static int blastTicks = BLAST_TICKS;
+    /** How hard the view is kicked by the ship the player rides running into something, in degrees. */
+    private static float jolt;
 
     private CameraShake() {
     }
@@ -110,6 +120,11 @@ public final class CameraShake {
         roughLeft = ticks;
     }
 
+    /** The ship the player rides has run into something this hard: from 0, a bump, to 1, the hardest smash. */
+    public static void impact(float strength) {
+        jolt = Math.max(jolt, JOLT * Mth.clamp(strength, 0, 1));
+    }
+
     /** The airliner the player rides has dropped into an air pocket this deep (about 1, deeper in a storm). */
     public static void airPocket(float depth) {
         pocket = depth;
@@ -130,6 +145,7 @@ public final class CameraShake {
     public static void tick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         thump *= THUMP_FADE;
+        jolt *= JOLT_FADE;
         time++;
         roughLeft = Math.max(0, roughLeft - 1);
         pocketTicks = Math.min(POCKET_TICKS, pocketTicks + 1);
@@ -164,15 +180,16 @@ public final class CameraShake {
         float dip = dip(partial);
         float shaken = blastTicks + partial;
         float heave = blastTicks < BLAST_TICKS ? blast * (float) Math.pow(1 - Math.min(1, shaken / BLAST_TICKS), BLAST_SETTLING) : 0;
-        if (!SkylinersClientConfig.CAMERA_SHAKE.get() || rumble + thump + sway + rough + dip + heave <= 0.001F) {
+        if (!SkylinersClientConfig.CAMERA_SHAKE.get() || rumble + thump + sway + rough + dip + heave + jolt <= 0.001F) {
             return;
         }
         float t = time + partial;
         float jitter = rumble * (RANDOM.nextFloat() * 2 - 1);
         // Rough air: two uneven waves, so the jolts never settle into a rhythm.
         float bump = rough * (Mth.sin(t * 0.9F) + 0.6F * Mth.sin(t * 2.3F + 1.1F));
-        float pitch = jitter + thump * Mth.sin(t * 1.7F) + sway * Mth.sin(t * 0.05F) + bump + dip;
-        float roll = rumble * (RANDOM.nextFloat() * 2 - 1) * 0.6F + sway * Mth.sin(t * 0.037F + 1.3F) + rough * Mth.sin(t * 1.3F + 0.4F);
+        float pitch = jitter + thump * Mth.sin(t * 1.7F) + sway * Mth.sin(t * 0.05F) + bump + dip + jolt * Mth.sin(t * 2.9F);
+        float roll = rumble * (RANDOM.nextFloat() * 2 - 1) * 0.6F + sway * Mth.sin(t * 0.037F + 1.3F) + rough * Mth.sin(t * 1.3F + 0.4F)
+            + jolt * JOLT_ROLL * Mth.sin(t * 3.7F + 0.5F);
         // A blast: on each axis a heavy sway with a fast rattle riding on it.
         event.setYaw(event.getYaw() + Mth.clamp(heave * swayed(BLAST_YAW, shaken), -BLAST_MOST, BLAST_MOST));
         event.setPitch(event.getPitch() + pitch + Mth.clamp(heave * swayed(BLAST_PITCH, shaken), -BLAST_MOST, BLAST_MOST));

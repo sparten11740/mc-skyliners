@@ -22,6 +22,7 @@ import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
 import dev.ryanhcode.sable.api.sublevel.ticket.SubLevelLoadingTicketType;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
@@ -328,6 +329,19 @@ public final class SableFlight {
     /** How fast a point among an assembled airliner's blocks moves, in blocks a second; still anywhere else. */
     public static Vec3 velocity(Level level, Vec3 point) {
         return SABLE ? Access.velocity(level, point) : Vec3.ZERO;
+    }
+
+    /**
+     * An assembled airframe as a whole, as Sable moves it: the point it turns about, its centre of mass, in the world,
+     * how fast that moves, in blocks a second, its turning left out, and the box round all of it in the world.
+     */
+    public record Body(Vec3 centre, Vec3 velocity, AABB bounds) {
+    }
+
+    /** The assembled airframe the block entity is part of, as a whole; null when it is not part of one. */
+    @Nullable
+    public static Body body(BlockEntity blockEntity) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel ? Access.body(blockEntity) : null;
     }
 
     /**
@@ -858,6 +872,22 @@ public final class SableFlight {
 
         static Vec3 velocity(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
+        }
+
+        @Nullable
+        static Body body(BlockEntity blockEntity) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe) || airframe.isRemoved()) {
+                return null;
+            }
+            RigidBodyHandle handle = RigidBodyHandle.of(airframe);
+            if (handle == null || !handle.isValid()) {
+                return null;
+            }
+            Vector3dc velocity = handle.getLinearVelocity(new Vector3d());
+            Vector3dc centre = airframe.logicalPose().position();
+            BoundingBox3dc bounds = airframe.boundingBox();
+            return new Body(new Vec3(centre.x(), centre.y(), centre.z()), new Vec3(velocity.x(), velocity.y(), velocity.z()),
+                new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()));
         }
 
         static boolean lifts(BlockState state) {
