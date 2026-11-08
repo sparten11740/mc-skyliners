@@ -18,9 +18,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * The zeppelin's safety net: a canopy that opens over anyone who falls from a zeppelin, off the boarding stairs under
  * its belly in flight, say, or from the gangway inside its hull, the parachute's striped canopy, with its snap, so they
  * glide down as under a parachute and land unhurt, steering the way they walk. It opens for anyone aboard a zeppelin
- * a moment ago who has fallen a few blocks, not in creative mode, not flying and not under a parachute of their own,
- * and packs itself away as they land. Some players are children, and a zeppelin is a long way up. The server decides
- * it opens and tells the clients near (see {@link SafetyCanopyPayload}), whose players move themselves.
+ * a moment ago, or thrown into the air a moment ago (see {@link #thrown}), who has fallen a few blocks, not in
+ * creative mode, not flying and not under a parachute of their own, and packs itself away as they land. Some players
+ * are children, and a zeppelin is a long way up. The server decides it opens and tells the clients near (see
+ * {@link SafetyCanopyPayload}), whose players move themselves.
  */
 public final class SafetyCanopy {
     /** How far a player falls before it opens, in blocks: past a jump down, short of a fall that hurts much. */
@@ -42,6 +43,14 @@ public final class SafetyCanopy {
         for (ServerPlayer player : players) {
             LAST_ABOARD.put(player.getUUID(), now);
         }
+    }
+
+    /**
+     * Notes a player thrown into the air, by a laser cannon's blast say (see {@code TurretBlast}): falling a few blocks
+     * soon after, wherever they are, their canopy opens as it does over someone falling from a zeppelin.
+     */
+    public static void thrown(ServerPlayer player) {
+        LAST_ABOARD.put(player.getUUID(), player.level().getGameTime());
     }
 
     /** Whether the player's safety canopy is open, as their side knows it. */

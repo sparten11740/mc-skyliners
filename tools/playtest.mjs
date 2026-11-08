@@ -662,6 +662,14 @@ const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
+// A laser cannon's rocket thrown at a player: how far behind them it is summoned, in blocks; how many samples of where
+// they are are taken, two ticks apart; how high or far it must throw them at least, in blocks; and how long they are
+// given to come down, in ticks.
+const THROW_ROCKET_OFF = 6;
+const THROW_SAMPLES = 40;
+const THROWN_HIGH = 6;
+const THROWN_FAR = 8;
+const THROWN_LANDS_TICKS = 300;
 // How far her gunner's seat may stand from straight under her laser cannon, across or along, in blocks.
 const GUNNER_SEAT_OFF = 1;
 // Stepping back off the top of her core's ladder: how long the back key is held, in ticks, and how far under her gunner's
@@ -2468,6 +2476,30 @@ function checkFreighterCanopy() {
   expect(dimmedOutside < clearOutside * CANOPY_DIMMED_SHARE, "freighter: dimmed, her cockpit through her canopy darkens from outside",
     `luma ${round(clearOutside)} clear, ${round(dimmedOutside)} dimmed`);
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
+}
+
+// A laser cannon's rocket flown at a player throws them far and high with its blast, unhurt, and they come down under
+// their safety canopy; a rocket with no cannon behind it, summoned here, counts everyone as not aboard her. Before,
+// rockets flew straight past players and blasts left them standing.
+function checkTurretThrowsPlayers() {
+  creative();
+  emptyHands();
+  const x = nextSite++ * SITE_APART + 0.5;
+  must(`server tp @p ${x} ${ground} 0.5 0 0; wait ${CHUNKS_TICKS}t`);
+  send("?server effect clear @p");
+  survival();
+  const since = now();
+  must(`server summon skyliners:cannon_rocket ${x} ${ground + 1} ${0.5 - THROW_ROCKET_OFF}`);
+  const path = must(`sample status every 2t x${THROW_SAMPLES}`).rows.filter((row) => row.pos);
+  const highest = Math.max(...path.map((row) => row.pos[1])) - ground;
+  const farthest = Math.max(...path.map((row) => Math.hypot(row.pos[0] - x, row.pos[2] - 0.5)));
+  expect(highest >= THROWN_HIGH || farthest >= THROWN_FAR, "turret: a rocket flown at a player throws them far and high",
+    `${round(highest)} blocks up, ${round(farthest)} blocks off`);
+  must(`wait ${THROWN_LANDS_TICKS}t`);
+  const landed = must("status");
+  expect(landed.hp === landed.max_hp, "turret: thrown, they come down unhurt", `health ${landed.health}`);
+  expect(highest < THROWN_HIGH || played("skyliners:canopy_open", since).length > 0, "turret: thrown high, their safety canopy opens over them");
+  creative();
 }
 
 // A freighter's console: her modules curve round her seats, each a slice of one ring; on the ground her boost button
@@ -4844,6 +4876,7 @@ const CHECKS = {
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
+  "turret-throws-players": { run: checkTurretThrowsPlayers, about: "a laser cannon's rocket throws a player far and high, unhurt, to land under their safety canopy" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },

@@ -423,6 +423,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK) {
             ShipHits.struck(level, block.getBlockPos(), hit.getLocation(), along, ShipHits.Shot.BOLT, SableFlight.bodyAt(level, worldPosition));
         }
+        TurretBlast.throwStruck(hit, along, notAboard());
         if (SkylinersConfig.FREIGHTER_TURRET_BLASTS.get()) {
             TurretBlast.at(level, gunner, from, hit, notAboard());
         }

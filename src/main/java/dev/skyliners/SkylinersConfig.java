@@ -76,6 +76,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_EVERY_PLUME;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_THROWS_PLAYERS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROCKETS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SHIP_HITS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
@@ -360,7 +361,8 @@ public final class SkylinersConfig {
         SAFETY_CANOPY = builder
             .comment(
                 "Whether a canopy opens over anyone who falls from a zeppelin, a few blocks down, so they glide to the ground unhurt",
-                "as under a parachute: off its boarding stairs in flight, or from its gangway inside the hull."
+                "as under a parachute: off its boarding stairs in flight, or from its gangway inside the hull; and over anyone",
+                "a laser cannon throws into the air (see freighter.turretThrowsPlayers)."
             )
             .define("safetyCanopy", true);
         NAVIGATION_LIGHTS = builder
@@ -847,6 +849,14 @@ public final class SkylinersConfig {
                 "rules for TNT, but never a block of any ship, and hurting only hostile mobs. Without it, bolts break nothing."
             )
             .define("turretBlasts", true);
+        FREIGHTER_TURRET_THROWS_PLAYERS = builder
+            .comment(
+                "Whether a laser cannon's bolts and rockets throw players they strike, or go off near, far and high, without",
+                "hurting them, never anyone aboard the cannon's own ship; whoever is thrown comes down unhurt, under their",
+                "safety canopy (see safetyCanopy) or floating down slowly.",
+                "Without it, they pass players by as before."
+            )
+            .define("turretThrowsPlayers", true);
         FREIGHTER_ROCKETS = builder
             .comment(
                 "Whether a laser cannon carries rocket pods either side of its barrels, launched by holding use at its gunner's",

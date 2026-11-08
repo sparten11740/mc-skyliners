@@ -275,9 +275,13 @@ public class CannonRocket extends Projectile {
         return from.add(way.scale(along));
     }
 
-    /** Whether it may strike someone: a hostile mob, alive and not aboard her. */
+    /**
+     * Whether it may strike someone and go off: a hostile mob, alive and not aboard her, or a player not aboard her for
+     * its blast to throw (see {@link TurretBlast#throwsPlayer}).
+     */
     private boolean strikes(Entity entity) {
-        return entity instanceof Enemy && entity.isAlive() && !entity.isSpectator() && notAboard(entity);
+        boolean mob = entity instanceof Enemy && entity.isAlive() && !entity.isSpectator() && notAboard(entity);
+        return mob || TurretBlast.throwsPlayer(entity, this::notAboard);
     }
 
     /** Whether someone is not aboard the ship that launched it: anyone, for a cannon gone or standing in the world. */
