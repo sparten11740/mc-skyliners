@@ -309,6 +309,28 @@ const ROCKET_RELOAD_TICKS = 220;
 const ROCKET_DECK_AHEAD = 13;
 const ROCKET_DECK_UNDER = 3;
 const ROCKET_DECK_STONE = 6;
+// A freighter's cannon fired at another ship: how far east of her the other freighter is laid down, in blocks, clear of
+// her rim and in her cannon's reach, and how high over her control head she is flown to hover; how far in from her
+// near side and how far up her hull the cannon is aimed, in blocks; how long each hit is watched, in ticks; how much a
+// bolt must change her speed at least, in blocks a second, and how many times more a rocket must tilt her, four times
+// as hard a push as a bolt's but both blurred by her hovering; how long a burst of bolts is held, in ticks,
+// and how fast and how far it may shove her at most, in blocks a second and blocks: a rocket's worth and what she lets
+// up of it in those seconds, with the push of the bolts' own blasts, where with a cap of nearly twice that nine bolts
+// shoved her at 2.4 blocks a second and eight blocks off; and how long she is then given to settle, in ticks, how
+// slowly she must then drift, in blocks a second, and how near the height she hovered at she must be, in blocks.
+const HIT_TARGET_ABEAM = 75;
+const HIT_TARGET_UP = 40;
+const HIT_AIM_IN = 3;
+const HIT_AIM_UP = 0.4;
+const HIT_WATCH_TICKS = 40;
+const BOLT_SHOVE_LEAST = 0.15;
+const ROCKET_ROCKS_MORE = 1.5;
+const HIT_BURST_TICKS = 60;
+const HIT_BURST_FASTEST = 2.5;
+const HIT_BURST_FARTHEST = 6;
+const HIT_SETTLE_TICKS = 200;
+const HIT_SETTLED_SPEED = 0.8;
+const HIT_SETTLED_WITHIN = 3;
 // The laser crossbow: how far in front of the player its targets stand, in blocks, and how far down the player looks at
 // them, in degrees; how long a shot at one is given to fly there and strike, in ticks; a creeper's and a cow's full
 // health, in half hearts; how long it is left to cool after venting, in ticks; how long use is held down for a burst,
@@ -1775,6 +1797,81 @@ function rocketBlastsBlocks([cx, cy, cz]) {
   send(`?server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} air`);
   expect(shown === ROCKETS - 1, "freighter: a quick tap of use launches just one rocket, the sight showing three left", `${shown} shown`);
   expect(left < TURRET_BLASTED_LEFT, "freighter: her rocket's blast knocks out a block of stone it strikes", `${left} of 9 stone left`);
+}
+
+// Another ship shot at: from a freighter's gunner's seat, her cannon fired at a second freighter hovering abeam of her,
+// a bolt pings off her hull, heard and seen where it struck with sparks and a puff of smoke, and shoves her a little
+// along its way; a rocket bursts on her with a crunch and shoves her harder; a long burst of bolts never shoves her
+// fast or far; and she settles back to her hover after it. Shot at before, she felt nothing and nothing was heard.
+function checkShipHits() {
+  const site = layDown("freighter");
+  const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
+  const seat = cannon && gunnerSeat(cannon.at_abs[0], cannon.at_abs[2]);
+  if (!seat) {
+    expect(false, "ship hits: the freighter has a laser cannon and a gunner's seat under it");
+    return;
+  }
+  must(`server tp @p ${site.x + HIT_TARGET_ABEAM} ${ground} ${site.z}; turn 180 0; wait 40t`);
+  must("skyliners:build freighter", BUILD_SECONDS);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + HIT_TARGET_UP} speed=0`, BUILD_SECONDS);
+  const target = findShipFlying("skyliners:engine_grille");
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "ship hits: the other freighter lifts off and hovers abeam of her");
+  if (!up) {
+    return;
+  }
+  // Aboard her a moment, so the minute she flies on with nobody aboard starts over, and then at the gun.
+  must(`sable:tp ${target} skyliners:autopilot; wait ${LOOK_EVERY}t`);
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] - 0.5}; wait 20t`);
+  sitAt(seat);
+  const { box, at_abs: hovered } = must(`sable:info ${target} side=server`);
+  const aim = [box.min[0] + HIT_AIM_IN, box.min[1] + (box.max[1] - box.min[1]) * HIT_AIM_UP, cannon.at_abs[2] + 0.5];
+  aimFromSight(aim);
+  aimFromSight(aim);
+  const bolt = hitAndWatch(target, "key down key.attack; wait 3t; key up key.attack", HIT_WATCH_TICKS);
+  expect(heard("skyliners:impact_bolt", bolt.since, 0), "ship hits: a bolt striking the other freighter pings off her hull");
+  const seen = Object.fromEntries(must(`particles since=${bolt.since}`).rows.map((row) => [row.type, row.count]));
+  expect((seen.electric_spark ?? 0) > 0 && (seen.smoke ?? 0) > 0, "ship hits: sparks and a puff of smoke burst where it strikes, seen from the gun",
+    `${seen.electric_spark ?? 0} sparks, ${seen.smoke ?? 0} puffs`);
+  expect(bolt.shove >= BOLT_SHOVE_LEAST && bolt.along > 0, "ship hits: the bolt shoves her a little along its way",
+    `speed changed by ${round(bolt.shove)} blocks a second, ${round(bolt.along)} of it along the shot, tilted ${round(bolt.tilt)} degrees`);
+  const rocket = hitAndWatch(target, "key press key.use", HIT_WATCH_TICKS);
+  expect(heard("skyliners:impact_rocket", rocket.since, 0), "ship hits: a rocket bursts on her hull with a crunch");
+  expect(rocket.along > bolt.along && rocket.tilt > bolt.tilt * ROCKET_ROCKS_MORE, "ship hits: a rocket shoves and rocks her harder than a bolt",
+    `rocket ${round(rocket.along)} blocks a second away from the gun and ${round(rocket.tilt)} degrees, bolt ${round(bolt.along)} and ${round(bolt.tilt)}`);
+  must(`wait ${HIT_SETTLE_TICKS}t`);
+  const burst = hitAndWatch(target, `key down key.attack; sample sable:info ${target} side=server every 2t while wait ${HIT_BURST_TICKS}t; key up key.attack`,
+    HIT_WATCH_TICKS);
+  const pings = played("skyliners:impact_bolt", burst.since).length;
+  expect(pings > 1 && burst.shove <= HIT_BURST_FASTEST && burst.moved <= HIT_BURST_FARTHEST,
+    "ship hits: a long burst of bolts shoves her no faster or farther than a rocket might",
+    `${pings} bolts struck her, speed changed by ${round(burst.shove)} blocks a second, moved ${round(burst.moved)} blocks`);
+  const { vel, at_abs: settled } = must(`wait ${HIT_SETTLE_TICKS}t; sable:info ${target} side=server`);
+  expect(Math.hypot(...vel) <= HIT_SETTLED_SPEED && Math.abs(settled[1] - hovered[1]) <= HIT_SETTLED_WITHIN, "ship hits: she settles back to her hover after it",
+    `drifting at ${round(Math.hypot(...vel))} blocks a second, at y ${round(settled[1])}, hovering at ${round(hovered[1])} before`);
+}
+
+// A ship's motion through a hit, the action that fires it run first, watching her too if it samples her, and then her
+// watched every two ticks for so long: how much her speed changed at most from what it was, in blocks a second, and how
+// much of that away from the gun; how far her pitch or roll changed at most, in degrees; how far she moved, in blocks;
+// and the tick it began.
+function hitAndWatch(target, action, ticks) {
+  const before = must(`sable:info ${target} side=server`);
+  const since = now();
+  const replies = send(`${action}; sample sable:info ${target} side=server every 2t x${ticks / 2}`, BUILD_SECONDS);
+  const failed = replies.find((reply) => reply.ok === false);
+  if (failed) {
+    throw new Error(`${action}: ${failed.err} ${failed.arg ?? ""}`);
+  }
+  const rows = replies.flatMap((reply) => reply.rows ?? []).filter((row) => row.vel);
+  const change = (row) => row.vel.map((v, i) => v - before.vel[i]);
+  const shove = Math.max(...rows.map((row) => Math.hypot(...change(row))));
+  const away = [Math.sign(before.at_abs[0] - must("status").pos[0]), 0, 0];
+  const along = Math.max(...rows.map((row) => change(row).reduce((sum, v, i) => sum + v * away[i], 0)));
+  const tilt = Math.max(...rows.map((row) => Math.max(Math.abs(row.pitch - before.pitch), Math.abs(row.roll - before.roll))));
+  const moved = Math.max(...rows.map((row) => Math.hypot(...row.at_abs.map((v, i) => v - before.at_abs[i]))));
+  return { shove, along, tilt, moved, since };
 }
 
 // Sits in a seat from where the player stands; if something stands in the way, from the floor beside it, where the
@@ -4464,6 +4561,7 @@ const CHECKS = {
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },
+  "ship-hits": { run: checkShipHits, slow: true, about: "a freighter's cannon fired at another freighter hovering abeam: bolts ping off her and rock her a little, a rocket harder, a burst never far" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow fires at a click, its short bolt seen flying out of it, strikes a creeper, never a cow, and held down it vents and cools" },
   "laser-crossbow-flight": { run: checkLaserCrossbowInFlight, slow: true, about: "the laser crossbow's bolt, fired aboard a flying freighter, is seen leaving it" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
