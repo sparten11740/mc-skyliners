@@ -170,6 +170,15 @@ public final class SableFlight {
     }
 
     /**
+     * A point in the world seen in the frame of the assembled airliner the entity rides, among its blocks, as it lies
+     * now; the point itself when the entity rides none, or the point is among an airliner's blocks already. Something
+     * given there, as a laser bolt fired aboard or steam puffed from a crossbow, a client draws carried along with her.
+     */
+    public static Vec3 toRidden(Entity entity, Vec3 point) {
+        return SABLE ? Access.toRidden(entity, point) : point;
+    }
+
+    /**
      * Whether two block entities are both part of one assembled airliner: the same one of Sable's flying bodies, not
      * merely two that fly side by side; false when either is not part of one.
      */
@@ -697,6 +706,14 @@ public final class SableFlight {
             SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
             return airliner == null || airliner.isRemoved() ? Vec3.ZERO
                 : Sable.HELPER.getVelocity(entity.level(), airliner, airliner.logicalPose().transformPositionInverse(entity.position()));
+        }
+
+        static Vec3 toRidden(Entity entity, Vec3 point) {
+            SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            if (airliner == null || airliner.isRemoved() || Sable.HELPER.getContaining(entity.level(), point) != null) {
+                return point;
+            }
+            return airliner.logicalPose().transformPositionInverse(point);
         }
 
         static boolean sameAirliner(BlockEntity one, BlockEntity other) {

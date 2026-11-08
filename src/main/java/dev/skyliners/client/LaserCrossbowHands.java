@@ -26,16 +26,15 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * How the laser crossbow is held (see {@link LaserCrossbowItem}). The game poses its own crossbow by its own code and
- * draws anything else being charged as a crossbow at the camera itself, a dark sliver across the view, so this poses it
- * all.
+ * How the laser crossbow is held (see {@link LaserCrossbowItem}). The game poses its own crossbow by its own code, so
+ * this poses it all.
  *
- * <p>In first person it is held low on its side of the view, its muzzle toward the crosshair; raised to aim as it is
- * charged and while it stays charged; kicked back and up as it fires, then lowered again; and swung as anything held
- * is when its holder attacks. Every use of an item drops it out of sight and swings it back up, as if it were taken in
- * hand again: that is left out while it is raised or kicking back, which every use of it is. In third person it is
- * cocked as the game's own crossbow is while it charges, and aimed in both hands while it is charged and a moment after
- * it fires, as the game aims its own charged.
+ * <p>In first person it is held low on its side of the view, its muzzle toward the crosshair; raised to aim as it fires,
+ * kicked back and up by each shot, and lowered again a moment after the last, so held down it stays raised, bucking
+ * with each shot; and swung as anything held is when its holder attacks. Every use of an item drops it out of sight
+ * and swings it back up, as if it were taken in hand again: that is left out while it is raised or kicking back, which
+ * every use of it is. In third person it is aimed in both hands a moment after each shot, as the game aims its own
+ * crossbow charged.
  *
  * <p>It also says where its muzzle is drawn, which its bolts are drawn leaving (see {@link LaserBolts}).
  */
@@ -52,11 +51,15 @@ public final class LaserCrossbowHands implements IClientItemExtensions {
     private static final float AIM_ACROSS = 0.14F;
     private static final float AIM_UP = 0.07F;
     private static final float AIM_BACK = 0.05F;
-    /** How long it kicks back after a shot, in ticks, how far back at first, in blocks, and how far up, in degrees. */
-    private static final double KICK_TICKS = 6;
-    private static final float KICK_BACK = 0.15F;
-    private static final float KICK_UP = 14;
-    /** How long it takes to lower from aiming after a shot, in first person, in ticks. */
+    /**
+     * How long it kicks back after a shot, in ticks, as long as the game takes to repeat a held use, how far back at
+     * first, in blocks, and how far up, in degrees.
+     */
+    private static final double KICK_TICKS = 4;
+    private static final float KICK_BACK = 0.1F;
+    private static final float KICK_UP = 9;
+    /** How long it stays raised after a shot, and how long it then takes to lower, in first person, in ticks. */
+    private static final double RAISED_TICKS = 10;
     private static final double LOWER_TICKS = 8;
     /** How long it is still aimed in both hands after a shot, in third person, in ticks. */
     private static final long AIMED_AFTER_SHOT = 10;
@@ -101,19 +104,19 @@ public final class LaserCrossbowHands implements IClientItemExtensions {
         FIRED[hand.ordinal()] = DrawingClock.wholeTicks() + 1;
     }
 
-    /** In third person: aimed in both hands while charged and a moment after a shot, else held as anything is. */
+    /** In third person: aimed in both hands a moment after a shot, else held as anything is. */
     @Nullable
     @Override
     public HumanoidModel.ArmPose getArmPose(LivingEntity holder, InteractionHand hand, ItemStack stack) {
         long shot = LaserCrossbowItem.lastShot(stack);
         boolean justFired = shot > 0 && Math.abs(holder.level().getGameTime() - shot) < AIMED_AFTER_SHOT;
-        return LaserCrossbowItem.charged(stack) || justFired ? HumanoidModel.ArmPose.CROSSBOW_HOLD : null;
+        return justFired ? HumanoidModel.ArmPose.CROSSBOW_HOLD : null;
     }
 
     @Override
     public boolean applyForgeHandTransform(PoseStack pose, LocalPlayer player, HumanoidArm arm, ItemStack stack, float partialTick,
         float taken, float swing) {
-        hold(pose, player, arm, stack, partialTick, taken, swing);
+        hold(pose, player, arm, partialTick, taken, swing);
         return true;
     }
 
@@ -121,12 +124,12 @@ public final class LaserCrossbowHands implements IClientItemExtensions {
      * Poses it in first person in its holder's hand on one side, so far through this tick, so far through being taken
      * in hand and so far through a swing, from the eye: before its model's own transform for first person.
      */
-    private static void hold(PoseStack pose, LivingEntity holder, HumanoidArm arm, ItemStack stack, float partialTick, float taken, float swing) {
+    private static void hold(PoseStack pose, LivingEntity holder, HumanoidArm arm, float partialTick, float taken, float swing) {
         int side = arm == HumanoidArm.RIGHT ? 1 : -1;
         InteractionHand hand = arm == holder.getMainArm() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         double sinceShot = Math.max(0, DrawingClock.ticks(partialTick) - FIRED[hand.ordinal()]);
         float kick = sinceShot < KICK_TICKS ? (float) Mth.square(1 - sinceShot / KICK_TICKS) : 0;
-        float aim = aim(stack, holder, partialTick, sinceShot);
+        float aim = aim(sinceShot);
         boolean steady = aim > 0 || kick > 0;
         float reach = Mth.sqrt(swing);
         if (swing > 0) {
@@ -150,17 +153,9 @@ public final class LaserCrossbowHands implements IClientItemExtensions {
         pose.mulPose(Axis.YP.rotationDegrees(side * -45));
     }
 
-    /**
-     * How far it is raised to aim, from 0 at rest to 1: as far as it is through charging, wholly while it is charged,
-     * and lowering again after a shot.
-     */
-    private static float aim(ItemStack stack, LivingEntity holder, float partialTick, double sinceShot) {
-        if (LaserCrossbowItem.charged(stack)) {
-            return 1;
-        }
-        float charging = LaserCrossbowItem.charging(stack, holder, partialTick);
-        float lowering = (float) Math.max(0, 1 - sinceShot / LOWER_TICKS);
-        float raised = Math.max(charging, lowering);
+    /** How far it is raised to aim, from 0 at rest to 1, so many ticks after its last shot: up, then lowering again. */
+    private static float aim(double sinceShot) {
+        float raised = (float) Mth.clamp(1 - (sinceShot - RAISED_TICKS) / LOWER_TICKS, 0, 1);
         return raised * raised * (3 - 2 * raised);
     }
 
@@ -212,8 +207,8 @@ public final class LaserCrossbowHands implements IClientItemExtensions {
         pose.mulPose(Axis.XP.rotationDegrees((player.getViewXRot(partialTick) - lagPitch) * SWAY));
         pose.mulPose(Axis.YP.rotationDegrees((player.getViewYRot(partialTick) - lagYaw) * SWAY));
         HumanoidArm arm = hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+        hold(pose, player, arm, partialTick, 0, 0);
         ItemStack stack = player.getItemInHand(hand);
-        hold(pose, player, arm, stack, partialTick, 0, 0);
         boolean left = arm == HumanoidArm.LEFT;
         BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, player.level(), player, player.getId());
         ClientHooks.handleCameraTransforms(pose, model, left ? ItemDisplayContext.FIRST_PERSON_LEFT_HAND : ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,

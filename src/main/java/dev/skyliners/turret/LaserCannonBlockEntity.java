@@ -415,7 +415,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         Vec3 from = SableFlight.toWorld(level, muzzle);
         Vec3 along = SableFlight.toWorld(level, muzzle.add(way)).subtract(from);
         HitResult hit = LaserFire.trace(level, gunner, from, along, RANGE, notAboard());
-        LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN, null);
+        LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN);
         if (SkylinersConfig.FREIGHTER_TURRET_BLASTS.get()) {
             TurretBlast.at(level, gunner, from, hit, notAboard());
         }

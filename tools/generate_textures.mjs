@@ -6007,10 +6007,10 @@ const LIFT_ICONS = {
 // The freighter's laser crossbow's icon (see LaserCrossbowItem), as its model is seen from above, pointing up and to the
 // right as the game's own crossbow does: a dark-wood stock and grip from its butt at the bottom left, a gunmetal body on
 // to the glowing emitter at its muzzle, its coil round the prod, two gunmetal arms across its front, swept back to the
-// glowing pods at their tips, and its three heat lamps along the body. Resting, its string lies straight between the
-// pods, a dull amber, and its lamps are dark; charging, it glows warmer and then hot; charged, its string is drawn back to
-// its latch in a V, glowing near white, and its lamps are green; venting, its lamps are red and wisps of steam rise off
-// its arms, so each look differs in shape or colour, never in text alone.
+// glowing pods at their tips, and its three heat lamps along the body. Ready to fire, its string is drawn back to its
+// latch in a V, a dull amber, and its lamps are green; heating, it glows warmer and then hot, its lamps amber at the
+// hotter; venting, its string lies slack straight between the pods, its lamps are red and wisps of steam rise off its
+// arms, so each look differs in shape or colour, never in text alone.
 {
   const CLEAR = [0, 0, 0, 0];
   const WOOD = [0x4a, 0x30, 0x20];
@@ -6054,11 +6054,12 @@ const LIFT_ICONS = {
     if (grip.has(at)) return WOOD;
     return body(x, y) ?? CLEAR;
   };
-  const LAMP_DARK = [0x26, 0x28, 0x2c];
-  const GLOWS = { "": [0xb8, 0x6a, 0x1c], warm: [0xe0, 0x88, 0x24], hot: [0xff, 0xb4, 0x3c], charged: [0xff, 0xf0, 0xb0] };
+  const LAMP_GREEN = [0x50, 0xf0, 0x60];
+  const LAMP_AMBER = [0xff, 0xa8, 0x20];
+  const GLOWS = { "": [0xb8, 0x6a, 0x1c], warm: [0xe0, 0x88, 0x24], hot: [0xff, 0xb4, 0x3c] };
   for (const [look, glow] of Object.entries(GLOWS)) {
     const name = look ? `laser_crossbow_${look}` : "laser_crossbow";
-    texture(itemOutput, name, crossbow(glow, look === "charged" ? drawn : slack, look === "charged" ? [0x50, 0xf0, 0x60] : LAMP_DARK), 0);
+    texture(itemOutput, name, crossbow(glow, drawn, look === "hot" ? LAMP_AMBER : LAMP_GREEN), 0);
   }
   texture(itemOutput, "laser_crossbow_venting", crossbow(GLOWS[""], slack, [0xf0, 0x30, 0x20], new Map([...steam].map((at) => [at, STEAM]))), 0);
 }
@@ -6066,8 +6067,7 @@ const LIFT_ICONS = {
 // The laser crossbow's model's parts (see generate_resources.mjs): gunmetal with faint panel seams for its body, prod,
 // arms and butt plate, a paler steel for its rail, sights and trigger, dark wood with a grain for its stock and grip,
 // copper for the windings round its coil, and the amber of its coil, string, channel and emitters as it glows brighter
-// charging, from a dull ember resting through warm and hot to near white charged; and its three heat lamps, dark, green
-// or red.
+// heating, from a dull ember resting through warm to hot; and its three heat lamps, green, amber or red.
 {
   const METAL = [0x4a, 0x50, 0x5a];
   const METAL_SEAM = [0x38, 0x3d, 0x45];
@@ -6081,11 +6081,11 @@ const LIFT_ICONS = {
   texture(itemOutput, "laser_crossbow_trim", (x, y) => (y % 8 === 0 ? TRIM_EDGE : TRIM), 3);
   texture(itemOutput, "laser_crossbow_wood", (x, y) => ((y * 5 + Math.floor(x / 4)) % 7 === 0 ? WOOD_GRAIN : WOOD), 4);
   texture(itemOutput, "laser_crossbow_copper", (x, y) => ((x + y) % 2 === 0 ? COPPER : COPPER_DARK), 3);
-  const GLOWS = { rest: [0x8a, 0x4c, 0x14], warm: [0xc8, 0x74, 0x1c], hot: [0xf4, 0xa8, 0x30], charged: [0xff, 0xec, 0xa8] };
+  const GLOWS = { rest: [0x8a, 0x4c, 0x14], warm: [0xc8, 0x74, 0x1c], hot: [0xf4, 0xa8, 0x30] };
   for (const [look, colour] of Object.entries(GLOWS)) {
     texture(itemOutput, `laser_crossbow_glow_${look}`, () => colour, 2);
   }
-  const LAMPS = { dark: [0x26, 0x28, 0x2c], green: [0x50, 0xf0, 0x60], red: [0xf0, 0x30, 0x20] };
+  const LAMPS = { green: [0x50, 0xf0, 0x60], amber: [0xff, 0xa8, 0x20], red: [0xf0, 0x30, 0x20] };
   for (const [look, colour] of Object.entries(LAMPS)) {
     texture(itemOutput, `laser_crossbow_lamp_${look}`, () => colour, 0);
   }

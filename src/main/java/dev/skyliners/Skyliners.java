@@ -64,6 +64,7 @@ import dev.skyliners.entity.Spookie;
 import dev.skyliners.entity.Tardigrade;
 import dev.skyliners.horn.ShipHorn;
 import dev.skyliners.impact.ImpactJolt;
+import dev.skyliners.item.BoltsInFlight;
 import dev.skyliners.lookout.LookoutSpot;
 import dev.skyliners.parachute.OpenParachute;
 import dev.skyliners.parachute.Parachute;
@@ -167,6 +168,7 @@ public final class Skyliners {
                 ShipHorn.tick(level);
                 LandAhead.tick(level);
                 ParkedShips.tick(level);
+                BoltsInFlight.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {
@@ -188,12 +190,13 @@ public final class Skyliners {
                 SelfDestruct.drop(level);
                 ShipHorn.drop(level);
                 LandAhead.drop(level);
+                BoltsInFlight.drop(level);
             }
         });
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("38")
+        event.registrar("39")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)

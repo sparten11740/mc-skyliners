@@ -309,25 +309,29 @@ const ROCKET_RELOAD_TICKS = 220;
 const ROCKET_DECK_AHEAD = 13;
 const ROCKET_DECK_UNDER = 3;
 const ROCKET_DECK_STONE = 6;
-// The laser crossbow: how long use is held to charge it, in ticks, longer than it takes, and how long to see that held
-// past its click it does not fire by itself; how far in front of the
-// player its targets stand, in blocks, and how far down the player looks at them, in degrees; a creeper's and a cow's
-// full health, in half hearts; how long it is left to cool after venting, in ticks; and how many shots in a row vent
-// it. Its bolt: how soon after a shot it is looked for and how much later again, in ticks; how long it must have shown
-// by then at least, in ticks, more than the blink of four it once was; and how near the eye it must leave from, in
-// blocks, as the crossbow's muzzle is.
-const CROSSBOW_CHARGE_TICKS = 30;
-const CROSSBOW_HELD_LONG_TICKS = 60;
+// The laser crossbow: how far in front of the player its targets stand, in blocks, and how far down the player looks at
+// them, in degrees; how long a shot at one is given to fly there and strike, in ticks; a creeper's and a cow's full
+// health, in half hearts; how long it is left to cool after venting, in ticks; how long use is held down for a burst,
+// in ticks, how often the game repeats a held use, in ticks, and how many shots a burst fires at least before it vents.
+// Its bolt: how soon after a shot it is looked for and how much later again, in ticks; how long it must have shown by
+// then at least, in ticks, more than the blink of four it once was; how near the eye it must leave from, in blocks, as
+// the crossbow's muzzle is; and, by the time it is first looked for, how far its tail must have flown from there at
+// least and how long it may be drawn at most, in blocks, a short bolt and not a ray from the muzzle.
 const CROSSBOW_TARGET_AHEAD = 6;
 const CROSSBOW_AIM_DOWN = 8;
+const CROSSBOW_STRIKE_TICKS = 20;
 const CREEPER_HEALTH = 20;
 const COW_HEALTH = 10;
-const CROSSBOW_COOLED_TICKS = 100;
-const CROSSBOW_HEAT = 3;
+const CROSSBOW_COOLED_TICKS = 80;
+const CROSSBOW_BURST_TICKS = 120;
+const CROSSBOW_REPEAT_TICKS = 4;
+const CROSSBOW_LEAST_BURST = 10;
 const BOLT_LOOKED_FOR_TICKS = 3;
 const BOLT_LATER_TICKS = 15;
 const BOLT_SHOWN_TICKS = 8;
 const BOLT_NEAR_EYE = 1.5;
+const BOLT_FLOWN_LEAST = 3;
+const BOLT_LONGEST = 2.5;
 // The laser crossbow aboard a flying freighter: how fast she flies along, in blocks a second, what share of that she
 // must have come up to, and how far up the player looks to fire, in degrees, clear of her controls, which a click
 // would work instead of firing.
@@ -1801,44 +1805,44 @@ function aimFromSight(point) {
   return gunnerSight();
 }
 
-// The laser crossbow: charged by holding use, it fires an amber bolt that the player sees leave the crossbow's muzzle
-// in front of them and that shows a while, not for a blink; it strikes a creeper hard and leaves a cow unharmed; three
-// quick shots and it vents, and will not fire again until it has cooled. The creeper is shot with the world on easy, as
-// a peaceful world takes hostile mobs away at once. The quick shots go in one script: sent one by one, the time between
-// them let it cool before the third.
+// The laser crossbow: one click fires it at once, with no holding, an amber bolt that the player sees leave the
+// crossbow's muzzle in front of them and fly out as a short bolt, not a ray from the muzzle, showing a while, not for a
+// blink; it strikes a creeper and leaves a cow unharmed; held down it keeps firing until it overheats and vents,
+// hissing, holding its fire, and once cooled it fires again. The creeper is shot with the world on easy, as a peaceful
+// world takes hostile mobs away at once. The burst is held in one step: sent click by click, the time between them
+// would let it cool.
 function checkLaserCrossbow() {
   const x = nextSite++ * SITE_APART;
   creative();
   must(`server tp @p ${x} ${ground} 0; turn 0 0; wait 40t; server item replace entity @p weapon.mainhand with skyliners:laser_crossbow`);
-  const held = now();
-  must(`turn 0 0; use hold=${CROSSBOW_HELD_LONG_TICKS}t; wait 5t`);
-  const charged = /laser_crossbow_charged\W*1b/.test(JSON.stringify(send("server data get entity @p SelectedItem")[0]));
-  expect(charged && !heard("skyliners:laser_crossbow_shot", held, 0), "laser crossbow: held long past its click, it charges and does not fire by itself",
-    charged ? "charged" : "not charged");
-  seesItsBolt("laser crossbow: fired", "use");
+  const clicked = now();
+  must("turn 0 0; wait 10t; use; wait 5t");
+  expect(heard("skyliners:laser_crossbow_shot", clicked, 0), "laser crossbow: one click fires it at once, without holding use");
+  seesItsBolt("laser crossbow: fired", "wait 10t; use", "", true);
   must("server difficulty easy");
   const struck = shootAt("creeper", x);
   must("server difficulty peaceful");
-  expect(struck < CREEPER_HEALTH, "laser crossbow: charged and fired, its bolt strikes a creeper", `health ${struck} of ${CREEPER_HEALTH}`);
+  expect(struck < CREEPER_HEALTH, "laser crossbow: its bolt strikes a creeper", `health ${struck} of ${CREEPER_HEALTH}`);
   const spared = shootAt("cow", x);
   expect(spared === COW_HEALTH, "laser crossbow: its bolt never hurts a cow", `health ${spared} of ${COW_HEALTH}`);
-  must(`wait ${CROSSBOW_COOLED_TICKS}t`);
-  const quick = now();
-  const shot = `use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 5t`;
-  must(`${Array(CROSSBOW_HEAT + 1).fill(shot).join("; ")}; wait 10t`);
-  const shots = played("skyliners:laser_crossbow_shot", quick).length;
-  expect(shots === CROSSBOW_HEAT && heard("minecraft:block.fire.extinguish", quick, 0),
-    "laser crossbow: three quick shots and it vents, hissing, and does not fire a fourth", `${shots} shots`);
+  must(`turn 0 0; wait ${CROSSBOW_COOLED_TICKS}t`);
+  const burst = now();
+  must(`use hold=${CROSSBOW_BURST_TICKS}t; wait 5t`);
+  const shots = played("skyliners:laser_crossbow_shot", burst).length;
+  const vented = heard("skyliners:ramp_steam", burst, 0);
+  expect(vented && shots >= CROSSBOW_LEAST_BURST && shots < CROSSBOW_BURST_TICKS / CROSSBOW_REPEAT_TICKS,
+    "laser crossbow: held down it keeps firing, then overheats and vents, hissing, and holds its fire", `${shots} shots, ${vented ? "vented" : "never vented"}`);
   must(`wait ${CROSSBOW_COOLED_TICKS}t`);
   const cooled = now();
-  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
-  expect(heard("skyliners:laser_crossbow_shot", cooled, 0), "laser crossbow: once cooled, it charges and fires again");
+  must("use; wait 10t");
+  expect(heard("skyliners:laser_crossbow_shot", cooled, 0), "laser crossbow: once cooled, it fires again");
 }
 
-// Fires the laser crossbow in hand, charged, by a script ending in its use, and looks at its bolt as the player sees
-// it: drawn leaving the crossbow's muzzle in front of them, not where the server had them, and still shown a moment
-// later, not gone in a blink.
-function seesItsBolt(what, fire, aimed = "") {
+// Fires the laser crossbow in hand by a script ending in its use, and looks at its bolt as the player sees it: drawn
+// leaving the crossbow's muzzle in front of them, not where the server had them, and flying out as a short bolt rather
+// than a ray from the muzzle; fired where it flies its whole range, it is still shown a moment later, not gone in a
+// blink. Fired where it soon strikes something, as aboard a ship, it rightly vanishes as it gets there.
+function seesItsBolt(what, fire, aimed = "", fliesItsRange = false) {
   const before = must("skyliners:bolts").received ?? 0;
   const bolt = must(`${fire}; wait ${BOLT_LOOKED_FOR_TICKS}t; skyliners:bolts`);
   const [right, up, ahead] = (bolt.from_camera ?? "0,0,-99").split(",").map(Number);
@@ -1846,15 +1850,19 @@ function seesItsBolt(what, fire, aimed = "") {
   expect(bolt.received > before && bolt.from_muzzle === true && ahead > 0 && fromEye <= BOLT_NEAR_EYE,
     `${what}, its bolt is drawn leaving the crossbow's muzzle in front of the player`,
     `${bolt.received - before} sent, from the muzzle ${bolt.from_muzzle}, from the eye ${right}, ${up}, ${ahead}${aimed ? `, ${aimed}` : ""}`);
-  const later = must(`wait ${BOLT_LATER_TICKS}t; skyliners:bolts`);
-  expect(later.shown >= BOLT_SHOWN_TICKS, `${what}, its bolt shows a while, not for a blink`, `shown ${later.shown} ticks`);
+  expect(bolt.flown >= BOLT_FLOWN_LEAST && bolt.streak > 0 && bolt.streak <= BOLT_LONGEST,
+    `${what}, its bolt flies out as a short bolt, not a ray from the muzzle`, `its tail ${bolt.flown} blocks out, ${bolt.streak} blocks long`);
+  if (fliesItsRange) {
+    const later = must(`wait ${BOLT_LATER_TICKS}t; skyliners:bolts`);
+    expect(later.shown >= BOLT_SHOWN_TICKS, `${what}, its bolt shows a while, not for a blink`, `shown ${later.shown} ticks`);
+  }
 }
 
-// Summons a mob that stands still in front of the player, charges the laser crossbow and fires it at the mob: its
-// health after, the mob then taken away.
+// Summons a mob that stands still in front of the player and fires the laser crossbow at it once: its health after the
+// bolt has had time to fly there, the mob then taken away.
 function shootAt(mob, x) {
   must(`server summon ${mob} ${x + 0.5} ${ground} ${CROSSBOW_TARGET_AHEAD + 0.5} {NoAI:1b,PersistenceRequired:1b}; wait 10t`);
-  must(`turn 0 ${CROSSBOW_AIM_DOWN}; use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t; use; wait 10t`);
+  must(`turn 0 ${CROSSBOW_AIM_DOWN}; wait 10t; use; wait ${CROSSBOW_STRIKE_TICKS}t`);
   const [reply] = send(`server data get entity @e[type=${mob},limit=1,sort=nearest] Health`);
   must(`server kill @e[type=${mob}]; wait 5t`);
   const health = Number(/(-?[0-9.]+)f/.exec(JSON.stringify(reply))?.[1]);
@@ -1881,7 +1889,6 @@ function checkLaserCrossbowInFlight() {
   expect(going, "freighter: she flies along", `at ${freighterReport()?.ahead} blocks a second`);
   must(`sable:tp ${at.join(",")}; wait 20t; server item replace entity @p weapon.mainhand with skyliners:laser_crossbow`);
   const { aim } = must(`turn 0 ${-CROSSBOW_FLIGHT_AIM_UP}; wait 5t; status`);
-  must(`use hold=${CROSSBOW_CHARGE_TICKS}t; wait 5t`);
   seesItsBolt("laser crossbow: fired aboard a freighter flying along", "use", `aimed at ${aim ?? "nothing in reach"}`);
   must("skyliners:autopilot land");
 }
@@ -4398,7 +4405,7 @@ const CHECKS = {
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },
-  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },
+  "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow fires at a click, its short bolt seen flying out of it, strikes a creeper, never a cow, and held down it vents and cools" },
   "laser-crossbow-flight": { run: checkLaserCrossbowInFlight, slow: true, about: "the laser crossbow's bolt, fired aboard a flying freighter, is seen leaving it" },
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },

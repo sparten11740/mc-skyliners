@@ -5010,75 +5010,64 @@ function lowRoar(seconds, cutoff, own) {
   writeSound("cannon_rocket_load", load, 0.6);
 }
 
-// The laser crossbow (see the plan's "The laser crossbow"), each sound with a random sequence of its own. Its shot:
-// the glowing coil it has for a string twanging as it is let go, a plucked string at 98 hertz; the bolt crackling off
-// it, noise round 2.5 kilohertz chopped by a 220 hertz square, swelling for 80 milliseconds; and the soft thump of the
-// stock in the shoulder. Its reload: twelve ratchet clicks quickening as it is cocked, the coil's charge whining up
-// from 300 hertz to 2.4 kilohertz over 0.6 seconds, and the latch clacking home as it is ready. Tune them here.
+// The laser crossbow (see LaserCrossbowItem), each sound with a random sequence of its own. Its shot, a punchy "pew"
+// short enough for five a second: a bright zap diving from 2.6 kilohertz to under 400 hertz in a few hundredths of a
+// second, a sine with a buzz of square on it, doubled an octave down for body, over a crack of noise as it leaves and
+// the soft thump of the stock in the shoulder; the game plays it a little higher or lower each time. Its bolt striking:
+// a smack, then a sizzle of crackling sparks dying away, high-passed noise popping at random, over a short electric
+// buzz. Tune them here.
 const LASER_CROSSBOW = {
-  // The shot: the string's pitch, in hertz, and how much of it is left each time round, some 20 decibels lost a
-  // second; the bolt's ring and chop, in hertz, and how long it swells, in seconds.
-  stringHz: 98,
-  stringRings: 0.975,
-  boltHz: 2500,
-  chopHz: 220,
-  boltSwells: 0.08,
-  shotSeconds: 0.7,
-  // The reload: its clicks, the first and the last gap between them, in seconds; the charge whine from and to, in
-  // hertz, when it starts and how long it rises, in seconds; and when the latch clacks.
-  clicks: 12,
-  firstGap: 0.07,
-  lastGap: 0.025,
-  chargeFrom: 300,
-  chargeTo: 2400,
-  chargeAt: 0.45,
-  charging: 0.6,
-  latchAt: 1.12,
-  reloadSeconds: 1.4,
+  // The shot: the zap's pitch from and to, in hertz, how fast it dives and dies away, in seconds, how much square
+  // buzz it carries and how loud its octave below is; the crack's length, in seconds; and how long it all is.
+  zapFrom: 2600,
+  zapTo: 380,
+  dives: 0.045,
+  dies: 0.08,
+  buzz: 0.35,
+  octaveBelow: 0.5,
+  crackSeconds: 0.012,
+  shotSeconds: 0.3,
+  // The strike: the sizzle's cut-off, in hertz, how fast it dies away, in seconds, and how many pops a second it
+  // crackles with; the buzz's pitch, in hertz, and how long it lasts, in seconds; and how long it all is.
+  sizzleFrom: 2800,
+  sizzleDies: 0.13,
+  popsPerSecond: 90,
+  buzzHz: 110,
+  buzzSeconds: 0.08,
+  hitSeconds: 0.5,
 };
 {
   const shotRandom = ownRandom(0x4c435368);
   const C = LASER_CROSSBOW;
   const shot = new Float64Array(Math.round(C.shotSeconds * RATE));
-  // The coil twanging: a Karplus-Strong string, a burst of noise round a delay line a period of its pitch long, each
-  // turn averaged with its neighbour and losing a little.
-  const period = Math.round(RATE / C.stringHz);
-  const string = Float64Array.from({ length: shot.length }, (_, i) => (i < period ? shotRandom() * 2 - 1 : 0));
-  for (let i = period + 1; i < string.length; i++) {
-    string[i] = C.stringRings * 0.5 * (string[i - period] + string[i - period - 1]);
-  }
-  const bolt = resonance(whiteNoise(C.shotSeconds, shotRandom), C.boltHz, 1.5);
+  const crack = highPassed(whiteNoise(C.crackSeconds, shotRandom), 3000);
+  let phase = 0;
   shot.forEach((_, i) => {
     const t = i / RATE;
-    const chop = (C.chopHz * t) % 1 < 0.5 ? 1 : 0.15;
-    const swell = t < C.boltSwells ? t / C.boltSwells : Math.exp(-(t - C.boltSwells) / 0.03);
-    shot[i] = 0.5 * string[i] * Math.min(1, t / 0.002, (C.shotSeconds - t) / 0.1) + 5 * swell * chop * bolt[i];
+    phase += (2 * Math.PI * (C.zapTo + (C.zapFrom - C.zapTo) * Math.exp(-t / C.dives))) / RATE;
+    const zap = Math.sin(phase) + C.buzz * Math.sign(Math.sin(phase)) + C.octaveBelow * Math.sin(phase / 2);
+    const envelope = Math.min(1, t / 0.002) * Math.exp(-t / C.dies) * Math.min(1, (C.shotSeconds - t) / 0.03);
+    shot[i] = envelope * zap + (i < crack.length ? 0.6 * crack[i] * (1 - i / crack.length) : 0);
   });
-  thunk(shot, 0, 80, 0.4, shotRandom);
+  thunk(shot, 0, 70, 0.35, shotRandom);
   writeSound("laser_crossbow_shot", shot, 0.8);
 }
 {
-  const reloadRandom = ownRandom(0x4c43526c);
+  const hitRandom = ownRandom(0x4c434869);
   const C = LASER_CROSSBOW;
-  const reload = new Float64Array(Math.round(C.reloadSeconds * RATE));
-  let at = 0;
-  for (let k = 0; k < C.clicks; k++) {
-    click(reload, at, 2600 + 600 * reloadRandom(), 0.5, reloadRandom);
-    click(reload, at + 0.006, 1300, 0.25, reloadRandom);
-    at += C.firstGap * (C.lastGap / C.firstGap) ** (k / (C.clicks - 1));
-  }
-  let phase = 0;
-  for (let i = Math.round(C.chargeAt * RATE); i < Math.round(C.latchAt * RATE); i++) {
-    const t = i / RATE - C.chargeAt;
-    const rising = Math.min(1, t / C.charging);
-    phase += (C.chargeFrom * (C.chargeTo / C.chargeFrom) ** rising) / RATE;
-    const tone = Math.sin(2 * Math.PI * phase) + 0.3 * Math.sin(4 * Math.PI * phase) + 0.12 * Math.sin(6 * Math.PI * phase);
-    const envelope = Math.min(1, t / 0.05) * (0.4 + 0.6 * rising) * Math.min(1, (C.latchAt - C.chargeAt - t) / 0.03);
-    reload[i] += 0.3 * envelope * tone * (1 + 0.15 * Math.sin(2 * Math.PI * 31 * t));
-  }
-  click(reload, C.latchAt, 2000, 0.8, reloadRandom);
-  thunk(reload, C.latchAt + 0.004, 150, 0.35, reloadRandom);
-  writeSound("laser_crossbow_reload", reload, 0.75);
+  const sizzle = highPassed(whiteNoise(C.hitSeconds, hitRandom), C.sizzleFrom);
+  const hit = new Float64Array(sizzle.length);
+  let pop = 0;
+  hit.forEach((_, i) => {
+    const t = i / RATE;
+    pop = hitRandom() < C.popsPerSecond / RATE ? 1 + hitRandom() : pop * 0.995;
+    const fizz = Math.exp(-t / C.sizzleDies) * (0.35 + pop) * sizzle[i];
+    const buzz = t < C.buzzSeconds ? 0.3 * Math.sign(Math.sin(2 * Math.PI * C.buzzHz * t)) * (1 - t / C.buzzSeconds) : 0;
+    hit[i] = Math.min(1, t / 0.001) * fizz * Math.min(1, (C.hitSeconds - t) / 0.05) + buzz;
+  });
+  thunk(hit, 0, 110, 0.6, hitRandom);
+  click(hit, 0.002, 2200, 0.4, hitRandom);
+  writeSound("laser_crossbow_hit", hit, 0.75);
 }
 
 /** The samples through a two-pole low-pass whose cutoff moves as it goes, cutoffAt(t) hertz t seconds in. */

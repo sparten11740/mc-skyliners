@@ -2,7 +2,7 @@
   "loader": "neoforge:separate_transforms",
   "gui_light": "front",
   "base": {
-    "parent": "skyliners:item/laser_crossbow_slack",
+    "parent": "skyliners:item/laser_crossbow_drawn",
     "textures": {
       "metal": "skyliners:item/laser_crossbow_metal",
       "trim": "skyliners:item/laser_crossbow_trim",
@@ -12,7 +12,7 @@
       "string": "skyliners:item/laser_crossbow_glow_rest",
       "emitter": "skyliners:item/laser_crossbow_glow_rest",
       "channel": "skyliners:item/laser_crossbow_glow_rest",
-      "lamp": "skyliners:item/laser_crossbow_lamp_dark",
+      "lamp": "skyliners:item/laser_crossbow_lamp_green",
       "particle": "skyliners:item/laser_crossbow_metal"
     }
   },
@@ -29,21 +29,15 @@
   "overrides": [
     {
       "predicate": {
-        "skyliners:charge": 0.34
+        "skyliners:heat": 0.4
       },
       "model": "skyliners:item/laser_crossbow_warm"
     },
     {
       "predicate": {
-        "skyliners:charge": 0.67
+        "skyliners:heat": 0.7
       },
       "model": "skyliners:item/laser_crossbow_hot"
-    },
-    {
-      "predicate": {
-        "skyliners:charged": 1
-      },
-      "model": "skyliners:item/laser_crossbow_charged"
     },
     {
       "predicate": {

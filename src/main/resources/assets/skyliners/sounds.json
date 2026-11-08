@@ -850,11 +850,11 @@
       }
     ]
   },
-  "laser_crossbow_reload": {
-    "subtitle": "subtitles.skyliners.laser_crossbow_reload",
+  "laser_crossbow_hit": {
+    "subtitle": "subtitles.skyliners.laser_crossbow_hit",
     "sounds": [
       {
-        "name": "skyliners:laser_crossbow_reload"
+        "name": "skyliners:laser_crossbow_hit"
       }
     ]
   },

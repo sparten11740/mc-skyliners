@@ -2940,15 +2940,20 @@ still hurt hostile mobs but break no block.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
 copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing
-emitters and a string of amber light between them, a copper-wound coil round its prod. Hold use to charge it, a ratchet
-and a rising whine: you raise it to aim as its coil glows warmer and then hot, until it clicks. Let go and it stays
-charged, its string drawn back in a V glowing near white and the three lamps at the back of its sight green; anyone
-watching sees you aim it in both hands. Use it again to fire: it kicks back with a flash at its muzzle, and an amber
-bolt flies from it the way you look, up to 48 blocks, leaving a glowing trail that fades, seen leaving your crossbow by
-you and everyone near, on the ground or aboard a ship in flight. It strikes hostile mobs hard and throws them back in a
-shower of sparks; it never hurts players, villagers, pets or animals, and never breaks a block. Three quick shots and it
-vents steam for a few seconds, its lamps red, hissing if you try it, before it charges again. The server config's
-`freighter.laserCrossbow` switches it off, leaving it a click. Its rack hangs on the wall of her entry hall, just in
+emitters and a string of amber light drawn back between them, a copper-wound coil round its prod. It needs no
+charging: ready, the three lamps at the back of its sight are green, and each press of use fires at once with a punchy
+"pew", a little higher or lower each time. Hold use down and it keeps firing, five shots a second. It raises and kicks
+back with a flash at its muzzle, anyone watching sees you aim it in both hands, and a short glowing amber bolt flies
+from its muzzle the way you look, fast but easy to follow by eye, up to 40 blocks, seen leaving your crossbow by you
+and everyone near, on the ground or aboard a ship in flight, where it flies along with her. Where it hits something it
+bursts in a flash and a shower of sparks with a sizzle; where it hits nothing it fades out at the end of its range. It
+strikes hostile mobs and throws them back as it reaches them; it never hurts players, villagers, pets or animals, and
+never breaks a block. Each shot heats it and it cools as it rests: a row of little bars under your crosshair lights up
+from yellow to red as it heats, its coil glows warmer and then hot, and its lamps turn amber when it is nearly too hot.
+Fire it steadily, two shots a second, and it never overheats; hold use down for about four seconds and it does: it
+hisses and vents steam for a couple of seconds, its lamps red, its string slack and the bars flashing red and white,
+going out one by one, and it holds its fire until it has cooled. The server config's `freighter.laserCrossbow` switches
+it off, leaving it a click. Its rack hangs on the wall of her entry hall, just in
 from the corridor, the crossbow lying across its two brass pegs: use it with an empty hand to take the crossbow down,
 and use it holding the crossbow to rack it again; an empty rack shows its bare pegs. The Crossbow Rack is among her
 blocks in the creative tab, put up empty.

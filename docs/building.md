@@ -386,12 +386,14 @@ long off and shows the clients what holds her (`FreighterFlight.heldBy`), drawn 
 Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
 a landing it comes down only once her cockpit is `quiet`, so it and her announcements never talk over each other.
 `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
-`LaserCrossbowItem` keeps its charge and heat on its stack as data components, worked out on its holder's client as on
-the server, which `LaserCrossbowLooks` draws and `LaserCrossbowHands` poses in hand, as the game poses only its own
-crossbow; it traces its bolt with `LaserFire`, as the laser pointer does, and sends it as a `LaserBolt`, whose glow
-colour tells `LaserBolts` to draw it amber rather than the path clearer's red, whose holder has it drawn leaving the
-crossbow as each client draws it in their hands (`LaserCrossbowHands.muzzle`), and whose end lies among a ship's blocks
-where it strikes one, so it lands on her as she is drawn. Her top turret is in `turret/`: the
+`LaserCrossbowItem` fires at each use and keeps its heat on its stack as a data component, worked out on its holder's
+client as on the server, which `LaserCrossbowLooks` draws, `LaserCrossbowGauge` shows under the crosshair and
+`LaserCrossbowHands` poses in hand, as the game poses only its own crossbow; it traces its bolt with `LaserFire`, as
+the laser pointer does, and sends it once as a `LaserBolt` (`LaserFire.fly`), whose holder has it drawn leaving the
+crossbow as each client draws it in their hands (`LaserCrossbowHands.muzzle`), whose start lies among the blocks of the
+ship its holder rides and whose end among those of a ship it strikes, or of whoever it strikes aboard her, so it flies
+along with her. `LaserBolts` draws it flying at `LaserBolt.HELD_SPEED` and bursts it into sparks with a sizzle as it
+gets there, while `BoltsInFlight` holds its harm to a mob on the server until then. Her top turret is in `turret/`: the
 `LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from its `sight` (over and
 behind its swivel, square to their look, worked out the same on both sides from the seated player's turn, which is in
 her frame) to what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so
@@ -411,7 +413,7 @@ where `CannonRockets` draws its fireball and soot and jolts the view (`CameraSha
 between its moves; `CannonRockets` trails its smoke and flame as `BlastPuffParticle`s made there, not sent, and plays
 its roar, and `CannonRocketRenderer` draws it. `GunnerTrigger` carries the use key as the rockets' trigger, the cannon
 counts its rockets and loads its pods, telling clients in its update tag, and `GunnerSight` draws them under the
-reticle. Its bolts and the crossbow's strike through `LaserFire.strike`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
+reticle. Its bolts and the crossbow's hurt through `LaserFire.hurt`, the one rule for what a laser hurts. Her club's `BandstandBlock` keeps nothing in its
 block entity but is tracked on clients, where `ClubBand` starts its song for a player who comes near, counting its
 beat, and `BandstandRenderer` draws the three players swaying to it; `FreighterLayout.clubBar()` lays the rocket
 club's bar, counter, stools, taps, bartender and back bar, along the club's straight wall, and `quarters()` and

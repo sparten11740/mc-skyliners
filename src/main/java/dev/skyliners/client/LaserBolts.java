@@ -1,7 +1,11 @@
 package dev.skyliners.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import dev.skyliners.Skyliners;
+import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.LaserBolt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +17,13 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -36,14 +45,17 @@ import org.joml.Vector3f;
  * barrel as it is turned and as its airliner is drawn. A bolt no turret has found, as from one too far off to be drawn,
  * starts where the server fired it from.
  *
- * <p>A bolt from a weapon in hand is drawn leaving that weapon's muzzle as this client draws it in its holder's hands
- * (see {@link LaserCrossbowHands}), in first person or third, aboard a ship standing or flying, rather than where the
- * server had it, a tick or more ago and, aboard a ship in flight, blocks off. It flies out as a bright streak with a
- * flash at the muzzle, leaving a trail that fades once it has struck. Over a bright sky an amber glow added to the sky
- * would be lost, so a halo of it is laid over the sky first. Far off it is never drawn thinner than a pixel or two, and
- * near the eye never a blot.
+ * <p>A bolt from a weapon in hand is a short glowing bolt, a blaster's, that flies from the weapon's muzzle as this
+ * client draws it in its holder's hands (see {@link LaserCrossbowHands}), in first person or third, at
+ * {@link LaserBolt#HELD_SPEED}, with a flash at the muzzle as it leaves. Where it left is kept from the first frame it
+ * is drawn, among the blocks of the ship its holder rides when they ride one, so a bolt fired aboard a ship in flight
+ * flies along with her, and one fired on the run is not dragged along by its holder. Its head burns white-hot, its tail
+ * thinner and fainter. Where it strikes something it vanishes into it with a burst of sparks, a flash and a sizzle;
+ * where it strikes nothing it fades out over the last blocks of its range. Over a bright sky an amber glow added to the
+ * sky would be lost, so a halo of it is laid over the sky first. Far off it is never drawn thinner than a pixel or two,
+ * and near the eye never a blot.
  *
- * <p>Where a bolt strikes a ship, it is drawn landing among her blocks as she is drawn.
+ * <p>Where a bolt strikes a ship, or someone aboard her, it is drawn landing among her blocks as she is drawn.
  */
 public final class LaserBolts {
     /** How long a mounted gun's bolt shows, in ticks. */
@@ -52,25 +64,52 @@ public final class LaserBolts {
     private static final float CORE = 0.05F;
     private static final float GLOW = 0.16F;
     private static final int CORE_COLOUR = 0xFFFFE8E8;
-    /** How fast a bolt from a weapon in hand flies out, in blocks a tick, and how long its streak is, in blocks. */
-    private static final double FLIGHT_SPEED = 8;
-    private static final double STREAK = 3;
-    /** How long its trail lingers once it has struck, fading, in ticks. */
-    private static final double TRAIL_TICKS = 8;
+    /** How long a bolt from a weapon in hand is, from its head to its tail, in blocks. */
+    private static final double BOLT_LENGTH = 2;
+    /** Over how many of the last blocks of its range a bolt that strikes nothing fades out. */
+    private static final double FADE_BLOCKS = 8;
+    /**
+     * How long a bolt from a weapon in hand may show at most, in ticks, whatever happens to it: longer than any flies.
+     * A bolt longer than any weapon reaches, in blocks, is one among the blocks of a ship this client does not have, and
+     * is not drawn.
+     */
+    private static final int MOST_HELD_TICKS = 40;
+    private static final double MOST_REACH = 96;
     /**
      * How long the four-pointed flash at its muzzle shows, in ticks, how far its points reach and how wide they are,
      * in blocks, and how big its bright heart is, half across, in blocks.
      */
     private static final double FLASH_TICKS = 2;
-    private static final float FLASH_REACH = 0.14F;
-    private static final float FLASH_WIDTH = 0.025F;
-    private static final float FLASH_HEART = 0.04F;
-    /** Its trail's halo, glow and core and its streak's glow and core, half widths in blocks. */
-    private static final double HALO = 0.06;
-    private static final double TRAIL_GLOW = 0.035;
-    private static final double TRAIL_CORE = 0.014;
-    private static final double STREAK_GLOW = 0.07;
-    private static final double STREAK_CORE = 0.025;
+    private static final float FLASH_REACH = 0.1F;
+    private static final float FLASH_WIDTH = 0.02F;
+    private static final float FLASH_HEART = 0.035F;
+    /** How long the flash where it strikes shows, in ticks, and how much bigger it is than the one at the muzzle. */
+    private static final double BURST_TICKS = 3;
+    private static final float BURST_SIZE = 3;
+    /**
+     * Where it strikes: how many sparks fly, and how many crackling bits fall, how fast they fly out, in blocks a tick,
+     * and how much smoke curls up.
+     */
+    private static final int SPARKS = 10;
+    private static final int CRACKLES = 6;
+    private static final double SPARK_SPEED = 0.6;
+    private static final double CRACKLE_SPEED = 0.25;
+    private static final int SMOKE = 2;
+    /** How loud its sizzle is, as a share of full, and how high, at the lowest and how much higher it may be. */
+    private static final float HIT_VOLUME = 0.7F;
+    private static final float HIT_PITCH = 0.9F;
+    private static final float HIT_PITCH_SPREAD = 0.25F;
+    /**
+     * Its halo, glow and white-hot core, half widths in blocks at its head and its tail, and how strong its tail is
+     * against its head, as a share.
+     */
+    private static final double HALO_HEAD = 0.18;
+    private static final double HALO_TAIL = 0.06;
+    private static final double GLOW_HEAD = 0.11;
+    private static final double GLOW_TAIL = 0.04;
+    private static final double CORE_HEAD = 0.045;
+    private static final double CORE_TAIL = 0.015;
+    private static final float TAIL_STRENGTH = 0.35F;
     /**
      * How narrow and how wide a bolt from a weapon in hand is ever drawn, as seen, in blocks across per block away:
      * about two pixels far off, and near the eye no wider than its muzzle.
@@ -89,6 +128,25 @@ public final class LaserBolts {
     private static final double MOST_LAG_TICKS = 6;
     /** How far a bolt may leave from off that stretch ahead of a turret's muzzle and still be its own, in blocks. */
     private static final double AT_MUZZLE = 2;
+    /**
+     * A bolt from a weapon in hand is drawn in two layers, neither hiding what is drawn after it: its halo laid over
+     * what is behind it, as the game lays any translucent colour, and its glow and core added to it, as lightning is.
+     * Both are drawn in one plane, so neither keeps its depth, or each layer would hide the next one in places.
+     */
+    private static final RenderType HALO = RenderType.create(Skyliners.MOD_ID + "_laser_halo", DefaultVertexFormat.POSITION_COLOR,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+            .setCullState(RenderStateShard.NO_CULL)
+            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+            .createCompositeState(false));
+    private static final RenderType GLOWING = RenderType.create(Skyliners.MOD_ID + "_laser_glow", DefaultVertexFormat.POSITION_COLOR,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.RENDERTYPE_LIGHTNING_SHADER)
+            .setTransparencyState(RenderStateShard.LIGHTNING_TRANSPARENCY)
+            .setCullState(RenderStateShard.NO_CULL)
+            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+            .createCompositeState(false));
 
     private static final List<Bolt> BOLTS = new ArrayList<>();
     private static int now;
@@ -99,28 +157,35 @@ public final class LaserBolts {
 
     /**
      * A bolt, from the muzzle to where it struck, in the world or among a ship's blocks, the colour of its glow, the
-     * entity id of whoever holds the weapon it left (or {@link LaserBolt#NO_HOLDER}), the tick it was fired and how
-     * long it shows; and, once the turret that fired it has found it, the tip of that turret's barrel among its
-     * airliner's blocks, where it is drawn from.
+     * entity id of whoever holds the weapon it left (or {@link LaserBolt#NO_HOLDER}), whether it strikes anything, and
+     * the tick it was fired; once the turret that fired it has found it, the tip of that turret's barrel among its
+     * airliner's blocks, where it is drawn from; and, for one from a weapon in hand, where it left as first drawn, in
+     * the frame it was sent leaving from, whether that was the weapon's muzzle as drawn, how far it had to fly when last
+     * drawn, in blocks, and whether it has burst where it struck.
      */
     static final class Bolt {
         private final Vec3 from;
         private final Vec3 to;
         private final int glow;
         private final int holder;
+        private final boolean strikes;
         private final int fired;
-        private final double life;
         @Nullable
         private Vec3 tip;
+        @Nullable
+        private Vec3 start;
+        private boolean fromMuzzle;
+        private double length = Double.NaN;
+        private boolean burst;
         private int frames;
 
-        private Bolt(Vec3 from, Vec3 to, int glow, int holder, int fired, double life) {
-            this.from = from;
-            this.to = to;
-            this.glow = glow;
-            this.holder = holder;
+        private Bolt(LaserBolt bolt, int fired) {
+            this.from = bolt.from();
+            this.to = bolt.to();
+            this.glow = bolt.glow();
+            this.holder = bolt.holder();
+            this.strikes = bolt.strikes();
             this.fired = fired;
-            this.life = life;
         }
 
         /** Where the bolt strikes, in the world, though it struck among a ship's blocks. */
@@ -132,6 +197,20 @@ public final class LaserBolts {
         private boolean held() {
             return holder != LaserBolt.NO_HOLDER;
         }
+
+        /** How many ticks after it was fired it has got where it was going: never, before it was first drawn. */
+        private double arrives() {
+            return Double.isNaN(length) ? Double.POSITIVE_INFINITY : length / LaserBolt.HELD_SPEED;
+        }
+
+        /** Whether it is done with, as of this tick: faded, or vanished into what it struck and its burst over. */
+        private boolean over() {
+            int age = now - fired;
+            if (!held()) {
+                return age > LIFE_TICKS;
+            }
+            return age > MOST_HELD_TICKS || age > arrives() + Math.max(BOLT_LENGTH / LaserBolt.HELD_SPEED, BURST_TICKS);
+        }
     }
 
     private LaserBolts() {
@@ -140,18 +219,46 @@ public final class LaserBolts {
     /** A bolt fired. */
     public static void add(LaserBolt bolt) {
         received++;
-        double life = LIFE_TICKS;
-        ClientLevel level = Minecraft.getInstance().level;
-        if (bolt.holder() != LaserBolt.NO_HOLDER && level != null) {
-            life = bolt.from().distanceTo(SableClient.toWorld(level, bolt.to())) / FLIGHT_SPEED + TRAIL_TICKS;
-        }
-        BOLTS.add(new Bolt(bolt.from(), bolt.to(), bolt.glow(), bolt.holder(), now, life));
-        seen = new LaserBolt.Seen(received, bolt.holder(), 0, 0, false, null);
+        BOLTS.add(new Bolt(bolt, now));
+        seen = new LaserBolt.Seen(received, bolt.holder(), 0, 0, false, null, 0, 0);
     }
 
+    /** Each client tick: bolts from a weapon in hand that have got to what they strike burst there, and old ones go. */
     public static void tick(ClientTickEvent.Post event) {
         now++;
-        BOLTS.removeIf(bolt -> now - bolt.fired > bolt.life);
+        for (Bolt bolt : BOLTS) {
+            if (bolt.held() && bolt.strikes && !bolt.burst && now - bolt.fired >= bolt.arrives()) {
+                bolt.burst = true;
+                burst(bolt);
+            }
+        }
+        BOLTS.removeIf(Bolt::over);
+    }
+
+    /**
+     * A bolt from a weapon in hand bursts where it struck: sparks flying out and crackling bits falling, a wisp of
+     * smoke, and its sizzle. They are given off where it struck as it was sent, among a ship's blocks where it struck
+     * one of hers or someone aboard, so that Sable carries them along with her.
+     */
+    private static void burst(Bolt bolt) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            return;
+        }
+        RandomSource random = level.getRandom();
+        spray(level, ParticleTypes.ELECTRIC_SPARK, bolt.to, SPARKS, SPARK_SPEED, random);
+        spray(level, ParticleTypes.CRIT, bolt.to, CRACKLES, CRACKLE_SPEED, random);
+        spray(level, ParticleTypes.SMOKE, bolt.to, SMOKE, 0, random);
+        Vec3 heard = SableClient.toWorld(level, bolt.to);
+        float pitch = HIT_PITCH + random.nextFloat() * HIT_PITCH_SPREAD;
+        level.playLocalSound(heard.x, heard.y, heard.z, SkylinersRegistry.LASER_CROSSBOW_HIT.get(), SoundSource.PLAYERS, HIT_VOLUME, pitch, false);
+    }
+
+    /** So many particles given off from a point, flying out every way at up to so many blocks a tick. */
+    private static void spray(ClientLevel level, ParticleOptions particle, Vec3 at, int count, double speed, RandomSource random) {
+        for (int i = 0; i < count; i++) {
+            level.addParticle(particle, at.x, at.y, at.z, random.triangle(0, speed), random.triangle(0, speed), random.triangle(0, speed));
+        }
     }
 
     /** Whether no bolt is shown at all. */
@@ -218,30 +325,36 @@ public final class LaserBolts {
         Map<Integer, Vec3> muzzles = new HashMap<>();
         for (Bolt bolt : BOLTS) {
             if (bolt.held()) {
-                Vec3 muzzle = muzzles.computeIfAbsent(bolt.holder, holder -> muzzle(holder, camera, event.getProjectionMatrix(), partial));
+                Vec3 muzzle = bolt.start != null ? null
+                    : muzzles.computeIfAbsent(bolt.holder, holder -> muzzle(holder, camera, event.getProjectionMatrix(), partial));
                 flights.add(flightOf(bolt, muzzle, camera, partial));
             }
         }
+        flights.removeIf(flight -> flight.length() > MOST_REACH);
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         pose.translate(-eye.x, -eye.y, -eye.z);
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer halos = buffers.getBuffer(RenderType.debugQuads());
-        for (Flight flight : flights) {
-            ribbon(halos, matrix, eye, flight.from(), flight.head(), HALO, fade(HALO_ALPHA << 24 | flight.glow() & 0xFFFFFF, flight.trail()));
-        }
-        buffers.endBatch(RenderType.debugQuads());
         VertexConsumer beams = buffers.getBuffer(RenderType.lightning());
         for (Bolt bolt : BOLTS) {
             if (!bolt.held()) {
                 mounted(beams, matrix, bolt, camera, partial);
             }
         }
-        for (Flight flight : flights) {
-            flight(beams, matrix, camera, flight);
-        }
         buffers.endBatch(RenderType.lightning());
+        if (!flights.isEmpty()) {
+            VertexConsumer halos = buffers.getBuffer(HALO);
+            for (Flight flight : flights) {
+                streak(halos, matrix, eye, flight, HALO_HEAD, HALO_TAIL, HALO_ALPHA << 24 | flight.glow() & 0xFFFFFF);
+            }
+            buffers.endBatch(HALO);
+            VertexConsumer glows = buffers.getBuffer(GLOWING);
+            for (Flight flight : flights) {
+                flight(glows, matrix, camera, flight);
+            }
+            buffers.endBatch(GLOWING);
+        }
         pose.popPose();
     }
 
@@ -250,25 +363,51 @@ public final class LaserBolts {
         float fade = 1 - Math.min(1, (now - bolt.fired + partial) / LIFE_TICKS);
         Vec3 from = bolt.tip == null ? bolt.from : inWorld(SableClient.placing(bolt.tip, partial), bolt.tip);
         Vec3 to = inWorld(SableClient.placing(bolt.to, partial), bolt.to);
-        drawn(bolt, camera, from, false);
+        drawn(bolt, camera, from, 0, 0);
         beam(beams, matrix, from, to, GLOW, fade(bolt.glow, fade));
         beam(beams, matrix, from, to, CORE, fade(CORE_COLOUR, fade));
     }
 
     /**
-     * Where a bolt from a weapon in hand is drawn this frame, and how: from the weapon's muzzle as drawn, or from where
-     * the server fired it while its holder is not to be seen, to where it struck; how far out its streak has flown, out
-     * of how far it flies, and how long since it left, in ticks; how strong its trail still is; and its glow's colour.
+     * Where a bolt from a weapon in hand is drawn this frame, and how: from where it left, as first drawn, to where it
+     * strikes, both where they are drawn this frame; how long since it left, in ticks; its glow's colour; and whether it
+     * strikes anything there.
      */
-    private record Flight(Vec3 from, Vec3 to, double flown, double length, double age, float trail, int glow) {
-        /** A point so far along it from the muzzle, in blocks. */
+    private record Flight(Vec3 from, Vec3 to, double length, double age, int glow, boolean strikes) {
+        /** A point so far along it from where it left, in blocks. */
         Vec3 at(double along) {
             return length == 0 ? from : from.add(to.subtract(from).scale(Mth.clamp(along / length, 0, 1)));
         }
 
-        /** The head of its streak. */
+        /** How far it has flown, in blocks. */
+        double flown() {
+            return age * LaserBolt.HELD_SPEED;
+        }
+
+        /** Its head, as far as what it strikes. */
         Vec3 head() {
-            return at(flown);
+            return at(flown());
+        }
+
+        /** Its tail, a bolt's length behind its head and never back past where it left. */
+        Vec3 tail() {
+            return at(flown() - BOLT_LENGTH);
+        }
+
+        /**
+         * How strong it shows: wholly while it flies, fading over the last blocks of its range where it strikes nothing,
+         * gone once it has wholly vanished into what it strikes.
+         */
+        float strength() {
+            if (strikes) {
+                return flown() < length + BOLT_LENGTH ? 1 : 0;
+            }
+            return (float) (1 - Mth.clamp((flown() - (length - FADE_BLOCKS)) / FADE_BLOCKS, 0, 1));
+        }
+
+        /** How long since it got to what it strikes, in ticks; less than nothing before then. */
+        double sinceStruck() {
+            return age - length / LaserBolt.HELD_SPEED;
         }
     }
 
@@ -283,25 +422,34 @@ public final class LaserBolts {
         return entity == null ? null : LaserCrossbowHands.muzzle(entity, camera, projection, partial);
     }
 
-    /** How a bolt from a weapon in hand is drawn this frame, from its weapon's muzzle as drawn, if it is to be seen. */
+    /**
+     * How a bolt from a weapon in hand is drawn this frame. The first time, where it left is taken from its weapon's
+     * muzzle as drawn, if that is to be seen, else from where the server fired it, and kept in the frame the server
+     * sent it leaving from, among the blocks of the ship its holder rides when they ride one.
+     */
     private static Flight flightOf(Bolt bolt, @Nullable Vec3 muzzle, Camera camera, float partial) {
-        Vec3 from = muzzle == null ? bolt.from : muzzle;
+        SableClient.Placing leaving = SableClient.placing(bolt.from, partial);
+        if (bolt.start == null) {
+            bolt.fromMuzzle = muzzle != null;
+            bolt.start = muzzle == null ? bolt.from : SableClient.toDrawnPlot(bolt.from, muzzle, partial);
+        }
+        Vec3 from = inWorld(leaving, bolt.start);
         Vec3 to = inWorld(SableClient.placing(bolt.to, partial), bolt.to);
-        double age = now - bolt.fired + partial;
-        double length = from.distanceTo(to);
-        float trail = (float) (1 - Mth.clamp((age - length / FLIGHT_SPEED) / TRAIL_TICKS, 0, 1));
-        drawn(bolt, camera, from, muzzle != null);
-        return new Flight(from, to, Math.min(length, age * FLIGHT_SPEED), length, age, trail, bolt.glow);
+        bolt.length = from.distanceTo(to);
+        Flight flight = new Flight(from, to, bolt.length, now - bolt.fired + partial, bolt.glow, bolt.strikes);
+        double tailFlown = Mth.clamp(flight.flown() - BOLT_LENGTH, 0, bolt.length);
+        drawn(bolt, camera, from, tailFlown, Math.min(flight.flown(), bolt.length) - tailFlown);
+        return flight;
     }
 
     /**
-     * Notes a bolt drawn this frame from a point, from its weapon's muzzle as drawn or not; the newest, for a play-test
-     * to read.
+     * Notes a bolt drawn this frame from a point, how far its tail had flown from there and how long it was drawn, in
+     * blocks; the newest, for a play-test to read.
      */
-    private static void drawn(Bolt bolt, Camera camera, Vec3 from, boolean fromMuzzle) {
+    private static void drawn(Bolt bolt, Camera camera, Vec3 from, double flown, double streak) {
         bolt.frames++;
         if (bolt == BOLTS.get(BOLTS.size() - 1)) {
-            seen = new LaserBolt.Seen(received, bolt.holder, bolt.frames, now - bolt.fired, fromMuzzle, fromCamera(camera, from));
+            seen = new LaserBolt.Seen(received, bolt.holder, bolt.frames, now - bolt.fired, bolt.fromMuzzle, fromCamera(camera, from), flown, streak);
         }
     }
 
@@ -313,39 +461,48 @@ public final class LaserBolts {
     }
 
     /**
-     * A bolt from a weapon in hand: its trail from the muzzle to its streak, glowing round a white-hot core and fading
-     * once it has struck, its streak flying out ahead of it until it strikes, and a flash at the muzzle as it leaves.
+     * A bolt from a weapon in hand: its glow round a white-hot core, its head brightest, as it flies; a flash at the
+     * muzzle as it leaves; and a bigger flash where it strikes as it gets there.
      */
     private static void flight(VertexConsumer beams, Matrix4f matrix, Camera camera, Flight flight) {
         Vec3 eye = camera.getPosition();
-        Vec3 head = flight.head();
-        ribbon(beams, matrix, eye, flight.from(), head, TRAIL_GLOW, fade(flight.glow(), flight.trail()));
-        ribbon(beams, matrix, eye, flight.from(), head, TRAIL_CORE, fade(HOT_CORE, flight.trail()));
-        if (flight.age() * FLIGHT_SPEED < flight.length() + STREAK) {
-            Vec3 tail = flight.at(flight.age() * FLIGHT_SPEED - STREAK);
-            ribbon(beams, matrix, eye, tail, head, STREAK_GLOW, flight.glow());
-            ribbon(beams, matrix, eye, tail, head, STREAK_CORE, HOT_CORE);
-        }
+        streak(beams, matrix, eye, flight, GLOW_HEAD, GLOW_TAIL, flight.glow());
+        streak(beams, matrix, eye, flight, CORE_HEAD, CORE_TAIL, HOT_CORE);
         if (flight.age() < FLASH_TICKS) {
-            flash(beams, matrix, camera, flight.from(), flight.glow(), (float) (1 - flight.age() / FLASH_TICKS));
+            flash(beams, matrix, camera, flight.from(), flight.glow(), 1, (float) (1 - flight.age() / FLASH_TICKS));
+        }
+        double sinceStruck = flight.sinceStruck();
+        if (flight.strikes() && sinceStruck >= 0 && sinceStruck < BURST_TICKS) {
+            flash(beams, matrix, camera, flight.to(), flight.glow(), BURST_SIZE, (float) (1 - sinceStruck / BURST_TICKS));
         }
     }
 
+    /** One layer of a flying bolt, from its tail to its head, so wide at each and in this colour, fading toward its tail. */
+    private static void streak(VertexConsumer beams, Matrix4f matrix, Vec3 eye, Flight flight, double head, double tail, int colour) {
+        float strength = flight.strength();
+        if (strength <= 0) {
+            return;
+        }
+        int bright = fade(colour, strength);
+        ribbon(beams, matrix, eye, flight.tail(), flight.head(), tail, head, fade(bright, TAIL_STRENGTH), bright);
+    }
+
     /**
-     * A flat strip this wide from one point to another, turned to face the eye all along it, never thinner than
-     * {@link #FAINTEST} nor wider than {@link #BOLDEST} as seen from there.
+     * A flat strip from one point to another, so wide at each end and in a colour at each, turned to face the eye all
+     * along it, never thinner than {@link #FAINTEST} nor wider than {@link #BOLDEST} as seen from there.
      */
-    private static void ribbon(VertexConsumer beams, Matrix4f matrix, Vec3 eye, Vec3 from, Vec3 to, double half, int colour) {
+    private static void ribbon(VertexConsumer beams, Matrix4f matrix, Vec3 eye, Vec3 from, Vec3 to, double halfFrom, double halfTo, int colourFrom,
+        int colourTo) {
         Vec3 along = to.subtract(from);
         if (along.lengthSqr() < 1.0E-6) {
             return;
         }
-        Vec3 nearSide = across(along, eye, from, half);
-        Vec3 farSide = across(along, eye, to, half);
-        vertex(beams, matrix, from.subtract(nearSide), colour);
-        vertex(beams, matrix, from.add(nearSide), colour);
-        vertex(beams, matrix, to.add(farSide), colour);
-        vertex(beams, matrix, to.subtract(farSide), colour);
+        Vec3 nearSide = across(along, eye, from, halfFrom);
+        Vec3 farSide = across(along, eye, to, halfTo);
+        vertex(beams, matrix, from.subtract(nearSide), colourFrom);
+        vertex(beams, matrix, from.add(nearSide), colourFrom);
+        vertex(beams, matrix, to.add(farSide), colourTo);
+        vertex(beams, matrix, to.subtract(farSide), colourTo);
     }
 
     /** Half the width of a strip at a point along it, crosswise to it and to the eye's view of it. */
@@ -360,15 +517,15 @@ public final class LaserBolts {
     }
 
     /**
-     * A four-pointed flash facing the camera at a point, its points in its glow's colour round a white-hot heart, this
-     * strong.
+     * A four-pointed flash facing the camera at a point, its points in its glow's colour round a white-hot heart, so
+     * many times the muzzle flash's size and this strong.
      */
-    private static void flash(VertexConsumer beams, Matrix4f matrix, Camera camera, Vec3 at, int glow, float strength) {
+    private static void flash(VertexConsumer beams, Matrix4f matrix, Camera camera, Vec3 at, int glow, float size, float strength) {
         Vector3f left = camera.getLeftVector();
         Vector3f up = camera.getUpVector();
-        diamond(beams, matrix, at, left, up, FLASH_REACH, FLASH_WIDTH, fade(glow, strength));
-        diamond(beams, matrix, at, up, left, FLASH_REACH, FLASH_WIDTH, fade(glow, strength));
-        diamond(beams, matrix, at, left, up, FLASH_HEART, FLASH_HEART, fade(HOT_CORE, strength));
+        diamond(beams, matrix, at, left, up, FLASH_REACH * size, FLASH_WIDTH * size, fade(glow, strength));
+        diamond(beams, matrix, at, up, left, FLASH_REACH * size, FLASH_WIDTH * size, fade(glow, strength));
+        diamond(beams, matrix, at, left, up, FLASH_HEART * size, FLASH_HEART * size, fade(HOT_CORE, strength));
     }
 
     /** A diamond at a point, reaching so far each way along one direction and so far along another. */

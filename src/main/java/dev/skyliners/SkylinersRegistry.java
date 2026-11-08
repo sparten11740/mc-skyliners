@@ -962,10 +962,10 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_FLIGHT = sound("cannon_rocket_flight");
     public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_BLAST = sound("cannon_rocket_blast");
     public static final DeferredHolder<SoundEvent, SoundEvent> CANNON_ROCKET_LOAD = sound("cannon_rocket_load");
-    /** The laser crossbow fired: its coil twanging and a crackling bolt. */
+    /** The laser crossbow fired: a punchy "pew", a bright zap diving down over a crack and a thump. */
     public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_SHOT = sound("laser_crossbow_shot");
-    /** The laser crossbow cocked and charged: a ratchet, a rising whine and its latch. */
-    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_RELOAD = sound("laser_crossbow_reload");
+    /** A laser crossbow's bolt striking: a smack and a sizzle of sparks dying away. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CROSSBOW_HIT = sound("laser_crossbow_hit");
     /** Her jump drive spooling up, its whine sweeping up over a swelling sub-bass. */
     public static final DeferredHolder<SoundEvent, SoundEvent> JUMP_DRIVE_SPOOL = sound("jump_drive_spool");
     /** Her jump drive failing: its whine stuttering and dropping, backfires and sparks. */
@@ -1882,11 +1882,14 @@ public final class SkylinersRegistry {
     /** The freighter's laser crossbow (see {@link LaserCrossbowItem}). */
     public static final DeferredItem<LaserCrossbowItem> LASER_CROSSBOW = ITEMS.register("laser_crossbow",
         () -> new LaserCrossbowItem(new Item.Properties().stacksTo(1)));
-    /** Whether a laser crossbow is charged, kept on its stack so every client draws its coil glowing. */
+    /**
+     * Whether a laser crossbow was charged, from when it had to be charged before each shot: no longer set, and let go
+     * by the crossbow as it is carried, but still known, so a crossbow saved charged loads rather than being lost.
+     */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> LASER_CROSSBOW_CHARGED = DATA_COMPONENTS.registerComponentType(
         "laser_crossbow_charged", builder -> builder.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL)
     );
-    /** How hot a laser crossbow is, kept on its stack so every client draws it venting. */
+    /** How hot a laser crossbow is, kept on its stack so every client draws it heating and venting. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<LaserCrossbowItem.Heat>> LASER_CROSSBOW_HEAT =
         DATA_COMPONENTS.registerComponentType("laser_crossbow_heat",
             builder -> builder.persistent(LaserCrossbowItem.Heat.CODEC).networkSynchronized(LaserCrossbowItem.Heat.STREAM_CODEC));

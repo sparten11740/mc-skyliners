@@ -135,6 +135,15 @@ public final class SableClient {
     }
 
     /**
+     * Where a point in the world lies in the frame of the airliner holding a point among its blocks, as she is drawn at
+     * this partial tick; the point itself when no airliner holds that point. Something seen beside her as she is drawn,
+     * as a laser crossbow's muzzle in the hands of someone aboard, taken among her blocks to be carried along with her.
+     */
+    static Vec3 toDrawnPlot(Vec3 aboard, Vec3 point, float partialTick) {
+        return SABLE ? Access.toDrawnPlot(aboard, point, partialTick) : point;
+    }
+
+    /**
      * A direction in the world turned into the frame of the airliner a block is part of, as it is drawn now: a look
      * turned for something among its blocks, as the server turns it; the direction itself for a block in the world.
      */
@@ -339,6 +348,11 @@ public final class SableClient {
                 return point;
             }
             return (lastTick ? airliner.lastPose() : airliner.logicalPose()).transformPositionInverse(point);
+        }
+
+        static Vec3 toDrawnPlot(Vec3 aboard, Vec3 point, float partialTick) {
+            ClientSubLevel airliner = Sable.HELPER.getContainingClient(aboard);
+            return airliner == null ? point : airliner.renderPose(partialTick).transformPositionInverse(point);
         }
 
         static Vec3 turnToPlot(BlockPos pos, Vec3 direction) {

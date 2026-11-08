@@ -185,7 +185,9 @@ public final class BlockpilotCommands {
             .field("frames", "how many frames it has been drawn in")
             .field("shown", "for how many ticks after it came it has been drawn")
             .field("from_muzzle", "whether it was drawn leaving that weapon's muzzle as drawn, rather than where the server fired it from")
-            .field("from_camera", "where it was drawn leaving from, from the camera: blocks right, up and ahead as it looks"));
+            .field("from_camera", "where it was drawn leaving from, from the camera: blocks right, up and ahead as it looks")
+            .field("flown", "for a bolt from a weapon in hand, how far its tail had flown from where it left, in blocks, when last drawn")
+            .field("streak", "for a bolt from a weapon in hand, how long it was drawn, head to tail, in blocks, when last drawn"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("repairs", (context, args) -> repairs(args))
             .onServer()
             .group("skyliners")
@@ -482,7 +484,7 @@ public final class BlockpilotCommands {
             return Result.ok(new Fields().tag("received", 0));
         }
         Fields fields = new Fields().tag("received", seen.received()).tag("holder", seen.holder()).tag("frames", seen.frames())
-            .tag("shown", seen.shown()).tag("from_muzzle", seen.fromMuzzle());
+            .tag("shown", seen.shown()).tag("from_muzzle", seen.fromMuzzle()).tag("flown", round(seen.flown())).tag("streak", round(seen.streak()));
         Vec3 at = seen.fromCamera();
         return Result.ok(at == null ? fields : fields.tag("from_camera", round(at.x) + "," + round(at.y) + "," + round(at.z)));
     }

@@ -1007,10 +1007,10 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
 // for the bolt, an emitter at its muzzle, a trigger in its guard, and a sight housing at the back whose face shows the
 // one aiming its three heat lamps. Across its front, its prod, a coil wound in copper round it, and two arms, straight
 // out and then swept back, each tipped with an emitter pod glowing inward, an amber string of light between them.
-// Resting, its string lies straight across the pods; charged, it is drawn back to its latch in a V. As it charges its
-// coil, string and emitters glow brighter in three steps, near white once charged, its lamps then green; venting, its
-// lamps are red (see LaserCrossbowLooks). Its glowing parts glow whatever the light round them. Held, it is posed by
-// LaserCrossbowHands: these transforms are for that pose, its muzzle along the aiming arm.
+// Ready to fire, its string is drawn back to its latch in a V and its lamps are green; as it heats its coil, string and
+// emitters glow brighter in two steps, its lamps turning amber at the hotter; venting, its string lies slack straight
+// across the pods and its lamps are red (see LaserCrossbowLooks). Its glowing parts glow whatever the light round them.
+// Held, it is posed by LaserCrossbowHands: these transforms are for that pose, its muzzle along the aiming arm.
 {
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   const sides = ["north", "south", "east", "west", "up", "down"];
@@ -1078,10 +1078,9 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
   // Each look in the hand, on the ground and on a wall is the model; among the slots it is its icon, which reads better
   // so small (see generate_textures.mjs).
   const looks = [
-    ["laser_crossbow", "slack", "rest", "dark"],
-    ["laser_crossbow_warm", "slack", "warm", "dark"],
-    ["laser_crossbow_hot", "slack", "hot", "dark"],
-    ["laser_crossbow_charged", "drawn", "charged", "green"],
+    ["laser_crossbow", "drawn", "rest", "green"],
+    ["laser_crossbow_warm", "drawn", "warm", "green"],
+    ["laser_crossbow_hot", "drawn", "hot", "amber"],
     ["laser_crossbow_venting", "slack", "rest", "red"],
   ];
   for (const [name, shape, glow, lamp] of looks) {
@@ -1094,7 +1093,7 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
         textures: {
           metal: `${ID}:item/laser_crossbow_metal`, trim: `${ID}:item/laser_crossbow_trim`, wood: `${ID}:item/laser_crossbow_wood`,
           copper: `${ID}:item/laser_crossbow_copper`, coil: glowing, string: glowing, emitter: glowing,
-          channel: `${ID}:item/laser_crossbow_glow_${glow === "charged" ? "charged" : "rest"}`, lamp: `${ID}:item/laser_crossbow_lamp_${lamp}`,
+          channel: `${ID}:item/laser_crossbow_glow_rest`, lamp: `${ID}:item/laser_crossbow_lamp_${lamp}`,
           particle: `${ID}:item/laser_crossbow_metal`,
         },
       },
@@ -1103,9 +1102,8 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
       },
       ...(name === "laser_crossbow" ? {
         overrides: [
-          { predicate: { [`${ID}:charge`]: 0.34 }, model: `${ID}:item/laser_crossbow_warm` },
-          { predicate: { [`${ID}:charge`]: 0.67 }, model: `${ID}:item/laser_crossbow_hot` },
-          { predicate: { [`${ID}:charged`]: 1 }, model: `${ID}:item/laser_crossbow_charged` },
+          { predicate: { [`${ID}:heat`]: 0.4 }, model: `${ID}:item/laser_crossbow_warm` },
+          { predicate: { [`${ID}:heat`]: 0.7 }, model: `${ID}:item/laser_crossbow_hot` },
           { predicate: { [`${ID}:venting`]: 1 }, model: `${ID}:item/laser_crossbow_venting` },
         ],
       } : {}),
@@ -2557,7 +2555,7 @@ const FREIGHTER_SOUNDS = {
   freighter_ignition: { subtitle: "Lift jets ignite", heard: FREIGHTER_HEARD },
   freighter_spool: { subtitle: "Main engines spool up", heard: FREIGHTER_HEARD },
   freighter_flyby: { subtitle: "Freighter thunders past", heard: FREIGHTER_HEARD },
-  // Her ball turrets firing, heard well off as guns are, and turning; and the laser crossbow fired and charged.
+  // Her ball turrets firing, heard well off as guns are, and turning; and the laser crossbow fired and its bolt striking.
   ball_turret_shot: { subtitle: "Turret fires", heard: 64 },
   ball_turret_servo: { subtitle: "Turret turns" },
   ball_turret_hiss: { subtitle: "Turret hydraulics hiss" },
@@ -2570,7 +2568,7 @@ const FREIGHTER_SOUNDS = {
   cannon_rocket_blast: { subtitle: "Rocket explodes", heard: 24 },
   cannon_rocket_load: { subtitle: "Rocket pod loads" },
   laser_crossbow_shot: { subtitle: "Laser crossbow fires", heard: 32 },
-  laser_crossbow_reload: { subtitle: "Laser crossbow charges" },
+  laser_crossbow_hit: { subtitle: "Laser bolt sizzles" },
   // Her jump drive, heard all through her: spooling up, sputtering as it fails, thumped back to life and jumping.
   jump_drive_spool: { subtitle: "Jump drive spools up", heard: 48 },
   jump_drive_sputter: { subtitle: "Jump drive sputters", heard: 48 },
