@@ -124,6 +124,14 @@ public abstract class CraftFlight {
     }
 
     /**
+     * Whether it holds over the pin it is set to land at, having found nowhere round it to come down, on either side:
+     * the landing picture on its autopilot's screen is shown dimmed by it. Only a craft that looks for ground does.
+     */
+    boolean noGroundAtPin() {
+        return false;
+    }
+
+    /**
      * What is said aboard it for one of the flight deck's announcements (see {@link CabinAnnouncements} and
      * {@link EdgeOfSpace}): words of its own, in a voice of its own if it has one, or the announcement as the
      * airliner's flight deck makes it.

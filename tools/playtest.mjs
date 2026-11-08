@@ -214,6 +214,10 @@ const PAD_REACH = 64;
 const LAKE_REACH = 70;
 const LAKE_TICKS = 1600;
 const LAKE_HOLD_WITHIN = 8;
+// Her autopilot's landing picture, drawn in the middle of its tile on the screen: how big it is in the screen's own
+// pixels, and what share of its brightness it keeps dimmed, at most, finding no ground.
+const LAKE_PICTURE_SIZE = 16;
+const LAKE_PICTURE_DIMMED = 0.85;
 // A freighter that cannot finish landing: how long she is given to come down on the stone and give it up, in ticks; how
 // long she is watched holding over it, in ticks; how far from the lake's edge the player stands, in blocks, left behind
 // on the ground; how long she is given with nobody aboard to come down twice and let go, past her minute of waiting
@@ -2412,8 +2416,23 @@ function checkFreighterPad() {
   }
 }
 
+// Opens the autopilot's screen of the freighter the player is beside, set to fly to a pin; a function reading how
+// bright its landing picture shows now, its luma from 0 to 255.
+function openLandingPicture() {
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at } = must(`sable:find ${freighter} skyliners:autopilot 1 side=server`).rows[0];
+  const screen = must(`use ${at.join(",")}; wait 20t; screen`);
+  const [tileX, tileY, tileW, tileH] = screen.rows.find((row) => row.kind === "LandToggle").bounds;
+  const [screenW, screenH] = screen.size;
+  const [middleX, middleY] = [tileX + tileW / 2, tileY + tileH / 2];
+  const half = LAKE_PICTURE_SIZE / 2;
+  const region = `${(middleX - half) / screenW},${(middleY - half) / screenH},${(middleX + half) / screenW},${(middleY + half) / screenH}`;
+  return () => must(`wait 5t; pixels landing=${region}`).landing.luma;
+}
+
 // A freighter set to land at a pin in a lake, with no dry ground within reach of it: she holds over the pin and says
-// so, with the low note, rather than come down in the water.
+// so, with the low note, rather than come down in the water, and her autopilot's screen shows its landing picture
+// dimmed for those who cannot read the message.
 function checkFreighterLake() {
   const site = layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -2423,9 +2442,14 @@ function checkFreighterLake() {
     return;
   }
   const since = now();
-  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${DRAG_CRUISE} pin=${x},${z} land=true`);
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${DRAG_CRUISE} pin=${x},${z} land=true; wait 10t`);
+  const landingPicture = openLandingPicture();
+  const lit = landingPicture();
   expect(waitForMessage("*holding*", since, LAKE_TICKS), "freighter: set to land in a lake, she says she finds no ground");
   expect(heard("minecraft:block.note_block.pling", since, 0), "freighter: and the low note says it to those who cannot read");
+  const dimmed = landingPicture();
+  expect(dimmed < lit * LAKE_PICTURE_DIMMED, "freighter: her autopilot's screen shows its landing picture dimmed as she holds, finding no ground", `luma ${dimmed}, ${lit} before`);
+  must("close");
   const near = (report) => Math.hypot(...String(report.middle).split(",").map(Number).map((at, i) => at - [x, z][i]));
   const holding = waitForReport(freighterReport, (report) => near(report) <= LAKE_HOLD_WITHIN, LAKE_TICKS) ?? freighterReport();
   must("wait 200t");

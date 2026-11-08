@@ -537,6 +537,7 @@
   "screen.skyliners.autopilot_settings.turn.tight_right": "Tight Circle Right",
   "screen.skyliners.autopilot_settings.land_at_pin.on": "Land at the Pin: on, landing near it clear of buildings",
   "screen.skyliners.autopilot_settings.land_at_pin.off": "Land at the Pin: off, circling it",
+  "screen.skyliners.autopilot_settings.land_at_pin.no_ground": "Land at the Pin: on, but no clear, level ground near it: holding over it",
   "screen.skyliners.autopilot_settings.map": "Map: drag to look about, scroll to zoom, click to drop the pin",
   "screen.skyliners.autopilot_settings.map.middle": "X %s  Z %s",
   "screen.skyliners.autopilot_settings.map.pin": "Pin X %s  Z %s",

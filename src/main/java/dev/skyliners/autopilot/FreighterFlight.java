@@ -123,8 +123,11 @@ public final class FreighterFlight extends StandingFlight {
     /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
     private final ShownShare lift = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
-    /** Whether she has said she finds no ground to come down on round the pin she holds over. */
-    private boolean toldNoGround;
+    /**
+     * Whether she holds over the pin she is set to land at with no ground found round it, on the server and as the
+     * clients are shown it, her autopilot's screen dimming its landing picture by it.
+     */
+    private boolean noGround;
     /** What she does about a landing she cannot finish. */
     private final BalkedLanding balked = new BalkedLanding();
     /** Her engine grille glowing with her engines, and which of her thrusters trail their plumes. */
@@ -612,6 +615,7 @@ public final class FreighterFlight extends StandingFlight {
             tag.putLong("FreighterJumpingSince", jumpingSince);
         }
         tag.putBoolean("FreighterJumps", jumpsAllowed);
+        tag.putBoolean("FreighterNoGround", noGround);
         if (heldBy != null) {
             tag.putString("FreighterHeldBy", heldBy);
         }
@@ -627,6 +631,7 @@ public final class FreighterFlight extends StandingFlight {
         boostUntil = tag.contains("FreighterBoostUntil") ? tag.getLong("FreighterBoostUntil") : NO_BOOST;
         jumpingSince = tag.contains("FreighterJumpingSince") ? tag.getLong("FreighterJumpingSince") : NO_JUMP;
         jumpsAllowed = tag.getBoolean("FreighterJumps");
+        noGround = tag.getBoolean("FreighterNoGround");
         // Only a word a picture's name can be made of: her console draws the picture it names.
         String why = tag.getString("FreighterHeldBy");
         heldBy = ResourceLocation.isValidPath(why) && !why.isEmpty() ? why : null;
@@ -708,6 +713,7 @@ public final class FreighterFlight extends StandingFlight {
         AutopilotBlockEntity.Phase phase = autopilot.phase;
         boolean legsDown = legsDown(level, autopilot, phase);
         climb.tick(level, autopilot, flight.position().y);
+        boolean noGroundNow = false;
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,
@@ -722,8 +728,9 @@ public final class FreighterFlight extends StandingFlight {
             } else {
                 autopilot.advance(next, AutopilotBlockEntity.Phase.DESCENT);
             }
-            sayNoGround(level, autopilot, pilot.noGroundAtPin(orders));
+            noGroundNow = pilot.noGroundAtPin(orders);
         }
+        sayNoGround(level, autopilot, noGroundNow);
         slam.tick(level, autopilot, flight, pilot.middle(flight), radio, pilot.wiring().clusters(), pilot.wiring().feet(),
             heldNow(level, autopilot.getBlockPos()));
         legs.tick(level, autopilot.getBlockPos(), autopilot.phase, radio, flight.velocity().y);
@@ -753,16 +760,26 @@ public final class FreighterFlight extends StandingFlight {
 
     /**
      * Set to land at a pin with no clear, level ground round it, she says so once to everyone aboard as she holds over
-     * it, the sky's lowest note saying it to those who cannot read: set another pin, or land her where she is.
+     * it, the sky's lowest note saying it to those who cannot read: set another pin, or land her where she is. The
+     * clients are told of it as it starts and as it ends, her autopilot's screen dimming its landing picture meanwhile.
      */
-    private void sayNoGround(ServerLevel level, AutopilotBlockEntity autopilot, boolean noGround) {
-        if (noGround && !toldNoGround) {
+    private void sayNoGround(ServerLevel level, AutopilotBlockEntity autopilot, boolean noGroundNow) {
+        if (noGroundNow == noGround) {
+            return;
+        }
+        noGround = noGroundNow;
+        autopilot.changed();
+        if (noGround) {
             BalkedLanding.sayAboard(autopilot, SkylinersRegistry.FREIGHTER_COMPUTER_HOLDING,
                 Component.translatable("message.skyliners.autopilot.no_ground_freighter"));
             level.playSound(null, autopilot.getBlockPos(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS,
                 AutopilotBlockEntity.NOTE_VOLUME, AutopilotBlockEntity.NOTE_LOW);
         }
-        toldNoGround = noGround;
+    }
+
+    @Override
+    boolean noGroundAtPin() {
+        return noGround;
     }
 
     @Override

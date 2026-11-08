@@ -444,6 +444,7 @@ public class AutopilotSettingsScreen extends Screen {
         map.visible = toPin;
         pinCircle.visible = toPin && !rocket;
         landToggle.visible = toPin && !rocket;
+        landToggle.show(landAtPin && autopilot != null && autopilot.noGroundAtPin());
         fan.visible = !toPin;
         fan.active = !rocket;
         turns.forEach(turn -> turn.visible = !toPin && (!rocket || turn.turn == Turn.STRAIGHT));
@@ -1302,24 +1303,41 @@ public class AutopilotSettingsScreen extends Screen {
 
     /**
      * Whether, flying to the pin, it lands near it: a tile with an airliner touching down on a runway by a pin, edged
-     * in the landing's amber, lit green while it is on. Pointed at, it says what it does and whether it is on. It is
-     * there only while it flies to a pin, and pressed it only changes the settings, to be engaged or applied.
+     * in the landing's amber, lit green while it is on, its picture dimmed while it holds over the pin with nowhere
+     * round it to come down. Pointed at, it says what it does and whether it is on. It is there only while it flies to
+     * a pin, and pressed it only changes the settings, to be engaged or applied.
      */
     private final class LandToggle extends PanelArt.PanelButton {
+        /** Whether its picture is shown dimmed. */
+        private boolean noGround;
+
         LandToggle(int x, int y) {
-            super(x, y, STRIP_TILE, STRIP_HEIGHT, label(landAtPin));
+            super(x, y, STRIP_TILE, STRIP_HEIGHT, label(landAtPin, false));
             showLabel();
         }
 
-        private static Component label(boolean on) {
-            return Component.translatable(on ? "screen.skyliners.autopilot_settings.land_at_pin.on" : "screen.skyliners.autopilot_settings.land_at_pin.off");
+        private static Component label(boolean on, boolean noGround) {
+            String state = !on ? "off" : noGround ? "no_ground" : "on";
+            return Component.translatable("screen.skyliners.autopilot_settings.land_at_pin." + state);
+        }
+
+        /** Shows it dimmed or not, as the autopilot finds nowhere to come down or does, and says so when pointed at. */
+        void show(boolean noGround) {
+            if (noGround != this.noGround) {
+                this.noGround = noGround;
+                relabel();
+            }
+        }
+
+        private void relabel() {
+            setMessage(label(landAtPin, noGround));
+            showLabel();
         }
 
         @Override
         public void onPress() {
             landAtPin = !landAtPin;
-            setMessage(label(landAtPin));
-            showLabel();
+            relabel();
         }
 
         @Override
@@ -1332,7 +1350,7 @@ public class AutopilotSettingsScreen extends Screen {
             Look look = look();
             PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, look, landAtPin);
             int sink = look == Look.PRESSED ? 1 : 0;
-            pictures().landAtPin().draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+            pictures().landAtPin().draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, !noGround);
         }
     }
 }

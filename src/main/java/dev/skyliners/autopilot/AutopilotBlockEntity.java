@@ -860,6 +860,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         return landAtPin;
     }
 
+    /** Whether it holds over the pin it is set to land at, having found nowhere round it to come down. */
+    public boolean noGroundAtPin() {
+        return flight.noGroundAtPin();
+    }
+
     public double targetHeading() {
         return targetHeading;
     }
