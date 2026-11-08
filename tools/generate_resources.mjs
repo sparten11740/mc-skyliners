@@ -2264,7 +2264,6 @@ function zeppelinControlsLang() {
     "message.skyliners.console.slam_slamming": "Brace! She's coming down hard!",
     "message.skyliners.console.slam_busy": "She is coming down hard already",
     "message.skyliners.console.slam_not_flying": "She slams down only while she flies along",
-    "message.skyliners.console.slam_too_high": "The ground is too far below her",
     "message.skyliners.console.slam_held": "Not with her ramp out",
     "message.skyliners.console.slam_switched_off": "The slam landing is switched off on this server",
     "message.skyliners.console.slam_no_ship": "No freighter here to slam down",

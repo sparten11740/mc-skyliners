@@ -453,6 +453,10 @@ const SPACE_CLIMB_FROM = 1100;
 const SPACE_CLIMB_WATCH_TICKS = 400;
 const SPACE_CLIMB_GAINED = 250;
 const SPACE_SETTLE_TICKS = 100;
+// Her slam from far out in space: how many seconds she is watched coming down, a second at a time, and how fast she must
+// drive down at the fastest, in blocks a second, far past the sixteen she drove at before from any height.
+const SPACE_SLAM_WATCH_SECONDS = 150;
+const SPACE_SLAM_FASTEST = 40;
 const SPACE_TOP_UNDER = 40;
 const SPACE_TOP_TICKS = 600;
 const SPACE_HELD_WITHIN = 5;
@@ -2778,6 +2782,34 @@ function checkFreighterSpaceCeiling() {
     `at y ${top.altitude}, climbing ${top.climb}`);
 }
 
+// Her slam button from far out in space: hovering at y 2,500 it is lit, where past 160 blocks over the ground it used
+// to say no; pressed, she drives down far faster than she does from near the ground, all the way down, strikes it with
+// her crash and settles on her legs, the player aboard her unhurt.
+function checkFreighterSlamFromSpace() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${HIGHEST_ALTITUDE} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  lift(freighter, HIGHEST_ALTITUDE);
+  must(`skyliners:autopilot fly altitude=${HIGHEST_ALTITUDE} speed=0; wait ${SPACE_SETTLE_TICKS}t`);
+  const up = freighterReport();
+  expect(up?.slam === "ready", "freighter: hovering far out in space, her slam button is lit", `slam ${up?.slam} at y ${up?.altitude}`);
+  const { at } = must(`sable:find ${freighter} skyliners:console_slam 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  survival();
+  const health = healthOf();
+  const pressed = now();
+  must(`use ${at.join(",")}`);
+  const rows = must(`sample skyliners:freighter every 20t x${SPACE_SLAM_WATCH_SECONDS}`, BUILD_SECONDS).rows;
+  const fastest = Math.min(...rows.map((row) => row.climb ?? 0));
+  expect(-fastest >= SPACE_SLAM_FASTEST, "freighter: slammed down from space, she drives down far faster than from near the ground",
+    `${round(-fastest)} blocks a second at the fastest`);
+  const down = rows.findIndex((row) => row.phase === "off");
+  expect(down >= 0, "freighter: she comes all the way down and switches off on the ground", down >= 0 ? `${down} s from the button` : `last at y ${rows.at(-1)?.altitude}`);
+  expect(played("skyliners:freighter_slam", pressed).length > 0, "freighter: she strikes the ground with her crash");
+  expect(healthOf() === health, "freighter: nobody aboard is hurt", `health ${healthOf()}, ${health} before`);
+  creative();
+}
+
 // Moves a flying ship straight up or down to a height at once, as a long climb would take her, and puts the player back
 // aboard at her climb button.
 function lift(ship, height) {
@@ -4883,6 +4915,7 @@ const CHECKS = {
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
+  "freighter-slam-from-space": { run: checkFreighterSlamFromSpace, slow: true, about: "a freighter's slam button works far out in space and brings her down hard all the way, nobody hurt" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },

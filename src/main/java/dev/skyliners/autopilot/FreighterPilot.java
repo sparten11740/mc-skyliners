@@ -88,7 +88,8 @@ public final class FreighterPilot {
     /** How quickly her lift closes on the climb she wants, in blocks a second each second a block a second off it. */
     private static final double CLIMB_GAIN = 1.2;
     /**
-     * Her slam landing (see {@link FreighterSlam}): how fast she drives down at most, in blocks a second; how hard she
+     * Her slam landing (see {@link FreighterSlam}): how fast she drives down at most, in blocks a second, from as high as
+     * space, her braking curve slowing her from it in time over the ground (see {@link #slamSink}); how hard she
      * brakes on her lift at the last at most, in blocks a second each second, and at least, however heavy she is; the
      * share of the lift she has spare over her weight she brakes on, the rest left for her lift to catch up and keep
      * her level; how fast she touches down, in blocks a second,
@@ -97,7 +98,7 @@ public final class FreighterPilot {
      * second each second; the least share of her weight her lift holds up as she drives down; and how quickly her lift
      * closes on the climb she wants, as {@link #CLIMB_GAIN} does, more tightly, so she brakes when she means to.
      */
-    private static final double SLAM_SINK = 16;
+    private static final double SLAM_SINK = 60;
     private static final double SLAM_BRAKE = 9;
     private static final double SLAM_LEAST_BRAKE = 1;
     private static final double SLAM_SPARE_SHARE = 0.6;

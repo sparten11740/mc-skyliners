@@ -2662,18 +2662,19 @@ note. Climbing straight up brings no new land into view, as flying along does, s
 she climbs. The server config's `freighter.climbBoost` switches it off; her console then has a second bank of toggles
 where the climb button was.
 
-Beside it, the big red button in its ring of red and black stripes, under a fat arrow pointing down onto the ground
-with a burst where it strikes, slams her down where she is. It glows red while she flies along, hovering or cruising,
-with the ground no more than 160 blocks under her feet, and is dark otherwise. Pressed then, her computer says she is
-taking the quick way down and to brace yourselves, her thrusters roar, deep, and she drives straight down far faster
-than she ever lands, her legs coming out, white-hot exhaust streaming up over her as if her thrusters fired the other
-way and dashes racing down past the arrow on its screen. At the last her lift roars and she brakes hard, and her feet
-hit the ground with a deep boom and a crunch of metal heard well off: the view of everyone aboard kicks and shakes,
-anyone standing near feels the ground jolt, earth and smoke burst up at each of her feet and a ring of dust races out
-over the ground round her. Then she settles on her legs and switches off with her bell, as after any landing, and her
-ramp comes down. It only looks like a crash: she touches the ground slowly enough that nothing under her breaks and
-nobody aboard is hurt or thrown about. On the ground, lifting off, landing, too high over the ground or with her ramp
-not all away, it only says no with a low note. The server config's `freighter.slamLanding` switches it off; her console
+Beside it, the big red button in its ring of red and black stripes, under a fat arrow pointing down onto the ground with
+a burst where it strikes, slams her down where she is. It glows red while she flies along, hovering or cruising, from
+any height, out in space as well, and is dark otherwise. Pressed then, her computer says she is taking the quick way
+down and to brace yourselves, her thrusters roar, deep, and she drives straight down far faster than she ever lands, up
+to 60 blocks a second from high up, the quick way down from space too, her legs coming out, white-hot exhaust streaming
+up over her as if her thrusters fired the other way and dashes racing down past the arrow on its screen. At the last her
+lift roars and she brakes hard, and her feet hit the ground with a deep boom and a crunch of metal heard well off: the
+view of everyone aboard kicks and shakes, anyone standing near feels the ground jolt, earth and smoke burst up at each
+of her feet and a ring of dust races out over the ground round her. Then she settles on her legs and switches off with
+her bell, as after any landing, and her ramp comes down. It only looks like a crash: she touches the ground slowly
+enough that nothing under her breaks and nobody aboard is hurt or thrown about. On the ground, lifting off, landing or
+with her ramp not all away, it only says no with a low note. The server config's `freighter.slamLanding` switches it
+off; her console
 then has her flight readouts where the slam button was, and a bank of toggles before the co-pilot.
 
 The big blue button on the co-pilot's side, in its ring of blue and white stripes under a starburst, jumps her through

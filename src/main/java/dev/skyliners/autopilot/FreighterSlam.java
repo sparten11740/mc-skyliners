@@ -39,12 +39,13 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * her ramp stays up throughout; none with the server config's {@code freighter.slamLanding} off.
  */
 public final class FreighterSlam {
-    /** The highest her feet may be over the ground for it to fire, in blocks: higher, the ground is out of reach. */
-    static final double REACH = 160;
     /** How near the ground her feet must come to have struck it, in blocks, as her pilot counts touching. */
     private static final double STRUCK = 0.6;
-    /** The longest a slam goes on, in ticks (a minute), should she never come down. */
-    private static final int LONGEST_TICKS = 1200;
+    /**
+     * The longest a slam goes on, in ticks (four minutes), should she never come down: long enough to come down from
+     * far out in space at her fastest.
+     */
+    private static final int LONGEST_TICKS = 4 * 60 * 20;
     /**
      * Her thrusters' roar as it begins, heard at her middle: how loud, and how much lower than her boost's, as her
      * thrusters fire the other way.
@@ -98,8 +99,6 @@ public final class FreighterSlam {
         BUSY,
         /** She is not flying along: on the ground, lifting off, coming down or switched off. */
         NOT_FLYING,
-        /** The ground is too far below her for it. */
-        TOO_HIGH,
         /** Something would hold her take-off: her ramp not all away. */
         HELD,
         /** The server's config has it switched off. */
@@ -120,7 +119,7 @@ public final class FreighterSlam {
 
     /**
      * On the server and as the clients are shown it: whether it is under way, and whether she could slam down now,
-     * flying along with the ground in reach and the server letting her.
+     * flying along, from any height, and the server letting her.
      */
     private boolean firing;
     private boolean ready;
@@ -222,9 +221,6 @@ public final class FreighterSlam {
         }
         if (!FreighterJump.flyingAlong(autopilot)) {
             return Answer.NOT_FLYING;
-        }
-        if (radio > REACH) {
-            return Answer.TOO_HIGH;
         }
         return held != null ? Answer.HELD : null;
     }
