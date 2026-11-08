@@ -16,27 +16,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 - **A removed ship comes back.** `/sable remove` only drops the loaded copy; Sable's stored copy stays in
   `sable storage find_all_sub_levels` and flies again once its area loads.
 
-## The zeppelin
-
-- A mooring mast and a Moor mode for the autopilot.
-- Portholes in the gas cells, a drop room, bounce nets and crawl-ways out to the engine cars.
-- A ballast board and a weigh-off balance, a drift telescope, a piano and an Owl's Nest.
-- A band of stars on the screen under her natural ceiling.
-- A duck hunt of her own (Duck Hunt counts the airliner's ducks only).
-- Planting the flag: a banner dropped on a spike.
-- The sky crane lifting glued builds, through a Sable rope.
-- A plane docked on the flying carrier counted in her pilot's mass.
-
-## The airliner
-
-- The rocket's painting is left out at scale 2.5, where the zeppelin's still hangs; scales 2, 3 and 4 have both. Why has
-  not been looked into.
-- A "gear down" voice callout. The voices are made with Windows' speech synthesis, so it waits for a Windows machine.
-
-## The rocket
-
-- A carpet ring round each lift doorway, and lamps over the lab's counters.
-
 ## The freighter
 
 - Her mains read as black holes in her engine grille while they idle without a plume: a nozzle rim of their own.
@@ -53,9 +32,7 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   them again at every later fold of her ramp; a fresh freighter never does. The cause is not found (the hatch cells at
   -5..-7, -4, 0..2 and -13, -4, 2 from the ramp panel). A check: fly, land, drop her, and look that `sable:list` near her
   shows only her after the next fold.
-- Rockets fired ahead as she flies leave smoke she flies into, whiting out the gunner's view a few seconds.
 - Her belly looks very dark from below in flight; not yet compared with her on the ground.
-- The stencilled arrows on her hull plating point every which way.
 - `BoardingRamp` and `BoardingAirstairs` each keep their own wait for someone to step off (held, a cooldown, the chime,
   looking again): one shared piece beside `Hatch`, before a third door-like mechanism copies it again.
 
