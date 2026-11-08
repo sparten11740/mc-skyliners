@@ -527,6 +527,16 @@ const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
+// Coming aboard a freighter on someone's birthday: how far from her bandstand to stand to be off her, in blocks; and how
+// long the greeting may take to come once aboard, in ticks.
+const BIRTHDAY_AWAY = 100;
+const BIRTHDAY_WITHIN = 40;
+// How long to stay off her before coming aboard again, in ticks: past the time off that counts as coming aboard anew.
+const BIRTHDAY_OFF_TICKS = 120;
+// Lifting off with them aboard: how long to give her to be assembled and climb, in ticks, and how high she must be by
+// then to have taken off, in blocks.
+const BIRTHDAY_LIFT_TICKS = 300;
+const BIRTHDAY_LIFTED = 5;
 // How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
 // round her control head her cockpit's floor is looked over for carpet, in blocks.
 const TIP_STRIPS_BACK = 3;
@@ -1900,6 +1910,41 @@ function checkFreighterLights() {
   const corridor = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([ax, az]) =>
     must(`block ${axisX + ax * CORRIDOR_MIDDLE},${y + 1},${axisZ + az * CORRIDOR_MIDDLE} light`).block_light ?? 0);
   expect(Math.min(...corridor) >= CORRIDOR_LIT, "freighter: her ring corridor is lit all round", `block light ${corridor.join(", ")}`);
+}
+
+// Comes aboard a freighter with the client config naming someone whose birthday is tomorrow, then today, then again
+// today, then lifts off with them aboard: her computer's birthday greeting, and its banner, come only on the day, and
+// once from each freighter, not again as her taking off moves her autopilot into Sable's plot.
+function checkBirthdayGreeting() {
+  layDown("freighter");
+  const [stand] = must("find skyliners:bandstand 128 1").rows;
+  const [x, y, z] = stand.at_abs;
+  const [dx, dz] = STEPS[must(`block ${x},${y},${z}`).props?.facing ?? "north"];
+  const aboard = `server tp @p ${x + dx * BAND_NEAR + 0.5} ${y} ${z + dz * BAND_NEAR + 0.5}`;
+  const away = `server tp @p ${x} ${ground} ${z + BIRTHDAY_AWAY}; wait ${BIRTHDAY_OFF_TICKS}t`;
+  const day = (date) => `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const today = new Date();
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  // Set off her, as a birthday that comes while they stand aboard greets them there and then.
+  const greetedComingAboard = (date) => {
+    must(`${away}; config skyliners client birthdayDate ${day(date)}`);
+    const since = now();
+    must(aboard);
+    return Boolean(heard("*freighter_computer_birthday*", since, BIRTHDAY_WITHIN));
+  };
+  try {
+    must("config skyliners client birthdayName Sam");
+    expect(!greetedComingAboard(tomorrow), "birthday: the day before it, coming aboard a freighter greets nobody");
+    expect(greetedComingAboard(today), "birthday: on their birthday, coming aboard a freighter, her computer wishes them a happy birthday");
+    expect(!greetedComingAboard(today), "birthday: gone and come aboard her again that day, she does not greet them twice");
+    const since = now();
+    must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+    const flying = must(`wait ${BIRTHDAY_LIFT_TICKS}t; sable:info here brief`);
+    expect(flying.agl > BIRTHDAY_LIFTED && !heard("*freighter_computer_birthday*", since, 0), "birthday: lifting off with them aboard, she does not greet them again",
+      `${flying.agl} blocks up`);
+  } finally {
+    send("?config reset");
+  }
 }
 
 // A freighter's club: a bar with the robot bartender behind its counter, and a band; standing before its bandstand,
@@ -4033,6 +4078,7 @@ const CHECKS = {
   "freighter-rooms": { run: checkFreighterRooms, about: "a freighter's crew quarters have their bunks, her lounge its booth with leg room, her hold its cargo and scanner" },
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
+  "birthday-greeting": { run: checkBirthdayGreeting, slow: true, about: "a freighter greets whoever the client config names as they come aboard on their birthday, once, and nobody the day before" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },

@@ -1015,6 +1015,11 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ZERO_GRAVITY_BUMP = sound("zero_gravity_bump");
     /** Her computer, a gravity switch turned off: "Gravity off. Try not to hit your head." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ZERO_GRAVITY = sound("freighter_computer_zero_gravity");
+    /**
+     * Her computer wishing a happy birthday to whoever comes aboard, when the client config names someone (see the
+     * client's BirthdayBanner).
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_BIRTHDAY = sound("freighter_computer_birthday");
     /** A fault panel of the freighter's running repairs sparking: the radio's crackle, subtitled as its own. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FAULT_CRACKLE = sound("fault_crackle");
     /** A leaky pipe of the freighter's running repairs steaming: the fog machine's hiss, subtitled as its own. */

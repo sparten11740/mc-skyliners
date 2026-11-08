@@ -1198,6 +1198,14 @@
       }
     ]
   },
+  "freighter_computer_birthday": {
+    "subtitle": "subtitles.skyliners.freighter_computer_birthday",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_birthday"
+      }
+    ]
+  },
   "fault_crackle": {
     "subtitle": "subtitles.skyliners.fault_crackle",
     "sounds": [

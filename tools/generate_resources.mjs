@@ -2595,6 +2595,7 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
   freighter_computer_zero_gravity: { subtitle: "Computer: Gravity off", aboard: true },
+  freighter_computer_birthday: { subtitle: "Computer: Happy birthday!" },
   // Her running repairs' fault spots at fault, each played louder than its own sound so it carries across her deck: the
   // fault panel's crackle, the radio's, and the leaky pipe's hiss, the fog machine's (a sound's "from" is the sound
   // file it plays, where that is another's).

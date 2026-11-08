@@ -5575,6 +5575,7 @@ const COMPUTER_ANNOUNCEMENTS = {
   freighter_computer_arrival: "We're down. | Nothing fell off. | That I know of.",
   freighter_computer_space: "We're in space. | Keep the windows shut.",
   freighter_computer_gravity: "Gravity back on. | Mind your landing.",
+  freighter_computer_birthday: "Happy birthday! | Welcome aboard, Captain.",
 };
 // Her computer through her hyperspace jump (see FreighterJump), our own lines in the voice of a worn old cargo hauler's
 // computer that has seen it all: spooling up as the button is pressed, letting go as she jumps, coming out of it at the

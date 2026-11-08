@@ -24,6 +24,7 @@ import dev.skyliners.client.AutopilotRenderer;
 import dev.skyliners.client.AutopilotScreenRenderer;
 import dev.skyliners.client.BandstandRenderer;
 import dev.skyliners.client.BasketballRenderer;
+import dev.skyliners.client.BirthdayBanner;
 import dev.skyliners.client.BlastFlash;
 import dev.skyliners.client.BlastPuffParticle;
 import dev.skyliners.client.BlueIceChunkRenderer;
@@ -300,6 +301,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::tick);
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::widen);
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::world);
+        NeoForge.EVENT_BUS.addListener(BirthdayBanner::tick);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
@@ -402,6 +404,7 @@ public final class SkylinersClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "outside_camera"), PassengerCameras::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lightning_flash"), LightningFlash::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "blast_flash"), BlastFlash::overlay);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "birthday_banner"), BirthdayBanner::overlay);
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_jump"),
             HyperspaceOverlay::overlay);
         // Where the spyglass's own round is drawn, under the hotbar.
