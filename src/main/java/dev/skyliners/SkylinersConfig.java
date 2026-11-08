@@ -73,6 +73,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_PLATING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_OUTSIDE_LIGHTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_EVERY_PLUME;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROCKETS;
@@ -693,6 +694,15 @@ public final class SkylinersConfig {
                 "brighter and wider the harder her mains push her ahead, and out once she rests."
             )
             .define("engineGlow", true);
+        FREIGHTER_EVERY_PLUME = builder
+            .comment(
+                "Whether every one of the freighter's thrusters trails Create Propulsion's plume: all six of her mains as she flies",
+                "along and all twenty of her lift thrusters as she lifts off and lands. Off, four of her mains and the middle lift",
+                "thruster of each cluster do, which looks much the same from outside. Every puff of a plume is sent to every player",
+                "near and moved along by each of their clients: on, she sends half as many again as she flies along and five times",
+                "as many as she lifts off and lands. A freighter already flying takes it up once she is next loaded."
+            )
+            .define("everyPlume", false);
         FREIGHTER_GALLERY = builder
             .comment(
                 "Whether the freighter's long passages are galleries: space posters along the tunnel down her port prong, an",

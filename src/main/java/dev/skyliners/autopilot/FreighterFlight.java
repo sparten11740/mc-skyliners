@@ -118,9 +118,9 @@ public final class FreighterFlight extends StandingFlight {
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     /** Whether she has said she finds no ground to come down on round the pin she holds over. */
     private boolean toldNoGround;
-    /** Her engine grille glowing with her engines, and her lift thrusters' plumes shown close over the ground. */
+    /** Her engine grille glowing with her engines, and which of her thrusters trail their plumes. */
     private final EngineGlow glow = new EngineGlow();
-    private final LiftPlumes liftPlumes = new LiftPlumes();
+    private final FreighterPlumes plumes = new FreighterPlumes();
     /**
      * Where her disc's middle is from her control head, so many blocks to its right and ahead of it, on the clients as
      * on the server; unknown for one built before it was kept, until her pilot's wiring gives it.
@@ -702,7 +702,7 @@ public final class FreighterFlight extends StandingFlight {
             autopilot.changed();
         }
         glow.tick(level, autopilot.getBlockPos(), pilot.wiring().grille(), lift.shown(), mains.shown(), now);
-        liftPlumes.tick(level, autopilot.getBlockPos(), pilot.wiring().clusters(), radio);
+        plumes.tick(level, autopilot.getBlockPos(), pilot.wiring().clusters(), pilot.wiring().mains(), radio);
         watchArrival(autopilot, flight, radio);
         jumpTick(level, autopilot, flight);
     }

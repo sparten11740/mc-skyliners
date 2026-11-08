@@ -2736,8 +2736,10 @@ the rivet from a gold nugget on a stone button.
 
 She flies on Create Propulsion's creative thrusters, which need no fuel: four clusters of five set into her belly lift
 her and keep her deck level, more of their push going to whichever side dips, so she is never tipped by where her weight
-sits, their plumes showing as she lifts off and lands, close over the ground, and left out higher up, where nobody would
-see them under her; six main engines in her stern push her ahead, their plumes behind her, and two retros in her prongs'
+sits, the middle one of each cluster trailing its plume down to the ground as she lifts off and lands, left out higher
+up, where nobody would see it under her; six main engines in her stern push her ahead, all six glowing and four of them
+trailing plumes behind her (the server config's `freighter.everyPlume` has every one of her thrusters trail one, at
+up to five times the particles sent to everyone near), and two retros in her prongs'
 tips hold her back from behind grated engine bays; jets at her nose and her tail turn her and push her sideways, those
 at her nose set into the outer walls of her prongs' tunnels, only their nozzles showing outside, and those at her tail
 hidden. In her cockpit the autopilot's control head stands between the pilot's seat and the co-pilot's, jump seats
