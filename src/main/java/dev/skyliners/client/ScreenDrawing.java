@@ -1,10 +1,14 @@
 package dev.skyliners.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import dev.skyliners.Skyliners;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -26,9 +30,31 @@ final class ScreenDrawing {
     private ScreenDrawing() {
     }
 
+    /**
+     * Flat shapes as the text background draws them, but drawn in the order they are given rather than sorted by how
+     * far each is from the camera: a screen's layers lie a hair apart, and sorted afresh every frame they swapped places
+     * as the view moved, a radar's sweep trail and rings flickering through each other. Given in order from the
+     * bottom layer up, each is drawn over the last.
+     */
+    private static final RenderType LAYERED = RenderType.create(Skyliners.MOD_ID + "_screen_layers", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, false, false, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.RENDERTYPE_TEXT_BACKGROUND_SHADER)
+            .setTextureState(RenderStateShard.NO_TEXTURE)
+            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+            .setLightmapState(RenderStateShard.LIGHTMAP)
+            .createCompositeState(false));
+
     /** The buffer flat shapes are drawn into. */
     static VertexConsumer shapes(MultiBufferSource buffers) {
         return buffers.getBuffer(RenderType.textBackground());
+    }
+
+    /**
+     * The buffer flat shapes are drawn into in the order given, the bottom layer first, for a screen whose layers
+     * overlap, as a radar scope's do.
+     */
+    static VertexConsumer layers(MultiBufferSource buffers) {
+        return buffers.getBuffer(LAYERED);
     }
 
     static void vertex(VertexConsumer shapes, Matrix4f matrix, double x, double y, float z, int colour) {

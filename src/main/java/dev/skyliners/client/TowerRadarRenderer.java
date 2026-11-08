@@ -44,8 +44,13 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
     /** How long the sweep takes to go round, in milliseconds, and how many pieces of the disc it is drawn in. */
     private static final long SWEEP_PERIOD = 4000;
     private static final int PIECES = 48;
-    /** How far behind the sweep its fading trail reaches, in pieces. */
+    /**
+     * How far behind the sweep its fading trail reaches, in pieces of the disc, and how many thin slices it is drawn
+     * in, each fading smoothly across into the next: drawn in a few even slices, each one flat, it showed as a row of
+     * fading ghosts of the sweep rather than one trail.
+     */
     private static final int TRAIL = 10;
+    private static final int TRAIL_SLICES = 40;
     /** A blip's half size, and the length of an airliner's heading line, in blocks; how dim it fades to. */
     private static final float BLIP = 0.018F;
     private static final float HEADING = 0.05F;
@@ -83,7 +88,7 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
         pose.mulPose(Axis.YP.rotationDegrees(-screen.toYRot()));
         pose.translate(0, MIDDLE_Y, surface(radar.getBlockState()));
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = ScreenDrawing.layers(buffers);
         ScreenDrawing.rect(shapes, matrix, -GLASS_HALF_WIDTH, -GLASS_HALF_HEIGHT, GLASS_HALF_WIDTH, GLASS_HALF_HEIGHT, 0, GLASS);
         disc(shapes, matrix, RADIUS, 0.0005F, SCOPE);
         for (int ring = RINGS; ring >= 1; ring--) {
@@ -112,21 +117,27 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
         ScreenDrawing.disc(shapes, matrix, 0, 0, radius, PIECES, z, colour);
     }
 
-    /** One piece of a disc, from one angle round to another (clockwise from up, as a compass goes). */
-    private static void piece(VertexConsumer shapes, Matrix4f matrix, double a, double b, float radius, float z, int colour) {
-        ScreenDrawing.vertex(shapes, matrix, 0, 0, z, colour);
-        ScreenDrawing.vertex(shapes, matrix, Math.sin(b) * radius, Math.cos(b) * radius, z, colour);
-        ScreenDrawing.vertex(shapes, matrix, Math.sin(a) * radius, Math.cos(a) * radius, z, colour);
-        ScreenDrawing.vertex(shapes, matrix, 0, 0, z, colour);
+    /** The sweep's trail behind it, fading smoothly from the sweep's edge to nothing. */
+    private static void trail(VertexConsumer shapes, Matrix4f matrix, double sweep) {
+        double step = 2 * Math.PI / PIECES * TRAIL / TRAIL_SLICES;
+        for (int i = 0; i < TRAIL_SLICES; i++) {
+            fading(shapes, matrix, sweep - (i + 1) * step, sweep - i * step, trailColour(i + 1), trailColour(i));
+        }
     }
 
-    /** The sweep's fading trail, the pieces behind it. */
-    private static void trail(VertexConsumer shapes, Matrix4f matrix, double sweep) {
-        double step = 2 * Math.PI / PIECES;
-        for (int i = 0; i < TRAIL; i++) {
-            int alpha = (TRAIL_COLOUR >>> 24) * (TRAIL - i) / TRAIL;
-            piece(shapes, matrix, sweep - (i + 1) * step, sweep - i * step, RADIUS, 0.0025F, alpha << 24 | TRAIL_COLOUR & 0xFFFFFF);
-        }
+    /** The trail's colour so many slices behind the sweep: its own at the sweep's edge, none at its far end. */
+    private static int trailColour(int behind) {
+        int alpha = (TRAIL_COLOUR >>> 24) * (TRAIL_SLICES - behind) / TRAIL_SLICES;
+        return alpha << 24 | TRAIL_COLOUR & 0xFFFFFF;
+    }
+
+    /** A slice of the trail between two bearings, its colour blending from one edge's to the other's across it. */
+    private static void fading(VertexConsumer shapes, Matrix4f matrix, double a, double b, int colourA, int colourB) {
+        float z = 0.0025F;
+        ScreenDrawing.vertex(shapes, matrix, 0, 0, z, colourB);
+        ScreenDrawing.vertex(shapes, matrix, Math.sin(b) * RADIUS, Math.cos(b) * RADIUS, z, colourB);
+        ScreenDrawing.vertex(shapes, matrix, Math.sin(a) * RADIUS, Math.cos(a) * RADIUS, z, colourA);
+        ScreenDrawing.vertex(shapes, matrix, 0, 0, z, colourA);
     }
 
     /**
