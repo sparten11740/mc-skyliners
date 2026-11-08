@@ -50,6 +50,14 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   lining of their own inside (M4, the cockpit's dress).
 - Her ramp refuses to come down where the ground under its foot rises: a foot lip that takes ground a block higher or
   lower, as the plan has it, laying its last blocks of deck to meet it.
+- Dropped hard with her ramp down (lifted 25 blocks by `sable physics translation` and let fall), she sheds pieces of
+  her belly over the ramp well as ships of their own, 3 by 1 by 3 of `freighter_cover` and one block more, and sheds
+  them again at every later fold of her ramp; a fresh freighter never does. The cause is not found (the hatch cells at
+  -5..-7, -4, 0..2 and -13, -4, 2 from the ramp panel). A check: fly, land, drop her, and look that `sable:list` near her
+  shows only her after the next fold.
+- Rockets fired ahead as she flies leave smoke she flies into, whiting out the gunner's view a few seconds.
+- Her belly looks very dark from below in flight; not yet compared with her on the ground.
+- The stencilled arrows on her hull plating point every which way.
 - `BoardingRamp` and `BoardingAirstairs` each keep their own wait for someone to step off (held, a cooldown, the chime,
   looking again): one shared piece beside `Hatch`, before a third door-like mechanism copies it again.
 
