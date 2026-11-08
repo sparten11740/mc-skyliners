@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -109,13 +110,14 @@ public final class BlockpilotCommands {
             .onServer()
             .group("skyliners")
             .help("what the nearest freighter's autopilot is doing: phase, height, climb, speed ahead and across, heading, tilt, mass, lift, trims, thrusters, "
-                + "legs, and how many ticks after its button her last hyperspace jump found the land round her pin loaded (-1 before one)")
+                + "legs, what holds her take-off, and how many ticks after its button her last hyperspace jump found the land round her pin loaded (-1 before one)")
             .field("phase", "the autopilot's phase")
             .field("lift", "the share of full lift her lift thrusters are set to")
             .field("clusters", "each lift cluster's total signal: ahead right, ahead left, astern right, astern left")
             .field("jets", "each jet's signal: nose right, nose left, tail right, tail left")
             .field("mass", "the freighter's mass in Sable's units")
-            .field("legs", "where her landing legs are: down, raising, up or lowering, moving apart, or fixed"));
+            .field("legs", "where her landing legs are: down, raising, up or lowering, moving apart, or fixed")
+            .field("held", "what holds her take-off on her legs, as her console shows it (ramp), or none"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("gunner", (context, args) -> gunner())
             .needsWorld()
             .group("skyliners")
@@ -292,6 +294,7 @@ public final class BlockpilotCommands {
             .tag("retros", report.retros())
             .tag("jets", report.jets())
             .tag("legs", freighter.legsShown(autopilot))
+            .tag("held", Objects.requireNonNullElse(FreighterFlight.heldBy(autopilot), "none"))
             .tag("jump_loaded_after", freighter.jumpLoadedAfter()));
     }
 

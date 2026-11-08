@@ -1170,7 +1170,8 @@ A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use i
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
 or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter. A Model Zeppelin, a silver
 cigar on its stand with its fins and its car, and a Model Freighter, a grey saucer with her prongs and her cockpit pod
-on a stand of her own, are in the creative tab.
+on a stand of her own, are in the creative tab. Each takes up only the room its model does, so it is picked out, and
+bumped into, where it is drawn.
 
 A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
@@ -2146,7 +2147,8 @@ them, ready to be packed and dropped; out to either side a wall of pallet racks 
 boxes, drums and crates and now and then a bay left empty, parts the front from the back (with a gap in it in a big
 rocket); at the back right is a workbench corner, a crafting table, a stool and a grindstone under shelves of tool
 cases, and at the back left crates are piled where they were set down. By the way in on its left stands the Parcel
-Scanner, a conveyor under a striped gantry with an empty crate waiting on its belt: set a crate on it, or use it, and a
+Scanner, a conveyor under a striped gantry with an empty crate waiting on its belt, the gantry as solid as it looks:
+set a crate on it, or use it, and a
 red curtain of laser light fills the gantry with a rising whirr while a line sweeps down the crate on its screen, then a
 bright double beep and a green tick if something is packed in the crate, ready to drop, or a low buzz and a red cross if
 not. Halo lights hang round the shaft as in the entry, and the middle of its back is left to the rover (below). The
@@ -2611,7 +2613,8 @@ to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along
 controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
 turned toward her middle so whichever seat you fly from it faces you. Left to right: the climb button before the
 pilot, her flight readouts, the boost button, the scanner, the hyperspace jump button, her engines and a bank of toggles.
-From either seat every module is pressed where it is seen, over the desks between, so a pilot alone reaches them all.
+From either seat every module is pressed where it is seen, over the desks between, so a pilot alone reaches them all,
+and each is as solid as its desk is drawn: the room in front of it neither stops you nor takes a click.
 Every reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons,
 her
 height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring
@@ -2749,7 +2752,8 @@ Mind your landing." Her autopilot screen and the settings
 screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
 
 Her outside is a working ship's. On her top, to port of her stern, a big white satellite dish nearly four blocks across
-turns slowly round on its pedestal, tipped up at the sky; off her port bow stands a little farm of antenna masts, two
+turns slowly round on its pedestal, tipped up at the sky, the middle of its bowl solid enough to stand on; off her port
+bow stands a little farm of antenna masts, two
 more to starboard, each with a red lamp at its tip blinking a second on and three off; there are cream sensor domes with
 a cyan band round their foot, banks of heat-sink fins glowing orange at their roots either side of her stern over her
 engines, exhaust vents between them and flush vent grilles inboard of them letting off white wisps, and runs of
@@ -2775,8 +2779,10 @@ had it keeps the zeppelin's plainer silver cover until she is built again.
 
 Her outer ring and rim are plated: riveted seams run out from her middle every 30 degrees, a few sectors between them
 are dark gunmetal, welded patches are scattered over the rest, and yellow and black hazard stripes ring her docking
-collars and run along the foot of her rim under her engines. The Dark, Riveted and Patched Hull Plates and the Hazard
-Plate are among her blocks in the creative tab, each a whole plate set by hand. The server config's `freighter.plating`
+collars and run along the foot of her rim under her engines, each plate drawn as finely as her hull, its seam along its
+top and its left edge as hers are, its rivets each with a shadow. The Dark, Riveted and Patched Hull Plates and the
+Hazard Plate are among her blocks in the creative tab, each a whole plate set by hand.
+The server config's `freighter.plating`
 leaves her skin one pale grey.
 
 By night she shows her lights: a glowing cyan band runs all round her rim, light strips line both walls of her loading
@@ -2819,8 +2825,10 @@ and once she has landed with her autopilot off and her computer has had its say,
 as soon as she is set to fly; her take-off waits on her legs until it is all away. Press its button while she is coming
 in to land and it clicks, its lamp blinking amber, and the ramp comes down by itself as soon as she has settled on her
 legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and if her take-off is
-waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls her take-off off with
-a low note, her autopilot switching off and the ramp staying down. Walk onto it while it swings and it holds you up:
+waiting, everyone aboard is told so and hears the chime wherever they are, in her cockpit or at her gunner's seat, while
+the scanner on her console shows her ramp with someone standing on it, flashing amber, in place of its scope; held half
+a minute, she calls her take-off off with a low note, her autopilot switching off and the ramp staying down.
+Walk onto it while it swings and it holds you up:
 coming down it carries you down with it, and going up it stops where it is, chiming, until you step off it. It never
 comes down onto anyone standing under it, nor shuts its hatch on anyone in it, but stops with a chime until they move.
 From the ground, the amber button low on her

@@ -1,11 +1,13 @@
 package dev.skyliners.exterior;
 
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.shapes.Shapes;
 
 /**
  * What can be picked out of each of the outside fittings (see {@link HullFittingBlock}) as it stands on a floor, is
  * fixed to a wall and hangs under a ceiling, drawn facing north, as their models are (see
- * tools/generate_resources.mjs): roughly the parts of each that hold still, kept within its block.
+ * tools/generate_resources.mjs): roughly the parts of each that hold still, kept within its block but for the big
+ * dish's bowl over its turntable.
  */
 public final class HullFittings {
     /**
@@ -18,11 +20,13 @@ public final class HullFittings {
     public static final SatelliteDishBlock.Dish SMALL_DISH = new SatelliteDishBlock.Dish(new float[]{8, 10.5F, 8}, new float[]{8, 10, 5.5F},
         new float[]{8, 9, 8}, 1, 35, 60);
     /**
-     * The big satellite dish: on a floor its pedestal and column up to the turntable at the top of its block; on a wall
-     * its heavy plate and twin arms; under a ceiling its plate and column down to the ring at the foot of its block.
+     * The big satellite dish: on a floor its pedestal and column up to the turntable at the top of its block, and over
+     * it the middle of its bowl as it turns round tipped up at the sky, to bump into and to stand on (what of the bowl
+     * reaches out past its block is that block's to fill, and no one's); on a wall its heavy plate and twin arms; under
+     * a ceiling its plate and column down to the ring at the foot of its block.
      */
-    public static final HullFittingBlock.Outline BIG_SATELLITE_DISH = new HullFittingBlock.Outline(Block.box(1, 0, 1, 15, 16, 15),
-        Block.box(3, 2, 1, 13, 14, 16), Block.box(2, 0, 2, 14, 16, 14));
+    public static final HullFittingBlock.Outline BIG_SATELLITE_DISH = new HullFittingBlock.Outline(
+        Shapes.or(Block.box(1, 0, 1, 15, 16, 15), Block.box(2, 16, 2, 14, 28, 14)), Block.box(3, 2, 1, 13, 14, 16), Block.box(2, 0, 2, 14, 16, 14));
     /** Where the big dish's mounts hold its dish, three times the small one's size. */
     public static final SatelliteDishBlock.Dish BIG_DISH = new SatelliteDishBlock.Dish(new float[]{8, 16, 8}, new float[]{8, 12, 3},
         new float[]{8, 1, 8}, 3, 45, 20);

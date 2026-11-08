@@ -145,7 +145,7 @@ public final class Skyliners {
         RoverDrivers.register();
         RocketPilot.holdCountdownWhile(RoverBayBlockEntity::holdsCountdown);
         RocketPilot.holdCountdownWhile(RocketStairsBlockEntity::holdsCountdown);
-        FreighterFlight.holdTakeoffWhile(RampPanelBlockEntity::holdsTakeoff);
+        FreighterFlight.holdTakeoffWhile("ramp", RampPanelBlockEntity::holdsTakeoff);
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);

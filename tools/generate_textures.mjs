@@ -8952,6 +8952,16 @@ function consoleTextures() {
       return paint(x, y) ?? GLASS;
     }, 1);
   }
+  // Her take-off held by someone on her ramp: her hull's edge at the left, her ramp sloping down from under it to the
+  // ground at the right, and someone standing on it, their arms out.
+  const HELD_RAMP_PERSON = [[8, 2], [9, 2], [8, 3], [9, 3], [7, 4], [8, 4], [9, 4], [10, 4], [6, 5], [8, 5], [9, 5], [11, 5], [6, 6], [8, 6],
+    [9, 6], [11, 6], [8, 7], [9, 7], [8, 8], [9, 8], [7, 9], [10, 9], [7, 10], [10, 10], [10, 11], [10, 12]];
+  const HELD_RAMP_ROWS = Array.from({ length: SIZE }, (_, y) => Array.from({ length: SIZE }, (_, x) => {
+    const rampTop = 9 + Math.floor(x / 2.5);
+    const ramp = y >= rampTop && y <= rampTop + 1;
+    const hull = x <= 1 && y >= 4 && y <= 8;
+    return ramp || hull || HELD_RAMP_PERSON.some(([px, py]) => px === x && py === y) ? "#" : ".";
+  }).join(""));
   const iconsOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/console");
   mkdirSync(iconsOutput, { recursive: true });
   const ICONS = {
@@ -8977,6 +8987,7 @@ function consoleTextures() {
       "......####......", "################", "################", "......####......", ".....#.##.#.....", "....#..##..#....",
       "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
     climb_boost: CLIMB_ROWS,
+    held_ramp: HELD_RAMP_ROWS,
     power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
       ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",
       "....########....", ".....######.....", "................", "................"],
@@ -9044,33 +9055,63 @@ function hullFittingTextures() {
 }
 hullFittingTextures();
 
-// The freighter's hull plates (see FreighterPlating): a dark gunmetal plate edged in a darker seam, rivets along its top
-// and bottom; a riveted seam in her cover's pale grey, two rows of rivets either side of a darker joint; a welded
-// patch, a dull plate set into her pale grey, its weld bead round it, a rivet at each corner and a scorch across it;
-// and hazard stripes, yellow and black on the slant, worn here and there to grey.
+// The freighter's hull plates (see FreighterPlating), at her skins' fineness, 32 pixels, so they sit with them: each
+// with a seam along its top and its left edge only, as her skins have, so plates side by side share one, an edge a shade
+// lighter just inside it, and rivets with a shadow under each. A dark gunmetal plate, rivets along its top and its foot,
+// a scuff here and there and a fine scratch; a riveted seam in her cover's pale grey, two rows of rivets either side of
+// a darker joint down its middle; a welded patch, a dull plate set into her pale grey, its weld bead rippling round it,
+// a rivet at each corner and a scorch across it; and hazard stripes, yellow and black on the slant, worn here and
+// there to grey.
 function hullPlateTextures() {
+  const PLATE = 32;
+  // How far apart rivets are along a row, in pixels; how much darker a seam, and how much lighter the edge inside it,
+  // is than its plate, in steps.
+  const RIVET_EVERY = 5;
+  const SEAM_DARK = 26;
+  const EDGE_LIGHT = 8;
+  // A plate's own seam and edge on its top and left, or nothing there.
+  const edged = (x, y, colour) => {
+    if (x === 0 || y === 0) return lighten(colour, -SEAM_DARK);
+    if (x === 1 || y === 1) return lighten(colour, EDGE_LIGHT);
+    return null;
+  };
+  // A rivet in a row at a pixel, its head lit and its shadow under it to the right; or nothing there.
+  const rivet = (x, y, head, colour, inRow) => {
+    if (inRow(x, y)) return head;
+    if (inRow(x - 1, y - 1)) return lighten(colour, -14);
+    return null;
+  };
+  const DARK = [0x5a, 0x61, 0x6a];
   texture(blockOutput, "hull_plate_dark", (x, y) => {
-    if (x === 0 || y === 0) return [0x40, 0x46, 0x4e];
-    if ((y === 2 || y === 13) && x % 4 === 2) return [0x80, 0x88, 0x92];
-    return (x * 5 + y * 3) % 29 === 0 ? [0x6a, 0x72, 0x7c] : [0x5a, 0x61, 0x6a];
-  }, 4);
+    const along = (rx, ry) => (ry === 4 || ry === 27) && rx >= 4 && rx <= 29 && (rx - 4) % RIVET_EVERY === 0;
+    const scratch = y > 9 && y < 14 && x - 2 * (y - 10) === 19;
+    return edged(x, y, DARK) ?? rivet(x, y, [0x80, 0x88, 0x92], DARK, along)
+      ?? ((x * 5 + y * 3) % 41 === 0 ? [0x6a, 0x72, 0x7c] : scratch ? lighten(DARK, 9) : DARK);
+  }, 4, PLATE, PLATE);
+  const PALE = [0xc6, 0xcb, 0xd1];
   texture(blockOutput, "hull_plate_riveted", (x, y) => {
-    if (x === 7 || x === 8) return [0xa4, 0xaa, 0xb2];
-    if ((x === 4 || x === 11) && y % 4 === 1) return [0x9a, 0xa0, 0xa8];
-    return [0xc6, 0xcb, 0xd1];
-  }, 3);
+    const either = (rx, ry) => (rx === 9 || rx === 22) && ry >= 3 && (ry - 3) % RIVET_EVERY === 0;
+    if (x === 15 || x === 16) return [0xa4, 0xaa, 0xb2];
+    if (x === 17) return lighten(PALE, 6);
+    return edged(x, y, PALE) ?? rivet(x, y, [0x9a, 0xa0, 0xa8], PALE, either) ?? PALE;
+  }, 3, PLATE, PLATE);
+  const PATCHED = [0xc4, 0xc9, 0xcf];
+  const PATCH = [0x9a, 0x98, 0x8c];
   texture(blockOutput, "hull_plate_patched", (x, y) => {
-    const inPatch = x >= 3 && x <= 12 && y >= 4 && y <= 12;
-    const onBead = inPatch && (x === 3 || x === 12 || y === 4 || y === 12);
-    if (onBead) return [0x6e, 0x6a, 0x62];
-    if ((x === 4 || x === 11) && (y === 5 || y === 11)) return [0x7c, 0x78, 0x70];
-    if (inPatch) return Math.abs(x - y) <= 1 ? [0x6a, 0x66, 0x5c] : [0x9a, 0x98, 0x8c];
-    return [0xc4, 0xc9, 0xcf];
-  }, 5);
+    const inPatch = x >= 6 && x <= 25 && y >= 8 && y <= 25;
+    const onBead = inPatch && (x === 6 || x === 25 || y === 8 || y === 25);
+    if (onBead) return (x + y) % 2 === 0 ? [0x6e, 0x6a, 0x62] : [0x80, 0x7c, 0x72];
+    const corner = (rx, ry) => (rx === 9 || rx === 22) && (ry === 11 || ry === 22);
+    const scorch = Math.abs(x - y - 1);
+    if (inPatch) return rivet(x, y, [0x7c, 0x78, 0x70], PATCH, corner) ?? (scorch <= 1 ? [0x6a, 0x66, 0x5c] : scorch <= 3 ? [0x82, 0x7f, 0x74] : PATCH);
+    return edged(x, y, PATCHED) ?? PATCHED;
+  }, 5, PLATE, PLATE);
   texture(blockOutput, "hazard_plate", (x, y) => {
-    if ((x * 7 + y * 11) % 23 === 0) return [0x8a, 0x86, 0x7a];
-    return Math.floor((x + y) / 4) % 2 === 0 ? [0xf0, 0xbc, 0x1c] : [0x24, 0x24, 0x26];
-  }, 5);
+    const stripe = Math.floor((x + y) / 8) % 2 === 0 ? [0xf0, 0xbc, 0x1c] : [0x24, 0x24, 0x26];
+    const worn = (x * 7 + y * 11) % 89 === 0 || (x * 7 + y * 11) % 89 === 1;
+    if (x === 0 || y === 0) return mixColour(stripe, [0x24, 0x24, 0x26], 0.5);
+    return worn ? [0x8a, 0x86, 0x7a] : stripe;
+  }, 5, PLATE, PLATE);
 }
 hullPlateTextures();
 

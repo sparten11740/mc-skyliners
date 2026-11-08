@@ -3,6 +3,7 @@ package dev.skyliners.block;
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -20,6 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The cargo bay's parcel scanner: a graphite cabinet as high as a table, a conveyor belt for its top and a gantry over
@@ -41,6 +46,12 @@ public class ParcelScannerBlock extends HorizontalDirectionalBlock {
     /** How bright its lamp and screen glow, ready and otherwise, in light levels. */
     private static final int READY_GLOW = 3;
     private static final int BUSY_GLOW = 7;
+    /**
+     * Its cabinet and belt filling its block, and its gantry over the belt, drawn facing north: a post just outside
+     * either side of its block, rising to the bar across over the belt, as high as a crate on the belt is tall.
+     */
+    private static final Map<Direction, VoxelShape> SHAPES = TurnedShapes.of(Shapes.or(Block.box(0, 0, 0, 16, 16, 16),
+        Block.box(-1.5, 13, 7, 0, 30, 9), Block.box(16, 13, 7, 17.5, 30, 9), Block.box(-1.5, 28, 6.5, 17.5, 30, 9.5)));
 
     /** Where a scan stands. */
     public enum Scan implements StringRepresentable {
@@ -73,6 +84,11 @@ public class ParcelScannerBlock extends HorizontalDirectionalBlock {
     /** How bright its lamp and screen glow: dim when ready, brighter as it scans and shows its verdict. */
     public static int glow(BlockState state) {
         return state.getValue(SCAN) == Scan.READY ? READY_GLOW : BUSY_GLOW;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPES.get(state.getValue(FACING));
     }
 
     /**

@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -35,8 +36,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class LaserCannonBlock extends BaseEntityBlock {
     private static final MapCodec<LaserCannonBlock> CODEC = simpleCodec(LaserCannonBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    /** Its pedestal, to stand on and aim at: a column up the middle of its block. */
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 16, 13);
+    /**
+     * Its pedestal, to stand on and aim at, a column up the middle of its block, and over it the housing on its swivel,
+     * as far round as it reaches whichever way it is turned, short of its barrels, which swing out past its block.
+     */
+    private static final VoxelShape SHAPE = Shapes.or(Block.box(3, 0, 3, 13, 16, 13), Block.box(1, 16, 1, 15, 22, 15));
 
     public LaserCannonBlock(Properties properties) {
         super(properties);

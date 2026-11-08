@@ -10,6 +10,7 @@ import dev.skyliners.compat.SableFlight;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -58,9 +60,10 @@ public final class FreighterFlight extends StandingFlight {
     /**
      * What holds her take-off before her thrusters spool up, each asked on the server every tick it waits with her
      * level and her autopilot's place: her ramp not yet all away, for one, which {@code Skyliners} registers once as
-     * the mod starts, so the autopilot need know nothing of ramps. Held, she waits on her legs, her thrusters quiet.
+     * the mod starts, so the autopilot need know nothing of ramps. Held, she waits on her legs, her thrusters quiet,
+     * and her console shows what holds her by its picture (see {@link #heldBy}).
      */
-    private static final List<BiPredicate<ServerLevel, BlockPos>> HOLDS = new CopyOnWriteArrayList<>();
+    private static final List<Hold> HOLDS = new CopyOnWriteArrayList<>();
     /**
      * How long her take-off may be held, in ticks (half a minute), before it is called off and her autopilot switched
      * off: someone staying on her ramp keeps it from folding away, and she never lifts off with them on it.
@@ -104,6 +107,12 @@ public final class FreighterFlight extends StandingFlight {
     private int legsAwaited;
     /** How many ticks in a row her take-off has been held (see {@link #HOLDS}). */
     private int heldFor;
+    /**
+     * What holds her take-off now, by the word its picture on her console goes by, on the server and as the clients
+     * are shown it; none while nothing does.
+     */
+    @Nullable
+    private String heldBy;
     /** How hard her lift thrusters and her mains fire, as the clients are shown it. */
     private final ShownShare lift = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
@@ -148,6 +157,13 @@ public final class FreighterFlight extends StandingFlight {
     /** Her jump as a console shows it, and how far into its spool she is, from 0 to 1. */
     public record JumpShown(JumpStage stage, double spooled) {
         public static final JumpShown UNAVAILABLE = new JumpShown(JumpStage.UNAVAILABLE, 0);
+    }
+
+    /**
+     * Something that may hold her take-off (see {@link #HOLDS}): the word its picture on her console goes by, and
+     * whether it holds her now, asked with her level and her autopilot's place.
+     */
+    private record Hold(String why, BiPredicate<ServerLevel, BlockPos> holds) {
     }
 
     /** What asking her to boost comes to (see {@link #boost}), each with its own word in the hotbar. */
@@ -331,6 +347,16 @@ public final class FreighterFlight extends StandingFlight {
     /** What her pilot is doing, for play-testing. */
     public FreighterPilot.Report report() {
         return pilot.report();
+    }
+
+    /**
+     * What holds the take-off of the freighter an autopilot flies, on either side, by the word its picture on her
+     * console goes by: her ramp, say; null while nothing does, and for any other craft.
+     */
+    @Nullable
+    public static String heldBy(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? null : freighter.heldBy;
     }
 
     /**
@@ -523,6 +549,9 @@ public final class FreighterFlight extends StandingFlight {
             tag.putLong("FreighterJumpingSince", jumpingSince);
         }
         tag.putBoolean("FreighterJumps", jumpsAllowed);
+        if (heldBy != null) {
+            tag.putString("FreighterHeldBy", heldBy);
+        }
         climb.saveShown(tag);
     }
 
@@ -533,6 +562,9 @@ public final class FreighterFlight extends StandingFlight {
         boostUntil = tag.contains("FreighterBoostUntil") ? tag.getLong("FreighterBoostUntil") : NO_BOOST;
         jumpingSince = tag.contains("FreighterJumpingSince") ? tag.getLong("FreighterJumpingSince") : NO_JUMP;
         jumpsAllowed = tag.getBoolean("FreighterJumps");
+        // Only a word a picture's name can be made of: her console draws the picture it names.
+        String why = tag.getString("FreighterHeldBy");
+        heldBy = ResourceLocation.isValidPath(why) && !why.isEmpty() ? why : null;
         climb.loadShown(tag);
     }
 
@@ -548,22 +580,29 @@ public final class FreighterFlight extends StandingFlight {
         }
     }
 
-    /** Holds her take-off before her thrusters spool up for as long as something says so (see {@link #HOLDS}). */
-    public static void holdTakeoffWhile(BiPredicate<ServerLevel, BlockPos> hold) {
-        HOLDS.add(hold);
+    /**
+     * Holds her take-off before her thrusters spool up for as long as something says so (see {@link #HOLDS}), her
+     * console showing it meanwhile by the picture of the word given, {@code textures/gui/console/held_<why>.png}.
+     */
+    public static void holdTakeoffWhile(String why, BiPredicate<ServerLevel, BlockPos> hold) {
+        HOLDS.add(new Hold(why, hold));
     }
 
-    /** Whether something holds her take-off this tick (see {@link #HOLDS}): set to take off, her autopilot at a place. */
-    private static boolean takeoffHeld(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase phase) {
+    /**
+     * What holds her take-off this tick (see {@link #HOLDS}), set to take off, her autopilot at a place: by its word,
+     * or null for nothing.
+     */
+    @Nullable
+    private static String takeoffHeld(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase phase) {
         if (phase != AutopilotBlockEntity.Phase.TAKEOFF) {
-            return false;
+            return null;
         }
-        for (BiPredicate<ServerLevel, BlockPos> hold : HOLDS) {
-            if (hold.test(level, origin)) {
-                return true;
+        for (Hold hold : HOLDS) {
+            if (hold.holds().test(level, origin)) {
+                return hold.why();
             }
         }
-        return false;
+        return null;
     }
 
     @Override
@@ -581,8 +620,13 @@ public final class FreighterFlight extends StandingFlight {
     void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         double radio = aloft(level, autopilot, flight);
         autopilot.watchUnattended(level, flight, radio);
-        boolean held = takeoffHeld(level, autopilot.getBlockPos(), autopilot.phase);
+        String why = takeoffHeld(level, autopilot.getBlockPos(), autopilot.phase);
+        boolean held = why != null;
         heldFor = held ? heldFor + 1 : 0;
+        if (!Objects.equals(why, heldBy)) {
+            heldBy = why;
+            autopilot.changed();
+        }
         if (heldFor > TAKEOFF_HELD_LONGEST) {
             callOffTakeoff(level, autopilot);
         }

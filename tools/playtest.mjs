@@ -230,6 +230,34 @@ const BUMP_MOVED = 0.5;
 // Where on a console module of a freighter its desk is aimed at, as a point of its block from 0 to 1 across, up and
 // along: the middle of its desk's top, which is drawn a little over four fifths of a block up at its back.
 const DESK_TOP_AT = "0.5,0.8,0.5";
+// Walking at a freighter's scanner module from her control head: how far out from its middle to start, in blocks,
+// clear of the head; and how far past its middle, toward the head, the player may be stopped at most, in blocks: its
+// desk begins just short of its middle, where it was its block's face, half a block out, that stopped them.
+const DESK_FROM = 1.15;
+const DESK_STOPS_WITHIN = 0.5;
+// Walking at a freighter's parcel scanner from beside it, along its gantry's bar: how far out to start, in blocks; and
+// how far from its middle the player must have been stopped at least, in blocks: by its gantry's post, standing a
+// pixel and a half out past its block's face, half a block and a player's half width out.
+const GANTRY_FROM = 2;
+const GANTRY_POST_OUT = 0.85;
+// Where a parcel scanner is used, as a point of its block from 0 to 1 across, up and along, drawn facing north: its
+// screen, on its front low on its cabinet, under the crate on its belt.
+const SCANNER_SCREEN_AT = "0.5,0.4,0";
+// Dropped onto her laser cannon and her big satellite dish: how high over each to start, in blocks; and how high over
+// each block the player must come to stand, in blocks, with what margin: on the cannon's housing over its pedestal,
+// and on the middle of the dish's bowl over its mount.
+const DROP_FROM = 3;
+const CANNON_HOUSING_TOP = 1.375;
+const DISH_BOWL_TOP = 1.75;
+const STANDS_WITHIN = 0.05;
+// The slim souvenir models, the rocket's and the freighter's, each set down on the ground facing north with a point of
+// its block, from 0 to 1 across, up and along, where the box all four once shared took a click though nothing of it is
+// drawn there, and one where it is drawn; and how far off to click them from, in blocks, south of it.
+const SOUVENIRS = {
+  model_rocket: { empty: "0.2,0.6,0.5", solid: "0.5,0.5,0.5" },
+  model_freighter: { empty: "0.5,0.72,0.5", solid: "0.5,0.45,0.5" },
+};
+const SOUVENIR_FROM = 2.5;
 // How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
@@ -1119,7 +1147,10 @@ function checkFreighterFlight() {
   must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
   const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - height) < FREIGHTER_HOLD_WITHIN,
     FREIGHTER_UP_TICKS);
-  expect(up, "freighter: she lifts off her legs and climbs to the height set", up ? `at ${up.altitude}` : "");
+  // Not up, what she is doing says why: still held on her legs by what her console shows, or flying but short of it.
+  const last = up ?? freighterReport();
+  expect(up, "freighter: she lifts off her legs and climbs to the height set",
+    up ? `at ${up.altitude}` : `${last?.phase} at ${last?.altitude}, lift ${last?.lift}, legs ${last?.legs}, held by ${last?.held}`);
   if (!up) {
     return;
   }
@@ -1341,6 +1372,7 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   const held = freighterReport();
   expect(held?.phase === "takeoff" && held.lift === 0, "freighter: set to fly with someone on her ramp, she waits on her legs",
     `${held?.phase}, lift ${held?.lift}`);
+  expect(held?.held === "ramp", "freighter: held so, her console's scanner shows her ramp holding her", `${held?.held}`);
   expect(heard("block.note_block.bell", since, 0), "freighter: her ramp chimes for them to step off");
   const freighter = findShipFlying("skyliners:engine_grille");
   const [{ at: panelAboard }] = must(`sable:find ${freighter} skyliners:ramp_panel 1 side=server`).rows;
@@ -1351,7 +1383,31 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   must(`sable:tp ${freighter} skyliners:autopilot; wait 20t; skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`);
   const up = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", FREIGHTER_UP_TICKS);
   expect(up, "freighter: set to fly again with nobody on it, her ramp folds away and she lifts off", up ? "" : `still ${freighterReport()?.phase}`);
+  expect(up?.held === "none", "freighter: lifting off, her console no longer shows anything holding her", `${up?.held}`);
   must("skyliners:autopilot off");
+}
+
+// A freighter set to fly with the player sat at her gunner's seat, under her top dome, lifts off as she does with them
+// on the ground beside her, nothing holding her: one was seen waiting on her legs so.
+function checkFreighterGunnerTakeoff() {
+  layDown("freighter");
+  const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
+  const [x, , z] = cannon?.at_abs ?? [];
+  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
+    .sort((a, b) => a[1] - b[1])[0];
+  if (!seat) {
+    expect(false, "freighter: she has a gunner's seat under her dome");
+    return;
+  }
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] - 0.5}; wait 20t`);
+  sitAt(seat);
+  expect(gunnerSight() !== undefined, "freighter: the player sits at her gunner's seat");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", FREIGHTER_UP_TICKS);
+  const last = up ?? freighterReport();
+  expect(up, "freighter: set to fly from her gunner's seat, she lifts off", up ? "" : `still ${last?.phase}, lift ${last?.lift}, held by ${last?.held}`);
+  must("skyliners:autopilot land; key press key.sneak 10t; wait 10t");
 }
 
 // A freighter's top turret: the ladder up her core is climbed from her deck with the walk key alone to the gunner's
@@ -1760,7 +1816,8 @@ function checkFreighterRooms() {
   checkCargoScanner();
 }
 
-// A freighter's cargo hold's parcel scanner, a crate waiting on its belt: used, it sweeps the crate with its lasers.
+// A freighter's cargo hold's parcel scanner, a crate waiting on its belt: used at its screen, from in front of it, it
+// sweeps the crate with its lasers.
 function checkCargoScanner() {
   const [scanner] = must("find skyliners:parcel_scanner 128 1").rows;
   const crate = scanner && must(`block ${scanner.at_abs[0]},${scanner.at_abs[1] + 1},${scanner.at_abs[2]}`).id === "skyliners:cargo_crate";
@@ -1772,7 +1829,7 @@ function checkCargoScanner() {
   const [dx, dz] = STEPS[must(`block ${at}`).props.facing];
   must(`server tp @p ${scanner.at_abs[0] + 0.5 + dx * 2} ${scanner.at_abs[1]} ${scanner.at_abs[2] + 0.5 + dz * 2}; wait 5t`);
   const used = now();
-  must(`use ${at}`);
+  must(`use ${at} at ${SCANNER_SCREEN_AT}`);
   expect(Boolean(heard("*scanner_sweep*", used, LOOK_EVERY)), "freighter: used, the parcel scanner sweeps its crate");
 }
 
@@ -2138,6 +2195,72 @@ function checkFreighterSolid() {
   } else {
     expect(false, "freighter: she has a sun lounger with open floor behind it to walk at it from");
   }
+}
+
+// A freighter's console is as solid as it is drawn: walked at from her control head, her scanner module's desk stops
+// the player at its near edge, just short of its block's middle. With the fault its whole block was solid, and its
+// desk's empty room in front of it stopped them half a block short, and took clicks meant for what is beyond.
+function checkFreighterConsoleSolid() {
+  ship("freighter");
+  const [scanner] = must("find skyliners:console_scanner 128 1").rows;
+  const towardHead = scanner && STEPS[must(`block ${scanner.at_abs.join(",")}`).props.facing ?? "north"];
+  if (!scanner || !clearWay(scanner.at_abs, towardHead, 1)) {
+    expect(false, "freighter: her console has its scanner module, with open floor between it and her control head");
+    return;
+  }
+  const { along } = bumpInto(scanner.at_abs, towardHead, DESK_FROM);
+  expect(along < DESK_STOPS_WITHIN && along < DESK_FROM - BUMP_MOVED, "freighter: walked at from her control head, her scanner module stops the player at its desk",
+    `${along} blocks short of its block's middle`);
+}
+
+// A freighter's outside is as solid as it is drawn: dropped onto her laser cannon, the player stands on its housing
+// over its pedestal; onto her big satellite dish, on the middle of its bowl over its mount; and walked at from beside
+// her parcel scanner in her hold, its gantry's post stops them. With the fault they fell through the housing and the
+// bowl onto what is under them, and the post stood out past the scanner's block with nothing there.
+function checkFreighterOutsideSolid() {
+  ship("freighter");
+  for (const [block, top, what] of [["laser_cannon", CANNON_HOUSING_TOP, "her laser cannon's housing"], ["big_satellite_dish", DISH_BOWL_TOP, "her big dish's bowl"]]) {
+    const [found] = must(`find skyliners:${block} 128 1`).rows;
+    const stood = found && landsOn(found.at_abs);
+    expect(stood !== undefined && Math.abs(stood - top) < STANDS_WITHIN, `freighter: dropped onto ${what}, the player stands on it`,
+      found ? `${stood} blocks over its block, ${top} wanted` : "not built");
+  }
+  const [scanner] = must("find skyliners:parcel_scanner 128 1").rows;
+  const facing = scanner && (must(`block ${scanner.at_abs.join(",")}`).props.facing ?? "north");
+  const side = scanner && [STEPS[CLOCKWISE[facing]], STEPS[CLOCKWISE[CLOCKWISE[CLOCKWISE[facing]]]]].find((way) => clearWay(scanner.at_abs, way, GANTRY_FROM));
+  if (!side) {
+    expect(false, "freighter: her hold has its parcel scanner, with open floor beside it to walk at it from");
+    return;
+  }
+  const { along } = bumpInto(scanner.at_abs, side, GANTRY_FROM);
+  expect(along > GANTRY_POST_OUT && along < GANTRY_FROM - BUMP_MOVED, "freighter: walked at her parcel scanner from beside it, its gantry's post stops the player",
+    `${along} blocks from its middle`);
+}
+
+// Drops the player, in survival, from over the middle of a block onto it; how high over the block they come to stand.
+function landsOn([x, y, z]) {
+  survival();
+  const there = must(`server tp @p ${x + 0.5} ${y + DROP_FROM} ${z + 0.5}; wait 40t; status`);
+  creative();
+  return round(there.pos[1] - y);
+}
+
+// The slim souvenir models set down on the ground are clicked only where they are drawn: aimed at from beside one where
+// nothing of it is, the click passes it by to the ground beyond; aimed at its model, it takes it. With the fault all
+// four shared one box, as big as the airliner's, and the rocket and the freighter took clicks well clear of them.
+function checkSouvenirShapes() {
+  // Out of every ship's way, short of the first site.
+  const [x, z] = [-SITE_APART / 2, 0];
+  creative();
+  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t`);
+  for (const [model, { empty, solid }] of Object.entries(SOUVENIRS)) {
+    must(`server setblock ${x} ${ground} ${z} skyliners:${model}[facing=north]; server tp @p ${x + 0.5} ${ground} ${z + 0.5 + SOUVENIR_FROM}; turn 180 0; wait 10t`);
+    const missed = send(`use ${x},${ground},${z} at ${empty}`)[0];
+    const taken = send(`use ${x},${ground},${z} at ${solid}`)[0];
+    expect(missed.ok === false && taken.ok !== false, `${model}: clicked only where its model is drawn`,
+      `beside it: ${missed.ok === false ? missed.err : "taken"}; on it: ${taken.ok === false ? taken.err : "taken"}`);
+  }
+  must(`server setblock ${x} ${ground} ${z} air`);
 }
 
 // Whether the console module at a block has its slice of the ring, asked twice a second apart: a server still busy
@@ -3506,6 +3629,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
+  "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },
@@ -3519,6 +3643,9 @@ const CHECKS = {
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own, out to her prongs' tips and her cockpit" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
+  "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
+  "freighter-outside-solid": { run: checkFreighterOutsideSolid, about: "a freighter's cannon housing and big dish are stood on, and her parcel scanner's gantry stops whoever walks into it" },
+  "souvenir-shapes": { run: checkSouvenirShapes, about: "the rocket and freighter souvenir models are clicked only where they are drawn" },
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },

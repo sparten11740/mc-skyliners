@@ -330,7 +330,9 @@ inside as one cone of tinted glass, darkening with that pane, framed by ribs. `F
 her control head, a `ConsoleBlock` of each `ConsoleKind` (in `console/`) in the block each slice's middle falls in, its
 `ConsoleBlockEntity` told its slice of the ring (`ConsoleShape.Facet`) and the way to her head through a `Fitting`;
 `ConsoleShape` says where a module stands in its block, a slice, a desk of its own, a plate or a wedge, for the server to
-read a touch on its toggles and the client's `ConsoleRenderer` to draw it, its casing by `ConsoleCasing`, the shading
+read a touch on its toggles and the client's `ConsoleRenderer` to draw it, and a slice's shape in its block
+(`ConsoleShape.deskShape`, kept by its block entity, so the block's shape is dynamic), its casing by `ConsoleCasing`,
+the shading
 rolled round the ring, and its screens and controls by `ConsoleArt`, from the autopilot and `SableClient.attitude`. Her
 boost is `FreighterFlight.boost`, her pilot firing her mains flat out while it lasts (`FreighterPilot.Boost`), the
 clients shown when it ends to draw it. Her hyperspace jump is `FreighterJump`, owned by `FreighterFlight` and asked for
@@ -353,7 +355,8 @@ little steps, both of which the ground passes through (`SableFlight.rampPlate`, 
 while anyone stands where it would move next (`BoardingRamp.anyoneInTheSwing`); `BoardingRampRenderer`
 draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
-long off. Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
+long off and shows the clients what holds her (`FreighterFlight.heldBy`), drawn on her console's scanner by its picture.
+Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
 a landing it comes down only once her cockpit is `quiet`, so it and her announcements never talk over each other.
 `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
 `LaserCrossbowItem` keeps its charge and heat on its stack as data components, worked out on its holder's client as on

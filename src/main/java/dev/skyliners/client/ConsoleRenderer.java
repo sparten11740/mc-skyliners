@@ -85,7 +85,7 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
         return new ConsoleArt.Readings(attitude != null, attitude == null ? 0 : attitude.airspeed(), attitude == null ? 0 : attitude.altitude(),
             attitude == null ? 0 : attitude.verticalSpeed(), heading, autopilot == null ? 0 : FreighterFlight.liftOf(autopilot),
             autopilot == null ? 0 : FreighterFlight.mainsOf(autopilot), boost, jump, climb, freighter, (float) (DrawingClock.ticks(partialTick) % TICKS_ROUND), since,
-            console.toggles(), blips);
+            console.toggles(), blips, autopilot == null ? null : FreighterFlight.heldBy(autopilot));
     }
 
     /** A scope's blips, found afresh once a tick: whoever is near but the player looking, and her pin, if she has one. */

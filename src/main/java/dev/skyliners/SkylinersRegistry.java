@@ -2295,22 +2295,22 @@ public final class SkylinersRegistry {
     /** Souvenirs: a pilot's cap to wear, and models of the airliner, the zeppelin, the rocket and the freighter. */
     public static final DeferredItem<PilotCapItem> PILOT_CAP = ITEMS.register("pilot_cap", () -> new PilotCapItem(new Item.Properties().stacksTo(1)));
     public static final DeferredBlock<SouvenirModelBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
-        "model_airliner", SouvenirModelBlock::new,
+        "model_airliner", properties -> new SouvenirModelBlock(properties, SouvenirModelBlock.AIRLINER),
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_AIRLINER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_AIRLINER);
     public static final DeferredBlock<SouvenirModelBlock> MODEL_ZEPPELIN = BLOCKS.registerBlock(
-        "model_zeppelin", SouvenirModelBlock::new,
+        "model_zeppelin", properties -> new SouvenirModelBlock(properties, SouvenirModelBlock.ZEPPELIN),
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_ZEPPELIN_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ZEPPELIN);
     public static final DeferredBlock<SouvenirModelBlock> MODEL_ROCKET = BLOCKS.registerBlock(
-        "model_rocket", SouvenirModelBlock::new,
+        "model_rocket", properties -> new SouvenirModelBlock(properties, SouvenirModelBlock.ROCKET),
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_ROCKET_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ROCKET);
     public static final DeferredBlock<SouvenirModelBlock> MODEL_FREIGHTER = BLOCKS.registerBlock(
-        "model_freighter", SouvenirModelBlock::new,
+        "model_freighter", properties -> new SouvenirModelBlock(properties, SouvenirModelBlock.FREIGHTER),
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_FREIGHTER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_FREIGHTER);
@@ -3419,10 +3419,14 @@ public final class SkylinersRegistry {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).isValidSpawn(SkylinersRegistry::never);
     }
 
-    /** A module of the freighter's cockpit console, of a kind: dark metal, its screens and lamps glowing a little. */
+    /**
+     * A module of the freighter's cockpit console, of a kind: dark metal, its screens and lamps glowing a little. Its
+     * shape follows its slice of her console's ring, which its block entity keeps, so the game does not keep it by its
+     * state.
+     */
     private static DeferredBlock<ConsoleBlock> consoleModule(String name, ConsoleKind kind) {
         return BLOCKS.registerBlock(name, properties -> new ConsoleBlock(properties, kind),
-            metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(state -> CONSOLE_GLOW));
+            metal(MapColor.COLOR_GRAY).noOcclusion().dynamicShape().lightLevel(state -> CONSOLE_GLOW));
     }
 
     /** A mocktail's nourishment, a sip's, drunk whenever it is wanted, the lift it gives added to it. */

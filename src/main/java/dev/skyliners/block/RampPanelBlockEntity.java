@@ -30,11 +30,11 @@ import net.minecraft.world.phys.Vec3;
  * the ramp comes down of its own accord once she first stands built, and again once she is down on her legs after
  * flying with her autopilot off, where the ground lies under its foot; it folds away as soon as her autopilot is set
  * to fly or she moves, and her take-off waits until it is all away (see {@link #holdsTakeoff}), as it waits, with a
- * chime, until nobody stands on it; while someone holds it so, everyone aboard is told once and her cockpit hears the
- * chime too. The panel's one button works it by hand while she stands with her autopilot off, showing what it does:
- * down while the ramp is up, up while it is down. Pressed while she comes in to land, it promises the ramp, which comes
- * down by itself as soon as she has settled; flying otherwise, the lamp only turns red with a low note. Its lamp
- * follows how the ramp stands (see {@link RampPanelBlock.Status}).
+ * chime, until nobody stands on it; while someone holds it so, everyone aboard is told once and hears the chime too,
+ * wherever they are aboard. The panel's one button works it by hand while she stands with her autopilot off, showing
+ * what it does: down while the ramp is up, up while it is down. Pressed while she comes in to land, it promises the
+ * ramp, which comes down by itself as soon as she has settled; flying otherwise, the lamp only turns red with a low
+ * note. Its lamp follows how the ramp stands (see {@link RampPanelBlock.Status}).
  */
 public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Keeper {
     private static final Loaded<RampPanelBlockEntity> LOADED = new Loaded<>(RampPanelBlockEntity.class);
@@ -44,8 +44,12 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
     private static final double MOVING = 1.0;
     /** How many looks in a row she has to be still on the ground, after flying, before the ramp comes down. */
     private static final int STILL_LOOKS = 4;
-    /** How often her cockpit hears the waiting chime while her take-off waits for someone to step off, in ticks. */
+    /**
+     * How often everyone aboard hears the waiting chime while her take-off waits for someone to step off, in ticks;
+     * and how near her ramp they hear its own chime instead, in blocks, as far as a block's sound carries.
+     */
     private static final int WAITING_CHIME = 40;
+    private static final double RAMP_HEARD = 16;
     /** How long the lamp stays red after the ramp would not move, in ticks. */
     private static final int REFUSED_TICKS = 40;
     /** How loud the click is that says the ramp will come down once she has landed. */
@@ -240,7 +244,8 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
 
     /**
      * Everyone aboard told once that her take-off waits for someone on the ramp to step off, as it begins to; and while
-     * it waits, her cockpit hears the ramp's chime.
+     * it waits, everyone aboard out of earshot of the ramp's own chime hears it where they are, in her cockpit or at
+     * her gunner's seat, her console meanwhile showing her ramp (see {@code FreighterFlight#heldBy}).
      */
     private void tellHolding(ServerLevel level) {
         AutopilotBlockEntity freighter = ramp.held() ? AutopilotBlockEntity.framedBy(level, worldPosition, Craft.FREIGHTER) : null;
@@ -251,10 +256,20 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
             }
         }
         if (now && level.getGameTime() % WAITING_CHIME == 0) {
-            level.playSound(null, freighter.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
-                BoardingAirstairs.WAITING_PITCH);
+            chimeAboard(level);
         }
         holding = now;
+    }
+
+    /** The ramp's waiting chime, heard by everyone aboard too far off to hear the ramp's own, each where they are. */
+    private void chimeAboard(ServerLevel level) {
+        Vec3 here = SableFlight.toWorld(level, Vec3.atCenterOf(worldPosition));
+        for (ServerPlayer player : Aboard.players(this)) {
+            if (player.position().distanceTo(here) > RAMP_HEARD) {
+                player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
+                    BoardingAirstairs.WAITING_PITCH);
+            }
+        }
     }
 
     /** Sets the panel's lamp to how the ramp stands, when that changes. */
