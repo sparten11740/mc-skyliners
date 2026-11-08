@@ -84,6 +84,17 @@ public final class HyperspaceOverlay {
     private static final int STREAK_CYAN = 0x8CE6FF;
     /** How loud the jump's sounds are, heard wherever aboard she is. */
     private static final float VOLUME = 1.0F;
+    /**
+     * How long the viewer may be off every ship, after riding one as her drive began to spool, before they are taken to
+     * have stepped off her, in ticks; and the longest the spool and her last moment before she goes are shown with no
+     * word of the next step, three times as long as the server may hold her (FreighterJump's LONGEST_WAIT and
+     * GO_TICKS), as a server loading the land at her pin may run that much slower. Past either, the streaks fade as for
+     * a call off: the server tells only those aboard, so one who stepped off as she spooled would otherwise see them for
+     * good.
+     */
+    private static final int OFF_HER_TICKS = 20;
+    private static final int LONGEST_SPOOL = 600;
+    private static final int LONGEST_GO = 75;
 
     /** The step showing, when it began on this client's drawing clock, how long it lasts at the least, and its stars. */
     private static HyperspaceJump.Stage stage;
@@ -96,6 +107,9 @@ public final class HyperspaceOverlay {
     private static long arrivedLineAt = -1;
     /** The level the jump showing began in: changing world or dimension forgets it. */
     private static WeakReference<ClientLevel> shownIn = new WeakReference<>(null);
+    /** Whether the viewer rode a ship as her drive began to spool, and for how many ticks since they have ridden none. */
+    private static boolean rodeAtSpool;
+    private static int offHer;
 
     private HyperspaceOverlay() {
     }
@@ -109,6 +123,8 @@ public final class HyperspaceOverlay {
         if (step.stage() == HyperspaceJump.Stage.SPOOL) {
             seed = minecraft.level.getGameTime();
             lookedAhead = new Vec3(minecraft.gameRenderer.getMainCamera().getLookVector());
+            rodeAtSpool = minecraft.player != null && SableClient.autopilot(minecraft.player) != null;
+            offHer = 0;
         }
         shownIn = new WeakReference<>(minecraft.level);
         stage = step.stage();
@@ -128,11 +144,31 @@ public final class HyperspaceOverlay {
         }
     }
 
-    /** Once a client tick: her computer says she is out of the jump a moment after she is. */
+    /**
+     * Once a client tick: her computer says she is out of the jump a moment after she is, and the streaks of a jump the
+     * viewer has stepped off fade.
+     */
     public static void tick(ClientTickEvent.Post event) {
         if (arrivedLineAt >= 0 && DrawingClock.wholeTicks() >= arrivedLineAt) {
             arrivedLineAt = -1;
             play(SkylinersRegistry.FREIGHTER_COMPUTER_JUMP_ARRIVED.get());
+        }
+        if (stage == HyperspaceJump.Stage.SPOOL || stage == HyperspaceJump.Stage.GO) {
+            fadeIfLeft();
+        }
+    }
+
+    /**
+     * The streaks faded as for a call off, without her computer's word, once the viewer has stepped off her as she
+     * spools up or no word of the next step has come for longer than the server may take.
+     */
+    private static void fadeIfLeft() {
+        LocalPlayer player = Minecraft.getInstance().player;
+        offHer = rodeAtSpool && player != null && SableClient.autopilot(player) == null ? offHer + 1 : 0;
+        double now = DrawingClock.ticks(0);
+        if (offHer >= OFF_HER_TICKS || now - began > (stage == HyperspaceJump.Stage.SPOOL ? LONGEST_SPOOL : LONGEST_GO)) {
+            stage = HyperspaceJump.Stage.CANCEL;
+            began = now;
         }
     }
 
