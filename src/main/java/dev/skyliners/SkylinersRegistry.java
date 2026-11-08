@@ -1094,6 +1094,20 @@ public final class SkylinersRegistry {
         sound("freighter_computer_slam");
     /** The freighter slamming into the ground (see {@code FreighterSlam}): a deep boom and a crunch of metal. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_SLAM = sound("freighter_slam");
+    /** Her computer as a meteor shower is told: "Meteor shower ahead. Hold on to something bolted down." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_METEORS = sound("freighter_computer_meteors");
+    /** Her computer as an asteroid storm is told: "Asteroid storm ahead. Brace for impact." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ASTEROIDS = sound("freighter_computer_asteroids");
+    /** Her computer as a solar flare is told: "Solar flare. Don't look at the sun." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_FLARE = sound("freighter_computer_flare");
+    /** Her computer as space weather has passed: "All clear. You can let go now." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ALL_CLEAR = sound("freighter_computer_all_clear");
+    /** Space weather's alarm (see {@link dev.skyliners.spaceweather.SpaceWeather}), whooping as it is told. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_WEATHER_ALARM = sound("space_weather_alarm");
+    /** A meteor striking a freighter in space weather: a sharp ping off her plates and a fizz of sparks. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_METEOR_STRIKE = sound("space_meteor_strike");
+    /** An asteroid crashing into a freighter in space weather: a deep boom, a crunch of metal, rattling rock. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_ASTEROID_STRIKE = sound("space_asteroid_strike");
     /** Her computer as a new sticker goes up on her sticker map: "New sticker. Another place I got dragged to." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_STICKER =
         sound("freighter_computer_sticker");

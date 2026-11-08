@@ -136,6 +136,8 @@ import dev.skyliners.client.SleepParticle;
 import dev.skyliners.client.SleighBells;
 import dev.skyliners.client.SlideRenderer;
 import dev.skyliners.client.SpaceSky;
+import dev.skyliners.client.SpaceWeatherHud;
+import dev.skyliners.client.SpaceWeatherSky;
 import dev.skyliners.client.BreakerBoardRenderer;
 import dev.skyliners.client.CoolantValveRenderer;
 import dev.skyliners.client.FloorWindowRenderer;
@@ -222,6 +224,8 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(CarriedParticles::tick);
         ShipParticles.spawner = CarriedParticles::spawn;
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
+        NeoForge.EVENT_BUS.addListener(SpaceWeatherSky::stage);
+        NeoForge.EVENT_BUS.addListener(SpaceWeatherSky::loggingOut);
         LaserBolt.clientSeen = LaserBolts::seen;
         NeoForge.EVENT_BUS.addListener(FreighterEngineGlow::stage);
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
@@ -415,6 +419,7 @@ public final class SkylinersClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lightning_flash"), LightningFlash::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "blast_flash"), BlastFlash::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "birthday_banner"), BirthdayBanner::overlay);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "space_weather"), SpaceWeatherHud::overlay);
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_jump"),
             HyperspaceOverlay::overlay);
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_wake"),

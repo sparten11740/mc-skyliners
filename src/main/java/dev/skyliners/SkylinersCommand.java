@@ -13,6 +13,11 @@ import dev.skyliners.airport.LaunchPad;
 import dev.skyliners.airframe.ZeppelinLayout;
 import dev.skyliners.airframe.ZeppelinOptions;
 import dev.skyliners.airframe.ZeppelinSize;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.Craft;
+import dev.skyliners.autopilot.FreighterFlight;
+import dev.skyliners.compat.SableFlight;
+import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -21,14 +26,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * {@code /skyliners build <pos> <north|east|south|west> [furnished|zeppelin [furnished]|rocket|freighter|launch_pad]}:
  * builds an airliner, a zeppelin, a rocket, a freighter or a launch pad, for server operators without a blueprint in
  * hand, its nose tip at pos and its tail stretching away the given way. Unlike the blueprint it builds through
- * whatever is in the way, and reports how much that was.
+ * whatever is in the way, and reports how much that was. {@code /skyliners spaceweather
+ * <meteor_shower|asteroid_storm|solar_flare>} brings space weather over the nearest freighter at once (see
+ * {@link SpaceWeather}), to try it without waiting for it to blow up there.
  */
 final class SkylinersCommand {
+    /** How far from whoever runs it a freighter is looked for to bring space weather over, in blocks. */
+    private static final double WEATHER_REACH = 256;
+
     private SkylinersCommand() {
     }
 
@@ -46,7 +57,37 @@ final class SkylinersCommand {
                     .then(Commands.literal("freighter").executes(context -> build(context, along, FreighterLayout.create(), "commands.skyliners.build_freighter")))
                     .then(Commands.literal("launch_pad").executes(context -> buildLaunchPad(context, along)))));
         }
-        dispatcher.register(Commands.literal(Skyliners.MOD_ID).requires(source -> source.hasPermission(2)).then(build));
+        LiteralArgumentBuilder<CommandSourceStack> weather = Commands.literal("spaceweather");
+        for (SpaceWeather.Kind kind : SpaceWeather.Kind.values()) {
+            weather.then(Commands.literal(kind.getSerializedName()).executes(context -> spaceWeather(context, kind)));
+        }
+        dispatcher.register(Commands.literal(Skyliners.MOD_ID).requires(source -> source.hasPermission(2)).then(build).then(weather));
+    }
+
+    /**
+     * Space weather of a kind over the freighter nearest whoever runs it, at once, as long as she flies from y 1,500 up
+     * with someone aboard; or why not.
+     */
+    private static int spaceWeather(CommandContext<CommandSourceStack> context, SpaceWeather.Kind kind) {
+        CommandSourceStack source = context.getSource();
+        AutopilotBlockEntity nearest = null;
+        double best = WEATHER_REACH * WEATHER_REACH;
+        for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(source.getLevel())) {
+            double away = SableFlight.toWorld(source.getLevel(), Vec3.atCenterOf(autopilot.getBlockPos())).distanceToSqr(source.getPosition());
+            if (away < best && autopilot.craft() == Craft.FREIGHTER) {
+                best = away;
+                nearest = autopilot;
+            }
+        }
+        SpaceWeather.Answer answer = FreighterFlight.spaceWeather(source.getLevel(), nearest, kind);
+        Component said = Component.translatable("commands.skyliners.space_weather." + answer.name().toLowerCase(Locale.ROOT),
+            Component.translatable("commands.skyliners.space_weather.kind." + kind.getSerializedName()));
+        if (answer != SpaceWeather.Answer.COMING) {
+            source.sendFailure(said);
+            return 0;
+        }
+        source.sendSuccess(() -> said, true);
+        return 1;
     }
 
     private static int build(CommandContext<CommandSourceStack> context, Direction along, boolean furnished) throws CommandSyntaxException {

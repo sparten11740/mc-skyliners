@@ -54,6 +54,7 @@ import dev.skyliners.client.RadarScreen;
 import dev.skyliners.client.RocketPlumeParticles;
 import dev.skyliners.client.RocketRoar;
 import dev.skyliners.client.SelfDestructWarning;
+import dev.skyliners.client.SpaceWeatherSky;
 import dev.skyliners.client.TerrainMap;
 import dev.skyliners.client.ThrownClear;
 import dev.skyliners.client.TransponderScreen;
@@ -81,6 +82,8 @@ import dev.skyliners.selfdestruct.BlastPayload;
 import dev.skyliners.selfdestruct.SelfDestruct;
 import dev.skyliners.selfdestruct.SelfDestructAlarmPayload;
 import dev.skyliners.selfdestruct.ThrownClearPayload;
+import dev.skyliners.spaceweather.IncomingStrike;
+import dev.skyliners.spaceweather.SpaceWeatherShown;
 import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.GunnerTrigger;
 import dev.skyliners.turret.RocketBlast;
@@ -196,7 +199,7 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("39")
+        event.registrar("40")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -256,6 +259,10 @@ public final class Skyliners {
             .playToClient(HyperspaceWake.TYPE, HyperspaceWake.STREAM_CODEC,
                 (payload, context) -> HyperspaceWakes.seen(payload))
             .playToClient(ImpactJolt.TYPE, ImpactJolt.STREAM_CODEC,
-                (payload, context) -> CameraShake.impact(payload.strength()));
+                (payload, context) -> CameraShake.impact(payload.strength()))
+            .playToClient(SpaceWeatherShown.TYPE, SpaceWeatherShown.STREAM_CODEC,
+                (payload, context) -> SpaceWeatherSky.shown(payload))
+            .playToClient(IncomingStrike.TYPE, IncomingStrike.STREAM_CODEC,
+                (payload, context) -> SpaceWeatherSky.incoming(payload));
     }
 }

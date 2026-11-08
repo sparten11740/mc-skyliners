@@ -3174,6 +3174,35 @@ same way, a repair board near it lighting a star; aboard any ship with an autopi
 round it as she flies. The server config's `freighter.repairs` builds her without them and keeps every fault spot from
 going off, even on redstone.
 
+Far past the black of space, from y 1,500 up, she meets space weather: every few minutes she flies up there with
+someone aboard, at random, a meteor shower, an asteroid storm or a solar flare blows through. Each is told first: an
+alarm whoops through her three times, her computer says what is coming, and everyone aboard sees its picture flash at
+the top of their screen in a badge ringed in its colour, the same picture flashing on her console's scanner in place of
+its scope: amber meteors streaking down for a meteor shower, a red lumpy rock for an asteroid storm, a yellow sun
+throwing out its rays for a solar flare. Meanwhile the first of it shows far off on the horizon the way it comes from:
+glowing streaks crossing low over it, or big grey rocks tumbling slowly in. Ten seconds after the alarm it is on her.
+In a meteor shower, "Meteor shower ahead. Hold on to something bolted down.", streaks with white-hot heads trailing
+orange stream past all round her for twenty-five seconds, and six to nine of them strike her, each seen flying in to
+the spot on her hull it lands on, landing with a sharp ping off her plates, a flash and a spray of sparks, her deck
+jolting under everyone aboard and her nudged off her spot (about three blocks a second) and swung a little. In an
+asteroid storm, "Asteroid storm ahead. Brace for impact.", lumps of grey stone tumble past for half a minute, some far
+off, some close enough to fill the view, a few glowing with magma, and three to five crash into her: a rock tumbling
+in, a heavy crunch and boom rolling through her, a blast of fire, shattered rock and smoke where it struck, everyone's
+view thrown about and shaking a while after, and her shoved hard, about nine blocks a second, thrown well off her spot,
+tipped as much as fifteen degrees and swung round, a few strikes together turning her half round. In a solar flare,
+"Solar flare. Don't look at the sun.", a warm glare swells and eases over everyone's view for fifteen seconds, now and
+then flickering dark as her screens flicker with it, her speakers crackle, and its wind pushes her steadily aside.
+Each time her autopilot fights her back onto her course and her height, and once it has passed her computer says
+"All clear. You can let go now." as a green tick shows in the badge. Nothing of hers ever breaks and nobody aboard is hurt, however hard she is thrown. Everyone near her sees
+the same streaks and rocks, and the strikes ring out for those outside too; space is otherwise silent, so the streaks
+and rocks going by make no sound. Coming back down under y 1,400 brings an early all-clear, and once one has passed
+none comes for at least a minute. The server config's `freighter.spaceWeather` keeps space calm, its
+`freighter.spaceWeatherEvery` sets how many minutes go by between bouts on average (four), and its
+`freighter.spaceWeatherStrength` how hard they throw her about, in percent of the usual (0 keeps her steady through
+them, every strike still seen, heard and felt). An operator can bring any of them over the nearest freighter at once,
+without waiting, with `/skyliners spaceweather meteor_shower`, `asteroid_storm` or `solar_flare`, so long as she flies
+from y 1,500 up with someone aboard.
+
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
 her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room

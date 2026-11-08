@@ -78,6 +78,9 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROCKETS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SHIP_HITS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SPACE_WEATHER;
+    public static final ModConfigSpec.IntValue FREIGHTER_SPACE_WEATHER_EVERY;
+    public static final ModConfigSpec.IntValue FREIGHTER_SPACE_WEATHER_STRENGTH;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PRONGS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMUGGLER_HOLD;
@@ -534,9 +537,9 @@ public final class SkylinersConfig {
         ROCKET_CEILING = builder
             .comment(
                 "How high a rocket's or a freighter's autopilot can be set to climb, in world blocks: far over the top of the world,",
-                "where there is only sky and it turns to space as she climbs (black by y 1,200). She flies as well at 9,000 as at",
-                "1,000; the higher, the longer the trip up and back down. The airliner and the zeppelin stay under the top of the",
-                "world."
+                "where there is only sky and it turns to space as she climbs (black by y 1,200), and a freighter meets space weather",
+                "from y 1,500 up. She flies as well at 9,000 as at 1,000; the higher, the longer the trip up and back down. The",
+                "airliner and the zeppelin stay under the top of the world."
             )
             .defineInRange("highestAltitude", 2500, 100, 10000);
         LED_STRIPS = builder
@@ -834,6 +837,28 @@ public final class SkylinersConfig {
                 "view of everyone aboard jolted. Without it, shots strike ships unfelt and unheard."
             )
             .define("shipHits", true);
+        FREIGHTER_SPACE_WEATHER = builder
+            .comment(
+                "Whether a freighter flying above y 1,500, far past the black of space, now and then meets space weather: a",
+                "meteor shower of glowing streaks, a few of them striking her with a sharp ping and sparks, an asteroid storm of",
+                "big tumbling rocks, some crashing into her and throwing her about, or a solar flare that floods the view with",
+                "glare, crackles in her speakers and makes her screens flicker. Her computer warns everyone aboard with an alarm",
+                "and a picture first, and says when it is all clear. Nothing breaks and nobody aboard is hurt, and her autopilot",
+                "brings her back on course. Without it, space stays calm."
+            )
+            .define("spaceWeather", true);
+        FREIGHTER_SPACE_WEATHER_EVERY = builder
+            .comment(
+                "How many minutes a freighter flies above y 1,500 between bouts of space weather, on average: each comes at",
+                "random, and never within a minute of the last."
+            )
+            .defineInRange("spaceWeatherEvery", 4, 1, 60);
+        FREIGHTER_SPACE_WEATHER_STRENGTH = builder
+            .comment(
+                "How hard space weather throws a freighter about, as a share of how hard it does by default, in percent: 0 leaves",
+                "her steady through it, every strike still seen, heard and felt, and 200 shoves her twice as hard."
+            )
+            .defineInRange("spaceWeatherStrength", 100, 0, 300);
         FREIGHTER_BANDSTAND = builder
             .comment(
                 "Whether the freighter is built with a bandstand in her club, the room through the doorway at her port bow, its",

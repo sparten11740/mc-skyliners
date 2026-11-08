@@ -2775,6 +2775,13 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_jump_too_near: { subtitle: "Computer: Pin's next door, just fly", aboard: true },
   freighter_computer_climb_boost: { subtitle: "Computer: Climbing hard", aboard: true },
   freighter_computer_slam: { subtitle: "Computer: Quick way down, brace", aboard: true },
+  // Space weather (see SpaceWeather): her computer telling of each kind and of the all-clear, and the alarm whooping
+  // through her first, heard by everyone aboard wherever they are.
+  freighter_computer_meteors: { subtitle: "Computer: Meteor shower ahead", aboard: true },
+  freighter_computer_asteroids: { subtitle: "Computer: Asteroid storm, brace", aboard: true },
+  freighter_computer_flare: { subtitle: "Computer: Solar flare", aboard: true },
+  freighter_computer_all_clear: { subtitle: "Computer: All clear", aboard: true },
+  space_weather_alarm: { subtitle: "Space weather alarm whoops", aboard: true },
   // The freighter slamming into the ground (see FreighterSlam), played loud enough to carry 160 blocks.
   freighter_slam: { subtitle: "Freighter slams into the ground" },
   freighter_computer_sticker: { subtitle: "Computer: New sticker", aboard: true },
@@ -2802,8 +2809,9 @@ function freighterSoundsLang() {
 // girders groan, a bump's thud and her hull grinding as she slides along, each heard so many blocks off at its
 // plainest, as Impacts has it (its CRUNCH_HEARD, GROAN_HEARD, THUD_HEARD and SCRAPE_HEARD), and farther as it plays
 // louder. A ship struck by a shot (see ShipHits): a laser bolt's ping off her plates, and a rocket's boom and crunch, a
-// hard hit's own, each played as loud as reaches as far as it is heard and fading out over sixteen blocks for each of
-// its volume, as far as the server sends it (ShipHits' SENT_PER_VOLUME).
+// hard hit's own; and a freighter struck in space weather (see SpaceWeather): a meteor's ping and an asteroid's crash;
+// each played as loud as reaches as far as it is heard and fading out over sixteen blocks for each of its volume, as far
+// as the server sends it (ShipHits' and SpaceWeather's SENT_PER_VOLUME).
 const IMPACT_SOUNDS = {
   impact_crunch: { subtitle: "Ship crashes", heard: 96 },
   impact_groan: { subtitle: "Hull groans", heard: 48, files: ["zeppelin_creak_1", "zeppelin_creak_2", "zeppelin_creak_3"] },
@@ -2811,6 +2819,8 @@ const IMPACT_SOUNDS = {
   impact_scrape: { subtitle: "Hull scrapes", heard: 64 },
   impact_bolt: { subtitle: "Bolt pings off hull", heard: 16 },
   impact_rocket: { subtitle: "Rocket bursts on hull", heard: 16, files: ["impact_crunch"] },
+  space_meteor_strike: { subtitle: "Meteor pings off hull", heard: 16 },
+  space_asteroid_strike: { subtitle: "Asteroid crashes into hull", heard: 16 },
 };
 function impactSounds() {
   return Object.fromEntries(Object.entries(IMPACT_SOUNDS).map(([name, { heard, files = [name] }]) => [name,
@@ -12361,6 +12371,16 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.skyliners.freighter_built": "The freighter is ready. Use the autopilot in her cockpit, out at her front right, to fly her.",
   "message.skyliners.freighter_too_high": "The freighter would reach past the build height here; build her lower down.",
   "commands.skyliners.build_freighter": "Building a freighter of %s blocks, %s of them over blocks that were in the way",
+  "commands.skyliners.space_weather.coming": "%s on its way: the alarm sounds now",
+  "commands.skyliners.space_weather.busy": "Space weather blows round her already",
+  "commands.skyliners.space_weather.not_flying": "She has to be flying for space weather",
+  "commands.skyliners.space_weather.too_low": "Space weather blows only from y 1,500 up: climb higher first",
+  "commands.skyliners.space_weather.nobody_aboard": "Nobody is aboard her to meet it",
+  "commands.skyliners.space_weather.switched_off": "Space weather is switched off on this server (freighter.spaceWeather)",
+  "commands.skyliners.space_weather.no_ship": "No freighter near enough",
+  "commands.skyliners.space_weather.kind.meteor_shower": "A meteor shower",
+  "commands.skyliners.space_weather.kind.asteroid_storm": "An asteroid storm",
+  "commands.skyliners.space_weather.kind.solar_flare": "A solar flare",
   "block.skyliners.padded_bulkhead": "Padded Bulkhead",
   "block.skyliners.engine_grille": "Engine Grille",
   "block.skyliners.deck_robot": "Deck Robot",

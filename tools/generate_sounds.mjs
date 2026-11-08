@@ -1384,6 +1384,111 @@ function crumple(samples, start, length, noise, notes, gain) {
   }
   writeSound("freighter_slam", saturate(hullEcho(dry, 0.15), 3.5), 0.95);
 }
+// A meteor striking a freighter in space weather (see SpaceWeather): the hard crack of it landing, her plate ringing
+// high at a struck plate's inharmonic notes over a short knock of the hull, a fizz of sparks crackling off for a moment
+// after, and a little of the space round her.
+{
+  const noise = ownRandom(0x4d657465);
+  const length = 1.4;
+  const dry = new Float64Array(Math.round(length * RATE));
+  thunk(dry, 0, 110, 0.8, noise);
+  let hiss = 0;
+  let hissLow = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = i / RATE;
+    const crack = t < 0.008 ? (noise() * 2 - 1) * (1 - t / 0.008) : 0;
+    const white = noise() * 2 - 1;
+    hissLow += 0.5 * (white - hissLow);
+    hiss += 0.92 * (white - hiss);
+    const ping = [[1130, 0.35, 0.7], [2470, 0.28, 1], [3610, 0.2, 0.6], [5290, 0.12, 0.4], [7020, 0.07, 0.25]]
+      .reduce((sum, [note, decay, weight], k) => sum + weight * Math.sin(2 * Math.PI * note * t + k) * Math.exp(-t / decay), 0);
+    const fizz = (hiss - hissLow) * Math.min(1, t / 0.02) * Math.exp(-t / 0.35);
+    dry[i] = 1.6 * crack + 0.75 * ping * Math.min(1, t / 0.001) + 0.45 * fizz;
+  }
+  for (let spark = 0; spark < 28; spark++) {
+    const at = 0.02 + 0.7 * noise() * noise();
+    click(dry, at, 2200 + 4200 * noise(), 0.12 * (1 - at), noise);
+  }
+  const tail = Math.round(0.3 * RATE);
+  for (let i = dry.length - tail; i < dry.length; i++) {
+    dry[i] *= (dry.length - i) / tail;
+  }
+  writeSound("space_meteor_strike", saturate(hullEcho(dry, 0.14), 1.8), 0.85);
+}
+// An asteroid crashing into a freighter in space weather (see SpaceWeather), the heaviest hit she takes in the air: the
+// crack of rock on plate, a deep boom falling in pitch as it rolls through her, her plates crunching in a long run of
+// grinding jerks, ringing low, then her frame thumping as it takes the shove; shattered rock and bits of plating
+// rattling off her hull, and a long groaning rumble after, all of it driven hard into saturation.
+{
+  const noise = ownRandom(0x41737472);
+  const length = 3.6;
+  const dry = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  let rumble = 0;
+  let groan = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (28 + 60 * Math.exp(-t / 0.15))) / RATE;
+    const boom = Math.min(1, t / 0.003) * Math.exp(-t / 0.7) * (Math.sin(phase) + 0.45 * Math.sin(2 * phase) + 0.2 * Math.sin(3 * phase));
+    const crack = t < 0.025 ? (noise() * 2 - 1) * (1 - t / 0.025) : 0;
+    const white = noise() * 2 - 1;
+    rumble += 0.012 * (white - rumble);
+    groan += (2 * Math.PI * (52 + 9 * Math.sin(2 * Math.PI * 0.7 * t))) / RATE;
+    const plates = [[121, 1.2], [197, 1.0], [311, 0.8], [463, 0.6], [701, 0.4], [1105, 0.25]]
+      .reduce((sum, [note, decay], k) => sum + Math.sin(2 * Math.PI * note * t + k) * Math.exp(-t / decay) / (k + 1), 0);
+    const hum = Math.sin(groan) * Math.min(1, Math.max(0, t - 0.4) / 0.4) * Math.exp(-Math.max(0, t - 0.8) / 1.0);
+    dry[i] = 2 * boom + 1.4 * crack + 6 * rumble * Math.exp(-t / 1.3) + 0.55 * plates * Math.min(1, t / 0.003) + 0.25 * hum;
+  }
+  thunk(dry, 0.12, 50, 1.0, noise);
+  crumple(dry, 0.01, 0.8, noise, [[360, 9, 1], [610, 11, 0.8], [1010, 12, 0.6], [1700, 14, 0.4], [2800, 16, 0.25]], 165);
+  for (let bit = 0; bit < 48; bit++) {
+    const at = 0.15 + 1.5 * noise() * noise();
+    click(dry, at, 700 + 3000 * noise(), 0.28 * (1 - at / 2), noise);
+  }
+  const tail = Math.round(0.7 * RATE);
+  for (let i = dry.length - tail; i < dry.length; i++) {
+    dry[i] *= (dry.length - i) / tail;
+  }
+  writeSound("space_asteroid_strike", saturate(hullEcho(dry, 0.18), 3.5), 0.95);
+}
+// Her space weather alarm (see SpaceWeather), whooping through her before her computer warns what is coming: a warning
+// horn's whoop three times, deeper and longer than the door alarm's, rising from a growl to a wail and cut off, through
+// the horn speaker's two honking resonances, driven a little into clipping, with her hull's echoes after each. No noise,
+// so it never shifts the sounds after it.
+{
+  const length = 2.4;
+  const whoops = 3;
+  const whoop = 0.62;
+  const from = 210;
+  const to = 700;
+  const dry = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = (i / RATE) % (length / whoops);
+    if (t >= whoop) {
+      continue;
+    }
+    const rise = 1 - Math.pow(1 - t / whoop, 1.8);
+    const frequency = from + (to - from) * rise;
+    phase += (2 * Math.PI * frequency) / RATE;
+    let tone = 0;
+    for (let k = 1; k * frequency < 6500; k++) {
+      tone += (Math.sin(k * phase) * (k % 2 === 1 ? 1.3 : 0.7)) / k;
+    }
+    dry[i] = Math.min(1, t / 0.02) * Math.min(1, (whoop - t) / 0.03) * tone;
+  }
+  const honk = resonance(dry, 980, 3);
+  const bite = resonance(dry, 2300, 4);
+  const horn = dry.map((sample, i) => Math.tanh(1.6 * (0.35 * sample + 1.4 * honk[i] + 0.9 * bite[i])));
+  const samples = new Float64Array(horn.length);
+  for (const [delay, gain] of [[0, 1], [0.023, 0.3], [0.041, 0.22], [0.067, 0.15], [0.109, 0.09]]) {
+    const shift = Math.round(delay * RATE);
+    for (let i = 0; i + shift < samples.length; i++) {
+      samples[i + shift] += gain * horn[i];
+    }
+  }
+  writeSound("space_weather_alarm", samples, 0.8);
+}
 // A bump: a dull thump of the hull meeting something, a short clank of a plate, and a breath of rumble after it.
 {
   const noise = ownRandom(0x54687564);
@@ -5749,6 +5854,14 @@ const COMPUTER_CLIMB_LINES = {
 const COMPUTER_SLAM_LINES = {
   freighter_computer_slam: "Taking the quick way down. | Brace yourselves.",
 };
+// Her computer through space weather (see SpaceWeather), our own lines in the same voice: a meteor shower, an asteroid
+// storm and a solar flare told after the alarm, and the all-clear once each has passed.
+const COMPUTER_WEATHER_LINES = {
+  freighter_computer_meteors: "Meteor shower ahead. | Hold on to something bolted down.",
+  freighter_computer_asteroids: "Asteroid storm ahead. | Brace for impact.",
+  freighter_computer_flare: "Solar flare. | Don't look at the sun.",
+  freighter_computer_all_clear: "All clear. | You can let go now.",
+};
 // Her computer as her sticker map fills (see StickerMapBlockEntity), our own lines in the same voice: a sticker up, a
 // row of them filled, and the whole map, which is given an announcement's length.
 const COMPUTER_STICKER_LINES = {
@@ -5803,6 +5916,7 @@ if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_BOARD, COMPUTER_ANNOUNCEMENT_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_REPAIR_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_WEATHER_LINES, COMPUTER_ANNOUNCEMENT_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

@@ -1384,6 +1384,51 @@
       }
     ]
   },
+  "freighter_computer_meteors": {
+    "subtitle": "subtitles.skyliners.freighter_computer_meteors",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_meteors",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_asteroids": {
+    "subtitle": "subtitles.skyliners.freighter_computer_asteroids",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_asteroids",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_flare": {
+    "subtitle": "subtitles.skyliners.freighter_computer_flare",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_flare",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_all_clear": {
+    "subtitle": "subtitles.skyliners.freighter_computer_all_clear",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_all_clear",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "space_weather_alarm": {
+    "subtitle": "subtitles.skyliners.space_weather_alarm",
+    "sounds": [
+      {
+        "name": "skyliners:space_weather_alarm",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "freighter_slam": {
     "subtitle": "subtitles.skyliners.freighter_slam",
     "sounds": [
@@ -1942,6 +1987,24 @@
     "sounds": [
       {
         "name": "skyliners:impact_crunch",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "space_meteor_strike": {
+    "subtitle": "subtitles.skyliners.space_meteor_strike",
+    "sounds": [
+      {
+        "name": "skyliners:space_meteor_strike",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "space_asteroid_strike": {
+    "subtitle": "subtitles.skyliners.space_asteroid_strike",
+    "sounds": [
+      {
+        "name": "skyliners:space_asteroid_strike",
         "attenuation_distance": 16
       }
     ]

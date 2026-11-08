@@ -11,6 +11,7 @@ import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.FreighterSlam;
 import dev.skyliners.console.ConsoleBlockEntity;
 import dev.skyliners.console.ConsoleKind;
+import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -42,7 +43,8 @@ import org.joml.Matrix4f;
  * drives down, its big red button lit the same; and while something holds her take-off,
  * the scanner shows it in place of its scope, her ramp with someone on it flashing amber; and while one of her fault
  * spots is at fault, a red warning sign flashes on the scope at its bearing and another in the scope's corner, so a
- * fault can be tracked down from her cockpit. Along each desk stand chunky
+ * fault can be tracked down from her cockpit; while space weather is told or blows round her, the scanner flashes its
+ * picture in place of its scope, and a solar flare flickers every screen dark now and then. Along each desk stand chunky
  * controls of its kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly
  * and only one lamp blinks.
  */
@@ -186,6 +188,14 @@ final class ConsoleArt {
             held(buffers, matrix, height, readings);
             return;
         }
+        if (readings.freighter() && SpaceWeatherHud.screensFlicker()) {
+            return;
+        }
+        SpaceWeather.Kind weather = readings.freighter() ? SpaceWeatherSky.blowing() : null;
+        if (kind == ConsoleKind.SCANNER && weather != null) {
+            spaceWeather(buffers, matrix, height, readings, weather);
+            return;
+        }
         switch (kind) {
             case READOUTS -> readouts(pose, buffers, width, height, readings);
             case SCANNER -> scope(buffers, matrix, width, height, readings);
@@ -205,6 +215,16 @@ final class ConsoleArt {
     private static void held(MultiBufferSource buffers, Matrix4f matrix, double height, Readings readings) {
         boolean lit = (int) (readings.ticks() / HELD_FLASH) % 2 == 0;
         ScreenDrawing.picture(buffers, matrix, icon("held_" + readings.heldBy()), 0, height / 2, height * 0.4, 3 * LAYER, lit ? AMBER : fade(AMBER, 0.35F));
+    }
+
+    /**
+     * Space weather told or blowing round her (see {@link SpaceWeatherSky}): in place of the scope, its picture flashing
+     * big in its colour in the middle, as on everyone's screen.
+     */
+    private static void spaceWeather(MultiBufferSource buffers, Matrix4f matrix, double height, Readings readings, SpaceWeather.Kind weather) {
+        boolean lit = (int) (readings.ticks() / HELD_FLASH) % 2 == 0;
+        int colour = SpaceWeatherHud.colour(weather);
+        ScreenDrawing.picture(buffers, matrix, icon(SpaceWeatherHud.picture(weather)), 0, height / 2, height * 0.4, 3 * LAYER, lit ? colour : fade(colour, 0.35F));
     }
 
     /** With no ship to read: the power sign, pulsing slowly amber in the middle. */

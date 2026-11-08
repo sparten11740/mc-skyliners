@@ -456,6 +456,24 @@ const SPACE_SETTLE_TICKS = 100;
 const SPACE_TOP_UNDER = 40;
 const SPACE_TOP_TICKS = 600;
 const SPACE_HELD_WITHIN = 5;
+// Space weather: how high a freighter hovers for it, in blocks, over the y 1,500 it blows from; for each kind, what her
+// computer says of it, how a strike sounds, how long it lasts from the alarm to the all-clear, in ticks (its warning,
+// its time on her and its lingering in SpaceWeather), and how much a strike must change her speed at least, in blocks a
+// second; how long she is given to settle after, in ticks, and then how slowly she may drift, in blocks a second, how
+// far she may lean, in degrees, and how near the height her autopilot holds she must be, in blocks; and how many times
+// harder a rock must shove her than a meteor.
+const WEATHER_HEIGHT = 1600;
+const WEATHER = {
+  meteor_shower: { voice: "skyliners:freighter_computer_meteors", strike: "skyliners:space_meteor_strike", ticks: 760, shoveLeast: 1.5 },
+  asteroid_storm: { voice: "skyliners:freighter_computer_asteroids", strike: "skyliners:space_asteroid_strike", ticks: 860, shoveLeast: 5 },
+};
+const WEATHER_SETTLE_TICKS = 600;
+// The longest any space weather lasts, in ticks: an asteroid storm, alarm to all-clear.
+const WEATHER_TICKS_MOST = 860;
+const WEATHER_SETTLED_SPEED = 1;
+const WEATHER_SETTLED_TILT = 3;
+const WEATHER_SETTLED_WITHIN = 5;
+const ROCK_HARDER = 1.5;
 const SLAM_HEIGHT = 90;
 const SLAM_WATCH_TICKS = 300;
 const SLAM_FASTEST_LEAST = 10;
@@ -2723,6 +2741,59 @@ function lift(ship, height) {
   must(`server sable teleport ${ship} ${at[0]} ${height} ${at[2]}; wait 40t; sable:tp ${ship} skyliners:console_climb; wait ${LOOK_EVERY}t`);
 }
 
+// Space weather far past the edge of space: a freighter hovering at y 1,600 with the player aboard her in survival, a
+// meteor shower and then an asteroid storm brought over her: the alarm whoops and her computer warns of each; meteors
+// and rocks strike her, each strike heard, shoving her, a rock far harder than a meteor; her computer says it is all
+// clear; and afterwards she settles back level at the height she held, the player still aboard her and unhurt.
+function checkSpaceWeather() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${WEATHER_HEIGHT} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  lift(freighter, WEATHER_HEIGHT);
+  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - WEATHER_HEIGHT) < SPACE_HELD_WITHIN
+    && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
+  expect(hovering, "space weather: she hovers at y 1,600, past the black of space");
+  if (!hovering) {
+    return;
+  }
+  must(`wait ${SPACE_SETTLE_TICKS}t`);
+  survival();
+  const health = healthOf();
+  const shoves = {};
+  for (const [kind, { voice, strike, ticks, shoveLeast }] of Object.entries(WEATHER)) {
+    // Weather may blow by itself up there; once it has passed, none comes for a minute.
+    waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.blowing === "none", WEATHER_TICKS_MOST);
+    const before = must(`sable:info ${freighter} side=server`);
+    const since = now();
+    const asked = must(`skyliners:spaceweather start=${kind}`);
+    expect(asked.started === "coming", `${kind}: brought over her`, `${asked.started}`);
+    const rows = must(`sample sable:info ${freighter} side=server every 5t x${ticks / 5}`, BUILD_SECONDS).rows.filter((row) => row.vel);
+    expect(played("skyliners:space_weather_alarm", since).length > 0 && played(voice, since).length > 0,
+      `${kind}: the alarm whoops and her computer warns of it`);
+    const { landed } = must("skyliners:spaceweather");
+    const heardStrikes = played(strike, since).length;
+    expect(landed > asked.landed && heardStrikes > 0, `${kind}: it strikes her, each strike heard`, `${landed - asked.landed} landed, ${heardStrikes} heard`);
+    shoves[kind] = Math.max(...rows.map((row) => Math.hypot(...row.vel.map((v, i) => v - before.vel[i]))));
+    const tilt = Math.max(...rows.map((row) => Math.max(Math.abs(row.pitch), Math.abs(row.roll))));
+    expect(shoves[kind] >= shoveLeast, `${kind}: a strike shoves her hard`, `speed changed by ${round(shoves[kind])} blocks a second, tipped ${round(tilt)} degrees`);
+    expect(played("skyliners:freighter_computer_all_clear", since).length > 0, `${kind}: her computer says it is all clear`);
+    const settled = must(`wait ${WEATHER_SETTLE_TICKS}t; sable:info ${freighter} side=server`);
+    const lean = Math.max(Math.abs(settled.pitch), Math.abs(settled.roll));
+    const drift = Math.hypot(...settled.vel);
+    const { altitude, target_altitude: held } = freighterReport();
+    expect(drift <= WEATHER_SETTLED_SPEED && lean <= WEATHER_SETTLED_TILT && Math.abs(altitude - held) <= WEATHER_SETTLED_WITHIN,
+      `${kind}: she settles back level at her height`, `drifting at ${round(drift)} blocks a second, leaning ${round(lean)}, at y ${altitude}, set to ${held}`);
+  }
+  expect(shoves.asteroid_storm > shoves.meteor_shower * ROCK_HARDER, "space weather: a rock shoves her far harder than a meteor",
+    `${round(shoves.asteroid_storm)} against ${round(shoves.meteor_shower)} blocks a second`);
+  const after = healthOf();
+  expect(after >= health, "space weather: nobody aboard is hurt", `health ${after}, ${health} before`);
+  const { aboard } = must("status");
+  expect(Boolean(aboard) && freighter.startsWith(aboard), "space weather: the player is still aboard her", `aboard ${aboard ?? "nothing"}`);
+  creative();
+}
+
 // A freighter's slam landing: hovering, its button lit, her thrusters roar and her computer braces everyone, and she
 // drives straight down where she is far faster than she ever lands, strikes the ground with her crash heard, yet
 // touches it slowly enough that nothing breaks, then stands level on her legs and switches off, its button dark. The
@@ -4716,6 +4787,7 @@ const CHECKS = {
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
+  "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },

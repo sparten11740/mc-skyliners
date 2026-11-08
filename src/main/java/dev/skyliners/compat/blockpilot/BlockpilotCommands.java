@@ -26,6 +26,7 @@ import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.repairs.RepairBoardBlockEntity;
+import dev.skyliners.spaceweather.SpaceWeather;
 import dev.skyliners.turret.LaserCannonBlockEntity;
 import dev.blockpilot.api.Action;
 import dev.blockpilot.api.ArgType;
@@ -61,8 +62,9 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * the nearest autopilot as its settings screen would ({@code skyliners:autopilot}), and laying an airframe down in
  * front of the player and waiting until it stands ({@code skyliners:build}), which of a zeppelin's blocks its
  * assembly would leave behind ({@code skyliners:assembly}), and a fingerprint of an airframe's layout, to show a change
- * to how it is laid out moves no block ({@code skyliners:layout}), and repainting the nearest zeppelin
- * ({@code skyliners:livery}); and, on the client, whether the player sees from a laser cannon's sight
+ * to how it is laid out moves no block ({@code skyliners:layout}), repainting the nearest zeppelin
+ * ({@code skyliners:livery}), and the space weather over the nearest freighter, or bringing some over her
+ * ({@code skyliners:spaceweather}); and, on the client, whether the player sees from a laser cannon's sight
  * ({@code skyliners:gunner}) and what it last drew of a laser bolt ({@code skyliners:bolts}). Only loaded when
  * Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
@@ -86,6 +88,8 @@ public final class BlockpilotCommands {
     private static final int DARK_ABOVE = 24;
     private static final int DARK_LEAST = 4;
     private static final int DARK_SKY = 1;
+    /** The kinds of space weather, as the space weather command names them. */
+    private static final List<String> WEATHER_KINDS = Arrays.stream(SpaceWeather.Kind.values()).map(SpaceWeather.Kind::getSerializedName).toList();
 
     private BlockpilotCommands() {
     }
@@ -201,6 +205,17 @@ public final class BlockpilotCommands {
             .field("next", "the ticks of flight after which the next goes off, -1 before she first flies")
             .field("spots", "how many fault spots it looks after")
             .example("skyliners:repairs every=100"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("spaceweather", (context, args) -> spaceWeather(args))
+            .onServer()
+            .group("skyliners")
+            .option("start", "brings space weather of a kind over the nearest freighter at once, from y 1,500 up", WEATHER_KINDS)
+            .help("the space weather over the nearest freighter: what blows, how many strikes have landed on her and the tick the last did")
+            .field("blowing", "what blows now: meteor_shower, asteroid_storm, solar_flare or none")
+            .field("from", "the side of the sky the weather blowing comes out of, as a bearing in degrees as the game turns a look")
+            .field("landed", "how many strikes have landed on her since she was loaded")
+            .field("last_landed", "the game tick the last strike landed on her, -1 before any")
+            .field("started", "what asking for weather came to, when asked: coming, busy, not_flying, too_low, nobody_aboard, switched_off or no_ship")
+            .example("skyliners:spaceweather start=asteroid_storm"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("skyliners")
@@ -315,6 +330,22 @@ public final class BlockpilotCommands {
             .tag("held", Objects.requireNonNullElse(FreighterFlight.heldBy(autopilot), "none"))
             .tag("slam", FreighterFlight.slamOf(autopilot).name().toLowerCase(Locale.ROOT))
             .tag("jump_loaded_after", freighter.jumpLoadedAfter()));
+    }
+
+    private static Result spaceWeather(Args args) throws CommandException {
+        ServerPlayer player = player();
+        AutopilotBlockEntity autopilot = nearest(player);
+        Fields fields = new Fields();
+        if (args.hasOption("start")) {
+            SpaceWeather.Kind kind = SpaceWeather.Kind.of(WEATHER_KINDS.indexOf(args.option("start")));
+            fields.tag("started", FreighterFlight.spaceWeather(player.serverLevel(), autopilot, kind).name().toLowerCase(Locale.ROOT));
+        }
+        SpaceWeather weather = autopilot == null ? null : FreighterFlight.weatherOf(autopilot);
+        if (weather == null) {
+            return Result.error("no_freighter");
+        }
+        return Result.ok(fields.tag("blowing", weather.blowing()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
+            .tag("last_landed", weather.lastLanded()));
     }
 
     private static Result assembly() throws CommandException {
