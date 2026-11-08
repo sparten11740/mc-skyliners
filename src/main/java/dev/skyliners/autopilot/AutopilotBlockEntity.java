@@ -2454,7 +2454,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Sets an engine for so much thrust, shared out over its relays so their signals add up to it as nearly as they
-     * can (see {@link Relays#spread}): the total it was set to last is kept until the thrust wanted is
+     * can (see {@link Relays#spreadEvenly}): the total it was set to last is kept until the thrust wanted is
      * {@link #ENGINE_HOLD} from it. Cruising at 50 blocks a second, an engine wants less than two of a relay's 15
      * steps, so with one signal for all its relays a step was most of its thrust: holding the speed flipped every
      * engine between two steps about twice a second, and each flip sent every client near each of the engine's relays
@@ -2467,7 +2467,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         Integer last = engineTotals.get(engine);
         int total = last != null && Math.abs(wanted - last) < ENGINE_HOLD ? last : (int) Math.round(wanted);
         engineTotals.put(engine, total);
-        Relays.spread(level, worldPosition, engineRelays, total, engine.synced());
+        Relays.spreadEvenly(level, worldPosition, engineRelays, total, engine.synced());
     }
 
     /**

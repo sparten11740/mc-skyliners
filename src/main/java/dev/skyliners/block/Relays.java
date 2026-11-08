@@ -68,6 +68,49 @@ public final class Relays {
         }
     }
 
+    /**
+     * How many steps the order of a group's leftover steps is looked through for a relay (see {@link #spreadRank}):
+     * enough to reach every one of a group of up to 64, as many as a long's bits keep track of.
+     */
+    private static final int SPREAD_STEPS = 64;
+
+    /**
+     * Sets a group of relays to signals adding up to a total, as nearly as they can, what is left over of an even share
+     * going out along them in a fixed order that keeps it spread (see {@link #spreadRank}) rather than to the first
+     * ones: an airliner's engine at a low thrust, its few steps on its first relays alone, pushed from one side of its
+     * nacelle and tipped her as she landed and rolled out. A step of the total still moves one relay alone, and the
+     * first is still given a signal whenever any is.
+     */
+    public static void spreadEvenly(Level level, BlockPos origin, List<BlockPos> offsets, int total, boolean synced) {
+        int count = offsets.size();
+        int each = total / Math.max(1, count);
+        int over = total - each * count;
+        for (int i = 0; i < count; i++) {
+            drive(level, origin, offsets.get(i), each + (spreadRank(i, count) < over ? 1 : 0), synced);
+        }
+    }
+
+    /**
+     * Where a relay comes in the order a group's leftover steps go out in: halving the gaps along the group, from its
+     * first (0, then the middle, then the quarters...), so however many there are, they lie spread along it.
+     */
+    private static int spreadRank(int index, int count) {
+        long taken = 0;
+        int rank = 0;
+        for (int step = 0; rank < count && step < SPREAD_STEPS; step++) {
+            int at = (int) ((Integer.reverse(step) & 0xFFFFFFFFL) * count >>> 32);
+            if ((taken & 1L << at) != 0) {
+                continue;
+            }
+            if (at == index) {
+                return rank;
+            }
+            taken |= 1L << at;
+            rank++;
+        }
+        return count;
+    }
+
     /** Whether the block is a relay, what a control's links lead to. */
     public static boolean isRelay(BlockState state) {
         return state.getBlock() instanceof ThrustRelayBlock;
