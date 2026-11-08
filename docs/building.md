@@ -219,7 +219,9 @@ shaft (`RocketLayout.shaftWall`).
 `LedConsoleBlock`, both touch panels, their tiles laid out by `LedControls`; on the client `LedLights` tints the strips
 and times their
 modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConsoleRenderer` draw them through
-`LedControlsArt`, which lights their tiles through `TouchPanelArt`.
+`LedControlsArt`, which lights their tiles through `TouchPanelArt`. `LedPanelRenderer` works out its strips' bars and
+glows once for each ring found, and every panel's are drawn together after the level's block entities
+(`BatchedBuffers`, buffers of their own through `RegisterRenderBuffersEvent`).
 `RocketWindowDimmers`, laid after them, puts a `WindowDimmerBlock` over each story's LED panel, another touch panel,
 whose `WindowDimmerBlockEntity` keeps the box round its story's oval windows (round itself, put up by hand) and sets
 them through `OvalWindowPieceBlock.dimWithin`, as the console does through each story's `LedPanelBlockEntity`; on the
