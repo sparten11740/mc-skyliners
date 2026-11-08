@@ -277,6 +277,8 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(OculusRing::heard);
         NeoForge.EVENT_BUS.addListener(Earshot::heard);
         NeoForge.EVENT_BUS.addListener(CarriedAboard::onTick);
+        NeoForge.EVENT_BUS.addListener(CarriedAboard::onClientTick);
+        NeoForge.EVENT_BUS.addListener(CarriedAboard::onEntityTick);
         NeoForge.EVENT_BUS.addListener(Weightless::onTickPre);
         NeoForge.EVENT_BUS.addListener(Weightless::onTickPost);
         NeoForge.EVENT_BUS.addListener(LiftRide::onLevelTick);

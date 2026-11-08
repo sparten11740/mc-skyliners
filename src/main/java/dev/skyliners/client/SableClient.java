@@ -68,6 +68,11 @@ public final class SableClient {
      */
     private static final double MOST_INHERITED = 32;
     /**
+     * The furthest a ship moves in a tick flying, in blocks: some five times what any ship flies at. A ship this client
+     * sees go further in a tick was put there, as a hyperspace jump puts her, not flown there.
+     */
+    private static final double FURTHEST_FLOWN = 32;
+    /**
      * The game's climb: the speed a ladder lifts a climber at and the fastest they slide down one, in blocks a tick,
      * and the share of their speed the air leaves them each tick.
      */
@@ -98,6 +103,21 @@ public final class SableClient {
     static void keepAboard(LocalPlayer player) {
         if (SABLE) {
             Access.keepAboard(player);
+        }
+    }
+
+    /**
+     * Once a client tick, after Sable has moved the ships this client sees and before anything in the level moves: a
+     * ship that went further than any ship flies in a tick, as a hyperspace jump moves her, was put there, and is
+     * taken to have been there all along, the player aboard her as she went put where they stood among her blocks.
+     * Otherwise Sable carries everyone on her the whole way in a tick, looking along all of it among her blocks for
+     * something to bump into, every block of a box a jump's length long and, for a ship askew to her jump, hundreds of
+     * blocks wide, which held the game up for seconds and in some jumps for over half a minute, the flash as she came
+     * out frozen on the screen; and she is drawn smeared across it for that tick.
+     */
+    static void settleJumps(LocalPlayer player) {
+        if (SABLE) {
+            Access.settleJumps(player);
         }
     }
 
@@ -356,6 +376,35 @@ public final class SableClient {
             if (!player.getAbilities().flying) {
                 climb(player, airliner);
             }
+        }
+
+        static void settleJumps(LocalPlayer player) {
+            ClientSubLevelContainer container = SubLevelContainer.getContainer(player.clientLevel);
+            if (container == null) {
+                return;
+            }
+            for (ClientSubLevel ship : container.getAllSubLevels()) {
+                if (ship.lastPose().position().distanceSquared(ship.logicalPose().position()) > FURTHEST_FLOWN * FURTHEST_FLOWN) {
+                    carryOver(player, ship);
+                    ship.updateLastPose();
+                }
+            }
+        }
+
+        /**
+         * The player, standing on a ship put somewhere new or among her blocks as she lay last tick, put where they
+         * were among them as she lies now, and drawn there from the start of the tick; one riding a seat goes with it.
+         */
+        private static void carryOver(LocalPlayer player, ClientSubLevel ship) {
+            Vec3 among = ship.lastPose().transformPositionInverse(player.position());
+            BoundingBox3ic blocks = ship.getPlot().getBoundingBox();
+            boolean aboard = Sable.HELPER.getTrackingSubLevel(player) == ship
+                || blocks != null && blocks.contains(new Vector3d(among.x, among.y, among.z));
+            if (!aboard || player.isPassenger()) {
+                return;
+            }
+            player.setPos(ship.logicalPose().transformPosition(among));
+            player.setOldPosAndRot();
         }
 
         /**
