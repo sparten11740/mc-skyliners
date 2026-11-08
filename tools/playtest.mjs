@@ -392,6 +392,10 @@ const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1
   console_slam: 1 };
 const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump", "console_climb",
   "console_slam"];
+// Airframe fairings put down by hand: how far off the cell the player stands to put one down, in blocks, and how far
+// apart the corners are laid along the site, in blocks.
+const FAIRING_STAND_OFF = 2.5;
+const FAIRING_APART = 6;
 // Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
 // much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
 // speed, in ticks, and how near, in blocks a second.
@@ -2742,6 +2746,61 @@ function checkFreighterJumpSeen() {
   must(`sable:tp ${at.join(",")}; wait 20t; skyliners:autopilot land`);
 }
 
+// Airframe fairings put down by hand turn corners as stairs do. Round an inside corner the middle one fills it in,
+// round an outside corner it rounds it off, and a run hung under a ceiling turns its corner too, as in a room's cove;
+// the fairings either side of a corner, a lone one and one in a straight run stay straight. Broken again, a corner's
+// neighbour straightens out.
+function checkFairingCorners() {
+  creative();
+  emptyHands();
+  const x = nextSite++ * SITE_APART;
+  const [rests, hangs] = [ground, ground + 1];
+  must(`server tp @p ${x} ${ground} 0; wait ${CHUNKS_TICKS}t; server fill ${x + 2 * FAIRING_APART - 2} ${hangs + 1} -3 ${x + 2 * FAIRING_APART + 2} ${hangs + 1} 3 stone`);
+  must("server give @p skyliners:airframe_fairing 64; wait 5t; select 0");
+  const shapeAt = ([px, py, pz]) => must(`block ${px},${py},${pz} side=server`).props?.shape ?? "straight";
+  // An inside corner, put down corner first, so it turns as its neighbours come.
+  const inside = [x, rests, 0];
+  putFairing(inside, "south");
+  putFairing([x - 1, rests, 0], "south");
+  putFairing([x, rests, 1], "west");
+  expect(shapeAt(inside).startsWith("inner_"), "fairing: three put down round an inside corner, the middle one fills the corner in", shapeAt(inside));
+  expect(shapeAt([x - 1, rests, 0]) === "straight" && shapeAt([x, rests, 1]) === "straight", "fairing: the two either side of an inside corner stay straight");
+  // An outside corner, put down corner last, so it turns as it goes down.
+  const outside = [x + FAIRING_APART, rests, 0];
+  putFairing([outside[0] - 1, rests, 0], "north");
+  putFairing([outside[0], rests, 1], "east");
+  putFairing(outside, "north");
+  expect(shapeAt(outside).startsWith("outer_"), "fairing: three put down round an outside corner, the middle one rounds it off", shapeAt(outside));
+  // A cove: an inside corner hung under a stone ceiling.
+  const cove = [x + 2 * FAIRING_APART, hangs, 0];
+  putFairing(cove, "south", true);
+  putFairing([cove[0] - 1, hangs, 0], "south", true);
+  putFairing([cove[0], hangs, 1], "west", true);
+  const hung = must(`block ${cove.join(",")} side=server`).props ?? {};
+  expect(hung.half === "bottom" && (hung.shape ?? "straight").startsWith("inner_"), "fairing: hung under a ceiling round an inside corner, the middle one fills the corner in",
+    `${hung.half ?? "top"} ${hung.shape ?? "straight"}`);
+  // A lone one and a straight run.
+  const lone = [x + 3 * FAIRING_APART, rests, 0];
+  putFairing(lone, "south");
+  [0, 1, 2].forEach((i) => putFairing([lone[0] + 2 + i, rests, 0], "south"));
+  expect(shapeAt(lone) === "straight" && shapeAt([lone[0] + 3, rests, 0]) === "straight", "fairing: a lone one and the middle of a straight run stay straight",
+    `${shapeAt(lone)}, ${shapeAt([lone[0] + 3, rests, 0])}`);
+  must(`server tp @p ${x - 2.5} ${ground} 1.5 -90 40; wait 5t; mine ${x},${rests},1 timeout=5s; wait 5t`);
+  expect(shapeAt(inside) === "straight", "fairing: one of an inside corner's neighbours broken, the corner straightens out", shapeAt(inside));
+}
+
+// Puts a fairing down by hand at a cell with its cut facing the given way: the player stands out from the cell that
+// way, looking back at the ground under it, or at the ceiling over it for one that hangs.
+function putFairing([px, py, pz], cut, hangs = false) {
+  const [dx, dz] = STEPS[cut];
+  const [sx, sz] = [px + 0.5 + dx * FAIRING_STAND_OFF, pz + 0.5 + dz * FAIRING_STAND_OFF];
+  const yaw = { north: 0, east: 90, south: 180, west: -90 }[cut];
+  const lookedAt = hangs ? py + 1 : py;
+  const pitch = round((Math.atan2(ground + EYE_HEIGHT - lookedAt, FAIRING_STAND_OFF) * 180) / Math.PI);
+  must(`server tp @p ${sx} ${ground} ${sz} ${yaw} ${pitch}; wait 5t`);
+  send(`place skyliners:airframe_fairing ${px},${py},${pz}`);
+}
+
 // The console's modules set up by hand: each kind stands on a floor as a desk, fixed to a wall as a plate and hung
 // under a ceiling as a wedge, each facing whoever put it up.
 function checkConsoleMounts() {
@@ -4425,6 +4484,7 @@ const CHECKS = {
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
+  "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },
   "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends" },
