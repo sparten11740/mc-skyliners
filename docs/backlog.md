@@ -18,7 +18,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 
 ## The freighter
 
-- Her mains read as black holes in her engine grille while they idle without a plume: a nozzle rim of their own.
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
 - An engine grille set by hand stays dark: a redstone signal could light it (dark, idling, full), for other builds.
 - Told to land where she is, or landing by herself with nobody aboard, she does not look for ground at all: on a block

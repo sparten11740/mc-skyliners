@@ -560,7 +560,10 @@ clear of her passages, for the hull plates, `ShellBlock`s of their own textures 
 loading gap and prongs, and her `NavLightBlock`s.
 On each client `FreighterEngineGlow` draws her engines' glow after the particles, from the shares her autopilot already
 shows for her roar and the nozzles `FreighterLayout.mainNozzles` gives, each flare brought toward the camera so the hull
-never cuts it, and passes over a freighter out of view.
+never cuts it, and passes over a freighter out of view. `FreighterNozzles` draws a nozzle on each of her mains, a steel
+bell with a bright lip round its thruster's socket, standing out of her stern and on no block, so nothing stands in
+the line Create Propulsion checks and she pushes as before, and so a freighter already built has them too; her
+autopilot shows clients where her mains are with the rest of her flight, and `freighter.nozzleRims` switches them off.
 What moves on a client is drawn by `DrawingClock`: its own count of ticks for what only moves for show, and the game's
 time eased, never stepping back, for what keeps time with the server. A part a client counts itself, such as a door or a
 flight of stairs, takes the server's count through `ToldTicks`.

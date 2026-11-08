@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.AutopilotBlock;
+import dev.skyliners.block.Relays;
 import dev.skyliners.block.RetractableLegBlockEntity;
 import dev.skyliners.block.Turning;
 import dev.skyliners.compat.SableFlight;
@@ -18,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -126,6 +128,8 @@ public final class FreighterFlight extends StandingFlight {
     /** Her engine grille glowing with her engines, and which of her thrusters trail their plumes. */
     private final EngineGlow glow = new EngineGlow();
     private final FreighterPlumes plumes = new FreighterPlumes();
+    /** On a client, her mains' relays as her autopilot shows them, for drawing her nozzles (see {@link #mainRelaysOf}). */
+    private List<BlockPos> mainRelays = List.of();
     /**
      * Where her disc's middle is from her control head, so many blocks to its right and ahead of it, on the clients as
      * on the server; unknown for one built before it was kept, until her pilot's wiring gives it.
@@ -319,6 +323,15 @@ public final class FreighterFlight extends StandingFlight {
     public static float mainsOf(AutopilotBlockEntity autopilot) {
         FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
         return freighter == null ? 0 : freighter.mains.shown();
+    }
+
+    /**
+     * The relays of the mains of the freighter an autopilot flies, as this client was shown them, each an offset from
+     * her control head with its thruster a block astern of it; none for any other craft, or until a server has said.
+     */
+    public static List<BlockPos> mainRelaysOf(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? List.of() : freighter.mainRelays;
     }
 
     /**
@@ -598,6 +611,7 @@ public final class FreighterFlight extends StandingFlight {
         if (heldBy != null) {
             tag.putString("FreighterHeldBy", heldBy);
         }
+        tag.put("FreighterMainRelays", Relays.write(pilot.wiring().mains()));
         climb.saveShown(tag);
         slam.saveShown(tag);
     }
@@ -612,6 +626,7 @@ public final class FreighterFlight extends StandingFlight {
         // Only a word a picture's name can be made of: her console draws the picture it names.
         String why = tag.getString("FreighterHeldBy");
         heldBy = ResourceLocation.isValidPath(why) && !why.isEmpty() ? why : null;
+        mainRelays = Relays.read(tag.getList("FreighterMainRelays", Tag.TAG_INT_ARRAY));
         climb.loadShown(tag);
         slam.loadShown(tag);
     }

@@ -789,6 +789,34 @@ mkdirSync(miscOutput, { recursive: true });
   writeFileSync(resolve(miscOutput, "exhaust_flame.png"), encodePng(pixels));
   writeFileSync(resolve(miscOutput, "exhaust_flame.png.mcmeta"), JSON.stringify({ texture: { blur: true, clamp: true } }, null, 2) + "\n");
 }
+// The freighter's engine nozzles (see FreighterNozzles): four bands of 32 by 32 one above the other, each wrapped round
+// one part of a nozzle, across a petal and from the part's start to its end. Gunmetal for the collar with its rivets;
+// steel petals, seamed, tinted by the heat toward the lip; the lip polished, going to soot down inside; and a throat of
+// dark turbine vanes round a brighter hub.
+{
+  const between = (from, to, t) => from.map((c, i) => Math.round(c + (to[i] - c) * t));
+  const collar = (x, row) => {
+    if (row < 2 || row > 29) return [0x2c, 0x30, 0x38];
+    if ((row === 7 || row === 24) && x % 8 === 3) return [0x7c, 0x82, 0x8c];
+    return x === 0 ? [0x34, 0x38, 0x40] : [0x46, 0x4c, 0x56];
+  };
+  const petal = (x, row) => {
+    if (x === 0 || x === 31) return [0x32, 0x34, 0x3c];
+    if (x <= 2) return [0xb4, 0xb8, 0xc0];
+    return between([0x96, 0x9c, 0xa6], [0x74, 0x62, 0x70], (row / 31) ** 2);
+  };
+  const lip = (x, row) => {
+    if (row % 8 === 7) return [0x14, 0x14, 0x18];
+    const soot = Math.min(1, Math.max(0, (row - 4) / 14));
+    return between([0xdc, 0xe0, 0xe4], [0x1c, 0x1c, 0x20], soot);
+  };
+  const throat = (x, row) => {
+    if (row > 26) return [0x50, 0x54, 0x5c];
+    return x % 16 < 4 ? [0x0e, 0x0e, 0x12] : between([0x2c, 0x30, 0x3a], [0x1c, 0x1e, 0x24], row / 26);
+  };
+  const BANDS = [collar, petal, lip, throat];
+  texture(miscOutput, "engine_nozzle", (x, y) => BANDS[Math.floor(y / 32)](x, y % 32), 3, 32, 128);
+}
 
 // A contrail puff: a soft white round blob, see-through toward its edge.
 {

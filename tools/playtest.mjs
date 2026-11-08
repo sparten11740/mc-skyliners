@@ -148,6 +148,15 @@ const HOP_DOWN_TICKS = 1800;
 // she may lean, in degrees; how long she is watched hovering, in ticks; and how far off the player goes and how long
 // for, in blocks and ticks, past where this client keeps her, to see her again as someone walking up to her would.
 const FREIGHTER_CLIMB = 50;
+// A freighter's main engine seen from behind her, parked: how far astern of its thruster the camera stands, in blocks;
+// where its nozzle's lip is, in blocks from its axis and astern of the thruster's face, and how far round that point
+// the frame is read; how bright the brightest tenth of that must be, a luma from 0 to 255: a bare main shows only her
+// dark grille there, about 55.
+const NOZZLE_CAMERA_BACK = 6;
+const NOZZLE_LIP_OUT = 0.88;
+const NOZZLE_LIP_ASTERN = 1.22;
+const NOZZLE_LIP_ACROSS = 0.08;
+const NOZZLE_LIP_LUMA = 110;
 const FREIGHTER_UP_TICKS = 900;
 const FREIGHTER_DOWN_TICKS = 2400;
 const FREIGHTER_HOLD_WITHIN = 1.5;
@@ -2261,6 +2270,21 @@ function checkCargoScanner() {
 
 // A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage
 // and her ring corridor all round, so nobody walks her deck in the dark.
+// A freighter's main engines read as engines from behind her, parked with nothing firing: straight behind one, a bright
+// lip stands out round its nozzle, where it used to be only a black socket in her grille.
+function checkFreighterNozzles() {
+  layDown("freighter");
+  const relays = must("find skyliners:thrust_relay 128 64").rows.map((row) => row.at_abs);
+  const sternmost = Math.min(...relays.map(([, , z]) => z));
+  const [x, y, z] = relays.find((relay) => relay[2] === sternmost);
+  const thruster = z - 1;
+  const axis = `${x + 0.5},${y + 0.5}`;
+  must(`option hud off; camera at ${axis},${thruster - NOZZLE_CAMERA_BACK} look ${axis},${thruster}; wait 20t; settle`);
+  const lip = must(`pixels lip=@${x + 0.5},${y + 0.5 + NOZZLE_LIP_OUT},${thruster - NOZZLE_LIP_ASTERN} r=${NOZZLE_LIP_ACROSS}`).lip;
+  must("camera reset; option hud on");
+  expect(lip.p90 >= NOZZLE_LIP_LUMA, "nozzles: behind her, each main has a bright nozzle lip, not a black socket", `lip's brightest tenth, luma ${round(lip.p90)}`);
+}
+
 function checkFreighterLights() {
   ship("freighter");
   const lights = must("find skyliners:wall_light 128 100").rows.length;
@@ -5351,6 +5375,7 @@ const CHECKS = {
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
   "birthday-greeting": { run: checkBirthdayGreeting, slow: true, about: "a freighter greets whoever the client config names as they come aboard on their birthday, once, and nobody the day before" },
+  "freighter-nozzles": { run: checkFreighterNozzles, about: "a freighter's main engines show a nozzle with a bright lip from behind her, not a black socket" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },

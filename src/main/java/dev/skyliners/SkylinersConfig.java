@@ -74,6 +74,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_OUTSIDE_LIGHTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_EVERY_PLUME;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_NOZZLE_RIMS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_THROWS_PLAYERS;
@@ -736,6 +737,12 @@ public final class SkylinersConfig {
                 "as many as she lifts off and lands. A freighter already flying takes it up once she is next loaded."
             )
             .define("everyPlume", false);
+        FREIGHTER_NOZZLE_RIMS = builder
+            .comment(
+                "Whether the freighter's main engines show a nozzle standing out of her stern, a steel bell with a bright lip,",
+                "drawn by each client and never built. Without it, each main is the bare thruster in its socket in her grille."
+            )
+            .define("nozzleRims", true);
         FREIGHTER_GALLERY = builder
             .comment(
                 "Whether the freighter's long passages are galleries: space posters along the tunnel down her port prong, an",

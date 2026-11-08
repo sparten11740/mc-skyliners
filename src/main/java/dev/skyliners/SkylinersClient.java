@@ -72,6 +72,7 @@ import dev.skyliners.client.FlightStripBoardRenderer;
 import dev.skyliners.client.Floodlights;
 import dev.skyliners.client.FogMachineSounds;
 import dev.skyliners.client.FreighterEngineGlow;
+import dev.skyliners.client.FreighterNozzles;
 import dev.skyliners.client.FreighterRoar;
 import dev.skyliners.client.DeckRobotRenderer;
 import dev.skyliners.client.GearBayRenderer;
@@ -231,6 +232,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(SpaceWeatherSky::loggingOut);
         LaserBolt.clientSeen = LaserBolts::seen;
         NeoForge.EVENT_BUS.addListener(FreighterEngineGlow::stage);
+        NeoForge.EVENT_BUS.addListener(FreighterNozzles::stage);
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);
         NeoForge.EVENT_BUS.addListener(ClubBand::tick);
         NeoForge.EVENT_BUS.addListener(GunnerControls::input);
