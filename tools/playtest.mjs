@@ -1932,8 +1932,8 @@ function checkFreighterLights() {
   expect(Math.min(...corridor) >= CORRIDOR_LIT, "freighter: her ring corridor is lit all round", `block light ${corridor.join(", ")}`);
 }
 
-// Comes aboard a freighter with the client config naming someone whose birthday is tomorrow, then today, then again
-// today, then lifts off with them aboard: her computer's birthday greeting, and its banner, come only on the day, and
+// Comes aboard a freighter with the client config naming someone whose birthday is tomorrow, then today as another
+// account, then today as them, then again today, then lifts off with them aboard: her computer's birthday greeting, and its banner, come only on the day, and
 // once from each freighter, not again as her taking off moves her autopilot into Sable's plot.
 function checkBirthdayGreeting() {
   layDown("freighter");
@@ -1946,17 +1946,20 @@ function checkBirthdayGreeting() {
   const today = new Date();
   const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
   // Set off her, as a birthday that comes while they stand aboard greets them there and then.
-  const greetedComingAboard = (date) => {
-    must(`${away}; config skyliners client birthdayDate ${day(date)}`);
+  const greetedComingAboard = (date, account) => {
+    must(`${away}; config skyliners client birthdayDate ${day(date)}; config skyliners client birthdayPlayer ${account}`);
     const since = now();
     must(aboard);
     return Boolean(heard("*freighter_computer_birthday*", since, BIRTHDAY_WITHIN));
   };
+  const player = must("server list").rows.at(-1).line.split(": ").pop().split(", ")[0];
   try {
     must("config skyliners client birthdayName Sam");
-    expect(!greetedComingAboard(tomorrow), "birthday: the day before it, coming aboard a freighter greets nobody");
-    expect(greetedComingAboard(today), "birthday: on their birthday, coming aboard a freighter, her computer wishes them a happy birthday");
-    expect(!greetedComingAboard(today), "birthday: gone and come aboard her again that day, she does not greet them twice");
+    expect(!greetedComingAboard(tomorrow, player), "birthday: the day before it, coming aboard a freighter greets nobody");
+    expect(!greetedComingAboard(today, "Somebody_Else"), "birthday: on the day, playing as another account, coming aboard greets nobody");
+    expect(greetedComingAboard(today, player), "birthday: on their birthday, coming aboard a freighter, her computer wishes them a happy birthday",
+      `playing as ${player}`);
+    expect(!greetedComingAboard(today, player), "birthday: gone and come aboard her again that day, she does not greet them twice");
     const since = now();
     must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
     const flying = must(`wait ${BIRTHDAY_LIFT_TICKS}t; sable:info here brief`);

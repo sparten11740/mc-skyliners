@@ -3123,15 +3123,17 @@ to follow you about; touch it and it trills back; and now and then, with someone
 Deck Robot is among her blocks in the creative tab, to set down anywhere, and the server config's `freighter.robots`
 builds her without them.
 
-On someone's birthday, they are greeted aboard: put their name in the client config's `birthdayName` (`birthdayName =
-"Sam"`) and their birthday in its `birthdayDate`, as the month and day (`"07-14"` for the 14th of July) or their
-whole date of birth (`"2015-07-14"`). On that day, by their computer's date, coming aboard any freighter, a banner sweeps
-down over the top of their view with "HAPPY BIRTHDAY" and the name in bouncing rainbow letters, and how old they turn
-when the year is given ("HAPPY 8TH BIRTHDAY SAM!"); bunting runs along it with a balloon at each end, confetti falls,
-fireworks burst round them and her computer says "Happy birthday! Welcome aboard, Captain." to a fanfare. Each
-freighter greets them once that day, until they leave the world. Born on the 29th of February, they are greeted on the
-28th in other years. It is all on their own screen, for nobody else aboard, and with either setting left empty, as they start,
-nobody is greeted.
+On someone's birthday, they are greeted aboard: in the client config of the computer they play on, put their Minecraft
+account name in `birthdayPlayer` (`birthdayPlayer = "Steve"`), the name to call them in `birthdayName` (`birthdayName =
+"Sam"`), and their birthday in `birthdayDate`, as the month and day (`"07-14"` for the 14th of July) or their whole
+date of birth (`"2015-07-14"`). On that day, by that computer's date, playing as that account and coming aboard any
+freighter, a banner sweeps down over the top of their view with "HAPPY BIRTHDAY" and the name in bouncing rainbow
+letters, and how old they turn when the year is given ("HAPPY 8TH BIRTHDAY SAM!"); bunting runs along it with a balloon
+at each end, confetti falls, fireworks burst round them and her computer says "Happy birthday! Welcome aboard,
+Captain." to a fanfare. Each freighter greets them once that day, until they leave the world. Born on the 29th of
+February, they are greeted on the 28th in other years. It is all on their own screen, for nobody else aboard: anyone
+else playing on that computer, as another account, is never greeted, and with any of the three settings left empty, as
+they start, nobody is greeted.
 
 ### Settings
 
@@ -3140,8 +3142,8 @@ The settings are changed in game in Mods → Create: Skyliners → Config. The c
 `tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`,
 `fairOverClouds`, the
 rocket's `spaceSky`, `shootingStars` and `aurora`, her lift's `liftMusic` and `heightGauge`, the space helmet's
-`helmetBreathing`, her rooms' `roomAmbience`, the hot air burners' `burnerSmoke`, and the freighter's `birthdayName`
-and `birthdayDate`) are there from the title screen.
+`helmetBreathing`, her rooms' `roomAmbience`, the hot air burners' `burnerSmoke`, and the freighter's
+`birthdayPlayer`, `birthdayName` and `birthdayDate`) are there from the title screen.
 The server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
 they are kept in `config/skyliners-server.toml`, on a dedicated server in its own.
 

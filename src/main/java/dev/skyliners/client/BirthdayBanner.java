@@ -30,12 +30,13 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
- * A birthday greeting for whoever the client config's {@code birthdayName} names, on the day its {@code birthdayDate}
- * gives: coming aboard a freighter, a banner sweeps down over the top of the view, bunting and balloons round "HAPPY
- * BIRTHDAY", their age when the year they were born is given, and the name, in bouncing rainbow letters, confetti
- * falling over everything, while her computer wishes them a happy birthday to a fanfare and fireworks burst round them.
- * Each freighter greets them once that day, kept on this client until they leave the world, nothing saved, nothing
- * sent. Any other day, or with either setting empty, it looks for nothing.
+ * A birthday greeting for whoever plays as the account the client config's {@code birthdayPlayer} names, called by its
+ * {@code birthdayName}, on the day its {@code birthdayDate} gives: coming aboard a freighter, a banner sweeps down over
+ * the top of the view, bunting and balloons round "HAPPY BIRTHDAY", their age when the year they were born is given,
+ * and the name, in bouncing rainbow letters, confetti falling over everything, while her computer wishes them a happy
+ * birthday to a fanfare and fireworks burst round them. Each freighter greets them once that day, kept on this client
+ * until they leave the world, nothing saved, nothing sent. Playing as anyone else, on any other day, or with any of the
+ * three settings empty, it looks for nothing.
  */
 public final class BirthdayBanner {
     /** How far from her middle across counts as aboard her, in blocks. */
@@ -96,7 +97,8 @@ public final class BirthdayBanner {
         }
         String name = SkylinersClientConfig.BIRTHDAY_NAME.get().strip();
         LocalDate today = LocalDate.now();
-        AutopilotBlockEntity aboard = name.isEmpty() || !isBirthday(today) ? null : freighterAboard(level, player.position());
+        boolean theirs = isTheirs(player) && !name.isEmpty() && isBirthday(today);
+        AutopilotBlockEntity aboard = theirs ? freighterAboard(level, player.position()) : null;
         if (aboard == null) {
             offFor = Math.min(OFF_TICKS, offFor + 1);
             return;
@@ -111,6 +113,12 @@ public final class BirthdayBanner {
             words = cheer(name, birthday.age(today));
             greet(minecraft, level, player);
         }
+    }
+
+    /** Whether they play as the account whose birthday the client config gives: never with none given. */
+    private static boolean isTheirs(LocalPlayer player) {
+        String account = SkylinersClientConfig.BIRTHDAY_PLAYER.get().strip();
+        return !account.isEmpty() && account.equalsIgnoreCase(player.getGameProfile().getName());
     }
 
     /** Whether today is the birthday the client config gives. */

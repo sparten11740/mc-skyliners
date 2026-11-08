@@ -31,6 +31,7 @@ public final class SkylinersClientConfig {
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
     public static final ModConfigSpec.BooleanValue MISTY_WINDOWS;
     public static final ModConfigSpec.EnumValue<BurnerSmoke> BURNER_SMOKE;
+    public static final ModConfigSpec.ConfigValue<String> BIRTHDAY_PLAYER;
     public static final ModConfigSpec.ConfigValue<String> BIRTHDAY_NAME;
     public static final ModConfigSpec.ConfigValue<String> BIRTHDAY_DATE;
 
@@ -154,8 +155,13 @@ public final class SkylinersClientConfig {
                 "every puff, whatever the Particles setting, as Aeronautics puffs them; a full-size zeppelin's burners keep some",
                 "1,600 aloft at once, a share of each frame. NONE: no smoke. The burners' flames and embers are drawn either way.")
             .defineEnum("burnerSmoke", BurnerSmoke.PARTICLES);
+        BIRTHDAY_PLAYER = builder
+            .comment("Whose birthday it is: their Minecraft account name, as in birthdayPlayer = \"Steve\". Only someone playing",
+                "on this computer as that account is greeted (see birthdayName and birthdayDate), never anyone else who plays on",
+                "it. Empty, as it starts, nobody is greeted.")
+            .define("birthdayPlayer", "");
         BIRTHDAY_NAME = builder
-            .comment("Someone's name to wish a happy birthday on their birthday (see birthdayDate), as in birthdayName = \"Sam\":",
+            .comment("The name to wish a happy birthday on their birthday (see birthdayPlayer and birthdayDate), as in birthdayName = \"Sam\":",
                 "coming aboard a freighter that day, a banner sweeps over the top of the view with \"HAPPY BIRTHDAY\" and the name in",
                 "bouncing rainbow letters, bunting, balloons and confetti round it, fireworks burst and her computer wishes them a",
                 "happy birthday to a fanfare. Each freighter greets them once that day, until they leave the world. Empty, as it",
