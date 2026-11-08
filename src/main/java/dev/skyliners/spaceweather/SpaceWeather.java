@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.cabin.TurbulencePayload;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.impact.ImpactJolt;
@@ -37,21 +38,23 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Space weather, as a freighter meets it far past the black of space, from {@link #FROM} up: now and then, at random,
- * a meteor shower, an asteroid storm or a solar flare blows through (see {@link Kind}). Each is told first: an alarm
- * whoops through her, her computer says what is coming, and everyone aboard sees its picture flash on their screen and
- * on her scanner while the first streaks or rocks show far off on the horizon the way it comes from. Then it is on her
- * a while: meteors and rocks stream past, and a few strike her, each seen flying in first, landing with a ping or a
- * crunch, sparks, debris and smoke where it struck, the view of everyone aboard jolted, and she is shoved and set
- * turning there, an asteroid hard enough to throw her well off her spot and swing her round; or the flare's glare
- * floods the view and its wind pushes her steadily aside. Her autopilot fights her back onto her course and her
- * height. Then her computer says it is all clear, a green tick showing.
+ * Space weather, as a rocket or a freighter meets it far past the black of space, from {@link #FROM} up: now and then,
+ * at random, a meteor shower, an asteroid storm or a solar flare blows through (see {@link Kind}). Each is told first:
+ * an alarm whoops through her, her flight deck says what is coming after the chime (the freighter's computer in words
+ * of its own, see {@code CraftFlight#says}), and everyone aboard sees its picture flash on their screen, and on a
+ * freighter's scanner, while the first streaks or rocks show far off on the horizon the way it comes from. Then it is
+ * on her a while: meteors and rocks stream past, and a few strike her, each seen flying in first, landing with a ping
+ * or a crunch, sparks, debris and smoke where it struck, the view of everyone aboard jolted, and she is shoved and set
+ * turning there, an asteroid hard enough to throw her well off her spot and swing her round, a light ship harder than a
+ * heavy one, and a tall one tipped by a strike high on her nose; or the flare's glare floods the view and its wind
+ * pushes her steadily aside. Her autopilot fights her back onto her course and her height. Then she says it is all
+ * clear, a green tick showing.
  *
  * <p>No strike breaks a block of hers, nor anyone aboard: she is only shoved, through Sable, no harder than her
- * autopilot can win back. Nothing is saved: weather blowing as the freighter is unloaded is simply over. One for each
- * freighter, worked by her autopilot's block entity each tick; it costs nothing while none blows but a roll of the
- * dice, and only while someone is aboard. Off with the server setting "freighter.spaceWeather"; how often it blows and
- * how hard it throws her are set there too.
+ * autopilot can win back. Nothing is saved: weather blowing as the ship is unloaded is simply over. One for each rocket
+ * and freighter (see {@code StandingFlight}), worked by her autopilot's block entity each tick; it costs nothing while
+ * none blows but a roll of the dice, and only while someone is aboard. Off with the server setting
+ * "spaceWeather.enabled"; how often it blows and how hard it throws her are set there too.
  */
 public final class SpaceWeather {
     /** The height space weather blows from, in world blocks, at her control head: well past the sky's black. */
@@ -59,7 +62,7 @@ public final class SpaceWeather {
     /** How far under {@link #FROM} she must come down for weather under way to be over early, in blocks. */
     private static final int LEFT_BY = 100;
     /**
-     * How long each bout is told before it is on her, in ticks: the alarm, then her computer's warning after
+     * How long each bout is told before it is on her, in ticks: the alarm, then her flight deck's warning after
      * {@link #VOICE_AFTER}, while the first of it shows on the horizon.
      */
     private static final int WARNING_TICKS = 200;
@@ -101,12 +104,17 @@ public final class SpaceWeather {
     /**
      * Where a strike lands: how far round from the way the bout comes from a rock may come, in degrees, and how steeply
      * from over or under her at most, as the up of its way; how much of her hull's half width and half height across
-     * its way it may come in at; and how many tries a strike gets to find her hull before it misses her.
+     * its way it may come in at, on a ship wider than she is tall, as the freighter is, and on one taller than she is
+     * wide, as the rocket is, struck near her middle line and anywhere up her, so a strike high on her nose tips her
+     * rather than spinning her about her length, which nothing aboard her turns back; and how many tries a strike gets
+     * to find her hull before it misses her.
      */
     private static final double WAY_WANDER = 30;
     private static final double MOST_STEEP = 0.35;
     private static final double ACROSS_SHARE = 0.8;
     private static final double UPRIGHT_SHARE = 0.4;
+    private static final double TALL_ACROSS_SHARE = 0.1;
+    private static final double TALL_UPRIGHT_SHARE = 0.85;
     private static final int AIM_TRIES = 4;
     /**
      * A strike's planned moments: the least share of the time between two strikes taken off either end of each strike's
@@ -121,6 +129,15 @@ public final class SpaceWeather {
     private static final int CRACKLE_EVERY = 30;
     /** How long the view of everyone aboard goes on shaking after a strike that leaves them shaking, in ticks. */
     private static final int RUMBLE_TICKS = 30;
+    /**
+     * How heavy a ship is, in Sable's units (a plain block weighs one), that a strike shoves exactly as hard as its
+     * kind says: a freighter's weight. A lighter ship is shoved and turned harder by the square root of how much
+     * lighter, a heavier one less, but never more than {@link #LIGHTEST_SHARE} or less than {@link #HEAVIEST_SHARE} of
+     * it.
+     */
+    private static final double REFERENCE_MASS = 2500;
+    private static final double LIGHTEST_SHARE = 1.5;
+    private static final double HEAVIEST_SHARE = 0.5;
     /** A strike's shove and turn at the default strength, in percent: the setting is read as a share of it. */
     private static final double FULL_STRENGTH = 100;
 
@@ -130,16 +147,16 @@ public final class SpaceWeather {
          * Many small glowing streaks across the sky; a few strike her, each a sharp jolt, a ping off her plates and a
          * spray of sparks.
          */
-        METEOR_SHOWER(500, 6, 9, 3.0, 12, 0.5F, 0, 12, SkylinersRegistry.FREIGHTER_COMPUTER_METEORS, SkylinersRegistry.SPACE_METEOR_STRIKE, 64,
+        METEOR_SHOWER(500, 6, 9, 3.0, 12, 0.5F, 0, 12, SkylinersRegistry.ANNOUNCEMENT_METEORS, SkylinersRegistry.SPACE_METEOR_STRIKE, 64,
             1.2F),
         /**
          * Fewer, big tumbling rocks; one striking her shoves her hard, swings her round, crunches heavily through her,
          * and shakes the view of everyone aboard a good while.
          */
-        ASTEROID_STORM(600, 3, 5, 9.0, 30, 1.0F, 2.2F, 30, SkylinersRegistry.FREIGHTER_COMPUTER_ASTEROIDS, SkylinersRegistry.SPACE_ASTEROID_STRIKE,
+        ASTEROID_STORM(600, 3, 5, 9.0, 30, 1.0F, 2.2F, 30, SkylinersRegistry.ANNOUNCEMENT_ASTEROIDS, SkylinersRegistry.SPACE_ASTEROID_STRIKE,
             192, 1.0F),
         /** A glare over the view, crackling speakers, flickering screens, and a wind that pushes her aside. */
-        SOLAR_FLARE(300, 0, 0, 0, 0, 0, 0, 0, SkylinersRegistry.FREIGHTER_COMPUTER_FLARE, SkylinersRegistry.SPACE_METEOR_STRIKE, 0, 1);
+        SOLAR_FLARE(300, 0, 0, 0, 0, 0, 0, 0, SkylinersRegistry.ANNOUNCEMENT_FLARE, SkylinersRegistry.SPACE_METEOR_STRIKE, 0, 1);
 
         /** How long it is on her, in ticks, after it is told. */
         final int stormTicks;
@@ -160,7 +177,10 @@ public final class SpaceWeather {
         final float rumble;
         /** How long before a strike lands it is seen flying in, in ticks. */
         final int lead;
-        /** What her computer says of it, and how a strike sounds, how far off it is heard, in blocks, and its pitch. */
+        /**
+         * What her flight deck announces of it, and how a strike sounds, how far off it is heard, in blocks, and its
+         * pitch.
+         */
         final Holder<SoundEvent> warning;
         final Supplier<SoundEvent> struck;
         final double heard;
@@ -208,7 +228,7 @@ public final class SpaceWeather {
         NOBODY_ABOARD,
         /** The server's config has it switched off. */
         SWITCHED_OFF,
-        /** There is no freighter there. */
+        /** There is no rocket or freighter there. */
         NO_SHIP
     }
 
@@ -250,8 +270,8 @@ public final class SpaceWeather {
     private long lastLanded = -1;
 
     /**
-     * Each tick of an assembled freighter's: weather under way goes on; with none, flying above {@link #FROM} with
-     * someone aboard, one may begin, about as often as the server's config says.
+     * Each tick of an assembled rocket's or freighter's: weather under way goes on; with none, flying above
+     * {@link #FROM} with someone aboard, one may begin, about as often as the server's config says.
      */
     public void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         long now = level.getGameTime();
@@ -260,10 +280,10 @@ public final class SpaceWeather {
             blow(level, autopilot, height, now);
             return;
         }
-        if (!SkylinersConfig.FREIGHTER_SPACE_WEATHER.get() || height < FROM || now < quietUntil) {
+        if (!SkylinersConfig.SPACE_WEATHER.get() || height < FROM || now < quietUntil) {
             return;
         }
-        double every = SkylinersConfig.FREIGHTER_SPACE_WEATHER_EVERY.get() * TICKS_PER_MINUTE;
+        double every = SkylinersConfig.SPACE_WEATHER_EVERY.get() * TICKS_PER_MINUTE;
         if (level.getRandom().nextDouble() * every < 1 && !Aboard.players(autopilot).isEmpty()) {
             Kind[] kinds = Kind.values();
             begin(level, autopilot, kinds[level.getRandom().nextInt(kinds.length)], now);
@@ -271,11 +291,25 @@ public final class SpaceWeather {
     }
 
     /**
+     * Asks for weather of a kind at once over the ship an autopilot flies, as an operator's command and the play-test's
+     * do (see {@link #ask(ServerLevel, AutopilotBlockEntity, Kind, double)}): what it came to; no ship for an autopilot
+     * flying what never goes that high, or none.
+     */
+    public static Answer ask(ServerLevel level, @Nullable AutopilotBlockEntity autopilot, Kind asked) {
+        SpaceWeather weather = autopilot == null ? null : autopilot.spaceWeather();
+        if (weather == null) {
+            return Answer.NO_SHIP;
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        return state == null ? Answer.NOT_FLYING : weather.ask(level, autopilot, asked, state.position().y);
+    }
+
+    /**
      * Asked for weather of a kind at once, by a command, her control head so high, in world blocks: it is told now,
      * without waiting for the dice, while she flies above {@link #FROM} with someone aboard; or why not.
      */
-    public Answer ask(ServerLevel level, AutopilotBlockEntity autopilot, Kind asked, double height) {
-        if (!SkylinersConfig.FREIGHTER_SPACE_WEATHER.get()) {
+    private Answer ask(ServerLevel level, AutopilotBlockEntity autopilot, Kind asked, double height) {
+        if (!SkylinersConfig.SPACE_WEATHER.get()) {
             return Answer.SWITCHED_OFF;
         }
         if (kind != null) {
@@ -294,8 +328,13 @@ public final class SpaceWeather {
         return Answer.COMING;
     }
 
+    /** Whether any blows now, told or on her: the rocket waits it out up there before starting down. */
+    public boolean blowing() {
+        return kind != null;
+    }
+
     /** What blows now, by name, or "none"; for the play-test. */
-    public String blowing() {
+    public String blowingNamed() {
         return kind == null ? "none" : kind.getSerializedName();
     }
 
@@ -344,7 +383,7 @@ public final class SpaceWeather {
     }
 
     /**
-     * A tick of the weather under way: her computer's warning after the alarm; each strike seen flying in, then
+     * A tick of the weather under way: her flight deck's warning after the alarm; each strike seen flying in, then
      * landing; a flare's wind and crackle while it is on her; and the all-clear once it has passed, or at once should
      * she come down out of it. Gone quiet with nobody left aboard.
      */
@@ -355,7 +394,7 @@ public final class SpaceWeather {
             return;
         }
         if (into == VOICE_AFTER) {
-            say(level, Aboard.players(autopilot), kind.warning, SoundSource.VOICE);
+            say(level, Aboard.players(autopilot), autopilot.says(kind.warning), SoundSource.VOICE);
         }
         boolean on = into >= WARNING_TICKS && into < WARNING_TICKS + kind.stormTicks;
         if (on && kind == Kind.SOLAR_FLARE) {
@@ -413,8 +452,9 @@ public final class SpaceWeather {
     private static void trace(ServerLevel level, SableFlight.Body body, UUID her, Vec3 way, RandomSource random, Strike strike) {
         AABB box = body.bounds();
         Vec3 across = new Vec3(-way.z, 0, way.x).normalize();
-        double halfWide = Math.min(box.getXsize(), box.getZsize()) / 2 * ACROSS_SHARE;
-        double halfHigh = box.getYsize() / 2 * UPRIGHT_SHARE;
+        boolean tall = box.getYsize() > Math.max(box.getXsize(), box.getZsize());
+        double halfWide = Math.min(box.getXsize(), box.getZsize()) / 2 * (tall ? TALL_ACROSS_SHARE : ACROSS_SHARE);
+        double halfHigh = box.getYsize() / 2 * (tall ? TALL_UPRIGHT_SHARE : UPRIGHT_SHARE);
         Vec3 through = body.centre().add(across.scale((random.nextDouble() * 2 - 1) * halfWide)).add(0, (random.nextDouble() * 2 - 1) * halfHigh, 0);
         double reach = box.getSize() + box.getXsize() + box.getZsize();
         Vec3 start = through.subtract(way.scale(reach));
@@ -435,7 +475,9 @@ public final class SpaceWeather {
      */
     private void land(ServerLevel level, AutopilotBlockEntity autopilot, Strike strike) {
         Vec3 inWorld = SableFlight.toWorld(level, strike.onHer);
-        double strength = SkylinersConfig.FREIGHTER_SPACE_WEATHER_STRENGTH.get() / FULL_STRENGTH;
+        double mass = SableFlight.mass(autopilot);
+        double weight = mass > 0 ? Mth.clamp(Math.sqrt(REFERENCE_MASS / mass), HEAVIEST_SHARE, LIGHTEST_SHARE) : 1;
+        double strength = SkylinersConfig.SPACE_WEATHER_STRENGTH.get() / FULL_STRENGTH * weight;
         if (strength > 0) {
             SableFlight.strike(level, strike.block, inWorld, strike.way.scale(kind.shove * strength), Math.toRadians(kind.turn * strength));
         }
@@ -486,7 +528,7 @@ public final class SpaceWeather {
      * speakers now and then by everyone aboard.
      */
     private void flare(ServerLevel level, AutopilotBlockEntity autopilot, long into) {
-        double strength = SkylinersConfig.FREIGHTER_SPACE_WEATHER_STRENGTH.get() / FULL_STRENGTH;
+        double strength = SkylinersConfig.SPACE_WEATHER_STRENGTH.get() / FULL_STRENGTH;
         SableFlight.jolt(autopilot, toward(from).reverse().scale(FLARE_WIND * strength));
         if (into % CRACKLE_EVERY == 0) {
             say(level, Aboard.players(autopilot), SkylinersRegistry.RADIO_CRACKLE, SoundSource.BLOCKS);
@@ -494,8 +536,8 @@ public final class SpaceWeather {
     }
 
     /**
-     * The weather over: everyone shown so, and, when it passed by rather than was left, her computer saying it is all
-     * clear to everyone aboard; none blows again for a while.
+     * The weather over: everyone shown so, and, when it passed by rather than was left, her flight deck saying it is
+     * all clear to everyone aboard; none blows again for a while.
      */
     private void end(ServerLevel level, AutopilotBlockEntity autopilot, long now, boolean allClear) {
         SableFlight.Body body = SableFlight.body(autopilot);
@@ -503,7 +545,7 @@ public final class SpaceWeather {
             show(level, body, new SpaceWeatherShown(kind, startedAt, WARNING_TICKS, kind.stormTicks, seed, from, body.centre(), body.velocity(), true));
         }
         if (allClear) {
-            say(level, Aboard.players(autopilot), SkylinersRegistry.FREIGHTER_COMPUTER_ALL_CLEAR, SoundSource.VOICE);
+            say(level, Aboard.players(autopilot), autopilot.says(SkylinersRegistry.ANNOUNCEMENT_ALL_CLEAR), SoundSource.VOICE);
         }
         kind = null;
         strikes.clear();

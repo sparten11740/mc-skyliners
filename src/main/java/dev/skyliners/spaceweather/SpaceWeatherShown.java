@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Sent to everyone aboard a freighter and near her as space weather is told, and again as it is over (see
+ * Sent to everyone aboard a rocket or a freighter and near her as space weather is told, and again as it is over (see
  * {@link SpaceWeather}), one message each, for their client to show it: the alarm's picture on their screen and her
  * scanner, its meteors or rocks coming over the horizon and streaming past, a flare's glare, and the all-clear's tick.
  *

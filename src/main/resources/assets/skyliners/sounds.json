@@ -224,6 +224,42 @@
       }
     ]
   },
+  "announcement_meteors": {
+    "subtitle": "subtitles.skyliners.announcement_meteors",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_meteors",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_asteroids": {
+    "subtitle": "subtitles.skyliners.announcement_asteroids",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_asteroids",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_flare": {
+    "subtitle": "subtitles.skyliners.announcement_flare",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_flare",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_all_clear": {
+    "subtitle": "subtitles.skyliners.announcement_all_clear",
+    "sounds": [
+      {
+        "name": "skyliners:announcement_all_clear",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "announcement_arrival_rocket": {
     "subtitle": "subtitles.skyliners.announcement_arrival_rocket",
     "sounds": [

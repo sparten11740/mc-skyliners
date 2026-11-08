@@ -402,7 +402,8 @@ public final class RocketFlight extends StandingFlight {
             || RocketPilot.countdownHeld(level, origin, phase, pilot.counted());
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             boolean toPin = autopilot.lateral == AutopilotBlockEntity.Lateral.DESTINATION;
-            RocketPilot.Orders orders = new RocketPilot.Orders(phase, autopilot.targetAltitude, toPin, autopilot.orbitX, autopilot.orbitZ);
+            RocketPilot.Orders orders = new RocketPilot.Orders(phase, autopilot.targetAltitude, toPin, autopilot.orbitX, autopilot.orbitZ,
+                spaceWeather().blowing());
             AutopilotBlockEntity.Phase next = pilot.fly(level, origin, orders, flight, radio, SableFlight.mass(autopilot));
             countDown(level, autopilot, flight);
             // Before the cabin is told she lands, so that its announcement waits for launch control's "Landing burn.".

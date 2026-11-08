@@ -379,15 +379,19 @@ everyone aboard, block particles at her feet and the rocket's `RocketDustRing`, 
 her lift clusters through `RocketPlumes.send` as she drives down, so it adds no payload of its own. Her brake is
 scaled down to the lift she has spare (`slamBrake`), so a heavy load still touches down slowly. It refuses while
 `FreighterFlight`'s take-off holds hold (her ramp not all away). Space weather is `spaceweather/SpaceWeather`, owned by
-`FreighterFlight` and ticked with her: above `FROM` it rolls for a bout, plans its strikes, tells everyone near with
+`StandingFlight` for the rocket and the freighter (`CraftFlight.spaceWeather`, reached through
+`AutopilotBlockEntity.spaceWeather`) and ticked in `aloft`: its warnings are the flight deck's announcements, which
+`FreighterFlight.says` turns into her computer's lines, and `RocketPilot.Orders.waitUp` keeps the rocket up till the
+all-clear; above `FROM` it rolls for a bout, plans its strikes, tells everyone near with
 one `SpaceWeatherShown` (seed, bearing, her middle and velocity, so every client streams the same streaks and rocks
 past where she would be) and again as it is over, and sends one `IncomingStrike` a strike as it is seen flying in;
 each strike lands through `SableFlight.strike` at a block a `level.clip` from outside found of hers, with
 `ImpactJolt` and `TurbulencePayload`, particles among her blocks and a sound at the plot position. The client's
 `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon) and rocks (block models of stone, tumbling) after the
 particles, past the fog; `SpaceWeatherHud` draws the badge and the flare's glare, and `ConsoleArt` the scanner's
-picture and the flare's flicker. `/skyliners spaceweather` and Blockpilot's `skyliners:spaceweather` ask for one
-(`FreighterFlight.spaceWeather`). Her `DeckRobotBlock`s chirp, trill and beep from their block
+picture and the flare's flicker. A strike's shove scales with the ship's weight against a freighter's, and a ship
+taller than wide is struck near her middle line and anywhere up her, so she tips rather than spins. `/skyliners
+spaceweather` and Blockpilot's `skyliners:spaceweather` ask for one (`SpaceWeather.ask`). Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing

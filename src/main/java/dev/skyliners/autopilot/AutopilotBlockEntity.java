@@ -27,6 +27,7 @@ import dev.skyliners.cabin.Turbulence;
 import dev.skyliners.compat.PhysicsAssembler;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.impact.Impacts;
+import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -703,8 +704,17 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /** What is said aboard what it flies for one of the flight deck's announcements (see {@link CraftFlight#says}). */
-    Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
+    public Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
         return flight.says(announcement);
+    }
+
+    /**
+     * The space weather what it flies meets far past the black of space, on the server; null for a craft that never
+     * flies that high (see {@link CraftFlight#spaceWeather}).
+     */
+    @Nullable
+    public SpaceWeather spaceWeather() {
+        return flight.spaceWeather();
     }
 
     /** How its zeppelin is painted, on the clients as on the server. */

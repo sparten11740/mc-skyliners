@@ -3771,6 +3771,22 @@ if (speaker) {
     ANNOUNCEMENT_LONGEST);
 }
 
+// The flight deck telling of space weather (see SpaceWeather), made as the welcome to space is, the chime and then the
+// voice: a meteor shower, an asteroid storm and a solar flare after the alarm, and the all-clear once each has passed.
+// The freighter's computer says them in words of its own (COMPUTER_WEATHER_LINES).
+const SPACE_WEATHER_ANNOUNCEMENTS = {
+  announcement_meteors: "Meteor shower ahead. | Please hold on to something.",
+  announcement_asteroids: "Asteroid storm ahead. | Please hold on tight.",
+  announcement_flare: "Solar flare ahead. | Please don't look at the sun.",
+  announcement_all_clear: "The space weather has passed. | Thank you for holding on.",
+};
+if (speaker) {
+  await say(speaker, SPACE_WEATHER_ANNOUNCEMENTS, VOICE.announcement);
+  for (const name of Object.keys(SPACE_WEATHER_ANNOUNCEMENTS)) {
+    writeVoiced(name, announcement(trim(readWav(join(scratch, `${name}.voiced.wav`)))), VOICE.announcement, ANNOUNCEMENT_LONGEST);
+  }
+}
+
 // The ground officer's call as a zeppelin is let go from her handlers' lines (see BallastValveBlockEntity): a British
 // man's voice, Kokoro's George, shouted through a megaphone, its horn's narrow band and hard middle, and the field's
 // echo after it. Tune it here.

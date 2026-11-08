@@ -2561,6 +2561,10 @@ const VOICE_SUBTITLES = {
   announcement_arrival: "Announcement: Welcome to your destination",
   announcement_space: "Announcement: Welcome to space",
   announcement_gravity: "Announcement: Artificial gravity enabled",
+  announcement_meteors: "Announcement: Meteor shower ahead",
+  announcement_asteroids: "Announcement: Asteroid storm, hold on",
+  announcement_flare: "Announcement: Solar flare ahead",
+  announcement_all_clear: "Announcement: Space weather has passed",
   announcement_arrival_rocket: "Announcement: Welcome to your destination",
 };
 const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
@@ -12377,7 +12381,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "commands.skyliners.space_weather.too_low": "Space weather blows only from y 1,500 up: climb higher first",
   "commands.skyliners.space_weather.nobody_aboard": "Nobody is aboard her to meet it",
   "commands.skyliners.space_weather.switched_off": "Space weather is switched off on this server (freighter.spaceWeather)",
-  "commands.skyliners.space_weather.no_ship": "No freighter near enough",
+  "commands.skyliners.space_weather.no_ship": "No rocket or freighter near enough",
   "commands.skyliners.space_weather.kind.meteor_shower": "A meteor shower",
   "commands.skyliners.space_weather.kind.asteroid_storm": "An asteroid storm",
   "commands.skyliners.space_weather.kind.solar_flare": "A solar flare",

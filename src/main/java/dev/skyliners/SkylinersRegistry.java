@@ -552,6 +552,15 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SPACE = sound("announcement_space");
     /** The rocket's artificial gravity announced, after the chime, once all aboard have been light a while in space. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_GRAVITY = sound("announcement_gravity");
+    /**
+     * The flight deck telling of space weather after the chime (see {@code spaceweather.SpaceWeather}): a meteor
+     * shower, an asteroid storm, a solar flare, and the all-clear once it has passed; the freighter's computer says
+     * them in words of its own.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_METEORS = sound("announcement_meteors");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ASTEROIDS = sound("announcement_asteroids");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_FLARE = sound("announcement_flare");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ALL_CLEAR = sound("announcement_all_clear");
     /** Low gravity aboard a rocket in space coming on, and going (see {@code autopilot.SpaceGravity}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_LIGHT = sound("space_light");
     public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_HEAVY = sound("space_heavy");

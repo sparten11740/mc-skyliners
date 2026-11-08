@@ -63,7 +63,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * front of the player and waiting until it stands ({@code skyliners:build}), which of a zeppelin's blocks its
  * assembly would leave behind ({@code skyliners:assembly}), and a fingerprint of an airframe's layout, to show a change
  * to how it is laid out moves no block ({@code skyliners:layout}), repainting the nearest zeppelin
- * ({@code skyliners:livery}), and the space weather over the nearest freighter, or bringing some over her
+ * ({@code skyliners:livery}), and the space weather over the nearest rocket or freighter, or bringing some over her
  * ({@code skyliners:spaceweather}); and, on the client, whether the player sees from a laser cannon's sight
  * ({@code skyliners:gunner}) and what it last drew of a laser bolt ({@code skyliners:bolts}). Only loaded when
  * Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
@@ -208,8 +208,8 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("spaceweather", (context, args) -> spaceWeather(args))
             .onServer()
             .group("skyliners")
-            .option("start", "brings space weather of a kind over the nearest freighter at once, from y 1,500 up", WEATHER_KINDS)
-            .help("the space weather over the nearest freighter: what blows, how many strikes have landed on her and the tick the last did")
+            .option("start", "brings space weather of a kind over the nearest rocket or freighter at once, from y 1,500 up", WEATHER_KINDS)
+            .help("the space weather over the nearest rocket or freighter: what blows, how many strikes have landed on her and the tick the last did")
             .field("blowing", "what blows now: meteor_shower, asteroid_storm, solar_flare or none")
             .field("from", "the side of the sky the weather blowing comes out of, as a bearing in degrees as the game turns a look")
             .field("landed", "how many strikes have landed on her since she was loaded")
@@ -338,13 +338,13 @@ public final class BlockpilotCommands {
         Fields fields = new Fields();
         if (args.hasOption("start")) {
             SpaceWeather.Kind kind = SpaceWeather.Kind.of(WEATHER_KINDS.indexOf(args.option("start")));
-            fields.tag("started", FreighterFlight.spaceWeather(player.serverLevel(), autopilot, kind).name().toLowerCase(Locale.ROOT));
+            fields.tag("started", SpaceWeather.ask(player.serverLevel(), autopilot, kind).name().toLowerCase(Locale.ROOT));
         }
-        SpaceWeather weather = autopilot == null ? null : FreighterFlight.weatherOf(autopilot);
+        SpaceWeather weather = autopilot == null ? null : autopilot.spaceWeather();
         if (weather == null) {
-            return Result.error("no_freighter");
+            return Result.error("no_ship");
         }
-        return Result.ok(fields.tag("blowing", weather.blowing()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
+        return Result.ok(fields.tag("blowing", weather.blowingNamed()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
             .tag("last_landed", weather.lastLanded()));
     }
 

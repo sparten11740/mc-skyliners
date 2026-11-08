@@ -8,10 +8,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Sent to everyone near a freighter as a meteor or an asteroid of the space weather blowing is seen flying in to strike
- * her (see {@link SpaceWeather}), one message a strike, for their client to draw it coming: what kind of weather it is
- * of; where on her it lands, among her blocks, so it keeps coming at that spot as she moves; the way it travels, in the
- * world's directions, of length 1; when it lands, in game time; and its own seed, for its tumble and its size.
+ * Sent to everyone near a rocket or a freighter as a meteor or an asteroid of the space weather blowing is seen flying
+ * in to strike her (see {@link SpaceWeather}), one message a strike, for their client to draw it coming: what kind of
+ * weather it is of; where on her it lands, among her blocks, so it keeps coming at that spot as she moves; the way it
+ * travels, in the world's directions, of length 1; when it lands, in game time; and its own seed, for its tumble and
+ * its size.
  */
 public record IncomingStrike(SpaceWeather.Kind kind, Vec3 onHer, Vec3 way, long at, long seed) implements CustomPacketPayload {
     public static final Type<IncomingStrike> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "incoming_strike"));

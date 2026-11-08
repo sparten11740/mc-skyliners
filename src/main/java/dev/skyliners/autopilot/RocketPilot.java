@@ -186,10 +186,10 @@ public final class RocketPilot {
     }
 
     /**
-     * What the autopilot is set to fly: its phase, the height it climbs to, and where it goes, a pin or, without one,
-     * back where it rose from.
+     * What the autopilot is set to fly: its phase, the height it climbs to, where it goes, a pin or, without one, back
+     * where it rose from, and whether it waits up there before starting down, as it waits out space weather.
      */
-    record Orders(AutopilotBlockEntity.Phase phase, double altitude, boolean toPin, double pinX, double pinZ) {
+    record Orders(AutopilotBlockEntity.Phase phase, double altitude, boolean toPin, double pinX, double pinZ, boolean waitUp) {
     }
 
     /**
@@ -388,7 +388,7 @@ public final class RocketPilot {
         if (settled >= SETTLED_TICKS) {
             return AutopilotBlockEntity.Phase.OFF;
         }
-        return next(phase, highest, state, radio, mass, holding && !orders.toPin() ? null : toGo);
+        return next(phase, highest, state, radio, mass, holding && !orders.toPin() || orders.waitUp() ? null : toGo);
     }
 
     /**
@@ -406,7 +406,7 @@ public final class RocketPilot {
     /**
      * The phase it goes on in: up through the climb to the height set, across holding it until over where it is going
      * and hardly drifting, then down, braking once it must; holding its height where it is, with nowhere to go (null),
-     * once its landing has been called off.
+     * once its landing has been called off or while it waits up there.
      */
     private AutopilotBlockEntity.Phase next(AutopilotBlockEntity.Phase phase, double highest, SableFlight.State state, double radio, double mass,
                                             @Nullable Vec3 toGo) {

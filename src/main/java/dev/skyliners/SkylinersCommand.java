@@ -14,8 +14,6 @@ import dev.skyliners.airframe.ZeppelinLayout;
 import dev.skyliners.airframe.ZeppelinOptions;
 import dev.skyliners.airframe.ZeppelinSize;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
-import dev.skyliners.autopilot.Craft;
-import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.Locale;
@@ -33,11 +31,11 @@ import net.minecraft.world.phys.Vec3;
  * builds an airliner, a zeppelin, a rocket, a freighter or a launch pad, for server operators without a blueprint in
  * hand, its nose tip at pos and its tail stretching away the given way. Unlike the blueprint it builds through
  * whatever is in the way, and reports how much that was. {@code /skyliners spaceweather
- * <meteor_shower|asteroid_storm|solar_flare>} brings space weather over the nearest freighter at once (see
+ * <meteor_shower|asteroid_storm|solar_flare>} brings space weather over the nearest rocket or freighter at once (see
  * {@link SpaceWeather}), to try it without waiting for it to blow up there.
  */
 final class SkylinersCommand {
-    /** How far from whoever runs it a freighter is looked for to bring space weather over, in blocks. */
+    /** How far from whoever runs it a rocket or freighter is looked for to bring space weather over, in blocks. */
     private static final double WEATHER_REACH = 256;
 
     private SkylinersCommand() {
@@ -65,7 +63,7 @@ final class SkylinersCommand {
     }
 
     /**
-     * Space weather of a kind over the freighter nearest whoever runs it, at once, as long as she flies from y 1,500 up
+     * Space weather of a kind over the rocket or freighter nearest whoever runs it, at once, as long as she flies from y 1,500 up
      * with someone aboard; or why not.
      */
     private static int spaceWeather(CommandContext<CommandSourceStack> context, SpaceWeather.Kind kind) {
@@ -74,12 +72,12 @@ final class SkylinersCommand {
         double best = WEATHER_REACH * WEATHER_REACH;
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(source.getLevel())) {
             double away = SableFlight.toWorld(source.getLevel(), Vec3.atCenterOf(autopilot.getBlockPos())).distanceToSqr(source.getPosition());
-            if (away < best && autopilot.craft() == Craft.FREIGHTER) {
+            if (away < best && autopilot.spaceWeather() != null) {
                 best = away;
                 nearest = autopilot;
             }
         }
-        SpaceWeather.Answer answer = FreighterFlight.spaceWeather(source.getLevel(), nearest, kind);
+        SpaceWeather.Answer answer = SpaceWeather.ask(source.getLevel(), nearest, kind);
         Component said = Component.translatable("commands.skyliners.space_weather." + answer.name().toLowerCase(Locale.ROOT),
             Component.translatable("commands.skyliners.space_weather.kind." + kind.getSerializedName()));
         if (answer != SpaceWeather.Answer.COMING) {

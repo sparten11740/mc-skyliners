@@ -2553,8 +2553,14 @@ northern lights ripple along the planet's rim to the north, a ribbon of green sh
 sinking as bright folds drift along it. Everyone aboard sees the same shooting stars and the same lights. Her camera
 display shows it all as its cameras see it. As she reaches the edge of space on the way up, the cabin chime sounds and
 her flight deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client config's `spaceSky` leaves
-the sky as the game draws it, `shootingStars` keeps its stars still, and `aurora` leaves its nights dark. For ten
-seconds as she reaches the edge of space everyone aboard feels light, with a soft rising glide and a puff of sparkles at
+the sky as the game draws it, `shootingStars` keeps its stars still, and `aurora` leaves its nights dark. Far
+past the black, from y 1,500 up, she meets space weather now and then, as the freighter does (see the freighter's): the
+alarm whoops, her picture badge flashes at the top of everyone's screen, and after the chime her flight deck says
+"Meteor shower ahead. Please hold on to something.", "Asteroid storm ahead. Please hold on tight." or "Solar flare
+ahead. Please don't look at the sun."; she waits it out up there, holding her height, before starting down, and her
+flight deck says "The space weather has passed. Thank you for holding on." once it has. Tall as she is, she is struck
+anywhere up her, and a rock high on her nose tips her and shoves her aside; her side jets stand her upright again.
+For ten seconds as she reaches the edge of space everyone aboard feels light, with a soft rising glide and a puff of sparkles at
 their feet: a jump rises three blocks and hangs nearly two seconds, and a fall of seven blocks does not hurt. Then the
 chime sounds and her flight deck says "Artificial gravity enabled. Please mind your step.", and with the glide falling
 each of them has their weight back as they next land; once a climb, and at once for anyone who leaves her (the server
@@ -3196,11 +3202,11 @@ Each time her autopilot fights her back onto her course and her height, and once
 "All clear. You can let go now." as a green tick shows in the badge. Nothing of hers ever breaks and nobody aboard is hurt, however hard she is thrown. Everyone near her sees
 the same streaks and rocks, and the strikes ring out for those outside too; space is otherwise silent, so the streaks
 and rocks going by make no sound. Coming back down under y 1,400 brings an early all-clear, and once one has passed
-none comes for at least a minute. The server config's `freighter.spaceWeather` keeps space calm, its
-`freighter.spaceWeatherEvery` sets how many minutes go by between bouts on average (four), and its
-`freighter.spaceWeatherStrength` how hard they throw her about, in percent of the usual (0 keeps her steady through
-them, every strike still seen, heard and felt). An operator can bring any of them over the nearest freighter at once,
-without waiting, with `/skyliners spaceweather meteor_shower`, `asteroid_storm` or `solar_flare`, so long as she flies
+none comes for at least a minute. The rocket meets it too (see her own). The server config's `spaceWeather.enabled`
+keeps space calm, its `spaceWeather.every` sets how many minutes go by between bouts on average (four), and its
+`spaceWeather.strength` how hard they throw a ship about, in percent of the usual (0 keeps her steady through them,
+every strike still seen, heard and felt). An operator can bring any of them over the nearest rocket or freighter at
+once, without waiting, with `/skyliners spaceweather meteor_shower`, `asteroid_storm` or `solar_flare`, so long as she flies
 from y 1,500 up with someone aboard.
 
 Her deck is lit by wall washers over head height, small dark

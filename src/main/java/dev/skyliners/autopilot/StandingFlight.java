@@ -3,6 +3,7 @@ package dev.skyliners.autopilot;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.block.Announcement;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.spaceweather.SpaceWeather;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -21,6 +22,8 @@ abstract class StandingFlight extends CraftFlight {
     private final EdgeOfSpace space = new EdgeOfSpace();
     /** Its low gravity as it reaches space, until its artificial gravity is announced. */
     private final SpaceGravity gravity = new SpaceGravity();
+    /** The space weather it meets far past the black of space. */
+    private final SpaceWeather weather = new SpaceWeather();
 
     /** Its pilot told to come straight down where it is now, giving up wherever it was going. */
     abstract void landHere(AutopilotBlockEntity autopilot, SableFlight.State state);
@@ -36,14 +39,21 @@ abstract class StandingFlight extends CraftFlight {
 
     /**
      * What it does each tick before it is flown: kept aloft as every ship assembled through Sable is (see
-     * {@link #keptAloft}), and everyone aboard welcomed to space and floating there as it climbs past its edge; how
-     * high it is over the ground, in blocks.
+     * {@link #keptAloft}), everyone aboard welcomed to space and floating there as it climbs past its edge, and space
+     * weather met far past it; how high it is over the ground, in blocks.
      */
     double aloft(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         double radio = keptAloft(level, autopilot, flight);
         space.watch(level, autopilot, flight);
         gravity.tick(level, autopilot, flight);
+        weather.tick(level, autopilot, flight);
         return radio;
+    }
+
+    /** The space weather it meets far past the black of space. */
+    @Override
+    SpaceWeather spaceWeather() {
+        return weather;
     }
 
     /** Whether everyone aboard is light now, in space before its artificial gravity is announced (see SpaceGravity). */

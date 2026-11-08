@@ -37,14 +37,14 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Space weather blowing round the freighter the player rides, or flies near, as their client draws it (see
+ * Space weather blowing round the rocket or freighter the player rides, or flies near, as their client draws it (see
  * {@link SpaceWeather}): a meteor shower's streaks, white-hot heads trailing orange, crossing low over the horizon the
  * way it comes from while it is told, then streaming past all round her; an asteroid storm's rocks, lumps of grey stone
  * tumbling as they go, a few far off on the horizon at first, then big ones sweeping by, some close enough to fill the
  * view; and each meteor or rock that strikes her, seen flying in to the spot on her hull where it lands. A solar flare
  * shows only as its glare (see {@link SpaceWeatherHud}).
  *
- * <p>The weather shown is one for the player, the last they were told of: a second freighter blowing her own near by
+ * <p>The weather shown is one for the player, the last they were told of: a second ship blowing her own near by
  * replaces it. Every streak and rock is worked out once, as the weather is told, from its seed, so everyone near sees
  * the same ones at the same moments, and they stream past where she would be had nothing struck her: she is seen thrown
  * about among them. They are drawn after the particles, past the fog, as far as the game draws anything; those the

@@ -7,7 +7,6 @@ import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.RetractableLegBlockEntity;
 import dev.skyliners.block.Turning;
 import dev.skyliners.compat.SableFlight;
-import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -90,15 +89,20 @@ public final class FreighterFlight extends StandingFlight {
     private static final long NO_JUMP = Long.MIN_VALUE;
     /**
      * What her computer says in place of the flight deck's announcements, after its blip: as she is set to take off,
-     * comes down to land and stands on her legs again, and as she reaches space and her gravity comes back on, whether
-     * her autopilot or an announcement panel set aboard her makes it; any other announcement is the airliner's.
+     * comes down to land and stands on her legs again, as she reaches space and her gravity comes back on, and as
+     * space weather is told and has passed, whether her autopilot or an announcement panel set aboard her makes it;
+     * any other announcement is the airliner's.
      */
     private static final Map<Holder<SoundEvent>, Holder<SoundEvent>> COMPUTER_SAYS = Map.of(
         SkylinersRegistry.ANNOUNCEMENT_TAKEOFF, SkylinersRegistry.FREIGHTER_COMPUTER_TAKEOFF,
         SkylinersRegistry.ANNOUNCEMENT_LANDING, SkylinersRegistry.FREIGHTER_COMPUTER_LANDING,
         SkylinersRegistry.ANNOUNCEMENT_ARRIVAL, SkylinersRegistry.FREIGHTER_COMPUTER_ARRIVAL,
         SkylinersRegistry.ANNOUNCEMENT_SPACE, SkylinersRegistry.FREIGHTER_COMPUTER_SPACE,
-        SkylinersRegistry.ANNOUNCEMENT_GRAVITY, SkylinersRegistry.FREIGHTER_COMPUTER_GRAVITY
+        SkylinersRegistry.ANNOUNCEMENT_GRAVITY, SkylinersRegistry.FREIGHTER_COMPUTER_GRAVITY,
+        SkylinersRegistry.ANNOUNCEMENT_METEORS, SkylinersRegistry.FREIGHTER_COMPUTER_METEORS,
+        SkylinersRegistry.ANNOUNCEMENT_ASTEROIDS, SkylinersRegistry.FREIGHTER_COMPUTER_ASTEROIDS,
+        SkylinersRegistry.ANNOUNCEMENT_FLARE, SkylinersRegistry.FREIGHTER_COMPUTER_FLARE,
+        SkylinersRegistry.ANNOUNCEMENT_ALL_CLEAR, SkylinersRegistry.FREIGHTER_COMPUTER_ALL_CLEAR
     );
 
     private final FreighterPilot pilot = new FreighterPilot();
@@ -139,8 +143,6 @@ public final class FreighterFlight extends StandingFlight {
     private final FreighterClimbBoost climb = new FreighterClimbBoost();
     /** Her slam landing (see {@link #slam}), on the server and as the clients are shown it. */
     private final FreighterSlam slam = new FreighterSlam();
-    /** The space weather she meets far past the black of space (see {@link SpaceWeather}), on the server. */
-    private final SpaceWeather weather = new SpaceWeather();
     /**
      * Her jump drive in engineering as an offset from her control head, set as she is built, which spools up and fires
      * as she jumps; none for one built before, or without engineering's machines.
@@ -445,26 +447,6 @@ public final class FreighterFlight extends StandingFlight {
         return answer;
     }
 
-    /**
-     * Asks for space weather of a kind over the freighter an autopilot flies, at once, on the server, as an operator's
-     * command and the play-test's do (see {@link SpaceWeather#ask}): what it came to.
-     */
-    public static SpaceWeather.Answer spaceWeather(ServerLevel level, @Nullable AutopilotBlockEntity autopilot, SpaceWeather.Kind kind) {
-        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
-        if (freighter == null) {
-            return SpaceWeather.Answer.NO_SHIP;
-        }
-        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
-        return state == null ? SpaceWeather.Answer.NOT_FLYING : freighter.weather.ask(level, autopilot, kind, state.position().y);
-    }
-
-    /** The space weather the freighter an autopilot flies meets, on the server; null for any other craft. */
-    @Nullable
-    public static SpaceWeather weatherOf(AutopilotBlockEntity autopilot) {
-        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
-        return freighter == null ? null : freighter.weather;
-    }
-
     /** Where the slam landing of the freighter an autopilot flies stands, on either side; unavailable for others. */
     public static FreighterSlam.Stage slamOf(AutopilotBlockEntity autopilot) {
         FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
@@ -680,9 +662,9 @@ public final class FreighterFlight extends StandingFlight {
     /**
      * Each tick of hers assembled: she is kept loaded, as a zeppelin is; lightning strikes her in a storm and she notes
      * the villages below; she lands by herself once nobody has been aboard a while; everyone aboard is welcomed to
-     * space as she climbs past its edge, and meets space weather far past it; engaged, she flies (see
-     * {@link FreighterPilot}) until she has come down on her legs and stood there a moment, switching herself off with
-     * a bell.
+     * space as she climbs past its edge, and meets space weather far past it (see {@link StandingFlight#aloft});
+     * engaged, she flies (see {@link FreighterPilot}) until she has come down on her legs and stood there a moment,
+     * switching herself off with a bell.
      */
     @Override
     void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
@@ -701,7 +683,6 @@ public final class FreighterFlight extends StandingFlight {
         AutopilotBlockEntity.Phase phase = autopilot.phase;
         boolean legsDown = legsDown(level, autopilot, phase);
         climb.tick(level, autopilot, flight.position().y);
-        weather.tick(level, autopilot, flight);
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,

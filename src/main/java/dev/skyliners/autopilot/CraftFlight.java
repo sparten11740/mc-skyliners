@@ -2,6 +2,7 @@ package dev.skyliners.autopilot;
 
 import dev.skyliners.block.VillageSpotter;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -129,6 +130,12 @@ public abstract class CraftFlight {
      */
     Holder<SoundEvent> says(Holder<SoundEvent> announcement) {
         return announcement;
+    }
+
+    /** The space weather it meets far past the black of space; none for a craft that never flies that high. */
+    @Nullable
+    SpaceWeather spaceWeather() {
+        return null;
     }
 
     /** The mode it flies, as it says it, if it says it its own way; null for the usual heading, circle or pin. */

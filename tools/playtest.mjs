@@ -474,6 +474,14 @@ const WEATHER_SETTLED_SPEED = 1;
 const WEATHER_SETTLED_TILT = 3;
 const WEATHER_SETTLED_WITHIN = 5;
 const ROCK_HARDER = 1.5;
+// Space weather on the rocket: how long she is given to climb to it, in ticks; how much a rock must change her speed
+// and tip her at least, in blocks a second and degrees; how far from the height she waits it out at she may be thrown
+// meanwhile, in blocks; and, a while after, how upright she must stand again, in degrees.
+const ROCKET_WEATHER_UP_TICKS = 2400;
+const ROCKET_SHOVE_LEAST = 3;
+const ROCKET_TIPPED_LEAST = 4;
+const ROCKET_HELD_WITHIN = 10;
+const ROCKET_UPRIGHT_WITHIN = 5;
 const SLAM_HEIGHT = 90;
 const SLAM_WATCH_TICKS = 300;
 const SLAM_FASTEST_LEAST = 10;
@@ -2794,6 +2802,51 @@ function checkSpaceWeather() {
   creative();
 }
 
+// Space weather strikes the rocket too: flown up to y 1,600 with the player aboard her in survival, an asteroid storm
+// brought over her: the alarm whoops and her flight deck announces it after the chime, rocks strike her, each heard,
+// shoving her and tipping her; she waits it out up there, holding her height, says it is all clear, and a while after
+// stands upright again, the player still aboard and unhurt.
+function checkRocketSpaceWeather() {
+  layDown("rocket");
+  must(`skyliners:autopilot fly altitude=${WEATHER_HEIGHT}`, BUILD_SECONDS);
+  const rocket = findRocketFlying();
+  must(`sable:tp ${rocket} skyliners:robot_bartender; wait ${LOOK_EVERY}t`);
+  const up = waitForRocket((report) => report.phase === "cruise" && Math.abs(report.altitude - WEATHER_HEIGHT) < ROCKET_HELD_WITHIN,
+    ROCKET_WEATHER_UP_TICKS);
+  expect(up, "rocket: she climbs to y 1,600, past the black of space");
+  if (!up) {
+    return;
+  }
+  waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.blowing === "none", WEATHER_TICKS_MOST);
+  survival();
+  const health = healthOf();
+  const before = must(`sable:info ${rocket} side=server`);
+  const since = now();
+  const asked = must("skyliners:spaceweather start=asteroid_storm");
+  expect(asked.started === "coming", "rocket: an asteroid storm is brought over her", `${asked.started}`);
+  const rows = must(`sample sable:info ${rocket} side=server every 5t x${WEATHER.asteroid_storm.ticks / 5}`, BUILD_SECONDS).rows.filter((row) => row.vel);
+  expect(played("skyliners:space_weather_alarm", since).length > 0 && played("skyliners:announcement_asteroids", since).length > 0,
+    "rocket: the alarm whoops and her flight deck announces the storm");
+  const { landed } = must("skyliners:spaceweather");
+  const heardStrikes = played(WEATHER.asteroid_storm.strike, since).length;
+  expect(landed > asked.landed && heardStrikes > 0, "rocket: rocks strike her, each strike heard", `${landed - asked.landed} landed, ${heardStrikes} heard`);
+  const shove = Math.max(...rows.map((row) => Math.hypot(...row.vel.map((v, i) => v - before.vel[i]))));
+  const tilt = Math.max(...rows.map((row) => Math.max(Math.abs(row.pitch - before.pitch), Math.abs(row.roll - before.roll))));
+  expect(shove >= ROCKET_SHOVE_LEAST && tilt >= ROCKET_TIPPED_LEAST, "rocket: a rock shoves her and tips her nose",
+    `speed changed by ${round(shove)} blocks a second, tipped ${round(tilt)} degrees`);
+  const thrown = Math.max(...rows.map((row) => Math.abs(row.at_abs[1] - before.at_abs[1])));
+  expect(thrown <= ROCKET_HELD_WITHIN, "rocket: she waits it out up there, holding her height", `${round(thrown)} blocks off it at most`);
+  expect(played("skyliners:announcement_all_clear", since).length > 0, "rocket: her flight deck says it is all clear");
+  const settled = must(`wait ${WEATHER_SETTLE_TICKS}t; skyliners:rocket`);
+  const lean = Math.max(Math.abs(settled.tilt_front), Math.abs(settled.tilt_right));
+  expect(lean <= ROCKET_UPRIGHT_WITHIN, "rocket: a while after, she stands upright again", `leaning ${lean}, ${settled.phase} at y ${settled.altitude}`);
+  const after = healthOf();
+  expect(after >= health, "rocket: nobody aboard is hurt", `health ${after}, ${health} before`);
+  const { aboard } = must("status");
+  expect(Boolean(aboard) && rocket.startsWith(aboard), "rocket: the player is still aboard her", `aboard ${aboard ?? "nothing"}`);
+  creative();
+}
+
 // A freighter's slam landing: hovering, its button lit, her thrusters roar and her computer braces everyone, and she
 // drives straight down where she is far faster than she ever lands, strikes the ground with her crash heard, yet
 // touches it slowly enough that nothing breaks, then stands level on her legs and switches off, its button dark. The
@@ -4788,6 +4841,7 @@ const CHECKS = {
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },
+  "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
