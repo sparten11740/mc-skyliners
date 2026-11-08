@@ -117,12 +117,19 @@ public class AirstairRenderer<T extends BlockEntity & Airstairs> implements Bloc
         /**
          * A box, every face textured by the block: as much of its texture as the face is big, from its corner, so a
          * part shows its texture at the airliner's own pixel size. The hatch shows its whole picture outside, and
-         * plain skin round its edges and inside.
+         * plain skin round its edges and inside. A box wholly behind the camera is left out: a flight is many boxes,
+         * drawn whenever any of the wide box round it is in view, and seen from the cabin above it or the deck beside
+         * it much of it is at the camera's back.
          */
         void box(PoseStack stack, Matrix4f box, Vector3f min, Vector3f max, AirstairFlight.Part part) {
             stack.pushPose();
             stack.mulPose(box);
             PoseStack.Pose pose = stack.last();
+            float radius = new Vector3f(max).sub(min).length() / 2;
+            if (!Sight.ahead(pose, (min.x + max.x) / 2, (min.y + max.y) / 2, (min.z + max.z) / 2, radius)) {
+                stack.popPose();
+                return;
+            }
             int light = light(box, min, max);
             TextureAtlasSprite face = sprite(TEXTURES.get(part));
             TextureAtlasSprite edge = part == AirstairFlight.Part.HATCH ? sprite(SKIN) : face;
@@ -153,8 +160,12 @@ public class AirstairRenderer<T extends BlockEntity & Airstairs> implements Bloc
             return Math.min(1, length);
         }
 
-        /** A quad facing (nx, ny, nz), its four corners each (x, y, z, u, v) with u and v across the sprite, 0 to 1. */
+        /**
+         * A quad facing (nx, ny, nz), its four corners each (x, y, z, u, v) with u and v across the sprite, 0 to 1. Its
+         * normal is turned into the view once for all four corners, not at each.
+         */
         void quad(PoseStack.Pose pose, TextureAtlasSprite sprite, int light, float nx, float ny, float nz, float... corners) {
+            Vector3f normal = pose.transformNormal(nx, ny, nz, new Vector3f());
             for (int i = 0; i < 4; i++) {
                 int at = i * 5;
                 consumer.addVertex(pose, corners[at], corners[at + 1], corners[at + 2])
@@ -162,7 +173,7 @@ public class AirstairRenderer<T extends BlockEntity & Airstairs> implements Bloc
                     .setUv(sprite.getU(corners[at + 3]), sprite.getV(corners[at + 4]))
                     .setOverlay(OverlayTexture.NO_OVERLAY)
                     .setLight(light)
-                    .setNormal(pose, nx, ny, nz);
+                    .setNormal(normal.x, normal.y, normal.z);
             }
         }
     }
