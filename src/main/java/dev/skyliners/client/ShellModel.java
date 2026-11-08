@@ -58,12 +58,6 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
  * to such blocks draws its sides that face open space the way their cuts face, out of the hull, and none toward the
  * cabin; a whole block with none of them next to it is drawn as any glass.
  * <p>
- * With {@code "outside_only": true} (the freighter's canopy, its glass and its frame) only the faces looking out of the
- * hull are drawn, and only from outside: its cut faces, the sides whose neighbour lies beyond its cut, and a whole
- * block's sides that face out of the hull the way the cut blocks of the skin next to it face. From inside, nothing of it
- * shows: the canopy's lining draws the inside smooth instead (see the client's {@code CanopyLiningRenderer}), however
- * the blocks step round her curve.
- * <p>
  * Given the lining's textures too ("lining", "lining_ceiling", "lining_floor", "lining_dado", "lining_reveal",
  * "lining_reveal_pair", "lining_reveal_head", "lining_reveal_sill" and "lining_dado_sill"), it draws the faces the
  * block's state says are lined with them instead, each as {@link Lining#look} has it, the reveal down a window's left
@@ -75,8 +69,8 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 public final class ShellModel implements IUnbakedGeometry<ShellModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "shell");
     public static final IGeometryLoader<ShellModel> READER = (json, context) ->
-        new ShellModel(GsonHelper.getAsBoolean(json, "single_pane", false), GsonHelper.getAsBoolean(json, "outside_only", false),
-            GsonHelper.getAsInt(json, "tint_index", -1), GsonHelper.getAsInt(json, "lining_tint_index", -1));
+        new ShellModel(GsonHelper.getAsBoolean(json, "single_pane", false), GsonHelper.getAsInt(json, "tint_index", -1),
+            GsonHelper.getAsInt(json, "lining_tint_index", -1));
     /** What is round a block that its lined walls take their look from, as {@link Lining#context} gives it. */
     private static final ModelProperty<Integer> CONTEXT = new ModelProperty<>();
     /**
@@ -94,18 +88,10 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
      * out of the hull: the cosine of the widest angle between the two.
      */
     private static final double OUTSIDE_COSINE = 0.1;
-    /**
-     * How far round a whole block of a skin drawn from outside only, in blocks each way, the skin's cut blocks are
-     * looked for to tell which way is out, where none is next to it: as far as the middle of the freighter's canopy
-     * front is from its rim.
-     */
-    private static final int FAR_SKIN = 3;
     private static final Lining.Look[] LOOKS = Lining.Look.values();
 
     /** Whether the glass is drawn as one pane (see the class's description). */
     private final boolean singlePane;
-    /** Whether only the faces looking out of the hull are drawn, from outside only (see the class's description). */
-    private final boolean outsideOnly;
     /**
      * The tint its faces are coloured by, as a block's colour handler gives it (a zeppelin's cover, painted by its
      * livery), from {@code "tint_index"}; -1, none.
@@ -117,9 +103,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
      */
     private final int liningTintIndex;
 
-    private ShellModel(boolean singlePane, boolean outsideOnly, int tintIndex, int liningTintIndex) {
+    private ShellModel(boolean singlePane, int tintIndex, int liningTintIndex) {
         this.singlePane = singlePane;
-        this.outsideOnly = outsideOnly;
         this.tintIndex = tintIndex;
         this.liningTintIndex = liningTintIndex;
     }
@@ -137,8 +122,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         ResourceLocation hint = context.getRenderTypeHint();
         RenderTypeGroup group = hint != null ? context.getRenderType(hint) : RenderTypeGroup.EMPTY;
         RenderType renderType = group.isEmpty() ? RenderType.solid() : group.block();
-        return new Baked(looks, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane, outsideOnly,
-            tintIndex, liningTintIndex);
+        return new Baked(looks, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane, tintIndex,
+            liningTintIndex);
     }
 
     /** The texture a look is drawn with, by its name in the model's JSON. */
@@ -178,7 +163,6 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         private final ItemTransforms transforms;
         private final boolean ambientOcclusion;
         private final boolean singlePane;
-        private final boolean outsideOnly;
         private final int tintIndex;
         private final int liningTintIndex;
         /**
@@ -188,17 +172,12 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         private final AtomicReferenceArray<List<List<BakedQuad>>> panes = new AtomicReferenceArray<>(ShellGeometry.COUNT);
         /** The whole block's sides both ways round, by side index, for single-pane glass next to cut blocks. */
         private volatile List<List<BakedQuad>> wholePane;
-        /**
-         * For a skin drawn from outside only, each shape's faces looking out of the hull, baked as they are needed: by
-         * side index the sides whose neighbour lies beyond its cut, and last the cut faces.
-         */
-        private final AtomicReferenceArray<List<List<BakedQuad>>> outsides = new AtomicReferenceArray<>(ShellGeometry.COUNT);
 
         private record Shape(List<List<BakedQuad>> quads, List<List<BakedQuad>> wholeCulled) {
         }
 
         Baked(TextureAtlasSprite[] looks, boolean lining, TextureAtlasSprite particle, RenderType renderType, ItemTransforms transforms,
-              boolean ambientOcclusion, boolean singlePane, boolean outsideOnly, int tintIndex, int liningTintIndex) {
+              boolean ambientOcclusion, boolean singlePane, int tintIndex, int liningTintIndex) {
             this.looks = looks;
             this.lining = lining;
             this.particle = particle;
@@ -206,42 +185,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             this.transforms = transforms;
             this.ambientOcclusion = ambientOcclusion;
             this.singlePane = singlePane;
-            this.outsideOnly = outsideOnly;
             this.tintIndex = tintIndex;
             this.liningTintIndex = liningTintIndex;
-        }
-
-        /**
-         * A shape cut to the curve drawn from outside only: by side index its sides whose neighbour lies beyond its
-         * cut and that look out the way its cut does, never in toward the cabin, and last its cut faces, each facing
-         * out and shaded as the skin is.
-         */
-        private List<List<BakedQuad>> outside(int shape) {
-            List<List<BakedQuad>> baked = outsides.get(shape);
-            if (baked == null) {
-                double[] out = ShellGeometry.outward(shape);
-                double[] onCut = onCut(shape);
-                baked = outward(shape, face -> face.side() == null
-                    || beyondCut(face.side(), onCut, out) && along(out, face.side()) > OUTSIDE_COSINE);
-                outsides.set(shape, baked);
-            }
-            return baked;
-        }
-
-        /** The faces of a shape a test picks, by side index and last the cut faces, each facing out only. */
-        private List<List<BakedQuad>> outward(int shape, Predicate<ShellGeometry.Face> drawn) {
-            int rest = Direction.values().length;
-            List<List<BakedQuad>> bySide = new ArrayList<>();
-            for (int k = 0; k <= rest; k++) {
-                bySide.add(new ArrayList<>());
-            }
-            for (ShellGeometry.Face face : ShellGeometry.faces(shape)) {
-                if (drawn.test(face)) {
-                    bySide.get(face.side() == null ? rest : face.side().get3DDataValue())
-                        .addAll(bake(face, looks[Lining.Look.SKIN.ordinal()], false, tintIndex));
-                }
-            }
-            return bySide.stream().map(List::copyOf).toList();
         }
 
         /**
@@ -420,9 +365,6 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          */
         @Override
         public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
-            if (outsideOnly) {
-                return outsideOnlyData(level, pos, state, modelData);
-            }
             if (singlePane) {
                 int outer = outerSides(level, pos, state);
                 return outer < 0 ? modelData : modelData.derive().with(OUTER_SIDES, outer).build();
@@ -444,68 +386,9 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * edges to be culled by, which a neighbour's matching edges would cover while the faces still show, so those
          * faces are drawn always. One that does not (the glass) culls them by its stepped shape like any block's.
          */
-        /**
-         * For a skin drawn from outside only: which sides a whole block draws, those facing out of the hull, and for a
-         * block cut to the curve that shuts all light out of itself, the light outside its cut.
-         */
-        private static ModelData outsideOnlyData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
-            if (ShellBlock.shape(state) == ShellGeometry.WHOLE) {
-                Predicate<BlockState> skin = next -> next.getBlock() instanceof ShellBlock;
-                int outer = outerSides(level, pos, state, skin);
-                return modelData.derive().with(OUTER_SIDES, outer >= 0 ? outer : farOuterSides(level, pos, skin)).build();
-            }
-            int outside = outsideLight(level, pos, state);
-            return outside < 0 ? modelData : modelData.derive().with(OUTSIDE_LIGHT, outside).build();
-        }
-
-        /**
-         * Which sides a whole block of a skin drawn from outside only draws where no block of the skin cut to the curve
-         * is next to it, as in the middle of the freighter's flat canopy front: those facing anything but the skin the
-         * way the cut blocks of the skin round it face, nearer ones counting for more, within {@link #FAR_SKIN}; none
-         * where there are none, so nothing of it shows from inside.
-         */
-        private static int farOuterSides(BlockAndTintGetter level, BlockPos pos, Predicate<BlockState> skin) {
-            double[] out = new double[3];
-            for (BlockPos near : BlockPos.betweenClosed(pos.offset(-FAR_SKIN, -FAR_SKIN, -FAR_SKIN), pos.offset(FAR_SKIN, FAR_SKIN, FAR_SKIN))) {
-                BlockState there = level.getBlockState(near);
-                if (skin.test(there) && ShellBlock.shape(there) != ShellGeometry.WHOLE) {
-                    addOutward(out, ShellBlock.shape(there), 1.0 / near.distSqr(pos));
-                }
-            }
-            int sides = 0;
-            for (Direction side : Direction.values()) {
-                if (!skin.test(level.getBlockState(pos.relative(side))) && along(out, side) > OUTSIDE_COSINE) {
-                    sides |= 1 << side.get3DDataValue();
-                }
-            }
-            return sides;
-        }
-
-        /**
-         * The quads of a skin drawn from outside only against a side, or the rest: a block cut to the curve its faces
-         * looking out, its cut faces lit by the light outside it where it shuts all light out of itself; a whole block
-         * its sides facing out; a whole block with no cut skin next to it, as any block.
-         */
-        private List<BakedQuad> outsideQuads(int shape, @Nullable Direction side, ModelData extraData) {
-            int index = side == null ? Direction.values().length : side.get3DDataValue();
-            if (shape != ShellGeometry.WHOLE) {
-                List<BakedQuad> quads = outside(shape).get(index);
-                Integer light = extraData.get(OUTSIDE_LIGHT);
-                return side == null && light != null ? QuadTransformers.applyingLightmap(light).process(quads) : quads;
-            }
-            Integer outerSides = extraData.get(OUTER_SIDES);
-            if (outerSides == null) {
-                return shape(shape).quads().get(index);
-            }
-            return side != null && (outerSides & 1 << index) != 0 ? shape(shape).quads().get(index) : List.of();
-        }
-
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
             int shape = state != null ? ShellBlock.shape(state) : ShellGeometry.WHOLE;
-            if (outsideOnly && state != null) {
-                return outsideQuads(shape, side, extraData);
-            }
             if (singlePane && state != null && shape != ShellGeometry.WHOLE) {
                 return pane(shape).get(side == null ? Direction.values().length : side.get3DDataValue());
             }
@@ -562,22 +445,13 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * them next to it, or is cut itself, and is drawn as any glass.
          */
         private static int outerSides(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-            return outerSides(level, pos, state, next -> next.is(state.getBlock()));
-        }
-
-        /**
-         * Which sides a whole block of the skin draws, a bit for each side's index: those facing anything but the skin,
-         * as the test tells it, the way the blocks of the skin cut to the curve next to it face, out of the hull. -1
-         * where it has none of them next to it, or is cut itself.
-         */
-        private static int outerSides(BlockAndTintGetter level, BlockPos pos, BlockState state, Predicate<BlockState> skin) {
             if (ShellBlock.shape(state) != ShellGeometry.WHOLE) {
                 return -1;
             }
             double[] out = new double[3];
             for (Direction side : Direction.values()) {
                 BlockState next = level.getBlockState(pos.relative(side));
-                if (skin.test(next) && ShellBlock.shape(next) != ShellGeometry.WHOLE) {
+                if (next.is(state.getBlock()) && ShellBlock.shape(next) != ShellGeometry.WHOLE) {
                     addOutward(out, ShellBlock.shape(next));
                 }
             }
@@ -586,7 +460,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             }
             int sides = 0;
             for (Direction side : Direction.values()) {
-                if (!skin.test(level.getBlockState(pos.relative(side))) && along(out, side) > OUTSIDE_COSINE) {
+                if (!level.getBlockState(pos.relative(side)).is(state.getBlock()) && along(out, side) > OUTSIDE_COSINE) {
                     sides |= 1 << side.get3DDataValue();
                 }
             }
@@ -595,17 +469,12 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
 
         /** Adds the way a shape's cut faces, a unit long, to a sum of ways. */
         private static void addOutward(double[] sum, int shape) {
-            addOutward(sum, shape, 1);
-        }
-
-        /** Adds the way a shape's cut faces, so long, to a sum of ways. */
-        private static void addOutward(double[] sum, int shape, double weight) {
             double[] way = ShellGeometry.outward(shape);
             double length = Math.sqrt(way[0] * way[0] + way[1] * way[1] + way[2] * way[2]);
             if (length > 0) {
-                sum[0] += way[0] / length * weight;
-                sum[1] += way[1] / length * weight;
-                sum[2] += way[2] / length * weight;
+                sum[0] += way[0] / length;
+                sum[1] += way[1] / length;
+                sum[2] += way[2] / length;
             }
         }
 
