@@ -577,6 +577,12 @@ const SIZED_FACES_APART = 20;
 const SIZED_STAND = 3;
 const SIZED_WALL_ROWS = 13;
 const SIZED_COUNT_REACH = 16;
+// A round floor window laid to a floor's very edge, seen from beside it: how far out the camera stands, in blocks, how
+// far round the middle of the edge block's side the picture is measured, in blocks, and how much redder than blue the
+// floor's gold side is at least, where the window's grey-blue well or the sky would show through a side left out.
+const EDGE_CAMERA_OUT = 3.5;
+const EDGE_MEASURE = 0.3;
+const EDGE_GOLD_RED = 1.5;
 // Windows set by hand: each kind, with how many blocks wide and tall its opening is and how many pieces it has; how far
 // apart their walls stand, how far in front of a wall the player stands and how far round a window its pieces are
 // looked for, in blocks.
@@ -3570,6 +3576,26 @@ function sizedWindow({ face, wide, size, blocks, at, feet }) {
   send(`?server kill @e[type=item,distance=..${SIZED_COUNT_REACH}]`);
 }
 
+// A round floor window laid into a floor of gold reaching the floor's very edge, and opened: seen from beside the edge,
+// it shows the floor's own gold side there, as solid as the floor round it, not its grey well or the sky through a
+// side left out.
+function checkFloorWindowEdge() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  const [x, y, z] = [site.x, ground + 6, site.z];
+  const edge = Math.floor(FULL_WINDOW_ACROSS / 2);
+  creative();
+  emptyHands();
+  const stand = `${x + 0.5} ${y + SIZED_STAND} ${z + 0.5} 0 90`;
+  must(`server tp @p ${stand}; wait ${CHUNKS_TICKS}t; server fill ${x - edge} ${y} ${z - edge - 2} ${x + edge} ${y} ${z + edge + 2} gold_block`);
+  must(`server give @p skyliners:floor_window 1; wait 5t; select 0; server tp @p ${stand}; wait 20t; use ${x},${y},${z}; wait 10t; select 8; use ${x},${y},${z}; wait ${IRIS_TICKS}t`);
+  const side = [x + edge + 1, y + 0.5, z + 0.5];
+  must(`camera at ${side[0] + EDGE_CAMERA_OUT},${side[1]},${side[2]} look ${side.join(",")}; wait 20t`);
+  const seen = must(`pixels edge=@${side.join(",")} r=${EDGE_MEASURE}`).edge ?? {};
+  must("camera reset");
+  expect(seen.r > seen.b * EDGE_GOLD_RED, "floor window: laid to a floor's edge and open, its edge shows the floor's own side, not its well",
+    `red ${round(seen.r)}, green ${round(seen.g)}, blue ${round(seen.b)}`);
+}
+
 // A freighter's beach in her lounge: her round floor window in the middle of its sand, blending into it, loungers,
 // palms, tiki torches and a parasol round it, and its panel, which opens the window onto its shaft down to the glass in
 // her belly.
@@ -4667,6 +4693,7 @@ const CHECKS = {
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
   "floor-window-sizes": { run: checkFloorWindowSizes, about: "a round floor window set by hand into a floor or a wall takes the largest size that fits, from full to three and two across, and each opens, shuts and comes out whole" },
+  "floor-window-edge": { run: checkFloorWindowEdge, about: "a round floor window laid to a floor's very edge shows the floor's own side there, not its well" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges, her port prong's tunnel space posters, and no engine stands out in her prongs" },
   "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
   "freighter-smuggler-hold": { run: checkFreighterSmugglerHold, about: "a freighter's loose rivet chimes, its panel knocks hollow, opens onto a den of loot, shuts by itself and opens from inside" },

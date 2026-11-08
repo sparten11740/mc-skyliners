@@ -468,7 +468,8 @@ ceiling at the largest size `WindowDisc` finds fits, and opened from `FloorWindo
 floor it blends into, what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under
 it. The client's `FloorWindowRenderer` draws the window, as its blocks have no model, as if in a floor and turned to the
 face it is in: every block the floor but for the iris's hole, in strips whose ends lie on the circle, textured as
-`FaceLook` reads the floor's own faces, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
+`FaceLook` reads the floor's own faces, the sides that stand open drawn from the floor's model, and the middle block the
+round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
 `HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch.
 `FreighterTractorBeam`, straight after her cargo hold, lays the `BeamPadBlock` of `beam/` into the hold's floor where
 it has air under it down to her belly, keeping the two rows over it clear, and hangs the `TractorBeamBlock` under her

@@ -12,20 +12,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -36,8 +43,10 @@ import org.joml.Vector3f;
  * same window looking out another way. Every block draws the floor it blends into over its face and its back but for
  * the iris's round hole, opening from the window's middle out as it is told to open (see {@link
  * FloorWindowBlockEntity}): the floor in strips across the block, each strip's ends on the circle itself, cut again
- * wherever the circle turns or crosses the block's edge, so the hole is round without a step. The window's middle
- * block draws what spans the whole window, in flat faces round it: the iris's steel wall down the depth of the floor round the hole, and on down its
+ * wherever the circle turns or crosses the block's edge, so the hole is round without a step. Where a block's side
+ * stands open, at the edge of a floor or over a gap, it draws that side of the floor too, so the window reads as solid
+ * floor from any side and nothing of it is seen through its edge. The window's middle block draws what spans the whole
+ * window, in flat faces round it: the iris's steel wall down the depth of the floor round the hole, and on down its
  * shaft where it has one; a thin steel ring round the edge of the glass, so the window can be found shut; and in the
  * hole the faintly blue glass, flush with the floor, two glints across it. Its faces are shaded as the world's blocks
  * are, by the way they face, so it matches the floor round it. Left out while out of sight.
@@ -70,12 +79,14 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
     private static final int STEEL_DARK = 0xFF5C636B;
     private static final int GLASS = 0x40A8D8F0;
     private static final int GLINT = 0x70F4FCFF;
-    /** How often the light round each block of a window is looked at again, in ticks. */
+    /** How often the light round each block of a window, and which of its sides stand open, is looked at again, in ticks. */
     private static final long LIGHT_EVERY = 10;
-    /** Each block of a window's light at its corners over and under it, and when it was looked at, in ticks. */
+    /** Each block of a window's light and open sides, and when they were looked at, in ticks. */
     private static final Map<FloorWindowBlockEntity, Lit> LIT = new WeakHashMap<>();
     /** How each way a window can look out turns it from lying in a floor. */
     private static final Map<Direction, Frame> FRAMES = new EnumMap<>(Direction.class);
+    /** The random a model is asked for a side with: the same every time, so its look is too. */
+    private static final RandomSource SAME = RandomSource.create();
 
     static {
         for (int face = 0; face <= FACES; face++) {
@@ -124,8 +135,15 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         }
     }
 
-    /** A block of a window's light at the corners of its face and its back, and when it was looked at, in ticks. */
-    private record Lit(Corners over, Corners under, long at) {
+    /**
+     * A block of a window's light at the corners of its face and its back, each open side and the light at its corners,
+     * and when they were looked at, in ticks.
+     */
+    private record Lit(Corners over, Corners under, List<Side> sides, long at) {
+    }
+
+    /** An open side of a block of a window: the way it faces, and the light at its corners (see {@link #sideAxes}). */
+    private record Side(Direction toward, Corners light) {
     }
 
     /**
@@ -170,6 +188,7 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
         Frame frame = FRAMES.get(FloorWindowBlock.out(state));
         Lit lit = lit(window, frame, light);
         VertexConsumer cover = buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+        sides(cover, pose.last(), window, lit);
         pose.pushPose();
         frame.apply(pose);
         PoseStack.Pose at = pose.last();
@@ -342,7 +361,73 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
             .setNormal(at, up.x, up.y, up.z);
     }
 
-    /** A block of a window's light at its corners, looked at again every so often, as light round it seldom changes. */
+    /**
+     * The sides of a block that stand open, at the edge of a floor or over a gap in it, each drawn as the floor's own
+     * side, in the block's frame in the world, shaded and lit as the world's blocks are, so the window's edge is solid
+     * floor and nothing of its well shows through it.
+     */
+    private static void sides(VertexConsumer cover, PoseStack.Pose at, FloorWindowBlockEntity window, Lit lit) {
+        if (lit.sides().isEmpty()) {
+            return;
+        }
+        BlockState floor = window.floor();
+        Level level = window.getLevel();
+        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(floor);
+        for (Side side : lit.sides()) {
+            SAME.setSeed(0);
+            int shade = shade(level, side.toward());
+            for (BakedQuad quad : model.getQuads(floor, side.toward(), SAME, ModelData.EMPTY, null)) {
+                sideQuad(cover, at, quad, shaded(tint(quad, floor, level, window.getBlockPos()), shade), side);
+            }
+        }
+    }
+
+    /** The colour a quad of a block's model is drawn in at a place: white, or its tint there; white where there is no level. */
+    private static int tint(BakedQuad quad, BlockState block, @Nullable Level level, BlockPos at) {
+        if (!quad.isTinted() || level == null) {
+            return 0xFFFFFFFF;
+        }
+        return 0xFF000000 | Minecraft.getInstance().getBlockColors().getColor(block, level, at, quad.getTintIndex());
+    }
+
+    /** One quad of the floor's model on an open side, its corners where the model has them, lit up from the world's up. */
+    private static void sideQuad(VertexConsumer cover, PoseStack.Pose at, BakedQuad quad, int colour, Side side) {
+        int[] data = quad.getVertices();
+        Direction[] axes = sideAxes(side.toward());
+        for (int corner = 0; corner < 4; corner++) {
+            int from = corner * IQuadTransformer.STRIDE;
+            float x = Float.intBitsToFloat(data[from + IQuadTransformer.POSITION]);
+            float y = Float.intBitsToFloat(data[from + IQuadTransformer.POSITION + 1]);
+            float z = Float.intBitsToFloat(data[from + IQuadTransformer.POSITION + 2]);
+            float u = Float.intBitsToFloat(data[from + IQuadTransformer.UV0]);
+            float v = Float.intBitsToFloat(data[from + IQuadTransformer.UV0 + 1]);
+            int light = side.light().at(along(axes[0], x, y, z), along(axes[1], x, y, z));
+            cover.addVertex(at, x, y, z).setColor(colour).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(at, 0, 1, 0);
+        }
+    }
+
+    /** The two ways across a side of a block, each running the positive way along its axis, for its light's corners. */
+    private static Direction[] sideAxes(Direction toward) {
+        return switch (toward.getAxis()) {
+            case X -> new Direction[] {Direction.SOUTH, Direction.UP};
+            case Y -> new Direction[] {Direction.EAST, Direction.SOUTH};
+            case Z -> new Direction[] {Direction.EAST, Direction.UP};
+        };
+    }
+
+    /** How far along a positive way across a block a point of it lies, from the block's corner. */
+    private static float along(Direction way, float x, float y, float z) {
+        return switch (way.getAxis()) {
+            case X -> x;
+            case Y -> y;
+            case Z -> z;
+        };
+    }
+
+    /**
+     * A block of a window's light and open sides, looked at again every so often, as the light and the blocks round it
+     * seldom change.
+     */
     private static Lit lit(FloorWindowBlockEntity window, Frame frame, int own) {
         long now = DrawingClock.wholeTicks();
         Lit known = LIT.get(window);
@@ -351,10 +436,32 @@ public class FloorWindowRenderer implements BlockEntityRenderer<FloorWindowBlock
             Level level = window.getLevel();
             Corners over = corners(level, pos.relative(frame.out()), frame.alongX(), frame.alongZ(), own);
             Corners under = corners(level, pos.relative(frame.out().getOpposite()), frame.alongX(), frame.alongZ(), own);
-            known = new Lit(over, under, now);
+            known = new Lit(over, under, openSides(window, frame, own), now);
             LIT.put(window, known);
         }
         return known;
+    }
+
+    /**
+     * The sides of a block of a window, of the four across its face, that stand open: where no other window's block
+     * stands beside it and what does stand there leaves the floor's side to be seen, as the world would draw it.
+     */
+    private static List<Side> openSides(FloorWindowBlockEntity window, Frame frame, int own) {
+        Level level = window.getLevel();
+        if (level == null) {
+            return List.of();
+        }
+        BlockPos pos = window.getBlockPos();
+        List<Side> open = new ArrayList<>();
+        for (Direction toward : new Direction[] {frame.alongX(), frame.alongX().getOpposite(), frame.alongZ(), frame.alongZ().getOpposite()}) {
+            BlockPos beside = pos.relative(toward);
+            boolean windowBeside = level.getBlockState(beside).getBlock() instanceof FloorWindowBlock;
+            if (!windowBeside && Block.shouldRenderFace(window.floor(), level, pos, toward, beside)) {
+                Direction[] axes = sideAxes(toward);
+                open.add(new Side(toward, corners(level, beside, axes[0], axes[1], own)));
+            }
+        }
+        return open;
     }
 
     /**

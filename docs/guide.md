@@ -3070,7 +3070,8 @@ smaller on a smaller one, down to three across on a ledge three blocks wide and 
 round the block you used it on and an even one round that block's corner nearest where you aimed. Use it on a wall and
 it sets into the wall as a round porthole, or on a ceiling from below as a skylight, sized the same way, its glass
 flush with the face you used it on. It only goes into plain whole blocks whose face shows, so it never reaches in under
-a wall or round a corner. Where not even the smallest fits it gives a thud and a puff of smoke. Use the window
+a wall or round a corner, and seen from the side, at the edge of a floor or the back of a thin wall, it is as solid as
+the blocks it took the place of. Where not even the smallest fits it gives a thud and a puff of smoke. Use the window
 itself to open or shut it, or set its panel down within twelve blocks to open and shut it, by hand or with a redstone
 pulse such as a button on the panel: on a floor it stands on its post, and on a wall it sits flat in a steel rim. Break
 any block of the window and it all comes out, the blocks put back as they were and the window given back. Beach sand,
