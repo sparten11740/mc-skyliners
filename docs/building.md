@@ -220,7 +220,9 @@ wall washers (`WallLightBlock`) to her skin round each story, once the rooms hav
 finds room on her wall, as it does for the club's neon signs; before them `RocketGirders` lays the steel girders under
 her rooms' ceilings and `RocketGirderDecor` hangs each room's own under them (`GirderDecorBlock`, its `Part` drawing a
 loop of string or a pot rack across two blocks as one), and her shaft's lift glass and corner girders are laid with the
-shaft (`RocketLayout.shaftWall`).
+shaft (`RocketLayout.shaftWall`). Once everything stands, `HullLayout.joinGirders` joins each `SteelGirderBlock` to
+what is beside it (its `Joint` each way), as one put down by hand joins up: its blockstate is a multipart of the I-beam
+and a part for each joint, drawn standing up and turned with the girder.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, both touch panels, their tiles laid out by `LedControls`; on the client `LedLights` tints the strips

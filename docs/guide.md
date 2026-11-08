@@ -2097,6 +2097,15 @@ rocket climbing a column of sky in the colours of each height, from the sea at i
 line with a star where space begins, stars twinkling over it once she is up there (the client config's `heightGauge`
 keeps her floors on them).
 
+Steel girders join up as a real steel frame does, hers and any you put down. Stacked, they run on as one column, its
+flanges running up; one standing on the ground or on a block stands on a grey concrete footing under a bolted base
+plate, so it reads as a pillar. A beam put against a column's side is bolted to it, the column plated, finned and
+stiffened where the beam meets it, and beams meeting beams make a clean corner, tee or cross, their flanges running on
+into each other; a beam laid across another, one on the other, is bolted to it through a plate between them. An end
+against a wall or under a ceiling is bolted to it with a fixing plate, its bolts' heads showing, as her girders' ends are
+against her shaft's glass and her skin. Each joins as it is put down and as what is beside it changes, so girders in a
+world from before join up as anything is built beside them.
+
 Each room is finished inside its own way, on the walls her cover shows inside, along their foot, on its floor and on its
 ceiling, the floor of the room over it (the server config's `rocket.finishes` leaves her plain cover and grey floors):
 the entry riveted steel over a hazard-striped dado on studded rubber under a perforated ceiling; the cargo bay plywood

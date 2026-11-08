@@ -271,6 +271,7 @@ public final class RocketLayout extends HullLayout {
         if (SkylinersConfig.ROCKET_FINISHES.get()) {
             layout.finishInside();
         }
+        layout.joinGirders();
         layout.countAir();
         return layout;
     }

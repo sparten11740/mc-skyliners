@@ -1,16 +1,289 @@
 {
-  "variants": {
-    "axis=y": {
-      "model": "skyliners:block/steel_girder"
+  "multipart": [
+    {
+      "when": {
+        "axis": "y"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder"
+      }
     },
-    "axis=z": {
-      "model": "skyliners:block/steel_girder",
-      "x": 90
+    {
+      "when": {
+        "OR": [
+          {
+            "axis": "y",
+            "north": "girder"
+          },
+          {
+            "axis": "y",
+            "south": "girder"
+          },
+          {
+            "axis": "y",
+            "east": "girder"
+          },
+          {
+            "axis": "y",
+            "west": "girder"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_stiffeners"
+      }
     },
-    "axis=x": {
-      "model": "skyliners:block/steel_girder",
-      "x": 90,
-      "y": 90
+    {
+      "when": {
+        "axis": "y",
+        "up": "fixed"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_plate_up"
+      }
+    },
+    {
+      "when": {
+        "axis": "y",
+        "down": "fixed"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_foot"
+      }
+    },
+    {
+      "when": {
+        "axis": "y",
+        "north": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_face_north"
+      }
+    },
+    {
+      "when": {
+        "axis": "y",
+        "south": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_face_south"
+      }
+    },
+    {
+      "when": {
+        "axis": "y",
+        "east": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_column_east"
+      }
+    },
+    {
+      "when": {
+        "axis": "y",
+        "west": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_column_west"
+      }
+    },
+    {
+      "when": {
+        "axis": "z"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "axis": "z",
+            "down": "girder"
+          },
+          {
+            "axis": "z",
+            "up": "girder"
+          },
+          {
+            "axis": "z",
+            "east": "girder"
+          },
+          {
+            "axis": "z",
+            "west": "girder"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_stiffeners",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "north": "fixed"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_plate_up",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "south": "fixed"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_plate_down",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "down": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_face_north",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "up": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_face_south",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "east": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_beam_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "west": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_beam_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "axis": "x",
+            "down": "girder"
+          },
+          {
+            "axis": "x",
+            "up": "girder"
+          },
+          {
+            "axis": "x",
+            "south": "girder"
+          },
+          {
+            "axis": "x",
+            "north": "girder"
+          }
+        ]
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_stiffeners",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "east": "fixed"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_plate_up",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "west": "fixed"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_plate_down",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "down": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_face_north",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "up": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_face_south",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "south": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_beam_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "north": "girder"
+      },
+      "apply": {
+        "model": "skyliners:block/steel_girder_beam_west",
+        "x": 90,
+        "y": 90
+      }
     }
-  }
+  ]
 }
