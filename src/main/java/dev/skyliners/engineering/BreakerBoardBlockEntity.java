@@ -4,7 +4,6 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.LedPanelBlockEntity;
 import dev.skyliners.block.LedStripBlock;
 import dev.skyliners.block.Turning;
-import dev.skyliners.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,7 +94,7 @@ public class BreakerBoardBlockEntity extends BlockEntity {
         level.blockEvent(worldPosition, getBlockState().getBlock(), FLIPPED, switchNumber);
     }
 
-    /** On the client: sparks from the switch flipped, where its block is in the world as she flies. */
+    /** On the client: sparks from the switch flipped, carried along with her as she flies. */
     @Override
     public boolean triggerEvent(int id, int param) {
         if (id != FLIPPED) {
@@ -112,9 +111,9 @@ public class BreakerBoardBlockEntity extends BlockEntity {
             / BreakerBoardBlock.DOWN;
         Vec3 middle = Vec3.atCenterOf(worldPosition).add(Vec3.atLowerCornerOf(facing.getNormal()).scale(0.4))
             .add(Vec3.atLowerCornerOf(right.getNormal()).scale(across - 0.5)).add(0, up - 0.5, 0);
-        Vec3 at = SableFlight.toWorld(level, middle);
+        // Given off where the switch is, in Sable's plot aboard a ship, Sable carries them along with her.
         for (int spark = 0; spark < SPARKS; spark++) {
-            level.addParticle(ParticleTypes.ELECTRIC_SPARK, at.x, at.y, at.z, facing.getStepX() * 0.05 + level.random.nextGaussian() * 0.03,
+            level.addParticle(ParticleTypes.ELECTRIC_SPARK, middle.x, middle.y, middle.z, facing.getStepX() * 0.05 + level.random.nextGaussian() * 0.03,
                 level.random.nextDouble() * 0.05, facing.getStepZ() * 0.05 + level.random.nextGaussian() * 0.03);
         }
         return true;

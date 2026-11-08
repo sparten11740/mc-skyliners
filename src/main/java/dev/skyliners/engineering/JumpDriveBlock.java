@@ -2,7 +2,6 @@ package dev.skyliners.engineering;
 
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
-import dev.skyliners.compat.SableFlight;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -224,7 +223,7 @@ public class JumpDriveBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     /**
-     * On the client, what shows it working or failing round its core, where its block is in the world as she flies:
+     * On the client, what shows it working or failing round its core, carried along with her as she flies:
      * sparks crackling while it runs, a few motes rising as it spools, and smoke puffing while it sputters.
      */
     @Override
@@ -233,9 +232,9 @@ public class JumpDriveBlock extends HorizontalDirectionalBlock implements Entity
         if (drive == Drive.REST) {
             return;
         }
-        Vec3 near = new Vec3(pos.getX() + 0.5 + random.nextGaussian() * PARTICLE_SPREAD, pos.getY() + CORE_UP,
+        // Where its block is, in Sable's plot aboard a ship: Sable carries a particle given off there along with her.
+        Vec3 at = new Vec3(pos.getX() + 0.5 + random.nextGaussian() * PARTICLE_SPREAD, pos.getY() + CORE_UP,
             pos.getZ() + 0.5 + random.nextGaussian() * PARTICLE_SPREAD);
-        Vec3 at = SableFlight.toWorld(level, near);
         switch (drive) {
             case RUNNING -> level.addParticle(ParticleTypes.ELECTRIC_SPARK, at.x, at.y + random.nextGaussian() * PARTICLE_SPREAD, at.z, 0, 0, 0);
             case SPOOLING -> level.addParticle(ParticleTypes.END_ROD, at.x, at.y, at.z, 0, MOTE_RISE, 0);

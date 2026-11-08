@@ -1,7 +1,6 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
-import dev.skyliners.compat.SableFlight;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -26,7 +25,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A tiki torch, for the freighter's beach in her lounge: a bamboo pole with a woven head and a flame flickering on top
- * of it, warm and bright, sparks and a wisp of smoke rising from it, where its block is in the world as she flies. Put
+ * of it, warm and bright, sparks and a wisp of smoke rising from it, carried along with her as she flies. Put
  * up by hand it stands on a floor, its pole tall, or is fixed to a wall (MOUNT), a short pole held out from it on a
  * bamboo bracket, its flame lower; it goes against the block the player clicks, as a button does (see
  * {@link Mounting}), and nowhere that nothing holds it. FACING is the way it faces: on a wall out from it.
@@ -92,9 +91,9 @@ public class TikiTorchBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         double up = state.getValue(MOUNT) == Mount.WALL ? WALL_FLAME_UP : FLAME_UP;
-        Vec3 flame = new Vec3(pos.getX() + 0.5 + random.nextGaussian() * FLAME_SPREAD, pos.getY() + up,
+        // Where its block is, in Sable's plot aboard a ship: Sable carries a particle given off there along with her.
+        Vec3 at = new Vec3(pos.getX() + 0.5 + random.nextGaussian() * FLAME_SPREAD, pos.getY() + up,
             pos.getZ() + 0.5 + random.nextGaussian() * FLAME_SPREAD);
-        Vec3 at = SableFlight.toWorld(level, flame);
         level.addParticle(ParticleTypes.FLAME, at.x, at.y, at.z, 0, 0.01, 0);
         if (random.nextFloat() < SMOKE_CHANCE) {
             level.addParticle(ParticleTypes.SMOKE, at.x, at.y + 0.15, at.z, 0, 0.02, 0);

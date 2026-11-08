@@ -2,7 +2,6 @@ package dev.skyliners.engineering;
 
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
-import dev.skyliners.compat.SableFlight;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -144,7 +143,7 @@ public class CoolantValveBlock extends HorizontalDirectionalBlock implements Ent
     }
 
     /**
-     * On the client, while it vents: steam billowing up out of its vent, where its block is in the world as she flies.
+     * On the client, while it vents: steam billowing up out of its vent, carried along with her as she flies.
      */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
@@ -155,9 +154,9 @@ public class CoolantValveBlock extends HorizontalDirectionalBlock implements Ent
         Direction right = facing.getCounterClockWise();
         Vec3 mouth = Vec3.atBottomCenterOf(pos).add(Vec3.atLowerCornerOf(facing.getNormal()).scale(VENT_OUT - 0.5))
             .add(Vec3.atLowerCornerOf(right.getNormal()).scale(VENT_RIGHT)).add(0, VENT_UP, 0);
-        Vec3 at = SableFlight.toWorld(level, mouth);
+        // Given off where its block is, in Sable's plot aboard a ship, Sable carries the steam along with her.
         for (int puff = 0; puff < state.getValue(PRESSURE) + 1; puff++) {
-            level.addParticle(ParticleTypes.CLOUD, at.x, at.y, at.z, facing.getStepX() * STEAM_OUT + random.nextGaussian() * 0.02,
+            level.addParticle(ParticleTypes.CLOUD, mouth.x, mouth.y, mouth.z, facing.getStepX() * STEAM_OUT + random.nextGaussian() * 0.02,
                 STEAM_UP * random.nextDouble(), facing.getStepZ() * STEAM_OUT + random.nextGaussian() * 0.02);
         }
     }

@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
-import dev.skyliners.compat.SableFlight;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
@@ -184,7 +183,8 @@ public class FaultPanelBlock extends HorizontalDirectionalBlock implements Entit
             level.playSound(null, pos, SkylinersRegistry.JUMP_DRIVE_THUMP.get(), SoundSource.BLOCKS, CLANK_VOLUME, 1.3F);
         }
         level.playSound(null, pos, SkylinersRegistry.CENTRIFUGE_DING.get(), SoundSource.BLOCKS, CHIME_VOLUME, 1.2F);
-        Vec3 at = SableFlight.toWorld(level, mouth(pos, state.getValue(FACING), PANEL_MOUTH_UP));
+        // Sent from where its block is, in Sable's plot aboard a ship: Sable carries them along with her as she flies.
+        Vec3 at = mouth(pos, state.getValue(FACING), PANEL_MOUTH_UP);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, at.x, at.y, at.z, FIX_SPARKS, 0.15, 0.15, 0.15, FIX_SPARK_SPEED);
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, at.x, at.y, at.z, FIX_SPARKS / 2, 0.3, 0.3, 0.3, 0);
         RepairBoardBlockEntity.repaired(level, pos);
@@ -209,8 +209,9 @@ public class FaultPanelBlock extends HorizontalDirectionalBlock implements Entit
 
     /**
      * On the client, at fault, every {@link #SPRAY_EVERY} ticks: sparks spitting from the panel, smoke curling now and
-     * then, or steam jetting from the pipe's joint, where its block is in the world as she flies. The game's own
-     * {@code animateTick} comes to any one block too seldom for a steady stream.
+     * then, or steam jetting from the pipe's joint. They are given off where its block is, in Sable's plot aboard a
+     * ship, so Sable carries them along with her as she flies. The game's own {@code animateTick} comes to any one
+     * block too seldom for a steady stream.
      */
     private void spray(BlockState state, Level level, BlockPos pos) {
         if ((level.getGameTime() + pos.asLong()) % SPRAY_EVERY != 0) {
@@ -218,9 +219,8 @@ public class FaultPanelBlock extends HorizontalDirectionalBlock implements Entit
         }
         RandomSource random = level.getRandom();
         Direction facing = state.getValue(FACING);
-        Vec3 mouth = mouth(pos, facing, kind == Kind.PANEL ? PANEL_MOUTH_UP : PIPE_MOUTH_UP);
-        Vec3 at = SableFlight.toWorld(level, mouth);
-        Vec3 out = SableFlight.toWorld(level, mouth.add(Vec3.atLowerCornerOf(facing.getNormal()))).subtract(at);
+        Vec3 at = mouth(pos, facing, kind == Kind.PANEL ? PANEL_MOUTH_UP : PIPE_MOUTH_UP);
+        Vec3 out = Vec3.atLowerCornerOf(facing.getNormal());
         for (int puff = 0; puff < 1 + random.nextInt(MOST_PUFFS); puff++) {
             if (kind == Kind.PANEL) {
                 spark(level, random, at, random.nextInt(4) == 0 ? ParticleTypes.SMOKE : ParticleTypes.ELECTRIC_SPARK);

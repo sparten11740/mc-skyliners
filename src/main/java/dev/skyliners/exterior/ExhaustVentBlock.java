@@ -1,7 +1,6 @@
 package dev.skyliners.exterior;
 
 import dev.skyliners.block.Mount;
-import dev.skyliners.compat.SableFlight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -12,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * A vent on a ship's outside (see {@link HullFittingBlock}), now and then letting a wisp of white vapour out of its
- * mouth, up, out from the wall or down, where its block is in the world as she flies: the exhaust vent, a stack with a
+ * mouth, up, out from the wall or down, carried along with her as she flies: the exhaust vent, a stack with a
  * rain cap on a floor, a louvred box on a wall, or a nozzle pointing down under a ceiling; and the vent grille, flush
  * with what holds it, a slatted deck grating on a floor, a hooded louvred grille on a wall, or an intake with a hub
  * on its struts under a ceiling.
@@ -48,8 +47,8 @@ public class ExhaustVentBlock extends HullFittingBlock {
         Vec3 way = Vec3.atLowerCornerOf(out.getNormal());
         Vec3 from = Vec3.atCenterOf(pos).add(way.scale(mouth))
             .add(random.nextGaussian() * WISP_SPREAD, random.nextGaussian() * WISP_SPREAD, random.nextGaussian() * WISP_SPREAD);
-        Vec3 at = SableFlight.toWorld(level, from);
-        Vec3 drift = SableFlight.toWorld(level, from.add(way)).subtract(at).scale(WISP_SPEED);
-        level.addParticle(ParticleTypes.WHITE_SMOKE, at.x, at.y, at.z, drift.x, drift.y, drift.z);
+        // Given off where its block is, in Sable's plot aboard a ship, Sable carries it along with her.
+        Vec3 drift = way.scale(WISP_SPEED);
+        level.addParticle(ParticleTypes.WHITE_SMOKE, from.x, from.y, from.z, drift.x, drift.y, drift.z);
     }
 }

@@ -495,8 +495,7 @@ public final class BoardingRamp {
                 double along = level.random.nextDouble() * 2;
                 Vec3 at = head.add(right.getStepX() * side * edge + frame.out().getStepX() * along, 0,
                     right.getStepZ() * side * edge + frame.out().getStepZ() * along);
-                Vec3 world = SableFlight.toWorld(level, at);
-                level.addParticle(ParticleTypes.CLOUD, world.x, world.y, world.z, right.getStepX() * STEAM_SPEED * edge, STEAM_SPEED / 2,
+                level.addParticle(ParticleTypes.CLOUD, at.x, at.y, at.z, right.getStepX() * STEAM_SPEED * edge, STEAM_SPEED / 2,
                     right.getStepZ() * STEAM_SPEED * edge);
             }
         }
