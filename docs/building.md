@@ -462,7 +462,7 @@ under her middle by biome ids and tags. A board on the ground reads what its use
 Time advancement's criteria instead. `FreighterFurnishings`
 fills her rooms out with the fleet's furniture, each piece nudged to the nearest free spot near where it is meant or
 hung on the nearest padded wall, never across a doorway. `FreighterChillout` lays her lounge's beach first: the round
-floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindowItem` into a floor, a wall or a
+Iris Window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindowItem` into a floor, a wall or a
 ceiling at the largest size `WindowDisc` finds fits, and opened from `FloorWindowPanelBlock`; each
 `FloorWindowBlockEntity` keeps the offset to the window's middle block, its size and its middle in half blocks, the
 floor it blends into, what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under

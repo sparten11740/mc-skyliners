@@ -3053,7 +3053,7 @@ screens to look out through her outside cameras: under her belly straight down a
 ahead, astern of her over her top, and one circling her; press again for the next, and Left Shift brings you back.
 The server config's `freighter.rooms` builds her rooms bare.
 
-Her lounge has a beach. In the middle of a patch of sand is a huge round floor window, nine blocks across, walked over
+Her lounge has a beach. In the middle of a patch of sand is a huge round Iris Window, nine blocks across, walked over
 like the floor. Shut, it is the sand itself but for a thin steel ring round its edge. Press the big round button on its
 panel by the sand, painted with the window and an eye looking down, and an iris opens from the middle out, showing glass
 flush with the floor and a round steel shaft below it down to glass in her belly, so you watch the ground pass far below
@@ -3063,7 +3063,7 @@ spread its fronds clear of the walls and the parasol, and tiki torches with flam
 in the lounge's far corner. The server config's `freighter.beach` leaves the
 beach out.
 
-The floor window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
+The Iris Window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
 it lays itself into that floor, the whole disc at once, each block taking on the look of the floor it replaced, grass,
 planks or tiles alike. It takes the biggest round window that fits there: nine blocks across on a broad floor, and
 smaller on a smaller one, down to three across on a ledge three blocks wide and two across on one two wide, an odd size
