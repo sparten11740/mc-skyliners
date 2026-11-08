@@ -472,6 +472,8 @@ const ZERO_G_RISEN = 0.4;
 const ZERO_G_JUMP_TICKS = 10;
 const ZERO_G_JUMPED = 0.3;
 const ZERO_G_WATCH_TICKS = 60;
+// How many more times a weightless room's dropped cookie is looked at for having floated up, before it counts as not.
+const ZERO_G_COOKIE_LOOKS = 3;
 const ZERO_G_DOWN_TICKS = 200;
 const ZERO_G_DOWN_WITHIN = 0.3;
 // A gravity switch set by hand: the room built round it, how far out from its middle its walls stand and how many rows
@@ -2753,7 +2755,12 @@ function checkWeightlessRoom(who, switchAt, facing, toWorld) {
   const after = must("status").pos[1];
   expect(after - standing[1] >= ZERO_G_RISEN, `${who}: let go of jump, the player floats on, not falling back to the floor`,
     `${(after - standing[1]).toFixed(2)} up`);
-  const cookieNow = entityAt("@e[type=item,tag=zero_g,limit=1]");
+  // The cookie drifts up slowly, slower still on a busy server: it is looked at again, a little later, a few times.
+  let cookieNow = entityAt("@e[type=item,tag=zero_g,limit=1]");
+  for (let look = 0; look < ZERO_G_COOKIE_LOOKS && (!cookieNow || cookieNow[1] - cookieFrom[1] < ZERO_G_RISEN); look++) {
+    must(`wait ${ZERO_G_WATCH_TICKS}t`);
+    cookieNow = entityAt("@e[type=item,tag=zero_g,limit=1]");
+  }
   expect(Boolean(cookieNow) && cookieNow[1] - cookieFrom[1] >= ZERO_G_RISEN, `${who}: a dropped cookie floats up off the floor`,
     cookieNow ? `${(cookieNow[1] - cookieFrom[1]).toFixed(2)} up` : "gone");
   must(`server tp @p ${stand[0]} ${stand[1] + 1} ${stand[2]}; wait 5t`);
