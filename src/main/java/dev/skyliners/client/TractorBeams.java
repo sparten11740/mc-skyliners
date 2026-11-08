@@ -61,12 +61,14 @@ public final class TractorBeams {
     }
 
     /**
-     * Each tick of a lit beam on this client: its hum started, if it is not already playing; every hum no longer
-     * playing, stopped or cut off as the world was left, forgotten.
+     * Each tick of a lit beam on this client: its hum started, if it has none; every hum that has stopped itself, or
+     * whose beam is gone, as when the world is left, forgotten. A hum is known to be playing by its own stopping, not by
+     * asking the sound manager, which never finds one played aboard a ship as Sable carries it, so a new hum would be
+     * started every tick, dozens stacking.
      */
     public static void tick(TractorBeamBlockEntity beam) {
         SoundManager sounds = Minecraft.getInstance().getSoundManager();
-        HUMS.values().removeIf(hum -> hum.isStopped() || !sounds.isActive(hum));
+        HUMS.entrySet().removeIf(hum -> hum.getValue().isStopped() || hum.getKey().isRemoved());
         if (!HUMS.containsKey(beam)) {
             Hum hum = new Hum(beam);
             HUMS.put(beam, hum);
