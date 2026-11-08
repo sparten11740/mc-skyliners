@@ -407,7 +407,18 @@ floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindo
 what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under it. The client's
 `FloorWindowRenderer` draws the window, as its blocks have no model: every block the floor but for the iris's hole, in
 strips whose ends lie on the circle, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
-`HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch. `DarkCorners` is her
+`HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch.
+`FreighterTractorBeam`, straight after her cargo hold, lays the `BeamPadBlock` of `beam/` into the hold's floor where
+it has air under it down to her belly, keeping the two rows over it clear, and hangs the `TractorBeamBlock` under her
+belly beneath it as `FreighterExterior` hangs her outside pieces, clear of her legs; `freighter.tractorBeam` switches
+both, and keeps every beam dark. A lit beam's `TractorBeamBlockEntity` works in the world, where it finds its lens and
+the ground under it through `SableFlight.toWorld`: each tick it carries what stands in its beam (players by levitation,
+which their own game moves them by smoothly, anything else by its motion), brings what reaches its top onto its pad,
+the nearest `BeamPadBlockEntity` in reach (`Loaded`, so none is searched for), and lets down what steps onto the pad,
+only where it meets solid ground or water within its reach. What it does with each thing it holds is kept only while
+it is lit, never saved; whatever it lets go of falls slowly a while. On each client `TractorBeams` draws every lit beam
+after the particles, as `SearchlightBeams` draws searchlights, from where Sable holds its lens, and plays its hum.
+`DarkCorners` is her
 last pass: it spreads her lamps' light through her layout as the game does and lights every spot someone could stand
 in that is left unlit, her passages to a dim but never black level (`FreighterLayout.leastLight`), with a wall washer
 or a floor light, never on a window's glass; `skyliners:dark` measures the same in game. She and the rocket are both `HullLayout`s, which keeps their blocks, fittings and glazing and works out

@@ -99,6 +99,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINEERING;
     public static final ModConfigSpec.BooleanValue FREIGHTER_BEACH;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RETRACTING_LEGS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_TRACTOR_BEAM;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -859,6 +860,14 @@ public final class SkylinersConfig {
                 "her legs are fixed. Switched off later, legs already built still come down but no longer go up."
             )
             .define("retractingLegs", true);
+        FREIGHTER_TRACTOR_BEAM = builder
+            .comment(
+                "Whether the freighter is built with her tractor beam under her belly and its pad in her cargo hold, and whether",
+                "tractor beams shine: a beam of green light that gently lifts players, animals, villagers and loose items up onto",
+                "its pad, and lets down whoever steps onto the pad, never a hostile mob, and never hurting anyone. Without it,",
+                "she has no beam and every tractor beam stays dark."
+            )
+            .define("tractorBeam", true);
         builder.pop();
 
         SPEC = builder.build();

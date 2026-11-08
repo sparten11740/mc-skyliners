@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "LRL",
+    "III"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:lime_dye"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "skyliners:beam_pad",
+    "count": 2
+  }
+}

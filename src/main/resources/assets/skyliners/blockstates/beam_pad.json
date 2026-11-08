@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "skyliners:block/beam_pad"
+    },
+    "lit=true": {
+      "model": "skyliners:block/beam_pad_lit"
+    }
+  }
+}

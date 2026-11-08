@@ -9340,4 +9340,79 @@ function hullLightTextures() {
   texture(blockOutput, "hull_light_strip", (x, y) => (y >= 6 && y <= 9 ? [0xec, 0xfe, 0xff] : [0x8a, 0xec, 0xff]), 0);
 }
 hullLightTextures();
+// The freighter's tractor beam and its pad (see TractorBeamBlock and BeamPadBlock): the beam's housing of dark
+// gunmetal, riveted round its plate; its body ringed in hazard stripes under a row of vent slots; the rim round its
+// lens, ribbed steel; and its lens, seen from below, a wide round glass in a steel ring, dark green with rings in it,
+// or lit, glowing green to a white-hot middle. The pad's top is the rings of a target round a round plate in a frame of
+// deck plate, hazard stripes in its corners: dull while its beam is dark, and while it is lit glowing green, a bright
+// ring pulsing in from its edge to its middle over and over, so it reads at a glance as the place things come and go;
+// its sides are deck plate with a green line under its top.
+function tractorBeamTextures() {
+  const GUNMETAL = [0x4c, 0x53, 0x5c];
+  const GUNMETAL_DARK = [0x34, 0x3a, 0x42];
+  const RIVET = [0x8a, 0x92, 0x9c];
+  const STEEL = [0x9a, 0xa1, 0xa8];
+  const STEEL_DARK = [0x5c, 0x63, 0x6b];
+  const YELLOW = [0xf0, 0xbc, 0x1c];
+  const BLACK = [0x24, 0x24, 0x26];
+  const GREEN = [0x58, 0xff, 0x8c];
+  const stripes = (x, y) => (Math.floor((x + y) / 3) % 2 === 0 ? YELLOW : BLACK);
+  texture(blockOutput, "tractor_beam_housing", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return GUNMETAL_DARK;
+    if ((x === 2 || x === 13) && (y === 2 || y === 13)) return RIVET;
+    return (x + y * 3) % 17 === 0 ? [0x56, 0x5e, 0x68] : GUNMETAL;
+  }, 3);
+  texture(blockOutput, "tractor_beam_side", (x, y) => {
+    if (y >= 9) return stripes(x, y);
+    if (y === 8 || y === 0) return GUNMETAL_DARK;
+    if (y >= 3 && y <= 5 && x % 4 !== 0) return y === 3 ? [0x18, 0x1a, 0x1e] : [0x22, 0x26, 0x2c];
+    return GUNMETAL;
+  }, 3);
+  texture(blockOutput, "tractor_beam_rim", (x, y) => (x % 3 === 0 ? STEEL_DARK : y === 0 || y === 15 ? [0x7a, 0x82, 0x8a] : STEEL), 2);
+  const lens = (glass) => (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out > 7.2) return STEEL_DARK;
+    if (out > 5.6) return out > 6.6 || Math.round(Math.atan2(y - 7.5, x - 7.5) * 4) % 2 === 0 ? STEEL : [0xb4, 0xba, 0xc0];
+    return glass(out, x, y);
+  };
+  texture(blockOutput, "tractor_beam_lens", lens((out, x, y) => {
+    if (x - y > 2 && x - y < 4 && out > 2) return [0x9c, 0xd8, 0xb0];
+    return Math.round(out) % 2 === 0 ? [0x1c, 0x4a, 0x2c] : [0x24, 0x5c, 0x38];
+  }), 0);
+  texture(blockOutput, "tractor_beam_lens_lit", lens((out) => {
+    if (out < 1.6) return [0xf4, 0xff, 0xf6];
+    if (out < 3) return [0xb4, 0xff, 0xcc];
+    return Math.round(out) % 2 === 0 ? GREEN : [0x8c, 0xff, 0xac];
+  }), 0);
+  // The pad's top: a frame of deck plate with hazard stripes in its corners, a steel ring, then the target's rings
+  // round its round middle plate, each ring's brightness given by how far it is from the middle.
+  const pad = (ring) => (x, y) => {
+    const corner = (x < 3 || x > 12) && (y < 3 || y > 12);
+    if (corner) return stripes(x, y);
+    if (x === 0 || y === 0 || x === 15 || y === 15) return GUNMETAL_DARK;
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out > 7) return GUNMETAL;
+    if (out > 6.2) return STEEL;
+    return ring(out);
+  };
+  const dull = (out) => (Math.round(out) % 2 === 0 ? [0x3c, 0x56, 0x46] : GUNMETAL_DARK);
+  texture(blockOutput, "beam_pad_top", pad(dull), 2);
+  // How many frames the lit pad's pulse takes to come in from its edge to its middle.
+  const FRAMES = 8;
+  const glowing = (frame) => (out) => {
+    const pulse = 6 * (1 - frame / FRAMES);
+    if (Math.abs(out - pulse) < 0.8) return [0xf0, 0xff, 0xf4];
+    if (out < 1.6) return [0xc8, 0xff, 0xd8];
+    return Math.round(out) % 2 === 0 ? GREEN : [0x1c, 0x6a, 0x38];
+  };
+  texture(blockOutput, "beam_pad_top_lit", (x, y) => pad(glowing(Math.floor(y / SIZE)))(x, y % SIZE), 0, SIZE, SIZE * FRAMES);
+  writeFileSync(resolve(blockOutput, "beam_pad_top_lit.png.mcmeta"), JSON.stringify({ animation: { frametime: 2 } }, null, 2) + "\n");
+  texture(blockOutput, "beam_pad_side", (x, y) => {
+    if (y === 1) return [0x3c, 0xd8, 0x6c];
+    if (y === 0 || y === 15) return GUNMETAL_DARK;
+    if (y === 8 && x % 5 === 2) return RIVET;
+    return GUNMETAL;
+  }, 3);
+}
+tractorBeamTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);

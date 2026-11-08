@@ -5801,6 +5801,135 @@ function transmit(name, pitch) {
   return voice.map((s) => s / voicePeak);
 }
 
+// The freighter's tractor beam (see TractorBeamBlockEntity), a theremin's warble through it all, as flying saucers have
+// sounded since the old films, each sound with a random sequence of its own. Switched on, a hum swelling up from deep
+// and a whistle rising over it, sparkles round it; switched off, the hum sinking away under a falling whistle. Its hum
+// while lit, a seamless loop: a low tone throbbing, its octave over it and a high whistle wavering, every part turning
+// a whole number of times round the loop. Whatever it lifts goes up with a warbling whoop and a rising rush of air;
+// let down, the whoop falls. Arriving on its pad, a soft pop and four bell notes climbing. And a beam that will not
+// shine, a low double buzz. Tune it here.
+const TRACTOR_BEAM = {
+  // Switching on and off: how long, in seconds; the hum's pitch from and to, and the whistle's, in hertz.
+  onSeconds: 1.6,
+  offSeconds: 1.1,
+  humLow: 55,
+  humHigh: 110,
+  whistleLow: 440,
+  whistleHigh: 880,
+  // The hum: how long its loop is, and how long its rush of air is crossfaded over its seam, in seconds; its throb a
+  // second, and its whistle's wavering, each a whole number of times round the loop; how far the whistle wavers, a
+  // share of its pitch.
+  loopSeconds: 4,
+  loopFade: 0.5,
+  throb: 4,
+  waver: 6,
+  waverDepth: 0.025,
+  // Lifting and letting down: how long, in seconds; the whoop's pitch at its low end and its high, in hertz; its
+  // warble a second and how deep, a share of its pitch.
+  rideSeconds: 1.3,
+  whoopLow: 260,
+  whoopHigh: 1100,
+  warble: 9,
+  warbleDepth: 0.06,
+  // Arriving: the pop's pitch, in hertz, and the bell notes climbing after it, as MIDI notes, so far apart, in seconds.
+  popHz: 180,
+  chimes: [84, 88, 91, 96],
+  chimeApart: 0.07,
+  // Refused: the buzz's pitch, in hertz, each buzz's length and the gap between them, in seconds.
+  buzzHz: 90,
+  buzzSeconds: 0.16,
+  buzzGap: 0.08,
+};
+/**
+ * A sine whose pitch follows pitchAt(t), in hertz, t seconds in, so long, wavering by vibrato so many times a second.
+ */
+function theremin(seconds, pitchAt, vibrato, depth) {
+  let phase = 0;
+  return Float64Array.from({ length: Math.round(seconds * RATE) }, (_, i) => {
+    const t = i / RATE;
+    phase += pitchAt(t) * (1 + depth * Math.sin(2 * Math.PI * vibrato * t)) / RATE;
+    return Math.sin(2 * Math.PI * phase) + 0.25 * Math.sin(4 * Math.PI * phase);
+  });
+}
+/** The beam's rising or falling sweep, from a share of the way to another: the hum and the whistle swept together. */
+function beamSweep(seconds, from, to) {
+  const T = TRACTOR_BEAM;
+  const along = (t) => from + (to - from) * Math.min(1, t / seconds);
+  const hum = theremin(seconds, (t) => T.humLow * (T.humHigh / T.humLow) ** along(t), T.throb, 0.01);
+  const whistle = theremin(seconds, (t) => T.whistleLow * (T.whistleHigh / T.whistleLow) ** along(t), T.waver, T.waverDepth);
+  return hum.map((sample, i) => {
+    const t = i / RATE;
+    const envelope = Math.min(1, t / 0.05, (seconds - t) / 0.2);
+    return envelope * (0.8 * sample + 0.35 * along(t) * whistle[i]);
+  });
+}
+{
+  const T = TRACTOR_BEAM;
+  const sparkles = ownRandom(0x54424f6e);
+  const on = beamSweep(T.onSeconds, 0, 1);
+  for (let k = 0; k < 6; k++) {
+    bell(on, 0.4 + 0.15 * k + 0.05 * sparkles(), 1800 + 1600 * sparkles(), 0.12);
+  }
+  writeSound("tractor_beam_on", lowPassed(on, 9000), 0.75);
+  writeSound("tractor_beam_off", beamSweep(T.offSeconds, 1, 0), 0.7);
+}
+{
+  const T = TRACTOR_BEAM;
+  const air = ownRandom(0x5442486d);
+  const seconds = T.loopSeconds;
+  const n = Math.round((seconds + T.loopFade) * RATE);
+  const wash = sweptResonance(whiteNoise(seconds + T.loopFade, air), () => 700, 2);
+  const hum = Float64Array.from({ length: n }, (_, i) => {
+    const t = i / RATE;
+    const throb = 0.75 + 0.25 * Math.sin(2 * Math.PI * T.throb * t);
+    const low = Math.sin(2 * Math.PI * T.humHigh * t) + 0.5 * Math.sin(2 * Math.PI * 2 * T.humHigh * t);
+    const whistle = Math.sin(2 * Math.PI * (T.whistleHigh * t + (T.waverDepth * T.whistleHigh / T.waver) * Math.sin(2 * Math.PI * T.waver * t)));
+    return throb * low + 0.18 * whistle + 0.3 * wash[i];
+  });
+  writeSound("tractor_beam_hum", seamless(hum, seconds, T.loopFade), 0.6);
+}
+{
+  const T = TRACTOR_BEAM;
+  const air = ownRandom(0x5442526d);
+  const ride = (up) => {
+    const along = (t) => (up ? t / T.rideSeconds : 1 - t / T.rideSeconds);
+    const whoop = theremin(T.rideSeconds, (t) => T.whoopLow * (T.whoopHigh / T.whoopLow) ** along(t), T.warble, T.warbleDepth);
+    const rush = sweptResonance(whiteNoise(T.rideSeconds, air), (t) => 400 + 2400 * along(t), 1.5);
+    return whoop.map((sample, i) => {
+      const t = i / RATE;
+      const envelope = Math.min(1, t / 0.04, (T.rideSeconds - t) / 0.25);
+      return envelope * (0.7 * sample + 0.9 * rush[i]);
+    });
+  };
+  writeSound("tractor_beam_lift", ride(true), 0.7);
+  writeSound("tractor_beam_drop", ride(false), 0.7);
+}
+{
+  const T = TRACTOR_BEAM;
+  const arrive = new Float64Array(Math.round(1.1 * RATE));
+  let phase = 0;
+  for (let i = 0; i < Math.round(0.12 * RATE); i++) {
+    const t = i / RATE;
+    phase += T.popHz * (1 + 2 * Math.exp(-t / 0.015)) / RATE;
+    arrive[i] += Math.exp(-t / 0.035) * Math.sin(2 * Math.PI * phase);
+  }
+  T.chimes.forEach((note, k) => bell(arrive, 0.06 + k * T.chimeApart, noteHertz(note), 0.35));
+  writeSound("tractor_beam_arrive", arrive, 0.7);
+}
+{
+  const T = TRACTOR_BEAM;
+  const buzz = new Float64Array(Math.round((2 * T.buzzSeconds + T.buzzGap + 0.05) * RATE));
+  const step = T.buzzHz / RATE;
+  for (const start of [0, T.buzzSeconds + T.buzzGap]) {
+    for (let i = 0; i < Math.round(T.buzzSeconds * RATE); i++) {
+      const t = i / RATE;
+      const envelope = Math.min(1, t / 0.005, (T.buzzSeconds - t) / 0.02);
+      buzz[Math.round(start * RATE) + i] += envelope * pulseAt((step * i) % 1, step, 0.3);
+    }
+  }
+  writeSound("tractor_beam_refused", lowPassed(buzz, 1800), 0.6);
+}
+
 // The carrier clips: someone pressing the button and saying nothing, and a pilot's two quick clicks.
 receive("atc_static_open", [press(new Float64Array(Math.round(0.6 * RATE)), RADIO.speakers.nobody, RADIO.timing.press)], RADIO.gap,
   RADIO.carrierLevel, ATC_CARRIER_LONGEST);
