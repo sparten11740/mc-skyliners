@@ -193,7 +193,7 @@ public final class SpaceSky {
         Matrix4f pose = event.getModelViewMatrix();
         Matrix4f projection = event.getProjectionMatrix();
         float starlight = Math.max(STARS_BRIGHTEST * ramp(height, STARS_FROM, STARS_OUT), level.getStarBrightness(partialTick));
-        drawDome(pose, projection, skyAt(height).scale(day), opacity);
+        drawDome(pose, projection, SolarFlare.tinted(skyAt(height).scale(day), partialTick), opacity);
         drawHeavens(pose, projection, level, partialTick, starlight, opacity);
         double dip = Math.min(DIP_MOST, DIP_FROM + (height - SPACE_FROM) * DIP_A_BLOCK);
         drawPlanet(pose, dip, planetRed, planetGreen, planetBlue);
@@ -337,7 +337,7 @@ public final class SpaceSky {
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE,
             GlStateManager.DestFactor.ZERO);
         drawStars(turned, projection, starlight, opacity);
-        drawSun(turned, opacity);
+        drawSun(turned, opacity, partialTick);
         drawMoon(turned, level.getMoonPhase(), opacity);
     }
 
@@ -363,13 +363,19 @@ public final class SpaceSky {
         VertexBuffer.unbind();
     }
 
-    /** The sun where the game puts its own, white: a square, and a round glow fading out from it. */
-    private static void drawSun(Matrix4f pose, float opacity) {
+    /**
+     * The sun where the game puts its own, white: a square, and a round glow fading out from it; swollen and burning
+     * white-gold in a solar flare, its corona, tendrils and rings of light round it (see {@link SolarFlare}).
+     */
+    private static void drawSun(Matrix4f pose, float opacity, float partialTick) {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, opacity);
-        int core = FastColor.ARGB32.opaque(SUN);
-        int glowing = FastColor.ARGB32.color(Math.round(SUN_GLOW_OPACITY * 255), SUN);
-        int faded = FastColor.ARGB32.color(0, SUN);
+        float flare = SolarFlare.strength(partialTick);
+        int colour = FastColor.ARGB32.lerp(flare, FastColor.ARGB32.opaque(SUN), FastColor.ARGB32.opaque(SolarFlare.FLARING)) & 0xFFFFFF;
+        float coreSize = SUN_CORE * (1 + SolarFlare.SWELLS * flare);
+        int core = FastColor.ARGB32.opaque(colour);
+        int glowing = FastColor.ARGB32.color(Math.round(SUN_GLOW_OPACITY * 255), colour);
+        int faded = FastColor.ARGB32.color(0, colour);
         BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         for (int piece = 0; piece < SUN_PIECES; piece++) {
             double from = Math.PI * 2 * piece / SUN_PIECES;
@@ -379,9 +385,10 @@ public final class SpaceSky {
             builder.addVertex(pose, (float) Math.cos(to) * SUN_GLOW, SKY_DISTANCE, (float) Math.sin(to) * SUN_GLOW).setColor(faded);
         }
         for (float[] corner : SUN_SQUARE) {
-            builder.addVertex(pose, corner[0] * SUN_CORE, SKY_DISTANCE, corner[1] * SUN_CORE).setColor(core);
+            builder.addVertex(pose, corner[0] * coreSize, SKY_DISTANCE, corner[1] * coreSize).setColor(core);
         }
         BufferUploader.drawWithShader(builder.buildOrThrow());
+        SolarFlare.draw(pose, SUN_CORE, SUN_GLOW, SKY_DISTANCE, opacity, partialTick);
     }
 
     /** The moon where the game puts its own, in its phase tonight, as the game draws it. */

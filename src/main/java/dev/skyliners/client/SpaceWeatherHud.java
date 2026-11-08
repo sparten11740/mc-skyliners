@@ -45,6 +45,16 @@ public final class SpaceWeatherHud {
     private static final int GLARE_LEAST = 50;
     private static final int GLARE_MOST = 130;
     private static final float GLARE_SWELL = 50;
+    /**
+     * How much stronger the glare is looking straight at the sun than looking away from it, as a share of its swell; and
+     * how bright the flash is as a ring of the flare's light passes over her, as the overlay's opacity (0 to 255), and
+     * how strong a ring must be passing for her screens to flicker with it.
+     */
+    private static final float FACING_SUN = 0.6F;
+    private static final int RING_FLASH = 110;
+    /** The most the glare ever hides of the view, as the overlay's opacity (0 to 255), so the sun and its flare still show. */
+    private static final int GLARE_MOST_EVER = 175;
+    private static final float RING_FLICKERS = 0.4F;
     /** How often a flare flickers its view and her screens dark, as the share of ticks, and how dark the view goes. */
     private static final double FLICKER_SHARE = 0.12;
     private static final int FLICKER_ALPHA = 150;
@@ -70,7 +80,7 @@ public final class SpaceWeatherHud {
         double since = DrawingClock.gameTime(deltaTracker.getGameTimeDeltaPartialTick(false)) - shown.startedAt();
         boolean told = since < shown.warningTicks();
         if (shown.kind() == SpaceWeather.Kind.SOLAR_FLARE && !told && since < shown.warningTicks() + shown.stormTicks()) {
-            glare(graphics, since);
+            glare(graphics, since, deltaTracker.getGameTimeDeltaPartialTick(false));
         }
         boolean lit = !told || DrawingClock.wholeTicks() % FLASH_EVERY < FLASH_ON;
         badge(graphics, picture(shown.kind()), colour(shown.kind()), lit ? 1 : FLASH_DIM);
@@ -86,7 +96,8 @@ public final class SpaceWeatherHud {
             return false;
         }
         long since = DrawingClock.wholeTicks() - shown.startedAt();
-        return since >= shown.warningTicks() && since < shown.warningTicks() + shown.stormTicks() && flickers(DrawingClock.wholeTicks());
+        boolean on = since >= shown.warningTicks() && since < shown.warningTicks() + shown.stormTicks();
+        return on && (flickers(DrawingClock.wholeTicks()) || SolarFlare.passing(0) > RING_FLICKERS && DrawingClock.wholeTicks() % 2 == 0);
     }
 
     /** The picture of what blows, as her scanner shows it too: a giant asteroid's is an asteroid storm's. */
@@ -127,16 +138,19 @@ public final class SpaceWeatherHud {
     }
 
     /**
-     * A flare's glare over the whole view, swelling and easing, so far into the weather, in ticks; dark as it flickers.
+     * A flare's glare over the whole view, swelling and easing, so far into the weather, in ticks, the stronger the
+     * nearer the player looks at the sun, and flashing bright as a ring of its light passes over her; dark as it
+     * flickers.
      */
-    private static void glare(GuiGraphics graphics, double since) {
+    private static void glare(GuiGraphics graphics, double since, float partial) {
         if (flickers(DrawingClock.wholeTicks())) {
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), FLICKER_ALPHA << 24);
             return;
         }
         float swell = 0.5F + 0.5F * Mth.sin((float) (since / GLARE_SWELL * Mth.TWO_PI));
-        int alpha = Math.round(Mth.lerp(swell, GLARE_LEAST, GLARE_MOST));
-        graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), FastColor.ARGB32.color(alpha, GLARE));
+        float facing = Math.max(0, Minecraft.getInstance().gameRenderer.getMainCamera().getLookVector().dot(SpaceWeatherSky.sunWay(partial)));
+        float glare = Mth.lerp(swell, GLARE_LEAST, GLARE_MOST) * (1 + FACING_SUN * facing * facing) + RING_FLASH * SolarFlare.passing(partial);
+        graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), FastColor.ARGB32.color(Math.min(GLARE_MOST_EVER, Math.round(glare)), GLARE));
     }
 
     /** Whether a flare flickers at a game tick, hashed from it alone. */

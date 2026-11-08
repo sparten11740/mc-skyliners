@@ -404,8 +404,9 @@ client's `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon), rocks (
 lumps, craters, ridges and grain pushed out of an icosphere at three levels of detail, coloured per corner and lit
 flat per face by the sun on the client, see-through as they fade in) and bursts (chunks, dust and a flash) after the
 particles, past the fog, fading everything in by distance under the far plane; `GunnerView` locks the sight on with
-`SpaceWeatherSky.rockSighted`. `SpaceWeatherHud` draws the badge and the flare's glare, and `ConsoleArt` the scanner's
-picture and the flare's flicker. A strike's shove scales with the ship's weight against a freighter's, and a ship
+`SpaceWeatherSky.rockSighted`. `SolarFlare` swells and colours the sun `SpaceSky` draws, adds its corona, tendrils and
+rings of light round it and tints the dome; `SpaceWeatherHud` draws the badge and the flare's glare, and `ConsoleArt`
+the scanner's picture and the flare's flicker. A strike's shove scales with the ship's weight against a freighter's, and a ship
 taller than wide is struck near her middle line and anywhere up her, so she tips rather than spins. `/skyliners
 spaceweather` and Blockpilot's `skyliners:spaceweather` ask for one (`SpaceWeather.ask`). Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's

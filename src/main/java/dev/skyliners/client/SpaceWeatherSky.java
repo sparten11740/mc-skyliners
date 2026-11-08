@@ -51,7 +51,8 @@ import org.joml.Vector3f;
  * sweeping by, some close enough to fill the view; a giant asteroid's giant, many times bigger; and each meteor or rock
  * that strikes her, seen flying in to the spot on her hull where it lands, knocked off its course and slowed where her
  * laser cannon strikes it. A rock her cannon breaks bursts in a flash into tumbling chunks and a cloud of dust, with a
- * crunch. A solar flare shows only as its glare (see {@link SpaceWeatherHud}).
+ * crunch. A solar flare shows on the sun and the sky (see {@link SolarFlare}) and over the view (see
+ * {@link SpaceWeatherHud}).
  *
  * <p>Nothing pops into view: every streak and rock sets out from far beyond the farthest the game draws, and fades in
  * as it comes, faint and small at first, and out again as it goes; so does each that strikes her.
@@ -488,7 +489,7 @@ public final class SpaceWeatherSky {
      * The way to the sun, of length 1, where the game puts it at this partial tick: overhead at noon, setting in the
      * west.
      */
-    private static Vector3f sunWay(float partial) {
+    static Vector3f sunWay(float partial) {
         ClientLevel level = Minecraft.getInstance().level;
         double turned = level == null ? 0 : level.getTimeOfDay(partial) * Math.PI * 2;
         return new Vector3f((float) -Math.sin(turned), (float) Math.cos(turned), 0);

@@ -3216,8 +3216,13 @@ tipped as much as fifteen degrees and swung round, a few strikes together turnin
 blocks across, bigger than she is, seen coming from far off for over twenty seconds; its strike is never held back:
 a crunch far deeper and louder, a blast four times an asteroid's, everyone's view shaken hard for six seconds, and her
 thrown far off her spot and set spinning faster than her autopilot can stop for a good while. In a solar flare, "Solar
-flare. Don't look at the sun.", a warm glare swells and eases over everyone's view for fifteen seconds, now and then
-flickering dark as her screens flicker with it, her speakers crackle, and its wind pushes her steadily aside.
+flare. Don't look at the sun.", the sun itself flares: while it is told it stirs and flickers, loops of fire rising off
+its edge; then it erupts, swelling to more than twice its size and burning white-gold, a ragged corona of rays
+flickering round it and tendrils of fire arching off it, and every five or six seconds a shimmering ring of light
+races out across the sky from it, flashing over everyone's view and flickering her screens as it passes over her. The
+black round the sun turns amber, a warm glare swells and eases over everyone's view for fifteen seconds, the stronger
+the nearer they look at the sun, now and then flickering dark as her screens flicker with it, her speakers crackle,
+and its wind pushes her steadily aside.
 Each time her autopilot fights her back onto her course and her height, and once it has passed her computer says
 "All clear. You can let go now." as a green tick shows in the badge. Nothing of hers ever breaks and nobody aboard is
 hurt, however hard she is thrown: for a few seconds after a rock strikes her, half a minute after a giant, no fall and
