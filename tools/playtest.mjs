@@ -1365,6 +1365,33 @@ function checkRocketSelfDestructOnTheGround() {
   creative();
 }
 
+// A freighter standing on the ground: her self-destruct button is on her starboard wall by the co-pilot's jump seat as
+// she is built, arming it puts her together and sounds the alarm, and as its countdown runs out she blows up, whoever
+// stood aboard given a parachute, as the rocket's does. Putting a ship her size together takes longer than the rocket,
+// so her countdown, not a third press, is what is waited for.
+function checkFreighterSelfDestruct() {
+  layDown("freighter");
+  const [found] = must("find skyliners:self_destruct_button 128 1").rows;
+  expect(found, "freighter: she is built with a self-destruct button");
+  if (!found) {
+    return;
+  }
+  const [x, y, z] = found.at_abs;
+  const { props } = must(`block ${x},${y},${z}`);
+  expect(props?.mount === "wall", "freighter: her self-destruct button is fixed to her wall", `${props?.mount}`);
+  const [dx, dz] = STEPS[props?.facing ?? "north"];
+  must(`fly off; server tp @p ${x + 0.5 - dx * 1.5} ${y - 1} ${z + 0.5 - dz * 1.5}; wait 20t`);
+  const since = armButton(`${x},${y},${z}`);
+  expect(heard("*self_destruct_siren*", since, DESTRUCT_ARMED_TICKS), "freighter: standing as blocks, arming the button puts her together and sounds the alarm");
+  const freighter = findShipFlying("skyliners:engine_grille");
+  expect(heard("*self_destruct_blast*", since, DESTRUCT_ARMED_TICKS), "freighter: as its countdown runs out, she blows up",
+    played("*self_destruct*", since).map(soundOf).join("; ") || "no self-destruct sound since arming");
+  expect(!stillThere(freighter), "freighter: blown up on the ground, she is gone");
+  expect(wearsParachute(), "freighter: whoever stood aboard is given a parachute");
+  must(`server tp @p 0 ${ground} 0`);
+  creative();
+}
+
 // The freighter, watched from the ground: she lifts straight off her legs and climbs to the height set, hovers there
 // level, roars from outside, and is not heard spooling up as she merely holds her spot, nor as someone comes back to
 // her; then, nobody aboard, she comes down by herself and switches off on her legs. Hovering, her mains flickered on
@@ -4904,6 +4931,7 @@ const CHECKS = {
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
+  "freighter-self-destruct": { run: checkFreighterSelfDestruct, about: "a freighter's self-destruct button by her jump seats arms her, counts down and blows her up, whoever stood aboard given a parachute" },
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },
   "rocket-self-destruct-flight": { run: checkRocketSelfDestructInFlight, about: "a rocket blows up in flight, her roar stops, and whoever was aboard floats down unhurt", slow: true },
   "rocket-switches-off": { run: checkRocketSwitchesOffWhereSheRests, about: "a rocket switches off where she comes to rest, with the ground lower under her middle or hidden by leaves", slow: true },

@@ -2781,7 +2781,8 @@ at her nose set into the outer walls of her prongs' tunnels, only their nozzles 
 hidden. In her cockpit the autopilot's control head stands between the pilot's seat and the co-pilot's, jump seats
 behind them, her console curving round
 before them, and the autopilot screen on the wall at the co-pilot's right hand, so the view ahead through her canopy is
-clear. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
+clear; on that wall just aft of the co-pilot's jump seat, over the ledge, is her self-destruct button (see
+Self-destruct), which blows her up as it does the airliner and the rocket. Set her to fly and she is assembled first, as the zeppelin and the rocket are; then her thrusters spool up on her legs
 for three seconds and she lifts straight off them, rises a dozen blocks clear of anything round her before going
 anywhere, and climbs to her height, her deck level all the way. Once her feet are sixteen blocks over the ground her legs
 draw up into her belly, with a clunk and a hydraulic whine heard on her deck and on the ground under her: each strut's

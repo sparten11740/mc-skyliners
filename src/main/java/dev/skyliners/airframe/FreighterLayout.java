@@ -28,6 +28,7 @@ import dev.skyliners.block.GalleyOvenBlock;
 import dev.skyliners.block.GalleyUnitBlock;
 import dev.skyliners.block.LegBayBlockEntity;
 import dev.skyliners.block.LightTone;
+import dev.skyliners.block.Mount;
 import dev.skyliners.block.PalletRackBlock;
 import dev.skyliners.block.ParcelScannerBlock;
 import dev.skyliners.block.PilotSeatBlock;
@@ -1051,8 +1052,9 @@ public final class FreighterLayout extends HullLayout {
     /**
      * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its nose,
      * the pilot's seat on its left and the co-pilot's on its right, a sidestick at each outboard hand, the jump seats
-     * behind them, and the autopilot screen at the co-pilot's right, facing in, linked to the head; the head wired once
-     * it stands; her canopy's dimmer and lining; and her console curving round before the seats.
+     * behind them, and the autopilot screen at the co-pilot's right, facing in, linked to the head; her self-destruct
+     * button on the wall just aft of the co-pilot's jump seat; the head wired once it stands; her canopy's dimmer and
+     * lining; and her console curving round before the seats.
      */
     private void cockpit() {
         int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
@@ -1072,6 +1074,7 @@ public final class FreighterLayout extends HullLayout {
         seat(x + PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
         // Laid out nose north, her right is east: the screen at the co-pilot's right faces west, into her cockpit.
         autopilotScreen(new BlockPos(x + SCREEN_OUT, y + SCREEN_UP, z - AutopilotScreenBlock.COLUMNS / 2), Direction.WEST);
+        selfDestruct(new BlockPos(x + PILOTS_OUT, y + 1, z + JUMP_BEHIND + 1), at);
         canopyDimmer(new BlockPos(x - PILOTS_OUT - 1, y + DIMMER_UP, z));
         canopyLining();
         FreighterConsole.build(this, at);
@@ -1709,6 +1712,21 @@ public final class FreighterLayout extends HullLayout {
      * The autopilot screen facing a way, its first part, at the bottom on the left as one looks at it, where given,
      * linked to the control head once it stands.
      */
+    /**
+     * Her self-destruct button, the airliner's own (see {@link SelfDestructFitting}): fixed to her starboard wall over
+     * the ledge just aft of the co-pilot's jump seat, where whoever stands by the seats faces it, linked to her control
+     * head; only where that spot is open, and none with the server config's {@code selfDestruct} off, as on the
+     * airliner and the rocket.
+     */
+    private void selfDestruct(BlockPos button, BlockPos head) {
+        if (!SkylinersConfig.SELF_DESTRUCT.get() || !isOpen(button.getX(), button.getY(), button.getZ())) {
+            return;
+        }
+        // Laid out nose north, her starboard wall is east of it: whoever presses it faces east.
+        set(button.getX(), button.getY(), button.getZ(), SelfDestructFitting.button(Mount.WALL, Direction.EAST));
+        fit(button, SelfDestructFitting.linkedTo(button, head));
+    }
+
     private void autopilotScreen(BlockPos origin, Direction facing) {
         BlockState screen = SkylinersRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, facing);
         Direction viewersRight = facing.getCounterClockWise();
