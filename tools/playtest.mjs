@@ -57,6 +57,10 @@ const FLIGHT_SPEED = 50;
 const CLIMB_OUT_TICKS = 1400;
 const FLIGHT_HEIGHT_WANTED = 60;
 const LANDING_TICKS = 2400;
+// Cruising, how long its engines are watched, in seconds, and how many times a second its thrusters may be sent to every
+// client near at most: holding its speed by flipping every engine between two signals, they were sent about 290 times.
+const CRUISE_WATCH_SECONDS = 20;
+const CRUISE_THRUSTER_SENDS = 40;
 // How often something being waited for is looked for, in ticks.
 const LOOK_EVERY = 20;
 // A painting: how many pieces each of the fleet's has, and how far out in front of it must be clear, in blocks.
@@ -3805,6 +3809,11 @@ function flyAndLand() {
   must(`wait ${CLIMB_OUT_TICKS}t`, BUILD_SECONDS);
   const cruising = must("sable:info here brief");
   expect(cruising.agl >= FLIGHT_HEIGHT_WANTED, "flight: it takes off and climbs", `${cruising.agl} blocks over the ground at ${cruising.speed} blocks a second`);
+  const watched = must(`perf ${CRUISE_WATCH_SECONDS}s cruise`, BUILD_SECONDS).summary;
+  const sends = (watched?.server?.block_changes ?? []).filter((row) => row.block === "createpropulsion:creative_thruster")
+    .reduce((sum, row) => sum + row.per_s, 0);
+  expect(sends < CRUISE_THRUSTER_SENDS, "flight: cruising, its engines hold their thrust, not flickering and sending every client near afresh",
+    `thrusters sent ${round(sends)} times a second`);
   const since = now();
   must("skyliners:autopilot land");
   const landed = waitForMessage("*Landed*", since, LANDING_TICKS);

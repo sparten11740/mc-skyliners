@@ -892,7 +892,7 @@ public final class FreighterPilot {
             List<BlockPos> cluster = clusters.get(i);
             int least = lastShare > 0 ? IDLE_SIGNAL * cluster.size() : 0;
             clusterTotals[i] = Math.max(least, held(each * FULL * cluster.size(), clusterTotals[i]));
-            spread(level, origin, cluster, clusterTotals[i]);
+            Relays.spread(level, origin, cluster, clusterTotals[i], false);
         }
     }
 
@@ -940,8 +940,8 @@ public final class FreighterPilot {
         mainsTotal = boosting ? FULL * wiring.mains().size() : held(Math.max(0, shove) * FULL * wiring.mains().size(), mainsTotal);
         double braking = boosting ? 0 : Math.max(0, -shove) * mostMains() / Math.max(1, mostRetros());
         retrosTotal = held(Math.min(1, braking) * FULL * wiring.retros().size(), retrosTotal);
-        spread(level, origin, wiring.mains(), mainsTotal);
-        spread(level, origin, wiring.retros(), retrosTotal);
+        Relays.spread(level, origin, wiring.mains(), mainsTotal, false);
+        Relays.spread(level, origin, wiring.retros(), retrosTotal, false);
         double speedingAcross = Mth.clamp(SPEED_GAIN * (across - goingAcross), -MOST_ACCELERATION, MOST_ACCELERATION);
         double sideways = mass * speedingAcross / Math.max(1, 2 * mostJet());
         Jets jets = wiring.jets();
@@ -967,16 +967,6 @@ public final class FreighterPilot {
     private static void drive(ServerLevel level, BlockPos origin, @Nullable BlockPos relay, int signal) {
         if (relay != null) {
             Relays.drive(level, origin, relay, signal, false);
-        }
-    }
-
-    /** A set of thrusters at a total signal, spread so their sum gives it as nearly as it can. */
-    private static void spread(ServerLevel level, BlockPos origin, List<BlockPos> relays, int total) {
-        int count = relays.size();
-        int each = total / Math.max(1, count);
-        for (int i = 0; i < count; i++) {
-            // The signals left over once each has its even share go one more to the first ones.
-            Relays.drive(level, origin, relays.get(i), Math.min(FULL, each + (i < total - each * count ? 1 : 0)), false);
         }
     }
 

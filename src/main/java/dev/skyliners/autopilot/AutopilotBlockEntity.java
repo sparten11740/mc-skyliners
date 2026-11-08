@@ -488,16 +488,20 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final int JET_STEADY = 1;
     /**
-     * How far from an engine's signal the thrust wanted of it must be before the engine is set afresh, in steps of the
-     * 15: more than half a step, so a thrust between two steps holds one of them (see {@link #driveEngine}).
+     * How far from the total its relays were set to the thrust wanted of an engine must be before they are set afresh,
+     * in steps of one relay's signal: more than half a step, so a thrust between two totals holds one of them (see
+     * {@link #driveEngine}).
      */
     private static final double ENGINE_HOLD = 0.75;
 
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
     /** The control jets' signals as last set, not saved: set afresh on the first tick after loading. */
     private final Map<Channel, Integer> jetSignals = new EnumMap<>(Channel.class);
-    /** The engines' signals as the autopilot last set them, not saved: set afresh on the first tick after loading. */
-    private final Map<Channel, Integer> engineSignals = new EnumMap<>(Channel.class);
+    /**
+     * The total of each engine's relays' signals as the autopilot last set them (see {@link #driveEngine}), not saved:
+     * set afresh on the first tick after loading.
+     */
+    private final Map<Channel, Integer> engineTotals = new EnumMap<>(Channel.class);
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
     /**
@@ -897,7 +901,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         return level != null && Stream.of(ENGINES).anyMatch(this::running);
     }
 
-    /** Whether an engine is asked for thrust, as the first of its relays says: they all carry the same signal. */
+    /**
+     * Whether an engine is asked for thrust, as the first of its relays says: given a signal whenever any of them is,
+     * whether by its thrust lever or by the autopilot sharing its thrust out over them (see {@link #driveEngine}).
+     */
     private boolean running(Channel engine) {
         List<BlockPos> offsets = relays.getOrDefault(engine, List.of());
         if (offsets.isEmpty()) {
@@ -2436,17 +2443,21 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Sets an engine for so much thrust: to the signal it was set to last, until the thrust is {@link #ENGINE_HOLD}
-     * from it, then to the nearest. Rounded afresh each tick, a cruise's thrust between two steps flipped the engines
-     * between them several times a second, and each flip sends every client near the engine's relays and thrusters
-     * afresh, and has it redraw the part of the airliner round them.
+     * Sets an engine for so much thrust, shared out over its relays so their signals add up to it as nearly as they
+     * can (see {@link Relays#spread}): the total it was set to last is kept until the thrust wanted is
+     * {@link #ENGINE_HOLD} from it. Cruising at 50 blocks a second, an engine wants less than two of a relay's 15
+     * steps, so with one signal for all its relays a step was most of its thrust: holding the speed flipped every
+     * engine between two steps about twice a second, and each flip sent every client near each of the engine's relays
+     * and some forty thrusters afresh, about 130 KiB a second. Shared out, a step of the total moves one relay alone.
      */
     private void driveEngine(ServerLevel level, Channel engine, double thrust) {
-        double wanted = Mth.clamp(thrust, 0, 15);
-        Integer last = engineSignals.get(engine);
-        int signal = last != null && Math.abs(wanted - last) < ENGINE_HOLD ? last : (int) Math.round(wanted);
-        engineSignals.put(engine, signal);
-        drive(level, engine, signal);
+        mendLinks(level);
+        List<BlockPos> engineRelays = relays.getOrDefault(engine, List.of());
+        double wanted = Mth.clamp(thrust, 0, 15) * engineRelays.size();
+        Integer last = engineTotals.get(engine);
+        int total = last != null && Math.abs(wanted - last) < ENGINE_HOLD ? last : (int) Math.round(wanted);
+        engineTotals.put(engine, total);
+        Relays.spread(level, worldPosition, engineRelays, total, engine.synced());
     }
 
     /**

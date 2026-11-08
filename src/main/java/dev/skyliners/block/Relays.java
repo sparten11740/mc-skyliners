@@ -55,6 +55,19 @@ public final class Relays {
         }
     }
 
+    /**
+     * Sets a group of relays to signals adding up to a total, as nearly as they can: each gets an even share and what
+     * is left over goes one more to the first ones, so the first is given a signal whenever any is. A group of
+     * thrusters is so set far more finely than by one signal for all, a step of the total moving one relay alone.
+     */
+    public static void spread(Level level, BlockPos origin, List<BlockPos> offsets, int total, boolean synced) {
+        int count = offsets.size();
+        int each = total / Math.max(1, count);
+        for (int i = 0; i < count; i++) {
+            drive(level, origin, offsets.get(i), each + (i < total - each * count ? 1 : 0), synced);
+        }
+    }
+
     /** Whether the block is a relay, what a control's links lead to. */
     public static boolean isRelay(BlockState state) {
         return state.getBlock() instanceof ThrustRelayBlock;
