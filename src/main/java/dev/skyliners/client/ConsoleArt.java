@@ -10,6 +10,7 @@ import dev.skyliners.console.ConsoleBlockEntity;
 import dev.skyliners.console.ConsoleKind;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
@@ -30,9 +31,10 @@ import org.joml.Matrix4f;
  * hyperspace jump's starburst, dark with no pin to jump to, pulsing cyan while she can, and streaming streaks inside a
  * filling ring as her drive spools up, its big blue button lit the same; and the climb boost's arrow up over flames,
  * dark while she cannot climb so, pulsing orange while she can, flashing as dashes race up past it as
- * it fires and ringed red while it rests, its big orange button lit the same. Along each desk stand chunky controls of
- * its kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly and only one
- * lamp blinks.
+ * it fires and ringed red while it rests, its big orange button lit the same; and while something holds her take-off,
+ * the scanner shows it in place of its scope, her ramp with someone on it flashing amber. Along each desk stand chunky
+ * controls of its kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly
+ * and only one lamp blinks.
  */
 final class ConsoleArt {
     /** Each layer of a face drawn just off the one under it, in blocks. */
@@ -60,6 +62,8 @@ final class ConsoleArt {
     /** How often a lamp blinks, in ticks lit and as many dark, the standby lamp slower. */
     private static final int BLINK = 9;
     private static final int STANDBY_BLINK = 30;
+    /** How long what holds her take-off flashes bright on the scanner's screen, and as long dim, in ticks. */
+    private static final int HELD_FLASH = 10;
     /** How fast the power sign pulses on standby, in ticks a pulse. */
     private static final int STANDBY_PULSE = 60;
     /** The scope's beam: how far it turns each tick, in degrees, and how far round its fading trail reaches. */
@@ -110,12 +114,13 @@ final class ConsoleArt {
      * climb and heading as her instruments show them, her lift's and her mains' shares of full and where her boost
      * stands, her hyperspace jump and her climb boost, and whether she is a freighter at all; the drawing clock's ticks
      * for what only moves for show; how long ago the console was last touched, in ticks, negative for never; which of
-     * its toggles are up, a bit each; and the blips its scope shows.
+     * its toggles are up, a bit each; the blips its scope shows; and what holds her take-off, by its picture's word,
+     * if anything does.
      */
     record Readings(boolean powered, double speed, double height, double climb, double heading, double lift, double mains,
                     FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, FreighterClimbBoost.Shown climbBoost, boolean freighter, float ticks,
                     float sinceTouched, int toggles,
-                    List<Blip> blips) {
+                    List<Blip> blips, @Nullable String heldBy) {
     }
 
     /** One blip on the scope: its bearing off her heading, in degrees, its distance, in blocks, and whether it is her pin. */
@@ -133,6 +138,10 @@ final class ConsoleArt {
             standby(buffers, matrix, height, readings);
             return;
         }
+        if (kind == ConsoleKind.SCANNER && readings.heldBy() != null) {
+            held(buffers, matrix, height, readings);
+            return;
+        }
         switch (kind) {
             case READOUTS -> readouts(pose, buffers, width, height, readings);
             case SCANNER -> scope(buffers, matrix, width, height, readings);
@@ -142,6 +151,15 @@ final class ConsoleArt {
             case JUMP -> jumpScreen(buffers, matrix, width, height, readings);
             case CLIMB -> climbScreen(buffers, matrix, width, height, readings);
         }
+    }
+
+    /**
+     * Her take-off held on her legs: in place of the scope, what holds her, her ramp with someone standing on it, say,
+     * flashing big and amber in the middle, so whoever is to fly her sees why she waits.
+     */
+    private static void held(MultiBufferSource buffers, Matrix4f matrix, double height, Readings readings) {
+        boolean lit = (int) (readings.ticks() / HELD_FLASH) % 2 == 0;
+        ScreenDrawing.picture(buffers, matrix, icon("held_" + readings.heldBy()), 0, height / 2, height * 0.4, 3 * LAYER, lit ? AMBER : fade(AMBER, 0.35F));
     }
 
     /** With no ship to read: the power sign, pulsing slowly amber in the middle. */

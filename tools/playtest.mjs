@@ -1092,7 +1092,10 @@ function checkFreighterFlight() {
   must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
   const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - height) < FREIGHTER_HOLD_WITHIN,
     FREIGHTER_UP_TICKS);
-  expect(up, "freighter: she lifts off her legs and climbs to the height set", up ? `at ${up.altitude}` : "");
+  // Not up, what she is doing says why: still held on her legs by what her console shows, or flying but short of it.
+  const last = up ?? freighterReport();
+  expect(up, "freighter: she lifts off her legs and climbs to the height set",
+    up ? `at ${up.altitude}` : `${last?.phase} at ${last?.altitude}, lift ${last?.lift}, legs ${last?.legs}, held by ${last?.held}`);
   if (!up) {
     return;
   }
@@ -1314,6 +1317,7 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   const held = freighterReport();
   expect(held?.phase === "takeoff" && held.lift === 0, "freighter: set to fly with someone on her ramp, she waits on her legs",
     `${held?.phase}, lift ${held?.lift}`);
+  expect(held?.held === "ramp", "freighter: held so, her console's scanner shows her ramp holding her", `${held?.held}`);
   expect(heard("block.note_block.bell", since, 0), "freighter: her ramp chimes for them to step off");
   const freighter = findShipFlying("skyliners:engine_grille");
   const [{ at: panelAboard }] = must(`sable:find ${freighter} skyliners:ramp_panel 1 side=server`).rows;
@@ -1324,7 +1328,31 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   must(`sable:tp ${freighter} skyliners:autopilot; wait 20t; skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`);
   const up = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", FREIGHTER_UP_TICKS);
   expect(up, "freighter: set to fly again with nobody on it, her ramp folds away and she lifts off", up ? "" : `still ${freighterReport()?.phase}`);
+  expect(up?.held === "none", "freighter: lifting off, her console no longer shows anything holding her", `${up?.held}`);
   must("skyliners:autopilot off");
+}
+
+// A freighter set to fly with the player sat at her gunner's seat, under her top dome, lifts off as she does with them
+// on the ground beside her, nothing holding her: one was seen waiting on her legs so.
+function checkFreighterGunnerTakeoff() {
+  layDown("freighter");
+  const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
+  const [x, , z] = cannon?.at_abs ?? [];
+  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
+    .sort((a, b) => a[1] - b[1])[0];
+  if (!seat) {
+    expect(false, "freighter: she has a gunner's seat under her dome");
+    return;
+  }
+  must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] - 0.5}; wait 20t`);
+  sitAt(seat);
+  expect(gunnerSight() !== undefined, "freighter: the player sits at her gunner's seat");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", FREIGHTER_UP_TICKS);
+  const last = up ?? freighterReport();
+  expect(up, "freighter: set to fly from her gunner's seat, she lifts off", up ? "" : `still ${last?.phase}, lift ${last?.lift}, held by ${last?.held}`);
+  must("skyliners:autopilot land; key press key.sneak 10t; wait 10t");
 }
 
 // A freighter's top turret: the ladder up her core is climbed from her deck with the walk key alone to the gunner's
@@ -3300,6 +3328,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
+  "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow's bolt is seen leaving it, strikes a creeper, never a cow, and it vents after three quick shots" },

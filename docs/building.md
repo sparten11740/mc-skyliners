@@ -353,7 +353,8 @@ little steps, both of which the ground passes through (`SableFlight.rampPlate`, 
 while anyone stands where it would move next (`BoardingRamp.anyoneInTheSwing`); `BoardingRampRenderer`
 draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
-long off. Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
+long off and shows the clients what holds her (`FreighterFlight.heldBy`), drawn on her console's scanner by its picture.
+Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
 a landing it comes down only once her cockpit is `quiet`, so it and her announcements never talk over each other.
 `Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
 `LaserCrossbowItem` keeps its charge and heat on its stack as data components, worked out on its holder's client as on

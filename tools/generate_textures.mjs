@@ -8952,6 +8952,16 @@ function consoleTextures() {
       return paint(x, y) ?? GLASS;
     }, 1);
   }
+  // Her take-off held by someone on her ramp: her hull's edge at the left, her ramp sloping down from under it to the
+  // ground at the right, and someone standing on it, their arms out.
+  const HELD_RAMP_PERSON = [[8, 2], [9, 2], [8, 3], [9, 3], [7, 4], [8, 4], [9, 4], [10, 4], [6, 5], [8, 5], [9, 5], [11, 5], [6, 6], [8, 6],
+    [9, 6], [11, 6], [8, 7], [9, 7], [8, 8], [9, 8], [7, 9], [10, 9], [7, 10], [10, 10], [10, 11], [10, 12]];
+  const HELD_RAMP_ROWS = Array.from({ length: SIZE }, (_, y) => Array.from({ length: SIZE }, (_, x) => {
+    const rampTop = 9 + Math.floor(x / 2.5);
+    const ramp = y >= rampTop && y <= rampTop + 1;
+    const hull = x <= 1 && y >= 4 && y <= 8;
+    return ramp || hull || HELD_RAMP_PERSON.some(([px, py]) => px === x && py === y) ? "#" : ".";
+  }).join(""));
   const iconsOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/console");
   mkdirSync(iconsOutput, { recursive: true });
   const ICONS = {
@@ -8977,6 +8987,7 @@ function consoleTextures() {
       "......####......", "################", "################", "......####......", ".....#.##.#.....", "....#..##..#....",
       "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
     climb_boost: CLIMB_ROWS,
+    held_ramp: HELD_RAMP_ROWS,
     power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
       ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",
       "....########....", ".....######.....", "................", "................"],

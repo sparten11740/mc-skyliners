@@ -2819,8 +2819,10 @@ and once she has landed with her autopilot off and her computer has had its say,
 as soon as she is set to fly; her take-off waits on her legs until it is all away. Press its button while she is coming
 in to land and it clicks, its lamp blinking amber, and the ramp comes down by itself as soon as she has settled on her
 legs. Standing on it, or on its plate while it is up, holds it: it chimes until you step off, and if her take-off is
-waiting, everyone aboard is told so and her cockpit hears the chime; held half a minute, she calls her take-off off with
-a low note, her autopilot switching off and the ramp staying down. Walk onto it while it swings and it holds you up:
+waiting, everyone aboard is told so and hears the chime wherever they are, in her cockpit or at her gunner's seat, while
+the scanner on her console shows her ramp with someone standing on it, flashing amber, in place of its scope; held half
+a minute, she calls her take-off off with a low note, her autopilot switching off and the ramp staying down.
+Walk onto it while it swings and it holds you up:
 coming down it carries you down with it, and going up it stops where it is, chiming, until you step off it. It never
 comes down onto anyone standing under it, nor shuts its hatch on anyone in it, but stops with a chime until they move.
 From the ground, the amber button low on her
