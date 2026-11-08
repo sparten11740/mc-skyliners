@@ -10,26 +10,23 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
- * A freighter's hyperspace jump as those outside her see and hear it, on the ground or aboard another ship (see
- * {@link HyperspaceWake}): the tardigrade's spore-drive jump, its streaks of light and its whump, grown to a ship her
- * size. As she lets go, short streaks of light rush in to her hull from all round, more and more, keeping up with her
- * as she flies on, over a deep hum rising. Then she is gone in a white flash: long streaks shoot off ahead of where she
- * was, the way she pointed, glitter hangs in the air there and a ring of light closes in on the hole she left, with a
- * whoomph heard far off. Where she comes out, streaks rush in from behind her over a swelling rush and are gone into
- * the spot, and she is there in a flash, a ring of streaks bursting out round her and glitter, with a boom. The nearer
- * the onlooker, the brighter a faint white flash over their view as she goes and as she comes out. And she is drawn
- * stretching into the jump and snapping back out of it (see {@link HyperspaceStretch}).
+ * A freighter's hyperspace jump as those outside her see it, on the ground or aboard another ship (see
+ * {@link HyperspaceWake}): the tardigrade's spore-drive jump, its streaks of light, grown to a ship her size. As she
+ * lets go, short streaks of light rush in to her hull from all round, more and more, keeping up with her as she flies
+ * on. Then she is gone in a white flash: long streaks shoot off ahead of where she was, the way she pointed, glitter
+ * hangs in the air there and a ring of light closes in on the hole she left. Where she comes out, streaks rush in from
+ * behind her and are gone into the spot, and she is there in a flash, a ring of streaks bursting out round her and
+ * glitter. The nearer the onlooker, the brighter a faint white flash over their view as she goes and as she comes out.
+ * And she is drawn stretching into the jump and snapping back out of it (see {@link HyperspaceStretch}). What is heard
+ * of it, much further off, is {@link HyperspaceSounds}.
  *
  * <p>One message from the server a step, every particle made here; the streaks heed the player's particle setting by
  * themselves, and the flashes and the glitter are thinned out here, as they are shown past the game's own limit on
@@ -88,12 +85,11 @@ public final class HyperspaceWakes {
     private static final int FLASH_TICKS = 14;
     /** The share of the flashes and the glitter shown with the particle setting at Decreased: half; at Minimal, none. */
     private static final float DECREASED_SHARE = 0.5F;
-    /** How loud her jump is heard, as far as its sound reaches (see its {@code heard}, in blocks, in sounds.json). */
-    private static final float VOLUME = 1.0F;
     /**
      * How much later than the server a client shows a ship where she is, in ticks, as Sable smooths her flight between
      * the places it is sent: the flash where she goes and comes out and the streaks rushing in wait as long, so she is
-     * gone inside the flash and comes out as the streaks are gone into the spot.
+     * gone inside the flash and comes out as the streaks are gone into the spot, and so do her whump and thunderclap
+     * (see {@link HyperspaceSounds}).
      */
     static final int SHOWN_LATER = 4;
 
@@ -120,7 +116,7 @@ public final class HyperspaceWakes {
     private HyperspaceWakes() {
     }
 
-    /** A step of a jump seen from outside: its sound now, and what is seen of it from now on (see {@link #tick}). */
+    /** A step of a jump seen from outside: what is seen of it from now on (see {@link #tick}). */
     public static void seen(HyperspaceWake wake) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) {
@@ -132,11 +128,6 @@ public final class HyperspaceWakes {
         }
         WAKES.add(new Wake(wake, DrawingClock.wholeTicks()));
         HyperspaceStretch.seen(level, wake);
-        if (wake.stage() == HyperspaceWake.Stage.GATHER) {
-            hear(level, SkylinersRegistry.FREIGHTER_HYPERSPACE_OUT.get(), wake.at());
-        } else if (wake.stage() == HyperspaceWake.Stage.INBOUND) {
-            hear(level, SkylinersRegistry.FREIGHTER_HYPERSPACE_IN.get(), wake.at());
-        }
     }
 
     /** Once a client tick: the steps under way played on, those over let go. */
@@ -307,10 +298,5 @@ public final class HyperspaceWakes {
             case DECREASED -> DECREASED_SHARE;
             case MINIMAL -> 0;
         };
-    }
-
-    /** One of her jump's sounds, heard from where it happens, as far as it reaches. */
-    private static void hear(ClientLevel level, SoundEvent sound, Vec3 at) {
-        Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(sound, SoundSource.BLOCKS, VOLUME, 1.0F, level.getRandom(), at.x, at.y, at.z));
     }
 }

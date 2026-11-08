@@ -984,11 +984,16 @@ public final class SkylinersRegistry {
     /** Her jump: the whine shooting up, a moment's silence and a falling boom. */
     public static final DeferredHolder<SoundEvent, SoundEvent> JUMP_DRIVE_JUMP = sound("jump_drive_jump");
     /**
-     * Her jump heard from outside, far off: going, a deep hum rising as light gathers on her, into a whoomph as she
-     * goes; and coming out, a rush swelling as the streaks rush in, into a boom as she is there.
+     * Her jump heard from outside (see the client's HyperspaceSounds): going, her charge whining up as she lets go, then
+     * a whump with a crack and the air ripping back in as she goes, near by and duller far off; coming out, a rush
+     * swelling as the streaks rush in, then a thunderclap and thunder rolling on as she is there, near by and far off.
      */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_CHARGE = sound("freighter_hyperspace_charge");
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_OUT = sound("freighter_hyperspace_out");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_OUT_FAR = sound("freighter_hyperspace_out_far");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_RUSH = sound("freighter_hyperspace_rush");
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_IN = sound("freighter_hyperspace_in");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_IN_FAR = sound("freighter_hyperspace_in_far");
     /** The Spookie greeting someone: a hoot rising twice, and a chuff. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SPOOKIE_GREET = sound("spookie_greet");
     /** The Spookie happy: a rolling purr rising into a hoot. */

@@ -529,6 +529,16 @@ const SEEN_IN_NEAR = 16;
 const SEEN_OUT_OFF = 64;
 const SEEN_STRETCH = 3;
 const SEEN_STRETCH_FRAMES = 4;
+// Her jump heard from far off: the height the listener stands at, on a block put down at the top of the world straight
+// up from halfway along her course, so the land round them, and she with it, stays loaded; how far off both ends they
+// must be, in blocks; how fast sound travels, in blocks a tick, and how much later than that a client hears the bangs,
+// as it shows her later than the server has her (HyperspaceWakes.SHOWN_LATER), in ticks; and how many ticks either way
+// of that each bang may be heard, as the client's ticks and the server's do not keep step.
+const HEARD_PERCH = 320;
+const HEARD_FAR_LEAST = 300;
+const HEARD_SOUND_SPEED = 17.15;
+const HEARD_SHOWN_LATER = 4;
+const HEARD_SLACK = 3;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -3099,13 +3109,17 @@ function checkFreighterJump() {
     aboard.pos?.map(round).join(","));
   const flashes = must(`particles since=${pressed}`).rows.find((row) => row.type === "flash")?.count ?? 0;
   expect(flashes === 0, "freighter: whoever is aboard sees the jump from inside only, not the flashes those outside her see", `${flashes} flashes`);
+  const outside = played("skyliners:freighter_hyperspace_*", pressed);
+  expect(outside.length === 0, "freighter: and hears it from inside only, not the charge, whump, rush or thunderclap those outside her hear",
+    outside.map(soundOf).join(", "));
   must("skyliners:autopilot land");
 }
 
 // A freighter's hyperspace jump watched from the ground, where once she only vanished and reappeared: someone standing
-// off her course, between where she goes from and where she comes out, hears her go with a whoomph where she was and
-// come out with a boom over her pin, and sees a flash at each end, glitter hanging in the air and her streaks of light,
-// and her stretching out ahead into the jump and snapping back out of a stretch over her pin.
+// off her course, between where she goes from and where she comes out, hears her charge whine up and go with a whump
+// where she was, and a rush and a thunderclap over her pin, each as heard near by, and sees a flash at each end,
+// glitter hanging in the air and her streaks of light, and her stretching out ahead into the jump and snapping back out
+// of a stretch over her pin.
 function checkFreighterJumpSeen() {
   const site = layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -3129,11 +3143,14 @@ function checkFreighterJumpSeen() {
   must(`use ${at.join(",")}`);
   expect(Boolean(heard("*jump_drive_spool*", pressed, LOOK_EVERY)), "freighter: her jump button spools her drive up", site.what);
   must(`server tp @p ${x + SEEN_PIN / 2} ${ground} ${z + SEEN_ASIDE}`);
-  const comingOut = heard("*freighter_hyperspace_in*", pressed, JUMP_WITHIN);
-  const going = played("*freighter_hyperspace_out*", pressed, "wait 40t; ")[0];
+  const comingOut = heard("skyliners:freighter_hyperspace_in", pressed, JUMP_WITHIN);
+  const going = played("skyliners:freighter_hyperspace_out", pressed, "wait 40t; ")[0];
   const off = (sound) => (sound ? Math.hypot(sound.at_abs[0] - pin[0], sound.at_abs[2] - pin[1]) : NaN);
-  expect(off(going) >= SEEN_OUT_OFF, "freighter: watched from the ground, she is heard going, where she was", going ? `${round(off(going))} blocks off her pin` : "not heard");
-  expect(off(comingOut) <= SEEN_IN_NEAR, "freighter: and heard coming out, over her pin", comingOut ? `${round(off(comingOut))} blocks off it` : "not heard");
+  expect(off(going) >= SEEN_OUT_OFF, "freighter: watched from the ground, she is heard going with a whump, where she was", going ? `${round(off(going))} blocks off her pin` : "not heard");
+  expect(off(comingOut) <= SEEN_IN_NEAR, "freighter: and heard coming out with a thunderclap, over her pin", comingOut ? `${round(off(comingOut))} blocks off it` : "not heard");
+  const leadUp = ["charge", "rush"].map((part) => played(`skyliners:freighter_hyperspace_${part}`, pressed)[0]);
+  expect(leadUp.every(Boolean) && leadUp[0].tick < going?.tick && leadUp[1].tick < comingOut?.tick,
+    "freighter: her charge whines up before she goes, and a rush swells before she comes out", leadUp.map((sound) => (sound ? soundOf(sound) : "not heard")).join(", "));
   const seen = Object.fromEntries(must(`particles since=${pressed}`).rows.map((row) => [row.type, row.count]));
   expect((seen.flash ?? 0) >= SEEN_FLASHES, "freighter: a flash where she goes and another where she comes out", `${seen.flash ?? 0} flashes`);
   expect((seen.end_rod ?? 0) >= SEEN_GLITTER, "freighter: glitter in the air at both ends", `${seen.end_rod ?? 0} specks`);
@@ -3149,6 +3166,52 @@ function checkFreighterJumpSeen() {
   const there = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
   expect(there < JUMP_NEAR, "freighter: she came out over her pin", out ? `middle at ${out.middle}` : "no report");
   must(`sable:tp ${at.join(",")}; wait 20t; skyliners:autopilot land`);
+}
+
+// A freighter's hyperspace jump heard from far off, where once it was heard no further than it was seen: someone over
+// three hundred blocks from both ends, high over the ground between them, hears her go with a whump and come out with a
+// thunderclap, each the duller one heard far off, and each as much later than she went as sound takes to come that far,
+// as thunder comes a second after the lightning.
+function checkFreighterJumpHeardFar() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + FREIGHTER_CLIMB;
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(cruising, "freighter: she lifts off and cruises");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [x, z] = cruising.middle.split(",").map(Number);
+  const pin = [x + SEEN_PIN, z];
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE} pin=${pin[0]},${pin[1]}; wait 20t`);
+  const { at } = must(`sable:find ${freighter} skyliners:console_jump 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  // Off her once the button has spooled her drive up, as freighter-jump-seen does, and up to the top of the world.
+  const pressed = now();
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*jump_drive_spool*", pressed, LOOK_EVERY)), "freighter: her jump button spools her drive up", site.what);
+  const perch = [Math.floor(x + SEEN_PIN / 2), HEARD_PERCH, Math.floor(z)];
+  must(`server setblock ${perch[0]} ${perch[1] - 1} ${perch[2]} glass; server tp @p ${perch[0] + 0.5} ${perch[1]} ${perch[2] + 0.5}`);
+  const thunder = heard("skyliners:freighter_hyperspace_in*", pressed, JUMP_WITHIN);
+  const whump = played("skyliners:freighter_hyperspace_out*", pressed, "wait 40t; ")[0];
+  const { pos } = must("status");
+  const ear = [pos[0], pos[1] + EYE_HEIGHT, pos[2]];
+  const offEar = (sound) => (sound ? Math.hypot(...sound.at_abs.map((v, i) => v - ear[i])) : NaN);
+  expect(offEar(whump) >= HEARD_FAR_LEAST && offEar(thunder) >= HEARD_FAR_LEAST, "freighter: the listener stands over three hundred blocks from where she goes and where she comes out",
+    `${round(offEar(whump))} and ${round(offEar(thunder))} blocks off`);
+  expect(whump?.id === "skyliners:freighter_hyperspace_out_far", "freighter: heard from far off, she goes with a whump, the duller one", whump ? soundOf(whump) : "not heard");
+  expect(thunder?.id === "skyliners:freighter_hyperspace_in_far", "freighter: and comes out with a thunderclap, the duller one", thunder ? soundOf(thunder) : "not heard");
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  const jumped = freighterReport()?.jumped_at ?? -1;
+  for (const [what, sound] of [["whump", whump], ["thunderclap", thunder]]) {
+    const travelled = offEar(sound) / HEARD_SOUND_SPEED;
+    const later = sound && jumped >= 0 ? sound.tick - jumped - HEARD_SHOWN_LATER : NaN;
+    expect(Math.abs(later - travelled) <= HEARD_SLACK, `freighter: her ${what} is heard as much later than a near one as sound takes to come that far`,
+      `${later} ticks later, sound taking ${round(travelled)}; she jumped at ${jumped}`);
+  }
+  must("skyliners:autopilot land");
 }
 
 // Airframe fairings put down by hand turn corners as stairs do. Round an inside corner the middle one fills it in,
@@ -4971,6 +5034,7 @@ const CHECKS = {
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },
   "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends, her stretching into it and out of it" },
+  "freighter-jump-heard-far": { run: checkFreighterJumpHeardFar, slow: true, about: "a freighter's hyperspace jump is heard from over three hundred blocks off, dull and late as sound takes to come that far" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },

@@ -2697,15 +2697,25 @@ readouts again where the jump button was.
 
 Anyone watching from outside, on the ground or aboard another ship within 192 blocks, sees the jump too, as the
 tardigrade's jump grown to a ship her size. As she lets go, short streaks of light rush in to her hull from all round,
-more and more, keeping up with her as she flies, over a deep hum rising. Then she is gone in a white flash: long streaks
-shoot off ahead of where she was, the way she pointed, glitter hangs in the air and a ring of light closes in on the
-hole she left, with a whoomph heard far off. Where she comes out, streaks rush in from behind her over a swelling rush
-and vanish into the spot, and she is there in a flash, a ring of streaks bursting out round her and glitter, with a
-boom. The nearer the watcher, the brighter a faint white flash over their view. In the last moment before she goes she
-stretches, her stern holding still and her bow running on ahead, longer and longer and whiter, until she is six times
-her own length as the flash takes her; where she comes out she is there drawn long and white, trailing back the way she
-came, and snaps forward into her own shape. With Sodium installed she does not stretch. The server config's
-`freighter.hyperspaceWake` leaves this out; she then simply vanishes and reappears for them.
+more and more, keeping up with her as she flies, while her charge whines up, throbbing faster and faster with energy
+crackling round it, until the air is sucked in toward her. Then she is gone in a white flash and a deep whump with a
+sharp crack, the air ripping back in to fill where she was: long streaks shoot off ahead of where she was, the way she
+pointed, glitter hangs in the air and a ring of light closes in on the hole she left. Where she comes out, streaks rush
+in from behind her over a rush of air swelling higher and higher, and vanish into the spot, and she is there in a flash
+and a thunderclap, the tearing crack of lightning striking close by and a boom, with thunder rolling on for seconds
+after, a ring of streaks bursting out round her and glitter. The nearer the watcher, the brighter a faint white flash
+over their view. In the last moment before she goes she stretches, her stern holding still and her bow running on
+ahead, longer and longer and whiter, until she is six times her own length as the flash takes her; where she comes out
+she is there drawn long and white, trailing back the way she came, and snaps forward into her own shape. With Sodium
+installed she does not stretch.
+
+The whump and the thunderclap are among the loudest sounds Skyliners makes, louder than the freighter's slam, and carry
+640 blocks, loud close by and still plain hundreds of blocks off; the charge and the rush carry half as far. Sound
+takes its time, about seventeen blocks a tick as in the real world, so the further off the listener, the later they
+hear it, like thunder after lightning: nearly half a second after the flash 150 blocks off, nearly a second 300 blocks
+off. From further than 160 blocks the bangs come duller, as from far away, with less crack and a longer, deeper
+rumble. Those aboard her hear none of this, only her own jump from inside. The server config's
+`freighter.hyperspaceWake` leaves all this out; she then simply vanishes and reappears for those outside her.
 
 The tube out to her cockpit runs between ledges where its round wall meets her deck, and on them stands the fleet in
 miniature: models of the airliner, the zeppelin, the rocket and the freighter herself on their stands, their noses all

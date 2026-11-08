@@ -340,7 +340,8 @@ public final class BlockpilotCommands {
             .tag("legs", freighter.legsShown(autopilot))
             .tag("held", Objects.requireNonNullElse(FreighterFlight.heldBy(autopilot), "none"))
             .tag("slam", FreighterFlight.slamOf(autopilot).name().toLowerCase(Locale.ROOT))
-            .tag("jump_loaded_after", freighter.jumpLoadedAfter()));
+            .tag("jump_loaded_after", freighter.jumpLoadedAfter())
+            .tag("jumped_at", freighter.jumpedAt()));
     }
 
     private static Result spaceWeather(Args args) throws CommandException {

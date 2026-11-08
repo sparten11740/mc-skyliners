@@ -930,12 +930,39 @@
       }
     ]
   },
+  "freighter_hyperspace_charge": {
+    "subtitle": "subtitles.skyliners.freighter_hyperspace_charge",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_hyperspace_charge",
+        "attenuation_distance": 320
+      }
+    ]
+  },
   "freighter_hyperspace_out": {
     "subtitle": "subtitles.skyliners.freighter_hyperspace_out",
     "sounds": [
       {
         "name": "skyliners:freighter_hyperspace_out",
-        "attenuation_distance": 192
+        "attenuation_distance": 640
+      }
+    ]
+  },
+  "freighter_hyperspace_out_far": {
+    "subtitle": "subtitles.skyliners.freighter_hyperspace_out_far",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_hyperspace_out_far",
+        "attenuation_distance": 640
+      }
+    ]
+  },
+  "freighter_hyperspace_rush": {
+    "subtitle": "subtitles.skyliners.freighter_hyperspace_rush",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_hyperspace_rush",
+        "attenuation_distance": 320
       }
     ]
   },
@@ -944,7 +971,16 @@
     "sounds": [
       {
         "name": "skyliners:freighter_hyperspace_in",
-        "attenuation_distance": 192
+        "attenuation_distance": 640
+      }
+    ]
+  },
+  "freighter_hyperspace_in_far": {
+    "subtitle": "subtitles.skyliners.freighter_hyperspace_in_far",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_hyperspace_in_far",
+        "attenuation_distance": 640
       }
     ]
   },

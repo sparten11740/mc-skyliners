@@ -794,11 +794,12 @@ public final class SkylinersConfig {
             .define("hyperspaceJump", true);
         FREIGHTER_HYPERSPACE_WAKE = builder
             .comment(
-                "Whether those watching a freighter's hyperspace jump from outside, on the ground or another ship within 192",
-                "blocks, see and hear it: light gathering on her as she stretches out ahead into it, then a flash and streaks",
-                "shooting off ahead where she was with a deep whoomph; and where she comes out, streaks rushing in, a flash",
-                "and a ring of light with a boom as she snaps back out of a stretch. Without it, she only vanishes and",
-                "reappears for them. Those aboard see the jump from inside either way."
+                "Whether those outside a freighter's hyperspace jump, on the ground or another ship, see it within 192 blocks",
+                "and hear it within 640: light gathering on her as her charge whines up and she stretches out ahead into it,",
+                "then a flash and streaks shooting off ahead where she was with a deep whump; and where she comes out, a rush",
+                "and streaks rushing in, then a flash and a ring of light with a thunderclap as she snaps back out of a",
+                "stretch, heard the later the further off. Without it, she only vanishes and reappears for them. Those aboard",
+                "see and hear the jump from inside either way."
             )
             .define("hyperspaceWake", true);
         FREIGHTER_CLIMB_BOOST = builder

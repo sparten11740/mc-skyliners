@@ -23,7 +23,10 @@ import net.minecraft.world.phys.Vec3;
 public record HyperspaceWake(Stage stage, Vec3 at, Vec3 aboard, Vec3 ahead, float reach, int ticks) implements CustomPacketPayload {
     public static final Type<HyperspaceWake> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_wake"));
     public static final StreamCodec<ByteBuf, HyperspaceWake> STREAM_CODEC = StreamCodec.of(HyperspaceWake::write, HyperspaceWake::read);
-    /** How far from where it happens a jump is seen and heard, in blocks: well past where her hull fills the view. */
+    /**
+     * How far from where it happens a jump is seen, in blocks: well past where her hull fills the view. It is heard much
+     * further (see {@link HyperspaceSound#HEARD_WITHIN}).
+     */
     public static final double SEEN_WITHIN = 192;
     /**
      * What this client last drew of a freighter stretching into a jump and out of it, none before it was shown one; the

@@ -283,6 +283,11 @@ public final class FreighterFlight extends StandingFlight {
         return jump.loadedAfter();
     }
 
+    /** The game time she last jumped at, for play-testing; -1 before she has. */
+    public long jumpedAt() {
+        return jump.jumpedAt();
+    }
+
     /** Her jump, once a tick, on the server: on its way, and the clients told once it is over. */
     private void jumpTick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         boolean allowed = SkylinersConfig.FREIGHTER_HYPERSPACE_JUMP.get();
