@@ -2854,7 +2854,8 @@ way, such as ground rising under its foot. The server config's `freighter.ramp` 
 Button is among her blocks in the creative tab; set on any freighter, it works her ramp.
 
 Up her core, through its doorway from the ring corridor on her bow side, a slim chrome crew ladder climbs the core's
-back wall to the gunner's seat under her top dome, its rails carrying on up into grab handles to step off by, the
+back wall to the gunner's platform under her top dome, its rails carrying on up into grab handles to step off by: at
+the top, step back off it onto the platform, lit by a floor light either side of the gunner's seat a block ahead, the
 gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
 on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up to
 the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal on the hub where the dome's ribs

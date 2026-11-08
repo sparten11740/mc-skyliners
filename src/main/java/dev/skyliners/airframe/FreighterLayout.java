@@ -1181,8 +1181,9 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Her top turret, up her core: a ladder up the core's back wall from her deck to the top of the shaft under her top
-     * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow, its back to the ladder,
-     * their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
+     * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow a block ahead of the ladder,
+     * so whoever climbs it steps back off onto the platform between them, a floor light either side of the seat
+     * lighting it and that step kept clear, their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
      * and the laser cannon on its pedestal on the hub where the dome's ribs meet over them, facing her bow, its sight
      * seeing past her rim; none with the server config's {@code freighter.turrets} off.
      */
@@ -1205,7 +1206,12 @@ public final class FreighterLayout extends HullLayout {
             set(cell % CORE_INSIDE - 1, seat - 1, cell / CORE_INSIDE - 1, floor);
         }
         openDomeRow(under);
-        seat(0, seat, 0, PilotSeatBlock.Stick.NONE);
+        seat(0, seat, -1, PilotSeatBlock.Stick.NONE);
+        BlockState lamp = SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState();
+        set(-1, seat, -1, lamp);
+        set(1, seat, -1, lamp);
+        // Lit by those, so the pass for her dark corners sets no floor light where the climber steps off.
+        keepClear(0, seat, 0);
         int crown = under + 1;
         while (!isOpen(0, crown, 0) && crown < top) {
             crown++;

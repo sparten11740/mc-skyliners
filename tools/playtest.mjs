@@ -547,6 +547,12 @@ const CORRIDOR_LIT = 6;
 // A freighter's club band: how far in front of its stage the player stands to hear it, how far off they go to leave it,
 // in blocks, and how long its song is given to start and to fade away, in ticks.
 const BAND_NEAR = 3;
+// How far her gunner's seat may stand from straight under her laser cannon, across or along, in blocks.
+const GUNNER_SEAT_OFF = 1;
+// Stepping back off the top of her core's ladder: how long the back key is held, in ticks, and how far under her gunner's
+// platform's top they may stand and still be on it, in blocks.
+const STEP_OFF_TICKS = 20;
+const PLATFORM_SLACK = 0.05;
 // Coming aboard a freighter on someone's birthday: how far from her bandstand to stand to be off her, in blocks; and how
 // long the greeting may take to come once aboard, in ticks.
 const BIRTHDAY_AWAY = 100;
@@ -1472,8 +1478,7 @@ function checkFreighterGunnerTakeoff() {
   layDown("freighter");
   const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
   const [x, , z] = cannon?.at_abs ?? [];
-  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
-    .sort((a, b) => a[1] - b[1])[0];
+  const seat = gunnerSeat(x, z);
   if (!seat) {
     expect(false, "freighter: she has a gunner's seat under her dome");
     return;
@@ -1487,6 +1492,12 @@ function checkFreighterGunnerTakeoff() {
   const last = up ?? freighterReport();
   expect(up, "freighter: set to fly from her gunner's seat, she lifts off", up ? "" : `still ${last?.phase}, lift ${last?.lift}, held by ${last?.held}`);
   must("skyliners:autopilot land; key press key.sneak 10t; wait 10t");
+}
+
+// A freighter's gunner's seat, the lowest seat at most GUNNER_SEAT_OFF across or along from her laser cannon above.
+function gunnerSeat(x, z) {
+  return must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs)
+    .filter(([seatX, , seatZ]) => Math.abs(seatX - x) <= GUNNER_SEAT_OFF && Math.abs(seatZ - z) <= GUNNER_SEAT_OFF).sort((a, b) => a[1] - b[1])[0];
 }
 
 // A freighter's top turret: the ladder up her core is climbed from her deck with the walk key alone to the gunner's
@@ -1503,8 +1514,7 @@ function checkFreighterTurret() {
     return;
   }
   const [x, y, z] = cannon.at_abs;
-  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
-    .sort((a, b) => a[1] - b[1])[0];
+  const seat = gunnerSeat(x, z);
   const ladder = must("find skyliners:crew_ladder 128 20").rows.map((row) => row.at_abs).sort((a, b) => a[1] - b[1])[0];
   if (!seat || !ladder) {
     expect(false, "freighter: she has a gunner's seat under her dome and a ladder up to it");
@@ -1513,9 +1523,13 @@ function checkFreighterTurret() {
   const [climbX, climbZ, yaw] = CLIMBS[must(`block ${ladder.join(",")}`).props?.facing === "north" ? "south" : "north"];
   survival();
   must(`server tp @p ${ladder[0] + 0.5} ${ladder[1]} ${ladder[2] + 0.5 - climbZ * 0.2}; turn ${yaw} 0; wait 20t`);
-  const there = must(`move forward ${LADDER_CLIMB_TICKS}t; status`);
+  // Climbed facing the ladder, its platform is behind them: they step straight back off its top, where the seat stood.
+  const [, there, , , off] = send(`move forward ${LADDER_CLIMB_TICKS}t; status; move back ${STEP_OFF_TICKS}t; wait 10t; status`);
   creative();
   expect(there.pos[1] >= seat[1], "freighter: her core's ladder is climbed from her deck to her gunner's seat", `reached ${round(there.pos[1])}, seat at ${seat[1]}`);
+  const offLadder = Math.floor(off.pos[0]) !== ladder[0] || Math.floor(off.pos[2]) !== ladder[2];
+  expect(offLadder && off.pos[1] >= seat[1] - PLATFORM_SLACK, "freighter: stepping back off the top of her core's ladder, they stand on her gunner's platform",
+    `at ${off.pos.map(round).join(",")}, the ladder's column ${ladder[0]},${ladder[2]}, the platform's top at ${seat[1]}`);
   expect(gunnerSight() === undefined, "freighter: standing by her gunner's seat, the player sees from their own eyes");
   const sat = now();
   sitAt(seat);
@@ -1604,8 +1618,7 @@ function checkFreighterRockets() {
     return;
   }
   const [x, y, z] = cannon.at_abs;
-  const seat = must("find skyliners:pilot_seat 128 20").rows.map((row) => row.at_abs).filter(([seatX, , seatZ]) => seatX === x && seatZ === z)
-    .sort((a, b) => a[1] - b[1])[0];
+  const seat = gunnerSeat(x, z);
   if (!seat) {
     expect(false, "freighter: she has a gunner's seat under her dome");
     return;
@@ -1694,6 +1707,11 @@ function rocketBlastsBlocks([cx, cy, cz]) {
 function sitAt(seat) {
   const [{ ok }] = send(`use ${seat.join(",")}; wait 20t`);
   if (ok !== false) {
+    return;
+  }
+  // A seat's back stands a block over it, in the way from behind or the side: it seats them as well.
+  const back = [seat[0], seat[1] + 1, seat[2]];
+  if (must(`block ${back.join(",")}`).id === "skyliners:pilot_seat" && send(`use ${back.join(",")}; wait 20t`)[0].ok !== false) {
     return;
   }
   const beside = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dz]) => [seat[0] + dx, seat[1], seat[2] + dz])
