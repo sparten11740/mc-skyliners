@@ -423,7 +423,9 @@ counted on the server and each client (`ToldTicks`), invisible `RampPlateBlock`s
 swings, their slope in their state, and once down the invisible `RampDeckBlock`s laid, falling a block in two in four
 little steps, both of which the ground passes through (`SableFlight.rampPlate`, `rampDeck`); the swing holds, chiming,
 while anyone stands where it would move next (`BoardingRamp.anyoneInTheSwing`); `BoardingRampRenderer`
-draws the panel's face and the plate, rams, lip and lamps; the `RampButtonBlock` on her leg finds the panel through
+draws the panel's face and the plate, rams, lip and lamps, each of its columns out as far as `BoardingRamp.length` has
+it for the ground at its foot, which `reachIn` finds, a column at a time, within a block higher or lower; the
+`RampButtonBlock` on her leg finds the panel through
 her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhile`, which calls a take-off held too
 long off and shows the clients what holds her (`FreighterFlight.heldBy`), drawn on her console's scanner by its picture.
 Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after

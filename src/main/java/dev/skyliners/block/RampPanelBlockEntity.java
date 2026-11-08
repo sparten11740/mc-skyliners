@@ -263,7 +263,7 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
 
     /** The ramp's waiting chime, heard by everyone aboard too far off to hear the ramp's own, each where they are. */
     private void chimeAboard(ServerLevel level) {
-        Vec3 here = SableFlight.toWorld(level, Vec3.atCenterOf(worldPosition));
+        Vec3 here = SableFlight.toWorld(level, Vec3.atCenterOf(ramp.chimeFrom()));
         for (ServerPlayer player : Aboard.players(this)) {
             if (player.position().distanceTo(here) > RAMP_HEARD) {
                 player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, StandClear.WAITING_VOLUME,

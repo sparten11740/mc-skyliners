@@ -240,6 +240,19 @@ const RAMP_ABOVE_GROUND = 2;
 const RAMP_UNDER_OUT = 9;
 const RAMP_UNDER_TICKS = 150;
 const RAMP_STEP_ASIDE = 4;
+// A freighter's ramp meeting ground a block higher or lower at its foot: how many rows of deck its foot gains or loses
+// for a block, which fall a block in two; how far out past its foot the changed ground reaches, in blocks, and how far
+// past its foot walking up starts, on that ground; how far to either side of it the changed ground reaches, in blocks;
+// how many rows in from its foot a block is put in the room over its deck, to stand in its way; and how long the lamp
+// is given to turn red after it is pressed, in ticks.
+const RAMP_FOOT_ROWS = 2;
+const RAMP_FOOT_OUT = 10;
+const RAMP_WALK_FROM = 4;
+const RAMP_FOOT_ACROSS = 3;
+const RAMP_BLOCKED_ROW = 4;
+const RAMP_REFUSED_TICKS = 10;
+// Standing where a freighter's ramp's foot runs out to lower ground: how far out past its whole run to stand, in rows.
+const RAMP_FOOT_STAND = 2;
 // Walking at a freighter's furniture: how far out to start, in blocks, and how long to walk, in ticks, enough to reach
 // it; how far from its middle along the way walked the player must have been stopped, in blocks: her jump drive's
 // rings, round its core, and not its column; the body of a player of her band, in front of the side of its stage, and
@@ -1642,6 +1655,167 @@ function checkFreighterRamp() {
   standUnderRamp(deck, [dx, dz], panel.at_abs, lamp, lampTurns);
   callRampFromTheGround(lamp, lampTurns);
   holdFreighterOnHerRamp(deck, footX + dx * 2 * RAMP_STAND_UP, lowest + RAMP_STAND_UP, footZ + dz * 2 * RAMP_STAND_UP, lamp);
+}
+
+// A freighter's boarding ramp on ground that does not lie where she stands: a block higher or lower at its foot, it
+// still comes down, its deck ending where the ground meets it, and is walked up and down with the walk key alone, its
+// plate holding up whoever walks on it while it swings; two blocks higher or lower, or with a block in its way, it
+// refuses with a low note and a red lamp. It used to refuse the block higher, and left a block's step at the block lower.
+function checkFreighterRampFoot() {
+  layDown("freighter");
+  const [panel] = must("find skyliners:ramp_panel 128 1").rows;
+  expect(panel, "freighter: she is built with her ramp's panel");
+  if (!panel) {
+    return;
+  }
+  const lamp = () => must(`block ${panel.at_abs.join(",")} side=server`).props?.status;
+  const lampTurns = (status, within) => waitForReport(() => ({ status: lamp() }), (read) => read.status === status, within);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: on flat ground her ramp comes down by itself", `lamp ${lamp()}`);
+  const foot = rampFootOf(panel.at_abs);
+  if (!foot) {
+    return;
+  }
+  const lowest = Math.min(...foot.deck.map(([, y]) => y));
+  expect(lowest === ground, "freighter: on flat ground her ramp's lowest row lies on the ground", `lowest at y ${lowest}, the ground at y ${ground}`);
+  if (lowest !== ground) {
+    return;
+  }
+  pressRampPanel(foot);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: on flat ground her ramp folds away from its panel", `lamp ${lamp()}`);
+  rampMeetsGround(foot, lamp, lampTurns, { name: "a block higher", from: ground, to: ground, fill: "stone replace air", level: ground + 1, undo: "air replace stone" });
+  rampMeetsGround(foot, lamp, lampTurns, { name: "a block lower", from: ground - 1, to: ground - 1, fill: "air", level: ground - 1, undo: "grass_block replace air" });
+  rampHeldWhereItsFootRunsOut(foot, lamp, lampTurns);
+  rampMeetsRaggedGround(foot, lamp, lampTurns);
+  rampRefuses(foot, lamp, { name: "two blocks higher", from: ground, to: ground + 1, fill: "stone replace air", undo: "air replace stone" });
+  rampRefuses(foot, lamp, { name: "two blocks lower", from: ground - 2, to: ground - 1, fill: "air", undo: "dirt replace air" });
+  rampRefusedByABlock(foot, lamp);
+}
+
+// A freighter's ramp down on flat ground, as its laid deck shows it: the middle of its foot, the way it climbs, how many
+// blocks of deck it has and how wide it is, the room to stand in at its head and where its panel is.
+function rampFootOf(panelAt) {
+  const deck = must("find skyliners:ramp_deck 128 200 side=server").rows.map((row) => row.at_abs);
+  if (deck.length === 0) {
+    expect(false, "freighter: her ramp's deck is laid");
+    return undefined;
+  }
+  const lowest = Math.min(...deck.map(([, y]) => y));
+  const facing = must(`block ${deck.find(([, y]) => y === lowest).join(",")} side=server`).props?.facing ?? "north";
+  const [dx, dz, yaw] = CLIMBS[facing];
+  const outermost = Math.min(...deck.map(([x, , z]) => x * dx + z * dz));
+  const across = deck.filter(([x, , z]) => x * dx + z * dz === outermost).sort((a, b) => a[0] - b[0] || a[2] - b[2]);
+  const [x, , z] = across[Math.floor(across.length / 2)];
+  return { deck, x, z, dx, dz, yaw, outermost, width: across.length, head: rampHeadStand(deck, [dx, dz]), panelAt };
+}
+
+// Presses a freighter's ramp's panel from just in from its head, on her deck.
+function pressRampPanel(foot) {
+  must(`server tp @p ${foot.head.join(" ")}; wait 20t; use ${foot.panelAt.join(",")}`);
+}
+
+// Where a place on the ground round a freighter's ramp's foot is, as x, y and z: so far out past its foot, negative in
+// under the ramp, so far across it, and at a height.
+function nearRampFoot(foot, out, across, y) {
+  return `${foot.x - foot.dx * out + foot.dz * across} ${y} ${foot.z - foot.dz * out + foot.dx * across}`;
+}
+
+// Changes the ground under and past a freighter's ramp's foot, whole rows from the last row of its deck on out, replacing
+// only what is asked, so that nothing of hers beside it goes.
+function reshapeRampFoot(foot, shape, fill) {
+  const nearest = nearRampFoot(foot, 1 - RAMP_FOOT_ROWS, -RAMP_FOOT_ACROSS, shape.from);
+  const furthest = nearRampFoot(foot, RAMP_FOOT_OUT, RAMP_FOOT_ACROSS, shape.to);
+  must(`server fill ${nearest} ${furthest} ${fill}`);
+}
+
+// A freighter's ramp pressed down onto ground changed so, a block higher or lower: it comes down and its deck ends where
+// the ground meets it, its lowest row lying on that ground; walked up and down with the walk key alone it has no step
+// too high and no gap; it holds up whoever walks onto it as it swings; and folded away it leaves none of itself behind.
+function rampMeetsGround(foot, lamp, lampTurns, shape) {
+  reshapeRampFoot(foot, shape, shape.fill);
+  pressRampPanel(foot);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), `freighter: on ground ${shape.name} at its foot, her ramp comes down`, `lamp ${lamp()}`);
+  const deck = must("find skyliners:ramp_deck 128 200 side=server").rows.map((row) => row.at_abs);
+  const whole = foot.deck.length + (shape.level > ground ? -1 : 1) * RAMP_FOOT_ROWS * foot.width;
+  expect(deck.length === whole, `freighter: on ground ${shape.name}, its deck ends where the ground meets it`, `${deck.length} blocks, not ${whole}`);
+  const lowest = deck.length ? Math.min(...deck.map(([, y]) => y)) : NaN;
+  expect(lowest === shape.level, `freighter: on ground ${shape.name}, its lowest row lies on that ground`, `lowest at y ${lowest}, the ground at y ${shape.level}`);
+  survival();
+  const [fromX, , fromZ] = nearRampFoot(foot, RAMP_WALK_FROM, 0, shape.level).split(" ").map(Number);
+  must(`server tp @p ${fromX + 0.5} ${shape.level} ${fromZ + 0.5}; turn ${foot.yaw} 0; wait 25t`);
+  const upThere = must(`move forward ${RAMP_WALK_TICKS}t; status`);
+  const climbed = round(upThere.pos[1] - shape.level);
+  expect(climbed >= RAMP_RISE + ground - shape.level, `freighter: on ground ${shape.name}, its ramp is walked up with the walk key alone`,
+    `climbed ${climbed}, to ${upThere.pos.map(round).join(",")}`);
+  const downThere = must(`turn ${foot.yaw + 180} 0; move forward ${RAMP_WALK_TICKS}t; status`);
+  const along = Math.floor(downThere.pos[0]) * foot.dx + Math.floor(downThere.pos[2]) * foot.dz;
+  expect(round(downThere.pos[1]) === shape.level && along < foot.outermost, `freighter: on ground ${shape.name}, its ramp is walked back down to that ground`,
+    `at ${downThere.pos.map(round).join(",")}, the ground at y ${shape.level}`);
+  creative();
+  walkOntoRampOnItsWay(foot.deck, [foot.dx, foot.dz, foot.yaw], foot.panelAt, lamp, lampTurns);
+  pressRampPanel(foot);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), `freighter: on ground ${shape.name}, her ramp folds away`, `lamp ${lamp()}`);
+  const left = must("find skyliners:ramp_deck 128 200 side=server").rows.length;
+  expect(left === 0, `freighter: on ground ${shape.name}, folding it away leaves none of its deck behind`, `${left} blocks`);
+  reshapeRampFoot(foot, shape, shape.undo);
+}
+
+// Stands where a freighter's ramp's foot runs out to on ground a block lower, as it comes down: it holds, amber, with
+// its chime heard there, a child on the ground at its foot, and comes down once they step off.
+function rampHeldWhereItsFootRunsOut(foot, lamp, lampTurns) {
+  const shape = { from: ground - 1, to: ground - 1 };
+  reshapeRampFoot(foot, shape, "air");
+  const [x, , z] = nearRampFoot(foot, RAMP_FOOT_STAND, 0, ground - 1).split(" ").map(Number);
+  const since = now();
+  must(`server tp @p ${foot.head.join(" ")}; wait 20t; use ${foot.panelAt.join(",")}; server tp @p ${x + 0.5} ${ground - 1} ${z + 0.5}; wait ${RAMP_UNDER_TICKS}t`);
+  const held = lamp();
+  expect(held === "busy", "freighter: standing where her ramp's foot runs out, it waits for them", `lamp ${held}`);
+  expect(heard("block.note_block.bell", since, 0), "freighter: and they hear its chime at its foot");
+  must(`server tp @p ${x + 0.5 + foot.dz * RAMP_STEP_ASIDE} ${ground - 1} ${z + 0.5 + foot.dx * RAMP_STEP_ASIDE}`);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: stepped off, its foot runs out and it comes down", `lamp ${lamp()}`);
+  pressRampPanel(foot);
+  lampTurns("ready", RAMP_DOWN_TICKS);
+  reshapeRampFoot(foot, shape, "grass_block replace air");
+}
+
+// A freighter's ramp pressed down with one column's ground a block higher than the rest: that column's deck ends where
+// the ground meets it, two rows short of the others', and folded it leaves none behind.
+function rampMeetsRaggedGround(foot, lamp, lampTurns) {
+  const across = (foot.width - 1) / 2;
+  must(`server fill ${nearRampFoot(foot, 1 - RAMP_FOOT_ROWS, across, ground)} ${nearRampFoot(foot, RAMP_FOOT_OUT, across, ground)} stone replace air`);
+  pressRampPanel(foot);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: with one column's ground a block higher, her ramp comes down", `lamp ${lamp()}`);
+  const laid = must("find skyliners:ramp_deck 128 200 side=server").rows.length;
+  expect(laid === foot.deck.length - RAMP_FOOT_ROWS, "freighter: with one column's ground a block higher, that column's deck meets it", `${laid} blocks, not ${foot.deck.length - RAMP_FOOT_ROWS}`);
+  pressRampPanel(foot);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: with one column's ground a block higher, her ramp folds away", `lamp ${lamp()}`);
+  must(`server fill ${nearRampFoot(foot, 1 - RAMP_FOOT_ROWS, across, ground)} ${nearRampFoot(foot, RAMP_FOOT_OUT, across, ground)} air replace stone`);
+}
+
+// A freighter's ramp pressed down where the ground lies further off than it takes: a low note and a red lamp, none of its
+// deck laid.
+function rampRefuses(foot, lamp, shape) {
+  reshapeRampFoot(foot, shape, shape.fill);
+  const since = now();
+  pressRampPanel(foot);
+  must(`wait ${RAMP_REFUSED_TICKS}t`);
+  expect(lamp() === "refused", `freighter: on ground ${shape.name} at its foot, her ramp's lamp turns red`, `lamp ${lamp()}`);
+  expect(heard("block.note_block.bass", since, 0), `freighter: on ground ${shape.name}, her ramp sounds its low note`);
+  const laid = must("find skyliners:ramp_deck 128 200 side=server").rows.length;
+  expect(laid === 0, `freighter: on ground ${shape.name}, its deck is not laid`, `${laid} blocks`);
+  reshapeRampFoot(foot, shape, shape.undo);
+}
+
+// A freighter's ramp pressed down with a block standing in the room over its deck, on ground otherwise just as it was:
+// a low note and a red lamp, as ever.
+function rampRefusedByABlock(foot, lamp) {
+  const [cellX, cellY, cellZ] = foot.deck.find(([x, , z]) => x === foot.x + foot.dx * RAMP_BLOCKED_ROW && z === foot.z + foot.dz * RAMP_BLOCKED_ROW);
+  must(`server setblock ${cellX} ${cellY + 1} ${cellZ} stone`);
+  const since = now();
+  pressRampPanel(foot);
+  must(`wait ${RAMP_REFUSED_TICKS}t`);
+  const lit = lamp();
+  expect(lit === "refused" && heard("block.note_block.bass", since, 0), "freighter: with a block standing in the room over its deck, her ramp refuses", `lamp ${lit}`);
+  must(`server setblock ${cellX} ${cellY + 1} ${cellZ} air`);
 }
 
 // Where to stand in a freighter's ring corridor just in from the head of her ramp, as [x, y, z], from its deck laid and
@@ -5410,6 +5584,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
+  "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },

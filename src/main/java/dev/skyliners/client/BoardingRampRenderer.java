@@ -9,6 +9,8 @@ import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.RampPanelBlock;
 import dev.skyliners.block.RampPanelBlockEntity;
 import dev.skyliners.block.TouchPanel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.client.renderer.LightTexture;
@@ -36,8 +38,10 @@ import org.joml.Quaternionf;
  * open: the plate, grey ribbed deck plate edged in yellow and black hazard stripes on top and her skin's colour under
  * it, swinging down on its hinge tube at the head of the well; two hydraulic rams from brackets on the well's sides to
  * lugs on the plate's edges, lengthening as it falls; its foot lip unfolding at the end; and lamps at the well's head
- * and at the plate's foot, amber and blinking while it moves, steady white once it is down. Stowed, the hatch's own
- * blocks are the plate, and nothing is drawn but the panel.
+ * and at the plate's foot, amber and blinking while it moves, steady white once it is down. Each of its columns reaches
+ * as far out as the ramp has it for the ground at its foot (see {@link BoardingRamp#length}), its lip at its own end,
+ * so what is drawn is what is walked on. Stowed, the hatch's own blocks are the plate, and nothing is drawn but the
+ * panel.
  */
 public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockEntity> {
     /** The panel's face, from the middle of the block toward the way it looks, lifted just off its front. */
@@ -107,6 +111,12 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     private static final int[] SIDES = {-1, 1};
     /** How far past the ramp's own reach the camera may be and still see some of it, in blocks, for leaving it out. */
     private static final float SIGHT_MARGIN = 1.5F;
+    /** How far past its whole run and down its foot may reach at most to lower ground, in blocks, rounded up. */
+    private static final int FOOT_RUN = 3;
+
+    /** A stretch of the plate across its width whose columns reach equally far: its edges and length, in blocks. */
+    private record Span(float left, float right, float length) {
+    }
 
     @Override
     public void render(RampPanelBlockEntity panel, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -160,7 +170,7 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         pose.pushPose();
         pose.translate(head.getX() + 0.5 - out.getStepX() * 0.5, head.getY() + 1, head.getZ() + 0.5 - out.getStepZ() * 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-out.toYRot()));
-        float reach = (float) frame.length() / 2 + SIGHT_MARGIN;
+        float reach = (float) frame.length() / 2 + SIGHT_MARGIN + FOOT_RUN;
         if (!Sight.ahead(pose.last(), 0, -frame.rise() / 2F, frame.run() / 2F, reach)) {
             pose.popPose();
             return;
@@ -178,20 +188,63 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         for (int side : SIDES) {
             ram(pose, consumer, light, side * (frame.width() / 2F - ROD_HALF), angle, frame.length());
         }
+        List<Span> spans = spans(ramp, ticks, half);
+        int skin = skin(panel, frame);
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees((float) angle));
-        plate(consumer, pose.last(), light, half, (float) frame.length(), skin(panel, frame));
-        pose.translate(0, 0, frame.length());
-        lamps(consumer, pose.last(), half, -LAMP_HALF, lamp);
-        pose.mulPose(Axis.XP.rotationDegrees(lip(ticks, slope)));
-        FlatQuads.box(consumer, pose.last(), light, DECK, -half, -THICK / 2, 0, half, 0, LIP);
+        for (Span span : spans) {
+            plate(consumer, pose.last(), light, span, skin);
+            footLip(pose, consumer, light, span, lip(ticks, slope));
+        }
+        footLamps(pose, consumer, ramp, ticks, half, lamp);
         pose.popPose();
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees((float) angle));
-        floorTop(buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS)), pose.last(), light, ramp.floor(), level, foot, half,
-            (float) frame.length());
+        VertexConsumer floor = buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+        for (Span span : spans) {
+            floorTop(floor, pose.last(), light, ramp.floor(), level, foot, span);
+        }
         pose.popPose();
         pose.popPose();
+    }
+
+    /** The plate across its width in spans of columns reaching equally far, each drawn as one piece. */
+    private static List<Span> spans(BoardingRamp ramp, float ticks, float half) {
+        List<Span> spans = new ArrayList<>();
+        int width = ramp.frame().width();
+        int first = 0;
+        for (int column = 1; column <= width; column++) {
+            if (column == width || ramp.length(column, ticks) != ramp.length(first, ticks)) {
+                spans.add(new Span(edge(first, width, half), edge(column, width, half), (float) ramp.length(first, ticks)));
+                first = column;
+            }
+        }
+        return spans;
+    }
+
+    /** How far across from the ramp's middle line the edge before a column stands, kept within its well's sides. */
+    private static float edge(int column, int width, float half) {
+        return Math.clamp(column - width / 2F, -half, half);
+    }
+
+    /** A span's foot lip at the plate's foot there, turned so far from the plate. */
+    private static void footLip(PoseStack pose, VertexConsumer consumer, int light, Span span, float turned) {
+        pose.pushPose();
+        pose.translate(0, 0, span.length());
+        pose.mulPose(Axis.XP.rotationDegrees(turned));
+        FlatQuads.box(consumer, pose.last(), light, DECK, span.left(), -THICK / 2, 0, span.right(), 0, LIP);
+        pose.popPose();
+    }
+
+    /** A lamp at either side of the plate's foot, each at the foot of the column at its side, glowing in a colour. */
+    private static void footLamps(PoseStack pose, VertexConsumer consumer, BoardingRamp ramp, float ticks, float half, int colour) {
+        int last = ramp.frame().width() - 1;
+        for (int side : SIDES) {
+            pose.pushPose();
+            pose.translate(0, 0, ramp.length(side < 0 ? 0 : last, ticks));
+            lamp(consumer, pose.last(), side * half, -LAMP_HALF, colour);
+            pose.popPose();
+        }
     }
 
     /** How far the foot lip is turned from the plate, in degrees: folded back over it, then out level on the ground. */
@@ -201,30 +254,29 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
     }
 
     /**
-     * The plate, its top at y 0 from its hinge out to its foot along +z: her skin under it and along its sides up to
-     * a dark edge at its foot, the two meeting rather than overlapping, which flickers, and on top the floor it is part
-     * of while up (see {@link #floorTop}), so nothing changes as it folds away into the floor.
+     * A span of the plate, its top at y 0 from its hinge out to its foot along +z: her skin under it and along its
+     * sides up to a dark edge at its foot, the two meeting rather than overlapping, which flickers, and on top the
+     * floor it is part of while up (see {@link #floorTop}), so nothing changes as it folds away into the floor.
      */
-    private static void plate(VertexConsumer consumer, PoseStack.Pose at, int light, float half, float length, int skin) {
-        FlatQuads.box(consumer, at, light, skin, -half, -THICK, 0, half, 0, length - PLATE);
-        FlatQuads.box(consumer, at, light, EDGE, -half, -THICK, length - PLATE, half, 0, length);
+    private static void plate(VertexConsumer consumer, PoseStack.Pose at, int light, Span span, int skin) {
+        FlatQuads.box(consumer, at, light, skin, span.left(), -THICK, 0, span.right(), 0, span.length() - PLATE);
+        FlatQuads.box(consumer, at, light, EDGE, span.left(), -THICK, span.length() - PLATE, span.right(), 0, span.length());
     }
 
     /**
-     * The plate's top, the floor it is part of while up, laid block by block from its hinge out along it and from one
-     * side across, standing just proud of the plate, its texture as the floor's own blocks lay it.
+     * A span's top, the floor the plate is part of while up, laid block by block from its hinge out along it and from
+     * one side across, standing just proud of the plate, its texture as the floor's own blocks lay it.
      */
-    private static void floorTop(VertexConsumer consumer, PoseStack.Pose at, int light, BlockState floor, Level level, BlockPos foot, float half,
-                                 float length) {
+    private static void floorTop(VertexConsumer consumer, PoseStack.Pose at, int light, BlockState floor, Level level, BlockPos foot, Span span) {
         if (floor.isAir()) {
             return;
         }
         FloorLook look = FloorLook.of(floor);
         int colour = look.colour(floor, level, foot);
-        for (float near = 0; near < length; near++) {
-            float far = Math.min(length, near + 1);
-            for (float left = -half; left < half; left++) {
-                float right = Math.min(half, left + 1);
+        for (float near = 0; near < span.length(); near++) {
+            float far = Math.min(span.length(), near + 1);
+            for (float left = span.left(); left < span.right(); left++) {
+                float right = Math.min(span.right(), left + 1);
                 floorTile(consumer, at, light, colour, look, left, right, near, far);
             }
         }
@@ -246,11 +298,14 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
 
     /** A lamp either side at so far out from the ramp's middle line, glowing in a colour; none while blinked off. */
     private static void lamps(VertexConsumer consumer, PoseStack.Pose at, float out, float z, int colour) {
-        if (colour == 0) {
-            return;
-        }
         for (int side : SIDES) {
-            float x = side * out;
+            lamp(consumer, at, side * out, z, colour);
+        }
+    }
+
+    /** A lamp so far across from the ramp's middle line, glowing in a colour; none while blinked off. */
+    private static void lamp(VertexConsumer consumer, PoseStack.Pose at, float x, float z, int colour) {
+        if (colour != 0) {
             FlatQuads.box(consumer, at, LightTexture.FULL_BRIGHT, colour, x - LAMP_HALF, 0, z - LAMP_HALF, x + LAMP_HALF, 2 * LAMP_HALF,
                 z + LAMP_HALF);
         }
@@ -316,7 +371,7 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         }
         BoardingRamp.Frame frame = ramp.frame();
         BlockPos head = panel.getBlockPos().offset(frame.head());
-        BlockPos foot = head.relative(frame.out(), (int) Math.ceil(frame.length()) + 1).below(frame.rise());
+        BlockPos foot = head.relative(frame.out(), (int) Math.ceil(frame.length()) + 1 + FOOT_RUN).below(frame.rise() + FOOT_RUN);
         return own.minmax(AABB.encapsulatingFullBlocks(head.above(), foot).inflate(frame.width()));
     }
 }
