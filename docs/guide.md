@@ -615,8 +615,9 @@ still switches it off, handing the airliner back to the thrust levers; engaged a
 there.
 
 An airliner left flying with nobody aboard (everyone jumped out with a parachute, say) lands by itself after a minute,
-as if Land had been pressed, so it does not fly on for ever. The minute stops and starts over as soon as anyone is
-aboard again, and is not counted on the ground or while it lands already.
+as if Land had been pressed, so it does not fly on for ever; with nobody within 600 blocks of it either, it lands after
+ten seconds, as a ship kept flying far from everyone only costs the server. The minute stops and starts over as soon as
+anyone is aboard again, and is not counted on the ground or while it lands already.
 
 An airliner that will not move, held by whatever it has run into or sunk into, can be hopped free, wherever it rests:
 on the ground, on trees, on a roof. Once it has stood still (slower than a block a second) for 2 seconds with its engines running (on the thrust levers,
@@ -1902,7 +1903,7 @@ it hands the zeppelin over to them, the lever in the middle and the engines stop
 it flies by them as soon as someone moves one, once it has flown under the autopilot. Two telegraphs rung differently
 turn it, as the rudder does; with both at stop and the rudder hard over, it turns on the spot. Up high, where the air is
 too thin for the burners to lift it further, the lever and the elevator have nothing more to give. With nobody aboard
-for a minute, the autopilot comes down where it is, flown by hand or not.
+for a minute, or ten seconds with nobody within 600 blocks, the autopilot comes down where it is, flown by hand or not.
 
 A Horn Cord hangs from the control car's roof to starboard, just aft of the control head. Pull it and the zeppelin's
 horn sounds, a deep, snarling blast like a warship's, heard some 300 blocks off, from the ship as it flies; the
@@ -1955,9 +1956,10 @@ never higher than a gentle glide down to 20 blocks over the pin, and the rest of
 over the pin all the way. Told to Land, it stops, holding the way it points, and sinks straight down, briskly from high
 up (a block and a half a second) and gently near the ground (a block a second). On the ground it rests on its wheels,
 its burners holding most of its weight, its engines stopped, and switches itself off with a bell. With nobody aboard for
-a minute it comes down where it is. Still on the ground a minute after it was engaged, too heavy for its burners (built
-over with too much, say), it rests again and switches itself off with a thud, saying so; built without Create
-Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
+a minute, or ten seconds with nobody within 600 blocks, it comes down where it is. Still on the ground a minute after it
+was engaged, too heavy for its burners (built over with too much, say), it rests again and switches itself off with a
+thud, saying so; built without Create Aeronautics, it has no burners at all, and its autopilot says so instead of
+engaging.
 
 Nobody is hurt falling from a zeppelin: a striped safety canopy, the parachute's, opens over anyone who was aboard a
 moment ago and has fallen a few blocks, off the boarding stairs as they fold away under her, say, or from the gangway

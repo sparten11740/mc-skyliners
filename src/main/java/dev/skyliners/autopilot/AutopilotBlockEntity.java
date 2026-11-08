@@ -437,6 +437,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double STOPPED = 0.5;
     /** How long the airliner flies on with nobody aboard before it lands by itself, in ticks: a minute. */
     private static final int UNATTENDED = 60 * 20;
+    /**
+     * How long it flies on with nobody aboard and nobody near before it lands by itself, in ticks (see
+     * {@link #watchUnattended}): long enough for a player rejoining a world saved aboard it in flight to arrive, as the
+     * world ticks a moment before they do.
+     */
+    private static final int UNATTENDED_FAR_OFF = 10 * 20;
     /** How often it looks whether anyone is aboard, in ticks. */
     static final int ABOARD_LOOK = 20;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
@@ -1712,8 +1718,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     /**
      * Lands the airliner by itself once it has flown on for {@link #UNATTENDED} ticks with nobody aboard, everyone gone
      * out of it in flight (by parachute, say), so it does not fly on for ever: as Land on the settings screen does,
-     * engaging the autopilot if it is off. The count stops and starts over as soon as anyone is aboard, and while it is
-     * on the ground or landing already. Looked at every {@link #ABOARD_LOOK} ticks.
+     * engaging the autopilot if it is off. With nobody near enough to keep it loaded once down either (see
+     * {@link ParkedShips#nobodyNear}), it lands after {@link #UNATTENDED_FAR_OFF}: a ship kept loaded costs the server
+     * its physics wherever it flies, and a zeppelin left to fly its minute and sink slowly down after it was seen still
+     * loaded over two thousand blocks from anyone. Someone just stepped off it is near, and has the minute. The count
+     * stops and starts over as soon as anyone is aboard, and while it is on the ground or landing already; it is not
+     * saved. Looked at every {@link #ABOARD_LOOK} ticks.
      */
     void watchUnattended(ServerLevel level, SableFlight.State flight, double radio) {
         if (radio <= AIRBORNE || phase == Phase.LAND || phase == Phase.ROLLOUT || pinLanding.runway() != null) {
@@ -1724,7 +1734,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         unattended = Aboard.players(this).isEmpty() ? unattended + ABOARD_LOOK : 0;
-        if (unattended >= UNATTENDED) {
+        if (unattended >= UNATTENDED || unattended >= UNATTENDED_FAR_OFF && ParkedShips.nobodyNear(level, this)) {
             unattended = 0;
             land(level, flight);
         }

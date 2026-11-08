@@ -70,6 +70,15 @@ public final class ParkedShips extends SavedData {
         return true;
     }
 
+    /**
+     * Whether nobody is near enough the ship an autopilot is part of to keep it from being let go once parked (see
+     * {@link #LET_GO_AT}); false for an autopilot in no ship.
+     */
+    static boolean nobodyNear(ServerLevel level, BlockEntity autopilot) {
+        SableFlight.Footprint footprint = SableFlight.footprint(autopilot);
+        return footprint != null && !anyoneNear(level, footprint, LET_GO_AT);
+    }
+
     /** The ship an autopilot is part of is loaded and looks after itself again, or is taken apart: forgets it. */
     static void back(ServerLevel level, BlockEntity autopilot) {
         SableFlight.Footprint footprint = SableFlight.footprint(autopilot);

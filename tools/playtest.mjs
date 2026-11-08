@@ -155,6 +155,11 @@ const FREIGHTER_LEVEL_WITHIN = 2;
 const FREIGHTER_WATCH_TICKS = 200;
 const FREIGHTER_AWAY = 400;
 const FREIGHTER_AWAY_TICKS = 60;
+// A freighter left flying with nobody near: how far off everyone goes, in blocks, past the 600 within which a ship is
+// kept once parked, and how soon she must be down and let go after, in ticks: she is gone after some 900, but used to
+// fly on a minute (1,200 ticks) first and come down after it, staying loaded for some 1,950 in all.
+const UNATTENDED_AWAY = 1500;
+const UNATTENDED_GONE_TICKS = 1400;
 // How long each of her computer's lines for her flight deck is given to be heard, in ticks, the take-off one waiting
 // for the player to board her and hear it.
 const FREIGHTER_VOICE_TICKS = 300;
@@ -1264,6 +1269,31 @@ function checkFreighterFlight() {
       `control head at ${down.altitude}, built at ${head[1]}`);
     expect(!heard(IMPACT_SOUND, start, 0), "freighter: lifting off her legs and settling back on them, she is never heard striking the ground");
   }
+}
+
+// A ship left flying with nobody near: everyone aboard a cruising freighter goes far off, and she comes down at once
+// and is let go once down, rather than flying on a minute first and costing the server her physics all that while.
+function checkUnattendedFarOff() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(cruising, "unattended: the freighter lifts off and cruises");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  // Aboard a moment first, so whatever minute she counted with nobody aboard starts over.
+  must(`sable:tp ${freighter} skyliners:autopilot; wait ${LOOK_EVERY * 2}t`);
+  must(`server tp @p ${site.x + UNATTENDED_AWAY} ${ground} ${site.z}`);
+  const left = now();
+  let loaded = true;
+  for (let waited = 0; waited <= UNATTENDED_GONE_TICKS && loaded; waited += LOOK_EVERY) {
+    loaded = JSON.stringify(send(`wait ${LOOK_EVERY}t; ?server sable info @e`)).includes(freighter);
+  }
+  expect(!loaded, "unattended: left far off with nobody aboard, she comes down at once and is let go",
+    loaded ? `still loaded ${UNATTENDED_GONE_TICKS} ticks after everyone went` : `gone ${now() - left} ticks after everyone went`);
+  must(`server tp @p 0 ${ground} 0`);
 }
 
 // A ship set down hard is heard striking the ground, and grinding along it: a freighter, assembled and switched off
@@ -4240,6 +4270,7 @@ const CHECKS = {
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "impact-sounds": { run: checkImpactSounds, about: "a freighter dropped onto the ground crunches and groans, and shoved along it grinds", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
+  "unattended-far-off": { run: checkUnattendedFarOff, about: "a freighter left flying with nobody near comes down at once and is let go", slow: true },
   "freighter-repairs": { run: checkFreighterRepairs, slow: true, about: "a freighter's faults go off only in flight, crackling; whacked with a spanner, one is fixed and lights a star that stays lit" },
   "repairs-by-hand": { run: checkRepairsByHand, about: "a fault panel set up by hand sparks on redstone and, whacked, lights a star on a repair board beside it, which hands out spanners" },
   "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down, her ramp never talking over it", slow: true },
