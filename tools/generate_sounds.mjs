@@ -5555,8 +5555,9 @@ const COMPUTER = {
   // The peak it is written at, as the other voices'.
   level: 0.85,
 };
-// What her computer says of her own: her jump drive, her ramp coming down, her turret taken by a gunner and her name.
-// Gruff and dry, but always saying first what is happening. A "|" is a pause.
+// What her computer says of her own: her jump drive, her ramp coming down, her turret taken by a gunner, her name, and
+// a gravity switch turned off (see GravitySwitchBlockEntity). Gruff and dry, but always saying first what is happening.
+// A "|" is a pause.
 const COMPUTER_LINES = {
   freighter_computer_jump_charged: "Jump drive charged.",
   freighter_computer_jump_fault: "Jump drive fault.",
@@ -5564,6 +5565,7 @@ const COMPUTER_LINES = {
   freighter_computer_turret_ready: "Gun turret online. | Try and hit something.",
   freighter_computer_jump_countdown: "Jump in three, | two, | one.",
   freighter_computer_magpie_ready: "Magpie's awake. | Barely.",
+  freighter_computer_zero_gravity: "Gravity off. | Try not to hit your head.",
 };
 // Her computer's words in place of the flight deck's announcements (see FreighterFlight): set to take off, coming down
 // to land, down on her legs again, reaching space and her gravity coming back on there.
@@ -5928,6 +5930,118 @@ function beamSweep(seconds, from, to) {
     }
   }
   writeSound("tractor_beam_refused", lowPassed(buzz, 1800), 0.6);
+}
+
+// A gravity switch (see GravitySwitchBlockEntity): gravity going off, a motor whirring down and sinking away under a
+// rising airy shimmer and a few twinkles; coming back on, a whine rising into a heavy thunk and a clank; the soft, airy
+// hum of a weightless room, a slow breathing wash of air over a quiet open chord, a seamless loop; and someone floating
+// bumping off a wall, a soft padded thud with a springy boing. Each from a random sequence of its own.
+const ZERO_GRAVITY = {
+  // Off: how long, the click's pitch, the motor's pitch from and to, in hertz, and the shimmer's band from and to, in
+  // hertz, rising in from so many seconds; the twinkles' times, in seconds, and pitches, in hertz.
+  offSeconds: 1.8,
+  clickHz: 1400,
+  motorFrom: 520,
+  motorTo: 70,
+  shimmerFrom: 1200,
+  shimmerTo: 2600,
+  shimmerIn: 0.35,
+  twinkles: [[0.7, 2350], [0.95, 2800], [1.2, 3150], [1.45, 2650]],
+  // On: how long, the whine's pitch from and to, in hertz, over so many seconds, and the thunk's pitch, in hertz.
+  onSeconds: 1.4,
+  whineFrom: 110,
+  whineTo: 640,
+  whineSeconds: 0.7,
+  thunkHz: 52,
+  clankHz: 820,
+  // The hum: how long its loop is and how long it is crossfaded over, in seconds; its chord, in hertz; how fast the air
+  // breathes, in hertz, a whole number of times in the loop; and the band the air sighs in, in hertz.
+  humSeconds: 6,
+  humFade: 1,
+  chord: [110, 164.81, 220, 277.18],
+  breathe: 0.5,
+  airLow: 380,
+  airHigh: 900,
+  // The bump: how long, the boing's pitch from and to, in hertz, how fast it wobbles, in hertz, and how fast it dies.
+  bumpSeconds: 0.45,
+  boingFrom: 330,
+  boingTo: 150,
+  wobble: 14,
+  bumpDecay: 0.12,
+};
+{
+  const Z = ZERO_GRAVITY;
+  const noise = ownRandom(0x5a475f6f);
+  const n = Math.round(Z.offSeconds * RATE);
+  const off = new Float64Array(n);
+  click(off, 0, Z.clickHz, 0.5, noise);
+  let phase = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const along = t / Z.offSeconds;
+    const hz = Z.motorFrom * (Z.motorTo / Z.motorFrom) ** along;
+    const step = hz / RATE;
+    phase = (phase + step) % 1;
+    off[i] += Math.min(1, t / 0.03) * (1 - along) ** 1.5 * (0.6 * sawAt(phase, step) + 0.5 * Math.sin(2 * Math.PI * phase));
+  }
+  const motor = lowPassed(off, 2400);
+  const air = sweptResonance(whiteNoise(Z.offSeconds, noise), (t) => Z.shimmerFrom * (Z.shimmerTo / Z.shimmerFrom) ** (t / Z.offSeconds), 3);
+  const shimmer = air.map((sample, i) => {
+    const t = i / RATE;
+    const swell = Math.max(0, Math.min(1, (t - Z.shimmerIn) / 0.4)) * Math.min(1, (Z.offSeconds - t) / 0.5);
+    return 1.6 * swell * sample;
+  });
+  const mixed = motor.map((sample, i) => sample + shimmer[i]);
+  Z.twinkles.forEach(([at, hz]) => bell(mixed, at, hz, 0.25));
+  writeSound("gravity_switch_off", mixed, 0.7);
+}
+{
+  const Z = ZERO_GRAVITY;
+  const noise = ownRandom(0x5a475f6e);
+  const n = Math.round(Z.onSeconds * RATE);
+  const on = new Float64Array(n);
+  let phase = 0;
+  const whineN = Math.round(Z.whineSeconds * RATE);
+  for (let i = 0; i < whineN; i++) {
+    const t = i / RATE;
+    const along = t / Z.whineSeconds;
+    const step = Z.whineFrom * (Z.whineTo / Z.whineFrom) ** along / RATE;
+    phase = (phase + step) % 1;
+    on[i] += Math.min(1, t / 0.05) * along * (0.5 * sawAt(phase, step) + 0.4 * Math.sin(2 * Math.PI * phase));
+  }
+  const whine = lowPassed(on, 3000);
+  thunk(whine, Z.whineSeconds, Z.thunkHz, 2.2, noise);
+  click(whine, Z.whineSeconds + 0.005, Z.clankHz, 0.9, noise);
+  click(whine, Z.whineSeconds + 0.03, Z.clankHz * 1.5, 0.4, noise);
+  writeSound("gravity_switch_on", whine, 0.8);
+}
+{
+  const Z = ZERO_GRAVITY;
+  const noise = ownRandom(0x5a475f68);
+  const total = Z.humSeconds + Z.humFade;
+  const air = sweptResonance(whiteNoise(total, noise), (t) => Z.airLow + (Z.airHigh - Z.airLow) * (0.5 + 0.5 * Math.sin(2 * Math.PI * Z.breathe * t)), 1.2);
+  const hum = air.map((sample, i) => {
+    const t = i / RATE;
+    const breath = 0.6 + 0.4 * Math.sin(2 * Math.PI * Z.breathe * t);
+    const chord = Z.chord.reduce((sum, hz, k) => sum + Math.sin(2 * Math.PI * hz * t + k) * (0.85 + 0.15 * Math.sin(2 * Math.PI * Z.breathe * t + k)), 0);
+    return 0.9 * breath * sample + 0.12 * chord;
+  });
+  writeSound("zero_gravity_hum", lowPassed(seamless(hum, Z.humSeconds, Z.humFade), 3000), 0.45);
+}
+{
+  const Z = ZERO_GRAVITY;
+  const noise = ownRandom(0x5a475f62);
+  const n = Math.round(Z.bumpSeconds * RATE);
+  const bump = new Float64Array(n);
+  let phase = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const hz = Z.boingTo + (Z.boingFrom - Z.boingTo) * Math.exp(-t / 0.08);
+    phase += hz * (1 + 0.08 * Math.sin(2 * Math.PI * Z.wobble * t) * Math.exp(-t / 0.2)) / RATE;
+    bump[i] += Math.min(1, t / 0.004) * Math.exp(-t / Z.bumpDecay) * Math.sin(2 * Math.PI * phase);
+  }
+  const pad = lowPassed(whiteNoise(Z.bumpSeconds, noise), 500).map((sample, i) => 2.5 * sample * Math.exp(-i / RATE / 0.025));
+  writeSound("zero_gravity_bump", bump.map((sample, i) => sample + pad[i]), 0.6);
 }
 
 // The carrier clips: someone pressing the button and saying nothing, and a pilot's two quick clicks.

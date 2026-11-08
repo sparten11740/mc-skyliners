@@ -155,6 +155,7 @@ import dev.skyliners.client.ThrownClear;
 import dev.skyliners.client.TowedBanner;
 import dev.skyliners.client.TowerRadarRenderer;
 import dev.skyliners.client.TractorBeams;
+import dev.skyliners.client.Weightless;
 import dev.skyliners.client.TransponderRenderer;
 import dev.skyliners.client.TrolleyRenderer;
 import dev.skyliners.client.UpShipScene;
@@ -168,6 +169,7 @@ import dev.skyliners.entity.ShipParticles;
 import dev.skyliners.parachute.SafetyCanopy;
 import dev.skyliners.turret.CannonRocket;
 import dev.skyliners.turret.LaserCannonBlockEntity;
+import dev.skyliners.zerog.GravitySwitchBlockEntity;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
@@ -270,6 +272,8 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(OculusRing::heard);
         NeoForge.EVENT_BUS.addListener(Earshot::heard);
         NeoForge.EVENT_BUS.addListener(CarriedAboard::onTick);
+        NeoForge.EVENT_BUS.addListener(Weightless::onTickPre);
+        NeoForge.EVENT_BUS.addListener(Weightless::onTickPost);
         NeoForge.EVENT_BUS.addListener(LiftRide::onLevelTick);
         NeoForge.EVENT_BUS.addListener(LiftRide::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::loggingOut);
@@ -325,6 +329,7 @@ public final class SkylinersClient {
         // Tractor beams lit: their columns of green light, seen and humming.
         NeoForge.EVENT_BUS.addListener(TractorBeams::stage);
         TractorBeamBlockEntity.clientTicker = TractorBeams::tick;
+        GravitySwitchBlockEntity.clientTicker = Weightless::tick;
         NeoForge.EVENT_BUS.addListener(SkyTrails::tick);
         NeoForge.EVENT_BUS.addListener(SkyTrails::stage);
         // A rocket's engines heard as they fire: her roar, its ignition and cut-off, and her touchdown.

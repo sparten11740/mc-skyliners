@@ -411,6 +411,26 @@ const BEAM_HAND_FLOAT_TICKS = 100;
 // How long a lit beam takes at most to see what lies under it again, in ticks: TractorBeamBlockEntity.LOOK_EVERY, and
 // a little more.
 const BEAM_LOOKS_AGAIN = 15;
+// A gravity switch: how far before it the player and a dropped cookie stand, in blocks; how long they are given to
+// rise off the floor and how high over it they must then float, in ticks and blocks; how long jump is held and how much
+// higher the player must have floated for it, in ticks and blocks; how long they are watched afterwards, still off the
+// floor, in ticks; and how long they are given to come back down once gravity is back on, in ticks, and how near the
+// floor they must then stand, in blocks.
+const ZERO_G_STAND = 3;
+const ZERO_G_COOKIE = 5;
+const ZERO_G_RISE_TICKS = 60;
+const ZERO_G_RISEN = 0.4;
+const ZERO_G_JUMP_TICKS = 10;
+const ZERO_G_JUMPED = 0.3;
+const ZERO_G_WATCH_TICKS = 60;
+const ZERO_G_DOWN_TICKS = 200;
+const ZERO_G_DOWN_WITHIN = 0.3;
+// A gravity switch set by hand: the room built round it, how far out from its middle its walls stand and how many rows
+// tall it is inside, in blocks.
+const ZERO_G_ROOM_OUT = 4;
+const ZERO_G_ROOM_ROWS = 6;
+// A gravity switch aboard a hovering freighter: how high she is set to hover over where she stood, in blocks.
+const ZERO_G_HOVER = 20;
 // A round floor window: how many blocks it has at least; how long its iris is given to open or shut, in ticks; how
 // many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
 // for, in blocks.
@@ -2553,6 +2573,135 @@ function checkTractorBeamByHand() {
   creative();
 }
 
+// A gravity switch's room weightless, a player standing in it a few blocks before the switch on its floor (at floor
+// height, in the world) and a cookie dropped further in: pressed, the switch says so by its sound and its state, and
+// her computer speaks; the player rises off the floor and floats, higher still while they hold jump and not falling
+// after; the cookie floats too; pressed again, everyone comes back down gently, unhurt, falling slowly. Every position
+// given is the world's, the switch's included, or, aboard her flying, her plot's, with where the player stands then
+// found by a marker. Gives whether the player floated.
+function checkWeightlessRoom(who, switchAt, facing, toWorld) {
+  const [dx, dz] = STEPS[facing];
+  const [sx, sy, sz] = switchAt;
+  const floor = sy - 1;
+  const stand = toWorld([sx + 0.5 + dx * ZERO_G_STAND, floor, sz + 0.5 + dz * ZERO_G_STAND]);
+  const cookie = toWorld([sx + 0.5 + dx * ZERO_G_COOKIE, floor + 0.1, sz + 0.5 + dz * ZERO_G_COOKIE]);
+  survival();
+  emptyHands();
+  send("?server kill @e[type=item,tag=zero_g]");
+  must(`server tp @p ${stand.join(" ")}; wait 20t`);
+  must(`server summon item ${cookie.join(" ")} {Tags:["zero_g"],PickupDelay:32767,Item:{id:"minecraft:cookie",count:1}}; wait 10t`);
+  const standing = must("status").pos;
+  const cookieFrom = entityAt("@e[type=item,tag=zero_g,limit=1]") ?? cookie;
+  const off = now();
+  must(`turn ${WAYS[facing][2] + 180} 20; wait 5t; use ${switchAt.join(",")}; wait 5t`);
+  const weightless = must(`block ${switchAt.join(",")} side=server`).props?.weightless === "true";
+  expect(weightless && Boolean(heard("skyliners:gravity_switch_off", off, LOOK_EVERY)), `${who}: pressed, the gravity switch turns gravity off, whirring down`);
+  expect(Boolean(heard("skyliners:freighter_computer_zero_gravity", off, 3 * LOOK_EVERY)), `${who}: her computer says gravity is off`);
+  const risen = waitForPlayer((pos) => pos[1] - standing[1] >= ZERO_G_RISEN, ZERO_G_RISE_TICKS);
+  expect(Boolean(risen), `${who}: with gravity off, the player rises off the floor`, `${(must("status").pos[1] - standing[1]).toFixed(2)} up`);
+  const hums = must("sounds playing match=skyliners:zero_gravity_hum").rows.length;
+  expect(hums === 1, `${who}: a soft hum fills the weightless room, one hum and not one on another`, `${hums} playing`);
+  const before = must("status").pos[1];
+  must(`key press key.jump ${ZERO_G_JUMP_TICKS}t; wait ${ZERO_G_JUMP_TICKS + 5}t`);
+  const jumped = must("status").pos[1];
+  expect(jumped - before >= ZERO_G_JUMPED, `${who}: holding jump, the player floats higher`, `${(jumped - before).toFixed(2)} higher`);
+  must(`wait ${ZERO_G_WATCH_TICKS}t`);
+  const after = must("status").pos[1];
+  expect(after - standing[1] >= ZERO_G_RISEN, `${who}: let go of jump, the player floats on, not falling back to the floor`,
+    `${(after - standing[1]).toFixed(2)} up`);
+  const cookieNow = entityAt("@e[type=item,tag=zero_g,limit=1]");
+  expect(Boolean(cookieNow) && cookieNow[1] - cookieFrom[1] >= ZERO_G_RISEN, `${who}: a dropped cookie floats up off the floor`,
+    cookieNow ? `${(cookieNow[1] - cookieFrom[1]).toFixed(2)} up` : "gone");
+  must(`server tp @p ${stand[0]} ${stand[1] + 1} ${stand[2]}; wait 5t`);
+  const on = now();
+  must(`turn ${WAYS[facing][2] + 180} 0; wait 5t; use ${switchAt.join(",")}; wait 5t`);
+  const back = must(`block ${switchAt.join(",")} side=server`).props?.weightless === "false";
+  expect(back && Boolean(heard("skyliners:gravity_switch_on", on, LOOK_EVERY)), `${who}: pressed again, gravity comes back on with a thunk`);
+  const falling = JSON.stringify(send("server data get entity @p active_effects")[0]).includes("slow_falling");
+  const down = waitForPlayer((pos) => pos[1] - standing[1] <= ZERO_G_DOWN_WITHIN, ZERO_G_DOWN_TICKS);
+  expect(falling && Boolean(down) && healthOf() === FULL_HEALTH, `${who}: gravity back on, the player falls slowly back to the floor, unhurt`,
+    `${falling ? "falling slowly" : "not falling slowly"}, ${(must("status").pos[1] - standing[1]).toFixed(2)} up, health ${healthOf()}`);
+  send("?server kill @e[type=item,tag=zero_g]");
+  creative();
+  return Boolean(risen);
+}
+
+// A freighter's club has a gravity switch by its doorway and rubber ducks on its tables; the room goes weightless and
+// back (see checkWeightlessRoom).
+function checkFreighterZeroGravity() {
+  ship("freighter");
+  const [row] = must("find skyliners:gravity_switch 128 1").rows;
+  const ducks = must("find skyliners:rubber_duck 128 8").rows.length;
+  expect(Boolean(row) && ducks > 0, "freighter: she is built with a gravity switch in her club, rubber ducks on its tables", `${ducks} ducks`);
+  if (row) {
+    checkWeightlessRoom("freighter", row.at_abs, must(`block ${row.at_abs.join(",")}`).props?.facing ?? "north", (at) => at);
+  }
+}
+
+// A gravity switch set by hand on the wall of a little stone room makes that room weightless and back, and leaves
+// someone standing outside it as heavy as ever.
+function checkGravitySwitchByHand() {
+  const [x, z] = [nextSite++ * SITE_APART, STAND_AWAY];
+  const out = ZERO_G_ROOM_OUT;
+  creative();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${ground + 1} ${z + 0.5}; wait 40t`);
+  must(`server fill ${x - out - 1} ${ground} ${z - out - 1} ${x + out + 1} ${ground + ZERO_G_ROOM_ROWS + 1} ${z + out + 1} stone hollow`);
+  must(`server tp @p ${x + 0.5} ${ground + 1} ${z + 0.5} 180 0; wait 10t; server give @p skyliners:gravity_switch 1; wait 5t; select 0`);
+  const at = [x, ground + 2, z - out];
+  send(`place skyliners:gravity_switch ${at.join(",")}`);
+  const placed = must(`block ${at.join(",")} side=server`);
+  expect((placed.id ?? "").includes("gravity_switch") && placed.props?.mount === "wall", "gravity switch: put up on a wall, it hangs there",
+    `${placed.id} ${placed.props?.mount}`);
+  if (!(placed.id ?? "").includes("gravity_switch")) {
+    return;
+  }
+  const facing = placed.props?.facing ?? "south";
+  const [dx, dz] = STEPS[facing];
+  const stand = [at[0] + 0.5 + dx * ZERO_G_STAND, ground + 1, at[2] + 0.5 + dz * ZERO_G_STAND];
+  checkWeightlessRoom("gravity switch by hand", at, facing, ([px, py, pz]) => [px, py, pz]);
+  must(`server tp @p ${stand.join(" ")}; wait 5t; turn ${WAYS[facing][2] + 180} 0; use ${at.join(",")}; wait 5t`);
+  survival();
+  must(`server tp @p ${x + out + 3.5} ${ground} ${z + 0.5}; wait 40t`);
+  const outside = must("status").pos[1];
+  expect(outside - ground < ZERO_G_DOWN_WITHIN, "gravity switch: outside its room, the player keeps their weight", `${outside - ground} up`);
+  creative();
+  must(`server tp @p ${stand.join(" ")}; wait 5t; turn ${WAYS[facing][2] + 180} 0; use ${at.join(",")}; wait 5t`);
+}
+
+// A freighter hovering high over the ground: her club's gravity switch makes it weightless and back as it does on the
+// ground, everyone in it floating with her (see checkWeightlessRoom), its positions among her blocks.
+function checkFreighterZeroGravityInFlight() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + ZERO_G_HOVER;
+  must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && report.altitude > height - FREIGHTER_HOLD_WITHIN, FREIGHTER_UP_TICKS);
+  expect(Boolean(up), "freighter: she lifts off and hovers", `${(up ?? freighterReport())?.phase}`);
+  if (!up) {
+    return;
+  }
+  must(`wait ${FREIGHTER_WATCH_TICKS}t`);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [row] = must(`sable:find ${freighter} skyliners:gravity_switch 1 side=server`).rows;
+  expect(Boolean(row), "freighter: her gravity switch is aboard her in flight");
+  if (!row) {
+    return;
+  }
+  const facing = must(`block ${row.at.join(",")} side=server`).props?.facing ?? "north";
+  const [sx, sy, sz] = row.at;
+  const [dx, dz] = STEPS[facing];
+  must(`sable:tp ${sx + dx * ZERO_G_STAND},${sy - 1},${sz + dz * ZERO_G_STAND}; fly off; wait 20t`);
+  const toWorld = ([px, py, pz]) => {
+    must(`server execute positioned ${px} ${py} ${pz} out_sub_level ${freighter} run summon marker ~ ~ ~ {Tags:["zero_g_spot"]}`);
+    const spot = entityAt("@e[type=marker,tag=zero_g_spot,limit=1]") ?? [px, py, pz];
+    send("?server kill @e[type=marker,tag=zero_g_spot]");
+    return spot;
+  };
+  checkWeightlessRoom("freighter in flight", row.at, facing, toWorld);
+  send("?skyliners:autopilot land");
+}
+
 function checkFreighterCrossbowRack() {
   ship("freighter");
   const [rack] = must("find skyliners:crossbow_rack 128 1").rows;
@@ -3531,6 +3680,9 @@ const CHECKS = {
   "freighter-tractor-beam": { run: checkFreighterTractorBeam, about: "a freighter's tractor beam lets the player down from its pad and beams them and a cow up, never a zombie" },
   "freighter-beam-flight": { run: checkFreighterTractorBeamInFlight, about: "a hovering freighter's tractor beam lets the player down to the ground unhurt and beams them back up", slow: true },
   "tractor-beam-by-hand": { run: checkTractorBeamByHand, about: "tractor beams set up by hand hang or stand, beam a sheep onto a pad and float a player up and down" },
+  "freighter-zero-gravity": { run: checkFreighterZeroGravity, about: "a freighter's club gravity switch floats the player and a cookie, a jump lifts them higher, and pressed again they float down unhurt" },
+  "gravity-switch-by-hand": { run: checkGravitySwitchByHand, about: "a gravity switch set by hand on a room's wall floats that room, not outside it" },
+  "freighter-zero-gravity-flight": { run: checkFreighterZeroGravityInFlight, slow: true, about: "a hovering freighter's club gravity switch floats the player aboard her and lets them down unhurt" },
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },

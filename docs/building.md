@@ -418,6 +418,23 @@ the nearest `BeamPadBlockEntity` in reach (`Loaded`, so none is searched for), a
 only where it meets solid ground or water within its reach. What it does with each thing it holds is kept only while
 it is lit, never saved; whatever it lets go of falls slowly a while. On each client `TractorBeams` draws every lit beam
 after the particles, as `SearchlightBeams` draws searchlights, from where Sable holds its lens, and plays its hum.
+`FreighterZeroGravity`, after her LED strips so it takes a spot no panel wanted, hangs the `GravitySwitchBlock` of
+`zerog/` on her club's wall by its doorway and puts a rubber duck on each of the club's cocktail tables; its `Fitting`
+tells the `GravitySwitchBlockEntity` the club as a `WeightlessRoom`, the box round it, its wedge round her axis and how
+far out past her corridor it starts, turned as she was placed, while a switch set by hand measures the room round it
+each time it goes off. Only while off does it tick: it looks in its room's box for what floats, aboard a ship both what
+lives in her plot and what is in the world inside her, each seen in her frame through `SableFlight.toPlot`, and
+`ZeroGravity` keeps each floating. A player or mob loses its gravity to a transient attribute modifier, which a
+player's own game is told of and moves them by (and with no gravity the server never takes them for flying), with a
+soft jump and soft landings; a player holds a lease on it, renewed every tick, so their weight comes back whatever
+becomes of the switch. A mob or an item drifts as the server moves it, lifted, nudged and bounced; an item is made to
+fall no more and marked, so one saved floating loads with its weight. What leaves the room, or everything as gravity
+comes back on, is let go of with a few seconds of slow falling. While her ship moves along at the switch only players
+float, as the client's `CarriedAboard` keeps them with her and nothing would keep a floating mob or item; a jolt in her
+speed at the switch puts gravity back on. On each client `Weightless` pushes the player up or down as they hold jump or
+sneak and bounces them off walls, and plays a weightless room's hum and draws its sparkles; `RubberDuckRenderer`
+floats the ducks in a weightless room (`GravitySwitchBlockEntity.weightlessAt`). `freighter.zeroGravity` switches the
+switch and the ducks, and keeps every switch from going off.
 `DarkCorners` is her
 last pass: it spreads her lamps' light through her layout as the game does and lights every spot someone could stand
 in that is left unlit, her passages to a dim but never black level (`FreighterLayout.leastLight`), with a wall washer

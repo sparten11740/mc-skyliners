@@ -100,6 +100,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_BEACH;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RETRACTING_LEGS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TRACTOR_BEAM;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_ZERO_GRAVITY;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -868,6 +869,13 @@ public final class SkylinersConfig {
                 "she has no beam and every tractor beam stays dark."
             )
             .define("tractorBeam", true);
+        FREIGHTER_ZERO_GRAVITY = builder
+            .comment(
+                "Whether the freighter is built with a gravity switch by her club's doorway, and whether gravity switches work: pressed,",
+                "everyone in the room floats, mobs and dropped items too, bumping gently off its walls, and pressed again everyone",
+                "falls slowly back down, unhurt. Without it, she has no switch and every gravity switch only buzzes."
+            )
+            .define("zeroGravity", true);
         builder.pop();
 
         SPEC = builder.build();
