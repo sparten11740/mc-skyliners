@@ -2,7 +2,7 @@
 
 Create: Skyliners, a NeoForge 1.21.1 mod (Java 21): an A380-style double-deck airliner big enough to build in, assembled
 into a flying body by Sable (Create Aeronautics) and flown from its own cockpit, mostly by its autopilot. `README.md` is
-the short tour, `docs/guide.md` describes every feature as a player meets it, `docs/building.md` says which classes do
+the short tour, `docs/guide.md` and `docs/guide/` give the main features, `docs/building.md` says which classes do
 what, and `docs/backlog.md` holds what is still open. Its mod id, packages and commands are `skyliners`. Up to
 0.1.0-alpha.216 it was Aerolarge (`aerolarge`), as older commits still call it, and its airliner still flies as
 "Aerolarge three eight zero" on the radio.
@@ -124,8 +124,9 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
   Aeronautics as required mods. Its notes are the subjects of the `feat` and `fix` commits since the last tag (the
   last release's, for a release), so those subjects are written for players. It needs the repository's
   `CURSEFORGE_TOKEN` secret and `CURSEFORGE_PROJECT_ID` variable.
-- **Docs.** A change a player can see updates `docs/guide.md` along with it, and `README.md` too where its short tour
-  mentions it.
+- **Docs.** `docs/guide.md` and one page for each ship in `docs/guide/` give only the main features, at most a page
+  (about 500 words) each, and leave the rest for players to find. A new main feature, or a change to what they say,
+  updates them along with it, and `README.md` too where its short tour mentions it.
 - **Verify in game** what the build cannot show: rendering, layout and fit-out (walk a freshly built airliner, looking
   for floating or misplaced blocks), and flight behaviour (in flight). Say plainly what was not verified.
 - **Play-test script.** A bug found in play gets a check in `tools/playtest.mjs` along with its fix, where one can catch

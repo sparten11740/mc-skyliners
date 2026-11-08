@@ -64,9 +64,9 @@ Run these and treat any failure as a finding:
 - **Play-test script:** a fix for something found in play adds a check to `tools/playtest.mjs`, or the report says why
   none can catch it. `node tools/playtest.mjs <check> ...` runs those touching what changed; `--list` shows them. A
   failure is a finding.
-- **Docs:** a change a player can see (a block, an item, a screen, a setting, how something behaves) is described in
-  `docs/guide.md` as it now is, and in `README.md` where its short tour mentions it, and `docs/building.md`'s notes
-  on which class does what still hold.
+- **Docs:** a new main feature, or a change to something the guide says, is described in `docs/guide.md` or its ship's
+  page in `docs/guide/` (each at most a page, about 500 words; smaller features stay out, for players to find), and in
+  `README.md` where its short tour mentions it, and `docs/building.md`'s notes on which class does what still hold.
 
 ## 3. Review
 
@@ -132,7 +132,7 @@ style preferences the surrounding code does not share.
   English with British spelling, saying what a thing is and *why*; no narration of what the next line does. Comments
   wrap at 120 columns.
 - Every cue a player needs also has a picture, colour or sound, not text alone: some players cannot read yet.
-- `docs/guide.md` describes the behaviour as it now is.
+- What `docs/guide.md` and `docs/guide/` say still holds, and no page has grown past one page.
 
 ### Hygiene
 - No unused imports, fields, methods, constants, lang keys, textures or models; nothing left over from removed

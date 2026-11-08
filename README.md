@@ -84,7 +84,7 @@ settings are under Mods → Create: Skyliners → Config.
 
 ## Learn more
 
-- [The guide](docs/guide.md): everything in the mod, as a player meets it.
+- [The guide](docs/guide.md): a page on each ship's main features.
 - [Building](docs/building.md): how the mod is built and which classes do what. `./gradlew build` writes the jar to
   `build/libs/`.
 - [AGENTS.md](AGENTS.md): the rules the code keeps, for contributors.
