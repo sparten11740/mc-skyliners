@@ -392,6 +392,24 @@ const CLIMB_BOOST_SHARE = 0.8;
 const CLIMB_BOOST_DRIFT = 10;
 const CLIMB_BOOST_HOLD_TICKS = 200;
 const CLIMB_BOOST_HELD_WITHIN = 15;
+// Her slam landing: how high over where she was built she hovers before it, in blocks, high enough that she reaches her
+// fastest; how long she is watched coming down from the button, in ticks; how fast she must sink at the
+// fastest, in blocks a second, against the three she sinks at most landing; how fast at most she may touch down, in
+// blocks a second, under the four at which Sable's ship breaks the fragile blocks it strikes; how slowly she may sink
+// at the least once at her fastest, in blocks a second, below which she stopped to wait for her legs, until her feet
+// are so near the ground, in blocks, where she slows to touch down; how near the ground her feet must be to have touched
+// it, in blocks; how long after she is off her ramp is given to come down, in ticks; and
+// how far the player may end up from where they stood at her console, along the ground, or from her deck's height, in
+// blocks, and still be aboard there.
+const SLAM_HEIGHT = 90;
+const SLAM_WATCH_TICKS = 300;
+const SLAM_FASTEST_LEAST = 10;
+const SLAM_TOUCHDOWN_MOST = 3;
+const SLAM_PAUSED = 1;
+const SLAM_CUSHIONED = 3;
+const SLAM_TOUCHED = 0.6;
+const SLAM_RAMP_TICKS = 200;
+const SLAM_ABOARD_WITHIN = 3;
 // Her hyperspace jump: how far off along the ground her pin is, in blocks, and how tall the pillar standing on it, in
 // blocks over the ground; how long she is given from the button to come out there, in ticks; how near the pin her
 // middle must come out, and how far her lowest block must keep over the pillar's top, in blocks.
@@ -2422,6 +2440,66 @@ function checkFreighterClimbBoost() {
   must("skyliners:autopilot land");
 }
 
+// A freighter's slam landing: hovering, its button lit, her thrusters roar and her computer braces everyone, and she
+// drives straight down where she is far faster than she ever lands, strikes the ground with her crash heard, yet
+// touches it slowly enough that nothing breaks, then stands level on her legs and switches off, its button dark. The
+// player, standing aboard at it in survival, is neither hurt nor left behind, and no piece of her is shed as a ship of
+// its own, even once her ramp has come down after.
+function checkFreighterSlam() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + SLAM_HEIGHT} speed=0`, BUILD_SECONDS);
+  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
+  expect(hovering, "freighter: she lifts off and hovers");
+  if (!hovering) {
+    return;
+  }
+  expect(hovering.slam === "ready", "freighter: flying along over the ground, her slam button is lit", `slam ${hovering.slam}`);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const ships = must("sable:list 2048 side=server").rows.length;
+  const { at } = must(`sable:find ${freighter} skyliners:console_slam 1 side=server`).rows[0];
+  const stood = must(`sable:tp ${at.join(",")}; wait 20t; status`).pos;
+  survival();
+  const health = healthOf();
+  const pressed = now();
+  must(`use ${at.join(",")}`);
+  const rows = must(`sample sable:info ${freighter} brief side=server every 2t x${SLAM_WATCH_TICKS / 2}`, BUILD_SECONDS).rows;
+  expect(played("*speed_boost*", pressed).length > 0, "freighter: her slam button roars into it");
+  expect(played("skyliners:freighter_computer_slam", pressed).length > 0, "freighter: her computer braces everyone");
+  const fastest = Math.min(...rows.map((row) => row.climb));
+  expect(-fastest >= SLAM_FASTEST_LEAST, "freighter: slamming down, she drives down far faster than she lands", `${round(-fastest)} blocks a second at the fastest`);
+  const touched = rows.findIndex((row) => row.agl !== "none" && row.agl < SLAM_TOUCHED);
+  const touchdown = touched > 0 ? Math.min(rows[touched - 1].climb, rows[touched].climb) : NaN;
+  expect(-touchdown <= SLAM_TOUCHDOWN_MOST, "freighter: yet she touches down slowly enough that nothing breaks",
+    touched > 0 ? `${round(-touchdown)} blocks a second at ${rows[touched].agl} over the ground` : "she never touched");
+  const fastestAt = rows.findIndex((row) => row.climb === fastest);
+  const slowest = Math.max(...rows.slice(fastestAt, touched).filter((row) => row.agl === "none" || row.agl > SLAM_CUSHIONED).map((row) => row.climb));
+  expect(fastestAt < touched && -slowest >= SLAM_PAUSED, "freighter: she comes down in one go, never stopping to wait for her legs",
+    `${round(-slowest)} blocks a second at the slowest, ${(touched * 2) / 20} s from the button to the ground`);
+  const crash = played("skyliners:freighter_slam", pressed);
+  expect(crash.length > 0, "freighter: she strikes the ground with a crash", crash.map(soundOf).join(", "));
+  const hits = played(IMPACT_SOUND, pressed);
+  expect(hits.length === 0, "freighter: Sable feels no hit as she touches down, her crash all show", hits.map(soundOf).join(", "));
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: she settles and switches off", down ? "" : `still ${freighterReport()?.phase}`);
+  if (down) {
+    const lean = Math.max(Math.abs(down.tilt_front), Math.abs(down.tilt_right));
+    expect(Math.abs(down.altitude - head[1]) < FREIGHTER_HOLD_WITHIN && lean < FREIGHTER_LEVEL_WITHIN && down.legs === "down",
+      "freighter: she stands level on her legs", `control head at ${down.altitude}, built at ${head[1]}, leaning ${lean}, legs ${down.legs}`);
+    expect(down.slam === "unavailable", "freighter: on the ground, her slam button is dark", `slam ${down.slam}`);
+  }
+  const after = healthOf();
+  expect(after >= health, "freighter: nobody aboard is hurt", `health ${after}, ${health} before`);
+  const { pos } = must("status");
+  const away = Math.hypot(pos[0] - stood[0], pos[2] - stood[2]);
+  expect(away < SLAM_ABOARD_WITHIN && Math.abs(pos[1] - head[1]) < SLAM_ABOARD_WITHIN, "freighter: the player is still aboard at her console",
+    `${round(away)} blocks from where they stood, at y ${round(pos[1])}, her control head at y ${head[1]}`);
+  must(`wait ${SLAM_RAMP_TICKS}t`);
+  const shipsAfter = must("sable:list 2048 side=server").rows.length;
+  expect(shipsAfter === ships, "freighter: no piece of her is shed as a ship of its own", `${shipsAfter} ships, ${ships} before`);
+  creative();
+}
+
 // A freighter's boost: cruising, its button fires her mains flat out a while, her roar going up and her speed with
 // it, and afterwards she slows back to her speed; pressed again straight after, it rests, saying so.
 function checkFreighterBoost() {
@@ -4091,6 +4169,7 @@ const CHECKS = {
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
+  "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },

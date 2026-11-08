@@ -57,6 +57,7 @@
     "skyliners:console_boost",
     "skyliners:console_jump",
     "skyliners:console_climb",
+    "skyliners:console_slam",
     "skyliners:breaker_board",
     "skyliners:coolant_valve",
     "skyliners:fault_panel",

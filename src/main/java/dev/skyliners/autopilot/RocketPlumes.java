@@ -119,9 +119,10 @@ final class RocketPlumes {
 
     /**
      * So many particles about a spot, spread round it so far, in blocks, and moving at so much, in blocks a tick, every
-     * way: one packet to everyone near enough, however far that is.
+     * way: one packet to everyone near enough, however far that is. A freighter slamming down puffs her exhaust so too
+     * (see {@link FreighterSlam}).
      */
-    private static void send(ServerLevel level, ParticleOptions kind, Vec3 at, int count, double spread, double speed) {
+    static void send(ServerLevel level, ParticleOptions kind, Vec3 at, int count, double spread, double speed) {
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(at) < SEEN_WITHIN * SEEN_WITHIN) {
                 level.sendParticles(player, kind, true, at.x, at.y, at.z, count, spread, spread / 4, spread, speed);

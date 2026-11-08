@@ -1348,6 +1348,42 @@ function crumple(samples, start, length, noise, notes, gain) {
   }
   writeSound("impact_crunch", saturate(hullEcho(dry, 0.18), 3), 0.9);
 }
+// The freighter slamming into the ground (see FreighterSlam), bigger than any hit: the crack of her feet striking, a
+// boom deeper and longer than a crash's, falling in pitch as it rolls on; her legs and hull thumping down a beat after,
+// twice; her plates crunching in a long run of grinding jerks, ringing low; stones and bits of metal rattling down round
+// her; and the ground's rumble rolling on a good while, all of it driven hard into saturation.
+{
+  const noise = ownRandom(0x536c616d);
+  const length = 4.2;
+  const dry = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  let rumble = 0;
+  let deep = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (24 + 56 * Math.exp(-t / 0.18))) / RATE;
+    const boom = Math.min(1, t / 0.003) * Math.exp(-t / 0.8) * (Math.sin(phase) + 0.4 * Math.sin(2 * phase) + 0.15 * Math.sin(3 * phase));
+    const crack = t < 0.03 ? (noise() * 2 - 1) * (1 - t / 0.03) : 0;
+    const white = noise() * 2 - 1;
+    rumble += 0.012 * (white - rumble);
+    deep += 0.003 * (white - deep);
+    const plates = [[98, 1.4], [161, 1.1], [247, 0.8], [372, 0.6], [533, 0.4], [905, 0.25]]
+      .reduce((sum, [note, decay], k) => sum + Math.sin(2 * Math.PI * note * t + k) * Math.exp(-t / decay) / (k + 1), 0);
+    dry[i] = 2 * boom + 1.4 * crack + 6 * rumble * Math.exp(-t / 1.6) + 18 * deep * Math.exp(-t / 2.2) + 0.5 * plates * Math.min(1, t / 0.003);
+  }
+  thunk(dry, 0.16, 45, 1.2, noise);
+  thunk(dry, 0.34, 60, 0.7, noise);
+  crumple(dry, 0.01, 0.9, noise, [[310, 9, 1], [520, 11, 0.8], [890, 12, 0.6], [1450, 14, 0.4], [2400, 16, 0.25]], 170);
+  for (let bit = 0; bit < 36; bit++) {
+    const at = 0.25 + 1.6 * noise() * noise();
+    click(dry, at, 900 + 2600 * noise(), 0.25 * (1 - at / 2), noise);
+  }
+  const tail = Math.round(0.8 * RATE);
+  for (let i = dry.length - tail; i < dry.length; i++) {
+    dry[i] *= (dry.length - i) / tail;
+  }
+  writeSound("freighter_slam", saturate(hullEcho(dry, 0.15), 3.5), 0.95);
+}
 // A bump: a dull thump of the hull meeting something, a short clank of a plate, and a breath of rumble after it.
 {
   const noise = ownRandom(0x54687564);
@@ -5593,6 +5629,10 @@ const COMPUTER_JUMP_LINES = {
 const COMPUTER_CLIMB_LINES = {
   freighter_computer_climb_boost: "Climbing hard. | Hold on to your stomachs.",
 };
+// Her computer as she slams down (see FreighterSlam), our own line in the same voice.
+const COMPUTER_SLAM_LINES = {
+  freighter_computer_slam: "Taking the quick way down. | Brace yourselves.",
+};
 // Her computer as her sticker map fills (see StickerMapBlockEntity), our own lines in the same voice: a sticker up, a
 // row of them filled, and the whole map, which is given an announcement's length.
 const COMPUTER_STICKER_LINES = {
@@ -5643,6 +5683,7 @@ if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_CLIMB_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_SLAM_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_BOARD, COMPUTER_ANNOUNCEMENT_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_REPAIR_LINES, COMPUTER_LONGEST);

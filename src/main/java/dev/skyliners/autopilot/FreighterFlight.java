@@ -35,10 +35,10 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The freighter in her autopilot's hands (see {@link StandingFlight}): she lifts straight off her legs and comes
  * straight down onto them, flown by {@link FreighterPilot}, her legs drawn up into her belly as she flies and let down
- * before she lands (see {@link FreighterLegs}); she lands by herself once nobody has been aboard a while; and she can
- * climb to space as the rocket does. How hard her lift thrusters and her mains fire is shown to the
- * clients, who play her engines' roar by it (see the client's FreighterRoar), and where her disc's middle is among her
- * blocks goes with her, for them to place it.
+ * before she lands (see {@link FreighterLegs}); she lands by herself once nobody has been aboard a while, or slams
+ * down hard where she is from her console (see {@link FreighterSlam}); and she can climb to space as the rocket does.
+ * How hard her lift thrusters and her mains fire is shown to the clients, who play her engines' roar by it (see the
+ * client's FreighterRoar), and where her disc's middle is among her blocks goes with her, for them to place it.
  */
 public final class FreighterFlight extends StandingFlight {
     /** Engaged on the ground she rises this far above it, in blocks. */
@@ -136,6 +136,8 @@ public final class FreighterFlight extends StandingFlight {
     private final FreighterJump jump = new FreighterJump();
     /** Her climb boost (see {@link #climbBoost}), on the server and as the clients are shown it. */
     private final FreighterClimbBoost climb = new FreighterClimbBoost();
+    /** Her slam landing (see {@link #slam}), on the server and as the clients are shown it. */
+    private final FreighterSlam slam = new FreighterSlam();
     /**
      * Her jump drive in engineering as an offset from her control head, set as she is built, which spools up and fires
      * as she jumps; none for one built before, or without engineering's machines.
@@ -412,6 +414,40 @@ public final class FreighterFlight extends StandingFlight {
         return freighter == null ? FreighterClimbBoost.Shown.UNAVAILABLE : freighter.climb.shown(now, FreighterJump.flyingAlong(autopilot));
     }
 
+    /**
+     * Asks the freighter an autopilot flies to slam down, on the server, as her console's slam button does: while she
+     * flies along with the ground in reach and nothing would hold her take-off, she comes straight down where she is,
+     * driven down hard and struck down with a crash (see {@link FreighterSlam}), and switches off on her legs. What it
+     * came to, for the button to answer with. Standing as she was built, never yet assembled, she is on the ground, and
+     * it says so, rather than that there is no freighter.
+     */
+    public static FreighterSlam.Answer slam(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
+        if (freighter == null) {
+            return FreighterSlam.Answer.NO_SHIP;
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        if (state == null) {
+            return SkylinersConfig.FREIGHTER_SLAM_LANDING.get() ? FreighterSlam.Answer.NOT_FLYING : FreighterSlam.Answer.SWITCHED_OFF;
+        }
+        double radio = freighter.feetOverGround(level, autopilot);
+        FreighterSlam.Answer answer = freighter.slam.start(level, autopilot, radio, heldNow(level, autopilot.getBlockPos()));
+        if (answer == FreighterSlam.Answer.SLAMMING) {
+            autopilot.phase = AutopilotBlockEntity.Phase.DESCENT;
+            freighter.landHere(autopilot, state);
+            autopilot.lateral = AutopilotBlockEntity.Lateral.HEADING;
+            autopilot.landAtPin = false;
+            autopilot.changed();
+        }
+        return answer;
+    }
+
+    /** Where the slam landing of the freighter an autopilot flies stands, on either side; unavailable for others. */
+    public static FreighterSlam.Stage slamOf(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? FreighterSlam.Stage.UNAVAILABLE : freighter.slam.stage();
+    }
+
     /** Whether her autopilot flies her along, climbing or cruising: not lifting off or coming down. */
     private static boolean flyingAlong(AutopilotBlockEntity autopilot) {
         return (autopilot.phase == AutopilotBlockEntity.Phase.CLIMB || autopilot.phase == AutopilotBlockEntity.Phase.CRUISE) && !autopilot.comingIn();
@@ -553,6 +589,7 @@ public final class FreighterFlight extends StandingFlight {
             tag.putString("FreighterHeldBy", heldBy);
         }
         climb.saveShown(tag);
+        slam.saveShown(tag);
     }
 
     @Override
@@ -566,6 +603,7 @@ public final class FreighterFlight extends StandingFlight {
         String why = tag.getString("FreighterHeldBy");
         heldBy = ResourceLocation.isValidPath(why) && !why.isEmpty() ? why : null;
         climb.loadShown(tag);
+        slam.loadShown(tag);
     }
 
     /**
@@ -594,9 +632,15 @@ public final class FreighterFlight extends StandingFlight {
      */
     @Nullable
     private static String takeoffHeld(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase phase) {
-        if (phase != AutopilotBlockEntity.Phase.TAKEOFF) {
-            return null;
-        }
+        return phase == AutopilotBlockEntity.Phase.TAKEOFF ? heldNow(level, origin) : null;
+    }
+
+    /**
+     * What would hold her take-off now, whatever she is doing (see {@link #HOLDS}), her autopilot at a place: by its
+     * word, or null for nothing. Her slam landing holds off for it.
+     */
+    @Nullable
+    private static String heldNow(ServerLevel level, BlockPos origin) {
         for (Hold hold : HOLDS) {
             if (hold.holds().test(level, origin)) {
                 return hold.why();
@@ -636,7 +680,7 @@ public final class FreighterFlight extends StandingFlight {
         if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,
-                legsDown, boostNow(level, autopilot), climb.firing());
+                legsDown, boostNow(level, autopilot), climb.firing(), slam.firing(), slam.legsDueIn());
             AutopilotBlockEntity.Phase next = pilot.fly(level, autopilot.getBlockPos(), orders, flight, radio,
                 SableFlight.mass(autopilot), SableFlight.centreOfMass(autopilot));
             if (next == AutopilotBlockEntity.Phase.OFF) {
@@ -647,6 +691,8 @@ public final class FreighterFlight extends StandingFlight {
             }
             sayNoGround(level, autopilot, pilot.noGroundAtPin(orders));
         }
+        slam.tick(level, autopilot, flight, pilot.middle(flight), radio, pilot.wiring().clusters(), pilot.wiring().feet(),
+            heldNow(level, autopilot.getBlockPos()));
         legs.tick(level, autopilot.getBlockPos(), autopilot.phase, radio, flight.velocity().y);
         long now = level.getGameTime();
         boolean liftShown = lift.take(pilot.report().lift(), now);

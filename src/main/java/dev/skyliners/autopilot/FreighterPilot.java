@@ -87,6 +87,25 @@ public final class FreighterPilot {
     private static final double CLIMB_BOOST_EASE = 4;
     /** How quickly her lift closes on the climb she wants, in blocks a second each second a block a second off it. */
     private static final double CLIMB_GAIN = 1.2;
+    /**
+     * Her slam landing (see {@link FreighterSlam}): how fast she drives down at most, in blocks a second; how hard she
+     * brakes on her lift at the last at most, in blocks a second each second, and at least, however heavy she is; the
+     * share of the lift she has spare over her weight she brakes on, the rest left for her lift to catch up and keep
+     * her level; how fast she touches down, in blocks a second,
+     * well under the four at which Sable's ship breaks the fragile blocks it strikes; how high her feet are over the
+     * ground once she has slowed to it, in blocks; how fast the climb she wants may change meanwhile, in blocks a
+     * second each second; the least share of her weight her lift holds up as she drives down; and how quickly her lift
+     * closes on the climb she wants, as {@link #CLIMB_GAIN} does, more tightly, so she brakes when she means to.
+     */
+    private static final double SLAM_SINK = 16;
+    private static final double SLAM_BRAKE = 9;
+    private static final double SLAM_LEAST_BRAKE = 1;
+    private static final double SLAM_SPARE_SHARE = 0.6;
+    private static final double SLAM_TOUCHDOWN = 2;
+    private static final double SLAM_CUSHION = 1.5;
+    private static final double SLAM_EASE = 12;
+    private static final double SLAM_LEAST_LIFT = 0.25;
+    private static final double SLAM_CLIMB_GAIN = 3;
     /** The least share of her weight her lift holds up in flight: she never falls faster than the rest of gravity. */
     private static final double LEAST_LIFT = 0.6;
     /**
@@ -270,12 +289,14 @@ public final class FreighterPilot {
     /**
      * What the autopilot is set to fly: its phase, the height and speed set, the heading, and how it goes, on the
      * heading, round a circle about a middle so wide, or to a pin there, landing at it or not; whether her legs are
-     * down to land on (see {@link FreighterLegs}); where her boost stands; and whether her climb boost fires, when she
-     * climbs straight up as fast as she can to the height set, holding the spot it began over.
+     * down to land on (see {@link FreighterLegs}); where her boost stands; whether her climb boost fires, when she
+     * climbs straight up as fast as she can to the height set, holding the spot it began over; and whether she slams
+     * down, coming down far faster than she lands and braking hard at the last (see {@link FreighterSlam}), and then
+     * how long her legs should take yet to be down, in seconds.
      */
     record Orders(AutopilotBlockEntity.Phase phase, double altitude, double speed, double heading,
                   AutopilotBlockEntity.Lateral lateral, double pinX, double pinZ, double radius, boolean landAtPin,
-                  boolean legsDown, Boost boost, boolean climbBoost) {
+                  boolean legsDown, Boost boost, boolean climbBoost, boolean slam, double legsDueIn) {
     }
 
     /**
@@ -389,6 +410,11 @@ public final class FreighterPilot {
     private final int[] jetsHeld = new int[2];
     /** The climb she wanted last tick, eased toward the one she wants now. */
     private double easedClimb;
+    /**
+     * How fast the climb she wants changed this tick, in blocks a second each second: her lift leads by it as she slams
+     * down.
+     */
+    private double climbLead;
     /** Whether her climb boost fired last tick, so the spot she holds is taken as it begins. */
     private boolean climbBoosting;
     /** The signals each set of her thrusters was last set to together: her clusters, her mains and her retros. */
@@ -514,11 +540,12 @@ public final class FreighterPilot {
         } else {
             lookForPad(level, phase, orders, state, middle);
             Course course = course(phase, orders, state, middle);
-            double climb = easedClimb(climbWanted(phase, orders, state, radio), orders.climbBoost());
+            double wanted = climbWanted(phase, orders, state, radio, slamBrake(state, mass));
+            double climb = easedClimb(wanted, orders.climbBoost(), orders.slam());
             boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE && orders.boost() == Boost.NONE && !orders.climbBoost();
             boolean boosting = orders.boost() == Boost.FIRING && course.ahead() >= orders.speed() - BOOST_SLOWER;
             level(motion.tilt());
-            lift(level, origin, liftShare(state, going, mass, climb, learning),
+            lift(level, origin, liftShare(state, going, mass, climb, learning, orders.slam()),
                 split(motion.tilt().front(), motion.frontRate(), balance.ahead() + learnt.pitch),
                 split(motion.tilt().right(), motion.rightRate(), balance.right() + learnt.roll));
             move(level, origin, state, going, mass, learning, course.ahead(), course.across(),
@@ -642,9 +669,14 @@ public final class FreighterPilot {
      * height set; coming down, sinking fast to {@link #PAD_HOVER} over the ground, then at her landing speed, but with
      * her legs not yet down only to that height, where she hovers until they are, and no lower. Nearing a height she
      * eases off soon enough to stop at it as gently as {@link #CLIMB_EASE} lets her; with her climb boost firing, she
-     * climbs up to {@link #CLIMB_BOOST_SPEED}, easing off as {@link #CLIMB_BOOST_EASE} lets her.
+     * climbs up to {@link #CLIMB_BOOST_SPEED}, easing off as {@link #CLIMB_BOOST_EASE} lets her; slamming down, she
+     * comes down as {@link #slamSink} has it, all the way to the ground, braking as hard as given.
      */
-    private static double climbWanted(AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, double radio) {
+    private static double climbWanted(AutopilotBlockEntity.Phase phase, Orders orders, SableFlight.State state, double radio, double brake) {
+        boolean down = phase == AutopilotBlockEntity.Phase.DESCENT || phase == AutopilotBlockEntity.Phase.LAND;
+        if (down && orders.slam()) {
+            return -slamSink(radio, orders.legsDown(), orders.legsDueIn(), brake);
+        }
         return switch (phase) {
             case TAKEOFF -> LIFT_OFF_CLIMB;
             case DESCENT -> -Math.max(orders.legsDown() ? LANDING_SINK : 0, approach(radio - PAD_HOVER, MOST_SINK, CLIMB_EASE));
@@ -660,6 +692,36 @@ public final class FreighterPilot {
     }
 
     /**
+     * How fast she sinks slamming down, her feet so high over the ground, in blocks a second: up to {@link #SLAM_SINK},
+     * then braking as hard as given, in blocks a second each second, so she has slowed to {@link #SLAM_TOUCHDOWN} as
+     * her feet come down to {@link #SLAM_CUSHION}, touching down at that. With her legs still coming down, so much more
+     * slowly that she reaches the ground no sooner than they are down, a fall without a pause; with them overdue,
+     * braking instead to stop at {@link #PAD_HOVER}, where she hovers until they are, as she does landing.
+     */
+    private static double slamSink(double radio, boolean legsDown, double legsDueIn, double brake) {
+        double above = Math.max(0, radio - SLAM_CUSHION);
+        double sink = Math.min(SLAM_SINK, Math.sqrt(SLAM_TOUCHDOWN * SLAM_TOUCHDOWN + 2 * brake * above));
+        if (legsDown) {
+            return sink;
+        }
+        if (legsDueIn > 0) {
+            return Math.min(sink, above / legsDueIn);
+        }
+        return Math.min(sink, Math.sqrt(2 * brake * Math.max(0, radio - PAD_HOVER)));
+    }
+
+    /**
+     * How hard she can brake slamming down, in blocks a second each second: {@link #SLAM_SPARE_SHARE} of what her lift
+     * flat out gives over her weight, by her trim, no harder than {@link #SLAM_BRAKE} and no softer than {@link
+     * #SLAM_LEAST_BRAKE}, so however heavily she is loaded she has slowed to her touchdown speed by the ground.
+     */
+    private double slamBrake(SableFlight.State state, double mass) {
+        double weight = mass * state.gravity() * learnt.lift;
+        double spare = weight > 0 ? mostLift() / weight - 1 : 0;
+        return Mth.clamp(SLAM_SPARE_SHARE * spare * state.gravity(), SLAM_LEAST_BRAKE, SLAM_BRAKE);
+    }
+
+    /**
      * How fast to close on a height so far off, in blocks a second: no faster than she can ease off to stop at it,
      * planning on half the ease given, in blocks a second each second, since her lift takes a moment to follow the
      * climb she wants.
@@ -671,12 +733,16 @@ public final class FreighterPilot {
 
     /**
      * The climb she wants this tick, eased from the one she wanted last by at most {@link #CLIMB_EASE}, or by
-     * {@link #CLIMB_BOOST_EASE} while her climb boost fires or she still climbs faster than she does without it.
+     * {@link #CLIMB_BOOST_EASE} while her climb boost fires or she still climbs faster than she does without it, or by
+     * {@link #SLAM_EASE} as she slams down; how fast it changed is kept for her lift to lead by.
      */
-    private double easedClimb(double wanted, boolean climbBoost) {
+    private double easedClimb(double wanted, boolean climbBoost, boolean slam) {
         boolean hard = climbBoost || Math.abs(easedClimb) > MOST_CLIMB;
-        double step = (hard ? CLIMB_BOOST_EASE : CLIMB_EASE) / SharedConstants.TICKS_PER_SECOND;
+        double ease = slam ? SLAM_EASE : hard ? CLIMB_BOOST_EASE : CLIMB_EASE;
+        double step = ease / SharedConstants.TICKS_PER_SECOND;
+        double before = easedClimb;
         easedClimb = Mth.clamp(wanted, easedClimb - step, easedClimb + step);
+        climbLead = (easedClimb - before) * SharedConstants.TICKS_PER_SECOND;
         return easedClimb;
     }
 
@@ -758,12 +824,15 @@ public final class FreighterPilot {
     /**
      * The share of her full lift she wants: what holds up her weight, tilted, and closes on the climb she wants, by her
      * trim, never so little she falls faster than she may. Her trim is learnt only cruising, near the climb she wants.
+     * Slamming down, she may fall faster ({@link #SLAM_LEAST_LIFT}), and her lift closes more tightly on the climb she
+     * wants and leads by how fast it changes, so she brakes as hard and as late as she means to.
      */
-    private double liftShare(SableFlight.State state, Vec3 going, double mass, double climb, boolean learning) {
+    private double liftShare(SableFlight.State state, Vec3 going, double mass, double climb, boolean learning, boolean slam) {
         double error = climb - going.y;
         double upright = Math.max(LEAST_UPRIGHT, state.up().y);
-        double wanted = mass * (state.gravity() + CLIMB_GAIN * error) / upright;
-        double least = mass * state.gravity() * LEAST_LIFT / upright;
+        double pull = slam ? climbLead + SLAM_CLIMB_GAIN * error : CLIMB_GAIN * error;
+        double wanted = mass * (state.gravity() + pull) / upright;
+        double least = mass * state.gravity() * (slam ? SLAM_LEAST_LIFT : LEAST_LIFT) / upright;
         double push = Math.max(least, wanted) * learnt.lift;
         double most = mostLift();
         if (learning && wanted > least && push < most && Math.abs(error) < LEARNING_ERROR) {

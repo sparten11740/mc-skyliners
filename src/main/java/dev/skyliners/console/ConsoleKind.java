@@ -27,7 +27,13 @@ public enum ConsoleKind implements StringRepresentable {
      * A big orange push-button under an arrow pointing up over flames, lit while she flies along, that fires her lift
      * flat out to climb straight up hard (see her autopilot's climb boost).
      */
-    CLIMB(1);
+    CLIMB(1),
+    /**
+     * A big red push-button under a fat arrow pointing down onto the ground with a burst where it strikes, lit while
+     * she flies along with the ground in reach, that slams her straight down onto her legs (see her autopilot's slam
+     * landing).
+     */
+    SLAM(1);
 
     /** How many controls stand in a row along its desk: toggles, knobs, levers, or its one big button. */
     private final int controls;

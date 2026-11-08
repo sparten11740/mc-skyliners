@@ -637,7 +637,7 @@ function hullLightLang() {
 // The freighter's cockpit console (see ConsoleBlock), our own design: each module drawn by its renderer alone
 // (ConsoleRenderer), whichever way it faces and however it is put up, its block's model only its particle; its item a
 // little desk, its worn casing under a screen leaning back over its top, showing a picture of what it shows.
-const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump", "climb"];
+const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump", "climb", "slam"];
 {
   const MOUNTS = ["floor", "wall", "ceiling"];
   for (const kind of CONSOLE_KINDS) {
@@ -2238,6 +2238,14 @@ function zeppelinControlsLang() {
     "message.skyliners.console.climb_at_top": "She is at the edge of space already",
     "message.skyliners.console.climb_switched_off": "The climb boost is switched off on this server",
     "message.skyliners.console.climb_no_ship": "No freighter here to climb",
+    "block.skyliners.console_slam": "Slam Landing Console",
+    "message.skyliners.console.slam_slamming": "Brace! She's coming down hard!",
+    "message.skyliners.console.slam_busy": "She is coming down hard already",
+    "message.skyliners.console.slam_not_flying": "She slams down only while she flies along",
+    "message.skyliners.console.slam_too_high": "The ground is too far below her",
+    "message.skyliners.console.slam_held": "Not with her ramp out",
+    "message.skyliners.console.slam_switched_off": "The slam landing is switched off on this server",
+    "message.skyliners.console.slam_no_ship": "No freighter here to slam down",
     "block.skyliners.floor_window": "Floor Window",
     "block.skyliners.floor_window_panel": "Floor Window Panel",
     "block.skyliners.beach_sand": "Beach Sand",
@@ -2617,6 +2625,9 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_jump_grounded: { subtitle: "Computer: Not from down here", aboard: true },
   freighter_computer_jump_too_near: { subtitle: "Computer: Pin's next door, just fly", aboard: true },
   freighter_computer_climb_boost: { subtitle: "Computer: Climbing hard", aboard: true },
+  freighter_computer_slam: { subtitle: "Computer: Quick way down, brace", aboard: true },
+  // The freighter slamming into the ground (see FreighterSlam), played loud enough to carry 160 blocks.
+  freighter_slam: { subtitle: "Freighter slams into the ground" },
   freighter_computer_sticker: { subtitle: "Computer: New sticker", aboard: true },
   freighter_computer_sticker_row: { subtitle: "Computer: That's a whole row", aboard: true },
   freighter_computer_sticker_board: { subtitle: "Computer: Sticker map's full", aboard: true },
@@ -11477,7 +11488,7 @@ shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
 // Her console's modules: a screen of glass over iron, each with what it works in its middle.
 const CONSOLE_PARTS = { readouts: "minecraft:clock", scanner: "minecraft:compass", engines: "minecraft:comparator", switches: "minecraft:lever",
-  boost: "minecraft:blaze_powder", jump: "minecraft:ender_eye", climb: "minecraft:firework_rocket" };
+  boost: "minecraft:blaze_powder", jump: "minecraft:ender_eye", climb: "minecraft:firework_rocket", slam: "minecraft:anvil" };
 for (const [kind, part] of Object.entries(CONSOLE_PARTS)) {
   shaped(`console_${kind}`, ["GGG", "IPI", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", P: part, R: "minecraft:redstone" }, 1);
 }

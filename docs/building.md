@@ -346,7 +346,15 @@ After a jump, `SableFlight.letGoAboard` and `SableClient.keepAboard` let go of t
 keep everyone carried across going at. Her climb boost is `FreighterClimbBoost`, also owned by `FreighterFlight` and
 asked for by the climb console: it sets her autopilot's height to the top and tells her pilot it fires
 (`FreighterPilot.Orders.climbBoost`), when she climbs at up to `CLIMB_BOOST_SPEED`, easing by `CLIMB_BOOST_EASE`,
-holding the spot it began over. Her `DeckRobotBlock`s chirp, trill and beep from their block
+holding the spot it began over. Her slam landing is `FreighterSlam`, owned the same way and asked for by the slam
+console: `FreighterFlight.slam` puts her into `DESCENT` over where she is and tells her pilot it fires
+(`FreighterPilot.Orders.slam`), when `slamSink` drives her down at up to `SLAM_SINK` and brakes her at `SLAM_BRAKE`,
+her lift leading the climb it wants, to touch down at `SLAM_TOUCHDOWN`, under Sable's fragile-block speed. The crash is
+show played as her feet touch: `FREIGHTER_SLAM` carried far by its volume, `ImpactJolt` and `TurbulencePayload` for
+everyone aboard, block particles at her feet and the rocket's `RocketDustRing`, with the rocket's exhaust puffed over
+her lift clusters through `RocketPlumes.send` as she drives down, so it adds no payload of its own. Her brake is
+scaled down to the lift she has spare (`slamBrake`), so a heavy load still touches down slowly. It refuses while
+`FreighterFlight`'s take-off holds hold (her ramp not all away). Her `DeckRobotBlock`s chirp, trill and beep from their block
 entity on the server and turn their heads to whoever is near on the client (`DeckRobotRenderer`), as the rocket's
 bartender does. Her boarding ramp is kept by its panel, `RampPanelBlockEntity`, as a `BoardingRamp`, the airstairs'
 shape of thing: its hatch, every block of her well's columns from her deck down, taken away and put back, the swing

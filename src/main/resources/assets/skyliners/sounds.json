@@ -1330,6 +1330,23 @@
       }
     ]
   },
+  "freighter_computer_slam": {
+    "subtitle": "subtitles.skyliners.freighter_computer_slam",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_slam",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_slam": {
+    "subtitle": "subtitles.skyliners.freighter_slam",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_slam"
+      }
+    ]
+  },
   "freighter_computer_sticker": {
     "subtitle": "subtitles.skyliners.freighter_computer_sticker",
     "sounds": [

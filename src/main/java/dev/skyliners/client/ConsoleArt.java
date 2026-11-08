@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import dev.skyliners.Skyliners;
 import dev.skyliners.autopilot.FreighterClimbBoost;
 import dev.skyliners.autopilot.FreighterFlight;
+import dev.skyliners.autopilot.FreighterSlam;
 import dev.skyliners.console.ConsoleBlockEntity;
 import dev.skyliners.console.ConsoleKind;
 import java.util.List;
@@ -31,7 +32,9 @@ import org.joml.Matrix4f;
  * hyperspace jump's starburst, dark with no pin to jump to, pulsing cyan while she can, and streaming streaks inside a
  * filling ring as her drive spools up, its big blue button lit the same; and the climb boost's arrow up over flames,
  * dark while she cannot climb so, pulsing orange while she can, flashing as dashes race up past it as
- * it fires and ringed red while it rests, its big orange button lit the same; and while something holds her take-off,
+ * it fires and ringed red while it rests, its big orange button lit the same; the slam landing's arrow down onto the
+ * ground, dark while she cannot slam down, pulsing red while she can and flashing as dashes race down past it as she
+ * drives down, its big red button lit the same; and while something holds her take-off,
  * the scanner shows it in place of its scope, her ramp with someone on it flashing amber; and while one of her fault
  * spots is at fault, a red warning sign flashes on the scope at its bearing and another in the scope's corner, so a
  * fault can be tracked down from her cockpit. Along each desk stand chunky
@@ -106,9 +109,14 @@ final class ConsoleArt {
     private static final int JUMP_STREAKS = 16;
     private static final float JUMP_STREAK_SPEED = 0.06F;
     private static final int CLIMB_DARK = 0xFF3A2C20;
-    /** The dashes racing up past the climb boost's arrow as it fires: how many, and how far each runs a tick, a share. */
+    /**
+     * The dashes racing up past the climb boost's arrow as it fires, and down past the slam landing's as she drives
+     * down: how many, and how far each runs a tick, a share.
+     */
     private static final int CLIMB_DASHES = 6;
     private static final float CLIMB_DASH_SPEED = 0.08F;
+    /** The slam landing's dull red while she cannot slam down. */
+    private static final int SLAM_DARK = 0xFF3A2222;
 
     private ConsoleArt() {
     }
@@ -116,13 +124,14 @@ final class ConsoleArt {
     /**
      * The readings a console draws from, read once a frame: whether there is a ship to read, her speed ahead, height,
      * climb and heading as her instruments show them, her lift's and her mains' shares of full and where her boost
-     * stands, her hyperspace jump and her climb boost, and whether she is a freighter at all; the drawing clock's ticks
-     * for what only moves for show; how long ago the console was last touched, in ticks, negative for never; which of
-     * its toggles are up, a bit each; the blips its scope shows; and what holds her take-off, by its picture's word,
-     * if anything does.
+     * stands, her hyperspace jump, her climb boost and her slam landing, and whether she is a freighter at all; the
+     * drawing clock's ticks for what only moves for show; how long ago the console was last touched, in ticks,
+     * negative for never; which of its toggles are up, a bit each; the blips its scope shows; and what holds her
+     * take-off, by its picture's word, if anything does.
      */
     record Readings(boolean powered, double speed, double height, double climb, double heading, double lift, double mains,
-                    FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, FreighterClimbBoost.Shown climbBoost, boolean freighter, float ticks,
+                    FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, FreighterClimbBoost.Shown climbBoost,
+                    FreighterSlam.Stage slam, boolean freighter, float ticks,
                     float sinceTouched, int toggles,
                     List<Blip> blips, @Nullable String heldBy) {
     }
@@ -159,6 +168,7 @@ final class ConsoleArt {
             case BOOST -> boostScreen(buffers, matrix, width, height, readings);
             case JUMP -> jumpScreen(buffers, matrix, width, height, readings);
             case CLIMB -> climbScreen(buffers, matrix, width, height, readings);
+            case SLAM -> slamScreen(buffers, matrix, width, height, readings);
         }
     }
 
@@ -450,7 +460,7 @@ final class ConsoleArt {
         double size = Math.min(width, height) * 0.3;
         double y = height * 0.55;
         if (climb.stage() == FreighterClimbBoost.Stage.FIRING) {
-            dashes(shapes, matrix, width, height, readings.ticks());
+            dashes(shapes, matrix, width, height, readings.ticks(), false);
         }
         if (climb.stage() == FreighterClimbBoost.Stage.RESTING) {
             restRing(shapes, matrix, y, size * 1.35, 1 - climb.left());
@@ -458,13 +468,40 @@ final class ConsoleArt {
         ScreenDrawing.picture(buffers, matrix, icon("climb_boost"), 0, y, size, 5 * LAYER, climbColour(readings));
     }
 
-    /** Dashes racing up either side of the climb boost's arrow as it fires, as the sky would past her. */
-    private static void dashes(VertexConsumer shapes, Matrix4f matrix, double width, double height, float ticks) {
+    /**
+     * The slam landing: its arrow down onto the ground big in the middle, dark while she cannot slam down, pulsing red
+     * while she can, and flashing red and amber as she drives down, dashes racing down either side.
+     */
+    private static void slamScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
+        if (readings.slam() == FreighterSlam.Stage.FIRING) {
+            dashes(ScreenDrawing.shapes(buffers), matrix, width, height, readings.ticks(), true);
+        }
+        double size = Math.min(width, height) * 0.3;
+        ScreenDrawing.picture(buffers, matrix, icon("slam_landing"), 0, height * 0.55, size, 5 * LAYER, slamColour(readings));
+    }
+
+    /** The colour the slam landing is lit in, on its screen and its button, as it stands (see {@link #slamScreen}). */
+    private static int slamColour(Readings readings) {
+        if (!readings.freighter()) {
+            return UNLIT;
+        }
+        return switch (readings.slam()) {
+            case UNAVAILABLE -> SLAM_DARK;
+            case READY -> fade(RED, 0.75F + 0.25F * Mth.sin(readings.ticks() * 0.12F)) | 0xFF000000;
+            case FIRING -> (int) readings.ticks() % 4 < 2 ? RED : AMBER;
+        };
+    }
+
+    /**
+     * Dashes racing up either side of the climb boost's arrow as it fires, as the sky would past her, or down either
+     * side of the slam landing's as she drives down.
+     */
+    private static void dashes(VertexConsumer shapes, Matrix4f matrix, double width, double height, float ticks, boolean down) {
         double length = height * 0.12;
         for (int dash = 0; dash < CLIMB_DASHES; dash++) {
             double side = (dash % 2 == 0 ? -1 : 1) * width * (0.3 + 0.05 * (dash % 3));
             double run = (ticks * CLIMB_DASH_SPEED + dash * 0.29) % 1;
-            double bottom = height * 0.1 + run * (height * 0.8 - length);
+            double bottom = height * 0.1 + (down ? 1 - run : run) * (height * 0.8 - length);
             ScreenDrawing.line(shapes, matrix, side, bottom, side, bottom + length, 4 * LAYER, (float) (width * 0.015), AMBER);
         }
     }
@@ -548,6 +585,8 @@ final class ConsoleArt {
                 jumpCap(readings), JUMP_WHITE, JUMP_BLUE);
             case CLIMB -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
                 climbColour(readings), ORANGE, HAZARD_BLACK);
+            case SLAM -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
+                slamColour(readings), RED, HAZARD_BLACK);
             default -> pushButton(solid, pose, x, y, slot, light, LAMP_COLOURS[index % LAMP_COLOURS.length]);
         }
     }

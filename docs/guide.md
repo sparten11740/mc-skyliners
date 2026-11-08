@@ -2613,7 +2613,7 @@ Before her seats her console curves round in a half circle, from in front of the
 to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky
 controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
 turned toward her middle so whichever seat you fly from it faces you. Left to right: the climb button before the
-pilot, her flight readouts, the boost button, the scanner, the hyperspace jump button, her engines and a bank of toggles.
+pilot, the slam button, the boost button, the scanner, the hyperspace jump button, her engines and her flight readouts.
 From either seat every module is pressed where it is seen, over the desks between, so a pilot alone reaches them all,
 and each is as solid as its desk is drawn: the room in front of it neither stops you nor takes a click.
 Every reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons,
@@ -2629,7 +2629,8 @@ and her heading, its screen's chevrons flashing orange over a bar running down; 
 chevrons red in a ring of segments lighting one by one as it rests for ten seconds, and green again when it is ready.
 On the ground, lifting off, landing or resting, it only says no with a low note. Before she is assembled, her screens
 show the power sign pulsing amber and only one lamp blinks. Each module is among her blocks in the creative tab (Flight
-Readout Console, Scanner Console, Engine Console, Toggle Console, Boost Console and Climb Boost Console) and works on
+Readout Console, Scanner Console, Engine Console, Toggle Console, Boost Console, Climb Boost Console and Slam Landing
+Console) and works on
 its own: put down on a floor it is a little desk facing you, on a wall a plate, under a ceiling a wedge leaning down
 toward you, and it reads
 the nearest autopilot, showing the standby picture with none; the scope sweeps for whoever is near wherever it stands,
@@ -2646,6 +2647,20 @@ when it is ready. On the ground, lifting off, landing, resting or at the edge of
 note. Climbing straight up brings no new land into view, as flying along does, so the server keeps up however fast
 she climbs. The server config's `freighter.climbBoost` switches it off; her console then has a second bank of toggles
 where the climb button was.
+
+Beside it, the big red button in its ring of red and black stripes, under a fat arrow pointing down onto the ground
+with a burst where it strikes, slams her down where she is. It glows red while she flies along, hovering or cruising,
+with the ground no more than 160 blocks under her feet, and is dark otherwise. Pressed then, her computer says she is
+taking the quick way down and to brace yourselves, her thrusters roar, deep, and she drives straight down far faster
+than she ever lands, her legs coming out, white-hot exhaust streaming up over her as if her thrusters fired the other
+way and dashes racing down past the arrow on its screen. At the last her lift roars and she brakes hard, and her feet
+hit the ground with a deep boom and a crunch of metal heard well off: the view of everyone aboard kicks and shakes,
+anyone standing near feels the ground jolt, earth and smoke burst up at each of her feet and a ring of dust races out
+over the ground round her. Then she settles on her legs and switches off with her bell, as after any landing, and her
+ramp comes down. It only looks like a crash: she touches the ground slowly enough that nothing under her breaks and
+nobody aboard is hurt or thrown about. On the ground, lifting off, landing, too high over the ground or with her ramp
+not all away, it only says no with a low note. The server config's `freighter.slamLanding` switches it off; her console
+then has her flight readouts where the slam button was, and a bank of toggles before the co-pilot.
 
 The big blue button on the co-pilot's side, in its ring of blue and white stripes under a starburst, jumps her through
 hyperspace to her pin. It lights up, its starburst pulsing cyan, only while she flies along to a pin set on her

@@ -9050,6 +9050,25 @@ function consoleTextures() {
     "...##########...",
     "................",
   ];
+  // The slam landing's picture: a fat arrow pointing straight down onto the ground, with a burst where it strikes.
+  const SLAM_ROWS = [
+    "......####......",
+    "......####......",
+    "......####......",
+    "......####......",
+    "..############..",
+    "...##########...",
+    "....########....",
+    ".....######.....",
+    "......####......",
+    ".##....##....##.",
+    "...##......##...",
+    "#....#....#....#",
+    "................",
+    "################",
+    "################",
+    "................",
+  ];
   const PICTURES = {
     readouts: (x, y) => (y === 5 && x > 2 && x < 13) || (y > 8 && y < 12 && x > 2 && x < 3 + (x % 3) * 3) ? GREEN : null,
     scanner: (x, y) => {
@@ -9066,6 +9085,7 @@ function consoleTextures() {
       return out < 6.5 && (Math.abs(x - 7.5) < 0.6 || Math.abs(y - 7.5) < 0.6 || Math.abs(Math.abs(x - 7.5) - Math.abs(y - 7.5)) < 0.6) ? CYAN : null;
     },
     climb: (x, y) => (CLIMB_ROWS[y][x] !== "#" ? null : y < 10 ? [0xff, 0x8a, 0x1e] : y < 13 ? RED : AMBER),
+    slam: (x, y) => (SLAM_ROWS[y][x] !== "#" ? null : y < 9 ? RED : y < 12 ? AMBER : [0x9a, 0x8c, 0x7e]),
   };
   for (const [kind, paint] of Object.entries(PICTURES)) {
     texture(blockOutput, `console_${kind}_screen`, (x, y) => {
@@ -9108,6 +9128,7 @@ function consoleTextures() {
       "......####......", "################", "################", "......####......", ".....#.##.#.....", "....#..##..#....",
       "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
     climb_boost: CLIMB_ROWS,
+    slam_landing: SLAM_ROWS,
     held_ramp: HELD_RAMP_ROWS,
     power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
       ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",
