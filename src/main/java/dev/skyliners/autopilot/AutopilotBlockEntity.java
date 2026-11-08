@@ -1458,11 +1458,16 @@ public class AutopilotBlockEntity extends BlockEntity {
      * or given a pin.
      */
     void goAround(Level level) {
+        callOffLanding();
+        level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, NOTE_VOLUME, NOTE_HIGH);
+    }
+
+    /** Its landing called off, unannounced, for a craft that has something of its own to say about it. */
+    void callOffLanding() {
         announcements.letGo(Announcement.LANDING);
         sinkCommand = Double.NaN;
         phase = Phase.CLIMB;
         flight.goAround();
-        level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, NOTE_VOLUME, NOTE_HIGH);
     }
 
     /**

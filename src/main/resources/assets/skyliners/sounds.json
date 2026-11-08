@@ -1456,6 +1456,24 @@
       }
     ]
   },
+  "freighter_computer_balked": {
+    "subtitle": "subtitles.skyliners.freighter_computer_balked",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_balked",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_holding": {
+    "subtitle": "subtitles.skyliners.freighter_computer_holding",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_holding",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "freighter_computer_meteors": {
     "subtitle": "subtitles.skyliners.freighter_computer_meteors",
     "sounds": [

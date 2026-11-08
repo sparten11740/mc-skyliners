@@ -19,9 +19,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 ## The freighter
 
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
-- Told to land where she is, or landing by herself with nobody aboard, she does not look for ground at all: on a block
-  taller than her belly's clearance she rests on it with her legs in the air and never switches off. A guard for any
-  landing she cannot finish (some seconds touching without settling: climb back a few blocks, hold, and say so).
 - Her autopilot screen's landing picture could show it dimmed while she holds over a pin with no ground near it.
 - Dropped hard with her ramp down (lifted 25 blocks by `sable physics translation` and let fall), she sheds pieces of
   her belly over the ramp well as ships of their own, 3 by 1 by 3 of `freighter_cover` and one block more, and sheds

@@ -330,7 +330,11 @@ round a circle or onto a pin with the zeppelin's `Steering`, set to land near a 
 level spot `PadSearch` finds round it over the airliner's `GroundSurvey`, from her feet and the columns under her hull
 that `FreighterLayout` gives (`feet`, `underHull`), flying by how her middle moves rather than her control head out in
 her cockpit's pod, and her height over the ground from the lowest of her legs' feet (`Legs`, which the rocket's fins
-share). `FreighterFlight` shows the clients how hard her lift thrusters and her mains fire, two `ShownShare`s, and where
+share). A landing she cannot finish, held up by something her feet do not reach, is `BalkedLanding`, owned by
+`FreighterFlight`: it watches her height while she is set to come down, gives the landing up after some seconds
+stopped, and climbs her back to look round there with `PadSearch`, holding over the pin once she has tried enough; with
+nobody aboard to tell her otherwise, or told to switch off, she lets go on what stopped her instead, and counts as down.
+`FreighterFlight` shows the clients how hard her lift thrusters and her mains fire, two `ShownShare`s, and where
 her disc's middle is from her control head, from which `FreighterRoar` plays her engines' roar at her stern, her lift
 jets' blast under her belly, their thump and her mains' spooling up as they light, her hum aboard, the ground shaking
 near her and her thunder going by; and `EngineGlow` lights her `EngineGrilleBlock`s across her stern from the same

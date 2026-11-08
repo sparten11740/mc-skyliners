@@ -36,6 +36,11 @@ public final class PadSearch {
      */
     private static final double SWING = 5;
     private static final double[] SWINGS = {0, -SWING, SWING};
+    /**
+     * How near a spot she gave up landing on she tries no other, in blocks: her disc's radius, so that what stopped her,
+     * which her reading of the ground may not have seen (another ship, for one), is out from under her.
+     */
+    private static final int REFUSED_WITHIN = 30;
 
     /** Where she comes down: her disc's middle's column. */
     public record Pad(int x, int z) {
@@ -62,6 +67,8 @@ public final class PadSearch {
     private boolean verified;
     /** Whether every spot has been looked at with all its ground read, and none fits. */
     private boolean exhausted;
+    /** The spots she gave up landing on this flight (see {@link #refuse}). */
+    private final List<Pad> refused = new ArrayList<>();
 
     PadSearch() {
         for (int dx = -REACH; dx <= REACH; dx += STEP) {
@@ -83,6 +90,17 @@ public final class PadSearch {
         found = null;
         verified = false;
         exhausted = false;
+        refused.clear();
+    }
+
+    /**
+     * She could not finish coming down with her middle over a column (see {@link BalkedLanding}): no spot near it is
+     * tried again this flight, and the next look starts afresh from the pin, the ground already read kept.
+     */
+    void refuse(int x, int z) {
+        refused.add(new Pad(x, z));
+        pinX = Integer.MIN_VALUE;
+        pinZ = Integer.MIN_VALUE;
     }
 
     /**
@@ -191,6 +209,9 @@ public final class PadSearch {
      * {@link #SWING}): her feet on dry, bare, level ground and nothing under her reaching her hull.
      */
     private Fit fits(int x, int z) {
+        if (refused.stream().anyMatch(pad -> Math.hypot(pad.x() - x, pad.z() - z) < REFUSED_WITHIN)) {
+            return Fit.NO;
+        }
         for (double swing : SWINGS) {
             Fit fit = fits(x, z, heading + swing);
             if (fit != Fit.YES) {

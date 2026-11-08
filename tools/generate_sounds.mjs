@@ -6078,6 +6078,12 @@ const COMPUTER_CLIMB_LINES = {
 const COMPUTER_SLAM_LINES = {
   freighter_computer_slam: "Taking the quick way down. | Brace yourselves.",
 };
+// Her computer over a landing she cannot finish (see BalkedLanding), our own lines in the same voice: giving it up to
+// look for ground near by, and holding with nowhere to come down.
+const COMPUTER_BALKED_LINES = {
+  freighter_computer_balked: "Can't set her down here. | Going around.",
+  freighter_computer_holding: "Nowhere to put her down. | Holding here.",
+};
 // Her computer through space weather (see SpaceWeather), our own lines in the same voice: a meteor shower, an asteroid
 // storm and a solar flare told after the alarm, and the all-clear once each has passed.
 const COMPUTER_WEATHER_LINES = {
@@ -6137,6 +6143,7 @@ if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_CLIMB_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_SLAM_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_BALKED_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_BOARD, COMPUTER_ANNOUNCEMENT_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_REPAIR_LINES, COMPUTER_LONGEST);

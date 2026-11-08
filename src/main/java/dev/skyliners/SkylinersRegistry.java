@@ -1106,6 +1106,12 @@ public final class SkylinersRegistry {
     /** Her computer as she slams down: "Taking the quick way down. Brace yourselves." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_SLAM =
         sound("freighter_computer_slam");
+    /** Her computer giving up a landing she cannot finish: "Can't set her down here. Going around." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_BALKED =
+        sound("freighter_computer_balked");
+    /** Her computer as she holds with no ground to come down on: "Nowhere to put her down. Holding here." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_HOLDING =
+        sound("freighter_computer_holding");
     /** The freighter slamming into the ground (see {@code FreighterSlam}): a deep boom and a crunch of metal. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_SLAM = sound("freighter_slam");
     /** Her computer as a meteor shower is told: "Meteor shower ahead. Hold on to something bolted down." */

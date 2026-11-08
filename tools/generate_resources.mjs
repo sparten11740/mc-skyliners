@@ -2785,6 +2785,8 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_jump_too_near: { subtitle: "Computer: Pin's next door, just fly", aboard: true },
   freighter_computer_climb_boost: { subtitle: "Computer: Climbing hard", aboard: true },
   freighter_computer_slam: { subtitle: "Computer: Quick way down, brace", aboard: true },
+  freighter_computer_balked: { subtitle: "Computer: Can't set her down here", aboard: true },
+  freighter_computer_holding: { subtitle: "Computer: Nowhere to put her down", aboard: true },
   // Space weather (see SpaceWeather): her computer telling of each kind and of the all-clear, and the alarm whooping
   // through her first, heard by everyone aboard wherever they are.
   freighter_computer_meteors: { subtitle: "Computer: Meteor shower ahead", aboard: true },
@@ -12435,6 +12437,9 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.skyliners.autopilot.coming_down_rocket": "Coming down here, catching ourselves on the engines",
   "message.skyliners.autopilot.coming_down_freighter": "Coming straight down here on her thrusters",
   "message.skyliners.autopilot.no_ground_freighter": "No clear, level ground within 64 blocks of the pin: holding over it. Set another pin, or tell her to land where she is.",
+  "message.skyliners.autopilot.balked_freighter": "She cannot set down here: climbing back to look for clear ground near by.",
+  "message.skyliners.autopilot.balked_holding_freighter": "She cannot set down here either: holding over it. Set another pin.",
+  "message.skyliners.autopilot.balked_off_freighter": "Autopilot off: she rests on what stopped her, with her legs in the air, ready to lift off again.",
   "message.skyliners.autopilot.assembling_freighter": "Assembling the freighter: she lifts off as soon as she is ready.",
   "message.skyliners.autopilot.no_thrusters": "This freighter has no thrusters to fly her with: build her again with Create Propulsion installed.",
   "message.skyliners.autopilot.off_once_down_freighter": "Autopilot off once she is down: only her thrusters hold her up, so she comes straight down here first and switches off on her legs.",

@@ -125,6 +125,8 @@ public final class FreighterFlight extends StandingFlight {
     private final ShownShare mains = new ShownShare(SHOWN_STEPS, SHOWN_EVERY);
     /** Whether she has said she finds no ground to come down on round the pin she holds over. */
     private boolean toldNoGround;
+    /** What she does about a landing she cannot finish. */
+    private final BalkedLanding balked = new BalkedLanding();
     /** Her engine grille glowing with her engines, and which of her thrusters trail their plumes. */
     private final EngineGlow glow = new EngineGlow();
     private final FreighterPlumes plumes = new FreighterPlumes();
@@ -564,6 +566,7 @@ public final class FreighterFlight extends StandingFlight {
     void save(CompoundTag tag) {
         CompoundTag freighter = pilot.save();
         legs.save(freighter);
+        balked.save(freighter);
         tag.put("Freighter", freighter);
         if (jumpDrive != null) {
             tag.putLong("FreighterJumpDrive", jumpDrive.asLong());
@@ -575,6 +578,7 @@ public final class FreighterFlight extends StandingFlight {
         CompoundTag freighter = tag.getCompound("Freighter");
         pilot.load(freighter, turn);
         legs.load(freighter, turn);
+        balked.load(freighter);
         if (!middleKnown) {
             knowMiddle(pilot.wiring());
         }
@@ -676,6 +680,7 @@ public final class FreighterFlight extends StandingFlight {
 
     @Override
     void engage(AutopilotBlockEntity autopilot, SableFlight.State state) {
+        balked.forget();
         pilot.begin(state);
     }
 
@@ -712,6 +717,8 @@ public final class FreighterFlight extends StandingFlight {
             if (next == AutopilotBlockEntity.Phase.OFF) {
                 pilot.stop(level, autopilot.getBlockPos());
                 autopilot.settle(level);
+            } else if (balked.watch(phase, legsDown, flight.position().y)) {
+                balked.giveUp(level, autopilot, flight, pilot);
             } else {
                 autopilot.advance(next, AutopilotBlockEntity.Phase.DESCENT);
             }
@@ -750,8 +757,8 @@ public final class FreighterFlight extends StandingFlight {
      */
     private void sayNoGround(ServerLevel level, AutopilotBlockEntity autopilot, boolean noGround) {
         if (noGround && !toldNoGround) {
-            Component message = Component.translatable("message.skyliners.autopilot.no_ground_freighter");
-            Aboard.players(autopilot).forEach(player -> player.displayClientMessage(message, false));
+            BalkedLanding.sayAboard(autopilot, SkylinersRegistry.FREIGHTER_COMPUTER_HOLDING,
+                Component.translatable("message.skyliners.autopilot.no_ground_freighter"));
             level.playSound(null, autopilot.getBlockPos(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS,
                 AutopilotBlockEntity.NOTE_VOLUME, AutopilotBlockEntity.NOTE_LOW);
         }
@@ -768,6 +775,25 @@ public final class FreighterFlight extends StandingFlight {
     void landHere(AutopilotBlockEntity autopilot, SableFlight.State state) {
         pilot.landHere(state);
         autopilot.targetHeading = state.heading();
+    }
+
+    /** Switched off in the air: she comes down first, and lets go on whatever she comes down on (see BalkedLanding). */
+    @Override
+    Component offInTheAir(AutopilotBlockEntity autopilot, SableFlight.State state) {
+        balked.offOnceDown();
+        return super.offInTheAir(autopilot, state);
+    }
+
+    /** Her landing called off by new settings: told to switch off or not, she flies them now. */
+    @Override
+    void goAround() {
+        balked.calledOff();
+    }
+
+    /** No higher than the lowest of her feet; once let go resting on what her feet do not reach, down all the same. */
+    @Override
+    double radio(Level level, AutopilotBlockEntity autopilot, double radio) {
+        return balked.resting() ? 0 : super.radio(level, autopilot, radio);
     }
 
     @Override

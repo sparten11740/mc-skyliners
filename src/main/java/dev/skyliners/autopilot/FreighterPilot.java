@@ -509,6 +509,17 @@ public final class FreighterPilot {
     }
 
     /**
+     * A landing she could not finish (see {@link BalkedLanding}), her middle where it stopped: the spot is not tried
+     * again this flight, and she looks afresh for another.
+     */
+    void balked(Vec3 middle) {
+        pads.refuse(Mth.floor(middle.x), Mth.floor(middle.z));
+        overFor = 0;
+        touchingFor = 0;
+        settled = 0;
+    }
+
+    /**
      * Flies one tick: the phase she flies in next. Lifting off, she spools up on her legs first, then rises straight
      * up; climbing and cruising, she goes where she is set to; coming down, she holds her spot as she sinks onto it,
      * and once she has touched and stood still a moment she is switched off.

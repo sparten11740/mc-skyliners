@@ -214,6 +214,26 @@ const PAD_REACH = 64;
 const LAKE_REACH = 70;
 const LAKE_TICKS = 1600;
 const LAKE_HOLD_WITHIN = 8;
+// A freighter that cannot finish landing: how long she is given to come down on the stone and give it up, in ticks; how
+// long she is watched holding over it, in ticks; how far from the lake's edge the player stands, in blocks, left behind
+// on the ground; how long she is given with nobody aboard to come down twice and let go, past her minute of waiting
+// each time, in ticks; and how long after that she is watched not to take off again, past another of those minutes, in
+// ticks, and how long the launcher is told to wait for that, in seconds.
+const BALKED_WITHIN_TICKS = 1200;
+const BALKED_HOLD_WATCHED_TICKS = 300;
+const BALKED_STAND_OFF = 6;
+const BALKED_UNATTENDED_TICKS = 5400;
+const BALKED_UNATTENDED_WATCHED_TICKS = 1500;
+const BALKED_UNATTENDED_WATCHED_SECONDS = 120;
+// Ground higher under a freighter's nose: how far ahead of her middle her nose foot stands, in blocks, how far the
+// higher ground reaches round it and how high it stands, in blocks, lower than her belly's clearance.
+const BALKED_NOSE_FOOT_AHEAD = 19;
+const BALKED_STEP_REACH = 3;
+const BALKED_STEP_HIGH = 2;
+// A freighter landing under a lagging server: how many milliseconds each server tick is made to take, and how many
+// client ticks she is given to come down at that rate.
+const BALKED_LAG_MILLIS = 150;
+const BALKED_LAG_WITHIN_TICKS = 2400;
 // A freighter's boarding ramp: how long it is given to come down by itself once she stands, in ticks; how far it
 // falls, in blocks, which walking up it climbs, and how long the walk up from just past its foot takes, in ticks; how
 // many blocks up from its foot someone stands on it to hold her take-off; and how long she is watched held, in ticks.
@@ -2412,6 +2432,166 @@ function checkFreighterLake() {
   const still = freighterReport();
   expect(still.phase === "cruise" && near(still) <= LAKE_HOLD_WITHIN, "freighter: she holds over the pin, not coming down",
     `${still.phase}, ${near(still).toFixed(1)} blocks from it, earlier ${near(holding).toFixed(1)}`);
+}
+
+// Stone standing under the middle of a freighter as she hovers, taller than her belly's clearance and clear of her
+// feet, and, with a lake, water round it past where she may come down, so she finds nowhere else to try. Where it
+// stands, as x and z.
+function stoneUnderHer(lake) {
+  const [x, z] = String(freighterReport().middle).split(",").map(Number);
+  if (lake) {
+    must(`server fill ${x - LAKE_REACH} ${ground - 1} ${z - LAKE_REACH} ${x + LAKE_REACH} ${ground - 1} ${z + LAKE_REACH} water`);
+  }
+  must(`server fill ${x - PAD_STONE_REACH} ${ground - 1} ${z - PAD_STONE_REACH} ${x + PAD_STONE_REACH} ${ground + PAD_STONE_HIGH - 1} ${z + PAD_STONE_REACH} stone`);
+  return [x, z];
+}
+
+// Waits for a freighter set down on what her feet do not reach to give the landing up: her report once she climbs back.
+function waitForBalk() {
+  const back = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", BALKED_WITHIN_TICKS);
+  const last = back ?? freighterReport();
+  expect(back, "freighter: resting on stone with her legs in the air, she gives the landing up rather than sit there for ever",
+    `${last?.phase}, at height ${last?.altitude}, climbing at ${last?.climb}, legs ${last?.legs}`);
+  return back;
+}
+
+// Told to land where she is over stone taller than her belly's clearance, where she does not look for ground first, a
+// freighter climbs back off it, says so with her computer's voice and a rising note as well as in words, and comes down
+// on clear ground beside it, level on her legs. With the fault she sat on the stone with her legs in the air, for ever.
+function checkFreighterBalked() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const [x, z] = stoneUnderHer(false);
+  const since = now();
+  must("skyliners:autopilot land");
+  if (!waitForBalk()) {
+    return;
+  }
+  expect(heard("skyliners:freighter_computer_balked", since, 0), "freighter: her computer says she cannot set down there");
+  expect(heard("minecraft:block.note_block.pling", since, 0), "freighter: and a note says it to those who cannot read");
+  expect(waitForMessage("*clear*ground*", since, 0), "freighter: and she says in words that she is looking for clear ground");
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", PAD_DOWN_TICKS);
+  const last = down ?? freighterReport();
+  expect(down, "freighter: she finds clear ground near the stone and comes down on it", `${last?.phase}, pad ${last?.pad}, middle ${last?.middle}`);
+  if (!down) {
+    return;
+  }
+  const lean = Math.max(Math.abs(down.tilt_front), Math.abs(down.tilt_right));
+  expect(lean < PAD_LEVEL_WITHIN, "freighter: she stands level on her legs beside the stone", `leaning ${lean} degrees, middle ${down.middle}`);
+  const [mx, mz] = String(down.middle).split(",").map(Number);
+  const away = Math.hypot(mx - x, mz - z);
+  expect(away > PAD_STONE_REACH && away <= PAD_REACH + 2, "freighter: she comes down off the stone, near it", `${away.toFixed(1)} blocks from it`);
+}
+
+// Ground higher under a freighter's nose than under the rest of her: one foot touches first and she settles from
+// there as she comes down, which is not a landing she cannot finish. Set going on stopping for some seconds without
+// settling, she would climb back off it and never land.
+function checkFreighterBalkedSlope() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const hovering = freighterReport();
+  const [x, z] = String(hovering.middle).split(",").map(Number);
+  const nose = hovering.heading * Math.PI / 180;
+  const [footX, footZ] = [Math.round(x + Math.sin(nose) * BALKED_NOSE_FOOT_AHEAD), Math.round(z - Math.cos(nose) * BALKED_NOSE_FOOT_AHEAD)];
+  must(`server fill ${footX - BALKED_STEP_REACH} ${ground} ${footZ - BALKED_STEP_REACH} ${footX + BALKED_STEP_REACH} ${ground + BALKED_STEP_HIGH - 1} ${footZ + BALKED_STEP_REACH} stone`);
+  const since = now();
+  must("skyliners:autopilot land");
+  const down = waitForReport(freighterReport, (report) => report.phase === "off" || report.phase === "climb" || report.phase === "cruise", BALKED_WITHIN_TICKS);
+  const last = down ?? freighterReport();
+  expect(down?.phase === "off", "freighter: coming down with one foot on higher ground, she settles and switches off", `${last?.phase}, at height ${last?.altitude}, climbing at ${last?.climb}`);
+  expect(!heard("skyliners:freighter_computer_balked", since, 0), "freighter: and she does not give the landing up");
+}
+
+// A freighter coming down with the server far behind: how slowly the server is made to run decides how long her
+// landing takes, but it is not a landing she cannot finish, however long it takes.
+function checkFreighterBalkedLag() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const since = now();
+  must(`load server ${BALKED_LAG_MILLIS}; skyliners:autopilot land`);
+  const down = waitForReport(freighterReport, (report) => report.phase === "off" || report.phase === "climb" || report.phase === "cruise", BALKED_LAG_WITHIN_TICKS);
+  const last = down ?? freighterReport();
+  must("load off");
+  expect(down?.phase === "off", "freighter: with the server running behind, she still comes down and switches off", `${last?.phase}, at height ${last?.altitude}, climbing at ${last?.climb}`);
+  expect(!heard("skyliners:freighter_computer_balked", since, 0), "freighter: and she does not give the landing up");
+}
+
+// Stone in the middle of a lake, under a freighter with someone aboard: she climbs back off it, finds nowhere else to
+// come down, holds and says so, and comes down no more by herself; told to switch off, she comes down on it again and
+// lets go there, her thrusters quiet, rather than climbing back or staying on for ever.
+function checkFreighterBalkedNowhere() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  stoneUnderHer(true);
+  const since = now();
+  must("skyliners:autopilot land");
+  if (!waitForBalk()) {
+    return;
+  }
+  expect(waitForMessage("*holding*", since, LAKE_TICKS), "freighter: with no ground to try near the stone, she says she holds");
+  expect(heard("skyliners:freighter_computer_holding", since, 0), "freighter: her computer says so too");
+  expect(heard("minecraft:block.note_block.pling", since, 0), "freighter: and the low note says it to those who cannot read");
+  must(`wait ${BALKED_HOLD_WATCHED_TICKS}t`);
+  const still = freighterReport();
+  expect(still.phase === "cruise", "freighter: she holds, not coming back down to try again by herself", `${still.phase}, at height ${still.altitude}`);
+  const again = now();
+  must("skyliners:autopilot land");
+  if (!waitForBalk()) {
+    return;
+  }
+  expect(waitForMessage("*either*", again, LAKE_TICKS), "freighter: told to land on it once more, she gives it up and says she holds");
+  expect(heard("skyliners:freighter_computer_holding", again, 0), "freighter: her computer says so too");
+  must(`wait ${BALKED_HOLD_WATCHED_TICKS}t`);
+  const holding = freighterReport();
+  expect(holding.phase === "cruise", "freighter: and she tries no third landing by herself", `${holding.phase}, at height ${holding.altitude}`);
+  const told = now();
+  must("skyliners:autopilot off");
+  const off = waitForReport(freighterReport, (report) => report.phase === "off", BALKED_WITHIN_TICKS);
+  const last = off ?? freighterReport();
+  expect(off, "freighter: told to switch off over the stone, she comes down on it and lets go", `${last?.phase}, at height ${last?.altitude}`);
+  if (!off) {
+    return;
+  }
+  expect(off.lift === 0, "freighter: her thrusters are let go", `lift ${off.lift}`);
+  expect(heard("skyliners:lookout_bell", told, 0), "freighter: and she switches off with her bell");
+}
+
+// Stone in a lake under a freighter with nobody aboard: she comes down by herself, climbs back off it, finds nowhere to
+// try and holds, then comes down by herself once more and lets go on the stone, and stays switched off: she does not
+// go up and down over it for as long as she is loaded.
+function checkFreighterBalkedUnattended() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: she lifts off with nobody aboard");
+  if (!up) {
+    return;
+  }
+  const [x, z] = stoneUnderHer(true);
+  must(`server tp @p ${x + LAKE_REACH + BALKED_STAND_OFF} ${ground} ${z}; wait 20t`);
+  const off = waitForReport(freighterReport, (report) => report.phase === "off", BALKED_UNATTENDED_TICKS);
+  const last = off ?? freighterReport();
+  expect(off, "freighter: with nobody aboard and nowhere to come down, she lets go on the stone in the end", `${last?.phase}, at height ${last?.altitude}`);
+  if (!off) {
+    return;
+  }
+  expect(off.lift === 0, "freighter: her thrusters are let go", `lift ${off.lift}`);
+  must(`wait ${BALKED_UNATTENDED_WATCHED_TICKS}t`, BALKED_UNATTENDED_WATCHED_SECONDS);
+  const still = freighterReport();
+  expect(still.phase === "off", "freighter: switched off on the stone, she stays so, and does not go up and down over it", `${still.phase}, at height ${still.altitude}`);
 }
 
 // A freighter's rooms: her crew quarters have their bunks, reading lights on, her lounge its booth, a table among
@@ -5663,6 +5843,11 @@ const CHECKS = {
   "freighter-fixed-legs": { run: checkFreighterFixedLegs, slow: true, about: "a freighter built with fixed legs, as before they drew up, flies and lands on them as ever" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
+  "freighter-balked": { run: checkFreighterBalked, about: "a freighter told to land where she is over stone taller than her belly's clearance climbs back, says so and comes down on clear ground beside it", slow: true },
+  "freighter-balked-slope": { run: checkFreighterBalkedSlope, about: "a freighter with one foot on higher ground settles and switches off, not taken for a landing she cannot finish", slow: true },
+  "freighter-balked-lag": { run: checkFreighterBalkedLag, about: "a freighter landing with the server far behind still comes down and switches off, not taken for a landing she cannot finish", slow: true },
+  "freighter-balked-nowhere": { run: checkFreighterBalkedNowhere, about: "a freighter that cannot finish landing and has nowhere else to try holds and says so, and told to switch off lets go on what stopped her", slow: true },
+  "freighter-balked-unattended": { run: checkFreighterBalkedUnattended, about: "a freighter with nobody aboard that cannot finish landing lets go in the end and stays switched off, never going up and down for ever", slow: true },
   "impact-sounds": { run: checkImpactSounds, about: "a freighter dropped onto the ground crunches and groans, and shoved along it grinds", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
   "unattended-far-off": { run: checkUnattendedFarOff, about: "a freighter left flying with nobody near comes down at once and is let go", slow: true },
