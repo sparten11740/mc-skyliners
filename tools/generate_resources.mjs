@@ -2375,9 +2375,96 @@ function zeppelinLang() {
 write(`assets/${ID}/blockstates/hull_relay.json`, { variants: { "": { model: `${ID}:block/airframe_panel` } } });
 cubes.hull_relay = null;
 
+// How far the straight fairing's skin lies over the diagonal of its block, in pixels: the outer face of its slab,
+// half of the slab's thickness stretched by the turn. Its corners lay their slopes there too, so they meet it flush.
+const FAIRING_RISE = 0.5;
+// The game shades a face by the way it faces most, as a block's top or bottom or as one of its sides, and the straight
+// fairing's slope, a box turned 45 degrees, faces both ways alike but for the rounding of the turn: read off its baked
+// model, the one hung under its bottom edge with its cut facing south comes out shaded as a block's bottom, every other
+// as the side its cut faces. A corner's slope is shaded as the straight fairing cut the same way, so the two meet
+// evenly lit: its normal leans this fraction further toward the way the game is to take it than the other way.
+const FAIRING_SHADED_LEVEL = { top: [], bottom: ["south"] };
+const FAIRING_LEAN = 0.01;
+
+// A fairing's corners, where it meets another cut across it as stairs do, each a solid under its slopes, drawn as
+// the right-hand corner of a fairing cut along its top east edge: its second cut, along the top south edge. The inner
+// corner keeps all either cut keeps, its slopes meeting in a valley from the top north-west corner down to the
+// bottom south-east one; the outer corner keeps only what both keep, meeting in a hip along the same line. Each slope
+// lies where the straight fairing's skin does, so a corner meets the runs either side flush, and carries its texture
+// on as the straight fairing facing that way has it: along the slope from its top edge, across it as the block runs.
+// A slope is not a box, so they are meshes, each face a polygon with its normal and the columns and rows of its
+// texture at each corner, in pixels.
+function fairingCorners(eastLevel, southLevel) {
+  const r = FAIRING_RISE;
+  const up = (level) => (level ? 1 + FAIRING_LEAN : 1 - FAIRING_LEAN);
+  const east = { normal: [1, up(eastLevel), 0], uv: ([x, , z]) => [x - r / 2, z] };
+  const south = { normal: [0, up(southLevel), 1], uv: ([x, , z]) => [z - r / 2, 16 - x] };
+  const side = {
+    up: { normal: [0, 1, 0], uv: ([x, , z]) => [x, z] },
+    down: { normal: [0, -1, 0], uv: ([x, , z]) => [x, 16 - z] },
+    west: { normal: [-1, 0, 0], uv: ([, y, z]) => [z, 16 - y] },
+    north: { normal: [0, 0, -1], uv: ([x, y]) => [16 - x, 16 - y] },
+    east: { normal: [1, 0, 0], uv: ([, y, z]) => [16 - z, 16 - y] },
+    south: { normal: [0, 0, 1], uv: ([x, y]) => [x, 16 - y] },
+  };
+  const face = (kind, ...points) => ({ ...kind, points });
+  const square = (kind, at) => face(kind, ...[[0, 0], [16, 0], [16, 16], [0, 16]].map(at));
+  // The side under a slope's low edge, as high as the skin lies over the diagonal; and a side under a slope that
+  // falls from the top at one end to such a lip at the other: the lip, then what is over it.
+  const lip = (kind, at) => face(kind, ...[[0, 0], [16, 0], [16, r], [0, r]].map(at));
+  const underSlope = (kind, at) => [lip(kind, at), face(kind, ...[[0, r], [16, r], [r, 16], [0, 16]].map(at))];
+  return {
+    inner: [
+      face(east, [r, 16, r], [r, 16, 16], [16, r, 16]),
+      face(south, [r, 16, r], [16, 16, r], [16, r, 16]),
+      face(side.up, [0, 16, 0], [r, 16, 0], [r, 16, 16], [0, 16, 16]),
+      face(side.up, [r, 16, 0], [16, 16, 0], [16, 16, r], [r, 16, r]),
+      square(side.down, ([x, z]) => [x, 0, z]),
+      square(side.west, ([z, y]) => [0, y, z]),
+      square(side.north, ([x, y]) => [x, y, 0]),
+      ...underSlope(side.east, ([z, y]) => [16, y, z]),
+      ...underSlope(side.south, ([x, y]) => [x, y, 16]),
+    ],
+    outer: [
+      face(east, [r, 16, 0], [16, r, 0], [16, r, 16], [r, 16, r]),
+      face(south, [0, 16, r], [r, 16, r], [16, r, 16], [0, r, 16]),
+      face(side.up, [0, 16, 0], [r, 16, 0], [r, 16, r], [0, 16, r]),
+      square(side.down, ([x, z]) => [x, 0, z]),
+      ...underSlope(side.west, ([z, y]) => [0, y, z]),
+      ...underSlope(side.north, ([x, y]) => [x, y, 0]),
+      lip(side.east, ([z, y]) => [16, y, z]),
+      lip(side.south, ([x, y]) => [x, y, 16]),
+    ],
+  };
+}
+
+// A mesh as a Wavefront OBJ file, which NeoForge's OBJ loader reads: positions in blocks, texture columns and rows
+// as fractions of it, every face of one material, wound anticlockwise seen from outside as the game draws it.
+function objMesh(faces, library, material) {
+  const lines = [`mtllib ${library}`, `usemtl ${material}`];
+  const sub = (a, b) => a.map((value, i) => value - b[i]);
+  const cross = ([ax, ay, az], [bx, by, bz]) => [ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx];
+  const dot = (a, b) => a.reduce((sum, value, i) => sum + value * b[i], 0);
+  const number = (value) => String(Math.round(value * 1e6) / 1e6);
+  let corners = 0;
+  for (const [i, { points, normal, uv }] of faces.entries()) {
+    const facing = cross(sub(points[1], points[0]), sub(points[2], points[0]));
+    const wound = dot(facing, normal) < 0 ? [...points].reverse() : points;
+    const length = Math.hypot(...normal);
+    lines.push(`vn ${normal.map((value) => number(value / length)).join(" ")}`);
+    for (const point of wound) {
+      lines.push(`v ${point.map((value) => number(value / 16)).join(" ")}`, `vt ${uv(point).map((value) => number(value / 16)).join(" ")}`);
+    }
+    lines.push(`f ${wound.map((_, k) => `${corners + k + 1}/${corners + k + 1}/${i + 1}`).join(" ")}`);
+    corners += wound.length;
+  }
+  return lines.join("\n");
+}
+
 // The fairing, drawn cut at its top east edge: a skin plate along the diagonal from the top west corner to the
 // bottom east one (a thin slab through the middle turned 45 degrees and stretched to reach both corners), over eight
-// steps that fill the solid half and close its ends. The other cuts are the same model turned.
+// steps that fill the solid half and close its ends. The other cuts are the same model turned, and its corners are
+// the meshes above, turned.
 {
   const all = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, up: { texture }, down: { texture } });
   const steps = [...Array(8).keys()].map((k) => ({ from: [0, 2 * k, 0], to: [14 - 2 * k, 2 * k + 2, 16], faces: all("#skin") }));
@@ -2390,13 +2477,45 @@ cubes.hull_relay = null;
     ],
   });
   write(`assets/${ID}/models/item/airframe_fairing.json`, { parent: `${ID}:block/airframe_fairing` });
+  // The corners are drawn as the right-hand corner of a fairing facing east, its second cut facing south, and turned so
+  // the drawn east slope takes one of the two cuts: the one whose quarter turn clockwise is the other, resting; hung,
+  // turned over end to end, the drawn south slope faces north, so the one whose quarter turn anticlockwise is.
   const turn = { east: 0, south: 90, west: 180, north: 270 };
+  const clockwise = { east: "south", south: "west", west: "north", north: "east" };
+  const anticlockwise = { east: "north", north: "west", west: "south", south: "east" };
+  const corners = new Map();
+  const corner = (kind, half, facing, second) => {
+    const hung = half === "bottom";
+    const drawnEast = (hung ? anticlockwise : clockwise)[facing] === second ? facing : second;
+    const drawnSouth = drawnEast === facing ? second : facing;
+    const level = (cut) => FAIRING_SHADED_LEVEL[half].includes(cut);
+    const model = `airframe_fairing_${kind}_${level(drawnEast) ? "level" : "side"}_${level(drawnSouth) ? "level" : "side"}`;
+    corners.set(model, fairingCorners(level(drawnEast), level(drawnSouth))[kind]);
+    return { model: `${ID}:block/${model}`, ...(hung ? { x: 180 } : {}), y: turn[drawnEast] };
+  };
+  const cornersOf = (facing) => ["inner", "outer"].flatMap((kind) => ["top", "bottom"].flatMap((half) => [
+    [`facing=${facing},half=${half},shape=${kind}_left`, corner(kind, half, facing, anticlockwise[facing])],
+    [`facing=${facing},half=${half},shape=${kind}_right`, corner(kind, half, facing, clockwise[facing])],
+  ]));
   write(`assets/${ID}/blockstates/airframe_fairing.json`, {
     variants: Object.fromEntries(Object.entries(turn).flatMap(([facing, y]) => [
-      [`facing=${facing},half=top`, { model: `${ID}:block/airframe_fairing`, y }],
-      [`facing=${facing},half=bottom`, { model: `${ID}:block/airframe_fairing`, x: 180, y }],
+      [`facing=${facing},half=top,shape=straight`, { model: `${ID}:block/airframe_fairing`, y }],
+      [`facing=${facing},half=bottom,shape=straight`, { model: `${ID}:block/airframe_fairing`, x: 180, y }],
+      ...cornersOf(facing),
     ])),
   });
+  // The meshes lie outside models, where everything is a block model.
+  write(`assets/${ID}/meshes/airframe_fairing.mtl`, "newmtl skin\nmap_Kd #skin");
+  for (const [model, faces] of corners) {
+    write(`assets/${ID}/meshes/${model}.obj`, objMesh(faces, "airframe_fairing.mtl", "skin"));
+    write(`assets/${ID}/models/block/${model}.json`, {
+      parent: "minecraft:block/block",
+      loader: "neoforge:obj",
+      model: `${ID}:meshes/${model}.obj`,
+      emissive_ambient: false,
+      textures: { skin: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel` },
+    });
+  }
   write(`data/${ID}/loot_table/blocks/airframe_fairing.json`, {
     type: "minecraft:block",
     pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:airframe_fairing` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],

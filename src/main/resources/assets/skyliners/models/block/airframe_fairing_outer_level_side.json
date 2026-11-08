@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/block",
+  "loader": "neoforge:obj",
+  "model": "skyliners:meshes/airframe_fairing_outer_level_side.obj",
+  "emissive_ambient": false,
+  "textures": {
+    "skin": "skyliners:block/airframe_panel",
+    "particle": "skyliners:block/airframe_panel"
+  }
+}

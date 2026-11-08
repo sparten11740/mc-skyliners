@@ -1266,7 +1266,9 @@ too, a schematicannon does not. An airliner taken apart again forgets which of i
 Put down by hand, the frame's blocks sit the way they do aboard. An Airframe Fairing, the skin with its outer edge cut
 away at 45 degrees, goes down as stairs do: its cut faces you, along its top edge put on top of a block or against
 the lower half of a block's side, and along its bottom edge put against the underside of a block or the upper half of
-a block's side. A Nav Light shines out from the face it is put against. What a pilot sits behind (the thrust levers,
+a block's side. Like stairs, it turns corners with the fairings beside it: round an inside corner, as along the top of
+a room's walls, the corner one fills it in, its two slopes meeting in a valley, and round an outside corner it rounds
+it off into a hip. A Nav Light shines out from the face it is put against. What a pilot sits behind (the thrust levers,
 the autopilot's control head, the tiller and the parking brake) goes down with its nose the way you face, as a
 Landing Gear Bay's leg swings up and a Laser Turret fires that way; what faces the pilots (the instrument panel, a
 flight display, the gear lever and the laser, jump light and seatbelt switches) faces you, as a parachute rack does.

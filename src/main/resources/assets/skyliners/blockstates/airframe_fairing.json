@@ -1,40 +1,184 @@
 {
   "variants": {
-    "facing=east,half=top": {
+    "facing=east,half=top,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "y": 0
     },
-    "facing=east,half=bottom": {
+    "facing=east,half=bottom,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "x": 180,
       "y": 0
     },
-    "facing=south,half=top": {
+    "facing=east,half=top,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 270
+    },
+    "facing=east,half=top,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 0
+    },
+    "facing=east,half=bottom,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,half=bottom,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_level_side",
+      "x": 180,
+      "y": 90
+    },
+    "facing=east,half=top,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 270
+    },
+    "facing=east,half=top,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 0
+    },
+    "facing=east,half=bottom,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,half=bottom,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_level_side",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,half=top,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "y": 90
     },
-    "facing=south,half=bottom": {
+    "facing=south,half=bottom,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "x": 180,
       "y": 90
     },
-    "facing=west,half=top": {
+    "facing=south,half=top,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 0
+    },
+    "facing=south,half=top,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 90
+    },
+    "facing=south,half=bottom,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_level_side",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,half=bottom,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_level",
+      "x": 180,
+      "y": 180
+    },
+    "facing=south,half=top,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 0
+    },
+    "facing=south,half=top,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 90
+    },
+    "facing=south,half=bottom,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_level_side",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,half=bottom,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_level",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,half=top,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "y": 180
     },
-    "facing=west,half=bottom": {
+    "facing=west,half=bottom,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "x": 180,
       "y": 180
     },
-    "facing=north,half=top": {
+    "facing=west,half=top,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 90
+    },
+    "facing=west,half=top,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 180
+    },
+    "facing=west,half=bottom,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_level",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,half=bottom,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "x": 180,
+      "y": 270
+    },
+    "facing=west,half=top,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 90
+    },
+    "facing=west,half=top,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 180
+    },
+    "facing=west,half=bottom,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_level",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,half=bottom,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,half=top,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "y": 270
     },
-    "facing=north,half=bottom": {
+    "facing=north,half=bottom,shape=straight": {
       "model": "skyliners:block/airframe_fairing",
       "x": 180,
       "y": 270
+    },
+    "facing=north,half=top,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 180
+    },
+    "facing=north,half=top,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "y": 270
+    },
+    "facing=north,half=bottom,shape=inner_left": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,half=bottom,shape=inner_right": {
+      "model": "skyliners:block/airframe_fairing_inner_side_side",
+      "x": 180,
+      "y": 0
+    },
+    "facing=north,half=top,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 180
+    },
+    "facing=north,half=top,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "y": 270
+    },
+    "facing=north,half=bottom,shape=outer_left": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,half=bottom,shape=outer_right": {
+      "model": "skyliners:block/airframe_fairing_outer_side_side",
+      "x": 180,
+      "y": 0
     }
   }
 }
