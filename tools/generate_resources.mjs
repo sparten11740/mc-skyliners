@@ -2804,12 +2804,16 @@ function freighterSoundsLang() {
 // A ship running into something (see Impacts): a hard hit's crunch and boom, her hull groaning after it as a zeppelin's
 // girders groan, a bump's thud and her hull grinding as she slides along, each heard so many blocks off at its
 // plainest, as Impacts has it (its CRUNCH_HEARD, GROAN_HEARD, THUD_HEARD and SCRAPE_HEARD), and farther as it plays
-// louder.
+// louder. A ship struck by a shot (see ShipHits): a laser bolt's ping off her plates, and a rocket's boom and crunch, a
+// hard hit's own, each played as loud as reaches as far as it is heard and fading out over sixteen blocks for each of
+// its volume, as far as the server sends it (ShipHits' SENT_PER_VOLUME).
 const IMPACT_SOUNDS = {
   impact_crunch: { subtitle: "Ship crashes", heard: 96 },
   impact_groan: { subtitle: "Hull groans", heard: 48, files: ["zeppelin_creak_1", "zeppelin_creak_2", "zeppelin_creak_3"] },
   impact_thud: { subtitle: "Ship bumps", heard: 32 },
   impact_scrape: { subtitle: "Hull scrapes", heard: 64 },
+  impact_bolt: { subtitle: "Bolt pings off hull", heard: 16 },
+  impact_rocket: { subtitle: "Rocket bursts on hull", heard: 16, files: ["impact_crunch"] },
 };
 function impactSounds() {
   return Object.fromEntries(Object.entries(IMPACT_SOUNDS).map(([name, { heard, files = [name] }]) => [name,

@@ -817,6 +817,8 @@
   "subtitles.skyliners.impact_groan": "Hull groans",
   "subtitles.skyliners.impact_thud": "Ship bumps",
   "subtitles.skyliners.impact_scrape": "Hull scrapes",
+  "subtitles.skyliners.impact_bolt": "Bolt pings off hull",
+  "subtitles.skyliners.impact_rocket": "Rocket bursts on hull",
   "block.skyliners.laser_switch": "Laser Switch",
   "block.skyliners.laser_turret": "Laser Turret",
   "subtitles.skyliners.laser_hiss": "Laser fires",

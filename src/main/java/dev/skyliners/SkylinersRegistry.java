@@ -3117,6 +3117,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_GROAN = sound("impact_groan");
     public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_THUD = sound("impact_thud");
     public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_SCRAPE = sound("impact_scrape");
+    /**
+     * A ship struck by a shot (see {@link dev.skyliners.impact.ShipHits}): a laser bolt's ping off her plates, and a
+     * rocket's boom and crunch, a hard hit's.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_BOLT = sound("impact_bolt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_ROCKET = sound("impact_rocket");
     /** Sleigh bells, rung from a festive zeppelin's engines as they turn (see the client's SleighBells). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SLEIGH_BELLS = sound("sleigh_bells");
     public static final DeferredItem<BlockItem> ZEPPELIN_FABRIC_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_FABRIC);

@@ -77,6 +77,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROCKETS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SHIP_HITS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PORTHOLES;
     public static final ModConfigSpec.BooleanValue FREIGHTER_PRONGS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SMUGGLER_HOLD;
@@ -824,6 +825,13 @@ public final class SkylinersConfig {
                 "block of any ship. The pods load again a rocket at a time. Without it, the cannon has no pods."
             )
             .define("rockets", true);
+        FREIGHTER_SHIP_HITS = builder
+            .comment(
+                "Whether a ship struck by a laser cannon's bolt or rocket feels it, though it breaks none of her: rocked a little",
+                "where it struck, a bolt lightly and a rocket harder, the hit ringing off her hull with sparks and smoke, and the",
+                "view of everyone aboard jolted. Without it, shots strike ships unfelt and unheard."
+            )
+            .define("shipHits", true);
         FREIGHTER_BANDSTAND = builder
             .comment(
                 "Whether the freighter is built with a bandstand in her club, the room through the doorway at her port bow, its",

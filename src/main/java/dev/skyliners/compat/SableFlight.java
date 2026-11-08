@@ -18,6 +18,7 @@ import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintConfiguration;
 import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintHandle;
 import dev.ryanhcode.sable.api.physics.PhysicsPipeline;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
+import dev.ryanhcode.sable.api.physics.mass.MassData;
 import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
@@ -329,6 +330,23 @@ public final class SableFlight {
         if (SABLE && blockEntity.getLevel() instanceof ServerLevel) {
             Access.jolt(blockEntity, change);
         }
+    }
+
+    /**
+     * Strikes the assembled ship a block is part of at a point on her, in the world or among her blocks, as a shot
+     * striking her there does: her centre of mass made to move faster by a velocity in the world's directions, in
+     * blocks a second, and set turning as a blow at that point that gives her that speed turns her, by her weight and
+     * how it is spread, but never faster than so many radians a second more. Whether there was a ship to strike; on the
+     * server.
+     */
+    public static boolean strike(Level level, BlockPos block, Vec3 at, Vec3 speedChange, double mostTurn) {
+        return SABLE && level instanceof ServerLevel && Access.strike(level, block, at, speedChange, mostTurn);
+    }
+
+    /** Which of Sable's flying bodies the entity rides, standing on it or seated in it, by its id; null for none. */
+    @Nullable
+    public static UUID ridden(Entity entity) {
+        return SABLE ? Access.ridden(entity) : null;
     }
 
     /** Whether a point is among an assembled airliner's blocks, in its plot. */
@@ -910,6 +928,38 @@ public final class SableFlight {
             if (Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airliner) {
                 RigidBodyHandle.of(airliner).addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), new Vector3d());
             }
+        }
+
+        /**
+         * The blow worked out in her own frame, where Sable weighs her: the push that gives her centre of mass the
+         * speed, and the turn that push at the point makes, through her inertia; both handed to Sable as velocities in
+         * the world's frame, as it saves and loads them.
+         */
+        static boolean strike(Level level, BlockPos block, Vec3 at, Vec3 speedChange, double mostTurn) {
+            if (!(Sable.HELPER.getContaining(level, block) instanceof ServerSubLevel ship) || ship.isRemoved()) {
+                return false;
+            }
+            MassData weight = ship.getMassTracker();
+            RigidBodyHandle handle = RigidBodyHandle.of(ship);
+            if (weight.isInvalid() || handle == null || !handle.isValid()) {
+                return false;
+            }
+            Pose3dc pose = ship.logicalPose();
+            Vec3 point = Sable.HELPER.getContaining(level, at) == ship ? at : pose.transformPositionInverse(at);
+            Vector3d push = pose.transformNormalInverse(new Vector3d(speedChange.x, speedChange.y, speedChange.z)).mul(weight.getMass());
+            Vector3d arm = new Vector3d(point.x, point.y, point.z).sub(weight.getCenterOfMass());
+            Vector3d turn = weight.getInverseInertiaTensor().transform(arm.cross(push), new Vector3d());
+            if (turn.length() > mostTurn) {
+                turn.mul(mostTurn / turn.length());
+            }
+            handle.addLinearAndAngularVelocity(new Vector3d(speedChange.x, speedChange.y, speedChange.z), pose.transformNormal(turn));
+            return true;
+        }
+
+        @Nullable
+        static UUID ridden(Entity entity) {
+            SubLevel ridden = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            return ridden == null || ridden.isRemoved() ? null : ridden.getUniqueId();
         }
 
         static Vec3 velocity(Level level, Vec3 point) {

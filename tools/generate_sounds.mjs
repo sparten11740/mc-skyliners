@@ -1440,6 +1440,35 @@ function crumple(samples, start, length, noise, notes, gain) {
   }
   writeSound("impact_scrape", samples, 0.75);
 }
+// A laser bolt striking a ship's hull (see ShipHits): the crack of it landing, a zap falling fast in pitch, her plate
+// pinging at a struck plate's inharmonic notes over a dull knock of the hull behind it, and the scorch sizzling a
+// moment after, with a little of the space round her.
+{
+  const noise = ownRandom(0x426f6c74);
+  const length = 1.2;
+  const dry = new Float64Array(Math.round(length * RATE));
+  thunk(dry, 0, 150, 0.5, noise);
+  let zap = 0;
+  let hiss = 0;
+  let hissLow = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = i / RATE;
+    zap += (2 * Math.PI * (900 + 2600 * Math.exp(-t / 0.018))) / RATE;
+    const crack = t < 0.006 ? (noise() * 2 - 1) * (1 - t / 0.006) : 0;
+    const white = noise() * 2 - 1;
+    hissLow += 0.55 * (white - hissLow);
+    hiss += 0.9 * (white - hiss);
+    const ping = [[690, 0.3, 0.5], [1870, 0.25, 1], [2930, 0.18, 0.6], [4410, 0.12, 0.4], [6150, 0.08, 0.25]]
+      .reduce((sum, [note, decay, weight], k) => sum + weight * Math.sin(2 * Math.PI * note * t + k) * Math.exp(-t / decay), 0);
+    const sizzle = (hiss - hissLow) * Math.min(1, t / 0.03) * Math.exp(-t / 0.22);
+    dry[i] = 1.4 * crack + 0.5 * Math.sin(zap) * Math.exp(-t / 0.05) + 0.8 * ping * Math.min(1, t / 0.001) + 0.5 * sizzle;
+  }
+  const tail = Math.round(0.3 * RATE);
+  for (let i = dry.length - tail; i < dry.length; i++) {
+    dry[i] *= (dry.length - i) / tail;
+  }
+  writeSound("impact_bolt", hullEcho(dry, 0.12), 0.8);
+}
 // The trim car rolling along its rail a block (see TrimWinchBlockEntity): a rumble of its wheels bumping over the
 // rail's joints, and the clink of its haul chain.
 {

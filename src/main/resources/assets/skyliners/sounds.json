@@ -1928,6 +1928,24 @@
       }
     ]
   },
+  "impact_bolt": {
+    "subtitle": "subtitles.skyliners.impact_bolt",
+    "sounds": [
+      {
+        "name": "skyliners:impact_bolt",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "impact_rocket": {
+    "subtitle": "subtitles.skyliners.impact_rocket",
+    "sounds": [
+      {
+        "name": "skyliners:impact_crunch",
+        "attenuation_distance": 16
+      }
+    ]
+  },
   "laser_hiss": {
     "subtitle": "subtitles.skyliners.laser_hiss",
     "sounds": [

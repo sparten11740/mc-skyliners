@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.impact.ShipHits;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -32,7 +33,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * burns out and goes off in the air. Launched while the cannon's sight is locked on to a hostile mob, it homes in on
  * that mob, turning gently, and goes off as it passes close. It flies through her own blocks and past anyone who is not
  * a hostile mob, and goes off only against the world's blocks, another ship's blocks or a hostile mob not aboard her;
- * its blast spares every ship's blocks and hurts hostile mobs only.
+ * its blast spares every ship's blocks and hurts hostile mobs only, though another ship it strikes is rocked by it
+ * (see {@link ShipHits}).
  *
  * <p>It flies on the server, which tells the clients where it is every tick; each client carries it on between, draws
  * it (the client's {@code CannonRocketRenderer}), and trails its smoke and flame and plays its motor's roar itself (the
@@ -154,9 +156,15 @@ public class CannonRocket extends Projectile {
             goOff(from);
             return;
         }
-        Vec3 struck = struck(from, to);
-        if (struck != null) {
-            goOff(struck);
+        BlockHitResult wall = wallAhead(from, to);
+        Vec3 mob = mobAhead(from, wall == null ? to : wall.getLocation());
+        if (mob != null) {
+            goOff(mob);
+            return;
+        }
+        if (wall != null) {
+            goOff(wall.getLocation().subtract(step.normalize().scale(BACK_OFF)));
+            ShipHits.struck(level, wall.getBlockPos(), wall.getLocation(), step, ShipHits.Shot.ROCKET, her);
             return;
         }
         setDeltaMovement(step);
@@ -197,22 +205,12 @@ public class CannonRocket extends Projectile {
     }
 
     /**
-     * Where along a tick's flight it strikes something, if it does: a block of the world or of another ship, or a
-     * hostile mob.
+     * The first block along a tick's flight that is not one of her own, a block of the world or of another ship: where
+     * it was met, in the world, and the block, among that ship's blocks if it is one of hers. It flies through any of
+     * her own it meets on the way; none if it meets nothing else.
      */
     @Nullable
-    private Vec3 struck(Vec3 from, Vec3 to) {
-        Vec3 wall = wallAhead(from, to);
-        Vec3 mob = mobAhead(from, wall == null ? to : wall);
-        return mob != null ? mob : wall;
-    }
-
-    /**
-     * Where along a tick's flight it first meets a block that is not one of her own, in the world: through any of hers
-     * it meets on the way, which it flies through.
-     */
-    @Nullable
-    private Vec3 wallAhead(Vec3 from, Vec3 to) {
+    private BlockHitResult wallAhead(Vec3 from, Vec3 to) {
         Vec3 at = from;
         for (int pass = 0; pass < PASSES_THROUGH; pass++) {
             BlockHitResult met = level().clip(new ClipContext(at, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
@@ -221,7 +219,7 @@ public class CannonRocket extends Projectile {
             }
             Vec3 there = SableFlight.toWorld(level(), met.getLocation());
             if (her == null || !her.equals(SableFlight.bodyAt(level(), met.getBlockPos()))) {
-                return there.subtract(to.subtract(from).normalize().scale(BACK_OFF));
+                return new BlockHitResult(there, met.getDirection(), met.getBlockPos(), met.isInside());
             }
             at = there.add(to.subtract(from).normalize().scale(PAST_HER));
             if (to.subtract(at).dot(to.subtract(from)) <= 0) {

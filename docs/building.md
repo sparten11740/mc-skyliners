@@ -136,7 +136,12 @@ whole (`SableFlight.body`: her centre of mass, how fast it moves and the box rou
 one tick, gravity taken out, of more than any craft's lift, engines or an airliner's brakes make is summed as one hit
 and heard by how hard, a thud or a crunch and a groan after it, from the side of her box the push came from, and
 `ImpactJolt` kicks the view of those aboard through `CameraShake`; slowed hard across the ground just after such a
-push, she grinds, the scrape played again each second while she slides.
+push, she grinds, the scrape played again each second while she slides. A shot striking a ship goes through
+`ShipHits.struck`, called by the laser cannon's bolts and its `CannonRocket`s where they meet a block of another ship:
+`SableFlight.strike` gives her a speed and the turn that push at the hit point makes, through her inertia, clamped and
+scaled by her weight, each ship's pushes gathered and capped at a rocket's worth until she rides them out; the hit's
+sound and particles are played among her blocks so they ride along with her, and `ImpactJolt` kicks the view of those
+aboard and near.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned
 by `RocketFlightDeck` (where each seat, screen and console goes), its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or
