@@ -10,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.Mth;
@@ -162,8 +163,15 @@ public final class HyperspaceStretch {
         return jumps > 0 ? new HyperspaceWake.Stretched(jumps, longestGoing, goingFrames, longestComing, comingFrames) : null;
     }
 
-    /** One ship drawn as long as she is stretched now, if she is here and stretched at all. */
+    /**
+     * One ship drawn as long as she is stretched now, if she is here and stretched at all; never for someone riding
+     * her, whom the server tells nothing of her jump from outside anyway, so a copy of her is never drawn round them.
+     */
     private static void draw(RenderLevelStageEvent event, Stretch stretch, double now, float partialTick) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || SableClient.rides(player, stretch.told.aboard())) {
+            return;
+        }
         Vec3 ahead = stretch.told.ahead().normalize();
         SableClient.Ends ends = stretch.over ? null : SableClient.ends(stretch.told.aboard(), ahead, partialTick);
         if (ends == null) {

@@ -205,6 +205,11 @@ public final class SableClient {
         return SABLE ? Access.autopilot(entity) : null;
     }
 
+    /** Whether the entity rides the assembled ship that holds a point among her blocks; never without Sable. */
+    static boolean rides(Entity entity, Vec3 aboard) {
+        return SABLE && Access.rides(entity, aboard);
+    }
+
     /**
      * Where an assembled airliner's own frame lies among its blocks: the point on its centreline under the tip of its
      * nose, level with the bottom of its wheels, and the way its nose points, what kind of craft it is, airliner or
@@ -539,6 +544,11 @@ public final class SableClient {
         static AutopilotBlockEntity autopilot(Entity entity) {
             SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
             return airliner == null ? null : autopilot(airliner.getPlot());
+        }
+
+        static boolean rides(Entity entity, Vec3 aboard) {
+            SubLevel ridden = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            return ridden != null && ridden == Sable.HELPER.getContainingClient(aboard);
         }
 
         @Nullable
