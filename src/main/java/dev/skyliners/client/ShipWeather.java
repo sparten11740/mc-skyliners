@@ -1,11 +1,13 @@
 package dev.skyliners.client;
 
 import dev.skyliners.SkylinersClientConfig;
+import dev.skyliners.block.DimmingGlassBlock;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
@@ -20,8 +22,9 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
  * own blocks there, which knows nothing of a ship's blocks, so they fell straight through her into her cabins and
  * rooms. Here, each frame it rains, the ships round the camera are looked up: in each column where rain or snow is
  * drawn it falls only down to the highest block of a ship over it, as on her roof, and its splashes and its patter land
- * there; so under a roof high over a story, as in the rocket's lower stories, none is drawn or heard at all. The
- * clouds are kept out of her by {@link CloudlessCabin}.
+ * there; so under a roof high over a story, as in the rocket's lower stories, none is drawn or heard at all. No drop
+ * splashes on the freighter's canopy, which is drawn at her true surface, out past its blocks (see {@link #splashes}).
+ * The clouds are kept out of her by {@link CloudlessCabin}.
  *
  * <p>Over the clouds the weather is fair, as it is over a real storm: as the camera climbs out of the top of the cloud
  * layer the rain and the snow fade away, the storm's grey sky clearing and their patter falling silent, and as it comes
@@ -39,6 +42,11 @@ public final class ShipWeather {
      * camera's, so that a story under them hears none of the rain on her roof.
      */
     private static final int ROOF_REACH = 48;
+    /**
+     * How many blocks under a raindrop's splash, along a ship's up, her canopy's glass is looked for: Sable sets a
+     * splash on a ship as much as a block over her roof.
+     */
+    private static final int SPLASH_DEPTH = 2;
     /** How far over the clouds' top the weather has faded away, in blocks. */
     private static final double FAIR_OVER = 8;
     /** How little of the weather a camera sees for a lightning bolt, its flash and its thunder to be kept from it. */
@@ -98,6 +106,42 @@ public final class ShipWeather {
             }
         }
         return Integer.MIN_VALUE;
+    }
+
+    /**
+     * Whether a raindrop may splash at a point of the world: not on the freighter's canopy where its lining draws it
+     * (see {@link DimmingGlassBlock#lined}). Its blocks draw nothing, and the lining draws her glass at her true
+     * surface, a little out past where a splash comes to rest on their blocks, so from her seats the splashes were seen
+     * inside the glass, as rain in her cockpit. Looked for in the world, for a ship standing as she was built, and
+     * among the blocks of each ship round the camera.
+     */
+    public static boolean splashes(Level level, double x, double y, double z) {
+        BlockPos.MutableBlockPos cell = new BlockPos.MutableBlockPos(x, y, z);
+        if (DimmingGlassBlock.lined(level.getBlockState(cell)) || DimmingGlassBlock.lined(level.getBlockState(cell.move(Direction.DOWN)))) {
+            return false;
+        }
+        for (SableClient.Shelter ship : shelters) {
+            if (onCanopy(level, ship, x, y, z)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a point of the world lies on a ship's canopy glass, or as far over it as a splash is set. */
+    private static boolean onCanopy(Level level, SableClient.Shelter ship, double x, double y, double z) {
+        if (!ship.bounds().inflate(SPLASH_DEPTH).contains(x, y, z)) {
+            return false;
+        }
+        Vec3 at = ship.among(x, y, z);
+        Vec3 up = ship.up();
+        BlockPos.MutableBlockPos cell = new BlockPos.MutableBlockPos();
+        for (int down = 0; down <= SPLASH_DEPTH; down++) {
+            if (DimmingGlassBlock.lined(level.getBlockState(cell.set(at.x - up.x * down, at.y - up.y * down, at.z - up.z * down)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Whether a block keeps the weather off, as one of the world's own would: solid, or water. */

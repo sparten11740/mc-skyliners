@@ -23,6 +23,11 @@ public class DimmingGlassBlock extends CockpitGlassBlock {
         registerDefaultState(defaultBlockState().setValue(OvalWindowPieceBlock.DIM, 0).setValue(LINED, false));
     }
 
+    /** Whether a block is canopy glass that draws nothing, its lining drawing the canopy at her true surface. */
+    public static boolean lined(BlockState state) {
+        return state.getBlock() instanceof DimmingGlassBlock && state.getValue(LINED);
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);

@@ -111,12 +111,13 @@ airliner still flies in and out of them. With Fast or Fancy graphics the windows
 anyway; with Fabulous graphics the clouds outside the windows go too while the airliner is in the cloud layer. Turn it
 off with `cloudlessCabin` in the client config.
 
-Rain and snow stay out of her too, and out of a zeppelin or a rocket in flight: falling on one, they land on her roof,
-never in her cabins or her rooms. Over the clouds the weather is fair, as it is over a real storm: climbing out of the
-top of the cloud layer, the rain and the snow fade away within a few blocks and the storm's grey sky clears, and its
-lightning, its flash and its thunder stay down under the clouds, so no storm is heard in space; coming down into the
-clouds again they come back; below, the weather goes on as it was. Turn that off with `fairOverClouds` in the client
-config.
+Rain and snow stay out of her too, and out of a zeppelin, a rocket or a freighter in flight: falling on one, they land
+on her roof, never in her cabins, her rooms or under a freighter's canopy, and no drop splashes on the canopy itself,
+where from her seats it would look to be inside the glass. Over the clouds the weather is fair, as it is over a real
+storm: climbing out of the top of the cloud layer, the rain and the snow fade away within a few blocks and the storm's
+grey sky clears, and its lightning, its flash and its thunder stay down under the clouds, so no storm is heard in
+space; coming down into the clouds again they come back; below, the weather goes on as it was. Turn that off with
+`fairOverClouds` in the client config.
 
 ### Flight deck
 

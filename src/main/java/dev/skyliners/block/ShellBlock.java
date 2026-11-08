@@ -45,8 +45,14 @@ public class ShellBlock extends Block {
         }
     }
 
+    /**
+     * Skin counts as solid however thin its cut. The game lets rain fall past a block whose collision is small, as it
+     * falls through a carpet onto the floor under it, so a sliver cut from the crown of the freighter's canopy, with
+     * only her cockpit's air under it, let the rain fall straight through onto her floor, standing or flying. Solid,
+     * the skin keeps the rain and snow off as a roof does.
+     */
     public ShellBlock(Properties properties, Supplier<? extends ItemLike> part) {
-        super(properties);
+        super(properties.forceSolidOn());
         this.part = part;
         registerDefaultState(cut(stateDefinition.any(), ShellGeometry.WHOLE));
     }

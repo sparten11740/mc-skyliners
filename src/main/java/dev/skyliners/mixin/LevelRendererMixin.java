@@ -9,6 +9,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -24,7 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * flies, but the game still lets rain and snow fall down each column to the world's own highest block, which knows
  * nothing of hers, so it rained and snowed in her cabins and rooms. No hook reaches the height a column's rain falls to
  * short of drawing all of the game's rain over again: here the height read for each column, as the rain is drawn and as
- * it splashes, is raised to just over a ship's roof over it.
+ * it splashes, is raised to just over a ship's roof over it, and a splash is left out where it would land on the
+ * freighter's canopy.
  */
 @Mixin(LevelRenderer.class)
 abstract class LevelRendererMixin {
@@ -57,5 +59,14 @@ abstract class LevelRendererMixin {
     private BlockPos skyliners$splashOnShips(LevelReader reader, Heightmap.Types type, BlockPos pos, Operation<BlockPos> original) {
         BlockPos ground = original.call(reader, type, pos);
         return level == null ? ground : ground.atY(ShipWeather.fallsTo(level, ground.getX(), ground.getZ(), ground.getY()));
+    }
+
+    @WrapOperation(method = "tickRain", at = @At(value = "INVOKE",
+        target = "Lnet/minecraft/client/multiplayer/ClientLevel;addParticle(Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)V"))
+    private void skyliners$splashOffCanopies(ClientLevel splashed, ParticleOptions splash, double x, double y, double z, double dx, double dy, double dz,
+                                             Operation<Void> original) {
+        if (ShipWeather.splashes(splashed, x, y, z)) {
+            original.call(splashed, splash, x, y, z, dx, dy, dz);
+        }
     }
 }

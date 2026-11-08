@@ -408,6 +408,13 @@ const CANOPY_OUTSIDE = 8;
 const DIMMER_FACE = 0.12;
 const DIMMER_DARKEST = [0.8, 0.15];
 const DIMMER_CLEAR = [0.2, 0.75];
+// Rain over her canopy, seen from her pilot's seat: how long the rain is given to set in, in ticks; how much bluer than
+// red or green a pixel must be, 0 to 255, to be taken for rain; and how many such pixels across the whole frame are left
+// to her hull's own splashes, seen past her glass. With rain falling in her cockpit and splashing inside her glass there
+// were two thousand and more; with neither, about a hundred.
+const RAIN_SETS_IN = 120;
+const RAIN_BLUE = 50;
+const RAIN_PIXELS_MOST = 600;
 // Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
 // Her slam button takes the toggles' place, as the server config's freighter.slamLanding has her built by default.
 const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1, console_scanner: 1, console_jump: 1, console_engines: 1,
@@ -2547,6 +2554,42 @@ function checkFreighterCanopy() {
   expect(dimmedOutside < clearOutside * CANOPY_DIMMED_SHARE, "freighter: dimmed, her cockpit through her canopy darkens from outside",
     `luma ${round(clearOutside)} clear, ${round(dimmedOutside)} dimmed`);
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
+}
+
+// Rain over a freighter on the ground, seen from her pilot's seat with the clouds off: none falls in her cockpit and no
+// drop splashes inside her canopy's glass. With the fault, slivers of glass at the crown of her canopy let the rain fall
+// straight through onto her floor, and drops splashed on her canopy's blocks just inside the smooth glass her lining
+// draws, speckling it all over.
+function checkFreighterRain() {
+  if (spawnSync("ffmpeg", ["-version"]).error) {
+    console.log("  skip the freighter's rain: it takes FFmpeg to measure");
+    return;
+  }
+  ship("freighter");
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
+  const seat = pilotSeat();
+  const [, , yaw] = WAYS[nose];
+  must(`option renderClouds off; server weather rain; server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; ` +
+    `wait 10t; turn ${yaw} -20; wait ${RAIN_SETS_IN}t`);
+  const { file } = must("screenshot 1280 hud=off");
+  const rain = rainPixels(file);
+  rmSync(file, { force: true });
+  must("key press key.sneak 10t; server weather clear; wait 10t");
+  send("?option reset");
+  expect(rain <= RAIN_PIXELS_MOST, "freighter: in rain, none falls in her cockpit or splashes inside her canopy, seen from her seat",
+    `${rain} rain-blue pixels`);
+}
+
+// How many pixels of a screenshot are rain's blue, read through FFmpeg.
+function rainPixels(file) {
+  const decode = ["-hide_banner", "-loglevel", "error", "-i", file, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"];
+  const rgb = spawnSync("ffmpeg", decode, { maxBuffer: 1 << 26 }).stdout;
+  let rain = 0;
+  for (let at = 0; at + 2 < rgb.length; at += 3) {
+    rain += rgb[at + 2] - Math.max(rgb[at], rgb[at + 1]) > RAIN_BLUE ? 1 : 0;
+  }
+  return rain;
 }
 
 // A laser cannon's rocket flown at a player throws them far and high with its blast: one flying in creative mode, whom
@@ -5215,6 +5258,7 @@ const CHECKS = {
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },
+  "freighter-rain": { run: checkFreighterRain, about: "rain over a freighter neither falls in her cockpit nor splashes inside her canopy, seen from her seat" },
   "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends, her stretching into it and out of it" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },

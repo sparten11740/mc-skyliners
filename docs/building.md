@@ -65,8 +65,9 @@ mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn wit
 own turn does (the gym hall's trusses of an airliner built facing east or west), and `mixin/HotAirBurnerMixin` lets
 `BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff; `CloudlessCabin` leaves the clouds out of
 the player's view while the camera is inside a hull in the cloud layer; `ShipWeather`, through
-`mixin/LevelRendererMixin` and `mixin/LevelMixin`, lets rain and snow fall only onto a ship's roof and fades the
-weather over the clouds; `LandAhead` asks for the land ahead of a player
+`mixin/LevelRendererMixin` and `mixin/LevelMixin`, lets rain and snow fall only onto a ship's roof, keeps their
+splashes off the freighter's canopy and fades the weather over the clouds (a `ShellBlock` counts as solid however thin
+its cut, so the rain stops on it); `LandAhead` asks for the land ahead of a player
 flying aboard, past what they see, a few chunks at a time. The zeppelin's geometry lives in `ZeppelinShape`
 (the Hindenburg's measurements in metres) and is cut into blocks by `ZeppelinLayout` at the blocks a metre its
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
