@@ -2401,9 +2401,95 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // so they fit the round marker they sit in: a control tower, its glass cab over the shaft, the windows showing
   // through; an airliner from above; a house with its door; a five-pointed star; a flag on its pole; a heart; a cut gem,
   // its girdle showing through; a round tree on its trunk; an anchor; a pickaxe; a zeppelin from the side, its round
-  // bow ahead, tapering to its fins at the tail, its car under the bow.
+  // bow ahead, tapering to its fins at the tail, its car under the bow. Then the ones for space: the rocket upright,
+  // as her own autopilot shows her; a saucer freighter from above, her two prongs ahead either side of the loading
+  // gap and her dome showing through; a space fighter from above, a sharp arrowhead with its canopy showing through and
+  // a cannon at each wingtip; the wheel of a space station on its spokes round its hub; a satellite with its dish on
+  // top and a solar panel out either side on its boom; a ringed planet, the ring's near half across the ball with a gap
+  // either side of it; a flying saucer from the side, its dome's windows and the lights round its rim showing through,
+  // its beam under it; and a lumpy asteroid pocked with craters. These are drawn round pixel 8, the middle of the dark
+  // disc as MarkerArt fills it, and stay inside its rim so none runs into the coloured ring round it.
   const markerOutput = resolve(guiOutput, "marker");
   mkdirSync(markerOutput, { recursive: true });
+  // The space markers drawn by hand, so each reads at sixteen pixels.
+  const FREIGHTER_MARKER = [
+    "................",
+    "................",
+    ".....##...##....",
+    ".....##...##....",
+    ".....##...##....",
+    "....###...###...",
+    "...####...####..",
+    "...###########..",
+    "..#############.",
+    "..######.######.",
+    "..#############.",
+    "...###########..",
+    "....#########...",
+    "......#####.....",
+    "................",
+    "................",
+  ];
+  const FIGHTER_MARKER = [
+    "................",
+    "........#.......",
+    "........#.......",
+    ".......###......",
+    ".......#.#......",
+    "..#....###....#.",
+    "..#...#####...#.",
+    "..#..#######..#.",
+    "..#############.",
+    "..#############.",
+    "..#####.#.#####.",
+    "..###..###..###.",
+    ".......#.#......",
+    "................",
+    "................",
+    "................",
+  ];
+  const SATELLITE_MARKER = [
+    "................",
+    "................",
+    "......#...#.....",
+    "......#####.....",
+    ".......###......",
+    "........#.......",
+    "..####.###.####.",
+    "..####.###.####.",
+    ".##############.",
+    "..####.###.####.",
+    "..####.###.####.",
+    ".......###......",
+    "........#.......",
+    "................",
+    "................",
+    "................",
+  ];
+  const drawn = (rows) => (x, y) => rows[y][x] === "#";
+  // The ringed planet: its ball's radius; its ring's tilt (degrees, its right end up), half-axes and width; and the gap
+  // left either side of the ring's near half across the ball; all in pixels.
+  const PLANET_BALL = 4.2;
+  const RING_TILT = -20;
+  const RING_LONG = 6.6;
+  const RING_SHORT = 2;
+  const RING_WIDTH = 1.2;
+  const RING_GAP = 0.9;
+  // How near a pixel's middle comes to the ring's near and far halves, found along the ring a degree at a time.
+  const ringDistances = (x, y) => {
+    const tilt = (RING_TILT * Math.PI) / 180;
+    let near = Infinity;
+    let far = Infinity;
+    for (let degree = 0; degree < 360; degree++) {
+      const along = (degree * Math.PI) / 180;
+      const u = RING_LONG * Math.cos(along);
+      const v = RING_SHORT * Math.sin(along);
+      const d = Math.hypot(x - 8 - u * Math.cos(tilt) + v * Math.sin(tilt), y - 8 - u * Math.sin(tilt) - v * Math.cos(tilt));
+      if (v > 0) near = Math.min(near, d);
+      else far = Math.min(far, d);
+    }
+    return { near, far };
+  };
   const markers = {
     tower: (x, y) => {
       const cab = y >= 3 && y <= 5 && x >= 4 && x <= 11 && !(y === 4 && x >= 5 && x <= 10);
@@ -2448,6 +2534,36 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       const fins = x >= 10 && x <= 12 && Math.abs(y - 7) <= (x - 9) * 1.15;
       const car = y === 10 && x >= 4 && x <= 6;
       return body || fins || car;
+    },
+    rocket: (x, y) => rocketSide(x, y, 7.5, 7.5, 0, 0.95),
+    freighter: drawn(FREIGHTER_MARKER),
+    fighter: drawn(FIGHTER_MARKER),
+    station: (x, y) => {
+      const r = Math.hypot(x - 8, y - 8);
+      const ring = r >= 4.4 && r <= 5.8;
+      // Six spokes: within a pixel of a line through the hub every sixty degrees.
+      const spoke = r <= 4.5 && Math.abs(Math.sin(3 * Math.atan2(y - 8, x - 8))) * r <= 0.6;
+      return ring || spoke || r <= 1.6;
+    },
+    satellite: drawn(SATELLITE_MARKER),
+    planet: (x, y) => {
+      const { near, far } = ringDistances(x, y);
+      if (near <= RING_WIDTH / 2) return true;
+      if (Math.hypot(x - 8, y - 8) <= PLANET_BALL) return near > RING_WIDTH / 2 + RING_GAP;
+      return far <= RING_WIDTH / 2;
+    },
+    ufo: (x, y) => {
+      const dome = y <= 6 && Math.hypot(x - 8, (y - 6) * 1.1) <= 3 && !(y === 5 && (x === 7 || x === 9));
+      const rim = Math.abs(x - 8) <= 6 && Math.abs(y - 8) <= 1.8 * (1 - ((x - 8) / 6.6) ** 2);
+      const lights = y === 8 && (x === 4 || x === 8 || x === 12);
+      const beam = y >= 11 && y <= 13 && Math.abs(x - 8) <= y - 9 && (x + y) % 2 === 1;
+      return ((dome || rim) && !lights) || beam;
+    },
+    asteroid: (x, y) => {
+      const turn = Math.atan2(y - 8, x - 8);
+      const lumps = 5.5 + 0.8 * Math.sin(3 * turn + 0.5) + 0.5 * Math.cos(5 * turn);
+      const craters = Math.hypot(x - 6, y - 9.5) <= 1.5 || Math.hypot(x - 10.5, y - 6) <= 1 || Math.hypot(x - 10.5, y - 11) <= 0.6;
+      return Math.hypot(x - 8, y - 8) <= lumps && !craters;
     },
   };
   for (const [name, shape] of Object.entries(markers)) {

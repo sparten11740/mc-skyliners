@@ -1390,8 +1390,9 @@ Announcements and the radio), its radar screen and its transponder at the front,
 and a second radar screen at the side. The ground under the shaft is filled in, so it stands on uneven ground too.
 
 A **Transponder** shows wherever it is on every autopilot's map (see Autopilot) and on the tower's radar, by a picture
-and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: eleven pictures (a control
-tower, an airliner, home, a star, a flag, a heart, treasure, a forest, a harbour, a mine and an airship) and twelve
+and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: nineteen pictures (a control
+tower, an airliner, home, a star, a flag, a heart, treasure, a forest, a harbour, a mine, an airship, and for space a
+rocket, a freighter, a space fighter, a space station, a satellite, a ringed planet, a UFO and an asteroid) and twelve
 colours, each a button showing what it picks, with the marker as the maps will show it on the left; it shows its picture
 in its colour on its own little screen, too. Put up by hand it goes against the block you click, as a button does: on a
 floor or a desk, its knobs toward you; on a wall, looking out from it; or hung face down under a ceiling, its picture
