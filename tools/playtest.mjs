@@ -250,6 +250,14 @@ const DROP_FROM = 3;
 const CANNON_HOUSING_TOP = 1.375;
 const DISH_BOWL_TOP = 1.75;
 const STANDS_WITHIN = 0.05;
+// The slim souvenir models, the rocket's and the freighter's, each set down on the ground facing north with a point of
+// its block, from 0 to 1 across, up and along, where the box all four once shared took a click though nothing of it is
+// drawn there, and one where it is drawn; and how far off to click them from, in blocks, south of it.
+const SOUVENIRS = {
+  model_rocket: { empty: "0.2,0.6,0.5", solid: "0.5,0.5,0.5" },
+  model_freighter: { empty: "0.5,0.72,0.5", solid: "0.5,0.45,0.5" },
+};
+const SOUVENIR_FROM = 2.5;
 // How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
@@ -2210,6 +2218,24 @@ function landsOn([x, y, z]) {
   return round(there.pos[1] - y);
 }
 
+// The slim souvenir models set down on the ground are clicked only where they are drawn: aimed at from beside one where
+// nothing of it is, the click passes it by to the ground beyond; aimed at its model, it takes it. With the fault all
+// four shared one box, as big as the airliner's, and the rocket and the freighter took clicks well clear of them.
+function checkSouvenirShapes() {
+  // Out of every ship's way, short of the first site.
+  const [x, z] = [-SITE_APART / 2, 0];
+  creative();
+  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t`);
+  for (const [model, { empty, solid }] of Object.entries(SOUVENIRS)) {
+    must(`server setblock ${x} ${ground} ${z} skyliners:${model}[facing=north]; server tp @p ${x + 0.5} ${ground} ${z + 0.5 + SOUVENIR_FROM}; turn 180 0; wait 10t`);
+    const missed = send(`use ${x},${ground},${z} at ${empty}`)[0];
+    const taken = send(`use ${x},${ground},${z} at ${solid}`)[0];
+    expect(missed.ok === false && taken.ok !== false, `${model}: clicked only where its model is drawn`,
+      `beside it: ${missed.ok === false ? missed.err : "taken"}; on it: ${taken.ok === false ? taken.err : "taken"}`);
+  }
+  must(`server setblock ${x} ${ground} ${z} air`);
+}
+
 // Whether the console module at a block has its slice of the ring, asked twice a second apart: a server still busy
 // with a ship just built may let a question go unanswered.
 function sliceOfRing(at) {
@@ -3413,6 +3439,7 @@ const CHECKS = {
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
   "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
   "freighter-outside-solid": { run: checkFreighterOutsideSolid, about: "a freighter's cannon housing and big dish are stood on, and her parcel scanner's gantry stops whoever walks into it" },
+  "souvenir-shapes": { run: checkSouvenirShapes, about: "the rocket and freighter souvenir models are clicked only where they are drawn" },
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },

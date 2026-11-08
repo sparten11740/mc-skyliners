@@ -1170,7 +1170,8 @@ A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use i
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
 or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter. A Model Zeppelin, a silver
 cigar on its stand with its fins and its car, and a Model Freighter, a grey saucer with her prongs and her cockpit pod
-on a stand of her own, are in the creative tab.
+on a stand of her own, are in the creative tab. Each takes up only the room its model does, so it is picked out, and
+bumped into, where it is drawn.
 
 A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
