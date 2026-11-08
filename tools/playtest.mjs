@@ -434,6 +434,10 @@ const JUMP_CLEAR = 10;
 // The longest a server tick may take while she jumps, in milliseconds: loading the land at her pin all at once held one
 // for nearly four seconds.
 const JUMP_LONGEST_TICK = 1500;
+// The longest a frame of the game may take while she jumps, in milliseconds: Sable carrying the player aboard her the
+// whole jump in a tick, searching every block along it, held the picture for seconds and once for over half a minute,
+// the flash as she came out frozen on the screen; a jump's busiest frame took 20 to 90 ms on the Mac without that.
+const JUMP_LONGEST_FRAME = 1000;
 // Her jump watched from the ground: how far ahead of her the pin is set, in blocks along the ground, far enough for her
 // to jump and near enough for one watcher to see both ends; how far aside from her course the watcher stands, halfway
 // along it; and the least they must see of it: a flash at her middle and six round it at each end, a hundred specks of
@@ -2626,7 +2630,8 @@ function checkFreighterBoost() {
 // A freighter's hyperspace jump: flying along with no pin, her jump button says there is nowhere to jump to; flying to a
 // pin far off, a pillar of stone standing on it taller than she flies, the button spools her drive up, the land round
 // the pin loads as she spools without ever holding the server up, and she comes out over the pin, whoever pressed it
-// still aboard, her lowest block kept well clear over the pillar's top rather than in it.
+// still aboard, her lowest block kept well clear over the pillar's top rather than in it, and no frame of the game
+// held up.
 function checkFreighterJump() {
   const site = layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -2653,7 +2658,11 @@ function checkFreighterJump() {
   expect(Boolean(heard("*jump_drive_spool*", pressed, LOOK_EVERY)), "freighter: her jump button spools her drive up");
   // Waited out on the client's clock: a question for the server would wait behind the land loading at her pin.
   must(`wait ${JUMP_WITHIN}t`, BUILD_SECONDS);
-  const longest = must("perf stop").summary?.server?.mspt?.max ?? 0;
+  const { summary } = must("perf stop");
+  const longest = summary?.server?.mspt?.max ?? 0;
+  const longestFrame = summary?.client?.frame_ms?.max ?? 0;
+  expect(longestFrame < JUMP_LONGEST_FRAME, "freighter: her jump never holds the game up for whoever is aboard, the flash as she comes out clearing",
+    `longest frame ${round(longestFrame)} ms`);
   const out = freighterReport();
   const off = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
   expect(off < JUMP_NEAR, "freighter: she comes out of the jump over her pin", out ? `middle at ${out.middle}` : "no report");
