@@ -2,6 +2,8 @@ package dev.skyliners.console;
 
 import dev.skyliners.block.Mount;
 import dev.skyliners.block.MountedModule;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -9,6 +11,8 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Where a console module stands in its block, as the server reads a touch on it and the client draws it (see {@link
@@ -46,6 +50,12 @@ public record ConsoleShape(Mount mount, Direction facing, Vec3 innerLeft, Vec3 i
     public static final double HUNG_DROP = 0.5;
     /** How far up a plate on a wall or the face of a hung wedge its screen begins, as a share of the face. */
     public static final double SCREEN_FROM = 0.45;
+    /**
+     * How wide each strip of a slice's footprint is cut across its block, in blocks: a pixel, so the shape follows the
+     * slant of its edges to within one; and how thin a strip may be before it is left out, in blocks.
+     */
+    private static final double STRIP = 1.0 / 16;
+    private static final double EPSILON = 1e-4;
 
     /**
      * A console module's slice of the ring of a console laid round a ship's seats: the ring's middle, from the middle of
@@ -119,5 +129,52 @@ public record ConsoleShape(Mount mount, Direction facing, Vec3 innerLeft, Vec3 i
     /** Which of so many controls in a row along its desk a point falls at. */
     public int control(Vec3 point, int controls) {
         return Mth.clamp((int) Math.floor(across(point) * controls), 0, controls - 1);
+    }
+
+    /**
+     * What of a slice of a ring's desk stands in its block, to bump into and pick out: its footprint across the floor
+     * plan, between its near and far edges and its two ends, as far as it lies in its block, as high as the desk's top
+     * at its back; cut into strips {@link #STRIP} wide across the block, each as deep as the footprint reaches in it.
+     * What of the desk is drawn past its block, in the next one round the ring or out from it, is that block's to fill.
+     */
+    public VoxelShape deskShape() {
+        List<Vec3> footprint = List.of(innerLeft, innerRight, outerRight, outerLeft);
+        VoxelShape shape = Shapes.empty();
+        for (double x = 0; x < 1; x += STRIP) {
+            List<Vec3> strip = clip(clip(clip(clip(footprint, true, x, true), true, x + STRIP, false), false, 0, true), false, 1, false);
+            if (strip.size() < 3) {
+                continue;
+            }
+            double nearZ = strip.stream().mapToDouble(Vec3::z).min().orElse(0);
+            double farZ = strip.stream().mapToDouble(Vec3::z).max().orElse(0);
+            if (farZ - nearZ > EPSILON) {
+                shape = Shapes.or(shape, Shapes.box(x, 0, nearZ, x + STRIP, DESK_BACK, farZ));
+            }
+        }
+        return shape.optimize();
+    }
+
+    /**
+     * A footprint across the floor plan cut back to one side of a line straight across it: x or z (y unused) at least
+     * or at most so much, where the footprint crosses the line a corner set on it (Sutherland and Hodgman's way, one
+     * edge at a time). The footprint is convex, as a slice of a ring's desk is, so what is left is too.
+     */
+    private static List<Vec3> clip(List<Vec3> footprint, boolean alongX, double at, boolean keepAbove) {
+        List<Vec3> kept = new ArrayList<>();
+        for (int corner = 0; corner < footprint.size(); corner++) {
+            Vec3 from = footprint.get(corner);
+            Vec3 to = footprint.get((corner + 1) % footprint.size());
+            double fromOff = (alongX ? from.x : from.z) - at;
+            double toOff = (alongX ? to.x : to.z) - at;
+            boolean fromIn = keepAbove ? fromOff >= 0 : fromOff <= 0;
+            boolean toIn = keepAbove ? toOff >= 0 : toOff <= 0;
+            if (fromIn) {
+                kept.add(from);
+            }
+            if (fromIn != toIn) {
+                kept.add(from.lerp(to, fromOff / (fromOff - toOff)));
+            }
+        }
+        return kept;
     }
 }

@@ -3381,10 +3381,14 @@ public final class SkylinersRegistry {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).isValidSpawn(SkylinersRegistry::never);
     }
 
-    /** A module of the freighter's cockpit console, of a kind: dark metal, its screens and lamps glowing a little. */
+    /**
+     * A module of the freighter's cockpit console, of a kind: dark metal, its screens and lamps glowing a little. Its
+     * shape follows its slice of her console's ring, which its block entity keeps, so the game does not keep it by its
+     * state.
+     */
     private static DeferredBlock<ConsoleBlock> consoleModule(String name, ConsoleKind kind) {
         return BLOCKS.registerBlock(name, properties -> new ConsoleBlock(properties, kind),
-            metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(state -> CONSOLE_GLOW));
+            metal(MapColor.COLOR_GRAY).noOcclusion().dynamicShape().lightLevel(state -> CONSOLE_GLOW));
     }
 
     /** A mocktail's nourishment, a sip's, drunk whenever it is wanted, the lift it gives added to it. */

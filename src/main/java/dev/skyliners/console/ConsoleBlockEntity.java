@@ -2,6 +2,8 @@ package dev.skyliners.console;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.block.Mount;
+import dev.skyliners.block.MountedModule;
 import dev.skyliners.block.Turning;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -15,6 +17,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * What a console module keeps (see {@link ConsoleBlock}): its slice of the ring of a console laid round a ship's seats,
@@ -33,6 +36,9 @@ public class ConsoleBlockEntity extends BlockEntity {
     private BlockPos autopilot;
     private int toggles;
     private long touched = NEVER;
+    /** Its slice's desk as it stands in its block (see {@link ConsoleShape#deskShape}), worked out once; not saved. */
+    @Nullable
+    private VoxelShape deskShape;
 
     public ConsoleBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.CONSOLE_ENTITY.get(), pos, state);
@@ -45,6 +51,7 @@ public class ConsoleBlockEntity extends BlockEntity {
     public void arc(ConsoleShape.Facet slice, @Nullable BlockPos toAutopilot, Rotation rotation) {
         facet = slice.turned(rotation);
         autopilot = toAutopilot == null ? null : toAutopilot.rotate(rotation);
+        deskShape = null;
         setChanged();
     }
 
@@ -57,6 +64,21 @@ public class ConsoleBlockEntity extends BlockEntity {
     /** Where it stands in its block (see {@link ConsoleShape}). */
     public ConsoleShape shape() {
         return ConsoleShape.of(getBlockState(), facet);
+    }
+
+    /**
+     * What of its desk stands in its block, to bump into and pick out, for a slice of a console's ring on a floor (see
+     * {@link ConsoleShape#deskShape}); null for one put up by hand, which fills its own block.
+     */
+    @Nullable
+    public VoxelShape deskShape() {
+        if (facet == null || MountedModule.of(getBlockState()) != Mount.FLOOR) {
+            return null;
+        }
+        if (deskShape == null) {
+            deskShape = shape().deskShape();
+        }
+        return deskShape;
     }
 
     /**
@@ -150,6 +172,7 @@ public class ConsoleBlockEntity extends BlockEntity {
         } else {
             facet = null;
         }
+        deskShape = null;
         autopilot = tag.contains("Autopilot") ? Turning.turn(BlockPos.of(tag.getLong("Autopilot")), turn) : null;
         toggles = tag.getInt("Toggles");
         touched = tag.contains("Touched") ? tag.getLong("Touched") : NEVER;

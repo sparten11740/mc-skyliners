@@ -330,7 +330,9 @@ inside as one cone of tinted glass, darkening with that pane, framed by ribs. `F
 her control head, a `ConsoleBlock` of each `ConsoleKind` (in `console/`) in the block each slice's middle falls in, its
 `ConsoleBlockEntity` told its slice of the ring (`ConsoleShape.Facet`) and the way to her head through a `Fitting`;
 `ConsoleShape` says where a module stands in its block, a slice, a desk of its own, a plate or a wedge, for the server to
-read a touch on its toggles and the client's `ConsoleRenderer` to draw it, its casing by `ConsoleCasing`, the shading
+read a touch on its toggles and the client's `ConsoleRenderer` to draw it, and a slice's shape in its block
+(`ConsoleShape.deskShape`, kept by its block entity, so the block's shape is dynamic), its casing by `ConsoleCasing`,
+the shading
 rolled round the ring, and its screens and controls by `ConsoleArt`, from the autopilot and `SableClient.attitude`. Her
 boost is `FreighterFlight.boost`, her pilot firing her mains flat out while it lasts (`FreighterPilot.Boost`), the
 clients shown when it ends to draw it. Her hyperspace jump is `FreighterJump`, owned by `FreighterFlight` and asked for

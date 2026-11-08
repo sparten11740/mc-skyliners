@@ -2611,7 +2611,8 @@ to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along
 controls and rows of small blinking lamps, and over it a row of screens leaning back toward the seats, every module
 turned toward her middle so whichever seat you fly from it faces you. Left to right: the climb button before the
 pilot, her flight readouts, the boost button, the scanner, the hyperspace jump button, her engines and a bank of toggles.
-From either seat every module is pressed where it is seen, over the desks between, so a pilot alone reaches them all.
+From either seat every module is pressed where it is seen, over the desks between, so a pilot alone reaches them all,
+and each is as solid as its desk is drawn: the room in front of it neither stops you nor takes a click.
 Every reading has its own picture, a bar or a needle beside its figure, so none needs reading: her speed with chevrons,
 her
 height with a peak, her climb with an arrow turned up in green or down in amber, and her heading as a needle in a ring

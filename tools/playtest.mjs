@@ -230,6 +230,11 @@ const BUMP_MOVED = 0.5;
 // Where on a console module of a freighter its desk is aimed at, as a point of its block from 0 to 1 across, up and
 // along: the middle of its desk's top, which is drawn a little over four fifths of a block up at its back.
 const DESK_TOP_AT = "0.5,0.8,0.5";
+// Walking at a freighter's scanner module from her control head: how far out from its middle to start, in blocks,
+// clear of the head; and how far past its middle, toward the head, the player may be stopped at most, in blocks: its
+// desk begins just short of its middle, where it was its block's face, half a block out, that stopped them.
+const DESK_FROM = 1.15;
+const DESK_STOPS_WITHIN = 0.5;
 // How fast blocks are ticked at random while a freighter's ramp's deck is watched, as the game rule has it, and for
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
@@ -2141,6 +2146,22 @@ function checkFreighterSolid() {
   }
 }
 
+// A freighter's console is as solid as it is drawn: walked at from her control head, her scanner module's desk stops
+// the player at its near edge, just short of its block's middle. With the fault its whole block was solid, and its
+// desk's empty room in front of it stopped them half a block short, and took clicks meant for what is beyond.
+function checkFreighterConsoleSolid() {
+  ship("freighter");
+  const [scanner] = must("find skyliners:console_scanner 128 1").rows;
+  const towardHead = scanner && STEPS[must(`block ${scanner.at_abs.join(",")}`).props.facing ?? "north"];
+  if (!scanner || !clearWay(scanner.at_abs, towardHead, 1)) {
+    expect(false, "freighter: her console has its scanner module, with open floor between it and her control head");
+    return;
+  }
+  const { along } = bumpInto(scanner.at_abs, towardHead, DESK_FROM);
+  expect(along < DESK_STOPS_WITHIN && along < DESK_FROM - BUMP_MOVED, "freighter: walked at from her control head, her scanner module stops the player at its desk",
+    `${along} blocks short of its block's middle`);
+}
+
 // Whether the console module at a block has its slice of the ring, asked twice a second apart: a server still busy
 // with a ship just built may let a question go unanswered.
 function sliceOfRing(at) {
@@ -3342,6 +3363,7 @@ const CHECKS = {
   "freighter-leds": { run: checkFreighterLeds, about: "a freighter's rooms each have LED strips and a panel, each room a colour and a floor of its own, out to her prongs' tips and her cockpit" },
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
+  "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },

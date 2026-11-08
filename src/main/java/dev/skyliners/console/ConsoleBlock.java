@@ -52,9 +52,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final EnumProperty<Mount> MOUNT = MountedModule.MOUNT;
     /**
-     * Its shapes drawn facing north: a desk across its block as high as the desk's top is drawn at its back, so the one
-     * beyond it round her ring is pressed where it is seen over it rather than this one's empty room over its desk
-     * taking the click; a plate against a wall; a wedge under a ceiling.
+     * Its shapes drawn facing north, put up by hand: a desk across its block as high as the desk's top is drawn at its
+     * back, so the one beyond it round her ring is pressed where it is seen over it rather than this one's empty room
+     * over its desk taking the click; a plate against a wall; a wedge under a ceiling.
      */
     private static final VoxelShape DESK = Block.box(0, 0, 0, 16, ConsoleShape.DESK_BACK * 16, 16);
     private static final VoxelShape PLATE = Block.box(0, 0, 13, 16, 16, 16);
@@ -105,9 +105,14 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
         return RenderShape.INVISIBLE;
     }
 
+    /**
+     * A slice of a console's ring is as solid as its desk is drawn in its block, which only its block entity knows (see
+     * {@link ConsoleBlockEntity#deskShape}); one put up by hand, or asked with no block entity to hand, its whole desk.
+     */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(MountedModule.of(state)).get(state.getValue(FACING));
+        VoxelShape slice = level.getBlockEntity(pos) instanceof ConsoleBlockEntity console ? console.deskShape() : null;
+        return slice != null ? slice : SHAPES.get(MountedModule.of(state)).get(state.getValue(FACING));
     }
 
     /** No shadow on the floor round it: what is drawn of it is smaller than its block. */
