@@ -340,7 +340,8 @@ her control head, a `ConsoleBlock` of each `ConsoleKind` (in `console/`) in the 
 read a touch on its toggles and the client's `ConsoleRenderer` to draw it, and a slice's shape in its block
 (`ConsoleShape.deskShape`, kept by its block entity, so the block's shape is dynamic), its casing by `ConsoleCasing`,
 the shading
-rolled round the ring, and its screens and controls by `ConsoleArt`, from the autopilot and `SableClient.attitude`. Her
+rolled round the ring, and its screens and controls by `ConsoleArt`, from the autopilot and `SableClient.attitude`,
+every module's screen shapes and controls drawn together after the level's block entities (`BatchedBuffers`). Her
 boost is `FreighterFlight.boost`, her pilot firing her mains flat out while it lasts (`FreighterPilot.Boost`), the
 clients shown when it ends to draw it. Her hyperspace jump is `FreighterJump`, owned by `FreighterFlight` and asked for
 by the jump console: her `JumpDriveBlock` spooled through `spoolForJump`, the land round the pin loaded by a region

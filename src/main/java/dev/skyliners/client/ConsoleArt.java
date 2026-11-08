@@ -1,7 +1,9 @@
 package dev.skyliners.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.skyliners.Skyliners;
 import dev.skyliners.autopilot.FreighterClimbBoost;
@@ -16,10 +18,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 /**
@@ -42,6 +47,27 @@ import org.joml.Matrix4f;
  * and only one lamp blinks.
  */
 final class ConsoleArt {
+    /**
+     * The screens' shapes, as vanilla's text backgrounds, and the controls, as vanilla's cut-out quads on its white
+     * texture, every module's drawn together (see {@link BatchedBuffers}). The shapes are still sorted as vanilla's
+     * are, so each lies over the others as it did.
+     */
+    private static final RenderType SHAPES = RenderType.create(Skyliners.MOD_ID + "_console_shapes", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.RENDERTYPE_TEXT_BACKGROUND_SHADER)
+            .setTextureState(RenderStateShard.NO_TEXTURE)
+            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+            .setLightmapState(RenderStateShard.LIGHTMAP)
+            .createCompositeState(false));
+    private static final RenderType CONTROLS = RenderType.create(Skyliners.MOD_ID + "_console_controls", DefaultVertexFormat.NEW_ENTITY,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, true, false, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_CUTOUT_NO_CULL_SHADER)
+            .setTextureState(new RenderStateShard.TextureStateShard(FlatQuads.WHITE, false, false))
+            .setTransparencyState(RenderStateShard.NO_TRANSPARENCY)
+            .setCullState(RenderStateShard.NO_CULL)
+            .setLightmapState(RenderStateShard.LIGHTMAP)
+            .setOverlayState(RenderStateShard.OVERLAY)
+            .createCompositeState(true));
     /** Each layer of a face drawn just off the one under it, in blocks. */
     private static final float LAYER = 0.002F;
     /**
@@ -148,7 +174,7 @@ final class ConsoleArt {
     /** A module's screen, on its face. */
     static void screen(ConsoleKind kind, PoseStack pose, MultiBufferSource buffers, double width, double height, Readings readings) {
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         double half = width / 2;
         ScreenDrawing.rect(shapes, matrix, -half, 0, half, height, LAYER, GLASS_EDGE);
         ScreenDrawing.rect(shapes, matrix, -half + LAYER, LAYER, half - LAYER, height - LAYER, 2 * LAYER, GLASS);
@@ -193,7 +219,7 @@ final class ConsoleArt {
      */
     private static void readouts(PoseStack pose, MultiBufferSource buffers, double width, double height, Readings readings) {
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         double cellW = width / 2;
         double cellH = height / 2;
         bar(shapes, matrix, -cellW, cellH, cellW, cellH, readings.speed() / SPEED_FULL, GREEN);
@@ -255,7 +281,7 @@ final class ConsoleArt {
      * is touched.
      */
     private static void scope(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         double radius = Math.min(width, height) / 2 * 0.9;
         double y = height / 2;
         ScreenDrawing.disc(shapes, matrix, 0, y, radius, 32, 3 * LAYER, GREEN_DIM);
@@ -342,7 +368,7 @@ final class ConsoleArt {
      * mains' in amber, and her boost, full and pulsing orange as it fires, filling red as it rests, green when ready.
      */
     private static void gauges(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         double slot = width / 3;
         FreighterFlight.BoostShown boost = readings.boost();
         double boostFill = switch (boost.stage()) {
@@ -382,7 +408,7 @@ final class ConsoleArt {
      * lit in its lamp's colour while it is up, and the bottom row blinking to itself.
      */
     private static void annunciators(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         int columns = ConsoleKind.SWITCHES.controls();
         double cellW = width / columns;
         for (int column = 0; column < columns; column++) {
@@ -405,7 +431,7 @@ final class ConsoleArt {
      * with a bar running down under them, red while it rests with a ring of segments lighting one by one round them.
      */
     private static void boostScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         FreighterFlight.BoostShown boost = readings.boost();
         double size = Math.min(width, height) * 0.3;
         double y = height * 0.55;
@@ -433,7 +459,7 @@ final class ConsoleArt {
      * round it lighting one by one.
      */
     private static void jumpScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         FreighterFlight.JumpShown jump = readings.jump();
         double size = Math.min(width, height) * 0.28;
         double y = height * 0.5;
@@ -455,7 +481,7 @@ final class ConsoleArt {
      * while it rests with a ring of segments lighting one by one round it.
      */
     private static void climbScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         FreighterClimbBoost.Shown climb = readings.climbBoost();
         double size = Math.min(width, height) * 0.3;
         double y = height * 0.55;
@@ -561,7 +587,7 @@ final class ConsoleArt {
      */
     static void controls(ConsoleKind kind, PoseStack pose, MultiBufferSource buffers, double width, double height, int light, Readings readings,
                          ConsoleBlockEntity console) {
-        VertexConsumer solid = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
+        VertexConsumer solid = buffers.getBuffer(CONTROLS);
         int count = kind.controls();
         double slot = width / count;
         for (int control = 0; control < count; control++) {
@@ -684,7 +710,7 @@ final class ConsoleArt {
      * lit a moment after a touch, as a lamp test; with none, all dark but one blinking slowly green.
      */
     private static void lamps(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
-        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        VertexConsumer shapes = shapes(buffers);
         double y = height - LAMP_IN;
         boolean testing = readings.sinceTouched() >= 0 && readings.sinceTouched() < PING_TICKS;
         for (int lamp = 0; lamp < LAMPS; lamp++) {
@@ -703,6 +729,21 @@ final class ConsoleArt {
         }
         boolean lit = lamp % 3 == 0 || ((int) (readings.ticks() / (BLINK + lamp * 2)) + lamp) % 3 != 0;
         return lit ? LAMP_COLOURS[lamp % LAMP_COLOURS.length] : UNLIT;
+    }
+
+    /** The buffer the screens' shapes go into. */
+    private static VertexConsumer shapes(MultiBufferSource buffers) {
+        return buffers.getBuffer(SHAPES);
+    }
+
+    /** Gives the screens' shapes and the controls buffers of their own, which every module adds to through a frame. */
+    static void registerBuffers(RegisterRenderBuffersEvent event) {
+        BatchedBuffers.register(event, SHAPES, CONTROLS);
+    }
+
+    /** Draws every module's screens' shapes and controls together, once the level's block entities are drawn. */
+    static void drawBatched(RenderLevelStageEvent event) {
+        BatchedBuffers.draw(event, SHAPES, CONTROLS);
     }
 
     /** A colour as bright as a share of itself, its alpha kept. */

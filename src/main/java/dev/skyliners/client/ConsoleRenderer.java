@@ -25,6 +25,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * Draws a freighter console module (see {@link ConsoleBlock}), its block having no model of its own: its casing as it
@@ -54,6 +56,12 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
     private final Map<BlockPos, Found> found = new HashMap<>();
 
     private record Found(long tick, List<ConsoleArt.Blip> blips) {
+    }
+
+    /** Hooks in the buffers its screens' shapes and controls go into, every module's drawn together once a frame. */
+    public static void register(IEventBus modEventBus) {
+        modEventBus.addListener(ConsoleArt::registerBuffers);
+        NeoForge.EVENT_BUS.addListener(ConsoleArt::drawBatched);
     }
 
     @Override

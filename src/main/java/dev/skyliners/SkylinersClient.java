@@ -309,6 +309,8 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(HyperspaceWakes::tick);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
+        // A freighter's console: its screens' shapes and its controls drawn together, once a frame.
+        ConsoleRenderer.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::tick);
         NeoForge.EVENT_BUS.addListener(HullAmbience::tick);
