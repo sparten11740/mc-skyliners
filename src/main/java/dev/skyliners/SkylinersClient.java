@@ -311,6 +311,7 @@ public final class SkylinersClient {
         LedLights.register(modEventBus);
         // A freighter's console: its screens' shapes and its controls drawn together, once a frame.
         ConsoleRenderer.register(modEventBus);
+        CanopyLiningRenderer.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::tick);
         NeoForge.EVENT_BUS.addListener(HullAmbience::tick);

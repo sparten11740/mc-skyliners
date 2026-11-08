@@ -1,11 +1,16 @@
 package dev.skyliners.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import dev.skyliners.Skyliners;
 import dev.skyliners.block.CanopyLiningBlockEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -15,6 +20,10 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector3f;
 
 /**
@@ -33,6 +42,20 @@ import org.joml.Vector3f;
  * her blocks, the skin's thickness her surface.
  */
 public class CanopyLiningRenderer implements BlockEntityRenderer<CanopyLiningBlockEntity> {
+    /**
+     * Her canopy's glass, as vanilla's culled translucent entity type but in a buffer of its own, drawn once the
+     * translucent blocks are (see {@link #drawGlass}). Drawn through vanilla's shared buffer it was drawn, and wrote its
+     * depth, before her console's screens and controls, which are drawn together once the block entities are (see
+     * {@link ConsoleArt}), so from outside the cockpit the console behind the glass was left out altogether.
+     */
+    private static final RenderType GLASS_TYPE = RenderType.create(Skyliners.MOD_ID + "_canopy_glass", DefaultVertexFormat.NEW_ENTITY,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, true, true, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_TRANSLUCENT_CULL_SHADER)
+            .setTextureState(new RenderStateShard.TextureStateShard(FlatQuads.WHITE, false, false))
+            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+            .setLightmapState(RenderStateShard.LIGHTMAP)
+            .setOverlayState(RenderStateShard.OVERLAY)
+            .createCompositeState(true));
     /** How many flat faces go round the dome, along its shoulder and across its front, so its curve shows no facets. */
     private static final int ROUND = 72;
     private static final int ALONG = 12;
@@ -119,8 +142,28 @@ public class CanopyLiningRenderer implements BlockEntityRenderer<CanopyLiningBlo
         ribs(ribs, at, frame, lights);
         rivets(ribs, at, frame, light);
         lamps(ribs, at, frame);
-        VertexConsumer glass = buffers.getBuffer(RenderType.entityTranslucentCull(FlatQuads.WHITE));
+        VertexConsumer glass = buffers.getBuffer(GLASS_TYPE);
         glass(glass, at, frame, new Sheen(GLASS[Mth.clamp(lining.darkness(), 0, GLASS.length - 1)], at), lights);
+    }
+
+    /** Hooks in the buffer her canopy's glass goes into, drawn once a frame after everything it lies in front of. */
+    public static void register(IEventBus modEventBus) {
+        modEventBus.addListener(CanopyLiningRenderer::registerGlass);
+        NeoForge.EVENT_BUS.addListener(CanopyLiningRenderer::drawGlass);
+    }
+
+    private static void registerGlass(RegisterRenderBuffersEvent event) {
+        event.registerRenderBuffer(GLASS_TYPE);
+    }
+
+    /**
+     * Draws every canopy's glass for the frame once the translucent blocks are, after the block entities and what they
+     * draw together, so whatever stands behind it is drawn first and seen through it.
+     */
+    private static void drawGlass(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            Minecraft.getInstance().renderBuffers().bufferSource().endBatch(GLASS_TYPE);
+        }
     }
 
     /** The whole canopy, from its rim behind the base to its front. */
