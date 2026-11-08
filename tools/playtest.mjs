@@ -480,13 +480,16 @@ const WEATHER_SETTLED_WITHIN = 5;
 const ROCK_HARDER = 1.5;
 // Shooting at space rocks from a freighter's laser cannon: how near the cannon's sight a rock flying in must have come
 // before it is aimed at, in blocks, inside the 256 its bolts reach a rock; how far ahead of it the sight is aimed, in
-// ticks of its flight, for it to fly into the sight; how long after aiming the rocket is launched, inside the 30 ticks
+// ticks of its flight, for it to fly into the sight, how many tries it gets at shooting one down, and how long its
+// pods are given to load again between tries, in ticks; how long after aiming the rocket is launched, inside the 30 ticks
 // the sight's lock on a rock holds, and how long it is given to strike, in ticks; how many bolts are fired at a rock
 // to knock it off its course without breaking it, and how long after aiming the first is fired, in ticks; how long she
 // is given to settle from one storm before the next, in ticks; and how long a bout of space weather is waited for to
 // blow over at most, in ticks, with its last rocks flying in.
 const ROCK_AIM_WITHIN = 200;
 const ROCK_AIM_AHEAD = 14;
+const ROCK_AIM_TRIES = 3;
+const ROCK_RELOAD_TICKS = 180;
 const ROCK_LAUNCH_AFTER = 18;
 const ROCK_ROCKET_TICKS = 80;
 const ROCK_BOLTS = 2;
@@ -3017,7 +3020,8 @@ function atTheGun(freighter) {
     expect(false, "space rocks: she has a laser cannon and a gunner's seat under it");
     return false;
   }
-  must(`sable:tp ${seat.join(",")}; wait 20t; use ${seat.join(",")}; wait 20t`);
+  must(`sable:tp ${seat.join(",")}; wait 20t`);
+  sitAt(seat);
   const seated = gunnerSight() !== undefined;
   expect(seated, "space rocks: the player sits at her laser cannon, seeing from its sight");
   return seated;
@@ -3080,9 +3084,32 @@ function spinIn(rows) {
   return Math.max(0, ...rates);
 }
 
+// Aims the cannon's sight ahead of a rock flying in to strike her as it comes into its reach and launches two rockets
+// at it, a rock at a time, until one bursts or it has tried ROCK_AIM_TRIES times; what the sight said as each pair was
+// launched, the last first, and what it says after. She may still be turning from a strike, so the look in the world
+// drifts under a sight held still in her frame, and a try can miss.
+function shootRocks(before) {
+  const tries = [];
+  for (let tried = 0; tried < ROCK_AIM_TRIES; tried++) {
+    const coming = rockWithin(ROCK_AIM_WITHIN);
+    if (!coming) {
+      break;
+    }
+    const sights = send(`${aimAhead(coming, ROCK_AIM_AHEAD)}; wait ${ROCK_LAUNCH_AFTER}t; skyliners:gunner; key press key.use; wait 6t; key press key.use; `
+      + `wait ${ROCK_ROCKET_TICKS}t; skyliners:gunner`, BUILD_SECONDS).filter((reply) => "on" in reply);
+    tries.unshift(sights);
+    if (must("skyliners:spaceweather").shot_down > before.shot_down) {
+      break;
+    }
+    must(`wait ${ROCK_RELOAD_TICKS}t`);
+  }
+  return tries;
+}
+
 // Space rocks shot down: a freighter hovering at y 1,600, the player at her laser cannon and an asteroid storm brought
 // over her; aimed at a rock flying in to strike her, the cannon's sight locks on to it, and rockets launched at it home
-// in and burst it: the server counts it shot down, and the player's client is told so, drawing it no more.
+// in and burst it, at the third try at the latest: the server counts it shot down, and the player's client is told so,
+// drawing it no more.
 function checkSpaceRocksShot() {
   const freighter = freighterInSpace("space rocks");
   if (!freighter || !atTheGun(freighter)) {
@@ -3091,15 +3118,8 @@ function checkSpaceRocksShot() {
   const before = must("skyliners:spaceweather");
   const asked = must("skyliners:spaceweather start=asteroid_storm");
   expect(asked.started === "coming", "space rocks: an asteroid storm is brought over her", `${asked.started}`);
-  const coming = rockWithin(ROCK_AIM_WITHIN);
-  expect(coming, "space rocks: a rock flies in to strike her, into her cannon's reach");
-  if (!coming) {
-    return;
-  }
-  const replies = send(`${aimAhead(coming, ROCK_AIM_AHEAD)}; wait ${ROCK_LAUNCH_AFTER}t; skyliners:gunner; key press key.use; wait 6t; key press key.use; `
-    + `wait ${ROCK_ROCKET_TICKS}t; skyliners:gunner`, BUILD_SECONDS);
-  const [aimed, after] = replies.filter((reply) => "on" in reply);
-  expect(aimed?.locked === true, "space rocks: aimed at from her cannon's sight, the sight locks on to the rock");
+  const [[aimed, after] = []] = shootRocks(before);
+  expect(aimed?.locked === true, "space rocks: aimed at a rock flying in to strike her, her cannon's sight locks on to it");
   const weather = must("skyliners:spaceweather");
   expect(weather.shot_down > before.shot_down, "space rocks: rockets launched at it home in and burst it", `${weather.shot_down - before.shot_down} burst`);
   expect(after?.bursts_seen > 0, "space rocks: the player's client is told it burst, and draws it no more", `${after?.bursts_seen} seen burst`);
