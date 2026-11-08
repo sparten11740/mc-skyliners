@@ -425,6 +425,9 @@ const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines",
 // apart the corners are laid along the site, in blocks.
 const FAIRING_STAND_OFF = 2.5;
 const FAIRING_APART = 6;
+// A transponder's pictures for space, as it saves them, and how long a pick is given to reach the server, in ticks.
+const SPACE_PICTURES = ["ROCKET", "FREIGHTER", "FIGHTER", "STATION", "SATELLITE", "PLANET", "UFO", "ASTEROID"];
+const PICK_TICKS = 5;
 // Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
 // much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
 // speed, in ticks, and how near, in blocks a second.
@@ -3514,6 +3517,25 @@ function checkConsoleMounts() {
   }
 }
 
+// A transponder's panel: every picture's button is on the screen, the panel not running off it, and each picks a
+// picture of its own, which the transponder keeps, the pictures for space among them.
+function checkTransponderPictures() {
+  creative();
+  const x = nextSite++ * SITE_APART;
+  must(`server tp @p ${x + 0.5} ${ground} 0.5 0 0; wait ${CHUNKS_TICKS}t; server setblock ${x} ${ground} 2 skyliners:transponder[facing=north]`);
+  const panel = must(`wait 5t; use ${x},${ground},2; wait 10t; screen`);
+  const [width, height] = panel.size ?? [0, 0];
+  const buttons = (panel.rows ?? []).filter((row) => row.kind === "IconChoice");
+  const offScreen = buttons.filter(({ bounds: [left, top, w, h] }) => left < 0 || top < 0 || left + w > width || top + h > height);
+  expect(panel.screen === "transponder" && offScreen.length === 0, "transponder: every picture's button is on the screen",
+    `${buttons.length} buttons, off it: ${offScreen.map((row) => row.label).join(", ") || "none"}`);
+  const picked = buttons.map((row) => must(`click ${row.key}; wait ${PICK_TICKS}t; nbt ${x},${ground},2`).value?.Icon);
+  expect(new Set(picked).size === buttons.length, "transponder: each button picks a picture of its own, and it keeps it", picked.join(" "));
+  const missing = SPACE_PICTURES.filter((name) => !picked.includes(name));
+  expect(missing.length === 0, "transponder: the pictures for space are among them", missing.length ? `missing ${missing.join(", ")}` : "");
+  send("?close");
+}
+
 // A freighter's jump drive in engineering: used, it spools up and fires, or sputters until thumped, when it fires; and
 // it shows which by its block, running or sputtering, as its rings do.
 function checkFreighterJumpDrive() {
@@ -5256,6 +5278,7 @@ const CHECKS = {
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "turret-throws-players": { run: checkTurretThrowsPlayers, about: "a laser cannon's rocket throws a player far, flying in creative mode unhurt, in survival hurt and landing under their canopy" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
+  "transponder-pictures": { run: checkTransponderPictures, about: "a transponder's panel shows every picture on the screen, the space ones among them, and each picks and keeps its own" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },
   "freighter-rain": { run: checkFreighterRain, about: "rain over a freighter neither falls in her cockpit nor splashes inside her canopy, seen from her seat" },
