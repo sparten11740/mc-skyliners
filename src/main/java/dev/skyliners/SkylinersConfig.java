@@ -852,9 +852,10 @@ public final class SkylinersConfig {
             .define("turretBlasts", true);
         FREIGHTER_TURRET_THROWS_PLAYERS = builder
             .comment(
-                "Whether a laser cannon's bolts and rockets throw players they strike, or go off near, far and high, without",
-                "hurting them, never anyone aboard the cannon's own ship; whoever is thrown comes down unhurt, under their",
-                "safety canopy (see safetyCanopy) or floating down slowly.",
+                "Whether a laser cannon's bolts and rockets throw players they strike, or go off near, far and high, in creative",
+                "mode too, hurting them as they do hostile mobs unless they are in creative mode, never anyone aboard the cannon's",
+                "own ship; whoever is thrown comes down unhurt by the fall, under their safety canopy (see safetyCanopy) or",
+                "floating down slowly.",
                 "Without it, they pass players by as before."
             )
             .define("turretThrowsPlayers", true);

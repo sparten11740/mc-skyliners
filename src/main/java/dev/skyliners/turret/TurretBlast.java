@@ -2,6 +2,7 @@ package dev.skyliners.turret;
 
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.item.LaserFire;
 import dev.skyliners.parachute.SafetyCanopy;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -30,9 +31,10 @@ import net.minecraft.world.phys.Vec3;
  * The blast where a laser cannon's bolt strikes a block (see {@link LaserCannonBlockEntity}), and where one of its
  * rockets goes off (see {@link CannonRocket}): an explosion that knocks out the blocks round it, as a well-aimed cannon
  * should, but never a block of any ship, the cannon's own above all, and like the bolt itself it hurts only hostile
- * mobs, never a player, a villager, a pet, an animal or anyone aboard her. It throws players near it far and high,
- * unhurt, as a bolt striking one does (see {@link #throwStruck}), and they come down unhurt after; never anyone
- * aboard her, and none with the server config's {@code freighter.turretThrowsPlayers} off. It breaks blocks as TNT
+ * mobs, never a villager, a pet, an animal or anyone aboard her. It throws players near it far and high, in creative
+ * mode or flying too, as a bolt striking one does (see {@link #throwStruck}), hurting them as it does a mob unless
+ * they are in creative mode, and they come down unhurt by the fall after; never anyone aboard her, and none with the
+ * server config's {@code freighter.turretThrowsPlayers} off, when it leaves players be. It breaks blocks as TNT
  * does, by the world's rules for TNT; none with the server config's {@code freighter.turretBlasts} off, when a
  * rocket's still hurts hostile mobs.
  */
@@ -71,18 +73,20 @@ final class TurretBlast {
         Vec3 back = from.subtract(struck).normalize().scale(BACK_OFF);
         Vec3 at = struck.add(back);
         level.explode(shooter, null, new Spared(notAboard), at.x, at.y, at.z, POWER, false, Level.ExplosionInteraction.TNT);
-        floatDownAround(level, at, POWER, notAboard);
+        afterBlast(level, at, POWER, notAboard);
     }
 
     /**
-     * A bolt striking a player, not aboard the cannon's ship, throws them far along its way and up, unhurt, to come
-     * down unhurt after.
+     * A bolt striking a player, not aboard the cannon's ship, hurts them so much, by whoever fired it, unless they are
+     * in creative mode, and throws them far along its way and up, flying or not, to come down unhurt by the fall after.
      */
-    static void throwStruck(HitResult hit, Vec3 along, Predicate<Entity> notAboard) {
+    static void throwStruck(ServerLevel level, @Nullable Entity shooter, HitResult hit, Vec3 along, Predicate<Entity> notAboard,
+                            float damage) {
         if (!(hit instanceof EntityHitResult struck) || !throwsPlayer(struck.getEntity(), notAboard)) {
             return;
         }
         Player player = (Player) struck.getEntity();
+        LaserFire.hurtPlayer(level, shooter, player, damage);
         Vec3 way = along.normalize();
         player.setDeltaMovement(player.getDeltaMovement().add(way.x * BOLT_THROW, Math.max(0, way.y) * BOLT_THROW + BOLT_LIFT, way.z * BOLT_THROW));
         player.hurtMarked = true;
@@ -95,10 +99,16 @@ final class TurretBlast {
             && notAboard.test(player);
     }
 
-    /** Lets the players a blast of so much power threw come down unhurt after it. */
-    private static void floatDownAround(ServerLevel level, Vec3 at, float power, Predicate<Entity> notAboard) {
+    /**
+     * The players a blast of so much power threw, after it: thrown as well where they fly in creative mode, which the
+     * game's blast leaves standing, by telling their game the throw it gave them; and come down unhurt by the fall.
+     */
+    private static void afterBlast(ServerLevel level, Vec3 at, float power, Predicate<Entity> notAboard) {
         AABB near = AABB.ofSize(at, 0, 0, 0).inflate(power * THROWN_REACH);
         for (Player player : level.getEntitiesOfClass(Player.class, near, player -> throwsPlayer(player, notAboard))) {
+            if (player.getAbilities().flying) {
+                player.hurtMarked = true;
+            }
             floatDown(player);
         }
     }
@@ -126,12 +136,12 @@ final class TurretBlast {
         Level.ExplosionInteraction breaking = breaks ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE;
         level.explode(rocket, null, new Spared(notAboard), at.x, at.y, at.z, ROCKET_POWER, false, breaking, ParticleTypes.EXPLOSION,
             ParticleTypes.EXPLOSION, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
-        floatDownAround(level, at, ROCKET_POWER, notAboard);
+        afterBlast(level, at, ROCKET_POWER, notAboard);
     }
 
     /**
-     * What the blast may break and whom it may hurt or throw: no ship's blocks; only hostile mobs not aboard hurt, and
-     * players not aboard thrown far, unhurt.
+     * What the blast may break and whom it may hurt or throw: no ship's blocks; hostile mobs not aboard hurt, and
+     * players not aboard thrown far and hurt too unless they are in creative mode.
      */
     private static final class Spared extends ExplosionDamageCalculator {
         private final Predicate<Entity> notAboard;
@@ -148,7 +158,7 @@ final class TurretBlast {
 
         @Override
         public boolean shouldDamageEntity(Explosion explosion, Entity entity) {
-            return hurts(entity);
+            return hurts(entity) || throwsPlayer(entity, notAboard) && !((Player) entity).getAbilities().invulnerable;
         }
 
         @Override

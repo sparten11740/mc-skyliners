@@ -2924,10 +2924,10 @@ a second with a crack each, sparks wherever they strike, and where one meets a b
 knocks out the blocks round it, as TNT does by the world's own rules for TNT, but never a block of any ship, her own
 least of all; bolts and blasts alike hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard
 her, and attack does nothing else while you sit there, so the dome's glass is safe. A player a bolt strikes, though,
-or who stands near where one goes off, is thrown far and high, unhurt, and comes down safely: once they fall a few
-blocks their safety canopy opens over them as it does off a zeppelin, however high up they were thrown from, off
-another ship even. Nobody aboard her is ever thrown, and `freighter.turretThrowsPlayers` lets bolts and rockets pass
-players by as before. Every bolt heats the cannon and it
+or who stands near where one goes off, is thrown far and high, flying in creative mode too, and hurt as a mob is
+unless they are in creative mode; the fall never hurts them: once they fall a few blocks their safety canopy opens
+over them as it does off a zeppelin, however high up they were thrown from, off another ship even. Nobody aboard her
+is ever thrown or hurt, and `freighter.turretThrowsPlayers` lets bolts and rockets pass players by as before. Every bolt heats the cannon and it
 cools once you let go a moment: twenty bolts in a row and it overheats with a hiss, holding its fire a couple of seconds
 until it has cooled right down. Its heat shows on the barrels, as weathered as her hull, finned jackets and heat-blued
 steel to blackened crowns: the emitter in each crown, three coils behind it and a channel along the barrel glow red at
@@ -2949,7 +2949,7 @@ by the mob it chases, or after four seconds in the air, it goes off with a flash
 bang heard far off, shaking the view of anyone near: a blast as strong as a creeper's that knocks out blocks round it as
 TNT does, by the world's own rules for TNT, but never a block of any ship, and hurts hostile mobs only, never players,
 villagers, pets, animals or anyone aboard her. A rocket goes off on a player not aboard her too, its blast throwing
-them, and anyone else near, far and high, unhurt, as a bolt does. Once she flies, rockets fly straight through her own
+them, and anyone else near, far and high, as a bolt does, hurting them unless they are in creative mode. Once she flies, rockets fly straight through her own
 hull; standing on the ground as she was built, she stops them as any block would, her frame left whole as it is by any
 blast. They fly past anyone else who is not a hostile mob. Under the sight's reticle a row of four little rockets shows what is left in the
 pods: amber while loaded, red while the sight is locked on, grey where the cannon holds its fire (it holds its rockets

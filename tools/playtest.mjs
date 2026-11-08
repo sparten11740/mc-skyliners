@@ -678,6 +678,8 @@ const THROW_SAMPLES = 40;
 const THROWN_HIGH = 6;
 const THROWN_FAR = 8;
 const THROWN_LANDS_TICKS = 300;
+// How high off the ground a player flying in creative mode hangs for a rocket flown at them, in blocks.
+const THROWN_FLYING_UP = 8;
 // How far her gunner's seat may stand from straight under her laser cannon, across or along, in blocks.
 const GUNNER_SEAT_OFF = 1;
 // Stepping back off the top of her core's ladder: how long the back key is held, in ticks, and how far under her gunner's
@@ -2486,28 +2488,43 @@ function checkFreighterCanopy() {
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
 }
 
-// A laser cannon's rocket flown at a player throws them far and high with its blast, unhurt, and they come down under
-// their safety canopy; a rocket with no cannon behind it, summoned here, counts everyone as not aboard her. Before,
-// rockets flew straight past players and blasts left them standing.
+// A laser cannon's rocket flown at a player throws them far and high with its blast: one flying in creative mode, whom
+// the game's own blasts leave standing, unhurt; one in survival hurt too, coming down under their safety canopy. A
+// rocket with no cannon behind it, summoned here, counts everyone as not aboard her. Before, rockets flew straight past
+// players and blasts left them standing.
 function checkTurretThrowsPlayers() {
   creative();
   emptyHands();
-  const x = nextSite++ * SITE_APART + 0.5;
-  must(`server tp @p ${x} ${ground} 0.5 0 0; wait ${CHUNKS_TICKS}t`);
-  send("?server effect clear @p");
+  const flying = rocketAtPlayer(true);
+  expect(flying.highest >= THROWN_HIGH || flying.farthest >= THROWN_FAR, "turret: a rocket flown at a player flying in creative mode throws them far",
+    `${round(flying.highest)} blocks up, ${round(flying.farthest)} blocks off`);
+  expect(flying.landed.hp === flying.landed.max_hp, "turret: in creative mode, they are not hurt", `health ${flying.landed.health}`);
+  send("server difficulty easy");
   survival();
   const since = now();
-  must(`server summon skyliners:cannon_rocket ${x} ${ground + 1} ${0.5 - THROW_ROCKET_OFF}`);
-  const path = must(`sample status every 2t x${THROW_SAMPLES}`).rows.filter((row) => row.pos);
-  const highest = Math.max(...path.map((row) => row.pos[1])) - ground;
-  const farthest = Math.max(...path.map((row) => Math.hypot(row.pos[0] - x, row.pos[2] - 0.5)));
-  expect(highest >= THROWN_HIGH || farthest >= THROWN_FAR, "turret: a rocket flown at a player throws them far and high",
-    `${round(highest)} blocks up, ${round(farthest)} blocks off`);
-  must(`wait ${THROWN_LANDS_TICKS}t`);
-  const landed = must("status");
-  expect(landed.hp === landed.max_hp, "turret: thrown, they come down unhurt", `health ${landed.health}`);
-  expect(highest < THROWN_HIGH || played("skyliners:canopy_open", since).length > 0, "turret: thrown high, their safety canopy opens over them");
+  const walking = rocketAtPlayer(false);
+  expect(walking.highest >= THROWN_HIGH || walking.farthest >= THROWN_FAR, "turret: a rocket flown at a player in survival throws them far and high",
+    `${round(walking.highest)} blocks up, ${round(walking.farthest)} blocks off`);
+  expect(walking.landed.hp < walking.landed.max_hp && walking.landed.hp > 0, "turret: in survival, its blast hurts them", `health ${walking.landed.health}`);
+  expect(walking.highest < THROWN_HIGH || played("skyliners:canopy_open", since).length > 0, "turret: thrown high, their safety canopy opens over them");
+  send("server difficulty peaceful");
   creative();
+}
+
+// Flies a summoned rocket at the player on a site of its own, flying or standing on the ground: how high and how far it
+// threw them, in blocks, and how they were once down.
+function rocketAtPlayer(flies) {
+  const x = nextSite++ * SITE_APART + 0.5;
+  const y = flies ? ground + THROWN_FLYING_UP : ground;
+  must(`server tp @p ${x} ${y} 0.5 0 0; wait ${CHUNKS_TICKS}t${flies ? "; fly on" : ""}`);
+  send("?server effect clear @p");
+  send(`server effect give @p minecraft:instant_health 1 10 true`);
+  must(`wait 5t; server summon skyliners:cannon_rocket ${x} ${y + 1} ${0.5 - THROW_ROCKET_OFF}`);
+  const path = must(`sample status every 2t x${THROW_SAMPLES}`).rows.filter((row) => row.pos);
+  const highest = Math.max(...path.map((row) => row.pos[1])) - y;
+  const farthest = Math.max(...path.map((row) => Math.hypot(row.pos[0] - x, row.pos[2] - 0.5)));
+  const landed = must(`wait ${THROWN_LANDS_TICKS}t${flies ? "; fly off" : ""}; status`);
+  return { highest, farthest, landed };
 }
 
 // A freighter's console: her modules curve round her seats, each a slice of one ring; on the ground her boost button
@@ -4921,7 +4938,7 @@ const CHECKS = {
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
-  "turret-throws-players": { run: checkTurretThrowsPlayers, about: "a laser cannon's rocket throws a player far and high, unhurt, to land under their safety canopy" },
+  "turret-throws-players": { run: checkTurretThrowsPlayers, about: "a laser cannon's rocket throws a player far, flying in creative mode unhurt, in survival hurt and landing under their canopy" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },

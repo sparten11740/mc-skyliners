@@ -12,6 +12,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -121,6 +122,16 @@ public final class LaserFire {
             return SableFlight.toRidden(entityHit.getEntity(), hit.getLocation());
         }
         return hit instanceof BlockHitResult block ? SableFlight.toPlot(level, block.getBlockPos(), hit.getLocation(), false) : hit.getLocation();
+    }
+
+    /**
+     * A mounted gun's bolt striking a player, as the freighter's laser cannon's does: so much harm, by whoever fired
+     * it, to one who can be hurt; never one in creative mode.
+     */
+    public static void hurtPlayer(ServerLevel level, @Nullable Entity shooter, Player player, float damage) {
+        if (!player.getAbilities().invulnerable) {
+            player.hurt(laser(level, shooter), damage);
+        }
     }
 
     /** Whether a bolt hurts what it strikes: a hostile mob, alive. */
