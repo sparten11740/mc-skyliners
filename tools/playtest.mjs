@@ -513,7 +513,9 @@ const JUMP_LONGEST_FRAME = 1000;
 // she comes out and rings of them closing in on where she was and bursting out round her where she is, some five
 // hundred in all. How near the pin her coming out is heard, and how far from it her going is, in blocks along the
 // ground: she was at least a hundred and twenty-eight off it as the button was pressed and flew some fifty on toward it
-// before she went.
+// before she went. And how many times her own length she must be drawn at most as she goes and as she comes out, out of
+// the six she stretches to, and in how many frames at least, out of the eight or more her snapping back out lasts even
+// at twenty frames a second.
 const SEEN_PIN = 200;
 const SEEN_ASIDE = 50;
 const SEEN_FLASHES = 14;
@@ -521,6 +523,8 @@ const SEEN_GLITTER = 180;
 const SEEN_STREAKS = 400;
 const SEEN_IN_NEAR = 16;
 const SEEN_OUT_OFF = 64;
+const SEEN_STRETCH = 3;
+const SEEN_STRETCH_FRAMES = 4;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -3024,7 +3028,8 @@ function checkFreighterJump() {
 
 // A freighter's hyperspace jump watched from the ground, where once she only vanished and reappeared: someone standing
 // off her course, between where she goes from and where she comes out, hears her go with a whoomph where she was and
-// come out with a boom over her pin, and sees a flash at each end, glitter hanging in the air and her streaks of light.
+// come out with a boom over her pin, and sees a flash at each end, glitter hanging in the air and her streaks of light,
+// and her stretching out ahead into the jump and snapping back out of a stretch over her pin.
 function checkFreighterJumpSeen() {
   const site = layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -3041,6 +3046,7 @@ function checkFreighterJumpSeen() {
   must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE} pin=${pin[0]},${pin[1]}; wait 20t`);
   const { at } = must(`sable:find ${freighter} skyliners:console_jump 1 side=server`).rows[0];
   must(`sable:tp ${at.join(",")}; wait 20t`);
+  const jumpsSeen = must("skyliners:stretch").jumps;
   // Off her once the button has spooled her drive up, onto the ground: off her at once, the server would have her out
   // of reach of the button before the click reached it.
   const pressed = now();
@@ -3057,6 +3063,12 @@ function checkFreighterJumpSeen() {
   expect((seen.end_rod ?? 0) >= SEEN_GLITTER, "freighter: glitter in the air at both ends", `${seen.end_rod ?? 0} specks`);
   const streaks = seen["skyliners:hyperspace_streak"] ?? seen.hyperspace_streak ?? 0;
   expect(streaks >= SEEN_STREAKS, "freighter: streaks of light as she goes and as she comes out", `${streaks} streaks`);
+  const shown = must("skyliners:stretch");
+  const stretched = shown.jumps > jumpsSeen ? shown : {};
+  expect(stretched.going >= SEEN_STRETCH && stretched.going_frames >= SEEN_STRETCH_FRAMES, "freighter: she stretches out ahead into the jump as she goes",
+    `${stretched.going ?? 1} times her length at most, in ${stretched.going_frames ?? 0} frames`);
+  expect(stretched.coming >= SEEN_STRETCH && stretched.coming_frames >= SEEN_STRETCH_FRAMES, "freighter: and snaps back out of a stretch over her pin",
+    `${stretched.coming ?? 1} times her length at most, in ${stretched.coming_frames ?? 0} frames`);
   const out = freighterReport();
   const there = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
   expect(there < JUMP_NEAR, "freighter: she came out over her pin", out ? `middle at ${out.middle}` : "no report");
@@ -4880,7 +4892,7 @@ const CHECKS = {
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },
-  "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends" },
+  "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends, her stretching into it and out of it" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
