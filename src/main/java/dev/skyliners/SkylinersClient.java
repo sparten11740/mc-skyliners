@@ -1,5 +1,6 @@
 package dev.skyliners;
 
+import dev.skyliners.beam.TractorBeamBlockEntity;
 import dev.skyliners.block.BeanBagBlock;
 import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinCarpetBlock;
@@ -153,6 +154,7 @@ import dev.skyliners.client.TerrainMap;
 import dev.skyliners.client.ThrownClear;
 import dev.skyliners.client.TowedBanner;
 import dev.skyliners.client.TowerRadarRenderer;
+import dev.skyliners.client.TractorBeams;
 import dev.skyliners.client.TransponderRenderer;
 import dev.skyliners.client.TrolleyRenderer;
 import dev.skyliners.client.UpShipScene;
@@ -320,6 +322,9 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(LookoutView::loggingOut);
         NeoForge.EVENT_BUS.addListener(UpShipScene::tick);
         NeoForge.EVENT_BUS.addListener(SearchlightBeams::stage);
+        // Tractor beams lit: their columns of green light, seen and humming.
+        NeoForge.EVENT_BUS.addListener(TractorBeams::stage);
+        TractorBeamBlockEntity.clientTicker = TractorBeams::tick;
         NeoForge.EVENT_BUS.addListener(SkyTrails::tick);
         NeoForge.EVENT_BUS.addListener(SkyTrails::stage);
         // A rocket's engines heard as they fire: her roar, its ignition and cut-off, and her touchdown.

@@ -1,0 +1,32 @@
+{
+  "variants": {
+    "lit=false,mount=ceiling,powered=false": {
+      "model": "skyliners:block/tractor_beam"
+    },
+    "lit=false,mount=ceiling,powered=true": {
+      "model": "skyliners:block/tractor_beam"
+    },
+    "lit=true,mount=ceiling,powered=false": {
+      "model": "skyliners:block/tractor_beam_lit"
+    },
+    "lit=true,mount=ceiling,powered=true": {
+      "model": "skyliners:block/tractor_beam_lit"
+    },
+    "lit=false,mount=floor,powered=false": {
+      "model": "skyliners:block/tractor_beam",
+      "x": 180
+    },
+    "lit=false,mount=floor,powered=true": {
+      "model": "skyliners:block/tractor_beam",
+      "x": 180
+    },
+    "lit=true,mount=floor,powered=false": {
+      "model": "skyliners:block/tractor_beam_lit",
+      "x": 180
+    },
+    "lit=true,mount=floor,powered=true": {
+      "model": "skyliners:block/tractor_beam_lit",
+      "x": 180
+    }
+  }
+}

@@ -1011,6 +1011,68 @@
       }
     ]
   },
+  "tractor_beam_on": {
+    "subtitle": "subtitles.skyliners.tractor_beam_on",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_on",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "tractor_beam_off": {
+    "subtitle": "subtitles.skyliners.tractor_beam_off",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_off",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "tractor_beam_hum": {
+    "subtitle": "subtitles.skyliners.tractor_beam_hum",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_hum",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "tractor_beam_lift": {
+    "subtitle": "subtitles.skyliners.tractor_beam_lift",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_lift",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "tractor_beam_arrive": {
+    "subtitle": "subtitles.skyliners.tractor_beam_arrive",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_arrive",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "tractor_beam_drop": {
+    "subtitle": "subtitles.skyliners.tractor_beam_drop",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_drop",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "tractor_beam_refused": {
+    "subtitle": "subtitles.skyliners.tractor_beam_refused",
+    "sounds": [
+      {
+        "name": "skyliners:tractor_beam_refused"
+      }
+    ]
+  },
   "freighter_computer_jump_charged": {
     "subtitle": "subtitles.skyliners.freighter_computer_jump_charged",
     "sounds": [

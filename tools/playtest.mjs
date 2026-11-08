@@ -386,6 +386,31 @@ const ENGINEERING_SWITCH = "0.77,0.31,0.88";
 const VALVE_TURNS = 4;
 const VALVE_WHEEL = "0.5,0.4,0.55";
 const VALVE_VENTS = 120;
+// Her tractor beam: how long something takes at most to ride it up onto its pad or down to the ground, in ticks; how
+// near the pad's top a thing's feet must be to stand on it, in blocks; how far aside the player steps to leave the
+// beam, in blocks; how long a zombie under it is watched, in ticks; and a player's full health, in half hearts.
+const BEAM_RIDE_TICKS = 100;
+const BEAM_ON_PAD = 0.8;
+const BEAM_STEP_ASIDE = 4;
+const BEAM_WATCH_TICKS = 60;
+const FULL_HEALTH = 20;
+// Her tractor beam as she hovers: how high she is set to hover over where she stood, in blocks (she hovers at least so
+// high, and higher where she keeps clear of the ground round her); how long a ride down to the ground or up onto her
+// pad takes at most, in ticks; and how near the ground the player's feet must be to be down.
+const BEAM_HOVER = 24;
+const BEAM_FLIGHT_RIDE_TICKS = 300;
+const BEAM_DOWN_WITHIN = 0.5;
+// Tractor beams set up by hand: how high the stone they hang under is over the ground, in blocks; how far the pad is
+// from the hung one and the standing one from both, in blocks, past a pad's reach; how high a player standing on the
+// standing one floats at least, in blocks, and how long they are given to, in ticks.
+const BEAM_HAND_HIGH = 5;
+const BEAM_HAND_PAD_OUT = 3;
+const BEAM_HAND_LIFT_OUT = 24;
+const BEAM_HAND_FLOATS = 8;
+const BEAM_HAND_FLOAT_TICKS = 100;
+// How long a lit beam takes at most to see what lies under it again, in ticks: TractorBeamBlockEntity.LOOK_EVERY, and
+// a little more.
+const BEAM_LOOKS_AGAIN = 15;
 // A round floor window: how many blocks it has at least; how long its iris is given to open or shut, in ticks; how
 // many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
 // for, in blocks.
@@ -2359,6 +2384,175 @@ function checkFreighterCoolantValve() {
 
 // A freighter's crossbow rack in her entry hall: an empty hand takes the laser crossbow down, and holding it racks it
 // again.
+// Where an entity is, by a selector from the player: its position, or undefined for none.
+function entityAt(selector) {
+  const text = JSON.stringify(send(`server data get entity ${selector} Pos`)[0]);
+  const found = [...text.matchAll(/(-?[0-9.]+(?:E-?[0-9]+)?)d/g)].map((match) => Number(match[1]));
+  return found.length >= 3 ? found.slice(-3) : undefined;
+}
+
+// The player's health, in half hearts.
+function healthOf() {
+  const text = JSON.stringify(send("server data get entity @p Health")[0]);
+  return Number(/(-?[0-9.]+)f/.exec(text)?.[1]);
+}
+
+// Waits for a test of the player's position to hold, looking every few ticks; their position then, or undefined.
+function waitForPlayer(test, within) {
+  for (let waited = 0; waited <= within; waited += 5) {
+    const { pos } = must("wait 5t; status");
+    if (test(pos)) {
+      return pos;
+    }
+  }
+  return undefined;
+}
+
+// Waits for an entity to stand on a pad's top, looking every few ticks; whether it did.
+function waitOnPad(selector, [px, py, pz], within) {
+  for (let waited = 0; waited <= within; waited += 5) {
+    must("wait 5t");
+    const at = entityAt(selector);
+    if (at && Math.hypot(at[0] - px - 0.5, at[2] - pz - 0.5) <= BEAM_ON_PAD && Math.abs(at[1] - py - 1) <= BEAM_ON_PAD) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// A freighter's tractor beam as she stands on her legs: pressed with the player on it, its pad in her cargo hold lights
+// the beam under her belly and lets the player down it, unhurt; stepping out of the beam and back in, they are beamed
+// up onto the pad again, and so is a cow, but never a zombie; and the beam itself, pressed from the ground, goes dark.
+function checkFreighterTractorBeam() {
+  ship("freighter");
+  const [beamRow] = must("find skyliners:tractor_beam 128 1").rows;
+  const [padRow] = must("find skyliners:beam_pad 128 1").rows;
+  expect(Boolean(beamRow && padRow), "freighter: she is built with a tractor beam under her belly and its pad in her cargo hold");
+  if (!beamRow || !padRow) {
+    return;
+  }
+  const [bx, by, bz] = beamRow.at_abs;
+  const pad = padRow.at_abs;
+  const [px, py, pz] = pad;
+  expect(by < py && Math.hypot(bx - px, bz - pz) <= 2, "freighter: the beam hangs under her belly beneath its pad", `beam ${bx},${by},${bz}, pad ${pad}`);
+  survival();
+  const pressed = now();
+  must(`server tp @p ${px + 0.5} ${py + 1} ${pz + 0.5}; wait 10t; use ${pad.join(",")}; wait 5t`);
+  const lit = must(`block ${bx},${by},${bz} side=server`).props?.lit === "true" && must(`block ${pad.join(",")} side=server`).props?.lit === "true";
+  expect(lit && Boolean(heard("skyliners:tractor_beam_on", pressed, LOOK_EVERY)), "freighter: pressed, her pad lights, and her tractor beam with it");
+  const down = waitForPlayer((pos) => pos[1] < by && pos[1] - ground < BEAM_DOWN_WITHIN, BEAM_RIDE_TICKS);
+  expect(Boolean(down && heard("skyliners:tractor_beam_drop", pressed, 0)), "freighter: standing on the pad as it lights, the player is let down her beam to the ground",
+    down ? down.join(",") : must("status").pos.join(","));
+  expect(healthOf() === FULL_HEALTH, "freighter: let down her beam, the player is unhurt", `health ${healthOf()}`);
+  const stepped = now();
+  must(`server tp @p ${bx + 0.5 + BEAM_STEP_ASIDE} ${ground} ${bz + 0.5}; wait 10t; server tp @p ${bx + 0.5} ${ground} ${bz + 0.5}`);
+  const up = waitOnPad("@p", pad, BEAM_RIDE_TICKS);
+  expect(up && Boolean(heard("skyliners:tractor_beam_lift", stepped, 0)) && Boolean(heard("skyliners:tractor_beam_arrive", stepped, 0)),
+    "freighter: stepping out of her beam and back in, the player is beamed up onto the pad", must("status").pos.join(","));
+  must(`server tp @p ${bx + 0.5 + BEAM_STEP_ASIDE} ${ground} ${bz + 0.5}; wait 10t; server summon cow ${bx + 0.5} ${ground} ${bz + 0.5} {PersistenceRequired:1b}`);
+  expect(waitOnPad("@e[type=cow,limit=1,sort=nearest]", pad, BEAM_RIDE_TICKS), "freighter: a cow under her beam is beamed up onto the pad");
+  must(`server kill @e[type=cow]; server difficulty easy; server summon zombie ${bx + 0.5} ${ground} ${bz + 0.5} {NoAI:1b,PersistenceRequired:1b}; wait ${BEAM_WATCH_TICKS}t`);
+  const zombie = entityAt("@e[type=zombie,limit=1,sort=nearest]");
+  send("?server kill @e[type=zombie]; server difficulty peaceful");
+  expect(Boolean(zombie) && zombie[1] - ground < BEAM_DOWN_WITHIN, "freighter: a zombie under her beam is never lifted", zombie ? zombie.join(",") : "gone");
+  const off = now();
+  must(`server tp @p ${bx + 0.5} ${ground} ${bz + 2.5} 180 -60; wait 10t; use ${bx},${by},${bz}; wait 5t`);
+  const dark = must(`block ${bx},${by},${bz} side=server`).props?.lit !== "true" && must(`block ${pad.join(",")} side=server`).props?.lit !== "true";
+  expect(dark && Boolean(heard("skyliners:tractor_beam_off", off, LOOK_EVERY)), "freighter: pressed from the ground, her beam goes dark, and her pad with it");
+  creative();
+}
+
+// A freighter's tractor beam as she hovers high over the ground: pressed with the player on it, her pad lights her beam
+// and the player sinks down it all the way to the ground, unhurt; and stepping out of the beam and back in, they are
+// beamed all the way up onto the pad again.
+function checkFreighterTractorBeamInFlight() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + BEAM_HOVER;
+  must(`skyliners:autopilot fly altitude=${height} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && report.altitude > height - FREIGHTER_HOLD_WITHIN, FREIGHTER_UP_TICKS);
+  const last = up ?? freighterReport();
+  expect(up, "freighter: she lifts off and hovers high over the ground", `${last?.phase} at ${last?.altitude}, set ${height}`);
+  if (!up) {
+    return;
+  }
+  must(`wait ${FREIGHTER_WATCH_TICKS}t`);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [padRow] = must(`sable:find ${freighter} skyliners:beam_pad 1 side=server`).rows;
+  const [beamRow] = must(`sable:find ${freighter} skyliners:tractor_beam 1 side=server`).rows;
+  const pad = padRow.at;
+  must(`sable:tp ${pad.join(",")}; fly off; wait 20t`);
+  must(`server execute positioned ${pad[0] + 0.5} ${pad[1] + 1} ${pad[2] + 0.5} out_sub_level ${freighter} run tp @p ~ ~ ~; wait 10t`);
+  survival();
+  const pressed = now();
+  must(`use ${pad.join(",")}; wait 5t`);
+  expect(Boolean(heard("skyliners:tractor_beam_on", pressed, LOOK_EVERY)), "freighter: hovering, her pad pressed lights her tractor beam");
+  const down = waitForPlayer((pos) => pos[1] - ground < BEAM_DOWN_WITHIN, BEAM_FLIGHT_RIDE_TICKS);
+  expect(Boolean(down), "freighter: standing on her pad as it lights, the player sinks down her beam to the ground", must("status").pos.join(","));
+  expect(healthOf() === FULL_HEALTH, "freighter: let down from high over the ground, the player is unhurt", `health ${healthOf()}`);
+  const beamAt = beamRow.at;
+  must(`server execute positioned ${beamAt[0] + 0.5} ${beamAt[1]} ${beamAt[2] + 0.5} out_sub_level ${freighter} run summon marker ~ ~ ~ {Tags:["beam"]}`);
+  const [wx, , wz] = entityAt("@e[type=marker,tag=beam,limit=1]") ?? [0, 0, 0];
+  must(`server kill @e[type=marker,tag=beam]; server tp @p ${wx + BEAM_STEP_ASIDE} ${ground} ${wz}; wait 10t; server tp @p ${wx} ${ground} ${wz}`);
+  const stepped = now();
+  const aboard = waitForPlayer((pos) => pos[1] > height - BEAM_HOVER / 2, BEAM_FLIGHT_RIDE_TICKS) && heard("skyliners:tractor_beam_arrive", stepped, BEAM_RIDE_TICKS);
+  expect(Boolean(aboard), "freighter: stepping out of her beam and back in, the player is beamed all the way up onto her pad",
+    `${must("status").pos.join(",")}, beam at ${wx},${wz}, lifted ${Boolean(heard("skyliners:tractor_beam_lift", stepped, 0))}`);
+  creative();
+  send("?skyliners:autopilot land");
+}
+
+// Tractor beams set up by hand: one hung under a ceiling, which a sheep under it rides up onto a beam pad set down by
+// it, and which over lava lets nobody down from the pad; and one standing on a floor, which a player standing on it
+// floats up, and which, switched off by a redstone pulse, lets them float down unhurt.
+function checkTractorBeamByHand() {
+  const [x, z] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${ground} ${z - 4.5} 0 0; wait 40t`);
+  must(`server fill ${x - 1} ${ground + BEAM_HAND_HIGH} ${z - 1} ${x + 1} ${ground + BEAM_HAND_HIGH} ${z + 1} stone`);
+  must("server give @p skyliners:tractor_beam 2; server give @p skyliners:beam_pad 1; wait 5t; select 0");
+  const hung = [x, ground + BEAM_HAND_HIGH - 1, z];
+  must(`server tp @p ${x + 0.5} ${ground} ${z - 2.5} 0 -60; wait 10t`);
+  send(`place skyliners:tractor_beam ${hung.join(",")}`);
+  const hungState = must(`block ${hung.join(",")} side=server`);
+  expect((hungState.id ?? "").includes("tractor_beam") && hungState.props?.mount === "ceiling", "tractor beam: put up under a ceiling, it hangs there", `${hungState.id} ${hungState.props?.mount}`);
+  const pad = [x + BEAM_HAND_PAD_OUT, ground, z];
+  must(`select 1; server tp @p ${pad[0] + 0.5} ${ground} ${z - 2.5} 0 40; wait 10t`);
+  send(`place skyliners:beam_pad ${pad.join(",")}`);
+  const lit = now();
+  must(`server tp @p ${x + 0.5} ${ground} ${z - 2.5} 0 -60; wait 10t; use ${hung.join(",")}; wait 5t`);
+  expect(must(`block ${hung.join(",")} side=server`).props?.lit === "true" && Boolean(heard("skyliners:tractor_beam_on", lit, LOOK_EVERY)),
+    "tractor beam: used, it lights up, humming");
+  must(`server summon sheep ${x + 0.5} ${ground} ${z + 0.5} {PersistenceRequired:1b}`);
+  expect(waitOnPad("@e[type=sheep,limit=1,sort=nearest]", pad, BEAM_RIDE_TICKS), "tractor beam: a sheep under it is beamed up onto the pad set down by it");
+  send("?server kill @e[type=sheep]");
+  must(`server setblock ${x} ${ground - 1} ${z} lava; wait ${BEAM_LOOKS_AGAIN}t`);
+  survival();
+  const refused = now();
+  must(`server tp @p ${pad[0] + 0.5} ${ground + 1} ${pad[2] + 0.5}; wait ${BEAM_WATCH_TICKS}t`);
+  const kept = must("status").pos;
+  expect(kept[1] > ground + 0.5 && Boolean(heard("skyliners:tractor_beam_refused", refused, 0)),
+    "tractor beam: over lava, stepping onto its pad, the player is not let down, and the pad buzzes", kept.join(","));
+  creative();
+  must(`server setblock ${x} ${ground - 1} ${z} grass_block`);
+  const lift = [x + BEAM_HAND_LIFT_OUT, ground, z];
+  must(`select 0; server tp @p ${lift[0] + 0.5} ${ground} ${z - 2.5} 0 40; wait 10t`);
+  send(`place skyliners:tractor_beam ${lift.join(",")}`);
+  const standing = must(`block ${lift.join(",")} side=server`);
+  expect(standing.props?.mount === "floor", "tractor beam: put up on a floor, it stands there, looking up", `${standing.id} ${standing.props?.mount}`);
+  must(`use ${lift.join(",")}; wait 5t`);
+  survival();
+  must(`server tp @p ${lift[0] + 0.5} ${ground + 0.6} ${z + 0.5}`);
+  const floated = waitForPlayer((pos) => pos[1] - ground >= BEAM_HAND_FLOATS, BEAM_HAND_FLOAT_TICKS);
+  expect(Boolean(floated), "tractor beam: standing on one set on a floor, the player floats up its beam", must("status").pos.join(","));
+  must(`server setblock ${lift[0] + 1} ${ground} ${z} redstone_block`);
+  const landed = waitForPlayer((pos) => pos[1] - ground < BEAM_DOWN_WITHIN + 1, BEAM_HAND_FLOAT_TICKS * 2);
+  expect(Boolean(landed) && healthOf() === FULL_HEALTH, "tractor beam: switched off by a redstone pulse, it lets the player float down unhurt",
+    `${must("status").pos.join(",")}, health ${healthOf()}`);
+  creative();
+}
+
 function checkFreighterCrossbowRack() {
   ship("freighter");
   const [rack] = must("find skyliners:crossbow_rack 128 1").rows;
@@ -3334,6 +3528,9 @@ const CHECKS = {
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
+  "freighter-tractor-beam": { run: checkFreighterTractorBeam, about: "a freighter's tractor beam lets the player down from its pad and beams them and a cow up, never a zombie" },
+  "freighter-beam-flight": { run: checkFreighterTractorBeamInFlight, about: "a hovering freighter's tractor beam lets the player down to the ground unhurt and beams them back up", slow: true },
+  "tractor-beam-by-hand": { run: checkTractorBeamByHand, about: "tractor beams set up by hand hang or stand, beam a sheep onto a pad and float a player up and down" },
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },

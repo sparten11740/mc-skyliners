@@ -1,0 +1,135 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "plate": "skyliners:block/tractor_beam_housing",
+    "side": "skyliners:block/tractor_beam_side",
+    "rim": "skyliners:block/tractor_beam_rim",
+    "lens": "skyliners:block/tractor_beam_lens",
+    "particle": "skyliners:block/tractor_beam_housing"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        14,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#plate"
+        },
+        "south": {
+          "texture": "#plate"
+        },
+        "east": {
+          "texture": "#plate"
+        },
+        "west": {
+          "texture": "#plate"
+        },
+        "up": {
+          "texture": "#plate"
+        },
+        "down": {
+          "texture": "#plate"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        9,
+        3
+      ],
+      "to": [
+        13,
+        14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            3,
+            8,
+            13,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            3,
+            8,
+            13,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            3,
+            8,
+            13,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            3,
+            8,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#plate"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        6.5,
+        2
+      ],
+      "to": [
+        14,
+        9,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#plate"
+        },
+        "down": {
+          "texture": "#lens",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

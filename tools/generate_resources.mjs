@@ -700,6 +700,70 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
   cubes.coolant_valve = null;
 }
 
+// The freighter's tractor beam (see TractorBeamBlock), drawn hung under a ceiling: a mounting plate of riveted
+// gunmetal against the ceiling, a body under it ringed in hazard stripes, and a wide ribbed steel rim round its lens,
+// which looks down, dark green glass or, lit, glowing green at full brightness; stood on a floor the same model turned
+// upside down, its lens looking up. Its beam is drawn by the client's TractorBeams.
+{
+  const stripes = { texture: "#side", uv: [3, 8, 13, 13] };
+  const beam = (lit) => ({
+    parent: "minecraft:block/block",
+    textures: {
+      plate: `${ID}:block/tractor_beam_housing`, side: `${ID}:block/tractor_beam_side`, rim: `${ID}:block/tractor_beam_rim`,
+      lens: `${ID}:block/tractor_beam_lens${lit ? "_lit" : ""}`, particle: `${ID}:block/tractor_beam_housing`,
+    },
+    elements: [
+      solid([1, 14, 1], [15, 16, 15], "#plate"),
+      { from: [3, 9, 3], to: [13, 14, 13], faces: { north: stripes, south: stripes, east: stripes, west: stripes, down: { texture: "#plate" } } },
+      {
+        from: [2, 6.5, 2], to: [14, 9, 14],
+        faces: {
+          north: { texture: "#rim" }, south: { texture: "#rim" }, east: { texture: "#rim" }, west: { texture: "#rim" }, up: { texture: "#plate" },
+          down: { texture: "#lens", uv: [0, 0, 16, 16], ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) },
+        },
+      },
+    ],
+  });
+  write(`assets/${ID}/models/block/tractor_beam.json`, beam(false));
+  write(`assets/${ID}/models/block/tractor_beam_lit.json`, beam(true));
+  write(`assets/${ID}/blockstates/tractor_beam.json`, {
+    variants: Object.fromEntries(["ceiling", "floor"].flatMap((mount) => [false, true].flatMap((lit) => [false, true].map((powered) => [
+      `lit=${lit},mount=${mount},powered=${powered}`,
+      { model: `${ID}:block/tractor_beam${lit ? "_lit" : ""}`, ...(mount === "floor" ? { x: 180 } : {}) },
+    ])))),
+  });
+  write(`assets/${ID}/models/item/tractor_beam.json`, { parent: `${ID}:block/tractor_beam` });
+  dropsItself("tractor_beam");
+  cubes.tractor_beam = null;
+}
+
+// The tractor beam's pad (see BeamPadBlock): a whole block of deck plate laid into a floor, the rings of a target on
+// its top, dull, or glowing green at full brightness while its beam is lit, a bright ring pulsing in over them.
+{
+  const pad = (lit) => {
+    const side = (cullface) => ({ texture: "#side", cullface });
+    return {
+      parent: "minecraft:block/block",
+      textures: { top: `${ID}:block/beam_pad_top${lit ? "_lit" : ""}`, side: `${ID}:block/beam_pad_side`, particle: `${ID}:block/beam_pad_side` },
+      elements: [{
+        from: [0, 0, 0], to: [16, 16, 16],
+        faces: {
+          north: side("north"), south: side("south"), east: side("east"), west: side("west"), down: { texture: "#side", cullface: "down" },
+          up: { texture: "#top", cullface: "up", ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) },
+        },
+      }],
+    };
+  };
+  write(`assets/${ID}/models/block/beam_pad.json`, pad(false));
+  write(`assets/${ID}/models/block/beam_pad_lit.json`, pad(true));
+  write(`assets/${ID}/blockstates/beam_pad.json`, {
+    variants: { "lit=false": { model: `${ID}:block/beam_pad` }, "lit=true": { model: `${ID}:block/beam_pad_lit` } },
+  });
+  write(`assets/${ID}/models/item/beam_pad.json`, { parent: `${ID}:block/beam_pad` });
+  dropsItself("beam_pad");
+  cubes.beam_pad = null;
+}
+
 // The laser crossbow's rack in the freighter's entry hall (see CrossbowRackBlock): a dark wooden board against the wall
 // behind it with two brass pegs standing out, the crossbow drawn across them by CrossbowRackRenderer; drawn facing north.
 {
@@ -2058,6 +2122,8 @@ function zeppelinControlsLang() {
     "block.skyliners.jump_drive": "Jump Drive",
     "block.skyliners.breaker_board": "Breaker Board",
     "block.skyliners.coolant_valve": "Coolant Valve",
+    "block.skyliners.tractor_beam": "Tractor Beam",
+    "block.skyliners.beam_pad": "Beam Pad",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
     "block.skyliners.console_readouts": "Flight Readout Console",
     "block.skyliners.console_scanner": "Scanner Console",
@@ -2412,6 +2478,15 @@ const FREIGHTER_SOUNDS = {
   radar_dish_whirr: { subtitle: "Radar dish whirrs", heard: 24 },
   hidden_hatch_open: { subtitle: "Hidden hatch slides open" },
   hidden_hatch_close: { subtitle: "Hidden hatch slides shut" },
+  // Her tractor beam: switched on and off and humming between, heard round her belly; whatever it lifts whooping up,
+  // arriving on its pad with a chime and let down from it whooping down; and a beam that will not shine.
+  tractor_beam_on: { subtitle: "Tractor beam powers up", heard: 32 },
+  tractor_beam_off: { subtitle: "Tractor beam powers down", heard: 32 },
+  tractor_beam_hum: { subtitle: "Tractor beam hums", heard: 24 },
+  tractor_beam_lift: { subtitle: "Something is beamed up", heard: 32 },
+  tractor_beam_arrive: { subtitle: "Something arrives on the beam pad", heard: 24 },
+  tractor_beam_drop: { subtitle: "Something is beamed down", heard: 24 },
+  tractor_beam_refused: { subtitle: "Tractor beam buzzes" },
   // Her computer's voice, each line subtitled with what it says, her own words for the flight deck's announcements
   // with their gist.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
@@ -11108,6 +11183,8 @@ FITTINGS.push(...rampFittings());
 FITTINGS.push("bandstand");
 // The Spookie's hammock is fitted into her crew quarters, and her engineering's machines into it.
 FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve", "crossbow_rack");
+// Her tractor beam is fitted under her belly and its pad into her cargo hold's floor, and both set up by hand anywhere.
+FITTINGS.push("tractor_beam", "beam_pad");
 // Her console's modules are fitted into her cockpit, and set up by hand anywhere.
 FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
@@ -11259,6 +11336,8 @@ shaped("tiki_torch", ["T", "B", "B"], { T: "minecraft:torch", B: "minecraft:bamb
 shaped("crew_ladder", ["I I", "III", "I I"], { I: "minecraft:iron_ingot" }, 4);
 shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
+shaped("tractor_beam", ["IRI", "IEI", " G "], { I: "minecraft:iron_ingot", R: "minecraft:redstone", E: "minecraft:ender_pearl", G: "minecraft:lime_stained_glass" }, 1);
+shaped("beam_pad", ["LRL", "III"], { L: "minecraft:lime_dye", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 2);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);
 // Her console's modules: a screen of glass over iron, each with what it works in its middle.

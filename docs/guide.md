@@ -2943,6 +2943,30 @@ wall it sits flat in a steel rim. Break any block of the window and it all comes
 the window given back. Beach sand, potted palms, parasols, sun loungers and tiki torches are in the creative tab as
 well; a tiki torch stands tall on a floor, or put on a wall it is held out from it on a bamboo bracket, its flame lower.
 
+Under her belly, beneath her cargo hold, hangs her tractor beam, a gunmetal housing ringed in hazard stripes round a
+wide round lens, and in the hold's floor straight over it lies its pad, a deck plate with the rings of a target on it.
+Press the pad and the beam lights with a shimmering swell: a column of green light shines down from her belly to the
+ground, bright rings rising up it, humming, a pool of green light where it meets the ground, its lens glowing and the
+pad's rings glowing green, a bright ring pulsing in over them toward the middle. Whoever stands in the light below is
+lifted up it with a warbling whoop, six blocks a second, and comes up onto the pad in a burst of sparkles and a chime;
+so are animals, villagers, golems and allays, and anything dropped there, but never a hostile mob, a creature of the
+water, which would dry out, anyone gliding on wings, or anyone riding or ridden. Step onto the pad while the beam
+shines, rather than arriving on it, and down you go with a falling whoop, put at the top of the beam under her belly and
+floating down it to the ground, as slowly as a slow falling potion lets you fall; press the pad standing on it and you
+go straight down as it lights. Whatever else steps or is dropped onto it goes down too, an animal wandering onto it or a
+cookie for whoever waits below. Down there, step out of the light and back in to be beamed up again. The beam reaches
+the ground from as much as 64 blocks over it, so it works as she hovers, and it never hurts anyone: whoever steps out of
+it, or is in it as it goes dark, falls slowly for long enough to come down from its whole height; and where it meets
+lava, or no ground within its reach, the pad only buzzes and lets nobody down. Press the pad again, or the beam itself
+from the ground, to put it out with a falling hum.
+
+The Tractor Beam and the Beam Pad are among her blocks in the creative tab. Hung under a ceiling, the beam shines down
+to the ground and lifts things up to its lens; stood on a floor, it shines a dozen blocks up, a lift of light that
+floats whoever steps on it up to its top, where they bob. Use it, or give it a redstone pulse, to switch it on and off.
+A pad set down within 16 blocks of a beam is where the beam brings what it lifts, and pressing the pad switches the
+nearest beam on or off; with no beam in reach it only buzzes. The server config's `freighter.tractorBeam` builds her
+without them and keeps every tractor beam dark.
+
 Her lounge has a pet of its own: a small cousin of the rocket's tardigrade, a quarter its size and pale mint with teal
 folds, in a glass tank standing out from the wall by the galley on a stand of cabinets, a dark hood over it, so it paces
 at the eye height of whoever stands before it. It does all the big one does, pacing, turning round, sleeping at night

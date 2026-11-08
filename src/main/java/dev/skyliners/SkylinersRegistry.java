@@ -381,6 +381,10 @@ import dev.skyliners.item.RoverRemoteItem;
 import dev.skyliners.item.SpaceHelmetItem;
 import dev.skyliners.item.SpacePosterItem;
 import dev.skyliners.item.TrolleyItem;
+import dev.skyliners.beam.BeamPadBlock;
+import dev.skyliners.beam.BeamPadBlockEntity;
+import dev.skyliners.beam.TractorBeamBlock;
+import dev.skyliners.beam.TractorBeamBlockEntity;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.console.ConsoleBlock;
 import dev.skyliners.console.ConsoleBlockEntity;
@@ -973,6 +977,20 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> HIDDEN_HATCH_OPEN = sound("hidden_hatch_open");
     /** A hidden compartment's hatch sliding shut, sealing and latching. */
     public static final DeferredHolder<SoundEvent, SoundEvent> HIDDEN_HATCH_CLOSE = sound("hidden_hatch_close");
+    /** A tractor beam switched on: a shimmering swell rising into its hum. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_ON = sound("tractor_beam_on");
+    /** A tractor beam switched off: its hum sinking away. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_OFF = sound("tractor_beam_off");
+    /** A lit tractor beam's hum, a warbling seamless loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_HUM = sound("tractor_beam_hum");
+    /** Something lifted off by a tractor beam: a warbling whoop sweeping up. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_LIFT = sound("tractor_beam_lift");
+    /** Something arriving on a beam pad: a sparkling chime with a soft pop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_ARRIVE = sound("tractor_beam_arrive");
+    /** Something let down a tractor beam from its pad: a whoop sweeping down. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_DROP = sound("tractor_beam_drop");
+    /** A tractor beam that will not come on, or a pad with no beam in reach: a low, buzzing double thud. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_REFUSED = sound("tractor_beam_refused");
     /** Her computer, after its falling blip: "Jump drive charged." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_CHARGED =
         sound("freighter_computer_jump_charged");
@@ -1624,6 +1642,24 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CoolantValveBlockEntity>> COOLANT_VALVE_ENTITY =
         BLOCK_ENTITIES.register("coolant_valve", () -> BlockEntityType.Builder.of(CoolantValveBlockEntity::new, COOLANT_VALVE.get()).build(null));
     public static final DeferredItem<BlockItem> COOLANT_VALVE_ITEM = ITEMS.registerSimpleBlockItem(COOLANT_VALVE);
+    /**
+     * The freighter's tractor beam under her belly (see {@link TractorBeamBlock}), lifting things up into her cargo
+     * hold.
+     */
+    public static final DeferredBlock<TractorBeamBlock> TRACTOR_BEAM = BLOCKS.registerBlock(
+        "tractor_beam", TractorBeamBlock::new,
+        metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(state -> state.getValue(TractorBeamBlock.LIT) ? TractorBeamBlock.GLOW : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TractorBeamBlockEntity>> TRACTOR_BEAM_ENTITY =
+        BLOCK_ENTITIES.register("tractor_beam", () -> BlockEntityType.Builder.of(TractorBeamBlockEntity::new, TRACTOR_BEAM.get()).build(null));
+    public static final DeferredItem<BlockItem> TRACTOR_BEAM_ITEM = ITEMS.registerSimpleBlockItem(TRACTOR_BEAM);
+    /** The pad in the freighter's cargo hold that her tractor beam brings things up onto (see {@link BeamPadBlock}). */
+    public static final DeferredBlock<BeamPadBlock> BEAM_PAD = BLOCKS.registerBlock(
+        "beam_pad", BeamPadBlock::new, metal(MapColor.COLOR_GRAY).lightLevel(state -> state.getValue(BeamPadBlock.LIT) ? BeamPadBlock.GLOW : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BeamPadBlockEntity>> BEAM_PAD_ENTITY =
+        BLOCK_ENTITIES.register("beam_pad", () -> BlockEntityType.Builder.of(BeamPadBlockEntity::new, BEAM_PAD.get()).build(null));
+    public static final DeferredItem<BlockItem> BEAM_PAD_ITEM = ITEMS.registerSimpleBlockItem(BEAM_PAD);
     /** The laser crossbow's rack in the freighter's entry hall (see {@link CrossbowRackBlock}). */
     public static final DeferredBlock<CrossbowRackBlock> CROSSBOW_RACK = BLOCKS.registerBlock(
         "crossbow_rack", CrossbowRackBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.8F).sound(SoundType.WOOD).noOcclusion()
@@ -3252,6 +3288,8 @@ public final class SkylinersRegistry {
             BREAKER_BOARD_ITEM,
             COOLANT_VALVE_ITEM,
             CROSSBOW_RACK_ITEM,
+            TRACTOR_BEAM_ITEM,
+            BEAM_PAD_ITEM,
             CONSOLE_READOUTS_ITEM,
             CONSOLE_SCANNER_ITEM,
             CONSOLE_ENGINES_ITEM,
