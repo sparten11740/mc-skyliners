@@ -1198,6 +1198,67 @@
       }
     ]
   },
+  "fault_crackle": {
+    "subtitle": "subtitles.skyliners.fault_crackle",
+    "sounds": [
+      {
+        "name": "skyliners:radio_crackle"
+      }
+    ]
+  },
+  "fault_hiss": {
+    "subtitle": "subtitles.skyliners.fault_hiss",
+    "sounds": [
+      {
+        "name": "skyliners:fog_hiss"
+      }
+    ]
+  },
+  "freighter_computer_repair_fixed": {
+    "subtitle": "subtitles.skyliners.freighter_computer_repair_fixed",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_repair_fixed",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_repair_holds": {
+    "subtitle": "subtitles.skyliners.freighter_computer_repair_holds",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_repair_holds",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_repair_patched": {
+    "subtitle": "subtitles.skyliners.freighter_computer_repair_patched",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_repair_patched",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_repair_five": {
+    "subtitle": "subtitles.skyliners.freighter_computer_repair_five",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_repair_five",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_repair_grumble": {
+    "subtitle": "subtitles.skyliners.freighter_computer_repair_grumble",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_repair_grumble",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "freighter_computer_jump_spooling": {
     "subtitle": "subtitles.skyliners.freighter_computer_jump_spooling",
     "sounds": [

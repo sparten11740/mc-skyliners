@@ -10,6 +10,7 @@ import dev.skyliners.console.ConsoleBlock;
 import dev.skyliners.console.ConsoleBlockEntity;
 import dev.skyliners.console.ConsoleKind;
 import dev.skyliners.console.ConsoleShape;
+import dev.skyliners.repairs.FaultPanelBlockEntity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,11 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
     private static final int MOST_BLIPS = 16;
     /** How many scopes' blips are kept from one tick to the next at most, before they are all found afresh. */
     private static final int KEPT_SCOPES = 32;
+    /**
+     * How far from a scope her fault spots at fault are shown on it, in blocks: past the scope's own reach, so one in
+     * engineering at her stern still shows from her cockpit out at her front, at the scope's rim at its bearing.
+     */
+    private static final double FAULT_REACH = 100;
     /** Each scope's blips as last found, and the tick they were found in. */
     private final Map<BlockPos, Found> found = new HashMap<>();
 
@@ -88,7 +94,10 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
             console.toggles(), blips, autopilot == null ? null : FreighterFlight.heldBy(autopilot));
     }
 
-    /** A scope's blips, found afresh once a tick: whoever is near but the player looking, and her pin, if she has one. */
+    /**
+     * A scope's blips, found afresh once a tick: whoever is near but the player looking, her pin, if she has one, and
+     * each of her fault spots near it at fault (see {@link FaultPanelBlockEntity}).
+     */
     private List<ConsoleArt.Blip> blips(ConsoleBlockEntity console, Level level, double heading, @Nullable AutopilotBlockEntity autopilot) {
         long tick = DrawingClock.wholeTicks();
         Found last = found.get(console.getBlockPos());
@@ -103,21 +112,27 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
         AABB near = new AABB(at, at).inflate(ConsoleArt.SCOPE_NEAR);
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, near, entity -> entity != Minecraft.getInstance().player)) {
             if (blips.size() < MOST_BLIPS) {
-                blips.add(blip(at, entity.getX(), entity.getZ(), heading, false));
+                blips.add(blip(at, entity.getX(), entity.getZ(), heading, ConsoleArt.Mark.SOMEONE));
             }
         }
         if (autopilot != null && autopilot.lateral() == AutopilotBlockEntity.Lateral.DESTINATION) {
-            blips.add(blip(at, autopilot.orbitX(), autopilot.orbitZ(), heading, true));
+            blips.add(blip(at, autopilot.orbitX(), autopilot.orbitZ(), heading, ConsoleArt.Mark.PIN));
+        }
+        for (FaultPanelBlockEntity panel : FaultPanelBlockEntity.near(level, console.getBlockPos(), FAULT_REACH)) {
+            if (panel.faulty()) {
+                Vec3 spot = SableClient.toWorld(level, Vec3.atCenterOf(panel.getBlockPos()));
+                blips.add(blip(at, spot.x, spot.z, heading, ConsoleArt.Mark.FAULT));
+            }
         }
         found.put(console.getBlockPos(), new Found(tick, List.copyOf(blips)));
         return blips;
     }
 
     /** A blip for a spot in the world, from where the scope is and the way she heads. */
-    private static ConsoleArt.Blip blip(Vec3 from, double x, double z, double heading, boolean pin) {
+    private static ConsoleArt.Blip blip(Vec3 from, double x, double z, double heading, ConsoleArt.Mark mark) {
         double dx = x - from.x;
         double dz = z - from.z;
         double bearing = Math.toDegrees(Math.atan2(dx, -dz));
-        return new ConsoleArt.Blip(bearing - heading, Math.hypot(dx, dz), pin);
+        return new ConsoleArt.Blip(bearing - heading, Math.hypot(dx, dz), mark);
     }
 }

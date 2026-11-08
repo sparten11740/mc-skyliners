@@ -8916,6 +8916,59 @@ function gravitySwitchTextures() {
 }
 gravitySwitchTextures();
 
+// The freighter's running repairs (see FaultPanelBlock and RepairBoardBlock): the fault panel's face, worn steel with a
+// screw in each corner round a yellow warning triangle with a black lightning bolt in it, which says danger to anyone
+// who cannot read, laid out where the model's face takes it (pixels 4 to 12); the warning lamp, dark red, and flashing,
+// two frames, bright red with a hot white heart and dark; the repair board's face of dark brushed steel; the spanner, a
+// steel open-ended spanner lying corner to corner, its jaws at the top right; and the board's item, a dark board with
+// two rows of gold stars.
+function repairTextures() {
+  const STEEL_DARK = [0x3c, 0x41, 0x48];
+  const STEEL = [0x76, 0x7d, 0x86];
+  const STEEL_LIGHT = [0xb8, 0xbf, 0xc6];
+  const YELLOW = [0xf2, 0xc0, 0x1c];
+  const BLACK = [0x1c, 0x1c, 0x20];
+  const RED = [0xff, 0x34, 0x22];
+  const RED_DARK = [0x5c, 0x12, 0x10];
+  const GOLD = [0xff, 0xd0, 0x3a];
+  // The warning triangle, its tip up, from row 5 to row 11 and as wide at its foot; the bolt down its middle.
+  const inTriangle = (x, y) => y >= 5 && y <= 11 && Math.abs(x - 7.5) <= (y - 4.5) * 0.62;
+  const inBolt = (x, y) => (y >= 6 && y <= 8 && x === 8) || (y === 8 && x === 7) || (y >= 8 && y <= 10 && x === 7);
+  texture(blockOutput, "fault_panel_face", (x, y) => {
+    if ([[4, 4], [11, 4], [4, 11], [11, 11]].some(([sx, sy]) => sx === x && sy === y)) return STEEL_LIGHT;
+    if (inTriangle(x, y)) return inBolt(x, y) ? BLACK : YELLOW;
+    if (x <= 3 || x >= 12 || y <= 3 || y >= 12) return STEEL_DARK;
+    return STEEL;
+  }, 4);
+  const lamp = (colour, heart) => (x, y) => (Math.hypot(x - 6, y - 6) < 3 ? heart : colour);
+  texture(blockOutput, "fault_lamp", lamp(RED_DARK, [0x7a, 0x26, 0x22]), 2);
+  texture(blockOutput, "fault_lamp_flashing", (x, y) => (y < SIZE ? lamp(RED, [0xff, 0xe8, 0xd0]) : lamp(RED_DARK, [0x7a, 0x26, 0x22]))(x, y % SIZE),
+    0, SIZE, SIZE * 2);
+  writeFileSync(resolve(blockOutput, "fault_lamp_flashing.png.mcmeta"), JSON.stringify({ animation: { frametime: 5 } }, null, 2) + "\n");
+  texture(blockOutput, "repair_board_face", (x, y) => (y % 3 === 0 ? [0x2a, 0x2e, 0x34] : [0x30, 0x35, 0x3c]), 3);
+  // The spanner: its shaft from the bottom left to the top right, an open jaw round a gap at the top right and a ring
+  // round a hole at the bottom left.
+  const along = (x, y) => (x - (15 - y)) / Math.SQRT2;
+  outlinedIcon("spanner", (x, y) => {
+    const jaw = Math.hypot(x - 11.5, y - 4.5);
+    const ring = Math.hypot(x - 3.5, y - 12.5);
+    const gap = Math.abs(along(x, y)) < 1.2 && x >= 11 && y <= 5;
+    if (jaw < 3.4 && !gap) return x + y < 16 ? STEEL_LIGHT : STEEL;
+    if (ring < 2.6 && ring >= 1.1) return STEEL;
+    if (Math.abs(along(x, y)) < 1.1 && x > 4 && x < 11) return Math.abs(along(x, y)) < 0.4 ? STEEL_LIGHT : STEEL;
+    return null;
+  }, STEEL_DARK, () => null);
+  // The board's item: a dark board, a steel edge round it, and two rows of three gold stars.
+  const star = (x, y, cx, cy) => (x === cx && Math.abs(y - cy) <= 1) || (y === cy && Math.abs(x - cx) <= 1);
+  texture(itemOutput, "repair_board", (x, y) => {
+    if (y < 3 || y > 12) return CLEAR;
+    if (y === 3 || y === 12 || x === 0 || x === 15) return STEEL;
+    if ([3, 8, 12].some((cx) => [6, 10].some((cy) => star(x, y, cx, cy)))) return GOLD;
+    return [0x2c, 0x30, 0x36];
+  }, 0);
+}
+repairTextures();
+
 // The freighter's beach in her lounge (see the beach in generate_resources.mjs): warm sand with the odd pale shell; a
 // palm's ringed trunk, its pot of terracotta with a lighter rim, and a frond, a midrib out from the trunk at its left
 // edge and leaflets either side of it, tapering to its tip, clear between them, and one crossing over the others,

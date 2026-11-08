@@ -3066,6 +3066,32 @@ pressure its vent blasts a great cloud of steam with a whoosh and a hiss and the
 off. The Jump Drive, the Breaker Board and the Coolant Valve are among her blocks in the creative tab, and the server
 config's `freighter.engineering` builds her without them.
 
+As she flies along she breaks down now and then, and someone has to go and fix her: her running repairs. Every few
+minutes in the air under her autopilot, and never on the ground, one of her fault spots goes wrong: a steel junction box
+on the wall of engineering or of her crew quarters spits sparks and crackles, or a pipe low on the wall of her cargo
+hold or her lounge jets steam and hisses, its little lamp flashing red either way, loud enough to follow by ear from
+across her deck. Her console's scanner shows a red warning sign flashing on its scope at the fault's bearing, and
+another in its corner, so it can be tracked down from her cockpit too. Nothing is ever damaged and nobody is hurt: left
+alone a fault only goes on sparking, no more than two wait at once, and once in a long while her computer grumbles
+"Something's broken back there. Again." Whack it with the Spanner, using it, and it is fixed with a clank, a burst of
+sparks and a chime; an empty hand fixes it too, with a thump, as does anything else in hand but a block, which is put
+down against it as usual, so nobody is ever stuck without a spanner. Her repair
+board hangs on the wall just inside engineering's doorway: a dark steel board with a spanner clipped to its left end,
+two rows of five stars and, at its right end, a warning sign over a lamp, both flashing red while a fault waits. Each
+fault fixed lights its next star gold, chiming a step higher each time; a row of five lit plays a fanfare and glows gold
+behind, and all ten a bigger one, after which the next fix starts the board over, a little gold medal along its foot
+for each full board. Her computer has a dry word for every fix, "Fixed. For now.", "That'll hold. Probably." or
+"Patched up. Don't touch it.", and for every fifth "Five repairs. I might keep you." The stars are hers, and stay with
+the board. Use the board with no spanner about you and it hands you one off its clip.
+
+The Fault Panel, the Leaky Pipe, the Repair Board and the Spanner are among her blocks in the creative tab, and can be
+crafted: the panel from eight iron nuggets round a redstone dust, two pipes from five iron ingots round a water bucket,
+the board from three iron ingots over two glowstone dust either side of a gold ingot, and the spanner from four iron
+ingots in a fork. Put up by hand, a fault panel or pipe goes wrong when a redstone signal comes on, and is fixed the
+same way, a repair board near it lighting a star; aboard any ship with an autopilot, a repair board sets off the fault spots
+round it as she flies. The server config's `freighter.repairs` builds her without them and keeps every fault spot from
+going off, even on redstone.
+
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between
 her rooms and on each room's far wall, warm white, pink in her club and a cool night blue in her crew quarters, the room

@@ -102,6 +102,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_TRACTOR_BEAM;
     public static final ModConfigSpec.BooleanValue FREIGHTER_STICKER_MAP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ZERO_GRAVITY;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_REPAIRS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -885,6 +886,14 @@ public final class SkylinersConfig {
                 "falls slowly back down, unhurt. Without it, she has no switch and every gravity switch only buzzes."
             )
             .define("zeroGravity", true);
+        FREIGHTER_REPAIRS = builder
+            .comment(
+                "Whether the freighter is built with her running repairs, and whether they run: while she flies along, every few",
+                "minutes a fault panel round her rooms sparks or a pipe steams, flashing and crackling until someone whacks it with",
+                "a spanner (or a hand), which lights a star on her repair board in engineering. Nothing is ever damaged. Without it,",
+                "she has no fault spots or board, and no fault spot ever goes off, not even on redstone."
+            )
+            .define("repairs", true);
         builder.pop();
 
         SPEC = builder.build();

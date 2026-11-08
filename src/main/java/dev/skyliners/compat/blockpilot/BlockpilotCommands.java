@@ -25,6 +25,7 @@ import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.repairs.RepairBoardBlockEntity;
 import dev.skyliners.turret.LaserCannonBlockEntity;
 import dev.blockpilot.api.Action;
 import dev.blockpilot.api.ArgType;
@@ -183,6 +184,19 @@ public final class BlockpilotCommands {
             .field("shown", "for how many ticks after it came it has been drawn")
             .field("from_muzzle", "whether it was drawn leaving that weapon's muzzle as drawn, rather than where the server fired it from")
             .field("from_camera", "where it was drawn leaving from, from the camera: blocks right, up and ahead as it looks"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("repairs", (context, args) -> repairs(args))
+            .onServer()
+            .group("skyliners")
+            .option("every", "for play-testing, how long a ship flies between faults, in ticks; 0 for the usual few minutes", ArgType.INT)
+            .help("the nearest repair board's running repairs: faults waiting and where, faults fixed, and her flight counted toward the next")
+            .field("waiting", "how many of its fault spots are at fault")
+            .field("faulty", "where those at fault are, as plot positions to use")
+            .field("repairs", "how many faults have been fixed near it, ever")
+            .field("flying", "whether she flies along, when faults may go off")
+            .field("flown", "the ticks she has flown since the last fault went off")
+            .field("next", "the ticks of flight after which the next goes off, -1 before she first flies")
+            .field("spots", "how many fault spots it looks after")
+            .example("skyliners:repairs every=100"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("skyliners")
@@ -468,6 +482,33 @@ public final class BlockpilotCommands {
             .tag("shown", seen.shown()).tag("from_muzzle", seen.fromMuzzle());
         Vec3 at = seen.fromCamera();
         return Result.ok(at == null ? fields : fields.tag("from_camera", round(at.x) + "," + round(at.y) + "," + round(at.z)));
+    }
+
+    /**
+     * The repair board nearest the player, where it is in the world, and how it stands; given {@code every}, how long
+     * every ship flies between faults from now on, for play-testing, first.
+     */
+    private static Result repairs(Args args) throws CommandException {
+        ServerPlayer player = player();
+        if (args.hasOption("every")) {
+            RepairBoardBlockEntity.testEvery = Math.max(0, args.intOption("every", 0));
+        }
+        RepairBoardBlockEntity nearest = null;
+        double best = REACH * REACH;
+        for (RepairBoardBlockEntity board : RepairBoardBlockEntity.loaded(player.serverLevel())) {
+            double distance = SableFlight.toWorld(player.level(), Vec3.atCenterOf(board.getBlockPos())).distanceToSqr(player.position());
+            if (distance < best) {
+                nearest = board;
+                best = distance;
+            }
+        }
+        if (nearest == null) {
+            return Result.error("no_repair_board");
+        }
+        RepairBoardBlockEntity.Report report = nearest.report(player.serverLevel());
+        String faulty = report.faulty().stream().map(at -> at.getX() + "," + at.getY() + "," + at.getZ()).collect(Collectors.joining(" "));
+        return Result.ok(new Fields().tag("waiting", report.waiting()).tag("faulty", faulty).tag("repairs", report.repairs())
+            .tag("flying", report.flying()).tag("flown", report.flown()).tag("next", report.nextAfter()).tag("spots", report.spots()));
     }
 
     /** The player hosting the single player game Blockpilot drives. */

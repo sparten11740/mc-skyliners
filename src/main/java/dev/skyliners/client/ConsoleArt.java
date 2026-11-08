@@ -32,7 +32,9 @@ import org.joml.Matrix4f;
  * filling ring as her drive spools up, its big blue button lit the same; and the climb boost's arrow up over flames,
  * dark while she cannot climb so, pulsing orange while she can, flashing as dashes race up past it as
  * it fires and ringed red while it rests, its big orange button lit the same; and while something holds her take-off,
- * the scanner shows it in place of its scope, her ramp with someone on it flashing amber. Along each desk stand chunky
+ * the scanner shows it in place of its scope, her ramp with someone on it flashing amber; and while one of her fault
+ * spots is at fault, a red warning sign flashes on the scope at its bearing and another in the scope's corner, so a
+ * fault can be tracked down from her cockpit. Along each desk stand chunky
  * controls of its kind and a row of small lamps; with no ship to read, the screens show the power sign pulsing slowly
  * and only one lamp blinks.
  */
@@ -72,6 +74,8 @@ final class ConsoleArt {
     private static final float TRAIL_STEP = 3;
     /** How far off the scope sees, in blocks: those near at its rim, the pin at its rim from as far as this or more. */
     static final double SCOPE_NEAR = 48;
+    /** How long a fault's warning sign on the scope stays lit, and as long dark, flashing, in ticks. */
+    private static final float FAULT_FLASH = 6;
     private static final double SCOPE_FAR = 2000;
     /** How long the scope's ping ring takes to reach the rim, and a lamp test lasts, in ticks. */
     private static final int PING_TICKS = 20;
@@ -123,8 +127,13 @@ final class ConsoleArt {
                     List<Blip> blips, @Nullable String heldBy) {
     }
 
-    /** One blip on the scope: its bearing off her heading, in degrees, its distance, in blocks, and whether it is her pin. */
-    record Blip(double bearing, double distance, boolean pin) {
+    /** One blip on the scope: its bearing off her heading, in degrees, its distance, in blocks, and what it marks. */
+    record Blip(double bearing, double distance, Mark mark) {
+    }
+
+    /** What a blip on the scope marks: someone near, her pin, or one of her fault spots at fault. */
+    enum Mark {
+        SOMEONE, PIN, FAULT
     }
 
     /** A module's screen, on its face. */
@@ -258,22 +267,48 @@ final class ConsoleArt {
         for (Blip blip : readings.blips()) {
             blip(shapes, matrix, y, radius, beam, blip, readings.ticks());
         }
+        if (readings.blips().stream().anyMatch(blip -> blip.mark() == Mark.FAULT) && faultLit(readings.ticks())) {
+            warning(shapes, matrix, -width / 2 + height * 0.16, height * 0.82, height * 0.11);
+        }
         ping(shapes, matrix, y, radius, readings.sinceTouched());
     }
 
     /** A blip on the scope, brightest just after the beam passes over it, her pin's always lit and pulsing. */
     private static void blip(VertexConsumer shapes, Matrix4f matrix, double y, double radius, float beam, Blip blip, float ticks) {
-        double out = blip.pin() ? Math.min(1, Math.log1p(blip.distance()) / Math.log1p(SCOPE_FAR)) : Math.min(1, blip.distance() / SCOPE_NEAR);
+        boolean pin = blip.mark() == Mark.PIN;
+        double out = pin ? Math.min(1, Math.log1p(blip.distance()) / Math.log1p(SCOPE_FAR)) : Math.min(1, blip.distance() / SCOPE_NEAR);
         double angle = Math.toRadians(blip.bearing());
         double x = Math.sin(angle) * out * radius * 0.92;
         double up = y + Math.cos(angle) * out * radius * 0.92;
-        if (blip.pin()) {
+        if (blip.mark() == Mark.FAULT) {
+            if (faultLit(ticks)) {
+                warning(shapes, matrix, x, up, radius * 0.13);
+            }
+            return;
+        }
+        if (pin) {
             float pulse = 0.6F + 0.4F * Mth.sin(ticks * 0.3F);
             ScreenDrawing.disc(shapes, matrix, x, up, radius * 0.09, 4, 12 * LAYER, fade(AMBER, pulse));
             return;
         }
         float since = (float) Mth.positiveModulo(beam - blip.bearing(), 360) / 360;
         ScreenDrawing.disc(shapes, matrix, x, up, radius * 0.05, 8, 11 * LAYER, fade(GREEN, 1 - since * 0.8F));
+    }
+
+    /** Whether a fault's warning sign is lit now, flashing. */
+    private static boolean faultLit(float ticks) {
+        return (int) (ticks / FAULT_FLASH) % 2 == 0;
+    }
+
+    /** A warning sign round a middle, so big: a red triangle, its tip up, with a yellow mark down its middle. */
+    private static void warning(VertexConsumer shapes, Matrix4f matrix, double x, double y, double size) {
+        double bottom = y - size * 0.8;
+        ScreenDrawing.vertex(shapes, matrix, x - size, bottom, 14 * LAYER, RED);
+        ScreenDrawing.vertex(shapes, matrix, x + size, bottom, 14 * LAYER, RED);
+        ScreenDrawing.vertex(shapes, matrix, x, y + size, 14 * LAYER, RED);
+        ScreenDrawing.vertex(shapes, matrix, x, y + size, 14 * LAYER, RED);
+        ScreenDrawing.rect(shapes, matrix, x - size * 0.1, y - size * 0.25, x + size * 0.1, y + size * 0.5, 15 * LAYER, AMBER);
+        ScreenDrawing.rect(shapes, matrix, x - size * 0.1, y - size * 0.6, x + size * 0.1, y - size * 0.4, 15 * LAYER, AMBER);
     }
 
     /** The ping's ring going out from the middle after the scope is touched. */

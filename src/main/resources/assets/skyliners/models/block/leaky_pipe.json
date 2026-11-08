@@ -1,0 +1,244 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "box": "skyliners:block/habitat_kerb",
+    "face": "skyliners:block/fault_panel_face",
+    "pipe": "skyliners:block/lab_chrome",
+    "lamp": "skyliners:block/fault_lamp",
+    "particle": "skyliners:block/habitat_kerb"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        6,
+        12
+      ],
+      "to": [
+        16,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pipe"
+        },
+        "south": {
+          "texture": "#pipe"
+        },
+        "east": {
+          "texture": "#pipe"
+        },
+        "west": {
+          "texture": "#pipe"
+        },
+        "up": {
+          "texture": "#pipe"
+        },
+        "down": {
+          "texture": "#pipe"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        5,
+        15
+      ],
+      "to": [
+        4,
+        11,
+        16.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#box"
+        },
+        "south": {
+          "texture": "#box"
+        },
+        "east": {
+          "texture": "#box",
+          "uv": [
+            14.95,
+            5,
+            16,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#box",
+          "uv": [
+            14.95,
+            5,
+            16,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#box",
+          "uv": [
+            2,
+            14.95,
+            4,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#box",
+          "uv": [
+            2,
+            14.95,
+            4,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        5,
+        15
+      ],
+      "to": [
+        14,
+        11,
+        16.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#box"
+        },
+        "south": {
+          "texture": "#box"
+        },
+        "east": {
+          "texture": "#box",
+          "uv": [
+            14.95,
+            5,
+            16,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#box",
+          "uv": [
+            14.95,
+            5,
+            16,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#box",
+          "uv": [
+            12,
+            14.95,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#box",
+          "uv": [
+            12,
+            14.95,
+            14,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        5,
+        11
+      ],
+      "to": [
+        10,
+        11,
+        16.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#box"
+        },
+        "south": {
+          "texture": "#box"
+        },
+        "east": {
+          "texture": "#box",
+          "uv": [
+            10.95,
+            5,
+            16,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#box",
+          "uv": [
+            10.95,
+            5,
+            16,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#box",
+          "uv": [
+            6,
+            10.95,
+            10,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#box",
+          "uv": [
+            6,
+            10.95,
+            10,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        11,
+        12.5
+      ],
+      "to": [
+        9,
+        13,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp"
+        },
+        "south": {
+          "texture": "#lamp"
+        },
+        "east": {
+          "texture": "#lamp"
+        },
+        "west": {
+          "texture": "#lamp"
+        },
+        "up": {
+          "texture": "#lamp"
+        },
+        "down": {
+          "texture": "#lamp"
+        }
+      }
+    }
+  ]
+}

@@ -401,7 +401,19 @@ scanner's are; its block entity only keeps the client's ring speed for `JumpDriv
 rings. Her `BreakerBoardBlock`, laid after her LED strips, which hand on where each
 room's panel went, keeps those panels' offsets in its `BreakerBoardBlockEntity` and changes their brightness; a switch is on
 while its room is lit, as `BreakerBoardRenderer` reads from the panel. Her `CoolantValveBlock` keeps its pressure in its block state,
-letting it off on scheduled ticks; `CoolantValveRenderer` turns its wheel and swings its gauge's needle toward it. `FreighterEntryHall` hangs the
+letting it off on scheduled ticks; `CoolantValveRenderer` turns its wheel and swings its gauge's needle toward it.
+Her running repairs are in `repairs/`. `FreighterRepairs`, before her rooms are furnished, hangs the two-wide
+`RepairBoardBlock` (a `WideScreenBlock`) on engineering's wall by its doorway and puts up her `FaultPanelBlock`s, the
+fault panel and the leaky pipe, one class told its `Kind`, on her rooms' side walls, all found by `FreighterWalls`.
+Whether a spot is at fault is its block state; its `FaultPanelBlockEntity` saves nothing, is kept track of by `Loaded`
+on the server and on clients, and ticks only while at fault: its crackle or hiss now and then on the server, its sparks
+or steam on clients. The board's `RepairBoardBlockEntity` runs the repairs: once a second it looks over the spots within
+its reach aboard the same ship, counts her flight while her autopilot climbs, cruises or descends, and sets a spot off at
+random when one is due, at most two waiting; a spot fixed calls `RepairBoardBlockEntity.repaired`, which lights the
+nearest board's next star, saved with the game time it lit for `RepairBoardRenderer` to pop it on, and has her computer
+speak once her cockpit is quiet. `ConsoleRenderer` adds each spot at fault within its reach to her scanner's blips,
+which `ConsoleArt` draws as a flashing warning sign. Blockpilot's `skyliners:repairs` reads the nearest board and sets a
+short time between faults for the play-test. `FreighterEntryHall` hangs the
 `CrossbowRackBlock` on her entry hall's wall, found as her LED panels' places are, by `FreighterWalls`. `FreighterStickerMap`
 hangs the `StickerMapBlock` of `stickers/` on a straight run of the same wall, before her rooms are furnished: a
 `WideScreenBlock` four by two whose `StickerMapBlockEntity` keeps each `Sticker` up by the game time it went up, saved

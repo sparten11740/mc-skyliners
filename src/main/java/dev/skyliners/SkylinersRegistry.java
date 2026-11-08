@@ -406,6 +406,10 @@ import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.CannonRocket;
 import dev.skyliners.turret.LaserCannonBlock;
 import dev.skyliners.turret.LaserCannonBlockEntity;
+import dev.skyliners.repairs.FaultPanelBlock;
+import dev.skyliners.repairs.FaultPanelBlockEntity;
+import dev.skyliners.repairs.RepairBoardBlock;
+import dev.skyliners.repairs.RepairBoardBlockEntity;
 import dev.skyliners.zerog.GravitySwitchBlock;
 import dev.skyliners.zerog.GravitySwitchBlockEntity;
 import java.util.List;
@@ -1011,6 +1015,20 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ZERO_GRAVITY_BUMP = sound("zero_gravity_bump");
     /** Her computer, a gravity switch turned off: "Gravity off. Try not to hit your head." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ZERO_GRAVITY = sound("freighter_computer_zero_gravity");
+    /** A fault panel of the freighter's running repairs sparking: the radio's crackle, subtitled as its own. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FAULT_CRACKLE = sound("fault_crackle");
+    /** A leaky pipe of the freighter's running repairs steaming: the fog machine's hiss, subtitled as its own. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FAULT_HISS = sound("fault_hiss");
+    /** Her computer, a fault fixed: "Fixed. For now." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_REPAIR_FIXED = sound("freighter_computer_repair_fixed");
+    /** Her computer, a fault fixed: "That'll hold. Probably." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_REPAIR_HOLDS = sound("freighter_computer_repair_holds");
+    /** Her computer, a fault fixed: "Patched up. Don't touch it." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_REPAIR_PATCHED = sound("freighter_computer_repair_patched");
+    /** Her computer, every fifth fault fixed: "Five repairs. I might keep you." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_REPAIR_FIVE = sound("freighter_computer_repair_five");
+    /** Her computer, now and then, at a fault left a good long while: "Something's broken back there. Again." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_REPAIR_GRUMBLE = sound("freighter_computer_repair_grumble");
     /** Her computer, after its falling blip: "Jump drive charged." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_CHARGED =
         sound("freighter_computer_jump_charged");
@@ -1717,6 +1735,31 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StickerMapBlockEntity>> STICKER_MAP_ENTITY =
         BLOCK_ENTITIES.register("sticker_map", () -> BlockEntityType.Builder.of(StickerMapBlockEntity::new, STICKER_MAP.get()).build(null));
     public static final DeferredItem<BlockItem> STICKER_MAP_ITEM = ITEMS.registerSimpleBlockItem(STICKER_MAP);
+    /**
+     * The freighter's fault spots for her running repairs (see {@link FaultPanelBlock}): a junction box that sparks and
+     * a pipe that steams, sharing one kind of block entity.
+     */
+    public static final DeferredBlock<FaultPanelBlock> FAULT_PANEL = BLOCKS.registerBlock(
+        "fault_panel", properties -> new FaultPanelBlock(FaultPanelBlock.Kind.PANEL, properties), metal(MapColor.METAL).noOcclusion()
+            .lightLevel(state -> state.getValue(FaultPanelBlock.FAULTY) ? FaultPanelBlock.FAULT_GLOW : 0)
+    );
+    public static final DeferredItem<BlockItem> FAULT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(FAULT_PANEL);
+    public static final DeferredBlock<FaultPanelBlock> LEAKY_PIPE = BLOCKS.registerBlock(
+        "leaky_pipe", properties -> new FaultPanelBlock(FaultPanelBlock.Kind.PIPE, properties), metal(MapColor.METAL).noOcclusion()
+            .lightLevel(state -> state.getValue(FaultPanelBlock.FAULTY) ? FaultPanelBlock.FAULT_GLOW : 0)
+    );
+    public static final DeferredItem<BlockItem> LEAKY_PIPE_ITEM = ITEMS.registerSimpleBlockItem(LEAKY_PIPE);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FaultPanelBlockEntity>> FAULT_PANEL_ENTITY =
+        BLOCK_ENTITIES.register("fault_panel", () -> BlockEntityType.Builder.of(FaultPanelBlockEntity::new, FAULT_PANEL.get(), LEAKY_PIPE.get()).build(null));
+    /** The repair board of the freighter's running repairs (see {@link RepairBoardBlock}), a star for each fault fixed. */
+    public static final DeferredBlock<RepairBoardBlock> REPAIR_BOARD = BLOCKS.registerBlock(
+        "repair_board", RepairBoardBlock::new, metal(MapColor.COLOR_GRAY).strength(1.0F).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RepairBoardBlockEntity>> REPAIR_BOARD_ENTITY =
+        BLOCK_ENTITIES.register("repair_board", () -> BlockEntityType.Builder.of(RepairBoardBlockEntity::new, REPAIR_BOARD.get()).build(null));
+    public static final DeferredItem<BlockItem> REPAIR_BOARD_ITEM = ITEMS.registerSimpleBlockItem(REPAIR_BOARD);
+    /** The spanner that fixes the freighter's faults with a clank (see {@link FaultPanelBlock}); a plain tool otherwise. */
+    public static final DeferredItem<Item> SPANNER = ITEMS.register("spanner", () -> new Item(new Item.Properties().stacksTo(1)));
     /**
      * The freighter's cockpit console (see {@link ConsoleBlock}): its modules, each its own block, curving round her
      * pilots' seats as one half-round desk and put up anywhere by hand, sharing one kind of block entity.
@@ -3339,6 +3382,10 @@ public final class SkylinersRegistry {
             COOLANT_VALVE_ITEM,
             CROSSBOW_RACK_ITEM,
             STICKER_MAP_ITEM,
+            REPAIR_BOARD_ITEM,
+            FAULT_PANEL_ITEM,
+            LEAKY_PIPE_ITEM,
+            SPANNER,
             TRACTOR_BEAM_ITEM,
             BEAM_PAD_ITEM,
             GRAVITY_SWITCH_ITEM,

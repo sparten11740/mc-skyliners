@@ -5601,6 +5601,15 @@ const COMPUTER_STICKER_LINES = {
 const COMPUTER_STICKER_BOARD = {
   freighter_computer_sticker_board: "Sticker map's full. | We've been everywhere. | Twice.",
 };
+// Her computer through her running repairs (see RepairBoardBlockEntity), our own lines in the same voice: a fault
+// fixed, one of three said at random; every fifth fixed; and, now and then, a fault left sparking a good while.
+const COMPUTER_REPAIR_LINES = {
+  freighter_computer_repair_fixed: "Fixed. | For now.",
+  freighter_computer_repair_holds: "That'll hold. | Probably.",
+  freighter_computer_repair_patched: "Patched up. | Don't touch it.",
+  freighter_computer_repair_five: "Five repairs. | I might keep you.",
+  freighter_computer_repair_grumble: "Something's broken back there. | Again.",
+};
 /**
  * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
  * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
@@ -5635,6 +5644,7 @@ if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_CLIMB_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_STICKER_BOARD, COMPUTER_ANNOUNCEMENT_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_REPAIR_LINES, COMPUTER_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

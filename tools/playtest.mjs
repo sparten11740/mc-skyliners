@@ -451,6 +451,15 @@ const BEAM_HAND_FLOAT_TICKS = 100;
 // How long a lit beam takes at most to see what lies under it again, in ticks: TractorBeamBlockEntity.LOOK_EVERY, and
 // a little more.
 const BEAM_LOOKS_AGAIN = 15;
+// Her running repairs: how many fault spots she is built with at least; how long a ship flies between faults for the
+// play-test, in ticks, and how long a fault is then given to go off, how long she is watched on the ground for one
+// that should not, and how long a fixed fault's star, chime and computer's line are given, in ticks.
+const REPAIR_SPOTS_LEAST = 3;
+const REPAIR_TEST_EVERY = 100;
+const REPAIR_FAULT_WITHIN = 400;
+const REPAIR_GROUND_WATCH = 300;
+const REPAIR_FIXED_WITHIN = 40;
+const REPAIR_VOICE_WITHIN = 300;
 // A gravity switch: how far before it the player and a dropped cookie stand, in blocks; how long they are given to
 // rise off the floor and how high over it they must then float, in ticks and blocks; how long jump is held and how much
 // higher the player must have floated for it, in ticks and blocks; how long they are watched afterwards, still off the
@@ -3874,6 +3883,101 @@ function checkStickerMapByHand() {
     stickersOn(at).join(","));
 }
 
+// How the nearest repair board stands, as Blockpilot's skyliners:repairs reads it; undefined with none near.
+function repairsReport(options = "") {
+  const [reply] = send(`skyliners:repairs ${options}`.trim());
+  return reply.ok === false ? undefined : reply;
+}
+
+// The plot positions of the fault spots a repair board's report says are at fault.
+const faultyOf = (report) => (report?.faulty ?? "").split(" ").filter(Boolean);
+
+// A freighter's running repairs: she is built with her repair board and fault spots; standing on the ground, none goes
+// off however short the time between faults is set; hovering, one goes off within that time, crackling or hissing; a
+// player who goes to it and whacks it with a spanner fixes it, a chime sounds, a star lights on the board and her
+// computer has its say; and the star is still lit once the world has been left and joined again.
+function checkFreighterRepairs() {
+  layDown("freighter");
+  const board = must("find skyliners:repair_board 128 2 side=server").rows;
+  const spots = must("find skyliners:fault_panel 128 4 side=server").rows.length + must("find skyliners:leaky_pipe 128 4 side=server").rows.length;
+  expect(board.length === 2 && spots >= REPAIR_SPOTS_LEAST, "freighter: she is built with her repair board and fault spots round her rooms",
+    `${board.length} board parts, ${spots} fault spots`);
+  if (board.length !== 2) {
+    return;
+  }
+  const [bx, by, bz] = board[0].at_abs;
+  must(`server tp @p ${bx + 0.5} ${by - 1} ${bz + 0.5}; fly off; wait ${CHUNKS_TICKS}t`);
+  repairsReport(`every=${REPAIR_TEST_EVERY}`);
+  must(`wait ${REPAIR_GROUND_WATCH}t`);
+  const standing = repairsReport();
+  expect(standing && standing.waiting === 0 && !standing.flying, "freighter: standing on the ground, no fault goes off", JSON.stringify(standing));
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  findShipFlying("skyliners:engine_grille");
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(Boolean(up), "freighter: she lifts off and hovers for her repairs, the player aboard by her repair board");
+  if (!up) {
+    repairsReport("every=0");
+    return;
+  }
+  const since = now();
+  const broken = waitForReport(repairsReport, (report) => report.waiting > 0, REPAIR_FAULT_WITHIN);
+  const noise = heard("skyliners:fault_*", since, LOOK_EVERY);
+  expect(Boolean(broken) && Boolean(noise), "freighter: hovering, a fault goes off within the time set, crackling or hissing",
+    JSON.stringify(broken ?? repairsReport()));
+  repairsReport("every=0");
+  const [fault] = faultyOf(broken);
+  if (!fault) {
+    return;
+  }
+  emptyHands();
+  must(`server give @p skyliners:spanner 1; wait 5t; select 0; sable:tp ${fault}; wait 20t`);
+  const fixedAt = now();
+  must(`use ${fault}; wait ${REPAIR_FIXED_WITHIN}t`);
+  const fixed = repairsReport();
+  expect(fixed && fixed.repairs === 1 && !faultyOf(fixed).includes(fault) && Boolean(heard("skyliners:centrifuge_ding", fixedAt, LOOK_EVERY)),
+    "freighter: whacked with the spanner, the fault is fixed with a chime and a star lights on her board", JSON.stringify(fixed));
+  expect(Boolean(heard("skyliners:freighter_computer_repair_*", fixedAt, REPAIR_VOICE_WITHIN)), "freighter: and her computer has its say");
+  must(`leave; join world ${WORLD}; wait ${CHUNKS_TICKS}t`, BUILD_SECONDS);
+  const rejoined = repairsReport();
+  expect(rejoined?.repairs === 1, "freighter: her star is still lit once the world has been left and joined again", JSON.stringify(rejoined));
+  send("?skyliners:autopilot land");
+}
+
+// A fault panel set up by hand on a wall beside a repair board: a redstone signal coming on sets it sparking and
+// crackling; whacked with an empty hand it is fixed with a thump and a chime, lighting a star on the board; the board,
+// used by someone with no spanner, hands them one; and on the ground nothing sets it off by itself.
+function checkRepairsByHand() {
+  const [x, z] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${ground} ${z + 0.5} 180 0; wait 40t`);
+  must(`server fill ${x - 3} ${ground} ${z - 4} ${x + 3} ${ground + 3} ${z - 4} stone`);
+  must("server give @p skyliners:fault_panel 1; server give @p skyliners:repair_board 1; wait 5t; select 0");
+  const panel = [x, ground + 1, z - 3];
+  const boardAt = [x - 2, ground + 1, z - 3];
+  send(`place skyliners:fault_panel ${panel.join(",")}`);
+  must("select 1");
+  send(`place skyliners:repair_board ${boardAt.join(",")}`);
+  const placed = must(`block ${panel.join(",")} side=server`);
+  expect((placed.id ?? "").includes("fault_panel") && placed.props?.faulty === "false", "fault panel: put up by hand on a wall, it hangs there, all well",
+    JSON.stringify(placed));
+  const powered = now();
+  must(`server setblock ${x} ${ground + 2} ${z - 3} minecraft:redstone_block; wait 10t`);
+  const sparking = must(`block ${panel.join(",")} side=server`).props?.faulty === "true";
+  expect(sparking && Boolean(heard("skyliners:fault_crackle", powered, LOOK_EVERY)), "fault panel: a redstone signal sets it sparking and crackling");
+  must(`server setblock ${x} ${ground + 2} ${z - 3} minecraft:air; wait 5t`);
+  emptyHands();
+  const whacked = now();
+  must(`use ${panel.join(",")}; wait 10t`);
+  const board = repairsReport();
+  expect(must(`block ${panel.join(",")} side=server`).props?.faulty === "false" && Boolean(heard("skyliners:centrifuge_ding", whacked, LOOK_EVERY))
+    && board?.repairs === 1, "fault panel: whacked with an empty hand, it is fixed with a chime and the board beside it lights a star", JSON.stringify(board));
+  must(`use ${boardAt.join(",")}; wait 5t`);
+  const held = must("inv").rows.some((row) => row.item === "skyliners:spanner");
+  expect(held, "repair board: used with no spanner about you, it hands you one");
+}
+
 const CHECKS = {
   "curtain-parts": { run: checkCurtainParts, about: "a curtain parts as someone walks through it and shuts behind them" },
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
@@ -3950,6 +4054,8 @@ const CHECKS = {
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "impact-sounds": { run: checkImpactSounds, about: "a freighter dropped onto the ground crunches and groans, and shoved along it grinds", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },
+  "freighter-repairs": { run: checkFreighterRepairs, slow: true, about: "a freighter's faults go off only in flight, crackling; whacked with a spanner, one is fixed and lights a star that stays lit" },
+  "repairs-by-hand": { run: checkRepairsByHand, about: "a fault panel set up by hand sparks on redstone and, whacked, lights a star on a repair board beside it, which hands out spanners" },
   "freighter-voice": { run: checkFreighterVoice, about: "a freighter's computer, not the airliner's flight deck, says she lifts off, comes down and is down, her ramp never talking over it", slow: true },
   "rocket-middle-click": { run: checkRocketMiddleClick, about: "the mouse wheel gives something for every kind of block in the rocket", slow: true },
 };

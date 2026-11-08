@@ -141,6 +141,7 @@ import dev.skyliners.client.JumpDriveRenderer;
 import dev.skyliners.client.SpookieModel;
 import dev.skyliners.client.SpookieRenderer;
 import dev.skyliners.client.StickerMapRenderer;
+import dev.skyliners.client.RepairBoardRenderer;
 import dev.skyliners.client.SporeParticle;
 import dev.skyliners.client.SprinklerRenderer;
 import dev.skyliners.client.TabBanners;
@@ -381,6 +382,8 @@ public final class SkylinersClient {
             SkylinersRegistry.CROSSBOW_RACK_ENTITY.get(), context -> new CrossbowRackRenderer()));
         modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerBlockEntityRenderer(
             SkylinersRegistry.STICKER_MAP_ENTITY.get(), context -> new StickerMapRenderer()));
+        modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerBlockEntityRenderer(
+            SkylinersRegistry.REPAIR_BOARD_ENTITY.get(), context -> new RepairBoardRenderer()));
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);

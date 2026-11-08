@@ -700,6 +700,44 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
   cubes.coolant_valve = null;
 }
 
+// The freighter's fault spots (see FaultPanelBlock), each drawn facing north, against the wall to its south: the fault
+// panel a steel junction box with a conduit up out of its top and a small warning lamp on its face; the leaky pipe a
+// chrome pipe along the wall on two brackets, a flanged joint in its middle with the lamp on top. The lamp is dark red
+// while all is well and, at fault, flashes bright red at full brightness (an animated texture, so no renderer is
+// needed); the sparks and steam are particles. The spanner that fixes them is held as a tool is.
+{
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const lamp = (from, to, faulty) => ({
+    from, to, ...(faulty ? { shade: false } : {}),
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#lamp", ...(faulty ? lit : {}) }])),
+  });
+  const shapes = {
+    fault_panel: (faulty) => [solid([3, 3, 13], [13, 13, 16], "#box"), { ...solid([3.5, 3.5, 12.5], [12.5, 12.5, 13], "#box"), faces: {
+      north: { texture: "#face" }, east: { texture: "#box" }, west: { texture: "#box" }, up: { texture: "#box" }, down: { texture: "#box" } } },
+      solid([7, 13, 13.5], [9, 16, 15.5], "#pipe"), lamp([10, 10, 11.5], [12, 12, 12.5], faulty)],
+    leaky_pipe: (faulty) => [solid([0, 6, 12], [16, 10, 16], "#pipe"), solid([2, 5, 15], [4, 11, 16], "#box"), solid([12, 5, 15], [14, 11, 16], "#box"),
+      solid([6, 5, 11], [10, 11, 16], "#box"), lamp([7, 11, 12.5], [9, 13, 14.5], faulty)],
+  };
+  for (const [name, shape] of Object.entries(shapes)) {
+    for (const faulty of [false, true]) {
+      write(`assets/${ID}/models/block/${name}${faulty ? "_faulty" : ""}.json`, {
+        parent: "minecraft:block/block",
+        textures: { box: `${ID}:block/habitat_kerb`, face: `${ID}:block/fault_panel_face`, pipe: `${ID}:block/lab_chrome`,
+          lamp: `${ID}:block/fault_lamp${faulty ? "_flashing" : ""}`, particle: `${ID}:block/habitat_kerb` },
+        elements: shape(faulty),
+      });
+    }
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((faulty) => [false, true]
+        .map((powered) => [`facing=${facing},faulty=${faulty},powered=${powered}`, { model: `${ID}:block/${name}${faulty ? "_faulty" : ""}`, y }])))),
+    });
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+  write(`assets/${ID}/models/item/spanner.json`, { parent: "minecraft:item/handheld", textures: { layer0: `${ID}:item/spanner` } });
+}
+
 // The freighter's tractor beam (see TractorBeamBlock), drawn hung under a ceiling: a mounting plate of riveted
 // gunmetal against the ceiling, a body under it ringed in hazard stripes, and a wide ribbed steel rim round its lens,
 // which looks down, dark green glass or, lit, glowing green at full brightness; stood on a floor the same model turned
@@ -2167,6 +2205,11 @@ function zeppelinControlsLang() {
     "block.skyliners.gravity_switch": "Gravity Switch",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
     "block.skyliners.sticker_map": "Sticker Map",
+    "block.skyliners.fault_panel": "Fault Panel",
+    "block.skyliners.leaky_pipe": "Leaky Pipe",
+    "block.skyliners.repair_board": "Repair Board",
+    "item.skyliners.spanner": "Spanner",
+    "message.skyliners.repairs.off": "Running repairs are switched off on this server",
     "message.skyliners.sticker_map.aboard": "Her stickers go up as she lands somewhere new",
     "message.skyliners.sticker_map.nothing_new": "No new stickers yet: go and explore somewhere new!",
     "message.skyliners.sticker_map.off": "Sticker maps are switched off on this server",
@@ -2552,6 +2595,18 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
   freighter_computer_zero_gravity: { subtitle: "Computer: Gravity off", aboard: true },
+  // Her running repairs' fault spots at fault, each played louder than its own sound so it carries across her deck: the
+  // fault panel's crackle, the radio's, and the leaky pipe's hiss, the fog machine's (a sound's "from" is the sound
+  // file it plays, where that is another's).
+  fault_crackle: { subtitle: "Fault panel sparks and crackles", from: "radio_crackle" },
+  fault_hiss: { subtitle: "Leaky pipe hisses steam", from: "fog_hiss" },
+  // Her computer through her running repairs: a fault fixed, one of three lines; every fifth fixed; and a fault left a
+  // good while.
+  freighter_computer_repair_fixed: { subtitle: "Computer: Fixed, for now", aboard: true },
+  freighter_computer_repair_holds: { subtitle: "Computer: That'll hold, probably", aboard: true },
+  freighter_computer_repair_patched: { subtitle: "Computer: Patched up", aboard: true },
+  freighter_computer_repair_five: { subtitle: "Computer: Five repairs", aboard: true },
+  freighter_computer_repair_grumble: { subtitle: "Computer: Something's broken again", aboard: true },
   // Her computer through her hyperspace jump, the lines generate_sounds.mjs keeps together in COMPUTER_JUMP_LINES,
   // each with its gist.
   freighter_computer_jump_spooling: { subtitle: "Computer: Jump drive spooling up", aboard: true },
@@ -2571,11 +2626,11 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_gravity: { subtitle: "Computer: Gravity back on", aboard: true },
 };
 function freighterSounds() {
-  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard }]) => {
+  return Object.fromEntries(Object.entries(FREIGHTER_SOUNDS).map(([name, { heard, stream, takes, aboard, from }]) => {
     if (aboard) {
       return [name, heardAboard(name)];
     }
-    const sound = { name: `${ID}:${name}`, ...(stream ? { stream } : {}), ...(heard ? { attenuation_distance: heard } : {}) };
+    const sound = { name: `${ID}:${from ?? name}`, ...(stream ? { stream } : {}), ...(heard ? { attenuation_distance: heard } : {}) };
     return [name, { subtitle: `subtitles.${ID}.${name}`, sounds: takes ? takes.map((pitch) => ({ ...sound, pitch })) : [sound] }];
   }));
 }
@@ -9636,6 +9691,10 @@ wideScreen("livery_selector", "livery_selector");
 // parchment and its casing dark oak, its map and its stickers drawn over the face by StickerMapRenderer.
 slimScreenModels("sticker_map", `${ID}:block/sticker_map_face`, "minecraft:block/dark_oak_planks");
 wideScreen("sticker_map", "sticker_map");
+// The repair board (see RepairBoardBlock): the same slim board, two wide and one tall, its face dark steel and its
+// casing her engineering's steel, its spanner, stars and warning lamp drawn over the face by RepairBoardRenderer.
+slimScreenModels("repair_board", `${ID}:block/repair_board_face`, `${ID}:block/habitat_kerb`);
+wideScreen("repair_board", "repair_board");
 // A wide screen (see WideScreenBlock) drawn with the models given, upright or tilted, and its item a picture of its
 // own; only part 0 drops it, so the whole screen gives back one. Its parts run as far as the largest wide screen's
 // (WideScreenBlock.MOST_PARTS); a block with a size of its own lists the values of the property that picks it.
@@ -11251,6 +11310,8 @@ FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve",
 FITTINGS.push("tractor_beam", "beam_pad");
 // Her sticker map hangs on her entry hall's wall, and goes up by hand anywhere.
 FITTINGS.push("sticker_map");
+// Her running repairs' fault spots and board are fitted round her rooms, and set up by hand anywhere.
+FITTINGS.push("fault_panel", "leaky_pipe", "repair_board");
 FITTINGS.push("gravity_switch");
 // Her console's modules are fitted into her cockpit, and set up by hand anywhere.
 FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
@@ -11395,6 +11456,10 @@ shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecra
 shaped("engine_grating", ["BBB", "BGB", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 8);
 shaped("crossbow_rack", ["PGP", "PPP"], { P: "minecraft:dark_oak_planks", G: "minecraft:gold_nugget" }, 1);
 shaped("sticker_map", ["PPP", "PMP"], { P: "minecraft:dark_oak_planks", M: "minecraft:map" }, 1);
+shaped("spanner", ["I I", " I ", " I "], { I: "minecraft:iron_ingot" }, 1);
+shaped("fault_panel", ["III", "IRI", "III"], { I: "minecraft:iron_nugget", R: "minecraft:redstone" }, 1);
+shaped("leaky_pipe", ["III", "IBI"], { I: "minecraft:iron_ingot", B: "minecraft:water_bucket" }, 2);
+shaped("repair_board", ["III", "GSG"], { I: "minecraft:iron_ingot", G: "minecraft:glowstone_dust", S: "minecraft:gold_ingot" }, 1);
 shaped("floor_window", ["IGI", "GGG", "IGI"], { I: "minecraft:iron_ingot", G: "minecraft:glass" }, 1);
 shaped("beach_sand", ["SS", "SS"], { S: "minecraft:sand" }, 4);
 shaped("potted_palm", [" J ", " J ", " P "], { J: "minecraft:jungle_sapling", P: "minecraft:flower_pot" }, 1);
