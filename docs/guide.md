@@ -2682,6 +2682,15 @@ Hyperspace Jump Console is among her blocks in the creative tab and works for an
 or a ceiling. The server config's `freighter.hyperspaceJump` switches the jump off; her console then has her flight
 readouts again where the jump button was.
 
+Anyone watching from outside, on the ground or aboard another ship within 192 blocks, sees the jump too, as the
+tardigrade's jump grown to a ship her size. As she lets go, short streaks of light rush in to her hull from all round,
+more and more, keeping up with her as she flies, over a deep hum rising. Then she is gone in a white flash: long streaks
+shoot off ahead of where she was, the way she pointed, glitter hangs in the air and a ring of light closes in on the
+hole she left, with a whoomph heard far off. Where she comes out, streaks rush in from behind her over a swelling rush
+and vanish into the spot, and she is there in a flash, a ring of streaks bursting out round her and glitter, with a
+boom. The nearer the watcher, the brighter a faint white flash over their view. The server config's
+`freighter.hyperspaceWake` leaves this out; she then simply vanishes and reappears for them.
+
 The tube out to her cockpit runs between ledges where its round wall meets her deck, and on them stands the fleet in
 miniature: models of the airliner, the zeppelin, the rocket and the freighter herself on their stands, their noses all
 pointing on to her cockpit, with planters of greenery and flowers between them. The tunnel down her port prong is a

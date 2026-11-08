@@ -657,6 +657,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SLEEP_Z = PARTICLES.register("sleep_z", () -> new SimpleParticleType(false));
     /** A glowing spore of the spore drive the rocket's tardigrade jumps through (see entity.Tardigrade). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SPORE = PARTICLES.register("spore", () -> new SimpleParticleType(false));
+    /**
+     * A streak of light of a freighter's hyperspace jump as those outside her see it (see
+     * dev.skyliners.autopilot.HyperspaceWake), seen from far off.
+     */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> HYPERSPACE_STREAK =
+        PARTICLES.register("hyperspace_streak", () -> new SimpleParticleType(true));
 
     /** Opens by hand like a wooden door but sounds like the metal one it is. */
     public static final BlockSetType AIRLINER = BlockSetType.register(new BlockSetType(
@@ -963,6 +969,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> JUMP_DRIVE_THUMP = sound("jump_drive_thump");
     /** Her jump: the whine shooting up, a moment's silence and a falling boom. */
     public static final DeferredHolder<SoundEvent, SoundEvent> JUMP_DRIVE_JUMP = sound("jump_drive_jump");
+    /**
+     * Her jump heard from outside, far off: going, a deep hum rising as light gathers on her, into a whoomph as she
+     * goes; and coming out, a rush swelling as the streaks rush in, into a boom as she is there.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_OUT = sound("freighter_hyperspace_out");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_HYPERSPACE_IN = sound("freighter_hyperspace_in");
     /** The Spookie greeting someone: a hoot rising twice, and a chuff. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SPOOKIE_GREET = sound("spookie_greet");
     /** The Spookie happy: a rolling purr rising into a hoot. */

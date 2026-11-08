@@ -78,6 +78,8 @@ import dev.skyliners.client.HelmRenderer;
 import dev.skyliners.client.HelmetBreathing;
 import dev.skyliners.client.HelmetVisor;
 import dev.skyliners.client.HyperspaceOverlay;
+import dev.skyliners.client.HyperspaceStreakParticle;
+import dev.skyliners.client.HyperspaceWakes;
 import dev.skyliners.client.KeptLooks;
 import dev.skyliners.client.LaserBolts;
 import dev.skyliners.client.LaserCannonRenderer;
@@ -302,6 +304,9 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::widen);
         NeoForge.EVENT_BUS.addListener(HyperspaceOverlay::world);
         NeoForge.EVENT_BUS.addListener(BirthdayBanner::tick);
+        // A freighter's hyperspace jump as those outside her see it: the light gathering on her and rushing in to where
+        // she comes out.
+        NeoForge.EVENT_BUS.addListener(HyperspaceWakes::tick);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
@@ -407,6 +412,8 @@ public final class SkylinersClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "birthday_banner"), BirthdayBanner::overlay);
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_jump"),
             HyperspaceOverlay::overlay);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "hyperspace_wake"),
+            HyperspaceWakes::overlay);
         // Where the spyglass's own round is drawn, under the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "lookout_glass"), LookoutView::overlay);
         // The gunner's sight, over the view from the freighter's laser cannon and under the hotbar and the chat.
@@ -452,6 +459,7 @@ public final class SkylinersClient {
         event.registerSpriteSet(SkylinersRegistry.CANNON_ROCKET_SOOT.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.SOOT));
         event.registerSpriteSet(SkylinersRegistry.SLEEP_Z.get(), SleepParticle.Provider::new);
         event.registerSpriteSet(SkylinersRegistry.SPORE.get(), SporeParticle.Provider::new);
+        event.registerSpriteSet(SkylinersRegistry.HYPERSPACE_STREAK.get(), HyperspaceStreakParticle.Provider::new);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

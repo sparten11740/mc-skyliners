@@ -4242,6 +4242,19 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (r > 2.3) return CLEAR;
     return r < 1.2 ? [0xff, 0xff, 0xff] : [0xb8, 0xe8, 0xff];
   }, 0, 5, 5);
+  // A streak of light of a freighter's hyperspace jump seen from outside (see HyperspaceStreakParticle), drawn along
+  // its length left to right from its head: white-hot and solid down its middle, so it shows against a bright sky, its
+  // edges soft and pale blue, its ends rounded off. The particle fades it from its head to its tail as it draws it.
+  const STREAK_LONG = 16;
+  const STREAK_WIDE = 8;
+  texture(particleOutput, "hyperspace_streak", (x, y) => {
+    const across = Math.abs((y + 0.5) / STREAK_WIDE * 2 - 1);
+    const end = Math.min(1, (x + 0.5) / 2, (STREAK_LONG - x - 0.5) / 2);
+    const glow = Math.min(1, 1.6 * Math.max(0, 1 - across)) * end;
+    const white = Math.min(1, Math.max(0, 1.6 - across * 2.2));
+    const shade = (from, to) => Math.round(from + (to - from) * white);
+    return [shade(0x9c, 0xff), shade(0xdc, 0xff), 0xff, Math.round(255 * glow)];
+  }, 0, STREAK_LONG, STREAK_WIDE);
 }
   const GIRDER = [0x2f, 0x5f, 0xb3];
   const GIRDER_DARK = [0x23, 0x48, 0x8a];

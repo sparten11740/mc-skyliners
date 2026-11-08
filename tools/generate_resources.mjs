@@ -2560,6 +2560,9 @@ const FREIGHTER_SOUNDS = {
   jump_drive_sputter: { subtitle: "Jump drive sputters", heard: 48 },
   jump_drive_thump: { subtitle: "Jump drive kicks back in", heard: 48 },
   jump_drive_jump: { subtitle: "Jump drive jumps", heard: 64 },
+  // Her hyperspace jump heard from outside, as far off as it is seen (HyperspaceWake.SEEN_WITHIN): going and coming out.
+  freighter_hyperspace_out: { subtitle: "Freighter jumps to hyperspace", heard: 192 },
+  freighter_hyperspace_in: { subtitle: "Freighter drops out of hyperspace", heard: 192 },
   // The Spookie's voice, each in two takes a little higher and lower, its roar carrying through her.
   spookie_greet: { subtitle: "Spookie hoots hello", heard: 24, takes: SPOOKIE_TAKES },
   spookie_happy: { subtitle: "Spookie purrs happily", heard: 24, takes: SPOOKIE_TAKES },
@@ -2800,6 +2803,8 @@ for (const kind of ["trail", "flame", "fireball", "soot"]) {
   // The "z" rising from her sleeping tardigrade (see SleepParticle), and the glowing spores of its spore drive.
   write(`assets/${ID}/particles/sleep_z.json`, { textures: [`${ID}:sleep_z`] });
   write(`assets/${ID}/particles/spore.json`, { textures: [`${ID}:spore`] });
+  // The streaks of light of a freighter's hyperspace jump, as those outside her see it (see HyperspaceStreakParticle).
+  write(`assets/${ID}/particles/hyperspace_streak.json`, { textures: [`${ID}:hyperspace_streak`] });
   selfDestructParticles();
 }
 

@@ -12,6 +12,7 @@ import dev.skyliners.autopilot.AssemblyFailed;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.HyperspaceJump;
+import dev.skyliners.autopilot.HyperspaceWake;
 import dev.skyliners.autopilot.LaunchShock;
 import dev.skyliners.autopilot.OpenAutopilotScreen;
 import dev.skyliners.autopilot.ParkedShips;
@@ -44,6 +45,7 @@ import dev.skyliners.client.CameraShake;
 import dev.skyliners.client.CannonRockets;
 import dev.skyliners.client.CoffeeMachineScreen;
 import dev.skyliners.client.HyperspaceOverlay;
+import dev.skyliners.client.HyperspaceWakes;
 import dev.skyliners.client.LaserBolts;
 import dev.skyliners.client.LightningFlash;
 import dev.skyliners.client.MicroscopeScreen;
@@ -191,7 +193,7 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("37")
+        event.registrar("38")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -248,6 +250,8 @@ public final class Skyliners {
                 (payload, context) -> ThrownClear.thrown())
             .playToClient(HyperspaceJump.TYPE, HyperspaceJump.STREAM_CODEC,
                 (payload, context) -> HyperspaceOverlay.told(payload))
+            .playToClient(HyperspaceWake.TYPE, HyperspaceWake.STREAM_CODEC,
+                (payload, context) -> HyperspaceWakes.seen(payload))
             .playToClient(ImpactJolt.TYPE, ImpactJolt.STREAM_CODEC,
                 (payload, context) -> CameraShake.impact(payload.strength()));
     }

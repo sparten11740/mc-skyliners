@@ -5274,6 +5274,104 @@ const JUMP_DRIVE = {
   writeSound("jump_drive_jump", lowPassed(jump.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.8);
 }
 
+// The freighter's hyperspace jump heard from outside (see the client's HyperspaceWakes), far off: the tardigrade's
+// spore-drive jump, its hum rising into a whump, grown to a ship her size, each with a random sequence of its own.
+// Going, played as she lets go: a deep hum rising from 40 to 160 hertz under a rush of air swelling up to her going,
+// as long as her last moment before she goes (FreighterJump.GO_TICKS); then a whoomph, a sub falling from 110 to 30
+// hertz with a blast of low noise and a crack, a bright zing shooting up from 1.5 to 6 kilohertz as her streaks shoot
+// off, and the air rushing back into where she was. Coming out, played as the streaks start rushing in: a rush of air
+// swelling and falling from 4 kilohertz to 400 hertz as they come, as long again; then a boom, a crack, a sub falling
+// from 90 to 28 hertz and a long rumble rolling away.
+const HYPERSPACE_OUTSIDE = {
+  // How long the lead up to the jump is, in seconds, as long as her last moment before she goes; and how long each
+  // sound rings on after it.
+  leadSeconds: 1.25,
+  ringSeconds: 2.6,
+  // The hum going: from and to, in hertz; the whoomph's sub, from and to, in hertz, and how fast it falls, a second.
+  humFrom: 40,
+  humTo: 160,
+  whoomphFrom: 110,
+  whoomphTo: 30,
+  whoomphFall: 3,
+  // The zing of her streaks shooting off, from and to, in hertz, over so many seconds.
+  zingFrom: 1500,
+  zingTo: 6000,
+  zingSeconds: 0.35,
+  // The rush coming out: from and to, in hertz; the boom's sub, from and to, in hertz, and how fast it falls, a second.
+  rushFrom: 4000,
+  rushTo: 400,
+  boomFrom: 90,
+  boomTo: 28,
+  boomFall: 1.8,
+};
+{
+  const H = HYPERSPACE_OUTSIDE;
+  const seconds = H.leadSeconds + H.ringSeconds;
+  const n = Math.round(seconds * RATE);
+  const lead = Math.round(H.leadSeconds * RATE);
+
+  // Going.
+  const outRandom = ownRandom(0x48797031);
+  const swell = sweptResonance(whiteNoise(seconds, outRandom), (t) => 250 + 2200 * Math.min(1, t / H.leadSeconds) ** 2, 1.4);
+  const backIn = sweptResonance(whiteNoise(seconds, outRandom), (t) => 1800 * Math.exp(-Math.max(0, t - H.leadSeconds) / 0.5) + 150, 1);
+  const out = new Float64Array(n);
+  let hum = 0;
+  let whoomph = 0;
+  let zing = 0;
+  let brown = 0;
+  let blast = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const after = t - H.leadSeconds;
+    if (i < lead) {
+      const rising = t / H.leadSeconds;
+      hum += (H.humFrom + (H.humTo - H.humFrom) * rising ** 2) / RATE;
+      const shimmer = 0.6 + 0.4 * Math.sin(2 * Math.PI * (4 + 14 * rising) * t);
+      const tone = Math.sin(2 * Math.PI * hum) + 0.4 * Math.sin(4 * Math.PI * hum) + 0.2 * Math.sin(6.02 * Math.PI * hum);
+      out[i] = rising * (0.6 * shimmer * tone + 1.6 * rising ** 2 * swell[i]);
+      continue;
+    }
+    whoomph += (H.whoomphTo + (H.whoomphFrom - H.whoomphTo) * Math.exp(-after * H.whoomphFall)) / RATE;
+    const zinging = Math.min(1, after / H.zingSeconds);
+    zing += (H.zingFrom * (H.zingTo / H.zingFrom) ** zinging) / RATE;
+    const white = outRandom() * 2 - 1;
+    brown = (brown + 0.02 * white) * 0.996;
+    blast += 0.05 * (brown - blast);
+    const crack = after < 0.012 ? white * (1 - after / 0.012) : 0;
+    const ending = Math.min(1, (seconds - t) / 0.3);
+    out[i] = ending * (1.8 * Math.exp(-after * 1.1) * Math.min(1, after * 300) * Math.sin(2 * Math.PI * whoomph) + 10 * Math.exp(-after / 0.35) * blast
+      + 0.7 * crack + 0.35 * Math.exp(-after / 0.12) * Math.sin(2 * Math.PI * zing) + 0.9 * Math.exp(-after / 0.6) * backIn[i]);
+  }
+  writeSound("freighter_hyperspace_out", lowPassed(out.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.85);
+
+  // Coming out.
+  const inRandom = ownRandom(0x48797032);
+  const rush = sweptResonance(whiteNoise(seconds, inRandom), (t) => H.rushTo + (H.rushFrom - H.rushTo) * (1 - Math.min(1, t / H.leadSeconds)) ** 2, 1.6);
+  const away = sweptResonance(whiteNoise(seconds, inRandom), (t) => 150 + 1500 * Math.exp(-Math.max(0, t - H.leadSeconds) / 0.7), 1);
+  const into = new Float64Array(n);
+  let boom = 0;
+  brown = 0;
+  blast = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const after = t - H.leadSeconds;
+    if (i < lead) {
+      const coming = t / H.leadSeconds;
+      into[i] = 2.2 * coming ** 3 * rush[i];
+      continue;
+    }
+    boom += (H.boomTo + (H.boomFrom - H.boomTo) * Math.exp(-after * H.boomFall)) / RATE;
+    const white = inRandom() * 2 - 1;
+    brown = (brown + 0.02 * white) * 0.997;
+    blast += 0.04 * (brown - blast);
+    const crack = after < 0.015 ? white * (1 - after / 0.015) : 0;
+    const ending = Math.min(1, (seconds - t) / 0.4);
+    into[i] = ending * (1.8 * Math.exp(-after * 0.8) * Math.min(1, after * 300) * Math.sin(2 * Math.PI * boom) + 12 * Math.exp(-after / 0.6) * blast
+      + 0.8 * crack + 1.0 * Math.exp(-after / 0.9) * away[i]);
+  }
+  writeSound("freighter_hyperspace_in", lowPassed(into.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.85);
+}
+
 // The Spookie's voice (see the plan's "The Spookie"), each sound with a random sequence of its own: a big creature's
 // throat, a pulse through the three formants of its mouth gliding between "oo" and "ah", wandering a little in pitch,
 // with a breath of air through them. Its greeting: a "hoo-HOO", the first hoot rising from 140 to 190 hertz and the

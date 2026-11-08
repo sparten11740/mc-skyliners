@@ -36,8 +36,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * later she is moved straight there, her middle over the pin, as high as she was or higher, so her lowest block keeps
  * {@link #CLEARANCE} over the highest block anywhere under her and round her, everyone aboard with her (see
  * {@link SableFlight#jump}). Then her autopilot carries on as if she had flown there: over the pin, she hovers or comes
- * down on it. Everyone aboard is told each step (see {@link HyperspaceJump}) and sees and hears it. The ticket lets go by
- * itself a while after. Called off if she stops flying along before she goes.
+ * down on it. Everyone aboard is told each step (see {@link HyperspaceJump}) and sees and hears it; everyone near where
+ * she goes from or comes out but not aboard sees and hears it from outside (see {@link HyperspaceWake}). The ticket lets
+ * go by itself a while after. Called off if she stops flying along before she goes.
  */
 public final class FreighterJump {
     /** How long her drive spools up before she can let go, in ticks: as long as her computer takes to say so. */
@@ -136,6 +137,8 @@ public final class FreighterJump {
      * guesses each reaches that was not in when looked at, by chunk, and how many have been looked at so far.
      */
     private int around;
+    /** How far her hull reaches out from her middle along the ground, in blocks, for those watching from outside. */
+    private int hull;
     private final List<ChunkPos> footprint = new ArrayList<>();
     private final Long2IntMap guesses = new Long2IntOpenHashMap();
     private int guessed;
@@ -181,7 +184,8 @@ public final class FreighterJump {
         toX = autopilot.orbitX;
         toZ = autopilot.orbitZ;
         toChunk = new ChunkPos(BlockPos.containing(toX, 0, toZ));
-        around = reach(autopilot, autopilot.frame()) + MARGIN;
+        hull = reach(autopilot, autopilot.frame());
+        around = hull + MARGIN;
         under = Mth.ceil(around / (double) SectionPos.SECTION_SIZE);
         lookAround(Mth.floor(toX), Mth.floor(toZ));
         preload = Math.max(under, Math.min(MOST_PRELOAD, level.getServer().getPlayerList().getViewDistance()));
@@ -227,7 +231,7 @@ public final class FreighterJump {
             return;
         }
         if (goAt < 0) {
-            letGoWhenReady(level, autopilot);
+            letGoWhenReady(level, autopilot, state, middle);
         } else if (ticks >= goAt) {
             arrive(level, autopilot, state, middle, pilot, drive);
         }
@@ -264,8 +268,12 @@ public final class FreighterJump {
         }
     }
 
-    /** Spooled up and the land under her where she comes out in, or waited as long as she may, she lets go. */
-    private void letGoWhenReady(ServerLevel level, AutopilotBlockEntity autopilot) {
+    /**
+     * Spooled up and the land under her where she comes out in, or waited as long as she may, she lets go: those aboard
+     * told, those watching from outside shown light gathering on her, and those near where she is to come out streaks
+     * rushing in to it.
+     */
+    private void letGoWhenReady(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State state, Vec3 middle) {
         askFurther(level);
         guessAhead(level);
         boolean loaded = loadedAfter >= 0 || landIn(level, under);
@@ -275,7 +283,23 @@ public final class FreighterJump {
         if (ticks >= SPOOL_TICKS && (loaded || ticks >= LONGEST_WAIT)) {
             goAt = ticks + GO_TICKS;
             tell(autopilot, HyperspaceJump.Stage.GO, GO_TICKS);
+            showLettingGo(level, autopilot, state, middle);
         }
+    }
+
+    /**
+     * Those watching from outside shown light gathering on her as she lets go, and those near where she is to come out
+     * streaks rushing in to it, as high as she would come out by the land there as it stands now.
+     */
+    private void showLettingGo(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State state, Vec3 middle) {
+        if (!SkylinersConfig.FREIGHTER_HYPERSPACE_WAKE.get()) {
+            return;
+        }
+        List<ServerPlayer> aboard = Aboard.players(autopilot);
+        Vec3 among = SableFlight.toPlot(level, autopilot.getBlockPos(), middle, false);
+        show(level, new HyperspaceWake(HyperspaceWake.Stage.GATHER, middle, among, state.nose(), hull, GO_TICKS), aboard);
+        Vec3 out = new Vec3(toX, middle.y + heightOut(level, autopilot, state) - state.position().y, toZ);
+        show(level, new HyperspaceWake(HyperspaceWake.Stage.INBOUND, out, out, state.nose(), hull, GO_TICKS), aboard);
     }
 
     /**
@@ -302,15 +326,13 @@ public final class FreighterJump {
     /**
      * She jumps: moved straight to the pin, her middle over it, as high as she was or so high her lowest block keeps
      * {@link #CLEARANCE} over the highest block under her and round her, everyone aboard with her; her autopilot set to
-     * hold that height at least, her drive in engineering firing, and everyone aboard told she is out.
+     * hold that height at least, her drive in engineering firing, everyone aboard told she is out, and those near where
+     * she went from and where she came out shown it from outside.
      */
     private void arrive(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State state, Vec3 middle, FreighterPilot pilot,
                         @Nullable BlockPos drive) {
         jumping = false;
-        BoundingBox frame = autopilot.frame();
-        double below = frame == null ? 0 : autopilot.getBlockPos().getY() - frame.minY();
-        int highest = highestAround(level, Mth.floor(toX), Mth.floor(toZ));
-        double height = Math.max(state.position().y, highest + CLEARANCE + below + 1);
+        double height = heightOut(level, autopilot, state);
         Vec3 by = new Vec3(toX - middle.x, height - state.position().y, toZ - middle.z);
         List<ServerPlayer> aboard = Aboard.players(autopilot);
         riders.clear();
@@ -324,8 +346,37 @@ public final class FreighterJump {
         autopilot.targetAltitude = Math.max(autopilot.targetAltitude, height);
         pilot.jumped();
         aboard.forEach(player -> PacketDistributor.sendToPlayer(player, new HyperspaceJump(HyperspaceJump.Stage.ARRIVE, GO_TICKS)));
+        show(level, new HyperspaceWake(HyperspaceWake.Stage.DEPART, middle, middle, state.nose(), hull, 0), aboard);
+        Vec3 out = middle.add(by);
+        show(level, new HyperspaceWake(HyperspaceWake.Stage.ARRIVE, out, out, state.nose(), hull, 0), aboard);
         JumpDriveBlock.fireForJump(level, drive == null ? null : autopilot.getBlockPos().offset(drive));
         autopilot.changed();
+    }
+
+    /**
+     * How high she comes out at the pin, as Sable has her: as high as she flies, or so high her lowest block keeps
+     * {@link #CLEARANCE} over the highest block under her and round her there.
+     */
+    private double heightOut(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State state) {
+        BoundingBox frame = autopilot.frame();
+        double below = frame == null ? 0 : autopilot.getBlockPos().getY() - frame.minY();
+        int highest = highestAround(level, Mth.floor(toX), Mth.floor(toZ));
+        return Math.max(state.position().y, highest + CLEARANCE + below + 1);
+    }
+
+    /**
+     * A step of the jump shown to everyone near enough to see it from outside, but not those aboard her, who see it
+     * from inside; to nobody when the server's config leaves the sight out.
+     */
+    private static void show(ServerLevel level, HyperspaceWake wake, List<ServerPlayer> aboard) {
+        if (!SkylinersConfig.FREIGHTER_HYPERSPACE_WAKE.get()) {
+            return;
+        }
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(wake.at()) < HyperspaceWake.SEEN_WITHIN * HyperspaceWake.SEEN_WITHIN && !aboard.contains(player)) {
+                PacketDistributor.sendToPlayer(player, wake);
+            }
+        }
     }
 
     /**

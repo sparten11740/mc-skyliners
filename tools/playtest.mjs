@@ -432,6 +432,21 @@ const JUMP_CLEAR = 10;
 // The longest a server tick may take while she jumps, in milliseconds: loading the land at her pin all at once held one
 // for nearly four seconds.
 const JUMP_LONGEST_TICK = 1500;
+// Her jump watched from the ground: how far ahead of her the pin is set, in blocks along the ground, far enough for her
+// to jump and near enough for one watcher to see both ends; how far aside from her course the watcher stands, halfway
+// along it; and the least they must see of it: a flash at her middle and six round it at each end, a hundred specks of
+// glitter at each end, and her streaks, rushing in to her and shooting off ahead as she goes and rushing in to where
+// she comes out and rings of them closing in on where she was and bursting out round her where she is, some five
+// hundred in all. How near the pin her coming out is heard, and how far from it her going is, in blocks along the
+// ground: she was at least a hundred and twenty-eight off it as the button was pressed and flew some fifty on toward it
+// before she went.
+const SEEN_PIN = 200;
+const SEEN_ASIDE = 50;
+const SEEN_FLASHES = 14;
+const SEEN_GLITTER = 180;
+const SEEN_STREAKS = 400;
+const SEEN_IN_NEAR = 16;
+const SEEN_OUT_OFF = 64;
 // Her jump drive: how long it may take to spool up and fire or sputter once used, and to fire once thumped, in ticks.
 const DRIVE_SPOOLS = 100;
 const DRIVE_THUMPED = 40;
@@ -2631,7 +2646,50 @@ function checkFreighterJump() {
   const aboard = must("wait 40t; status");
   expect(aboard.aboard !== undefined || JSON.stringify(aboard).includes("aboard"), "freighter: whoever pressed the button is still aboard her",
     aboard.pos?.map(round).join(","));
+  const flashes = must(`particles since=${pressed}`).rows.find((row) => row.type === "flash")?.count ?? 0;
+  expect(flashes === 0, "freighter: whoever is aboard sees the jump from inside only, not the flashes those outside her see", `${flashes} flashes`);
   must("skyliners:autopilot land");
+}
+
+// A freighter's hyperspace jump watched from the ground, where once she only vanished and reappeared: someone standing
+// off her course, between where she goes from and where she comes out, hears her go with a whoomph where she was and
+// come out with a boom over her pin, and sees a flash at each end, glitter hanging in the air and her streaks of light.
+function checkFreighterJumpSeen() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const height = head[1] + FREIGHTER_CLIMB;
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE}`, BUILD_SECONDS);
+  const cruising = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(cruising, "freighter: she lifts off and cruises");
+  if (!cruising) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [x, z] = cruising.middle.split(",").map(Number);
+  const pin = [x + SEEN_PIN, z];
+  must(`skyliners:autopilot fly altitude=${height} speed=${BOOST_CRUISE} pin=${pin[0]},${pin[1]}; wait 20t`);
+  const { at } = must(`sable:find ${freighter} skyliners:console_jump 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t`);
+  // Off her once the button has spooled her drive up, onto the ground: off her at once, the server would have her out
+  // of reach of the button before the click reached it.
+  const pressed = now();
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*jump_drive_spool*", pressed, LOOK_EVERY)), "freighter: her jump button spools her drive up", site.what);
+  must(`server tp @p ${x + SEEN_PIN / 2} ${ground} ${z + SEEN_ASIDE}`);
+  const comingOut = heard("*freighter_hyperspace_in*", pressed, JUMP_WITHIN);
+  const going = played("*freighter_hyperspace_out*", pressed, "wait 40t; ")[0];
+  const off = (sound) => (sound ? Math.hypot(sound.at_abs[0] - pin[0], sound.at_abs[2] - pin[1]) : NaN);
+  expect(off(going) >= SEEN_OUT_OFF, "freighter: watched from the ground, she is heard going, where she was", going ? `${round(off(going))} blocks off her pin` : "not heard");
+  expect(off(comingOut) <= SEEN_IN_NEAR, "freighter: and heard coming out, over her pin", comingOut ? `${round(off(comingOut))} blocks off it` : "not heard");
+  const seen = Object.fromEntries(must(`particles since=${pressed}`).rows.map((row) => [row.type, row.count]));
+  expect((seen.flash ?? 0) >= SEEN_FLASHES, "freighter: a flash where she goes and another where she comes out", `${seen.flash ?? 0} flashes`);
+  expect((seen.end_rod ?? 0) >= SEEN_GLITTER, "freighter: glitter in the air at both ends", `${seen.end_rod ?? 0} specks`);
+  const streaks = seen["skyliners:hyperspace_streak"] ?? seen.hyperspace_streak ?? 0;
+  expect(streaks >= SEEN_STREAKS, "freighter: streaks of light as she goes and as she comes out", `${streaks} streaks`);
+  const out = freighterReport();
+  const there = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
+  expect(there < JUMP_NEAR, "freighter: she came out over her pin", out ? `middle at ${out.middle}` : "no report");
+  must(`sable:tp ${at.join(",")}; wait 20t; skyliners:autopilot land`);
 }
 
 // The console's modules set up by hand: each kind stands on a floor as a desk, fixed to a wall as a plate and hung
@@ -4236,6 +4294,7 @@ const CHECKS = {
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
   "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },
+  "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },

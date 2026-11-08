@@ -894,6 +894,24 @@
       }
     ]
   },
+  "freighter_hyperspace_out": {
+    "subtitle": "subtitles.skyliners.freighter_hyperspace_out",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_hyperspace_out",
+        "attenuation_distance": 192
+      }
+    ]
+  },
+  "freighter_hyperspace_in": {
+    "subtitle": "subtitles.skyliners.freighter_hyperspace_in",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_hyperspace_in",
+        "attenuation_distance": 192
+      }
+    ]
+  },
   "spookie_greet": {
     "subtitle": "subtitles.skyliners.spookie_greet",
     "sounds": [
