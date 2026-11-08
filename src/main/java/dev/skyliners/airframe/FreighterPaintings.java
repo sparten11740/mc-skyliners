@@ -2,6 +2,7 @@ package dev.skyliners.airframe;
 
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.block.LightTone;
 import dev.skyliners.block.SpacePoster;
 import java.util.List;
 import java.util.Map;
@@ -85,8 +86,8 @@ final class FreighterPaintings {
         if (fits) {
             pieces.forEach((at, piece) -> layout.set(at.getX(), at.getY(), at.getZ(), piece));
         }
-        if (fits && middle.getY() - painting.rowsUnderMiddle() > deck + 1) {
-            uplight(layout, deck, middle, face);
+        if (fits && middle.getY() - painting.rowsUnderMiddle() > deck + 1 && !uplight(layout, deck, middle, face)) {
+            pictureLight(layout, middle.above(painting.rows() - painting.rowsUnderMiddle()), face);
         }
         return fits;
     }
@@ -95,18 +96,31 @@ final class FreighterPaintings {
      * A floor light at the foot of the wall under a painting, shining up at it, in the column nearest its middle that
      * is open over her deck's floor, as a gallery lights its pictures: her rooms' wall washers leave a painting's
      * middle dim, and in her pink club all but dark. Warm white even there, so the picture shows its own colours;
-     * none where every column under it is taken. Its columns are tried out from the middle the same way along the wall
-     * whichever way the painting looks, toward east or south first.
+     * none where every column under it is taken, which it gives. Its columns are tried out from the middle the same way
+     * along the wall whichever way the painting looks, toward east or south first.
      */
-    private static void uplight(HullLayout layout, int deck, BlockPos middle, Direction face) {
+    private static boolean uplight(HullLayout layout, int deck, BlockPos middle, Direction face) {
         Direction.Axis wall = face.getClockWise().getAxis();
         Direction along = Direction.fromAxisAndDirection(wall, Direction.AxisDirection.POSITIVE);
         for (int column : UPLIGHT_COLUMNS) {
             BlockPos at = middle.relative(along, column);
             if (layout.isOpen(at.getX(), deck + 1, at.getZ()) && !layout.isOpen(at.getX(), deck, at.getZ())) {
                 layout.set(at.getX(), deck + 1, at.getZ(), SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState());
-                return;
+                return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * A wall washer just over a painting's middle, shining out from its wall onto it, for a painting with no room for a
+     * floor light under it, as where her ramp's hatch runs along the wall under her airliner painting and its floor is
+     * kept clear; none where the wall over it is taken.
+     */
+    private static void pictureLight(HullLayout layout, BlockPos over, Direction face) {
+        BlockPos behind = over.relative(face.getOpposite());
+        if (layout.isOpen(over.getX(), over.getY(), over.getZ()) && !layout.isOpen(behind.getX(), behind.getY(), behind.getZ())) {
+            layout.set(over.getX(), over.getY(), over.getZ(), SkylinersRegistry.WALL_LIGHT.get().shining(face, LightTone.WARM));
         }
     }
 
