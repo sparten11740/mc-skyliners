@@ -22,6 +22,8 @@ public record SpaceWeatherShown(SpaceWeather.Kind kind, long startedAt, int warn
                                 Vec3 velocity, boolean over) implements CustomPacketPayload {
     public static final Type<SpaceWeatherShown> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "space_weather"));
     public static final StreamCodec<ByteBuf, SpaceWeatherShown> STREAM_CODEC = StreamCodec.of(SpaceWeatherShown::write, SpaceWeatherShown::read);
+    /** Ticks a second. */
+    private static final double TICKS = 20;
 
     private static void write(ByteBuf buffer, SpaceWeatherShown shown) {
         buffer.writeByte(shown.kind().ordinal());
@@ -45,6 +47,14 @@ public record SpaceWeatherShown(SpaceWeather.Kind kind, long startedAt, int warn
         Vec3 centre = readVec(buffer);
         Vec3 velocity = readVec(buffer);
         return new SpaceWeatherShown(kind, startedAt, warningTicks, stormTicks, seed, from, centre, velocity, buffer.readBoolean());
+    }
+
+    /**
+     * Where she would be so long after it was told, in ticks, had nothing struck her, in the world: what its streaks
+     * and rocks stream past.
+     */
+    public Vec3 anchor(double since) {
+        return centre.add(velocity.scale(since / TICKS));
     }
 
     static void writeVec(ByteBuf buffer, Vec3 vec) {

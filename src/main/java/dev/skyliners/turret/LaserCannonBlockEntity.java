@@ -8,6 +8,7 @@ import dev.skyliners.block.Loaded;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.impact.ShipHits;
 import dev.skyliners.item.LaserFire;
+import dev.skyliners.spaceweather.SpaceRocks;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -15,6 +16,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -51,9 +53,13 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Either side of its housing, tilting with its barrels, it carries a rocket pod of two tubes, unless the server
  * config's {@code freighter.rockets} is off. Holding use launches a rocket (see {@link CannonRocket}) from the next
- * loaded tube every few ticks, flying to where the sight looks and homing in on the hostile mob it rests on, if any,
- * until the pods are empty; a tap launches one. A moment after the last launch the pods load again, a rocket at a time
+ * loaded tube every few ticks, flying to where the sight looks and homing in on the hostile mob or the space rock it
+ * rests on, if any, until the pods are empty; a tap launches one. A moment after the last launch the pods load again, a rocket at a time
  * with a clack. It holds its rockets where it holds its bolts.
+ *
+ * <p>Far past the edge of space, its bolts and rockets shoot at the rocks of an asteroid storm too, out to
+ * {@link #ROCK_REACH}, as nothing out there stops them: each strike chips a rock, knocks one coming at her off its
+ * course and slows it, and bursts it once struck often enough (see {@link SpaceRocks}); its sight locks on to one.
  *
  * <p>The server works out the aim each tick: what the gunner looks at, along their look from the sight, and the way to
  * it from the cannon's pivot, turned into her frame, so its bolts land under the sight's crosshair at any range. It
@@ -106,6 +112,18 @@ public class LaserCannonBlockEntity extends BlockEntity {
      * How far its bolts reach, in blocks, how much one hurts a hostile mob, in half hearts, and how far off it is seen.
      */
     public static final double RANGE = 64;
+    /**
+     * How far its bolts and its sight reach a rock of the space weather, in blocks, past what anything else is reached
+     * at: nothing in space stops them, and a rock flying in is worth meeting far out.
+     */
+    public static final double ROCK_REACH = 256;
+    /** How hard one of its bolts strikes a rock, in bolts' worth, as a rocket's is told (see {@link CannonRocket}). */
+    private static final double BOLT_FORCE = 1;
+    /**
+     * How long its sight stays locked on to a space rock after it last rested on it, in ticks, as a gun's lock-on holds
+     * a quick target the gunner's look slips off; the same the client's sight shows (see {@code GunnerView}).
+     */
+    public static final int ROCK_LOCK_HOLDS = 30;
     private static final float DAMAGE = 6;
     private static final double BOLTS_SEEN = 160;
     /** How often, at most, its aim is sent to the clients, in ticks, and how far it must have moved, in degrees. */
@@ -182,11 +200,18 @@ public class LaserCannonBlockEntity extends BlockEntity {
      */
     private boolean rocketTriggerHeld;
     private boolean rocketPressed;
-    /** Where its gunner's sight looks, in the world, and the hostile mob it rests on, none for none; on the server. */
+    /**
+     * Where its gunner's sight looks, in the world, and the hostile mob or the space rock it rests on, none for none; on
+     * the server.
+     */
     @Nullable
     private Vec3 sighted;
     @Nullable
     private Entity lockedOn;
+    @Nullable
+    private SpaceRocks.Target lockedRock;
+    /** The game tick its sight last rested on the space rock it is locked on to, on the server. */
+    private long lockedRockAt;
     /**
      * How many rockets its pods hold, and the game ticks its last rocket was launched and its pods last loaded one, on
      * the server; the clients are told how many it holds.
@@ -228,10 +253,11 @@ public class LaserCannonBlockEntity extends BlockEntity {
     public static Supplier<Sighting> clientSighting = () -> null;
 
     /**
-     * A view from a cannon's sight: where the sight is in the world, whether it rests on a hostile mob in reach, how
-     * many rockets its pods hold, and how far the next is loaded, as a share, as the sight shows them.
+     * A view from a cannon's sight: where the sight is in the world and the way it looks there, of length 1, whether it
+     * is locked on to a hostile mob or a space rock in reach, how many rockets its pods hold, and how far the next is
+     * loaded, as a share, as the sight shows them.
      */
-    public record Sighting(Vec3 eye, boolean lockedOn, int rockets, float loading) {
+    public record Sighting(Vec3 eye, Vec3 look, boolean lockedOn, int rockets, float loading) {
     }
 
     public LaserCannonBlockEntity(BlockPos pos, BlockState state) {
@@ -298,6 +324,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         rocketPressed = false;
         sighted = null;
         lockedOn = null;
+        lockedRock = null;
     }
 
     /** The player sitting under it, seated, their eyes within {@link #GUNNER_REACH} of it; none for nobody. */
@@ -315,23 +342,48 @@ public class LaserCannonBlockEntity extends BlockEntity {
 
     /**
      * Turns its barrels from its pivot toward what its gunner looks at, in her frame, kept from {@link #LOWEST} below
-     * level to {@link #HIGHEST} above: their look traced from the sight, or as far as its bolts reach if it meets
-     * nothing. It holds its fire where they look lower than its barrels go, or where its barrels would put their bolts
+     * level to {@link #HIGHEST} above: their look traced from the sight, a space rock it rests on, or as far as its
+     * bolts reach a rock if it meets nothing, so they cross the sight's line far out. It holds its fire where they look lower than its barrels go, or where its barrels would put their bolts
      * into her own hull, looked for along them from between their muzzles.
      */
     private void aimAt(ServerLevel level, Player gunner) {
         Vec3 look = gunner.getLookAngle();
         Vec3 sight = SableFlight.toWorld(level, sight(gunner.getYRot(), gunner.getXRot()));
         HitResult seen = LaserFire.trace(level, gunner, sight, look, RANGE, notAboard());
-        Vec3 target = seen.getLocation();
+        SpaceRocks.Hit rock = SpaceRocks.along(level, sight, look, rockReach(seen, sight));
+        Vec3 target = rock != null ? rock.at() : seen.getType() == HitResult.Type.MISS ? sight.add(look.scale(ROCK_REACH)) : seen.getLocation();
         sighted = target;
-        lockedOn = seen instanceof EntityHitResult hit && hit.getEntity() instanceof Enemy && hit.getEntity().isAlive() ? hit.getEntity() : null;
+        lockedOn = rock == null && seen instanceof EntityHitResult hit && hit.getEntity() instanceof Enemy && hit.getEntity().isAlive() ? hit.getEntity()
+            : null;
+        lockRock(level, rock);
         Vec3 pivot = SableFlight.toWorld(level, pivot());
         Vec3 way = SableFlight.turnToPlot(level, worldPosition, target.subtract(pivot)).normalize();
         yaw = (float) Math.toDegrees(Math.atan2(-way.x, way.z));
         float wanted = (float) Math.toDegrees(Math.asin(Mth.clamp(way.y, -1, 1)));
         pitch = Mth.clamp(wanted, -LOWEST, HIGHEST);
         held = wanted < -LOWEST || intoHer(level, gunner);
+    }
+
+    /**
+     * Its sight's lock on a space rock: on the one it rests on now, or still on the one it rested on last for
+     * {@link #ROCK_LOCK_HOLDS}, while that one is about.
+     */
+    private void lockRock(ServerLevel level, @Nullable SpaceRocks.Hit rock) {
+        long now = level.getGameTime();
+        if (rock != null) {
+            lockedRock = rock.target();
+            lockedRockAt = now;
+        } else if (lockedRock != null && (now - lockedRockAt > ROCK_LOCK_HOLDS || lockedRock.centre(level) == null)) {
+            lockedRock = null;
+        }
+    }
+
+    /**
+     * How far along a shot from a point a space rock may be met, in blocks: as far as {@link #ROCK_REACH} where the shot
+     * meets nothing else, and short of whatever it meets otherwise.
+     */
+    private static double rockReach(HitResult met, Vec3 from) {
+        return met.getType() == HitResult.Type.MISS ? ROCK_REACH : met.getLocation().distanceTo(from);
     }
 
     /** What its bolts and its aim pass through: anyone aboard her. */
@@ -409,7 +461,8 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /**
      * A bolt from the muzzle of its next barrel along its aim: hostile mobs hurt, never anyone aboard her; drawn for
      * every client near, sparks where it strikes and a blast where it meets a block (see {@link TurretBlast}), another
-     * ship rocked where it strikes one of hers (see {@link ShipHits}), and its shot heard.
+     * ship rocked where it strikes one of hers (see {@link ShipHits}), a space rock chipped where it strikes one first
+     * (see {@link SpaceRocks}), and its shot heard.
      */
     private void bolt(ServerLevel level) {
         Vec3 way = way(yaw, pitch);
@@ -419,6 +472,14 @@ public class LaserCannonBlockEntity extends BlockEntity {
         Vec3 from = SableFlight.toWorld(level, muzzle);
         Vec3 along = SableFlight.toWorld(level, muzzle.add(way)).subtract(from);
         HitResult hit = LaserFire.trace(level, gunner, from, along, RANGE, notAboard());
+        SpaceRocks.Hit rock = SpaceRocks.along(level, from, along, rockReach(hit, from));
+        if (rock != null) {
+            LaserFire.strike(level, gunner, from, BlockHitResult.miss(rock.at(), Direction.UP, BlockPos.containing(rock.at())), DAMAGE, LaserBolt.RED,
+                BOLTS_SEEN);
+            SpaceRocks.shoot(level, rock, along, BOLT_FORCE);
+            shotHeard(level, from);
+            return;
+        }
         LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN);
         if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK) {
             ShipHits.struck(level, block.getBlockPos(), hit.getLocation(), along, ShipHits.Shot.BOLT, SableFlight.bodyAt(level, worldPosition));
@@ -427,6 +488,11 @@ public class LaserCannonBlockEntity extends BlockEntity {
         if (SkylinersConfig.FREIGHTER_TURRET_BLASTS.get()) {
             TurretBlast.at(level, gunner, from, hit, notAboard());
         }
+        shotHeard(level, from);
+    }
+
+    /** A bolt's shot heard from where it left its muzzle. */
+    private static void shotHeard(ServerLevel level, Vec3 from) {
         level.playSound(null, from.x, from.y, from.z, SkylinersRegistry.BALL_TURRET_SHOT.get(), SoundSource.BLOCKS, SHOT_VOLUME,
             0.95F + level.getRandom().nextFloat() * 0.1F);
     }
@@ -459,7 +525,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         Vec3 along = SableFlight.toWorld(level, mouth.add(way(yaw, pitch))).subtract(from);
         Vec3 flight = sighted != null && sighted.distanceTo(from) > CONVERGE_FROM ? sighted.subtract(from) : along;
         Vec3 drift = SableFlight.velocity(level, mouth).scale(1 / TICKS_A_SECOND);
-        CannonRocket.launch(level, this, gunner, from, flight, drift, lockedOn);
+        CannonRocket.launch(level, this, gunner, from, flight, drift, lockedOn, lockedRock);
         rockets--;
         lastLaunch = now;
         owed = true;

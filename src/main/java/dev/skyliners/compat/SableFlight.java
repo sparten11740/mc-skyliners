@@ -343,6 +343,15 @@ public final class SableFlight {
         return SABLE && level instanceof ServerLevel && Access.strike(level, block, at, speedChange, mostTurn);
     }
 
+    /**
+     * Sets the assembled ship a block is part of turning faster, about an axis in the world's directions, by so many
+     * radians a second along it, as a giant asteroid striking her sends her spinning. Whether there was a ship to spin;
+     * on the server.
+     */
+    public static boolean spin(Level level, BlockPos block, Vec3 turn) {
+        return SABLE && level instanceof ServerLevel && Access.spin(level, block, turn);
+    }
+
     /** Which of Sable's flying bodies the entity rides, standing on it or seated in it, by its id; null for none. */
     @Nullable
     public static UUID ridden(Entity entity) {
@@ -953,6 +962,18 @@ public final class SableFlight {
                 turn.mul(mostTurn / turn.length());
             }
             handle.addLinearAndAngularVelocity(new Vector3d(speedChange.x, speedChange.y, speedChange.z), pose.transformNormal(turn));
+            return true;
+        }
+
+        static boolean spin(Level level, BlockPos block, Vec3 turn) {
+            if (!(Sable.HELPER.getContaining(level, block) instanceof ServerSubLevel ship) || ship.isRemoved()) {
+                return false;
+            }
+            RigidBodyHandle handle = RigidBodyHandle.of(ship);
+            if (handle == null || !handle.isValid()) {
+                return false;
+            }
+            handle.addLinearAndAngularVelocity(new Vector3d(), new Vector3d(turn.x, turn.y, turn.z));
             return true;
         }
 

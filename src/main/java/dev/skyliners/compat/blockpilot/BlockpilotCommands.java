@@ -27,6 +27,7 @@ import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.repairs.RepairBoardBlockEntity;
+import dev.skyliners.spaceweather.SpaceRocks;
 import dev.skyliners.spaceweather.SpaceWeather;
 import dev.skyliners.turret.LaserCannonBlockEntity;
 import dev.blockpilot.api.Action;
@@ -130,13 +131,15 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("gunner", (context, args) -> gunner())
             .needsWorld()
             .group("skyliners")
-            .help("whether this client sees from a laser cannon's sight, sitting at it: where the sight is, whether it is locked on to a hostile mob, "
-                + "and its rockets as the sight shows them")
+            .help("whether this client sees from a laser cannon's sight, sitting at it: where the sight is and looks, whether it is locked on to a "
+                + "hostile mob or a space rock, and its rockets as the sight shows them")
             .field("on", "whether the view is the sight's")
             .field("at", "where the sight is in the world")
-            .field("locked", "whether the sight rests on a hostile mob in reach")
+            .field("look", "the way the sight looks in the world, x,y,z of length 1")
+            .field("locked", "whether the sight is locked on to a hostile mob or a space rock in reach")
             .field("rockets", "how many rockets its pods hold, as the sight shows them")
-            .field("loading", "how far the next rocket is loaded, from 0 to 1, as the sight shows it filling"));
+            .field("loading", "how far the next rocket is loaded, from 0 to 1, as the sight shows it filling")
+            .field("bursts_seen", "how many space rocks this client has seen burst in the weather it shows"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -221,10 +224,21 @@ public final class BlockpilotCommands {
             .group("skyliners")
             .option("start", "brings space weather of a kind over the nearest rocket or freighter at once, from y 1,500 up", WEATHER_KINDS)
             .help("the space weather over the nearest rocket or freighter: what blows, how many strikes have landed on her and the tick the last did")
-            .field("blowing", "what blows now: meteor_shower, asteroid_storm, solar_flare or none")
+            .field("blowing", "what blows now: meteor_shower, asteroid_storm, solar_flare, giant_asteroid or none")
             .field("from", "the side of the sky the weather blowing comes out of, as a bearing in degrees as the game turns a look")
             .field("landed", "how many strikes have landed on her since she was loaded")
             .field("last_landed", "the game tick the last strike landed on her, -1 before any")
+            .field("last_share", "how much of a whole strike the last to land landed, from 1 for a rock never shot at down")
+            .field("shot_down", "how many rocks a laser cannon has burst since she was loaded")
+            .field("missed", "how many rocks coming at her a laser cannon knocked off course to miss her since she was loaded")
+            .field("coming", "how many rocks are flying in to strike her now")
+            .field("rock_at", "where the first rock flying in to strike her is, in the world, x,y,z")
+            .field("rock_vel", "how fast that rock moves, in blocks a second, x,y,z")
+            .field("rock_size", "how big that rock is, in blocks across")
+            .field("rock_lands", "the game tick that rock lands")
+            .field("rock_giant", "whether that rock is a giant asteroid's giant")
+            .field("giant_lands", "the game tick a giant asteroid's giant flying in lands, -1 for none")
+            .field("giant_size", "how big that giant is, in blocks across")
             .field("started", "what asking for weather came to, when asked: coming, busy, not_flying, too_low, nobody_aboard, switched_off or no_ship")
             .example("skyliners:spaceweather start=asteroid_storm"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
@@ -243,8 +257,11 @@ public final class BlockpilotCommands {
             return Result.ok(new Fields().tag("on", false));
         }
         Vec3 eye = sighting.eye();
+        Vec3 look = sighting.look();
         return Result.ok(new Fields().tag("on", true).tag("at", round(eye.x) + "," + round(eye.y) + "," + round(eye.z))
-            .tag("locked", sighting.lockedOn()).tag("rockets", sighting.rockets()).tag("loading", round(sighting.loading())));
+            .tag("look", round(look.x) + "," + round(look.y) + "," + round(look.z))
+            .tag("locked", sighting.lockedOn()).tag("rockets", sighting.rockets()).tag("loading", round(sighting.loading()))
+            .tag("bursts_seen", SpaceRocks.clientBurstsSeen.getAsInt()));
     }
 
     private static Result zeppelin() throws CommandException {
@@ -355,8 +372,19 @@ public final class BlockpilotCommands {
         if (weather == null) {
             return Result.error("no_ship");
         }
-        return Result.ok(fields.tag("blowing", weather.blowingNamed()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
-            .tag("last_landed", weather.lastLanded()));
+        List<SpaceWeather.Coming> coming = weather.coming(player.serverLevel());
+        fields.tag("blowing", weather.blowingNamed()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
+            .tag("last_landed", weather.lastLanded()).tag("last_share", round(weather.lastShare())).tag("shot_down", weather.shotDown())
+            .tag("missed", weather.missed()).tag("coming", coming.size());
+        if (!coming.isEmpty()) {
+            SpaceWeather.Coming first = coming.getFirst();
+            fields.tag("rock_at", round(first.at().x) + "," + round(first.at().y) + "," + round(first.at().z))
+                .tag("rock_vel", round(first.velocity().x) + "," + round(first.velocity().y) + "," + round(first.velocity().z))
+                .tag("rock_size", round(first.size())).tag("rock_lands", first.lands()).tag("rock_giant", first.giant());
+        }
+        SpaceWeather.Coming giant = coming.stream().filter(SpaceWeather.Coming::giant).findFirst().orElse(null);
+        fields.tag("giant_lands", giant == null ? -1 : giant.lands()).tag("giant_size", giant == null ? 0 : round(giant.size()));
+        return Result.ok(fields);
     }
 
     private static Result assembly() throws CommandException {

@@ -5,6 +5,7 @@ import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.impact.ShipHits;
+import dev.skyliners.spaceweather.SpaceRocks;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -30,8 +31,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * A rocket launched from a laser cannon's pod (see {@link LaserCannonBlockEntity}): it leaves its tube slowly, carried
  * along at the speed of the ship it was launched from, and its motor drives it faster and faster along its way, the
  * ship's speed falling away behind it, until it strikes something and goes off (see {@link TurretBlast#rocket}), or
- * burns out and goes off in the air. Launched while the cannon's sight is locked on to a hostile mob, it homes in on
- * that mob, turning gently, and goes off as it passes close. It flies through her own blocks and past anyone who is not
+ * burns out and goes off in the air. Launched while the cannon's sight is locked on to a hostile mob, or to a rock of
+ * the space weather, it homes in on it, turning gently, and goes off as it passes close; it goes off against any space
+ * rock it meets, striking it many bolts' worth (see {@link SpaceRocks}). It flies through her own blocks and past anyone who is not
  * a hostile mob, and goes off only against the world's blocks, another ship's blocks or a hostile mob not aboard her;
  * its blast spares every ship's blocks and hurts hostile mobs only, though another ship it strikes is rocked by it
  * (see {@link ShipHits}).
@@ -55,8 +57,15 @@ public class CannonRocket extends Projectile {
     public static final int BURN_TICKS = 80;
     /** How far it turns toward the mob it homes in on, at most, in degrees a tick: gently, so a quick one can dodge. */
     private static final double TURN = 6;
-    /** How near the middle of the mob it homes in on it goes off, in blocks. */
+    /** How near the middle of the mob it homes in on it goes off, in blocks, and how near the edge of a rock. */
     private static final double FUSE = 1.5;
+    /**
+     * How fast it turns toward the space rock it homes in on, at most, in degrees a tick: harder than at a mob, as a
+     * rock comes at it fast.
+     */
+    private static final double ROCK_TURN = 10;
+    /** How hard it strikes a space rock, in bolts' worth of the cannon's: a rock five bolts break, one rocket does. */
+    private static final double ROCK_FORCE = 5;
     /** How much bigger than its box a mob is to it, in blocks each way, so a near miss still strikes. */
     private static final double GRAZE = 0.3;
     /**
@@ -83,9 +92,11 @@ public class CannonRocket extends Projectile {
     private Vec3 heading = new Vec3(0, 0, 1);
     private double speed = LAUNCH_SPEED;
     private Vec3 drift = Vec3.ZERO;
-    /** The hostile mob it homes in on, none for none, on the server. */
+    /** The hostile mob or the space rock it homes in on, none for none, on the server. */
     @Nullable
     private Entity target;
+    @Nullable
+    private SpaceRocks.Target rock;
     /**
      * The cannon that launched it, and the ship that cannon is part of, none for one standing in the world, on the
      * server.
@@ -106,15 +117,16 @@ public class CannonRocket extends Projectile {
 
     /**
      * Launches a rocket from a cannon, fired by its gunner, from a point in the world along a way, carried along at a
-     * ship's speed there, in blocks a tick, homing in on a hostile mob, or none.
+     * ship's speed there, in blocks a tick, homing in on a hostile mob or a space rock, or neither.
      */
     static void launch(ServerLevel level, LaserCannonBlockEntity cannon, @Nullable Entity gunner, Vec3 at, Vec3 way, Vec3 drift,
-        @Nullable Entity target) {
+        @Nullable Entity target, @Nullable SpaceRocks.Target rock) {
         CannonRocket rocket = new CannonRocket(SkylinersRegistry.CANNON_ROCKET.get(), level);
         rocket.setOwner(gunner);
         rocket.cannon = cannon;
         rocket.her = SableFlight.bodyAt(level, cannon.getBlockPos());
         rocket.target = target;
+        rocket.rock = rock;
         rocket.heading = way.normalize();
         rocket.drift = drift;
         rocket.setPos(at);
@@ -162,6 +174,12 @@ public class CannonRocket extends Projectile {
             goOff(mob);
             return;
         }
+        SpaceRocks.Hit struck = rockAhead(level, from, wall == null ? to : wall.getLocation());
+        if (struck != null) {
+            goOff(struck.at());
+            SpaceRocks.shoot(level, struck, step, ROCK_FORCE);
+            return;
+        }
         if (wall != null) {
             goOff(wall.getLocation().subtract(step.normalize().scale(BACK_OFF)));
             ShipHits.struck(level, wall.getBlockPos(), wall.getLocation(), step, ShipHits.Shot.ROCKET, her);
@@ -172,8 +190,15 @@ public class CannonRocket extends Projectile {
         face(heading);
     }
 
-    /** Turns it toward the mob it homes in on, at most {@link #TURN} a tick; it lets go of one gone or dead. */
+    /**
+     * Turns it toward the mob it homes in on, at most {@link #TURN} a tick, or the space rock, at most
+     * {@link #ROCK_TURN}; it lets go of one gone or dead.
+     */
     private void home() {
+        if (rock != null) {
+            homeOnRock();
+            return;
+        }
         if (target == null) {
             return;
         }
@@ -185,6 +210,39 @@ public class CannonRocket extends Projectile {
         if (toward.lengthSqr() > Mth.EPSILON) {
             heading = turned(heading, toward.normalize(), Math.toRadians(TURN));
         }
+    }
+
+    /** Turns it toward the space rock it homes in on, letting go of one gone: burst, flown past, or its weather over. */
+    private void homeOnRock() {
+        Vec3 middle = rock.centre((ServerLevel) level());
+        if (middle == null) {
+            rock = null;
+            return;
+        }
+        Vec3 toward = middle.subtract(position());
+        if (toward.lengthSqr() > Mth.EPSILON) {
+            heading = turned(heading, toward.normalize(), Math.toRadians(ROCK_TURN));
+        }
+    }
+
+    /**
+     * The space rock a tick's flight meets first, or passes close enough to the one it homes in on to go off by: the
+     * one met along its way, or the one homed in on where it passes within {@link #FUSE} of its edge; none for none.
+     */
+    @Nullable
+    private SpaceRocks.Hit rockAhead(ServerLevel level, Vec3 from, Vec3 to) {
+        Vec3 step = to.subtract(from);
+        double length = step.length();
+        SpaceRocks.Hit met = length < Mth.EPSILON ? null : SpaceRocks.along(level, from, step, length);
+        if (met != null || rock == null) {
+            return met;
+        }
+        Vec3 middle = rock.centre(level);
+        if (middle == null) {
+            return null;
+        }
+        Vec3 nearest = nearestAlong(from, to, middle);
+        return nearest.distanceTo(middle) <= rock.reach() + FUSE ? new SpaceRocks.Hit(rock.weather(), rock.rock(), nearest, from.distanceTo(nearest)) : null;
     }
 
     /**

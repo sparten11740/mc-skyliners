@@ -82,7 +82,10 @@ import dev.skyliners.selfdestruct.BlastPayload;
 import dev.skyliners.selfdestruct.SelfDestruct;
 import dev.skyliners.selfdestruct.SelfDestructAlarmPayload;
 import dev.skyliners.selfdestruct.ThrownClearPayload;
+import dev.skyliners.spaceweather.Braced;
 import dev.skyliners.spaceweather.IncomingStrike;
+import dev.skyliners.spaceweather.RockBurst;
+import dev.skyliners.spaceweather.SpaceRocks;
 import dev.skyliners.spaceweather.SpaceWeatherShown;
 import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.GunnerTrigger;
@@ -146,6 +149,9 @@ public final class Skyliners {
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
         NeoForge.EVENT_BUS.addListener(SelfDestruct::onFall);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SelfDestruct.forget());
+        NeoForge.EVENT_BUS.addListener(Braced::onDamage);
+        NeoForge.EVENT_BUS.addListener(Braced::forget);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SpaceRocks.forget());
         // Last, so a placement another mod turned down is not marked.
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, HandPlaced::onPlace);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, HandPlaced::onArrive);
@@ -199,7 +205,7 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("40")
+        event.registrar("41")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -263,6 +269,8 @@ public final class Skyliners {
             .playToClient(SpaceWeatherShown.TYPE, SpaceWeatherShown.STREAM_CODEC,
                 (payload, context) -> SpaceWeatherSky.shown(payload))
             .playToClient(IncomingStrike.TYPE, IncomingStrike.STREAM_CODEC,
-                (payload, context) -> SpaceWeatherSky.incoming(payload));
+                (payload, context) -> SpaceWeatherSky.incoming(payload))
+            .playToClient(RockBurst.TYPE, RockBurst.STREAM_CODEC,
+                (payload, context) -> SpaceWeatherSky.burst(payload));
     }
 }

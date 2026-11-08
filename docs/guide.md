@@ -2559,7 +2559,8 @@ alarm whoops, her picture badge flashes at the top of everyone's screen, and aft
 "Meteor shower ahead. Please hold on to something.", "Asteroid storm ahead. Please hold on tight." or "Solar flare
 ahead. Please don't look at the sun."; she waits it out up there, holding her height, before starting down, and her
 flight deck says "The space weather has passed. Thank you for holding on." once it has. Tall as she is, she is struck
-anywhere up her, and a rock high on her nose tips her and shoves her aside; her side jets stand her upright again.
+anywhere up her, and a rock high on her nose tips her and shoves her aside; her side jets stand her upright again. A
+giant asteroid strikes her too, never held back, and throws her far; she has no cannon to shoot it down.
 For ten seconds as she reaches the edge of space everyone aboard feels light, with a soft rising glide and a puff of sparkles at
 their feet: a jump rises three blocks and hangs nearly two seconds, and a fall of seven blocks does not hurt. Then the
 chime sounds and her flight deck says "Artificial gravity enabled. Please mind your step.", and with the glide falling
@@ -2945,7 +2946,8 @@ its tube, until all four are away; tap use for just one. A rocket leaves slowly,
 motor drives it off faster and faster, a white-hot flame out of its tail and a long white smoke trail behind it, its
 roar rising as it comes your way and falling as it goes. It flies to whatever the crosshair is on, and while the sight
 is locked on to a hostile mob (the reticle red, brackets closed round it) the rockets home in on that mob, turning
-gently, so a quick one can still dodge. Where a rocket strikes a block, another ship or a hostile mob, or passes close
+gently, so a quick one can still dodge; far past the edge of space they home in on a space rock just the same (see her
+space weather below). Where a rocket strikes a block, another ship or a hostile mob, or passes close
 by the mob it chases, or after four seconds in the air, it goes off with a flash, a fireball, a cloud of soot and a deep
 bang heard far off, shaking the view of anyone near: a blast as strong as a creeper's that knocks out blocks round it as
 TNT does, by the world's own rules for TNT, but never a block of any ship, and hurts hostile mobs only, never players,
@@ -3191,33 +3193,55 @@ round it as she flies. The server config's `freighter.repairs` builds her withou
 going off, even on redstone.
 
 Far past the black of space, from y 1,500 up, she meets space weather: every few minutes she flies up there with
-someone aboard, at random, a meteor shower, an asteroid storm or a solar flare blows through. Each is told first: an
-alarm whoops through her three times, her computer says what is coming, and everyone aboard sees its picture flash at
-the top of their screen in a badge ringed in its colour, the same picture flashing on her console's scanner in place of
-its scope: amber meteors streaking down for a meteor shower, a red lumpy rock for an asteroid storm, a yellow sun
-throwing out its rays for a solar flare. Meanwhile the first of it shows far off on the horizon the way it comes from:
-glowing streaks crossing low over it, or big grey rocks tumbling slowly in. Ten seconds after the alarm it is on her.
+someone aboard, at random, a meteor shower, an asteroid storm or a solar flare blows through, and now and then a giant
+asteroid. Each is told first: an alarm whoops through her three times, her computer says what is coming, and everyone
+aboard sees its picture flash at the top of their screen in a badge ringed in its colour, the same picture flashing on
+her console's scanner in place of its scope: amber meteors streaking down for a meteor shower, a red lumpy rock for an
+asteroid storm (in a deeper red ring for a giant asteroid), a yellow sun throwing out its rays for a solar flare.
+Meanwhile the first of it shows far off on the horizon the way it comes from: glowing streaks crossing low over it, or
+big rocks tumbling slowly in. Nothing of it ever pops into view: every streak and rock flies in from far past the
+farthest you can see, small and faint at first, and grows as it comes. Ten seconds after the alarm it is on her.
 In a meteor shower, "Meteor shower ahead. Hold on to something bolted down.", streaks with white-hot heads trailing
 orange stream past all round her for twenty-five seconds, and six to nine of them strike her, each seen flying in to
 the spot on her hull it lands on, landing with a sharp ping off her plates, a flash and a spray of sparks, her deck
 jolting under everyone aboard and her nudged off her spot (about three blocks a second) and swung a little. In an
-asteroid storm, "Asteroid storm ahead. Brace for impact.", lumps of grey stone tumble past for half a minute, some far
-off, some close enough to fill the view, a few glowing with magma, and three to five crash into her: a rock tumbling
-in, a heavy crunch and boom rolling through her, a blast of fire, shattered rock and smoke where it struck, everyone's
+asteroid storm, "Asteroid storm ahead. Brace for impact.", rocks tumble past for half a minute, some far off, some close
+enough to fill the view: lumpy, uneven rocks, long or squat, knobbly and pitted with craters, grey, brown, dark basalt
+or rusty red, patched lighter and darker, lit by the sun on one side and dark on the other, each tumbling its own way,
+a few dark and cracked with glowing magma. Three to five crash into her, each seen tumbling in from far off for some
+fifteen seconds, then a heavy crunch and boom rolling through her, a blast of fire, shattered rock and smoke where it struck, everyone's
 view thrown about and shaking a while after, and her shoved hard, about nine blocks a second, thrown well off her spot,
-tipped as much as fifteen degrees and swung round, a few strikes together turning her half round. In a solar flare,
-"Solar flare. Don't look at the sun.", a warm glare swells and eases over everyone's view for fifteen seconds, now and
-then flickering dark as her screens flicker with it, her speakers crackle, and its wind pushes her steadily aside.
+tipped as much as fifteen degrees and swung round, a few strikes together turning her half round. A giant asteroid,
+"Asteroid storm ahead. Brace for impact." again, brings two or three ordinary rocks and one giant, thirty to forty
+blocks across, bigger than she is, seen coming from far off for over twenty seconds; its strike is never held back:
+a crunch far deeper and louder, a blast four times an asteroid's, everyone's view shaken hard for six seconds, and her
+thrown far off her spot and set spinning faster than her autopilot can stop for a good while. In a solar flare, "Solar
+flare. Don't look at the sun.", a warm glare swells and eases over everyone's view for fifteen seconds, now and then
+flickering dark as her screens flicker with it, her speakers crackle, and its wind pushes her steadily aside.
 Each time her autopilot fights her back onto her course and her height, and once it has passed her computer says
-"All clear. You can let go now." as a green tick shows in the badge. Nothing of hers ever breaks and nobody aboard is hurt, however hard she is thrown. Everyone near her sees
+"All clear. You can let go now." as a green tick shows in the badge. Nothing of hers ever breaks and nobody aboard is
+hurt, however hard she is thrown: for a few seconds after a rock strikes her, half a minute after a giant, no fall and
+no wall anyone aboard is thrown into hurts them, and anyone thrown clear of her has their safety canopy open over them
+as they fall (or floats down slowly where the server keeps no canopies).
+
+Her laser cannon can shoot the rocks down, from her gunner's seat (see her gunner's seat above). Out there its bolts
+reach a rock up to 256 blocks off, four times as far as anything else, as nothing in space stops them. Its sight locks
+on to a rock it rests on, with the reticle's red and the beep it gives a hostile mob, and holds the lock a second and a
+half after the rock slips off it; rockets launched while it is locked on home in on that rock, turning harder than at a
+mob. Each bolt chips a rock, sparks and stone flying off it; a rocket strikes it as hard as five bolts. A rock struck
+as often as it is blocks across (a small one by a bolt or two, the biggest passing rocks by a dozen, a giant by forty)
+bursts in a flash into tumbling chunks and a cloud of dust with a crunch, gone for everyone near. A rock flying in to
+strike her is knocked off its course and slowed by every hit as well, away from the side it was struck on, and lands
+that much softer: shot at once or twice it strikes her with only part of its shove, and knocked far enough off its
+course it misses her altogether and tumbles on past. Every hit on a giant takes some of its strike away too. Everyone near her sees
 the same streaks and rocks, and the strikes ring out for those outside too; space is otherwise silent, so the streaks
 and rocks going by make no sound. Coming back down under y 1,400 brings an early all-clear, and once one has passed
 none comes for at least a minute. The rocket meets it too (see her own). The server config's `spaceWeather.enabled`
 keeps space calm, its `spaceWeather.every` sets how many minutes go by between bouts on average (four), and its
 `spaceWeather.strength` how hard they throw a ship about, in percent of the usual (0 keeps her steady through them,
 every strike still seen, heard and felt). An operator can bring any of them over the nearest rocket or freighter at
-once, without waiting, with `/skyliners spaceweather meteor_shower`, `asteroid_storm` or `solar_flare`, so long as she flies
-from y 1,500 up with someone aboard.
+once, without waiting, with `/skyliners spaceweather meteor_shower`, `asteroid_storm`, `solar_flare` or
+`giant_asteroid`, so long as she flies from y 1,500 up with someone aboard.
 
 Her deck is lit by wall washers over head height, small dark
 lamps each throwing a fan of light up the wall: round her ring corridor between its doorways, along the walls between

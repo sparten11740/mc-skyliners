@@ -31,6 +31,8 @@ public final class SpaceWeatherHud {
     private static final int ASTEROID_COLOUR = 0xFFFF4A3A;
     private static final int FLARE_COLOUR = 0xFFFFE14A;
     private static final int CLEAR_COLOUR = 0xFF4CF08A;
+    /** A giant asteroid's colour: a deeper, angrier red than an asteroid storm's. */
+    private static final int GIANT_COLOUR = 0xFFE0103A;
     /** How long it flashes on and how long a whole flash takes while told, in ticks; how dim it shows off. */
     private static final int FLASH_ON = 8;
     private static final int FLASH_EVERY = 14;
@@ -87,9 +89,9 @@ public final class SpaceWeatherHud {
         return since >= shown.warningTicks() && since < shown.warningTicks() + shown.stormTicks() && flickers(DrawingClock.wholeTicks());
     }
 
-    /** The picture of what blows, as her scanner shows it too. */
+    /** The picture of what blows, as her scanner shows it too: a giant asteroid's is an asteroid storm's. */
     static String picture(SpaceWeather.Kind kind) {
-        return "space_" + kind.getSerializedName();
+        return "space_" + (kind == SpaceWeather.Kind.GIANT_ASTEROID ? SpaceWeather.Kind.ASTEROID_STORM : kind).getSerializedName();
     }
 
     /** The colour of what blows, as her scanner shows it too. */
@@ -97,6 +99,7 @@ public final class SpaceWeatherHud {
         return switch (kind) {
             case METEOR_SHOWER -> METEOR_COLOUR;
             case ASTEROID_STORM -> ASTEROID_COLOUR;
+            case GIANT_ASTEROID -> GIANT_COLOUR;
             case SOLAR_FLARE -> FLARE_COLOUR;
         };
     }

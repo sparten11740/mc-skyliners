@@ -32,9 +32,9 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * hand, the block outline and the game's crosshair give way to the sight's own (see {@link GunnerSight}).
  *
  * <p>Once a tick it also looks along the sight for what the cannon would strike, for the sight to show: a hostile mob
- * in reach locks it on, with a beep; and pulling the trigger while it cannot fire (too hot, aimed into her own hull or
- * lower than its barrels go) gets a dry click, as does pressing use for its rockets with its pods empty or while it
- * holds its fire.
+ * in reach, or a rock of the space weather far past the edge of space, locks it on, with a beep; and pulling the
+ * trigger while it cannot fire (too hot, aimed into her own hull or lower than its barrels go) gets a dry click, as does
+ * pressing use for its rockets with its pods empty or while it holds its fire.
  */
 public final class GunnerView {
     /** How loud and how high the beep is as the sight locks on to a hostile mob. */
@@ -61,6 +61,8 @@ public final class GunnerView {
         /** Whether the sight rests on a hostile mob it would strike, and for how many ticks it has. */
         boolean locked;
         int lockedTicks;
+        /** How many ticks since the sight last rested on a space rock, as its lock on one holds a while. */
+        int sinceRock = Integer.MAX_VALUE / 2;
         /** Whether the trigger and the rockets' trigger were held last tick. */
         boolean triggerHeld;
         boolean rocketsHeld;
@@ -93,7 +95,7 @@ public final class GunnerView {
     public static LaserCannonBlockEntity.Sighting sighting() {
         Gunning view = gunning;
         return view == null ? null
-            : new LaserCannonBlockEntity.Sighting(view.lens.getEyePosition(), view.locked, view.cannon.rockets(), view.cannon.loading(0));
+            : new LaserCannonBlockEntity.Sighting(view.lens.getEyePosition(), view.lens.getLookAngle(), view.locked, view.cannon.rockets(), view.cannon.loading(0));
     }
 
     /**
@@ -172,16 +174,22 @@ public final class GunnerView {
     /**
      * What the sight rests on, as the cannon's bolts would find it (see {@link LaserFire#trace}): the first block it
      * meets within their reach, among a ship's blocks too, or the first one standing before that block who may catch a
-     * bolt, passing anyone aboard her. Locked on if that is a hostile mob, beeping as it locks on.
+     * bolt, passing anyone aboard her. Locked on if that is a hostile mob, or a rock of the space weather in reach before
+     * anything else (see {@link SpaceWeatherSky#rockSighted}), held on that a moment after as the cannon holds it,
+     * beeping as it locks on.
      */
     private static void look(Minecraft minecraft, LocalPlayer player, Gunning view) {
         ClientLevel level = minecraft.level;
         if (level == null) {
             return;
         }
-        HitResult hit = LaserFire.trace(level, player, view.lens.getEyePosition(), view.lens.getLookAngle(), LaserCannonBlockEntity.RANGE,
-            entity -> !SableClient.isAboard(entity, view.cannon));
-        boolean locked = hit instanceof EntityHitResult struck && struck.getEntity() instanceof Enemy && struck.getEntity().isAlive();
+        Vec3 eye = view.lens.getEyePosition();
+        Vec3 ahead = view.lens.getLookAngle();
+        HitResult hit = LaserFire.trace(level, player, eye, ahead, LaserCannonBlockEntity.RANGE, entity -> !SableClient.isAboard(entity, view.cannon));
+        boolean enemy = hit instanceof EntityHitResult struck && struck.getEntity() instanceof Enemy && struck.getEntity().isAlive();
+        double rockReach = hit.getType() == HitResult.Type.MISS ? LaserCannonBlockEntity.ROCK_REACH : hit.getLocation().distanceTo(eye);
+        view.sinceRock = SpaceWeatherSky.rockSighted(eye, ahead, rockReach) ? 0 : view.sinceRock + 1;
+        boolean locked = enemy || view.sinceRock <= LaserCannonBlockEntity.ROCK_LOCK_HOLDS;
         if (locked && !view.locked) {
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_BIT.value(), LOCK_PITCH, LOCK_VOLUME));
         }

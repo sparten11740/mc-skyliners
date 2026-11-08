@@ -388,11 +388,23 @@ scaled down to the lift she has spare (`slamBrake`), so a heavy load still touch
 `FreighterFlight.says` turns into her computer's lines, and `RocketPilot.Orders.waitUp` keeps the rocket up till the
 all-clear; above `FROM` it rolls for a bout, plans its strikes, tells everyone near with
 one `SpaceWeatherShown` (seed, bearing, her middle and velocity, so every client streams the same streaks and rocks
-past where she would be) and again as it is over, and sends one `IncomingStrike` a strike as it is seen flying in;
-each strike lands through `SableFlight.strike` at a block a `level.clip` from outside found of hers, with
-`ImpactJolt` and `TurbulencePayload`, particles among her blocks and a sound at the plot position. The client's
-`SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon) and rocks (block models of stone, tumbling) after the
-particles, past the fog; `SpaceWeatherHud` draws the badge and the flare's glare, and `ConsoleArt` the scanner's
+past where she would be) and again as it is over, and sends one `IncomingStrike` a strike as it is seen flying in,
+from `SEEN_FROM` (820 blocks) out, so it flies into view; each strike lands through `SableFlight.strike` at a block a
+`level.clip` from outside found of hers, with `ImpactJolt` and `TurbulencePayload`, particles among her blocks and a
+sound at the plot position. A `GIANT_ASTEROID`'s giant lands unclamped by weight and with a far looser turn limit, and
+everyone aboard as a rock lands is `Braced`: a `LivingIncomingDamageEvent` handler cancels falls, walls and cramming,
+and each tick re-arms `SafetyCanopy.thrown` and forgets falls while still aboard. The rocks streaming past are
+`RockField`, common code that the server and every client work out from the seed alike, so `SpaceRocks` (the weather
+blowing, added as it is told) can trace the laser cannon's bolts (`LaserCannonBlockEntity.bolt`, out to `ROCK_REACH`)
+and rockets (`CannonRocket.rockAhead`, homing on a `SpaceRocks.Target`) against them; `SpaceWeather.shot` chips a rock
+and bursts it at its size in bolts' worth, one `RockBurst` to everyone shown, and knocks a strike flying in off its
+course (`knock`: drift across its way, slower, a later landing), sending its `IncomingStrike` again; `Strike.share`
+scales its landing by what is left of it, its speed and how far off course it arrives, past `missesFrom` a miss. The
+client's `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon), rocks (`RockMeshes`: eight procedural shapes,
+lumps, craters, ridges and grain pushed out of an icosphere at three levels of detail, coloured per corner and lit
+flat per face by the sun on the client, see-through as they fade in) and bursts (chunks, dust and a flash) after the
+particles, past the fog, fading everything in by distance under the far plane; `GunnerView` locks the sight on with
+`SpaceWeatherSky.rockSighted`. `SpaceWeatherHud` draws the badge and the flare's glare, and `ConsoleArt` the scanner's
 picture and the flare's flicker. A strike's shove scales with the ship's weight against a freighter's, and a ship
 taller than wide is struck near her middle line and anywhere up her, so she tips rather than spins. `/skyliners
 spaceweather` and Blockpilot's `skyliners:spaceweather` ask for one (`SpaceWeather.ask`). Her `DeckRobotBlock`s chirp, trill and beep from their block

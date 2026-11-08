@@ -469,15 +469,45 @@ const SPACE_HELD_WITHIN = 5;
 const WEATHER_HEIGHT = 1600;
 const WEATHER = {
   meteor_shower: { voice: "skyliners:freighter_computer_meteors", strike: "skyliners:space_meteor_strike", ticks: 760, shoveLeast: 1.5 },
-  asteroid_storm: { voice: "skyliners:freighter_computer_asteroids", strike: "skyliners:space_asteroid_strike", ticks: 860, shoveLeast: 5 },
+  asteroid_storm: { voice: "skyliners:freighter_computer_asteroids", strike: "skyliners:space_asteroid_strike", ticks: 960, shoveLeast: 5 },
 };
 const WEATHER_SETTLE_TICKS = 600;
-// The longest any space weather lasts, in ticks: an asteroid storm, alarm to all-clear.
-const WEATHER_TICKS_MOST = 860;
+// The longest any space weather lasts, in ticks: a giant asteroid, alarm to all-clear, its last rocks flown past.
+const WEATHER_TICKS_MOST = 1100;
 const WEATHER_SETTLED_SPEED = 1;
 const WEATHER_SETTLED_TILT = 3;
 const WEATHER_SETTLED_WITHIN = 5;
 const ROCK_HARDER = 1.5;
+// Shooting at space rocks from a freighter's laser cannon: how near the cannon's sight a rock flying in must have come
+// before it is aimed at, in blocks, inside the 256 its bolts reach a rock; how far ahead of it the sight is aimed, in
+// ticks of its flight, for it to fly into the sight; how long after aiming the rocket is launched, inside the 30 ticks
+// the sight's lock on a rock holds, and how long it is given to strike, in ticks; how many bolts are fired at a rock
+// to knock it off its course without breaking it, and how long after aiming the first is fired, in ticks; how long she
+// is given to settle from one storm before the next, in ticks; and how long a bout of space weather is waited for to
+// blow over at most, in ticks, with its last rocks flying in.
+const ROCK_AIM_WITHIN = 200;
+const ROCK_AIM_AHEAD = 14;
+const ROCK_LAUNCH_AFTER = 18;
+const ROCK_ROCKET_TICKS = 80;
+const ROCK_BOLTS = 2;
+const ROCK_FIRE_AFTER = 6;
+const ROCK_SETTLE_TICKS = 400;
+const ROCK_WEATHER_TICKS = 1300;
+// A giant asteroid: how long it is given to land, from the alarm, in ticks; how much its strike must change her speed
+// at least, in blocks a second, and how many times an ordinary rock's at least; how fast it must set her turning at
+// least, in degrees a second; how long a server tick may take at most through it, on average and at the worst, in
+// milliseconds, so a tumbling ship never stalls the game.
+const GIANT_TICKS = 1100;
+const GIANT_SHOVE_LEAST = 15;
+const GIANT_HARDER = 2;
+const GIANT_SPIN_LEAST = 20;
+const GIANT_TICK_MS = 50;
+const GIANT_WORST_TICK_MS = 250;
+// A strike's shove and spin: how many ticks before it lands its ship is first sampled, and how many samples are taken,
+// two ticks apart; and how long a giant's tumble is watched for the server stalling, in ticks.
+const STRIKE_LEAD_TICKS = 4;
+const STRIKE_SAMPLES = 15;
+const GIANT_TUMBLE_TICKS = 200;
 // Space weather on the rocket: how long she is given to climb to it, in ticks; how much a rock must change her speed
 // and tip her at least, in blocks a second and degrees; how far from the height she waits it out at she may be thrown
 // meanwhile, in blocks; and, a while after, how upright she must stand again, in degrees.
@@ -1799,7 +1829,8 @@ function turretOverheats() {
 // many, and how far the next is loaded; undefined while they see from their own eyes.
 function gunnerSight() {
   const reply = must("skyliners:gunner");
-  return reply.on ? { at: String(reply.at).split(",").map(Number), locked: reply.locked, rockets: reply.rockets, loading: reply.loading } : undefined;
+  return reply.on ? { at: String(reply.at).split(",").map(Number), look: String(reply.look).split(",").map(Number), locked: reply.locked,
+    rockets: reply.rockets, loading: reply.loading } : undefined;
 }
 
 // A freighter's rocket pods: sat at her laser cannon, the sight shows its four rockets; aimed at a creeper in the sky
@@ -2866,24 +2897,16 @@ function lift(ship, height) {
 // and rocks strike her, each strike heard, shoving her, a rock far harder than a meteor; her computer says it is all
 // clear; and afterwards she settles back level at the height she held, the player still aboard her and unhurt.
 function checkSpaceWeather() {
-  layDown("freighter");
-  must(`skyliners:autopilot fly altitude=${WEATHER_HEIGHT} speed=0`, BUILD_SECONDS);
-  const freighter = findShipFlying("skyliners:engine_grille");
-  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
-  lift(freighter, WEATHER_HEIGHT);
-  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - WEATHER_HEIGHT) < SPACE_HELD_WITHIN
-    && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
-  expect(hovering, "space weather: she hovers at y 1,600, past the black of space");
-  if (!hovering) {
+  const freighter = freighterInSpace("space weather");
+  if (!freighter) {
     return;
   }
-  must(`wait ${SPACE_SETTLE_TICKS}t`);
   survival();
   const health = healthOf();
   const shoves = {};
   for (const [kind, { voice, strike, ticks, shoveLeast }] of Object.entries(WEATHER)) {
     // Weather may blow by itself up there; once it has passed, none comes for a minute.
-    waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.blowing === "none", WEATHER_TICKS_MOST);
+    quietSpace();
     const before = must(`sable:info ${freighter} side=server`);
     const since = now();
     const asked = must(`skyliners:spaceweather start=${kind}`);
@@ -2956,6 +2979,205 @@ function checkRocketSpaceWeather() {
   expect(after >= health, "rocket: nobody aboard is hurt", `health ${after}, ${health} before`);
   const { aboard } = must("status");
   expect(Boolean(aboard) && rocket.startsWith(aboard), "rocket: the player is still aboard her", `aboard ${aboard ?? "nothing"}`);
+  creative();
+}
+
+// A freighter hovering at y 1,600, past the black of space, the player aboard at her climb button and no weather
+// blowing; her id, or undefined if she never got there.
+function freighterInSpace(what) {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${WEATHER_HEIGHT} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  lift(freighter, WEATHER_HEIGHT);
+  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - WEATHER_HEIGHT) < SPACE_HELD_WITHIN
+    && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
+  expect(hovering, `${what}: she hovers at y 1,600, past the black of space`);
+  if (!hovering) {
+    return undefined;
+  }
+  must(`wait ${SPACE_SETTLE_TICKS}t`);
+  quietSpace();
+  return freighter;
+}
+
+// Waits for any space weather blowing over the nearest ship to pass: it may blow by itself up there.
+function quietSpace() {
+  waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.blowing === "none", WEATHER_TICKS_MOST);
+}
+
+// Seats the player at a flying freighter's laser cannon, from beside its seat among her blocks; whether the view went
+// up to its sight.
+function atTheGun(freighter) {
+  const [cannon] = must(`sable:find ${freighter} skyliners:laser_cannon 1 side=server`).rows;
+  const seats = must(`sable:find ${freighter} skyliners:pilot_seat 20 side=server`).rows.map((row) => row.at);
+  const seat = cannon && seats.filter(([x, , z]) => Math.abs(x - cannon.at[0]) <= GUNNER_SEAT_OFF && Math.abs(z - cannon.at[2]) <= GUNNER_SEAT_OFF)
+    .sort((a, b) => a[1] - b[1])[0];
+  if (!seat) {
+    expect(false, "space rocks: she has a laser cannon and a gunner's seat under it");
+    return false;
+  }
+  must(`sable:tp ${seat.join(",")}; wait 20t; use ${seat.join(",")}; wait 20t`);
+  const seated = gunnerSight() !== undefined;
+  expect(seated, "space rocks: the player sits at her laser cannon, seeing from its sight");
+  return seated;
+}
+
+// How far the first rock flying in to strike her, in a report of the space weather, is from the cannon's sight, in
+// blocks; far off for none.
+function rockFromSight(weather) {
+  const sight = gunnerSight();
+  if (!weather.rock_at || !sight) {
+    return Infinity;
+  }
+  return Math.hypot(...weather.rock_at.split(",").map((v, i) => Number(v) - sight.at[i]));
+}
+
+// Waits for a rock to be flying in to strike her within so many blocks of the cannon's sight; the weather's report
+// then, or undefined if none came.
+function rockWithin(within) {
+  return waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.coming > 0 && rockFromSight(weather) <= within, ROCK_WEATHER_TICKS);
+}
+
+// The turn that aims the cannon's sight where the first rock flying in, in a report of the space weather, will be so
+// many ticks on, for it to fly into the sight. The seated gunner turns in her frame, which her flight turns in the
+// world, so the turn is the player's own corrected by how far the sight's look in the world is off the rock's way.
+function aimAhead(weather, ahead) {
+  const at = weather.rock_at.split(",").map(Number);
+  const vel = weather.rock_vel.split(",").map(Number);
+  const sight = gunnerSight();
+  const { yaw, pitch } = must("status");
+  const wanted = angles(at.map((v, i) => v + vel[i] * ahead / 20 - sight.at[i]));
+  const looking = angles(sight.look);
+  const round180 = (degrees) => ((degrees % 360) + 540) % 360 - 180;
+  return `turn ${round(yaw + round180(wanted.toward - looking.toward))} ${round(pitch - (wanted.up - looking.up))}`;
+}
+
+// A way in the world as Minecraft turns a look: round from south, toward west, and up from level, in degrees.
+function angles([x, y, z]) {
+  return { toward: Math.atan2(-x, z) * 180 / Math.PI, up: Math.atan2(y, Math.hypot(x, z)) * 180 / Math.PI };
+}
+
+// How much a strike landing at a tick changes a ship's speed at most, in blocks a second, from just before it to a
+// second after; and how fast it sets her turning at most, in degrees a second, from how far she turns between samples.
+function strikeAt(ship, lands) {
+  const ahead = Math.max(0, lands - now() - STRIKE_LEAD_TICKS);
+  const rows = must(`wait ${ahead}t; sample sable:info ${ship} side=server every 2t x${STRIKE_SAMPLES}`, BUILD_SECONDS).rows.filter((row) => row.vel);
+  return { shove: shoveIn(rows), spin: spinIn(rows) };
+}
+
+// The most a ship's speed changed from the first of some samples of her, in blocks a second.
+function shoveIn(rows) {
+  const first = rows[0].vel;
+  return Math.max(...rows.map((row) => Math.hypot(...row.vel.map((v, i) => v - first[i]))));
+}
+
+// How fast a ship turned at most between some samples of her taken every two ticks, in degrees a second, about any of
+// her axes.
+function spinIn(rows) {
+  const turned = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+  const rates = rows.slice(1).map((row, i) => Math.max(turned(row.yaw, rows[i].yaw), turned(row.pitch, rows[i].pitch), turned(row.roll, rows[i].roll)) * 10);
+  return Math.max(0, ...rates);
+}
+
+// Space rocks shot down: a freighter hovering at y 1,600, the player at her laser cannon and an asteroid storm brought
+// over her; aimed at a rock flying in to strike her, the cannon's sight locks on to it, and rockets launched at it home
+// in and burst it: the server counts it shot down, and the player's client is told so, drawing it no more.
+function checkSpaceRocksShot() {
+  const freighter = freighterInSpace("space rocks");
+  if (!freighter || !atTheGun(freighter)) {
+    return;
+  }
+  const before = must("skyliners:spaceweather");
+  const asked = must("skyliners:spaceweather start=asteroid_storm");
+  expect(asked.started === "coming", "space rocks: an asteroid storm is brought over her", `${asked.started}`);
+  const coming = rockWithin(ROCK_AIM_WITHIN);
+  expect(coming, "space rocks: a rock flies in to strike her, into her cannon's reach");
+  if (!coming) {
+    return;
+  }
+  const replies = send(`${aimAhead(coming, ROCK_AIM_AHEAD)}; wait ${ROCK_LAUNCH_AFTER}t; skyliners:gunner; key press key.use; wait 6t; key press key.use; `
+    + `wait ${ROCK_ROCKET_TICKS}t; skyliners:gunner`, BUILD_SECONDS);
+  const [aimed, after] = replies.filter((reply) => "on" in reply);
+  expect(aimed?.locked === true, "space rocks: aimed at from her cannon's sight, the sight locks on to the rock");
+  const weather = must("skyliners:spaceweather");
+  expect(weather.shot_down > before.shot_down, "space rocks: rockets launched at it home in and burst it", `${weather.shot_down - before.shot_down} burst`);
+  expect(after?.bursts_seen > 0, "space rocks: the player's client is told it burst, and draws it no more", `${after?.bursts_seen} seen burst`);
+  must(`key press key.sneak 10t; wait 10t`);
+  quietSpace();
+}
+
+// A rock knocked off its course: a freighter hovering at y 1,600, the player at her laser cannon; in one asteroid
+// storm the first rock to strike her is left alone, and in a second, once she has settled from the first, the first
+// rock is struck by her cannon's bolts on its way in: it lands a smaller strike than the one left alone, shoving her
+// less, or misses her, or breaks up. Each is the first of its storm, so she holds still under the sight as it comes.
+function checkSpaceRockKnocked() {
+  const freighter = freighterInSpace("knocked rock");
+  if (!freighter || !atTheGun(freighter)) {
+    return;
+  }
+  must("skyliners:spaceweather start=asteroid_storm");
+  const first = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.coming > 0, ROCK_WEATHER_TICKS);
+  if (!first) {
+    expect(false, "knocked rock: rocks fly in to strike her");
+    return;
+  }
+  const alone = strikeAt(freighter, first.rock_lands);
+  const leftAlone = must("skyliners:spaceweather");
+  quietSpace();
+  must(`wait ${ROCK_SETTLE_TICKS}t; skyliners:spaceweather start=asteroid_storm`);
+  const next = rockWithin(ROCK_AIM_WITHIN);
+  if (!next) {
+    expect(false, "knocked rock: a rock flies in to strike her, into her cannon's reach");
+    return;
+  }
+  must(`${aimAhead(next, ROCK_AIM_AHEAD)}; wait ${ROCK_FIRE_AFTER}t; key down key.attack; wait ${ROCK_BOLTS * 5}t; key up key.attack`);
+  const struck = must("skyliners:spaceweather");
+  const broke = struck.shot_down > leftAlone.shot_down;
+  const shot = broke || struck.coming === 0 ? { shove: 0, spin: 0 } : strikeAt(freighter, struck.rock_lands);
+  const after = must("skyliners:spaceweather");
+  const missed = after.missed > leftAlone.missed;
+  const softer = after.landed > leftAlone.landed && after.last_share < leftAlone.last_share && shot.shove < alone.shove;
+  expect(broke || missed || softer, "knocked rock: a rock struck by her cannon on its way in lands softer than one left alone, or misses her",
+    `left alone: ${round(leftAlone.last_share)} of a strike, shoving ${round(alone.shove)} blocks a second, turning ${round(alone.spin)} degrees a second; `
+    + `shot: ${broke ? "broke up" : missed ? "missed her" : `${round(after.last_share)} of a strike, shoving ${round(shot.shove)}, turning ${round(shot.spin)}`}`);
+  must(`key press key.sneak 10t; wait 10t`);
+  quietSpace();
+}
+
+// A giant asteroid: a freighter hovering at y 1,600, the player aboard her in survival, a giant asteroid brought over
+// her; its giant's strike, never held back, shoves her far harder than an ordinary rock's and sets her spinning; the
+// server never stalls as she tumbles; and the player comes out of it unhurt.
+function checkGiantAsteroid() {
+  const freighter = freighterInSpace("giant asteroid");
+  if (!freighter) {
+    return;
+  }
+  survival();
+  const health = healthOf();
+  const asked = must("skyliners:spaceweather start=giant_asteroid");
+  expect(asked.started === "coming", "giant asteroid: brought over her", `${asked.started}`);
+  const ordinary = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.coming > 0 && !weather.rock_giant, GIANT_TICKS);
+  const rock = ordinary ? strikeAt(freighter, ordinary.rock_lands) : { shove: 0, spin: 0 };
+  const coming = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.giant_lands > 0, GIANT_TICKS);
+  expect(coming, "giant asteroid: a giant flies in to strike her", coming ? `${coming.giant_size} blocks across` : "");
+  if (!coming) {
+    creative();
+    return;
+  }
+  must("perf start giant");
+  const giant = strikeAt(freighter, coming.giant_lands);
+  must(`wait ${GIANT_TUMBLE_TICKS}t`);
+  const { summary } = must("perf stop");
+  const mspt = summary?.server?.mspt ?? summary?.mspt ?? {};
+  expect(giant.shove >= GIANT_SHOVE_LEAST && giant.shove >= rock.shove * GIANT_HARDER && giant.spin >= GIANT_SPIN_LEAST,
+    "giant asteroid: its strike shoves her far harder than an ordinary rock's and sets her spinning",
+    `giant: ${round(giant.shove)} blocks a second, turning ${round(giant.spin)} degrees a second; a rock: ${round(rock.shove)} and ${round(rock.spin)}`);
+  expect((mspt.avg ?? 0) <= GIANT_TICK_MS && (mspt.max ?? 0) <= GIANT_WORST_TICK_MS, "giant asteroid: the server never stalls as she tumbles",
+    `server ticks ${round(mspt.avg ?? NaN)} ms on average, ${round(mspt.max ?? NaN)} ms at the worst`);
+  quietSpace();
+  const after = healthOf();
+  expect(after >= health, "giant asteroid: nobody aboard is hurt", `health ${after}, ${health} before`);
   creative();
 }
 
@@ -4963,6 +5185,9 @@ const CHECKS = {
   "freighter-slam-from-space": { run: checkFreighterSlamFromSpace, slow: true, about: "a freighter's slam button works far out in space and brings her down hard all the way, nobody hurt" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },
+  "space-rocks-shot": { run: checkSpaceRocksShot, slow: true, about: "from a freighter's laser cannon in space, the sight locks on to a rock flying in and rockets burst it, her client told so" },
+  "space-rock-knocked": { run: checkSpaceRockKnocked, slow: true, about: "a rock struck by a freighter's cannon on its way in lands softer than one left alone, misses her or breaks up" },
+  "giant-asteroid": { run: checkGiantAsteroid, slow: true, about: "a giant asteroid shoves a freighter far harder than a rock and spins her, the server never stalling, nobody hurt" },
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
