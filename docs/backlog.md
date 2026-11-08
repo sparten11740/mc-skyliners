@@ -30,7 +30,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   them again at every later fold of her ramp; a fresh freighter never does. The cause is not found (the hatch cells at
   -5..-7, -4, 0..2 and -13, -4, 2 from the ramp panel). A check: fly, land, drop her, and look that `sable:list` near her
   shows only her after the next fold.
-- Her belly looks very dark from below in flight; not yet compared with her on the ground.
 - `BoardingRamp` and `BoardingAirstairs` each keep their own wait for someone to step off (held, a cooldown, the chime,
   looking again): one shared piece beside `Hatch`, before a third door-like mechanism copies it again.
 
