@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -176,8 +177,8 @@ public class LaserCrossbowItem extends Item {
 
     /**
      * Fires its bolt from its muzzle the way its holder looks, drawn for everyone near flying out of the crossbow in
-     * its holder's hands; a hostile mob it is to strike hurt and thrown back once it gets there; its shot heard, a
-     * little higher or lower each time.
+     * its holder's hands; a hostile mob it is to strike hurt and thrown back once it gets there, and a ship whose block
+     * it is to strike rocked a little; its shot heard, a little higher or lower each time.
      */
     private static void fire(ServerLevel level, Player player) {
         Vec3 eye = player.getEyePosition();
@@ -187,9 +188,12 @@ public class LaserCrossbowItem extends Item {
         Vec3 muzzle = eye.add(look.scale(MUZZLE_AHEAD)).add(right.scale(MUZZLE_RIGHT)).add(0, -MUZZLE_DOWN, 0);
         int ticks = LaserFire.fly(level, player, muzzle, hit, LaserBolt.AMBER, BOLTS_SEEN);
         LivingEntity target = LaserFire.struck(hit);
+        Vec3 way = hit.getLocation().subtract(eye).normalize();
         if (target != null) {
-            Vec3 way = hit.getLocation().subtract(eye).normalize();
             BoltsInFlight.launch(level, player, target, ticks, DAMAGE, THROW, way);
+        }
+        if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK) {
+            BoltsInFlight.launchAt(level, player, block, ticks, way);
         }
         float pitch = SHOT_PITCH + level.getRandom().nextFloat() * SHOT_PITCH_SPREAD;
         sound(level, player, SkylinersRegistry.LASER_CROSSBOW_SHOT.get(), SHOT_VOLUME, pitch);

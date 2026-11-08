@@ -2948,8 +2948,9 @@ shoves her harder, with a boom and a crunch of metal, glowing embers and a cloud
 along with her, and each hit has its subtitle. A light ship rocks more than a heavy one, and she always rights herself:
 however long you keep firing, she is never pushed far, thrown over or knocked out of the sky. Everyone aboard her feels
 each hit as a kick to their view (unless the client setting `cameraShake` is off), harder the nearer they stand to it
-and harder for a rocket, and anyone standing near her outside feels it a little too. Your shots never strike the ship
-you fire from. The server config's `freighter.shipHits` lets shots strike ships unfelt and unheard.
+and harder for a rocket, and anyone standing near her outside feels it a little too. The Laser Crossbow's bolts strike
+ships too, as they reach her, with half a cannon bolt's tap and a higher ping. Your shots never strike the ship you fire
+from or ride. The server config's `freighter.shipHits` lets shots strike ships unfelt and unheard.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
 copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing

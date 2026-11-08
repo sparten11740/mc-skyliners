@@ -137,7 +137,8 @@ one tick, gravity taken out, of more than any craft's lift, engines or an airlin
 and heard by how hard, a thud or a crunch and a groan after it, from the side of her box the push came from, and
 `ImpactJolt` kicks the view of those aboard through `CameraShake`; slowed hard across the ground just after such a
 push, she grinds, the scrape played again each second while she slides. A shot striking a ship goes through
-`ShipHits.struck`, called by the laser cannon's bolts and its `CannonRocket`s where they meet a block of another ship:
+`ShipHits.struck`, called by the laser cannon's bolts and its `CannonRocket`s where they meet a block of another ship,
+and by the laser crossbow's bolts as they get there (`BoltsInFlight`):
 `SableFlight.strike` gives her a speed and the turn that push at the hit point makes, through her inertia, clamped and
 scaled by her weight, each ship's pushes gathered and capped at a rocket's worth until she rides them out; the hit's
 sound and particles are played among her blocks so they ride along with her, and `ImpactJolt` kicks the view of those
@@ -398,7 +399,8 @@ the laser pointer does, and sends it once as a `LaserBolt` (`LaserFire.fly`), wh
 crossbow as each client draws it in their hands (`LaserCrossbowHands.muzzle`), whose start lies among the blocks of the
 ship its holder rides and whose end among those of a ship it strikes, or of whoever it strikes aboard her, so it flies
 along with her. `LaserBolts` draws it flying at `LaserBolt.HELD_SPEED` and bursts it into sparks with a sizzle as it
-gets there, while `BoltsInFlight` holds its harm to a mob on the server until then. Her top turret is in `turret/`: the
+gets there, while `BoltsInFlight` holds its harm to a mob, or its strike on a ship's block (`ShipHits`), on the server
+until then. Her top turret is in `turret/`: the
 `LaserCannonBlockEntity` finds the player seated within reach under it, traces their look from its `sight` (over and
 behind its swivel, square to their look, worked out the same on both sides from the seated player's turn, which is in
 her frame) to what they look at and aims from its pivot at that, turned into her frame (`SableFlight.turnToPlot`), so

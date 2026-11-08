@@ -31,7 +31,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * with the server setting "freighter.shipHits".
  *
  * <p>Whatever fires at a ship calls {@link #struck} where its shot meets a block: the laser cannon's bolts and rockets
- * do.
+ * do, and the laser crossbow's bolts as they get there (see {@code BoltsInFlight}).
  */
 public final class ShipHits {
     /**
@@ -87,12 +87,17 @@ public final class ShipHits {
      */
     public enum Shot {
         /**
-         * A laser bolt: a light tap, a ping off her plates heard as far as a laser cannon reaches, a few sparks and a
-         * puff of scorch.
+         * A laser cannon's bolt: a light tap, a ping off her plates heard as far as a laser cannon reaches, a few
+         * sparks and a puff of scorch.
          */
         BOLT(0.3, 3, 0.2F, SkylinersRegistry.IMPACT_BOLT, 64, 1, ParticleTypes.ELECTRIC_SPARK, 10, ParticleTypes.SMOKE, 6),
         /** A rocket: a hard shove, a boom and crunch heard far off, glowing embers and a cloud of smoke. */
-        ROCKET(1.2, 8, 0.7F, SkylinersRegistry.IMPACT_ROCKET, 128, 1.05F, ParticleTypes.LAVA, 12, ParticleTypes.LARGE_SMOKE, 14);
+        ROCKET(1.2, 8, 0.7F, SkylinersRegistry.IMPACT_ROCKET, 128, 1.05F, ParticleTypes.LAVA, 12, ParticleTypes.LARGE_SMOKE, 14),
+        /**
+         * The laser crossbow's bolt, from a weapon in hand: half a cannon bolt's tap, a higher ping heard as far as the
+         * crossbow reaches, and fewer sparks; its own burst of sparks and sizzle land with it besides.
+         */
+        CROSSBOW_BOLT(0.15, 1.5, 0.12F, SkylinersRegistry.IMPACT_BOLT, 40, 1.15F, ParticleTypes.ELECTRIC_SPARK, 5, ParticleTypes.SMOKE, 3);
 
         private final double speed;
         private final double turn;
