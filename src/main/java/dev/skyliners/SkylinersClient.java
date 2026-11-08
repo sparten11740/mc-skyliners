@@ -1,5 +1,6 @@
 package dev.skyliners;
 
+import dev.skyliners.autopilot.HyperspaceWake;
 import dev.skyliners.beam.TractorBeamBlockEntity;
 import dev.skyliners.block.BeanBagBlock;
 import dev.skyliners.block.BunkBlock;
@@ -79,6 +80,7 @@ import dev.skyliners.client.HelmetBreathing;
 import dev.skyliners.client.HelmetVisor;
 import dev.skyliners.client.HyperspaceOverlay;
 import dev.skyliners.client.HyperspaceStreakParticle;
+import dev.skyliners.client.HyperspaceStretch;
 import dev.skyliners.client.HyperspaceWakes;
 import dev.skyliners.client.KeptLooks;
 import dev.skyliners.client.LaserBolts;
@@ -313,6 +315,10 @@ public final class SkylinersClient {
         // A freighter's hyperspace jump as those outside her see it: the light gathering on her and rushing in to where
         // she comes out.
         NeoForge.EVENT_BUS.addListener(HyperspaceWakes::tick);
+        // And she is drawn stretching into the jump and snapping back out of it.
+        NeoForge.EVENT_BUS.addListener(HyperspaceStretch::tick);
+        NeoForge.EVENT_BUS.addListener(HyperspaceStretch::stage);
+        HyperspaceWake.clientStretched = HyperspaceStretch::stretched;
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
         LedLights.register(modEventBus);
         // A freighter's console: its screens' shapes and its controls drawn together, once a frame.

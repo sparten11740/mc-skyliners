@@ -338,6 +338,7 @@ public final class FreighterJump {
         riders.clear();
         aboard.stream().map(Entity::getRootVehicle).distinct().filter(rider -> !SableFlight.inPlot(rider))
             .forEach(rider -> riders.add(new Rider(rider, SableFlight.toPlot(level, autopilot.getBlockPos(), rider.position(), false))));
+        Vec3 among = SableFlight.toPlot(level, autopilot.getBlockPos(), middle, false);
         if (!SableFlight.jump(autopilot, by)) {
             callOff(level, autopilot, drive);
             return;
@@ -348,7 +349,7 @@ public final class FreighterJump {
         aboard.forEach(player -> PacketDistributor.sendToPlayer(player, new HyperspaceJump(HyperspaceJump.Stage.ARRIVE, GO_TICKS)));
         show(level, new HyperspaceWake(HyperspaceWake.Stage.DEPART, middle, middle, state.nose(), hull, 0), aboard);
         Vec3 out = middle.add(by);
-        show(level, new HyperspaceWake(HyperspaceWake.Stage.ARRIVE, out, out, state.nose(), hull, 0), aboard);
+        show(level, new HyperspaceWake(HyperspaceWake.Stage.ARRIVE, out, among, state.nose(), hull, 0), aboard);
         JumpDriveBlock.fireForJump(level, drive == null ? null : autopilot.getBlockPos().offset(drive));
         autopilot.changed();
     }

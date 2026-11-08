@@ -21,6 +21,8 @@ import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
+import dev.ryanhcode.sable.sublevel.render.dispatcher.VanillaSubLevelRenderDispatcher;
+import dev.ryanhcode.sable.sublevel.render.vanilla.VanillaChunkedSubLevelRenderData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +30,8 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -42,6 +46,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.CommonHooks;
 import org.joml.Matrix4d;
+import org.joml.Matrix4f;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
@@ -50,8 +55,9 @@ import org.joml.Vector3dc;
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
  * with, which one a player is riding or a block is part of and how that one moves, the autopilot of the one a player
  * rides, how one is moving and lying for its instruments, where its outside cameras are as it flies, which ones come
- * near a point or hold it and how they lie as they are drawn, and those round the camera the weather falls on;
- * holding Sable's water occlusion off while a camera's
+ * near a point or hold it and how they lie as they are drawn, where one's blocks end along a line, and those round the
+ * camera the weather falls on; drawing one's blocks again through a matrix of our own, as a freighter is drawn
+ * stretching into a hyperspace jump; holding Sable's water occlusion off while a camera's
  * picture is drawn; and keeping the player in step with the airliner whose cabin they fly, fall or climb in. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
  * once it is known to be installed.
  */
@@ -332,9 +338,46 @@ public final class SableClient {
         return SABLE ? Access.placing(point, partialTick) : null;
     }
 
+    /**
+     * Where an assembled ship's blocks end either way along a line through a point among them, as she is drawn: that
+     * point in the world, and the furthest her blocks reach behind it and ahead of it along the line.
+     */
+    public record Ends(Vec3 middle, Vec3 back, Vec3 front) {
+    }
+
+    /**
+     * Where the assembled ship holding a point among her blocks ends either way along a way through the world (a unit
+     * long), as she is drawn at this partial tick, by the box round her blocks; null once no ship holds the point.
+     */
+    @Nullable
+    static Ends ends(Vec3 aboard, Vec3 way, float partialTick) {
+        return SABLE ? Access.ends(aboard, way, partialTick) : null;
+    }
+
+    /**
+     * Draws one layer of an assembled ship's blocks again, as Sable draws them, but taking the world, around the
+     * camera, through a model-view matrix of the caller's: a matrix that stretches the world draws her stretched. The
+     * layer's render state is set up and its shader applied by the caller. Whether she was drawn: not without Sable,
+     * once no ship holds the point, with a Sable that draws ships some other way (as it does alongside Sodium), or one
+     * whose drawing is no longer where it was.
+     */
+    static boolean drawBlocks(Vec3 aboard, RenderType layer, ShaderInstance shader, Matrix4f modelView, Vec3 camera) {
+        if (!SABLE || !Access.drawingReachable) {
+            return false;
+        }
+        try {
+            return Access.drawBlocks(aboard, layer, shader, modelView, camera);
+        } catch (LinkageError notThere) {
+            Access.drawingReachable = false;
+            return false;
+        }
+    }
+
     private static final class Access {
         /** False once Sable's water occlusion switch was found missing, as a later Sable might move it. */
         static boolean waterOcclusionReachable = true;
+        /** False once Sable's drawing of a ship's blocks was found missing, as a later Sable might move it. */
+        static boolean drawingReachable = true;
         /** False once Sable's store of the places the server sent was found missing, as a later Sable might move it. */
         static boolean sentReachable = true;
 
@@ -623,6 +666,39 @@ public final class SableClient {
             }
             Pose3dc pose = airliner.renderPose(partialTick);
             return new Placing(pose.bakeIntoMatrix(new Matrix4d()), new Quaterniond(pose.orientation()));
+        }
+
+        @Nullable
+        static Ends ends(Vec3 aboard, Vec3 way, float partialTick) {
+            ClientSubLevel ship = Sable.HELPER.getContainingClient(aboard);
+            BoundingBox3ic blocks = ship == null ? null : ship.getPlot().getBoundingBox();
+            if (blocks == null) {
+                return null;
+            }
+            Pose3dc pose = ship.renderPose(partialTick);
+            Vec3 middle = pose.transformPosition(aboard);
+            double back = 0;
+            double front = 0;
+            for (int corner = 0; corner < 8; corner++) {
+                Vector3d at = new Vector3d((corner & 1) == 0 ? blocks.minX() : blocks.maxX() + 1, (corner & 2) == 0 ? blocks.minY() : blocks.maxY() + 1,
+                    (corner & 4) == 0 ? blocks.minZ() : blocks.maxZ() + 1);
+                pose.transformPosition(at, at);
+                double along = (at.x - middle.x) * way.x + (at.y - middle.y) * way.y + (at.z - middle.z) * way.z;
+                back = Math.min(back, along);
+                front = Math.max(front, along);
+            }
+            return new Ends(middle, middle.add(way.scale(back)), middle.add(way.scale(front)));
+        }
+
+        static boolean drawBlocks(Vec3 aboard, RenderType layer, ShaderInstance shader, Matrix4f modelView, Vec3 camera) {
+            ClientSubLevel ship = Sable.HELPER.getContainingClient(aboard);
+            if (ship == null || !(ship.getRenderData() instanceof VanillaChunkedSubLevelRenderData blocks)) {
+                return false;
+            }
+            VanillaSubLevelRenderDispatcher.setupDynamicEffects(shader, true, true);
+            blocks.renderChunkedSubLevel(layer, shader, modelView, camera.x, camera.y, camera.z);
+            VanillaSubLevelRenderDispatcher.setupDynamicEffects(shader, false, true);
+            return true;
         }
 
         private static Ride ride(SubLevel airliner, Level level) {

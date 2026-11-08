@@ -28,7 +28,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * was, the way she pointed, glitter hangs in the air there and a ring of light closes in on the hole she left, with a
  * whoomph heard far off. Where she comes out, streaks rush in from behind her over a swelling rush and are gone into
  * the spot, and she is there in a flash, a ring of streaks bursting out round her and glitter, with a boom. The nearer
- * the onlooker, the brighter a faint white flash over their view as she goes and as she comes out.
+ * the onlooker, the brighter a faint white flash over their view as she goes and as she comes out. And she is drawn
+ * stretching into the jump and snapping back out of it (see {@link HyperspaceStretch}).
  *
  * <p>One message from the server a step, every particle made here; the streaks heed the player's particle setting by
  * themselves, and the flashes and the glitter are thinned out here, as they are shown past the game's own limit on
@@ -94,7 +95,7 @@ public final class HyperspaceWakes {
      * the places it is sent: the flash where she goes and comes out and the streaks rushing in wait as long, so she is
      * gone inside the flash and comes out as the streaks are gone into the spot.
      */
-    private static final int SHOWN_LATER = 4;
+    static final int SHOWN_LATER = 4;
 
     /** The steps leading up to a jump or a coming out under way on this client, and the level they are in. */
     private static final List<Wake> WAKES = new ArrayList<>();
@@ -130,6 +131,7 @@ public final class HyperspaceWakes {
             shownIn = new WeakReference<>(level);
         }
         WAKES.add(new Wake(wake, DrawingClock.wholeTicks()));
+        HyperspaceStretch.seen(level, wake);
         if (wake.stage() == HyperspaceWake.Stage.GATHER) {
             hear(level, SkylinersRegistry.FREIGHTER_HYPERSPACE_OUT.get(), wake.at());
         } else if (wake.stage() == HyperspaceWake.Stage.INBOUND) {

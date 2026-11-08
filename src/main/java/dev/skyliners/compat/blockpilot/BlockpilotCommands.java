@@ -16,6 +16,7 @@ import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.Craft;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.FreighterPilot;
+import dev.skyliners.autopilot.HyperspaceWake;
 import dev.skyliners.autopilot.RocketFlight;
 import dev.skyliners.autopilot.RocketPilot;
 import dev.skyliners.autopilot.SetAutopilot;
@@ -65,7 +66,8 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * to how it is laid out moves no block ({@code skyliners:layout}), repainting the nearest zeppelin
  * ({@code skyliners:livery}), and the space weather over the nearest rocket or freighter, or bringing some over her
  * ({@code skyliners:spaceweather}); and, on the client, whether the player sees from a laser cannon's sight
- * ({@code skyliners:gunner}) and what it last drew of a laser bolt ({@code skyliners:bolts}). Only loaded when
+ * ({@code skyliners:gunner}), what it last drew of a laser bolt ({@code skyliners:bolts}) and of a freighter
+ * stretching into a hyperspace jump and out of it ({@code skyliners:stretch}). Only loaded when
  * Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
@@ -192,6 +194,15 @@ public final class BlockpilotCommands {
             .field("from_camera", "where it was drawn leaving from, from the camera: blocks right, up and ahead as it looks")
             .field("flown", "for a bolt from a weapon in hand, how far its tail had flown from where it left, in blocks, when last drawn")
             .field("streak", "for a bolt from a weapon in hand, how long it was drawn, head to tail, in blocks, when last drawn"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("stretch", (context, args) -> stretch())
+            .needsWorld()
+            .group("skyliners")
+            .help("what this client last drew of a freighter stretching into a hyperspace jump and snapping back out of it, watched from outside")
+            .field("jumps", "how many jumps this client has been shown from outside")
+            .field("going", "how many times her own length she was drawn at most as she went")
+            .field("going_frames", "in how many frames she was drawn stretched as she went")
+            .field("coming", "how many times her own length she was drawn at most as she came out")
+            .field("coming_frames", "in how many frames she was drawn stretched as she came out"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("repairs", (context, args) -> repairs(args))
             .onServer()
             .group("skyliners")
@@ -518,6 +529,16 @@ public final class BlockpilotCommands {
             .tag("shown", seen.shown()).tag("from_muzzle", seen.fromMuzzle()).tag("flown", round(seen.flown())).tag("streak", round(seen.streak()));
         Vec3 at = seen.fromCamera();
         return Result.ok(at == null ? fields : fields.tag("from_camera", round(at.x) + "," + round(at.y) + "," + round(at.z)));
+    }
+
+    /** What this client last drew of a freighter stretching into a jump and out of it, watched from outside. */
+    private static Result stretch() {
+        HyperspaceWake.Stretched seen = HyperspaceWake.clientStretched.get();
+        if (seen == null) {
+            return Result.ok(new Fields().tag("jumps", 0));
+        }
+        return Result.ok(new Fields().tag("jumps", seen.jumps()).tag("going", round(seen.going())).tag("going_frames", seen.goingFrames())
+            .tag("coming", round(seen.coming())).tag("coming_frames", seen.comingFrames()));
     }
 
     /**
