@@ -2895,48 +2895,50 @@ back wall to the gunner's platform under her top dome, its rails carrying on up 
 the top, step back off it onto the platform, lit by a floor light either side of the gunner's seat a block ahead, the
 gunner's head in the dome's glass. The Crew Ladder is among her blocks in the creative tab and climbs any wall it is set
 on. Sit in the gunner's seat and her computer says "Gun turret online. Try and hit something.", and your view goes up to
-the sight of the laser cannon over you, behind its twin barrels on a gunmetal pedestal on the hub where the dome's ribs
-meet, high enough to see all round her past her rim and up into the sky, their glowing muzzles low in the view; sneak to
-get up and your own view is back at once. The barrels turn to whatever you look at, heavy as they are: they gather
-speed, slow as they come round and run a little past on a hard swing before settling, a hiss of hydraulics as they
-start, their servos whirring and a clunk as they lock, all the way round and from a little below level to near straight
-up. The sight is drawn in thin amber lines on a dark frame: at the middle a ring round a cross, where the bolts land,
-which turns red with brackets closing in round it and a beep while it rests on a hostile mob in reach, and grey with a
-red X where the cannon cannot fire (into her own hull, or lower than its barrels go; pull the trigger there and it only
-clicks); to its right a thermometer that fills with every bolt, going from amber to red, and flashes with heat waves
-rising over it once the cannon has overheated; and to its left a ring showing her from above, her bow at the top, a beam
-out of her the way you face. Hold attack to fire, red bolts from alternate barrels four times a second with a crack
-each, sparks wherever they strike, and where one meets a block it goes off in a small blast that knocks out the blocks
-round it, as TNT does by the world's own rules for TNT, but never a block of any ship, her own least of all; bolts and
-blasts alike hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard her, and attack does
-nothing else while you sit there, so the dome's glass is safe. Every bolt heats the cannon and it cools once you let go
-a moment: twenty bolts in a row and it overheats with a hiss, holding its fire a couple of seconds until it has cooled
-right down. The Laser Cannon is among her blocks in the creative tab; set down by hand near any seat, it works there
-too, its barrels resting the way you faced as you set it down. The server config's `freighter.turrets` builds her
-without it and keeps every laser cannon from firing, and `freighter.turretBlasts` keeps their bolts from blasting any
-block.
+the sight of the laser cannon over you, behind its twin barrels on a pedestal of worn, riveted gunmetal on the hub where
+the dome's ribs meet, high enough to see all round her past her rim and up into the sky, their glowing coils and muzzles
+low in the view; sneak to get up and your own view is back at once. The barrels turn to whatever you look at, heavy as
+they are: they gather speed, slow as they come round and run a little past on a hard swing before settling, a hiss of
+hydraulics as they start, their servos whirring and a clunk as they lock, all the way round and from a little below
+level to near straight up. The sight is drawn in thin amber lines on a dark frame: at the middle a ring round a cross,
+where the bolts land, which turns red with brackets closing in round it and a beep while it rests on a hostile mob in
+reach, and grey with a red X where the cannon cannot fire (into her own hull, or lower than its barrels go; pull the
+trigger there and it only clicks); to its right a thermometer that fills with every bolt, going from amber to red, and
+flashes with heat waves rising over it once the cannon has overheated; and to its left a ring showing her from above,
+her bow at the top, a beam out of her the way you face. Hold attack to fire, red bolts from alternate barrels four times
+a second with a crack each, sparks wherever they strike, and where one meets a block it goes off in a small blast that
+knocks out the blocks round it, as TNT does by the world's own rules for TNT, but never a block of any ship, her own
+least of all; bolts and blasts alike hurt hostile mobs only, never players, villagers, pets, animals or anyone aboard
+her, and attack does nothing else while you sit there, so the dome's glass is safe. Every bolt heats the cannon and it
+cools once you let go a moment: twenty bolts in a row and it overheats with a hiss, holding its fire a couple of seconds
+until it has cooled right down. Its heat shows on the barrels, as weathered as her hull, finned jackets and heat-blued
+steel to blackened crowns: the emitter in each crown, three coils behind it and a channel along the barrel glow red at
+full brightness even at night, a dull ember at rest, flaring as each barrel fires, burning brighter and whiter the
+hotter the cannon gets and flickering as it nears overheating, then dimming again as it cools. The Laser Cannon is among
+her blocks in the creative tab; set down by hand near any seat, it works there too, its barrels resting the way you
+faced as you set it down. The server config's `freighter.turrets` builds her without it and keeps every laser cannon
+from firing, and `freighter.turretBlasts` keeps their bolts from blasting any block.
 
-Either side of the cannon's swivel hangs a rocket pod, dark and banded in hazard yellow, tilting with the barrels: two
-tubes each, the red nose of a rocket showing in every loaded tube and a dark hole where one has gone. Hold use to
-launch them, one from each pod in turn every few ticks, each with a whoosh and a burst of smoke out of its tube, until
-all four are away; tap use for just one. A rocket leaves slowly, carried along at her speed, and its motor drives it
-off faster and faster, a white-hot flame out of its tail and a long white smoke trail behind it, its roar rising as it
-comes your way and falling as it goes. It flies to whatever the crosshair is on, and while the sight is locked on to a
-hostile mob (the reticle red, brackets closed round it) the rockets home in on that mob, turning gently, so a quick one
-can still dodge. Where a rocket strikes a block, another ship or a hostile mob, or passes close by the mob it chases,
-or after four seconds in the air, it goes off with a flash, a fireball, a cloud of soot and a deep bang heard far off,
-shaking the view of anyone near: a blast as strong as a creeper's that knocks out blocks round it as TNT does, by the
-world's own rules for TNT, but never a block of any ship, and hurts hostile mobs only, never players, villagers, pets,
-animals or anyone aboard her. Once she flies, rockets fly straight through her own hull; standing on the ground as she
-was built, she stops them as any block would, her frame left whole as it is by any blast. They fly past anyone who
-is not a hostile mob.
-Under the sight's reticle a row of four little rockets shows what is left in the pods: amber while loaded, red while the
-sight is locked on, grey where the cannon holds its fire (it holds its rockets where it holds its bolts), and an empty
-outline once launched, so the row empties from the left. A second after the last launch the pods load again, a rocket at
-a time with a clack, the next one on the sight filling up from its tail as it loads, until all four are back some eight
-seconds after the last left; press use with the pods empty and it only clicks. The server config's `freighter.rockets`
-takes the pods off every laser cannon, use then doing what it did before; with `freighter.turretBlasts` off, rockets
-still hurt hostile mobs but break no block.
+Either side of the cannon's swivel hangs a rocket pod in chipped olive paint, banded in worn hazard stripes, tilting
+with the barrels: two tubes each, the red nose of a rocket showing in every loaded tube and a dark hole where one has
+gone. Hold use to launch them, one from each pod in turn every few ticks, each with a whoosh and a burst of smoke out of
+its tube, until all four are away; tap use for just one. A rocket leaves slowly, carried along at her speed, and its
+motor drives it off faster and faster, a white-hot flame out of its tail and a long white smoke trail behind it, its
+roar rising as it comes your way and falling as it goes. It flies to whatever the crosshair is on, and while the sight
+is locked on to a hostile mob (the reticle red, brackets closed round it) the rockets home in on that mob, turning
+gently, so a quick one can still dodge. Where a rocket strikes a block, another ship or a hostile mob, or passes close
+by the mob it chases, or after four seconds in the air, it goes off with a flash, a fireball, a cloud of soot and a deep
+bang heard far off, shaking the view of anyone near: a blast as strong as a creeper's that knocks out blocks round it as
+TNT does, by the world's own rules for TNT, but never a block of any ship, and hurts hostile mobs only, never players,
+villagers, pets, animals or anyone aboard her. Once she flies, rockets fly straight through her own hull; standing on
+the ground as she was built, she stops them as any block would, her frame left whole as it is by any blast. They fly
+past anyone who is not a hostile mob. Under the sight's reticle a row of four little rockets shows what is left in the
+pods: amber while loaded, red while the sight is locked on, grey where the cannon holds its fire (it holds its rockets
+where it holds its bolts), and an empty outline once launched, so the row empties from the left. A second after the last
+launch the pods load again, a rocket at a time with a clack, the next one on the sight filling up from its tail as it
+loads, until all four are back some eight seconds after the last left; press use with the pods empty and it only clicks.
+The server config's `freighter.rockets` takes the pods off every laser cannon, use then doing what it did before; with
+`freighter.turretBlasts` off, rockets still hurt hostile mobs but break no block.
 
 The Laser Crossbow, among her blocks in the creative tab (crafted from a crossbow, an amethyst shard, two redstone and a
 copper ingot), is her own weapon: a gunmetal crossbow on a dark-wood stock, its two swept arms tipped with glowing

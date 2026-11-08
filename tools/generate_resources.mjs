@@ -285,15 +285,26 @@ function rampFittings() {
   return ["ramp_deck", "ramp_plate"];
 }
 
-// The freighter's laser cannon (see LaserCannonBlock): its pedestal, a gunmetal column on a flange up the middle of its
-// block with a drum on top, its swivel and barrels drawn on the drum by LaserCannonRenderer; round, so the same whichever
-// way it faces; its item shows the pedestal.
+// The freighter's laser cannon (see LaserCannonBlock): its pedestal, a column of worn gunmetal plate on a flange banded
+// in hazard stripes up the middle of its block, with a drum on top, the flange's and the drum's tops each a ring of
+// bolts round a hub; its swivel and barrels drawn on the drum by LaserCannonRenderer, in the same plate; round, so the
+// same whichever way it faces; its item shows the pedestal.
 {
-  const bezel = `${ID}:block/airstair_button_bezel`;
+  // A part of the pedestal, its sides of one texture, its top of another, whole over it, and its foot of the plate.
+  const tier = (from, to, side, top) => ({
+    from, to,
+    faces: {
+      north: { texture: side }, south: { texture: side }, east: { texture: side }, west: { texture: side },
+      up: { texture: top, uv: [0, 0, 16, 16] }, down: { texture: "#plate" },
+    },
+  });
   write(`assets/${ID}/models/block/laser_cannon.json`, {
     parent: "minecraft:block/block",
-    textures: { mount: bezel, particle: bezel },
-    elements: [solid([2, 0, 2], [14, 2, 14], "#mount"), solid([5, 2, 5], [11, 13, 11], "#mount"), solid([3, 13, 3], [13, 16, 13], "#mount")],
+    textures: {
+      plate: `${ID}:block/laser_cannon_plate`, ring: `${ID}:block/laser_cannon_ring`, hazard: `${ID}:block/laser_cannon_hazard`,
+      particle: `${ID}:block/laser_cannon_plate`,
+    },
+    elements: [tier([2, 0, 2], [14, 2, 14], "#hazard", "#ring"), tier([5, 2, 5], [11, 13, 11], "#plate", "#plate"), tier([3, 13, 3], [13, 16, 13], "#plate", "#ring")],
   });
   write(`assets/${ID}/blockstates/laser_cannon.json`, {
     variants: Object.fromEntries(["north", "east", "south", "west"].map((facing) => [`facing=${facing}`, { model: `${ID}:block/laser_cannon` }])),

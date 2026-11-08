@@ -1,8 +1,10 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "mount": "skyliners:block/airstair_button_bezel",
-    "particle": "skyliners:block/airstair_button_bezel"
+    "plate": "skyliners:block/laser_cannon_plate",
+    "ring": "skyliners:block/laser_cannon_ring",
+    "hazard": "skyliners:block/laser_cannon_hazard",
+    "particle": "skyliners:block/laser_cannon_plate"
   },
   "elements": [
     {
@@ -18,22 +20,28 @@
       ],
       "faces": {
         "north": {
-          "texture": "#mount"
+          "texture": "#hazard"
         },
         "south": {
-          "texture": "#mount"
+          "texture": "#hazard"
         },
         "east": {
-          "texture": "#mount"
+          "texture": "#hazard"
         },
         "west": {
-          "texture": "#mount"
+          "texture": "#hazard"
         },
         "up": {
-          "texture": "#mount"
+          "texture": "#ring",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#mount"
+          "texture": "#plate"
         }
       }
     },
@@ -50,22 +58,28 @@
       ],
       "faces": {
         "north": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "south": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "east": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "west": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "up": {
-          "texture": "#mount"
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#mount"
+          "texture": "#plate"
         }
       }
     },
@@ -82,22 +96,28 @@
       ],
       "faces": {
         "north": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "south": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "east": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "west": {
-          "texture": "#mount"
+          "texture": "#plate"
         },
         "up": {
-          "texture": "#mount"
+          "texture": "#ring",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#mount"
+          "texture": "#plate"
         }
       }
     }

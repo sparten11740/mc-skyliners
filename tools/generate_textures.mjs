@@ -9270,6 +9270,189 @@ function hullPlateTextures() {
 }
 hullPlateTextures();
 
+// The freighter's laser cannon (see LaserCannonRenderer, which lays these on its parts a block to 32 pixels from each
+// face's corner, and the laser_cannon model, its pedestal), as worn as her hull: dark gunmetal plates with a seam
+// along their top and left, rivets and bolts with a shadow under each and rust weeping from some, grime streaked down
+// them, specks of rust and bright scuffs. Its armour plate in three panels; a side plate with an access hatch on its
+// hinges, its latch and screws and a faded warning triangle; its top with a louvred vent at the back and worn hazard
+// stripes along its front; its barrels' cooling jacket finned round, and its barrels brushed steel with two clamps,
+// both blued and bronzed by heat toward the muzzle and sooted there; the crown round its emitter blackened, a port
+// cut in it; the emitter's lens and its coils in greys, for the renderer to tint with their glow; its rocket pods in
+// chipped olive paint showing bare steel, a faded arrow stencilled on them, banded in worn hazard stripes; a tube's
+// mouth dark in its rim; a rocket's nose red under an off-white tip; a turntable's top, a ring of bolts round its
+// hub inside a worn hazard ring; and a ribbed rubber hose with a faded yellow line along it.
+function laserCannonTextures() {
+  const PLATE = 32;
+  const GUNMETAL = [0x50, 0x56, 0x5e];
+  const OLIVE = [0x44, 0x47, 0x3e];
+  const BARE = [0x86, 0x8a, 0x8e];
+  const RUST = [0x7e, 0x4a, 0x2a];
+  const HAZARD_YELLOW = [0xd8, 0xa8, 0x22];
+  const HAZARD_BLACK = [0x26, 0x26, 0x28];
+  // How much darker a seam, and how much lighter the edge inside it, is than its plate, in steps; how far apart rivets
+  // are along a row, in pixels; how much darker grime makes a plate at most, in steps; and how often a pixel is a rust
+  // speck or a scuff, as shares of them.
+  const SEAM_DARK = 24;
+  const EDGE_LIGHT = 7;
+  const RIVET_EVERY = 5;
+  const GRIME = 16;
+  const RUST_SPECKS = 0.012;
+  const SCUFFS = 0.015;
+  // Grime streaked down a plate, a rust speck or a bright scuff here and there, the same wherever the pixel is drawn.
+  const worn = (colour, x, y, salt) => {
+    const streak = valueNoise(x / 2.5, y / 12, salt) * 0.7 + valueNoise(x / 7, y / 7, salt + 1) * 0.3;
+    const grimed = lighten(colour, -GRIME * Math.max(0, streak - 0.35) / 0.65);
+    const speck = latticeValue(x, y, salt + 2);
+    if (speck < RUST_SPECKS) return mixColour(grimed, RUST, 0.45);
+    if (speck > 1 - SCUFFS) return lighten(grimed, 14);
+    return grimed;
+  };
+  // A plate's own seam and edge on its top and left, or nothing there.
+  const edged = (x, y, colour) => {
+    if (x === 0 || y === 0) return lighten(colour, -SEAM_DARK);
+    if (x === 1 || y === 1) return lighten(colour, EDGE_LIGHT);
+    return null;
+  };
+  // A rivet in a row at a pixel, its head lit and its shadow under it to the right, and below some of them a streak of
+  // rust a few pixels long, fading as it runs; or nothing there.
+  const rivet = (x, y, colour, inRow) => {
+    if (inRow(x, y)) return lighten(colour, 34);
+    if (inRow(x - 1, y - 1)) return lighten(colour, -16);
+    for (let down = 1; down <= 4; down++) {
+      if (inRow(x, y - down) && latticeValue(x, y - down, 9) * 5 > down + 1) return mixColour(colour, RUST, 0.45 - down * 0.08);
+    }
+    return null;
+  };
+  // A bolt's head two pixels square at a corner, lit along its top and left, its shadow under it to the right.
+  const bolt = (x, y, colour, [bx, by]) => {
+    if (x === bx && y === by) return lighten(colour, 40);
+    if ((x === bx + 1 && y === by) || (x === bx && y === by + 1)) return lighten(colour, 24);
+    if (x === bx + 1 && y === by + 1) return lighten(colour, 10);
+    if ((x === bx + 2 && y >= by + 1 && y <= by + 2) || (y === by + 2 && x >= bx + 1 && x <= bx + 2)) return lighten(colour, -14);
+    return null;
+  };
+  const anyBolt = (x, y, colour, corners) => corners.reduce((found, corner) => found ?? bolt(x, y, colour, corner), null);
+  // Worn hazard stripes on the slant, so many pixels wide, gunmetal showing through where worn away.
+  const hazard = (x, y, width, salt) => {
+    const stripe = Math.floor((x + y) / width) % 2 === 0 ? HAZARD_YELLOW : HAZARD_BLACK;
+    return valueNoise(x / 2, y / 2, salt) < 0.28 ? GUNMETAL : stripe;
+  };
+
+  texture(blockOutput, "laser_cannon_plate", (x, y) => {
+    if (x === 19 || (y === 13 && x < 19)) return lighten(GUNMETAL, -SEAM_DARK);
+    if (x === 20 || (y === 14 && x < 19)) return lighten(GUNMETAL, EDGE_LIGHT);
+    const rows = (rx, ry) => ((ry === 3 || ry === 29) && rx >= 3 && rx <= 28 && (rx - 3) % RIVET_EVERY === 0) || (ry === 17 && rx >= 4 && rx <= 16 && (rx - 4) % 4 === 0);
+    const structure = edged(x, y, GUNMETAL) ?? rivet(x, y, GUNMETAL, rows) ?? anyBolt(x, y, GUNMETAL, [[23, 7], [27, 7], [23, 23], [27, 23]]);
+    return structure ?? worn(GUNMETAL, x, y, 11);
+  }, 3, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_hatch", (x, y) => {
+    const structure = edged(x, y, GUNMETAL) ?? hatchPixel(x, y);
+    return structure ?? worn(GUNMETAL, x, y, 21);
+  }, 3, PLATE, PLATE);
+  // The access hatch on the side plate: its groove, lit along its top and left inside, shadowed along its foot and right,
+  // its two hinges, its latch, a screw at each corner and a warning triangle stencilled on it, mostly worn away.
+  function hatchPixel(x, y) {
+    const [x0, y0, x1, y1] = [5, 6, 27, 26];
+    const inside = x > x0 && x < x1 && y > y0 && y < y1;
+    if ((x === x0 || x === x1 || y === y0 || y === y1) && x >= x0 && x <= x1 && y >= y0 && y <= y1) return lighten(GUNMETAL, -30);
+    if (x >= 3 && x <= 5 && ((y >= 9 && y <= 11) || (y >= 20 && y <= 22))) return y === 9 || y === 20 ? lighten(GUNMETAL, 26) : lighten(GUNMETAL, 8);
+    if (x >= 23 && x <= 24 && y >= 14 && y <= 17) return x === 23 ? [0x1c, 0x1e, 0x22] : lighten(GUNMETAL, 18);
+    if (!inside) return null;
+    const screw = anyBolt(x, y, GUNMETAL, [[7, 8], [24, 8], [7, 23], [24, 23]]);
+    if (screw) return screw;
+    if (x === x0 + 1 || y === y0 + 1) return lighten(GUNMETAL, EDGE_LIGHT + 4);
+    if (x === x1 - 1 || y === y1 - 1) return lighten(GUNMETAL, -10);
+    const [tx, ty] = [x - 16, y - 11];
+    const onTriangle = ty >= 0 && ty <= 7 && (Math.abs(tx) === Math.floor(ty / 2) || (ty === 7 && Math.abs(tx) <= 3) || (tx === 0 && ty >= 3 && ty <= 4));
+    if (onTriangle && latticeValue(x, y, 23) > 0.35) return mixColour(worn(GUNMETAL, x, y, 21), HAZARD_YELLOW, 0.5);
+    return null;
+  }
+  texture(blockOutput, "laser_cannon_top", (x, y) => {
+    const louvre = x >= 8 && x <= 23 && y >= 5 && y <= 14;
+    if (louvre) return y % 2 === 1 ? [0x18, 0x1a, 0x1e] : worn(lighten(GUNMETAL, 10), x, y, 31);
+    if (y >= 25 && y <= 30 && x >= 2) return worn(hazard(x, y, 4, 33), x, y, 31);
+    const rows = (rx, ry) => (ry === 3 || ry === 21) && rx >= 3 && rx <= 28 && (rx - 3) % RIVET_EVERY === 0;
+    return edged(x, y, GUNMETAL) ?? rivet(x, y, GUNMETAL, rows) ?? worn(GUNMETAL, x, y, 31);
+  }, 3, PLATE, PLATE);
+  // Heat's colours on steel, as a share of the way along a barrel toward its muzzle: straw, then bronze, then blue.
+  const tempered = (colour, along) => {
+    const share = Math.min(1, along);
+    if (share < 0.45) return colour;
+    if (share < 0.7) return mixColour(colour, [0x8c, 0x6e, 0x40], (share - 0.45) * 1.2);
+    return mixColour(mixColour(colour, [0x8c, 0x6e, 0x40], 0.3), [0x40, 0x4c, 0x7c], (share - 0.7) * 1.4);
+  };
+  texture(blockOutput, "laser_cannon_jacket", (x, y) => {
+    if (x <= 2) return worn(x === 0 ? lighten(GUNMETAL, -20) : lighten(GUNMETAL, 12), x, y, 41);
+    const fin = [[0x7c, 0x82, 0x8a], [0x58, 0x5e, 0x66], [0x26, 0x29, 0x2e]][(x - 3) % 3];
+    const edge = y === 0 ? -6 : 0;
+    return lighten(worn(tempered(fin, x / 20), x, y, 41), edge - Math.max(0, x - 16) * 2);
+  }, 2, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_barrel", (x, y) => {
+    const clamp = x === 2 || x === 3 || x === 12 || x === 13;
+    if (clamp) return x % 2 === 0 ? [0x8a, 0x90, 0x98] : [0x3a, 0x3e, 0x44];
+    const brushed = lighten([0x4c, 0x52, 0x5a], Math.round((latticeValue(Math.floor(x / 3), y, 43) - 0.5) * 10));
+    return lighten(tempered(brushed, x / 22), (y === 0 ? -6 : 0) - Math.max(0, x - 15) * 3);
+  }, 2, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_crown", (x, y) => {
+    const blackened = [0x2c, 0x2e, 0x32];
+    if (x === 0 || x === 6) return lighten(blackened, 18);
+    if (x >= 2 && x <= 4 && y >= 1 && y <= 2) return [0x0e, 0x0e, 0x10];
+    if (x >= 2 && x <= 4 && y === 0) return lighten(blackened, 12);
+    return worn(blackened, x, y, 47);
+  }, 3, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_lens", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    const grey = out < 2.5 ? 0xff : out < 4 ? 0xe4 : out < 5 ? 0xb4 : out < 6.5 ? 0xf0 : 0x8c;
+    return [grey, grey, grey];
+  }, 0);
+  texture(blockOutput, "laser_cannon_coil", (x) => {
+    const grey = [0xff, 0xd0, 0x6c][x % 3];
+    return [grey, grey, grey];
+  }, 0);
+  texture(blockOutput, "laser_cannon_pod", (x, y) => {
+    if (x === 10 || x === 22) return lighten(OLIVE, -SEAM_DARK);
+    const rows = (rx, ry) => (ry === 2 || ry === 11) && rx >= 2 && (rx - 2) % 4 === 0 && rx !== 10 && rx !== 22;
+    const structure = edged(x, y, OLIVE) ?? rivet(x, y, OLIVE, rows);
+    if (structure) return structure;
+    const chipped = valueNoise(x / 1.5, y / 1.5, 51) > 0.86 || latticeValue(x, y, 52) < 0.012;
+    if (chipped) return worn(BARE, x, y, 53);
+    const arrow = (y === 6 && x >= 13 && x <= 19) || (Math.abs(y - 6) === 20 - x && x >= 18 && x <= 20);
+    if (arrow && latticeValue(x, y, 54) > 0.3) return mixColour(worn(OLIVE, x, y, 53), [0xe6, 0xe4, 0xd8], 0.45);
+    return worn(OLIVE, x, y, 53);
+  }, 3, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_hazard", (x, y) => worn(hazard(x, y, 3, 61), x, y, 61), 3, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_tube", (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (out < 4.5) return [0x0a, 0x0a, 0x0c];
+    if (out < 5.5) return [0x1e, 0x20, 0x24];
+    if (out < 7) return y < 8 ? [0x7c, 0x82, 0x8a] : [0x56, 0x5c, 0x64];
+    return worn(OLIVE, x, y, 63);
+  }, 0);
+  texture(blockOutput, "laser_cannon_rocket", (x, y) => {
+    if (y < 4) return [0xe8, 0xe2, 0xd6];
+    if (y === 4) return [0x60, 0x20, 0x1a];
+    if (y >= 13) return [0x6e, 0x1c, 0x16];
+    return x >= 5 && x <= 7 ? [0xe8, 0x50, 0x40] : [0xc4, 0x2c, 0x22];
+  }, 3);
+  texture(blockOutput, "laser_cannon_ring", (x, y) => {
+    const out = Math.hypot(x - 15.5, y - 15.5);
+    const round = Math.atan2(y - 15.5, x - 15.5) / (Math.PI / 4);
+    if (out < 4) return worn(lighten(GUNMETAL, -10), x, y, 71);
+    if (out < 5 || (out >= 11.5 && out < 12.5)) return lighten(GUNMETAL, -26);
+    if (out < 11.5) {
+      const onBolt = Math.abs(out - 8.2) < 1.2 && Math.abs(round - Math.round(round)) < 0.12;
+      return onBolt ? lighten(GUNMETAL, y < 16 ? 36 : 20) : worn(GUNMETAL, x, y, 71);
+    }
+    if (out < 15) return worn(Math.floor(round * 2 + 8) % 2 === 0 ? HAZARD_YELLOW : HAZARD_BLACK, x, y, 73);
+    return worn(GUNMETAL, x, y, 71);
+  }, 3, PLATE, PLATE);
+  texture(blockOutput, "laser_cannon_hose", (x, y) => {
+    if (y === 1) return valueNoise(x / 2, 0, 81) < 0.35 ? [0x34, 0x34, 0x30] : [0x9a, 0x80, 0x2c];
+    return x % 2 === 0 ? [0x36, 0x38, 0x3c] : [0x22, 0x23, 0x26];
+  }, 2);
+}
+laserCannonTextures();
+
 // The freighter's hull (see the freighter_cover block): the zeppelin's doped silver at twice its fineness, laid as
 // riveted plates of many sizes. Each skin is one of five layouts of plates whose seams run along the skin's top and left
 // edges only, so that blocks side by side share one seam; each plate has a tone of its own, an edge a shade lighter just

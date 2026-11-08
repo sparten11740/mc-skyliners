@@ -404,7 +404,9 @@ while the gunner's `GunnerTrigger` says the attack key is held, which the client
 swallows. The client's `GunnerView` moves the seated gunner's view to the sight, a `Lens` placed every frame through
 `SableClient.view`, and looks along it each tick for a hostile mob to lock on to; `GunnerSight` draws the sight's
 reticle, thermometer and bearing ring with `GuiShapes`, which the `PilotHud` draws with too; `LaserCannonRenderer`
-draws its swivel and barrels and `CannonServo` whirrs as they swing. Its rockets are `CannonRocket` entities, never
+draws its swivel and barrels in worn block textures laid on its boxes and eight-sided prisms by `SpriteQuads`, their
+emitters' glow from its heat and from which barrel the update tag says fired last, and `CannonServo` whirrs as they
+swing. Its rockets are `CannonRocket` entities, never
 saved: the cannon launches one from its next loaded tube, worked out in her frame by `tilted` (which
 `LaserCannonRenderer` turns its pods by too) and taken into the world (`SableFlight.toWorld`), carried along at her
 speed there (`SableFlight.velocity`) and homing on the mob its sight rested on; it flies on the server, through her own

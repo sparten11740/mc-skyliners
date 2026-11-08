@@ -169,7 +169,10 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /** Whether its trigger is held, and the game tick its gunner last said so. */
     private boolean triggerHeld;
     private long heardAt;
-    /** The game tick of its last bolt, on the server, and which barrel is next. */
+    /**
+     * The game tick of its last bolt, on the server, and which barrel is next: the left one as it faces, across its
+     * middle line toward positive x in the frame its barrels tilt in, or the right. The clients are told which.
+     */
     private long lastBolt;
     private boolean leftBarrel;
     /**
@@ -551,6 +554,22 @@ public class LaserCannonBlockEntity extends BlockEntity {
         return (float) (heatAfter(heat, rested + sinceTold + partialTick) / MOST_HEAT);
     }
 
+    /**
+     * How long since its last bolt on a client at a partial tick, in ticks, as the server last told it and this client
+     * has counted since; long past any bolt once loaded.
+     */
+    public float sinceBolt(float partialTick) {
+        return rested + sinceTold + partialTick;
+    }
+
+    /**
+     * Which barrel its last bolt left from on a client, as the side of its middle line that barrel stands on in the
+     * frame its barrels tilt in: 1 toward positive x, -1 toward negative x.
+     */
+    public int lastBarrel() {
+        return leftBarrel ? -1 : 1;
+    }
+
     /** Whether it is overheated on a client, holding its fire until it has cooled right down. */
     public boolean overheated(float partialTick) {
         return overheated && heat(partialTick) > 0;
@@ -611,8 +630,9 @@ public class LaserCannonBlockEntity extends BlockEntity {
     }
 
     /**
-     * Only its aim, its heat, whether it holds its fire, and its rockets go to the clients; nothing of it is saved, the
-     * aim following whoever next sits at it, the heat long gone and its pods full again by the time it is loaded again.
+     * Only its aim, its heat, which barrel fires next, whether it holds its fire, and its rockets go to the clients;
+     * nothing of it is saved, the aim following whoever next sits at it, the heat long gone and its pods full again by
+     * the time it is loaded again.
      */
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
@@ -623,6 +643,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         long now = level == null ? lastBolt : level.getGameTime();
         tag.putInt("Rested", (int) Mth.clamp(now - lastBolt, 0, RESTED_TOLD));
         tag.putBoolean("Overheated", overheated);
+        tag.putBoolean("LeftNext", leftBarrel);
         tag.putBoolean("Held", held);
         tag.putBoolean("Pods", SkylinersConfig.FREIGHTER_ROCKETS.get());
         tag.putInt("Rockets", rockets);
@@ -639,6 +660,7 @@ public class LaserCannonBlockEntity extends BlockEntity {
         rested = tag.contains("Rested") ? tag.getInt("Rested") : RESTED_TOLD;
         sinceTold = 0;
         overheated = tag.getBoolean("Overheated");
+        leftBarrel = tag.getBoolean("LeftNext");
         held = tag.getBoolean("Held");
         pods = tag.getBoolean("Pods");
         rockets = tag.contains("Rockets") ? Mth.clamp(tag.getInt("Rockets"), 0, ROCKETS) : ROCKETS;
