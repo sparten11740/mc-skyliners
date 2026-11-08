@@ -3065,12 +3065,17 @@ beach out.
 
 The floor window and its panel are in the creative tab too, and work anywhere. Use the window on the top of a floor and
 it lays itself into that floor, the whole disc at once, each block taking on the look of the floor it replaced, grass,
-planks or tiles alike; it does not fit (a thud and a puff of smoke) where any block of the disc is something other than
-plain floor or open air. Use the window itself to open or shut it, or set its panel down within twelve blocks to open
-and shut it, by hand or with a redstone pulse such as a button on the panel: on a floor it stands on its post, and on a
-wall it sits flat in a steel rim. Break any block of the window and it all comes out, the floor put back as it was and
-the window given back. Beach sand, potted palms, parasols, sun loungers and tiki torches are in the creative tab as
-well; a tiki torch stands tall on a floor, or put on a wall it is held out from it on a bamboo bracket, its flame lower.
+planks or tiles alike. It takes the biggest round window that fits there: nine blocks across on a broad floor, and
+smaller on a smaller one, down to three across on a ledge three blocks wide and two across on one two wide, an odd size
+round the block you used it on and an even one round that block's corner nearest where you aimed. Use it on a wall and
+it sets into the wall as a round porthole, or on a ceiling from below as a skylight, sized the same way, its glass
+flush with the face you used it on. It only goes into plain whole blocks whose face shows, so it never reaches in under
+a wall or round a corner. Where not even the smallest fits it gives a thud and a puff of smoke. Use the window
+itself to open or shut it, or set its panel down within twelve blocks to open and shut it, by hand or with a redstone
+pulse such as a button on the panel: on a floor it stands on its post, and on a wall it sits flat in a steel rim. Break
+any block of the window and it all comes out, the blocks put back as they were and the window given back. Beach sand,
+potted palms, parasols, sun loungers and tiki torches are in the creative tab as well; a tiki torch stands tall on a
+floor, or put on a wall it is held out from it on a bamboo bracket, its flame lower.
 
 Under her belly, beneath her cargo hold, hangs her tractor beam, a gunmetal housing ringed in hazard stripes round a
 wide round lens, and in the hold's floor straight over it lies its pad, a deck plate with the rings of a target on it.

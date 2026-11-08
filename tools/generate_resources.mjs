@@ -828,17 +828,14 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
   cubes.crossbow_rack = null;
 }
 
-// The round floor window (see FloorWindowBlock): no model of its own, FloorWindowRenderer drawing it all, but glass
-// when it is broken; its item a flat picture of it. It drops nothing by itself, as the window gives itself back once
+// The round floor window (see FloorWindowBlock): no model of its own, FloorWindowRenderer drawing it all in a floor, a
+// wall or a ceiling, open or shut, but glass when it is broken, the same in every state; its item a flat picture of it. It drops nothing by itself, as the window gives itself back once
 // whichever of its blocks is broken. Its panel (see FloorWindowPanelBlock): a steel foot, post and head, and on top a
 // big round button painted with the window, glowing whatever the light round it, its lamp green or amber; fixed to a
 // wall, the same button facing out from it in a steel rim, flat to the wall, drawn facing north, its wall to the south.
 {
   write(`assets/${ID}/models/block/floor_window.json`, { textures: { particle: "minecraft:block/glass" } });
-  write(`assets/${ID}/blockstates/floor_window.json`, {
-    variants: Object.fromEntries(Object.keys(yRot).flatMap((facing) => [false, true]
-      .map((open) => [`facing=${facing},open=${open}`, { model: `${ID}:block/floor_window` }]))),
-  });
+  write(`assets/${ID}/blockstates/floor_window.json`, { variants: { "": { model: `${ID}:block/floor_window` } } });
   write(`assets/${ID}/models/item/floor_window.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/floor_window` } });
   cubes.floor_window = null;
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };

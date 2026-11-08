@@ -462,11 +462,13 @@ under her middle by biome ids and tags. A board on the ground reads what its use
 Time advancement's criteria instead. `FreighterFurnishings`
 fills her rooms out with the fleet's furniture, each piece nudged to the nearest free spot near where it is meant or
 hung on the nearest padded wall, never across a doorway. `FreighterChillout` lays her lounge's beach first: the round
-floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindowItem` and opened from
-`FloorWindowPanelBlock`; each `FloorWindowBlockEntity` keeps the offset to the window's middle, the floor it blends into,
-what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under it. The client's
-`FloorWindowRenderer` draws the window, as its blocks have no model: every block the floor but for the iris's hole, in
-strips whose ends lie on the circle, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
+floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindowItem` into a floor, a wall or a
+ceiling at the largest size `WindowDisc` finds fits, and opened from `FloorWindowPanelBlock`; each
+`FloorWindowBlockEntity` keeps the offset to the window's middle block, its size and its middle in half blocks, the
+floor it blends into, what it replaced and how deep a shaft runs under it), sand round it and her belly glazed under
+it. The client's `FloorWindowRenderer` draws the window, as its blocks have no model, as if in a floor and turned to the
+face it is in: every block the floor but for the iris's hole, in strips whose ends lie on the circle, textured as
+`FaceLook` reads the floor's own faces, and the middle block the round parts, as `OculusRing` hides a stepped edge. Her ramp keeps the row over its hatch clear with
 `HullLayout.keepClear`, still air but no longer open, so nothing laid after it stands on the hatch.
 `FreighterTractorBeam`, straight after her cargo hold, lays the `BeamPadBlock` of `beam/` into the hold's floor where
 it has air under it down to her belly, keeping the two rows over it clear, and hangs the `TractorBeamBlock` under her

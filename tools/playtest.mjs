@@ -566,6 +566,17 @@ const ZERO_G_HOVER = 20;
 // many loungers and palms her beach has at least; and how far past the foot of its shaft her belly's glass is looked
 // for, in blocks.
 const FLOOR_WINDOW_BLOCKS = 60;
+// Round floor windows set by hand into faces of each breadth, a floor's or a wall's: the largest a window comes, in
+// blocks across; how wide each face is, in blocks, the size the window should take there, in blocks across, and how
+// many blocks that is; how far apart the faces stand
+// and how far from each the player stands, in blocks; how tall a wall is, in blocks; and how many blocks round the
+// player a window's blocks are counted in.
+const FULL_WINDOW_ACROSS = 9;
+const SIZED_WINDOWS = [[13, FULL_WINDOW_ACROSS, 69], [3, 3, 9], [2, 2, 4]];
+const SIZED_FACES_APART = 20;
+const SIZED_STAND = 3;
+const SIZED_WALL_ROWS = 13;
+const SIZED_COUNT_REACH = 16;
 // Windows set by hand: each kind, with how many blocks wide and tall its opening is and how many pieces it has; how far
 // apart their walls stand, how far in front of a wall the player stands and how far round a window its pieces are
 // looked for, in blocks.
@@ -3508,6 +3519,57 @@ function checkFloorWindow() {
   creative();
 }
 
+// A round floor window set by hand takes the largest size that fits the face it goes into, in a floor and in a wall
+// alike: the full size on a broad one, three across on a ledge three blocks wide and two on one two wide. Each opens and
+// shuts at a touch of its glass and, broken, comes out whole, the stone put back and the window given back.
+function checkFloorWindowSizes() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  for (let i = 0; i < SIZED_WINDOWS.length; i++) {
+    const [wide, size, blocks] = SIZED_WINDOWS[i];
+    const x = site.x + i * SIZED_FACES_APART;
+    sizedWindow({ face: "floor", wide, size, blocks, at: [x, ground + 6, site.z], feet: [x, ground + 7, site.z] });
+    const wall = [x, ground + 2 + (SIZED_WALL_ROWS >> 1), site.z + SIZED_FACES_APART];
+    sizedWindow({ face: "wall", wide, size, blocks, at: wall, feet: [x, wall[1] - 1, wall[2] - SIZED_STAND] });
+  }
+}
+
+// Sets a round floor window by hand into a face of stone so many blocks wide, a floor's or a wall's, at the block
+// given, the player standing with their feet in the block given, on the floor or on a step before the wall, and checks
+// the size it takes there, that it opens and shuts at a touch of its glass, and that, broken, it comes out whole.
+function sizedWindow({ face, wide, size, blocks, at, feet }) {
+  const [x, y, z] = at;
+  const [low, high] = [Math.floor((wide - 1) / 2), Math.ceil((wide - 1) / 2)];
+  const reach = SIZED_WALL_ROWS >> 1;
+  const fill = face === "floor" ? `${x - low} ${y} ${z - reach} ${x + high} ${y} ${z + reach}` : `${x - low} ${y - reach} ${z} ${x + high} ${y + reach} ${z}`;
+  const what = `floor window in a ${face} ${wide} wide`;
+  const stand = `${feet[0] + 0.5} ${feet[1]} ${feet[2] + 0.5}`;
+  creative();
+  emptyHands();
+  must(`server tp @p ${stand}; wait ${CHUNKS_TICKS}t; server fill ${fill} stone`);
+  send(`?server setblock ${feet[0]} ${feet[1] - 1} ${feet[2]} stone`);
+  must(`server give @p skyliners:floor_window 1; wait 5t; select 0; server tp @p ${stand}; wait 20t; use ${x},${y},${z}; wait 10t`);
+  const laid = must(`find skyliners:floor_window ${SIZED_COUNT_REACH} 100`).rows.length;
+  const taken = Number((must(`server data get block ${x} ${y} ${z} Size`).rows[0]?.line ?? "").split(" ").at(-1));
+  const mount = must(`block ${x},${y},${z}`).props?.mount ?? "floor";
+  expect(laid === blocks && taken === size && mount === face, `${what}: set by hand, it takes the size that fits, ${size} across`,
+    `${laid} blocks, size ${taken}, in a ${mount}`);
+  must(`select 8; use ${x},${y},${z}; wait ${IRIS_TICKS}t`);
+  const opened = must(`block ${x},${y},${z}`).props?.open === "true";
+  must(`use ${x},${y},${z}; wait ${IRIS_TICKS}t`);
+  const shut = must(`block ${x},${y},${z}`).props?.open !== "true";
+  expect(opened && shut, `${what}: touched, its glass opens, and touched again it shuts`);
+  emptyHands();
+  survival();
+  must(`select 8; mine ${x},${y},${z} timeout=10s; wait 20t`);
+  const left = must(`find skyliners:floor_window ${SIZED_COUNT_REACH} 100`).rows.length;
+  const back = must(`block ${x},${y},${z}`).id;
+  const given = windowsGivenBack("floor_window");
+  expect(left === 0 && back.endsWith("stone") && given === 1, `${what}: broken, it all comes out, the stone put back and the window given back`,
+    `${left} blocks left, ${back} where it was, ${given} given back`);
+  creative();
+  send(`?server kill @e[type=item,distance=..${SIZED_COUNT_REACH}]`);
+}
+
 // A freighter's beach in her lounge: her round floor window in the middle of its sand, blending into it, loungers,
 // palms, tiki torches and a parasol round it, and its panel, which opens the window onto its shaft down to the glass in
 // her belly.
@@ -4604,6 +4666,7 @@ const CHECKS = {
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
+  "floor-window-sizes": { run: checkFloorWindowSizes, about: "a round floor window set by hand into a floor or a wall takes the largest size that fits, from full to three and two across, and each opens, shuts and comes out whole" },
   "freighter-gallery": { run: checkFreighterGallery, about: "a freighter's cockpit tube has the fleet's models on its ledges, her port prong's tunnel space posters, and no engine stands out in her prongs" },
   "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
   "freighter-smuggler-hold": { run: checkFreighterSmugglerHold, about: "a freighter's loose rivet chimes, its panel knocks hollow, opens onto a den of loot, shuts by itself and opens from inside" },

@@ -2,6 +2,7 @@ package dev.skyliners.floorwindow;
 
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.Turning;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -12,16 +13,17 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * A block of a round floor window (see {@link FloorWindowBlock}): where the window's middle block is, as an offset from
- * it, turned with the block if it is ever loaded facing another way (see {@link Turning}); the floor its shut iris
- * looks like, so the window blends into the floor round it; the block it took the place of, put back when the window is
- * taken out; and how deep a shaft runs down under it, if any. Clients are sent them all to draw it. On the client it
- * also keeps how far its iris has opened, eased toward open or shut at a steady pace, so every block of the window,
- * told at once, opens as one.
+ * it, and how big the window is and where its middle lies (see {@link WindowDisc}), both turned with the block if it is
+ * ever loaded facing another way (see {@link Turning}); the floor its shut iris looks like, so the window blends into
+ * the floor round it; the block it took the place of, put back when the window is taken out; and how deep a shaft runs
+ * down under it, if any. Clients are sent them all to draw it. On the client it also keeps how far its iris has opened,
+ * eased toward open or shut at a steady pace, so every block of the window, told at once, opens as one.
  */
 public class FloorWindowBlockEntity extends BlockEntity {
     /** The floor a window blends into when it has been told none, as one built before its floor was known. */
@@ -35,6 +37,13 @@ public class FloorWindowBlockEntity extends BlockEntity {
      * ship's hull to the glass in her belly; none for a window laid straight into a floor.
      */
     private int shaft;
+    /** How many blocks across the window is: one saved before sizes was the full size. */
+    private int size = WindowDisc.FULL;
+    /**
+     * The way from the middle of this block to the window's middle, in half blocks, so the middle of an even-sized
+     * window, on a corner between blocks, is kept exactly.
+     */
+    private BlockPos toCentre = BlockPos.ZERO;
     /**
      * On the client: how far the iris has opened, from 0 shut to 1 open; and when it was last drawn, on the drawing
      * clock, in ticks.
@@ -54,12 +63,25 @@ public class FloorWindowBlockEntity extends BlockEntity {
         configure(toMiddle, floor, replaced, 0);
     }
 
-    /** The same, with a shaft so many blocks deep under the window, down to where it looks out. */
+    /**
+     * The same for a full-sized window whose middle is the middle of its middle block, with a shaft so many blocks deep
+     * under it, down to where it looks out.
+     */
     public void configure(BlockPos toMiddle, BlockState floor, BlockState replaced, int shaftDepth) {
+        configure(toMiddle, floor, replaced, shaftDepth, WindowDisc.FULL, toMiddle.multiply(2));
+    }
+
+    /**
+     * The same for a window of any size: so many blocks across, its middle so many half blocks from this block's
+     * middle.
+     */
+    public void configure(BlockPos toMiddle, BlockState floor, BlockState replaced, int shaftDepth, int size, BlockPos toCentre) {
         this.toMiddle = toMiddle.immutable();
         this.floor = floor;
         this.replaced = replaced;
         this.shaft = Math.max(0, shaftDepth);
+        this.size = WindowDisc.sized(size);
+        this.toCentre = toCentre.immutable();
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
@@ -84,6 +106,26 @@ public class FloorWindowBlockEntity extends BlockEntity {
     /** How deep the window's shaft runs down under it, in blocks; none for most. */
     public int shaft() {
         return shaft;
+    }
+
+    /** How many blocks across the window is. */
+    public int size() {
+        return size;
+    }
+
+    /** How far out from the window's middle its glass reaches, to the inside of its ring, in blocks. */
+    public double radius() {
+        return WindowDisc.radius(size);
+    }
+
+    /** The way from the middle of this block to the window's middle, in half blocks. */
+    public BlockPos toCentre() {
+        return toCentre;
+    }
+
+    /** Every block of the window as it was laid: those standing and any gone since. */
+    public List<BlockPos> disc() {
+        return WindowDisc.blocks(worldPosition, toCentre, size, FloorWindowBlock.out(getBlockState()));
     }
 
     /** The block this one took the place of, put back when the window is taken out. */
@@ -116,15 +158,26 @@ public class FloorWindowBlockEntity extends BlockEntity {
         tag.put("Floor", NbtUtils.writeBlockState(floor));
         tag.put("Replaced", NbtUtils.writeBlockState(replaced));
         tag.putInt("Shaft", shaft);
+        tag.putInt("Size", size);
+        tag.putInt("CentreX", toCentre.getX());
+        tag.putInt("CentreY", toCentre.getY());
+        tag.putInt("CentreZ", toCentre.getZ());
         Turning.save(tag, getBlockState());
     }
 
-    /** Loaded again, its offset to the middle is turned if the block has turned since it was saved. */
+    /**
+     * Loaded again, its offsets to the middle are turned if the block has turned since they were saved; one saved
+     * before sizes is a full-sized window whose middle is its middle block's.
+     */
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        Rotation turned = Turning.since(tag, getBlockState());
         BlockPos saved = new BlockPos(tag.getInt("MiddleX"), tag.getInt("MiddleY"), tag.getInt("MiddleZ"));
-        toMiddle = Turning.turn(saved, Turning.since(tag, getBlockState()));
+        toMiddle = Turning.turn(saved, turned);
+        size = tag.contains("Size") ? WindowDisc.sized(tag.getInt("Size")) : WindowDisc.FULL;
+        BlockPos centre = tag.contains("CentreX") ? new BlockPos(tag.getInt("CentreX"), tag.getInt("CentreY"), tag.getInt("CentreZ")) : saved.multiply(2);
+        toCentre = Turning.turn(centre, turned);
         floor = tag.contains("Floor") ? NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), tag.getCompound("Floor")) : PLAIN_FLOOR;
         replaced = tag.contains("Replaced") ? NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), tag.getCompound("Replaced"))
             : Blocks.AIR.defaultBlockState();

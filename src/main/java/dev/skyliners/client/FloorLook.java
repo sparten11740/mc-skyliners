@@ -13,10 +13,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * How a block's top looks, for drawing a floor somewhere its own block is not, as a round floor window's shut iris and
- * the freighter's ramp do: its top's texture in the block atlas, and the tint it takes there, as grass does. Read from
- * its model as it is now, so it follows the textures through a reload of them: a lookup in the models' own table and
- * their list of quads, cheap enough to do each frame.
+ * How a block's top looks, for drawing a floor somewhere its own block is not, as the freighter's ramp does over its
+ * hatch (the round floor window, drawing any face, reads {@link FaceLook}): its top's texture in the block atlas, and
+ * the tint it takes there, as grass does. Read from its model as it is now, so it follows the textures through a reload
+ * of them: a lookup in the models' own table and their list of quads, cheap enough to do each frame.
  */
 record FloorLook(TextureAtlasSprite sprite, int tintIndex) {
     /** The random a model is asked for its top with: the same every time, so its look is too. */
