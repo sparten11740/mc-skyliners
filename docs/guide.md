@@ -2779,8 +2779,10 @@ had it keeps the zeppelin's plainer silver cover until she is built again.
 
 Her outer ring and rim are plated: riveted seams run out from her middle every 30 degrees, a few sectors between them
 are dark gunmetal, welded patches are scattered over the rest, and yellow and black hazard stripes ring her docking
-collars and run along the foot of her rim under her engines. The Dark, Riveted and Patched Hull Plates and the Hazard
-Plate are among her blocks in the creative tab, each a whole plate set by hand. The server config's `freighter.plating`
+collars and run along the foot of her rim under her engines, each plate drawn as finely as her hull, its seam along its
+top and its left edge as hers are, its rivets each with a shadow. The Dark, Riveted and Patched Hull Plates and the
+Hazard Plate are among her blocks in the creative tab, each a whole plate set by hand.
+The server config's `freighter.plating`
 leaves her skin one pale grey.
 
 By night she shows her lights: a glowing cyan band runs all round her rim, light strips line both walls of her loading
