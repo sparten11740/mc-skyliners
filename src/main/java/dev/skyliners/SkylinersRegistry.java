@@ -401,6 +401,8 @@ import dev.skyliners.floorwindow.FloorWindowItem;
 import dev.skyliners.floorwindow.FloorWindowPanelBlock;
 import dev.skyliners.spookie.SpookieHammockBlock;
 import dev.skyliners.spookie.SpookieHammockBlockEntity;
+import dev.skyliners.stickers.StickerMapBlock;
+import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.CannonRocket;
 import dev.skyliners.turret.LaserCannonBlock;
 import dev.skyliners.turret.LaserCannonBlockEntity;
@@ -991,6 +993,12 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_DROP = sound("tractor_beam_drop");
     /** A tractor beam that will not come on, or a pad with no beam in reach: a low, buzzing double thud. */
     public static final DeferredHolder<SoundEvent, SoundEvent> TRACTOR_BEAM_REFUSED = sound("tractor_beam_refused");
+    /** A sticker going up on a sticker map: a bright little fanfare, four notes up, sparkling. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> STICKER_MAP_NEW = sound("sticker_map_new");
+    /** A row of a sticker map filled: a bigger fanfare, brass and a held chord. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> STICKER_MAP_ROW = sound("sticker_map_row");
+    /** A whole sticker map filled: a celebration, a drum roll, a triumphant chord, a cymbal and sparkles. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> STICKER_MAP_FULL = sound("sticker_map_full");
     /** Her computer, after its falling blip: "Jump drive charged." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_CHARGED =
         sound("freighter_computer_jump_charged");
@@ -1029,6 +1037,15 @@ public final class SkylinersRegistry {
     /** Her computer as her climb boost fires: "Climbing hard. Hold on to your stomachs." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_CLIMB_BOOST =
         sound("freighter_computer_climb_boost");
+    /** Her computer as a new sticker goes up on her sticker map: "New sticker. Another place I got dragged to." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_STICKER =
+        sound("freighter_computer_sticker");
+    /** Her computer as a row of her sticker map fills: "That's a whole row. Show-off." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_STICKER_ROW =
+        sound("freighter_computer_sticker_row");
+    /** Her computer as her sticker map fills: "Sticker map's full. We've been everywhere. Twice." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_STICKER_BOARD =
+        sound("freighter_computer_sticker_board");
     /** Her computer for her flight deck, set to take off: "Lifting off. Hold on to something bolted down." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_TAKEOFF =
         sound("freighter_computer_takeoff");
@@ -1667,6 +1684,16 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrossbowRackBlockEntity>> CROSSBOW_RACK_ENTITY =
         BLOCK_ENTITIES.register("crossbow_rack", () -> BlockEntityType.Builder.of(CrossbowRackBlockEntity::new, CROSSBOW_RACK.get()).build(null));
     public static final DeferredItem<BlockItem> CROSSBOW_RACK_ITEM = ITEMS.registerSimpleBlockItem(CROSSBOW_RACK);
+    /**
+     * The sticker map on the wall of the freighter's entry hall (see {@link StickerMapBlock}), lighting a sticker for
+     * each kind of land she lands in.
+     */
+    public static final DeferredBlock<StickerMapBlock> STICKER_MAP = BLOCKS.registerBlock(
+        "sticker_map", StickerMapBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StickerMapBlockEntity>> STICKER_MAP_ENTITY =
+        BLOCK_ENTITIES.register("sticker_map", () -> BlockEntityType.Builder.of(StickerMapBlockEntity::new, STICKER_MAP.get()).build(null));
+    public static final DeferredItem<BlockItem> STICKER_MAP_ITEM = ITEMS.registerSimpleBlockItem(STICKER_MAP);
     /**
      * The freighter's cockpit console (see {@link ConsoleBlock}): its modules, each its own block, curving round her
      * pilots' seats as one half-round desk and put up anywhere by hand, sharing one kind of block entity.
@@ -3288,6 +3315,7 @@ public final class SkylinersRegistry {
             BREAKER_BOARD_ITEM,
             COOLANT_VALVE_ITEM,
             CROSSBOW_RACK_ITEM,
+            STICKER_MAP_ITEM,
             TRACTOR_BEAM_ITEM,
             BEAM_PAD_ITEM,
             CONSOLE_READOUTS_ITEM,

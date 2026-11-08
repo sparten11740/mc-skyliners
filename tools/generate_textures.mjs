@@ -9415,4 +9415,292 @@ function tractorBeamTextures() {
   }, 3);
 }
 tractorBeamTextures();
+// The sticker map (see StickerMapBlock and the client's StickerMapRenderer). Its board: an old parchment map in a
+// dark wooden frame with brass corners, faint lines of latitude and longitude, pale lands with darker coasts and a red
+// dotted route wandering between them. Its stickers, one sheet of them in the board's order, three rows of six (see
+// Sticker): each a die-cut sticker with a thick white edge and rounded corners, a little picture of a kind of land
+// inside, bright and simple enough to know at a glance; under them the same pictures as grey shadows in a dashed
+// brown edge, which the board shows for a sticker not yet up. Its item, the board in little: the frame round
+// parchment with six bright stickers on it. Its block's face, seen only edge on, is plain parchment.
+function stickerMapTextures() {
+  const stickerOutput = resolve(ROOT, "src/main/resources/assets/skyliners/textures/gui/sticker_map");
+  mkdirSync(stickerOutput, { recursive: true });
+  const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * Math.max(0, Math.min(1, t))));
+  const circle = (u, v, cx, cy, r) => (u - cx) ** 2 + (v - cy) ** 2 <= r * r;
+  const ellipse = (u, v, cx, cy, rx, ry) => ((u - cx) / rx) ** 2 + ((v - cy) / ry) ** 2 <= 1;
+  const rect = (u, v, x0, y0, x1, y1) => u >= x0 && u <= x1 && v >= y0 && v <= y1;
+  // A triangle pointing up, its apex at cx over its base, so far out each way at its base.
+  const peak = (u, v, cx, top, bottom, half) => v >= top && v <= bottom && Math.abs(u - cx) <= ((v - top) / (bottom - top)) * half;
+  // A pseudo-random number from 0 to 1 for a pair of whole numbers, the same each run.
+  const hashed = (a, b) => {
+    let h = Math.imul(a * 374761393 + b * 668265263, 0x27d4eb2d) ^ 0x5bd1e995;
+    h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+    return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
+  };
+  const SKY = [0x5a, 0xaa, 0xf2];
+  const SKY_LOW = [0xbc, 0xe4, 0xff];
+  const SUN = [0xff, 0xd6, 0x2e];
+  const CLOUD = [0xff, 0xff, 0xff];
+  const GRASS = [0x5c, 0xc4, 0x3a];
+  const GRASS_DEEP = [0x38, 0x8e, 0x26];
+  const GRASS_FAR = [0x8c, 0xcc, 0x5c];
+  const TRUNK = [0x6e, 0x48, 0x28];
+  const LEAVES = [0x3a, 0xa0, 0x2e];
+  const LEAVES_DARK = [0x26, 0x74, 0x22];
+  const SNOW = [0xf4, 0xf8, 0xff];
+  const SNOW_SHADE = [0xc8, 0xdc, 0xf2];
+  const SAND = [0xf2, 0xd6, 0x7c];
+  const SAND_SHADE = [0xd8, 0xb4, 0x58];
+  const SEA = [0x2a, 0x7c, 0xd6];
+  const SEA_DEEP = [0x1c, 0x5a, 0xae];
+  const BLACK = [0x20, 0x20, 0x24];
+  const WHITE = [0xff, 0xff, 0xff];
+  const sky = (v) => mix(SKY, SKY_LOW, v * 1.6);
+  const sun = (u, v, cx, cy) => (circle(u, v, cx, cy, 0.11) ? SUN : null);
+  const cloud = (u, v, cx, cy) => (ellipse(u, v, cx, cy, 0.14, 0.055) || ellipse(u, v, cx + 0.06, cy - 0.04, 0.08, 0.055) ? CLOUD : null);
+  // Rolling ground whose top is at a height that rises and falls across the picture.
+  const hill = (u, base, height, waves, phase) => base + height * Math.sin(u * waves + phase);
+  // A round-topped oak: its trunk under a blob of leaves, lighter on its upper left.
+  const oak = (u, v, cx, top, size) => {
+    if (circle(u, v, cx, top + size, size) || circle(u, v, cx - size * 0.7, top + size * 1.3, size * 0.7) || circle(u, v, cx + size * 0.7, top + size * 1.3, size * 0.7)) {
+      return circle(u, v, cx - size * 0.3, top + size * 0.7, size * 0.5) ? LEAVES : LEAVES_DARK;
+    }
+    return rect(u, v, cx - size * 0.18, top + size * 1.5, cx + size * 0.18, top + size * 3) ? TRUNK : null;
+  };
+  // A spruce: three tiers of dark needles narrowing up to its tip, over a stub of trunk.
+  const spruce = (u, v, cx, top, height, colour) => {
+    const tier = height / 3;
+    for (let k = 0; k < 3; k++) {
+      if (peak(u, v, cx, top + k * tier * 0.8, top + (k + 1.2) * tier, height * (0.18 + 0.08 * k))) return colour;
+    }
+    return rect(u, v, cx - 0.025, top + height * 1.2, cx + 0.025, top + height * 1.35) ? TRUNK : null;
+  };
+  const first = (...colours) => colours.find((colour) => colour) ?? null;
+  const pictures = {
+    plains: (u, v) => {
+      const near = hill(u, 0.64, 0.05, 5, 2.5);
+      if (v > near) return (Math.floor(u * 26) % 5 === 2 && v > near + 0.1 && v < near + 0.18) ? GRASS_DEEP : mix(GRASS, GRASS_DEEP, (v - near) * 1.5);
+      if (v > hill(u, 0.53, 0.04, 7, 1)) return GRASS_FAR;
+      return first(sun(u, v, 0.78, 0.2), cloud(u, v, 0.28, 0.26)) ?? sky(v);
+    },
+    flowers: (u, v) => {
+      if (circle(u, v, 0.5, 0.7, 0.13)) return circle(u, v, 0.5, 0.7, 0.055) ? [0xff, 0xd8, 0x30] : [0xf0, 0x3c, 0x5a];
+      if (rect(u, v, 0.48, 0.8, 0.52, 1)) return GRASS_DEEP;
+      const top = hill(u, 0.5, 0.03, 6, 0);
+      if (v <= top) return first(sun(u, v, 0.2, 0.2)) ?? sky(v);
+      const spot = hashed(Math.floor(u * 26), Math.floor(v * 26));
+      const blooms = [[0xff, 0x48, 0x48], [0xff, 0xe0, 0x30], [0xd8, 0x5c, 0xff], [0x58, 0x9c, 0xff], WHITE, [0xff, 0x9c, 0xd0]];
+      return spot < 0.32 + (v - top) * 0.3 ? blooms[Math.floor(spot * 97) % blooms.length] : GRASS;
+    },
+    forest: (u, v) => {
+      if (v > 0.84) return GRASS_DEEP;
+      return first(oak(u, v, 0.22, 0.28, 0.13), oak(u, v, 0.78, 0.24, 0.14), oak(u, v, 0.5, 0.4, 0.15)) ?? (v > 0.7 ? GRASS : sky(v));
+    },
+    taiga: (u, v) => {
+      if (v > 0.86) return v > 0.93 ? [0x6c, 0x4c, 0x2c] : [0x5a, 0x86, 0x3a];
+      const tree = first(spruce(u, v, 0.24, 0.18, 0.5, [0x1e, 0x5a, 0x34]), spruce(u, v, 0.74, 0.1, 0.56, [0x1e, 0x5a, 0x34]),
+        spruce(u, v, 0.5, 0.34, 0.42, [0x2a, 0x6e, 0x3e]));
+      return tree ?? mix([0x9c, 0xc8, 0xe8], [0xdc, 0xf0, 0xf4], v * 1.4);
+    },
+    dark_forest: (u, v) => {
+      if (circle(u, v, 0.6, 0.56, 0.19) && v < 0.58) return circle(u, v, 0.53, 0.46, 0.035) || circle(u, v, 0.68, 0.5, 0.03) ? WHITE : [0xd8, 0x26, 0x26];
+      if (rect(u, v, 0.55, 0.56, 0.65, 0.9)) return [0xe8, 0xe0, 0xc8];
+      if (v > 0.86) return [0x2a, 0x52, 0x1e];
+      if (rect(u, v, 0.12, 0.3, 0.2, 0.9) || rect(u, v, 0.86, 0.25, 0.93, 0.9)) return [0x3c, 0x28, 0x18];
+      const canopy = 0.32 + 0.07 * Math.sin(u * 13) + 0.04 * Math.sin(u * 29 + 1);
+      return v < canopy ? mix([0x1e, 0x48, 0x16], [0x12, 0x30, 0x10], v * 2) : [0x2c, 0x3c, 0x34];
+    },
+    cherry_grove: (u, v) => {
+      const petals = [[0xff, 0xb4, 0xd8], [0xff, 0x8c, 0xc4], [0xf6, 0xd0, 0xe8]];
+      if (circle(u, v, 0.5, 0.36, 0.25) || circle(u, v, 0.25, 0.46, 0.15) || circle(u, v, 0.76, 0.44, 0.16)) {
+        return petals[Math.floor(hashed(Math.floor(u * 13), Math.floor(v * 13)) * 3)];
+      }
+      if (rect(u, v, 0.46, 0.5, 0.55, 0.88) || (Math.abs(v - 0.6 + (u - 0.5) * 0.6) < 0.03 && u > 0.3 && u < 0.5)) return [0x5a, 0x34, 0x30];
+      if (v > 0.86) return GRASS;
+      return hashed(Math.floor(u * 26), Math.floor(v * 26)) < 0.06 ? petals[0] : sky(v);
+    },
+    desert: (u, v) => {
+      if (rect(u, v, 0.27, 0.34, 0.37, 0.82) || rect(u, v, 0.15, 0.46, 0.2, 0.62) || rect(u, v, 0.15, 0.58, 0.3, 0.63)
+        || rect(u, v, 0.44, 0.4, 0.49, 0.56) || rect(u, v, 0.34, 0.52, 0.49, 0.57)) {
+        return u > 0.31 && u < 0.33 ? [0x2c, 0x7a, 0x30] : [0x3e, 0x9a, 0x3a];
+      }
+      if (v > hill(u, 0.74, 0.06, 4, 0.5)) return v > hill(u, 0.86, 0.04, 6, 2) ? SAND_SHADE : SAND;
+      if (v > hill(u, 0.62, 0.05, 3, 2)) return [0xf8, 0xe2, 0x9a];
+      return first(sun(u, v, 0.75, 0.22)) ?? mix([0x6c, 0xb8, 0xf0], [0xfc, 0xe8, 0xb8], v * 1.5);
+    },
+    savanna: (u, v) => {
+      const canopy = ellipse(u, v, 0.56, 0.32, 0.3, 0.08) || ellipse(u, v, 0.26, 0.42, 0.14, 0.06);
+      if (canopy) return [0x6e, 0x86, 0x2a];
+      if (Math.abs(u - 0.5 - (0.84 - v) * 0.25) < 0.035 && v > 0.36 && v < 0.84) return [0x7a, 0x5c, 0x40];
+      if (Math.abs(u - 0.38 + (v - 0.6) * 0.8) < 0.025 && v > 0.42 && v < 0.62) return [0x7a, 0x5c, 0x40];
+      if (v > 0.8) return mix([0xc8, 0xb4, 0x4c], [0xa8, 0x94, 0x36], (v - 0.8) * 5);
+      return circle(u, v, 0.2, 0.18, 0.09) ? [0xff, 0xf0, 0x90] : mix([0xff, 0xb8, 0x58], [0xff, 0xe0, 0x98], v * 1.3);
+    },
+    badlands: (u, v) => {
+      const bands = [[0xd8, 0x6c, 0x2c], [0xb8, 0x4a, 0x24], [0xe8, 0xb0, 0x58], [0xf0, 0xe0, 0xc8], [0xa4, 0x3c, 0x20], [0xc8, 0x82, 0x48]];
+      const mesa = (v > 0.32 && Math.abs(u - 0.3) < 0.24 - (v - 0.32) * -0.08) || (v > 0.46 && Math.abs(u - 0.8) < 0.2);
+      if (v > 0.86) return [0xc8, 0x62, 0x2c];
+      if (mesa) return bands[Math.floor(v * 16) % bands.length];
+      return sky(v);
+    },
+    jungle: (u, v) => {
+      if (circle(u, v, 0.66, 0.52, 0.06)) return circle(u, v, 0.69, 0.51, 0.02) ? [0xff, 0xd0, 0x30] : [0xe8, 0x24, 0x24];
+      if (rect(u, v, 0.4, 0.57, 0.9, 0.6)) return TRUNK;
+      if (rect(u, v, 0.18, 0.3, 0.27, 1) || rect(u, v, 0.78, 0.25, 0.85, 1)) return [0x6c, 0x50, 0x2a];
+      if (v < 0.36 + 0.06 * Math.sin(u * 11)) return Math.floor(u * 26) % 4 === 1 && v > 0.2 ? [0x6c, 0xd0, 0x3c] : mix([0x1c, 0x78, 0x1c], [0x2c, 0x9c, 0x24], v * 2);
+      if (Math.floor(u * 26) % 6 === 3 && v < 0.75) return [0x4c, 0xb8, 0x30];
+      return v > 0.84 ? [0x2a, 0x86, 0x1e] : [0x8c, 0xd0, 0x8c];
+    },
+    bamboo: (u, v) => {
+      const face = circle(u, v, 0.5, 0.66, 0.22);
+      if (circle(u, v, 0.32, 0.47, 0.07) || circle(u, v, 0.68, 0.47, 0.07)) return BLACK;
+      if (face) {
+        if (ellipse(u, v, 0.41, 0.64, 0.06, 0.07) || ellipse(u, v, 0.59, 0.64, 0.06, 0.07)) return circle(u, v, 0.42, 0.63, 0.02) || circle(u, v, 0.58, 0.63, 0.02) ? WHITE : BLACK;
+        return ellipse(u, v, 0.5, 0.75, 0.05, 0.03) ? BLACK : WHITE;
+      }
+      const stalk = [0.12, 0.3, 0.72, 0.9].find((x) => Math.abs(u - x) < 0.04);
+      if (stalk !== undefined) return Math.floor(v * 26) % 6 === 0 ? [0x4c, 0x86, 0x22] : [0x7c, 0xc4, 0x3a];
+      return v > 0.88 ? GRASS_DEEP : [0xc8, 0xec, 0xc0];
+    },
+    swamp: (u, v) => {
+      if (rect(u, v, 0.14, 0.24, 0.24, 0.66)) return [0x4a, 0x3c, 0x24];
+      if (ellipse(u, v, 0.2, 0.22, 0.2, 0.12)) return [0x4a, 0x6a, 0x2a];
+      if (Math.abs(u - 0.06) < 0.02 && v > 0.22 && v < 0.55 || Math.abs(u - 0.34) < 0.02 && v > 0.22 && v < 0.5) return [0x3c, 0x5c, 0x22];
+      if (v > 0.62) {
+        const pad = ellipse(u, v, 0.55, 0.74, 0.1, 0.045) || ellipse(u, v, 0.82, 0.88, 0.09, 0.04) || ellipse(u, v, 0.3, 0.9, 0.08, 0.035);
+        return pad ? [0x3c, 0xa0, 0x2a] : mix([0x4a, 0x5c, 0x3a], [0x34, 0x44, 0x2c], (v - 0.62) * 3);
+      }
+      return mix([0x9c, 0xb0, 0x8c], [0xc4, 0xcc, 0xa8], v * 1.5);
+    },
+    snowy: (u, v) => {
+      if (u > 0.5 && u < 0.68 && Math.abs(v - 0.39) <= ((0.68 - u) / 0.18) * 0.035) return [0xff, 0x8c, 0x1c];
+      if (circle(u, v, 0.5, 0.36, 0.11)) return circle(u, v, 0.46, 0.33, 0.018) || circle(u, v, 0.55, 0.33, 0.018) ? BLACK : SNOW;
+      if (circle(u, v, 0.5, 0.62, 0.17)) return circle(u, v, 0.5, 0.57, 0.02) || circle(u, v, 0.5, 0.66, 0.02) ? BLACK : SNOW;
+      if (Math.abs(v - 0.55 + (u - 0.3) * 0.5) < 0.02 && u > 0.18 && u < 0.36) return TRUNK;
+      if (Math.abs(v - 0.55 - (u - 0.7) * 0.5) < 0.02 && u > 0.64 && u < 0.82) return TRUNK;
+      if (v > hill(u, 0.76, 0.04, 4, 1)) return v > 0.9 ? SNOW_SHADE : SNOW;
+      return hashed(Math.floor(u * 26), Math.floor(v * 26)) < 0.07 ? WHITE : mix([0x8c, 0xb8, 0xe8], [0xc8, 0xdc, 0xf4], v * 1.4);
+    },
+    ice_spikes: (u, v) => {
+      const spikes = [[0.36, 0.44, 0.08], [0.66, 0.5, 0.08], [0.2, 0.2, 0.12], [0.5, 0.06, 0.14], [0.8, 0.3, 0.11]];
+      const spike = spikes.find(([cx, top, half]) => peak(u, v, cx, top, 0.86, half));
+      if (spike) return u < spike[0] ? [0xc4, 0xec, 0xff] : [0x5c, 0xa8, 0xe8];
+      if (v > 0.84) return v > 0.92 ? SNOW_SHADE : SNOW;
+      return mix([0x4c, 0x8c, 0xd8], [0xa8, 0xd4, 0xf4], v * 1.3);
+    },
+    peaks: (u, v) => {
+      const ridge = peak(u, v, 0.42, 0.12, 0.86, 0.5) || peak(u, v, 0.8, 0.3, 0.86, 0.36);
+      if (v > 0.8) return GRASS;
+      if (ridge) {
+        const snowLine = 0.36 + 0.04 * Math.sin(u * 30) + (u > 0.6 ? 0.12 : 0);
+        if (v < snowLine) return u < 0.42 && u > 0.2 ? SNOW : SNOW_SHADE;
+        return u < 0.42 ? [0x8c, 0x8c, 0x96] : [0x6a, 0x6a, 0x74];
+      }
+      return first(cloud(u, v, 0.78, 0.16)) ?? sky(v);
+    },
+    seaside: (u, v) => {
+      if (ellipse(u, v, 0.34, 0.8, 0.12, 0.07)) return ellipse(u, v, 0.34, 0.8, 0.07, 0.04) ? [0x2e, 0x86, 0x3a] : [0x52, 0xb0, 0x4a];
+      if (circle(u, v, 0.48, 0.79, 0.035) || ellipse(u, v, 0.22, 0.86, 0.04, 0.02) || ellipse(u, v, 0.44, 0.87, 0.04, 0.02)) return [0x8c, 0xd0, 0x6c];
+      const shore = hill(u, 0.68, 0.03, 5, 0);
+      if (v > shore) return v < shore + 0.04 ? WHITE : SAND;
+      if (v > 0.4) return (Math.floor(u * 26) + Math.floor(v * 26)) % 7 === 0 && Math.floor(v * 26) % 3 === 0 ? [0x9c, 0xd4, 0xff] : mix(SEA, SEA_DEEP, (v - 0.4) * 2);
+      return first(sun(u, v, 0.8, 0.18), cloud(u, v, 0.32, 0.2)) ?? sky(v);
+    },
+    mushroom: (u, v) => {
+      if (ellipse(u, v, 0.5, 0.38, 0.32, 0.16) && v < 0.42) {
+        return circle(u, v, 0.36, 0.32, 0.04) || circle(u, v, 0.58, 0.28, 0.045) || circle(u, v, 0.7, 0.36, 0.035) ? WHITE : [0xd8, 0x22, 0x26];
+      }
+      if (rect(u, v, 0.44, 0.42, 0.56, 0.78)) return [0xec, 0xe4, 0xd4];
+      if (ellipse(u, v, 0.5, 0.84, 0.44, 0.12)) return v < 0.8 ? [0x8e, 0x76, 0x96] : [0x6a, 0x5c, 0x74];
+      return v > 0.7 ? mix(SEA, SEA_DEEP, (v - 0.7) * 3) : sky(v);
+    },
+    space: (u, v) => {
+      if (ellipse(u, v, 0.62, 0.42, 0.34, 0.06) && !circle(u, v, 0.62, 0.42, 0.16) && !(v < 0.42 && circle(u, v, 0.62, 0.42, 0.2))) return [0xe8, 0xd0, 0x90];
+      if (circle(u, v, 0.62, 0.42, 0.16)) return Math.floor(v * 26) % 4 < 2 ? [0xf0, 0x9c, 0x48] : [0xd8, 0x7c, 0x36];
+      if (circle(u, v, 0.5, 1.75, 0.95)) return circle(u, v, 0.5, 1.75, 0.92) ? (hashed(Math.floor(u * 9), Math.floor(v * 9)) < 0.35 ? [0x4c, 0xb0, 0x4a] : [0x2c, 0x78, 0xe0]) : [0x9c, 0xd8, 0xff];
+      return hashed(Math.floor(u * 26), Math.floor(v * 26)) < 0.08 ? [0xff, 0xff, 0xe8] : mix([0x0a, 0x0c, 0x24], [0x24, 0x1c, 0x4c], v);
+    },
+  };
+  // The pictures in the board's order (Sticker), three rows of six; a sticker's cell on the sheet, and its edges.
+  const ORDER = ["plains", "flowers", "forest", "taiga", "dark_forest", "cherry_grove", "desert", "savanna", "badlands", "jungle", "bamboo",
+    "swamp", "snowy", "ice_spikes", "peaks", "seaside", "mushroom", "space"];
+  const CELL = 32;
+  const COLUMNS = 6;
+  // Whether a pixel of a cell is inside its rounded square, so many pixels in from the cell's edge, its corners rounded so far.
+  const inside = (x, y, inset, radius) => {
+    const lo = inset;
+    const hi = CELL - 1 - inset;
+    if (x < lo || x > hi || y < lo || y > hi) return false;
+    const cx = Math.min(Math.max(x, lo + radius), hi - radius);
+    const cy = Math.min(Math.max(y, lo + radius), hi - radius);
+    return (x - cx) ** 2 + (y - cy) ** 2 <= radius * radius + 0.5;
+  };
+  const PICTURE_IN = 3;
+  const picturePixel = (name, x, y) => {
+    const span = CELL - 2 * PICTURE_IN;
+    return pictures[name]((x - PICTURE_IN + 0.5) / span, (y - PICTURE_IN + 0.5) / span);
+  };
+  const lit = (name, x, y) => {
+    if (!inside(x, y, 1, 6)) return inside(x - 1, y - 1, 1, 6) ? [0x30, 0x20, 0x10, 0x60] : CLEAR;
+    if (!inside(x, y, PICTURE_IN, 4)) return x >= CELL - 3 || y >= CELL - 3 ? [0xd8, 0xd8, 0xe4] : WHITE;
+    return picturePixel(name, x, y);
+  };
+  const shadow = (name, x, y) => {
+    if (!inside(x, y, 1, 6)) return CLEAR;
+    if (!inside(x, y, PICTURE_IN, 4)) return Math.floor((x + y) / 3) % 2 === 0 ? [0x86, 0x6c, 0x48, 0xd0] : CLEAR;
+    const [r, g, b] = picturePixel(name, x, y);
+    const light = (0.3 * r + 0.59 * g + 0.11 * b) / 255;
+    const grey = Math.round(0x7a + (light - 0.5) * 0x78);
+    return [grey, grey, grey + 4, 0xe8];
+  };
+  texture(stickerOutput, "stickers", (x, y) => {
+    const cell = Math.floor(x / CELL) + Math.floor(y / CELL) * COLUMNS;
+    const name = ORDER[cell % ORDER.length];
+    return cell < ORDER.length ? lit(name, x % CELL, y % CELL) : shadow(name, x % CELL, y % CELL);
+  }, 0, CELL * COLUMNS, CELL * COLUMNS);
+  // The board: its frame of dark oak, lit along its top and left and shaded along its bottom and right, brass plates at
+  // its corners; inside, parchment yellowing toward its edges, the grid of a map, pale lands with darker coasts and a
+  // red dotted route.
+  const WIDTH = 128;
+  const HEIGHT = 64;
+  const FRAME = 5;
+  const OAK = [0x4a, 0x30, 0x1c];
+  const OAK_LIGHT = [0x6a, 0x46, 0x2a];
+  const OAK_DARK = [0x30, 0x1e, 0x10];
+  const BRASS = [0xd8, 0xa8, 0x3c];
+  const PARCHMENT = [0xec, 0xdc, 0xae];
+  const PARCHMENT_EDGE = [0xc8, 0xa4, 0x68];
+  const LAND = [0xd6, 0xca, 0x92];
+  const COAST = [0xa8, 0x8c, 0x58];
+  const lands = [[0.2, 0.35, 0.16, 0.2], [0.55, 0.62, 0.2, 0.22], [0.82, 0.3, 0.12, 0.18], [0.36, 0.8, 0.1, 0.1]];
+  const landAt = (u, v) => lands.some(([cx, cy, rx, ry]) => ellipse(u, v, cx, cy, rx * (1 + 0.15 * Math.sin(v * 31 + cx * 9)), ry));
+  const route = (u) => 0.5 + 0.22 * Math.sin(u * 7.5 + 0.6);
+  texture(stickerOutput, "board", (x, y) => {
+    const edge = Math.min(x, y, WIDTH - 1 - x, HEIGHT - 1 - y);
+    if (edge < FRAME) {
+      const corner = (x < FRAME || x >= WIDTH - FRAME) && (y < FRAME || y >= HEIGHT - FRAME);
+      if (corner) return edge === 0 ? OAK_DARK : BRASS;
+      if (edge === 0 || edge === FRAME - 1) return OAK_DARK;
+      return (y < FRAME || x < FRAME) ? OAK_LIGHT : OAK;
+    }
+    const u = (x - FRAME) / (WIDTH - 2 * FRAME);
+    const v = (y - FRAME) / (HEIGHT - 2 * FRAME);
+    const yellowed = mix(PARCHMENT, PARCHMENT_EDGE, (1 - Math.min(edge - FRAME, 8) / 8) * 0.8);
+    if (Math.abs(v - route(u)) < 0.02 && x % 4 < 2) return [0xb0, 0x3a, 0x2a];
+    if (landAt(u, v)) return landAt(u + 0.012, v) && landAt(u - 0.012, v) && landAt(u, v + 0.025) && landAt(u, v - 0.025) ? LAND : COAST;
+    if ((x - FRAME) % 16 === 8 || (y - FRAME) % 14 === 7) return mix(yellowed, COAST, 0.3);
+    return yellowed;
+  }, 3, WIDTH, HEIGHT);
+  texture(blockOutput, "sticker_map_face", () => PARCHMENT, 3);
+  // The item: the board in little, its frame round parchment with six bright stickers in two rows.
+  const ICON_STICKERS = [[0x5c, 0xc4, 0x3a], [0xf2, 0xd6, 0x7c], [0xff, 0x9c, 0xd0], [0xf4, 0xf8, 0xff], [0x2a, 0x7c, 0xd6], [0xd8, 0x22, 0x26]];
+  texture(itemOutput, "sticker_map", (x, y) => {
+    if (y < 3 || y > 12) return CLEAR;
+    if (x === 0 || x === 15 || y === 3 || y === 12) return OAK;
+    const column = [2, 7, 11].findIndex((left) => x >= left && x < left + 3);
+    const row = [5, 9].findIndex((top) => y >= top && y < top + 2);
+    return column < 0 || row < 0 ? PARCHMENT : ICON_STICKERS[row * 3 + column];
+  }, 0);
+}
+stickerMapTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);

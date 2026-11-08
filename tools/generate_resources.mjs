@@ -2125,6 +2125,10 @@ function zeppelinControlsLang() {
     "block.skyliners.tractor_beam": "Tractor Beam",
     "block.skyliners.beam_pad": "Beam Pad",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
+    "block.skyliners.sticker_map": "Sticker Map",
+    "message.skyliners.sticker_map.aboard": "Her stickers go up as she lands somewhere new",
+    "message.skyliners.sticker_map.nothing_new": "No new stickers yet: go and explore somewhere new!",
+    "message.skyliners.sticker_map.off": "Sticker maps are switched off on this server",
     "block.skyliners.console_readouts": "Flight Readout Console",
     "block.skyliners.console_scanner": "Scanner Console",
     "block.skyliners.console_engines": "Engine Console",
@@ -2487,6 +2491,11 @@ const FREIGHTER_SOUNDS = {
   tractor_beam_arrive: { subtitle: "Something arrives on the beam pad", heard: 24 },
   tractor_beam_drop: { subtitle: "Something is beamed down", heard: 24 },
   tractor_beam_refused: { subtitle: "Tractor beam buzzes" },
+  // Her sticker map: a sticker going up, a row of them filling and the whole board filling, each bigger, heard round
+  // her entry hall and on along her corridor.
+  sticker_map_new: { subtitle: "Sticker goes up: fanfare", heard: 32 },
+  sticker_map_row: { subtitle: "Sticker row filled: fanfare", heard: 40 },
+  sticker_map_full: { subtitle: "Sticker map filled: celebration", heard: 48 },
   // Her computer's voice, each line subtitled with what it says, her own words for the flight deck's announcements
   // with their gist.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
@@ -2504,6 +2513,9 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_jump_grounded: { subtitle: "Computer: Not from down here", aboard: true },
   freighter_computer_jump_too_near: { subtitle: "Computer: Pin's next door, just fly", aboard: true },
   freighter_computer_climb_boost: { subtitle: "Computer: Climbing hard", aboard: true },
+  freighter_computer_sticker: { subtitle: "Computer: New sticker", aboard: true },
+  freighter_computer_sticker_row: { subtitle: "Computer: That's a whole row", aboard: true },
+  freighter_computer_sticker_board: { subtitle: "Computer: Sticker map's full", aboard: true },
   freighter_computer_takeoff: { subtitle: "Computer: Lifting off, hold on", aboard: true },
   freighter_computer_landing: { subtitle: "Computer: Coming down to land", aboard: true },
   freighter_computer_arrival: { subtitle: "Computer: We're down", aboard: true },
@@ -9572,6 +9584,10 @@ slimScreenModels("tail_camera_display", `${ID}:block/tail_camera_display`, `${ID
 wideScreen("tail_camera_display", "tail_camera_display", ["large=false", "large=true"]);
 slimScreenModels("livery_selector", `${ID}:block/livery_board_side`, `${ID}:block/livery_board_side`);
 wideScreen("livery_selector", "livery_selector");
+// The sticker map (see StickerMapBlock): the same slim board as a wide screen's, four wide and two tall, its face
+// parchment and its casing dark oak, its map and its stickers drawn over the face by StickerMapRenderer.
+slimScreenModels("sticker_map", `${ID}:block/sticker_map_face`, "minecraft:block/dark_oak_planks");
+wideScreen("sticker_map", "sticker_map");
 // A wide screen (see WideScreenBlock) drawn with the models given, upright or tilted, and its item a picture of its
 // own; only part 0 drops it, so the whole screen gives back one. Its parts run as far as the largest wide screen's
 // (WideScreenBlock.MOST_PARTS); a block with a size of its own lists the values of the property that picks it.
@@ -11185,6 +11201,8 @@ FITTINGS.push("bandstand");
 FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve", "crossbow_rack");
 // Her tractor beam is fitted under her belly and its pad into her cargo hold's floor, and both set up by hand anywhere.
 FITTINGS.push("tractor_beam", "beam_pad");
+// Her sticker map hangs on her entry hall's wall, and goes up by hand anywhere.
+FITTINGS.push("sticker_map");
 // Her console's modules are fitted into her cockpit, and set up by hand anywhere.
 FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
@@ -11327,6 +11345,7 @@ shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
 shaped("engine_grating", ["BBB", "BGB", "BBB"], { B: "minecraft:iron_bars", G: "minecraft:glowstone_dust" }, 8);
 shaped("crossbow_rack", ["PGP", "PPP"], { P: "minecraft:dark_oak_planks", G: "minecraft:gold_nugget" }, 1);
+shaped("sticker_map", ["PPP", "PMP"], { P: "minecraft:dark_oak_planks", M: "minecraft:map" }, 1);
 shaped("floor_window", ["IGI", "GGG", "IGI"], { I: "minecraft:iron_ingot", G: "minecraft:glass" }, 1);
 shaped("beach_sand", ["SS", "SS"], { S: "minecraft:sand" }, 4);
 shaped("potted_palm", [" J ", " J ", " P "], { J: "minecraft:jungle_sapling", P: "minecraft:flower_pot" }, 1);

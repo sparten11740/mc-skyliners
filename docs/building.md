@@ -399,7 +399,14 @@ rings. Her `BreakerBoardBlock`, laid after her LED strips, which hand on where e
 room's panel went, keeps those panels' offsets in its `BreakerBoardBlockEntity` and changes their brightness; a switch is on
 while its room is lit, as `BreakerBoardRenderer` reads from the panel. Her `CoolantValveBlock` keeps its pressure in its block state,
 letting it off on scheduled ticks; `CoolantValveRenderer` turns its wheel and swings its gauge's needle toward it. `FreighterEntryHall` hangs the
-`CrossbowRackBlock` on her entry hall's wall, found as her LED panels' places are, by `FreighterWalls`. `FreighterFurnishings`
+`CrossbowRackBlock` on her entry hall's wall, found as her LED panels' places are, by `FreighterWalls`. `FreighterStickerMap`
+hangs the `StickerMapBlock` of `stickers/` on a straight run of the same wall, before her rooms are furnished: a
+`WideScreenBlock` four by two whose `StickerMapBlockEntity` keeps each `Sticker` up by the game time it went up, saved
+by name and sent in its update tag, from which the client's `StickerMapRenderer` pops it on and shines a row or the
+board the moment it fills. A ship's autopilot tells it she is down through `AutopilotBlockEntity.whenArrived`, which
+`Skyliners` registers it with, so the autopilot knows nothing of sticker maps; `Sticker.of` names the kind of land
+under her middle by biome ids and tags. A board on the ground reads what its user has been to from the Adventuring
+Time advancement's criteria instead. `FreighterFurnishings`
 fills her rooms out with the fleet's furniture, each piece nudged to the nearest free spot near where it is meant or
 hung on the nearest padded wall, never across a doorway. `FreighterChillout` lays her lounge's beach first: the round
 floor window of `floorwindow/` (`FloorWindowBlock`, laid anywhere by `FloorWindowItem` and opened from

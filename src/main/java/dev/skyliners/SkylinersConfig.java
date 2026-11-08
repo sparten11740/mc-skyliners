@@ -100,6 +100,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_BEACH;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RETRACTING_LEGS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TRACTOR_BEAM;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_STICKER_MAP;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -868,6 +869,14 @@ public final class SkylinersConfig {
                 "she has no beam and every tractor beam stays dark."
             )
             .define("tractorBeam", true);
+        FREIGHTER_STICKER_MAP = builder
+            .comment(
+                "Whether the freighter is built with her sticker map on her entry hall's wall, and whether sticker maps fill: a",
+                "picture sticker lights up with a fanfare for each kind of land a ship lands in for the first time, desert,",
+                "jungle, snowy peaks and more, and space as she reaches it; on the ground a board fills from where whoever uses",
+                "it has been. Without it, she has no board and every sticker map stays as it is."
+            )
+            .define("stickerMap", true);
         builder.pop();
 
         SPEC = builder.build();

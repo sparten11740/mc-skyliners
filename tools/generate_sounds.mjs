@@ -5590,6 +5590,15 @@ const COMPUTER_JUMP_LINES = {
 const COMPUTER_CLIMB_LINES = {
   freighter_computer_climb_boost: "Climbing hard. | Hold on to your stomachs.",
 };
+// Her computer as her sticker map fills (see StickerMapBlockEntity), our own lines in the same voice: a sticker up, a
+// row of them filled, and the whole map, which is given an announcement's length.
+const COMPUTER_STICKER_LINES = {
+  freighter_computer_sticker: "New sticker. | Another place I got dragged to.",
+  freighter_computer_sticker_row: "That's a whole row. | Show-off.",
+};
+const COMPUTER_STICKER_BOARD = {
+  freighter_computer_sticker_board: "Sticker map's full. | We've been everywhere. | Twice.",
+};
 /**
  * The longest a line may run, its blip and all, in seconds, a countdown's beats among them; and one of her
  * announcements, which CabinAnnouncements and EdgeOfSpace give at most 15 seconds, as the flight deck's.
@@ -5622,6 +5631,8 @@ if (speaker) {
   await sayAsFreighterComputer(speaker, COMPUTER_ANNOUNCEMENTS, COMPUTER_ANNOUNCEMENT_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_JUMP_LINES, COMPUTER_LONGEST);
   await sayAsFreighterComputer(speaker, COMPUTER_CLIMB_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_STICKER_LINES, COMPUTER_LONGEST);
+  await sayAsFreighterComputer(speaker, COMPUTER_STICKER_BOARD, COMPUTER_ANNOUNCEMENT_LONGEST);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
@@ -5928,6 +5939,126 @@ function beamSweep(seconds, from, to) {
     }
   }
   writeSound("tractor_beam_refused", lowPassed(buzz, 1800), 0.6);
+}
+
+// The sticker map's fanfares (see StickerMapBlockEntity), each bigger than the one before, all synthesised here, bright
+// and brassy so they read as a prize won: a sticker going up, four quick bell notes leaping up an arpeggio over a soft
+// brass swell and a sprinkle of high sparkles; a row filled, a brass "ta-da-da-daaa" landing on a held major chord with
+// bells ringing over it; and the whole board filled, a snare roll swelling under a rising run into a long triumphant
+// chord, a cymbal crashing on it, bells and sparkles over it all. Noise comes from each sound's own random sequence, so
+// none of them shifts any other sound.
+const STICKER_FANFARE = {
+  // A brass note: its three sawtooths' tunings, its filter's cutoff opening from and to, in hertz, over its attack, in
+  // seconds, and how long it takes to die away at its end.
+  brassTunings: [0.996, 1, 1.005],
+  brassCutoffLow: 500,
+  brassCutoffHigh: 4200,
+  brassAttack: 0.04,
+  brassRelease: 0.12,
+  // The sparkles: how many, over how long, in seconds, and the notes they are picked from, as MIDI notes.
+  sparkleNotes: [91, 96, 100, 103, 108],
+  // A sticker: its bell notes, so far apart, in seconds, under a brass chord held so long; its sparkles.
+  newNotes: ["G5", "C6", "E6", "G6"],
+  newApart: 0.075,
+  newChord: ["C5", "E5", "G5"],
+  newChordSeconds: 0.7,
+  newSparkles: 10,
+  newSparkleSeconds: 0.9,
+  // A row: the brass's notes and how long each is, in seconds, then the chord it lands on and how long that is held.
+  rowRun: [["G4", 0.13], ["G4", 0.13], ["C5", 0.13]],
+  rowChord: ["C4", "G4", "C5", "E5", "G5"],
+  rowChordSeconds: 1.4,
+  rowSparkles: 18,
+  rowSparkleSeconds: 1.6,
+  // The board: the snare roll's length, in seconds, and its strokes a second; the run up over it, each note so long;
+  // the chord it lands on, held so long; the cymbal's decay, in seconds; its sparkles.
+  rollSeconds: 1.1,
+  rollStrokes: 28,
+  boardRun: [["C5", 0.11], ["E5", 0.11], ["G5", 0.11], ["C6", 0.11], ["E6", 0.11]],
+  boardChord: ["C4", "G4", "C5", "E5", "G5", "C6"],
+  boardChordSeconds: 2.2,
+  cymbalDecay: 1.3,
+  boardSparkles: 34,
+  boardSparkleSeconds: 2.6,
+};
+
+/** A brass note of a pitch, in hertz, so long, in seconds: sawtooths a hair apart through a filter opening as it swells. */
+function stickerBrass(frequency, seconds) {
+  const F = STICKER_FANFARE;
+  const raw = sawStack(seconds + F.brassRelease, () => frequency, F.brassTunings);
+  const opened = sweptLowPassed(raw, (t) => F.brassCutoffLow + (F.brassCutoffHigh - F.brassCutoffLow) * Math.min(1, t / F.brassAttack));
+  return opened.map((sample, i) => {
+    const t = i / RATE;
+    return sample * Math.min(1, t / F.brassAttack) * Math.min(1, Math.max(0, (seconds + F.brassRelease - t) / F.brassRelease));
+  });
+}
+
+/** Mixes samples into a track from a time, in seconds, so loud. */
+function mixInto(track, start, part, gain) {
+  const from = Math.round(start * RATE);
+  for (let i = 0; i < part.length && from + i < track.length; i++) {
+    track[from + i] += gain * part[i];
+  }
+}
+
+/** So many sparkles, little high bells at random notes and times from a time on for so long, in seconds. */
+function sparkles(track, start, seconds, count, own) {
+  for (let k = 0; k < count; k++) {
+    const note = STICKER_FANFARE.sparkleNotes[Math.floor(own() * STICKER_FANFARE.sparkleNotes.length)];
+    const single = new Float64Array(Math.round(0.4 * RATE));
+    bell(single, 0, noteHertz(note), 0.08);
+    mixInto(track, start + own() * seconds, single, 0.12 + 0.1 * own());
+  }
+}
+
+/** A chord of notes held so long, in seconds, mixed into a track from a time, each note so loud. */
+function brassChord(track, start, notes, seconds, gain) {
+  notes.forEach((name) => mixInto(track, start, stickerBrass(noteHertz(noteNumber(name)), seconds), gain));
+}
+
+{
+  const F = STICKER_FANFARE;
+  const own = ownRandom(0x53544b31);
+  const track = new Float64Array(Math.round(1.6 * RATE));
+  brassChord(track, 0.02, F.newChord, F.newChordSeconds, 0.12);
+  F.newNotes.forEach((name, k) => bell(track, k * F.newApart, noteHertz(noteNumber(name)), 0.25));
+  sparkles(track, F.newNotes.length * F.newApart, F.newSparkleSeconds, F.newSparkles, own);
+  writeSound("sticker_map_new", track, 0.7);
+}
+{
+  const F = STICKER_FANFARE;
+  const own = ownRandom(0x53544b32);
+  const track = new Float64Array(Math.round(2.6 * RATE));
+  let at = 0;
+  for (const [name, seconds] of F.rowRun) {
+    mixInto(track, at, stickerBrass(noteHertz(noteNumber(name)), seconds * 0.8), 0.35);
+    at += seconds;
+  }
+  brassChord(track, at, F.rowChord, F.rowChordSeconds, 0.16);
+  F.rowChord.slice(-3).forEach((name, k) => bell(track, at + k * 0.05, noteHertz(noteNumber(name) + 12), 0.4));
+  sparkles(track, at, F.rowSparkleSeconds, F.rowSparkles, own);
+  writeSound("sticker_map_row", track, 0.75);
+}
+{
+  const F = STICKER_FANFARE;
+  const own = ownRandom(0x53544b33);
+  const track = new Float64Array(Math.round(4.6 * RATE));
+  // The snare roll, swelling: short bursts of band-passed noise, each louder than the last.
+  for (let k = 0; k < F.rollSeconds * F.rollStrokes; k++) {
+    const hit = resonance(whiteNoise(0.05, own), 2200, 0.9).map((sample, i) => sample * Math.exp(-i / RATE / 0.018));
+    mixInto(track, k / F.rollStrokes, hit, 0.25 + 0.75 * (k / (F.rollSeconds * F.rollStrokes)));
+  }
+  let at = F.rollSeconds - F.boardRun.length * F.boardRun[0][1];
+  for (const [name, seconds] of F.boardRun) {
+    mixInto(track, at, stickerBrass(noteHertz(noteNumber(name)), seconds * 0.85), 0.3);
+    at += seconds;
+  }
+  brassChord(track, at, F.boardChord, F.boardChordSeconds, 0.14);
+  const crash = highPassed(whiteNoise(F.cymbalDecay * 3, own), 3000).map((sample, i) => sample * Math.exp(-i / RATE / F.cymbalDecay));
+  mixInto(track, at, crash, 0.5);
+  F.boardChord.slice(-4).forEach((name, k) => bell(track, at + k * 0.06, noteHertz(noteNumber(name) + 12), 0.6));
+  sparkles(track, at, F.boardSparkleSeconds, F.boardSparkles, own);
+  writeSound("sticker_map_full", track, 0.8);
 }
 
 // The carrier clips: someone pressing the button and saying nothing, and a pilot's two quick clicks.
