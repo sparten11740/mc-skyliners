@@ -46,8 +46,8 @@ final class FreighterShape {
     /**
      * The cockpit: the tube's axis so far out to starboard (the pod's is the same) and so high, its radius, and where
      * it runs from, inside the disc, where it crosses her outer bulkhead and stands a little proud of her top as it
-     * runs out over her rim, to the pod; the pod's axis so high and its radius, round as far as its cone, which narrows
-     * to the glazed front at its tip.
+     * runs out over her rim, to the pod; the pod's axis so high and its radius, round as far as its nose, whose
+     * shoulder rounds in to the flat glazed front at its tip, so wide.
      */
     static final double TUBE_OUT = 9.5;
     static final double TUBE_UP = 4.0;
@@ -56,7 +56,7 @@ final class FreighterShape {
     static final double POD_FROM = -12;
     static final double POD_UP = 4.4;
     static final double POD_RADIUS = 2.4;
-    static final double CONE_FROM = -14;
+    static final double NOSE_FROM = -14;
     static final double POD_TIP = -16.5;
     static final double TIP_RADIUS = 1.0;
     /** The ball turrets' domes on the axis: the top one's radius and crown's height, the belly one's and foot's. */
@@ -179,13 +179,28 @@ final class FreighterShape {
         return Math.max(round, Math.max(POD_FROM - z, z - TUBE_FROM));
     }
 
-    /** The cockpit's pod: round from the tube's end to its cone, which narrows to a flat glazed front at its tip. */
+    /**
+     * The cockpit's pod: round from the tube's end to its nose, whose shoulder rounds in to a flat glazed front at its
+     * tip, meeting the round part and the front each without an edge, so her canopy is a round dome.
+     */
     private static double pod(double x, double y, double z) {
         double across = Math.hypot(x - TUBE_OUT, y - POD_UP);
-        double narrowing = (POD_RADIUS - TIP_RADIUS) / (CONE_FROM - POD_TIP);
-        double radius = z >= CONE_FROM ? POD_RADIUS : TIP_RADIUS + narrowing * (z - POD_TIP);
-        double side = (across - radius) / (z >= CONE_FROM ? 1 : Math.sqrt(1 + narrowing * narrowing));
+        double side = z >= NOSE_FROM ? across - POD_RADIUS : shoulder(Math.max(across - TIP_RADIUS, 0), NOSE_FROM - z);
         return Math.max(side, Math.max(POD_TIP - z, z - POD_FROM));
+    }
+
+    /**
+     * How far a point lies outside her nose's shoulder, given how far out it is past the edge of the flat front and
+     * how far ahead of where the nose begins, in metres: a quarter ellipse from the pod's round part to the front's
+     * edge, as wide as the one is past the other and as deep as the nose is long. The distance is true on the surface
+     * and close to it nearby, which is all the snapped skin's cut asks of it.
+     */
+    private static double shoulder(double out, double ahead) {
+        double wide = POD_RADIUS - TIP_RADIUS;
+        double deep = NOSE_FROM - POD_TIP;
+        double share = Math.hypot(out / wide, ahead / deep);
+        double gradient = Math.hypot(out / (wide * wide), ahead / (deep * deep));
+        return gradient < Math.ulp(1.0) ? -Math.min(wide, deep) : share * (share - 1) / gradient;
     }
 
     /** The ball turrets' domes on the axis, balls standing out of her top and her belly. */

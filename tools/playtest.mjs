@@ -374,6 +374,8 @@ const OWN_FLOORS = 6;
 const CANOPY_SKY = "sky=0.62,0.05,0.72,0.18";
 const CANOPY_DIMMED_SHARE = 0.6;
 const CANOPY_SETTLE = 20;
+// How far out ahead of her canopy's lining her cockpit is looked at through her front window from outside, in blocks.
+const CANOPY_OUTSIDE = 8;
 // Her canopy's dimmer: how far its face stands out from her wall, in blocks, and where its darkest and its clear button
 // are on it, so far along it toward its side a quarter turn clockwise from the way it faces and up from its foot, in
 // blocks.
@@ -2240,32 +2242,52 @@ function skyThroughCanopy(seat, nose) {
   return luma;
 }
 
-// A freighter's canopy seen from inside: one smooth cone drawn by its lining, not her glass and its struts stepping
-// round her curve, which are drawn from outside only; and dimmed by her dimmer, the view through it darkens with her
-// glass, as smooth.
+// How bright her cockpit looks through a freighter's canopy from outside, its luma from 0 to 255: from out ahead of her
+// nose at the height of her lining, looking back at it through her front window.
+function cockpitThroughCanopy(lining, nose) {
+  const [fx, fz] = WAYS[nose];
+  const middle = lining.map((at) => at + 0.5);
+  const eye = [middle[0] + fx * CANOPY_OUTSIDE, middle[1], middle[2] + fz * CANOPY_OUTSIDE];
+  must(`camera at ${eye.join(",")} look ${middle.join(",")}; wait ${CANOPY_SETTLE}t`);
+  const luma = must(`pixels cockpit=@${middle.join(",")} r=1`).cockpit.luma;
+  must("camera reset");
+  return luma;
+}
+
+// A freighter's canopy: one smooth round dome drawn by its lining, inside and out, not her glass and struts stepping
+// round her curve, all of which draw nothing; and dimmed by her dimmer, the view through it darkens with her glass, as
+// smooth, from her seat and from outside alike. With the fault her struts were whole slabs of her cover drawn from
+// outside, stepping and crossing each other with hard edges all over her canopy.
 function checkFreighterCanopy() {
   ship("freighter");
   const linings = must("find skyliners:canopy_lining 128 2").rows;
   expect(linings.length === 1, "freighter: her canopy has its lining", `${linings.length} linings`);
   const unlined = must("find skyliners:dimming_glass[lined=false] 128 1").count ?? 0;
   const lined = must("find skyliners:dimming_glass[lined=true] 128 1").count ?? 0;
-  expect(unlined === 0 && lined > 0, "freighter: her canopy's glass is drawn from outside only, its lining drawing its inside",
+  expect(unlined === 0 && lined > 0, "freighter: her canopy's glass draws nothing, its lining drawing it inside and out",
     `${lined} lined, ${unlined} not`);
-  expect((must("find skyliners:canopy_frame 128 1").count ?? 0) > 0, "freighter: the struts between her canopy's panes are its frame");
+  const struts = must("find skyliners:canopy_frame 128 1").count ?? 0;
+  expect(struts === 0, "freighter: her canopy is glass all over, its ribs drawn by its lining, with no struts of her cover", `${struts} struts`);
   const [dimmer] = must("find skyliners:window_dimmer 128 1").rows;
   const [head] = must("find skyliners:autopilot 128 1").rows;
-  if (!dimmer || !head) {
-    expect(false, "freighter: her cockpit has its dimmer and control head");
+  if (!dimmer || !head || !linings[0]) {
+    expect(false, "freighter: her cockpit has its dimmer, control head and canopy lining");
     return;
   }
+  const rounded = must(`server data get block ${linings[0].at_abs.join(" ")} Rounded`).result ?? 0;
+  expect(rounded === 1, "freighter: her canopy's lining draws a round dome, not a cone");
   const nose = must(`block ${head.at_abs.join(",")}`).props.facing ?? "north";
   const facing = must(`block ${dimmer.at_abs.join(",")}`).props.facing ?? "east";
   const seat = pilotSeat();
   const clear = skyThroughCanopy(seat, nose);
+  const clearOutside = cockpitThroughCanopy(linings[0].at_abs, nose);
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_DARKEST);
   const dimmed = skyThroughCanopy(seat, nose);
+  const dimmedOutside = cockpitThroughCanopy(linings[0].at_abs, nose);
   expect(dimmed < clear * CANOPY_DIMMED_SHARE, "freighter: dimmed, the sky ahead through her canopy darkens from her seat",
     `luma ${round(clear)} clear, ${round(dimmed)} dimmed`);
+  expect(dimmedOutside < clearOutside * CANOPY_DIMMED_SHARE, "freighter: dimmed, her cockpit through her canopy darkens from outside",
+    `luma ${round(clearOutside)} clear, ${round(dimmedOutside)} dimmed`);
   pressDimmer(dimmer.at_abs, facing, ...DIMMER_CLEAR);
 }
 
@@ -4293,7 +4315,7 @@ const CHECKS = {
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "console-mounts": { run: checkConsoleMounts, about: "each console module set up by hand stands on a floor, a wall or a ceiling, facing whoever put it up" },
-  "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is smooth from inside, drawn by its lining, and dims from her seat" },
+  "freighter-canopy": { run: checkFreighterCanopy, about: "a freighter's canopy is one smooth dome its lining draws inside and out, and dims, seen from her seat and from outside" },
   "freighter-jump-seen": { run: checkFreighterJumpSeen, slow: true, about: "a freighter's hyperspace jump is seen and heard from the ground at both ends" },
   "freighter-jump-drive": { run: checkFreighterJumpDrive, about: "a freighter's jump drive spools up and fires, or sputters until thumped" },
   "freighter-breaker-board": { run: checkFreighterBreakerBoard, about: "a freighter's breaker board puts a room's lights out and back on" },

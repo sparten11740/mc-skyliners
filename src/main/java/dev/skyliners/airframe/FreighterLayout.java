@@ -68,7 +68,7 @@ import net.minecraft.world.phys.Vec3;
  * size. Only her blocks are kept: the air inside her hull is worked out from its shape as she is handed over.
  *
  * <p>Her hull is a skin of her own cover, the zeppelin's silver laid as riveted plates, cut to her lens and her parts
- * in the snapped style (see {@link SurfaceCut}), glazed round her cockpit's cone and over her turrets' domes, gunmetal
+ * in the snapped style (see {@link SurfaceCut}), glazed round her cockpit's nose and over her turrets' domes, gunmetal
  * ribs over each dome.
  * Inside, one deck: a core round the turrets' ladder on her axis, a ring corridor round it, and six rooms out to an
  * outer bulkhead, where her hull grows too low to stand in; past it, the wedge out to her rim is a closed void but
@@ -116,17 +116,25 @@ public final class FreighterLayout extends HullLayout {
     /** Her main engines along her stern's rim, at these bearings in degrees, so many rows over her deck. */
     private static final int[] MAIN_BEARINGS = {165, 171, 177, 183, 189, 195};
     /**
-     * How many struts run along her cockpit's cone, evenly round it from straight up: four, square to the blocks, so
+     * How many struts of her skin run along her cockpit's nose where her canopy is built of blocks alone, without the
+     * server config's {@code freighter.smoothCanopy}, evenly round it from straight up: four, square to the blocks, so
      * each runs straight along a row of them; between them her canopy is glass, with a ring of strut half way along.
      */
     private static final int CANOPY_SPOKES = 4;
     /**
-     * Her canopy's lining (see {@link #canopyLining}): how far in from her surface its glass is drawn, in blocks, at the
-     * inside of her canopy's blocks, and how many blocks back from her canopy's front along its axis an open block for
-     * it is looked for.
+     * How many slim ribs her smooth canopy's lining draws over its dome (see {@link #canopyLining}), evenly round it
+     * from straight up: six, so none runs level across the view ahead from her seats.
+     */
+    private static final int CANOPY_RIBS = 6;
+    /**
+     * Her canopy's lining (see {@link #canopyLining}): how far in from her surface its nose is told, in blocks, at the
+     * inside of her canopy's blocks, where her cockpit's walls meet the rim round its base, and how many blocks back
+     * from her canopy's front along its axis an open block for it is looked for.
      */
     private static final double LINING_IN = 0.6;
     private static final int LINING_SEARCH = 4;
+    /** How many corners a block has, each told by three bits, one an axis: which side of the block it lies on. */
+    private static final int CUBE_CORNERS = 8;
     private static final int MAIN_ROWS_UP = 2;
     /** How far past her rim's face her engines' glow is drawn, in blocks: out in the air behind her mains' nozzles. */
     private static final double NOZZLE_OUT = 0.6;
@@ -159,7 +167,7 @@ public final class FreighterLayout extends HullLayout {
     private static final int PORT_NOSE_JET = 0;
     private static final int STARBOARD_NOSE_JET = 1;
     /**
-     * Her cockpit's flight deck, in blocks from where the pod's round part meets its cone: the control head and the
+     * Her cockpit's flight deck, in blocks from where the pod's round part meets its nose: the control head and the
      * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
      * pilots so far either side of the head, the jump seats so far behind them, and the autopilot screen's middle so
      * far to the head's right and so many rows up, on the ledge of her skin at the co-pilot's right hand, where it
@@ -496,8 +504,9 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her skin: every block her surface passes through, cut to it; then the glass of her cockpit's cone and her
-     * turrets' domes set into it (see {@link #glaze}).
+     * Her skin: every block her surface passes through, cut to it; then the glass of her cockpit's nose and her
+     * turrets' domes set into it (see {@link #glaze}), and, where her canopy is smooth, glass in any open block of her
+     * nose that stands out past her surface (see {@link #throughCanopy}).
      */
     private void skin() {
         BlockState cover = SkylinersRegistry.FREIGHTER_COVER.get().defaultBlockState();
@@ -511,6 +520,61 @@ public final class FreighterLayout extends HullLayout {
                 glassRow(x, y);
             }
         }
+        fillCanopy();
+    }
+
+    /**
+     * Glass where an open block stands through her smooth canopy (see {@link #throughCanopy}), row by row along her
+     * length within a box round her nose; none where her canopy is built of blocks alone.
+     */
+    private void fillCanopy() {
+        if (!SkylinersConfig.FREIGHTER_SMOOTH_CANOPY.get()) {
+            return;
+        }
+        BlockState canopy = SkylinersRegistry.DIMMING_GLASS.get().defaultBlockState().setValue(DimmingGlassBlock.LINED, true);
+        boolean dimming = SkylinersConfig.FREIGHTER_CANOPY_DIMMER.get();
+        int noseFront = (int) Math.floor(FreighterShape.POD_TIP * scale);
+        int noseBack = (int) Math.ceil(FreighterShape.NOSE_FROM * scale);
+        int across = (int) Math.ceil(FreighterShape.POD_RADIUS * scale) + 1;
+        int wide = 2 * across + 1;
+        int axisX = (int) Math.round(FreighterShape.TUBE_OUT * scale);
+        int axisY = (int) Math.round(FreighterShape.POD_UP * scale);
+        for (int cell = 0; cell < wide * wide; cell++) {
+            fillNose(axisX + cell % wide - across, axisY + cell / wide - across, noseFront, noseBack, canopy, dimming);
+        }
+    }
+
+    /** Fills a row of her smooth canopy's nose along her length with glass where an open block stands through it. */
+    private void fillNose(int x, int y, int from, int to, BlockState canopy, boolean dimming) {
+        for (int z = from; z <= to; z++) {
+            if (isOpen(x, y, z) && throughCanopy(x, y, z)) {
+                set(x, y, z, canopy);
+                noteCanopy(dimming, new BlockPos(x, y, z));
+            }
+        }
+    }
+
+    /**
+     * Whether an open block inside her smooth canopy's nose has a corner out past her surface, where her lining draws
+     * her glass smooth however her blocks step round her curve: her skin's blocks, cut to her curve but snapped, leave
+     * such blocks open. Such a block is glass too, which draws nothing, so nothing laid inside her, her floor, her
+     * lights or her console, stands out through her glass.
+     */
+    private boolean throughCanopy(int x, int y, int z) {
+        boolean inNose = surface.depth(x, y + 0.5, z) < 0 && z / scale < FreighterShape.NOSE_FROM
+            && FreighterShape.nearest(x / scale, (y + 0.5) / scale, z / scale) == FreighterShape.Part.POD;
+        if (!inNose) {
+            return false;
+        }
+        for (int corner = 0; corner < CUBE_CORNERS; corner++) {
+            double cornerX = x - 0.5 + (corner & 1);
+            double cornerY = y + (corner >> 1 & 1);
+            double cornerZ = z - 0.5 + (corner >> 2 & 1);
+            if (FreighterShape.depth(FreighterShape.Part.POD, cornerX / scale, cornerY / scale, cornerZ / scale) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void skinRow(BlockState cover, int x, int y) {
@@ -525,8 +589,8 @@ public final class FreighterLayout extends HullLayout {
     /**
      * Her glass along a row: the canopy's dimming glass (see {@link dev.skyliners.block.DimmingGlassBlock}), smoked
      * glass with the server configs {@code freighter.canopyDimmer} and {@code freighter.smoothCanopy} both off, and
-     * smoked glass over her turrets' domes; and, seen smooth from inside, the struts between her canopy's panes made her
-     * canopy's frame, drawn from outside only, as her dimming glass is (see {@link #canopyLining}).
+     * smoked glass over her turrets' domes. Smooth, her canopy is glass all over, which its lining draws inside and out
+     * with its ribs (see {@link #canopyLining}).
      */
     private void glassRow(int x, int y) {
         BlockState glass = SkylinersRegistry.SMOKED_GLASS.get().defaultBlockState();
@@ -538,29 +602,14 @@ public final class FreighterLayout extends HullLayout {
             if (isOpen(x, y, z)) {
                 continue;
             }
-            if (glazed(x, y + 0.5, z)) {
+            if (glazed(x, y + 0.5, z, smooth)) {
                 boolean onCanopy = FreighterShape.nearest(x / scale, (y + 0.5) / scale, z / scale) == FreighterShape.Part.POD;
                 glaze(x, y, z, onCanopy ? canopy : glass);
                 noteCanopy(onCanopy && dimming, new BlockPos(x, y, z));
                 canopyPane = onCanopy && canopyPane == null && !isOpen(x, y, z) ? new BlockPos(x, y, z) : canopyPane;
-            } else if (smooth && onCone(x, y + 0.5, z)) {
-                canopyFrame(x, y, z);
             } else if (FreighterShape.nearest(x / scale, (y + 0.5) / scale, z / scale) == FreighterShape.Part.DOME) {
                 domeRib(x, y, z);
             }
-        }
-    }
-
-    /** Whether a point, in blocks, lies on her cockpit's cone or its glazed front, where her canopy is. */
-    private boolean onCone(double x, double y, double z) {
-        return FreighterShape.nearest(x / scale, y / scale, z / scale) == FreighterShape.Part.POD && z / scale < FreighterShape.CONE_FROM;
-    }
-
-    /** A strut of her canopy's cone made her canopy's frame, cut to her curve as the cover there was. */
-    private void canopyFrame(int x, int y, int z) {
-        BlockState cover = stateAt(x, y, z);
-        if (cover.is(SkylinersRegistry.FREIGHTER_COVER.get())) {
-            set(x, y, z, ShellBlock.withShape(SkylinersRegistry.CANOPY_FRAME.get().defaultBlockState(), ShellBlock.shape(cover)));
         }
     }
 
@@ -581,10 +630,11 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Whether her skin is glass at a point, in blocks: on her cockpit's cone and its front, but for its struts (see
-     * {@link #CANOPY_SPOKES}); and on her turrets' domes, but for their ribs.
+     * Whether her skin is glass at a point, in blocks: on her cockpit's nose, all over where her canopy is smooth, its
+     * lining drawing her ribs, and else but for its struts (see {@link #CANOPY_SPOKES}); and on her turrets' domes, but
+     * for their ribs.
      */
-    private boolean glazed(double x, double y, double z) {
+    private boolean glazed(double x, double y, double z, boolean smooth) {
         double mx = x / scale;
         double my = y / scale;
         double mz = z / scale;
@@ -592,7 +642,7 @@ public final class FreighterLayout extends HullLayout {
         if (part == FreighterShape.Part.DOME) {
             return !onDomeRib(mx, mz);
         }
-        return part == FreighterShape.Part.POD && mz < FreighterShape.CONE_FROM && !strut(mx, my, mz);
+        return part == FreighterShape.Part.POD && mz < FreighterShape.NOSE_FROM && (smooth || !strut(mx, my, mz));
     }
 
     /**
@@ -605,9 +655,9 @@ public final class FreighterLayout extends HullLayout {
         return Math.min(Math.abs(x), Math.abs(z)) * scale < 0.5;
     }
 
-    /** Whether a point on her cockpit's cone, in metres, lies on one of its struts. */
+    /** Whether a point on her cockpit's nose, in metres, lies on one of its struts. */
     private boolean strut(double x, double y, double z) {
-        double ring = (FreighterShape.CONE_FROM + FreighterShape.POD_TIP) / 2;
+        double ring = (FreighterShape.NOSE_FROM + FreighterShape.POD_TIP) / 2;
         if (Math.abs(z - ring) * scale < 0.5) {
             return true;
         }
@@ -998,7 +1048,7 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its cone,
+     * Her cockpit in the pod: the autopilot's control head facing her bow where the pod's round part meets its nose,
      * the pilot's seat on its left and the co-pilot's on its right, a sidestick at each outboard hand, the jump seats
      * behind them, and the autopilot screen at the co-pilot's right, facing in, linked to the head; the head wired once
      * it stands; her canopy's dimmer and lining; and her console curving round before the seats.
@@ -1006,7 +1056,7 @@ public final class FreighterLayout extends HullLayout {
     private void cockpit() {
         int x = (int) Math.round(FreighterShape.TUBE_OUT * scale);
         int y = deck + 1;
-        int z = (int) Math.round(FreighterShape.CONE_FROM * scale) + SEATS_BEHIND;
+        int z = (int) Math.round(FreighterShape.NOSE_FROM * scale) + SEATS_BEHIND;
         BlockPos at = new BlockPos(x, y, z);
         head = at;
         set(x, y, z, SkylinersRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
@@ -1027,10 +1077,11 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her canopy's lining (see {@link dev.skyliners.block.CanopyLiningBlock}), whose renderer draws her canopy's inside
-     * as one smooth cone: unseen in the air on her canopy's axis just behind its front, told once it stands the cone
-     * a skin's thickness in from her surface, where the inside of her glass is, and the pane of glass to follow as it
-     * dims; none with the server config's {@code freighter.smoothCanopy} off, or no open block there.
+     * Her canopy's lining (see {@link dev.skyliners.block.CanopyLiningBlock}), whose renderer draws her whole canopy,
+     * inside and out, as one smooth dome with its ribs: unseen in the air on her canopy's axis just behind its front,
+     * told once it stands the dome a skin's thickness in from her surface, where the inside of her glass is, and the
+     * pane of glass to follow as it dims; none with the server config's {@code freighter.smoothCanopy} off, or no open
+     * block there.
      */
     private void canopyLining() {
         if (!SkylinersConfig.FREIGHTER_SMOOTH_CANOPY.get()) {
@@ -1058,20 +1109,17 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * The cone her canopy's lining is drawn on, from the middle of the block given, as she is laid out nose north: her
-     * cone and its flat front each moved in from her surface by {@link #LINING_IN}, the ring half way along her cone,
-     * and a rib at each of her struts.
+     * The dome her canopy's lining is drawn on, from the middle of the block given, as she is laid out nose north: her
+     * nose's rounded shoulder and its flat front each moved in from her surface by {@link #LINING_IN}, the skin out to
+     * her surface as thick, no ring round it, and {@link #CANOPY_RIBS} ribs over it.
      */
     private CanopyLiningBlockEntity.Cone liningCone(BlockPos at) {
-        double narrowing = (FreighterShape.POD_RADIUS - FreighterShape.TIP_RADIUS) / (FreighterShape.CONE_FROM - FreighterShape.POD_TIP);
-        double radiusIn = LINING_IN * Math.sqrt(1 + narrowing * narrowing);
-        double length = (FreighterShape.CONE_FROM - FreighterShape.POD_TIP) * scale - LINING_IN;
-        double baseZ = FreighterShape.CONE_FROM * scale;
-        double ringZ = (FreighterShape.CONE_FROM + FreighterShape.POD_TIP) / 2 * scale;
+        double length = (FreighterShape.NOSE_FROM - FreighterShape.POD_TIP) * scale - LINING_IN;
+        double baseZ = FreighterShape.NOSE_FROM * scale;
         // The surface's x and z run through the middle of a block, its y from a block's foot.
         Vec3 base = new Vec3(FreighterShape.TUBE_OUT * scale - at.getX(), FreighterShape.POD_UP * scale - at.getY() - 0.5, baseZ - at.getZ());
-        return new CanopyLiningBlockEntity.Cone(base, length, FreighterShape.POD_RADIUS * scale - radiusIn,
-            FreighterShape.TIP_RADIUS * scale - radiusIn, (baseZ - ringZ) / length, CANOPY_SPOKES);
+        return new CanopyLiningBlockEntity.Cone(base, length, FreighterShape.POD_RADIUS * scale - LINING_IN,
+            FreighterShape.TIP_RADIUS * scale - LINING_IN, CanopyLiningBlockEntity.NO_RING, CANOPY_RIBS, LINING_IN, true);
     }
 
     /** A pilot seat facing her bow, both its halves, where both are open. */

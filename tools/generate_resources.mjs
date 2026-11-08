@@ -151,20 +151,18 @@ for (const [name, renderType] of Object.entries(cubes)) {
 
 // The freighter's dimming glass (see DimmingGlassBlock): her canopy, cut to her hull's curve as the smoked glass is by the
 // mod's "shell" loader, its model for each darkness drawn with that darkness's glass, clear being the smoked glass; and,
-// lined, the same drawn from outside only, her canopy's lining drawing its inside (see CanopyLiningRenderer).
+// lined, nothing at all, her canopy's lining drawing the whole canopy inside and out (see CanopyLiningRenderer).
 {
   const DIMS = [0, 1, 2, 3];
   for (const dim of DIMS) {
     const skin = dim === 0 ? "smoked_glass" : `dimming_glass_${dim}`;
     const textures = { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` };
     write(`assets/${ID}/models/block/dimming_glass_${dim}.json`, { loader: `${ID}:shell`, render_type: "minecraft:translucent", textures });
-    write(`assets/${ID}/models/block/dimming_glass_${dim}_lined.json`, {
-      loader: `${ID}:shell`, render_type: "minecraft:translucent", outside_only: true, textures,
-    });
   }
+  write(`assets/${ID}/models/block/dimming_glass_lined.json`, { textures: { particle: `${ID}:block/smoked_glass` } });
   write(`assets/${ID}/blockstates/dimming_glass.json`, {
     variants: Object.fromEntries(DIMS.flatMap((dim) => [false, true].map((lined) =>
-      [`dim=${dim},lined=${lined}`, { model: `${ID}:block/dimming_glass_${dim}${lined ? "_lined" : ""}` }]))),
+      [`dim=${dim},lined=${lined}`, { model: `${ID}:block/${lined ? "dimming_glass_lined" : `dimming_glass_${dim}`}` }]))),
   });
   write(`data/${ID}/loot_table/blocks/dimming_glass.json`, {
     type: "minecraft:block",
@@ -1437,21 +1435,18 @@ function slideLang() {
 // baked by the mod's own "shell" loader from the block's corners, the windscreen's drawn as a single pane however
 // thick its glass runs (see ShellModel). They give back the part they are cut from (the clear glass, plain glass). The
 // relay hidden in the nacelles drops nothing.
-// The freighter's canopy frame is her cover drawn from outside only, as her lined canopy glass is.
-for (const [name, skin, renderType, part, singlePane, tinted, outsideOnly] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false, false],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false, false],
-  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
-  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false, false],
-  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, false],
-  ["canopy_frame", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true, true],
+for (const [name, skin, renderType, part, singlePane, tinted] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
+  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false],
+  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
     loader: `${ID}:shell`,
     render_type: renderType,
     ...(singlePane ? { single_pane: true } : {}),
-    ...(outsideOnly ? { outside_only: true } : {}),
     ...(tinted ? { tint_index: 0 } : {}),
     textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
   });
@@ -1462,6 +1457,16 @@ for (const [name, skin, renderType, part, singlePane, tinted, outsideOnly] of [
   });
   cubes[name] = null;
 }
+// The struts of the freighter's first smooth canopies, her cover cut to her curve: nothing drawn, her canopy's lining
+// drawing her whole canopy and its ribs inside and out (see CanopyLiningRenderer); it gives back fabric.
+write(`assets/${ID}/blockstates/canopy_frame.json`, { variants: { "": { model: `${ID}:block/canopy_frame` } } });
+write(`assets/${ID}/models/block/canopy_frame.json`, { textures: { particle: `${ID}:block/zeppelin_skin` } });
+write(`data/${ID}/loot_table/blocks/canopy_frame.json`, {
+  type: "minecraft:block",
+  pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:zeppelin_fabric` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+  random_sequence: `${ID}:blocks/canopy_frame`,
+});
+cubes.canopy_frame = null;
 
 // The zeppelin's fabric, on its fins, its cars and its neck: the undoped weave all round, tinted by the zeppelin's
 // livery as its cover is (see Livery), the way vanilla's leaves are tinted.

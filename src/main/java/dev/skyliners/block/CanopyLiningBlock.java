@@ -19,9 +19,9 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The freighter's canopy seen from inside (see {@link CanopyLiningBlockEntity}): an unseen block in the air of her
- * cockpit, near the tip of her canopy, whose renderer draws the canopy's inside as one smooth cone of tinted glass
- * framed by ribs, where her glass and its frame, drawn from outside only, would otherwise show their blocks stepping
+ * The freighter's canopy as it is seen (see {@link CanopyLiningBlockEntity}): an unseen block in the air of her
+ * cockpit, near the tip of her canopy, whose renderer draws the whole canopy, inside and out, as one smooth dome of
+ * tinted glass framed by slim ribs, where her glass, which draws nothing, would otherwise show its blocks stepping
  * round her curve. It has no shape to bump into or aim at and nothing to pick or break; only her build lays it, since
  * it means nothing outside a canopy, and taking her apart takes it with her. FACING is the way her canopy points, her
  * bow.

@@ -1,9 +1,0 @@
-{
-  "loader": "skyliners:shell",
-  "render_type": "minecraft:translucent",
-  "outside_only": true,
-  "textures": {
-    "skin": "skyliners:block/smoked_glass",
-    "particle": "skyliners:block/smoked_glass"
-  }
-}

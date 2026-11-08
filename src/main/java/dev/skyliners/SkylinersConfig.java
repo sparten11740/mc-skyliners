@@ -729,9 +729,9 @@ public final class SkylinersConfig {
             .define("canopyDimmer", true);
         FREIGHTER_SMOOTH_CANOPY = builder
             .comment(
-                "Whether the freighter's canopy is seen smooth from inside: one round cone of tinted glass framed by dark ribs,",
-                "dimmed with the dimmer as smoothly as clear, in place of her glass and its frame stepping round her curve block",
-                "by block. Without it, her canopy is drawn block by block from inside as from outside."
+                "Whether the freighter's canopy is drawn smooth, inside and out: one round dome of tinted glass framed by slim",
+                "gunmetal ribs, dimmed with the dimmer as smoothly as clear, in place of her glass and its struts stepping round",
+                "her curve block by block. Without it, her canopy is built and drawn block by block, struts and all."
             )
             .define("smoothCanopy", true);
         FREIGHTER_CONSOLE = builder

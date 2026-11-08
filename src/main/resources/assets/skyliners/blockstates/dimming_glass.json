@@ -4,25 +4,25 @@
       "model": "skyliners:block/dimming_glass_0"
     },
     "dim=0,lined=true": {
-      "model": "skyliners:block/dimming_glass_0_lined"
+      "model": "skyliners:block/dimming_glass_lined"
     },
     "dim=1,lined=false": {
       "model": "skyliners:block/dimming_glass_1"
     },
     "dim=1,lined=true": {
-      "model": "skyliners:block/dimming_glass_1_lined"
+      "model": "skyliners:block/dimming_glass_lined"
     },
     "dim=2,lined=false": {
       "model": "skyliners:block/dimming_glass_2"
     },
     "dim=2,lined=true": {
-      "model": "skyliners:block/dimming_glass_2_lined"
+      "model": "skyliners:block/dimming_glass_lined"
     },
     "dim=3,lined=false": {
       "model": "skyliners:block/dimming_glass_3"
     },
     "dim=3,lined=true": {
-      "model": "skyliners:block/dimming_glass_3_lined"
+      "model": "skyliners:block/dimming_glass_lined"
     }
   }
 }

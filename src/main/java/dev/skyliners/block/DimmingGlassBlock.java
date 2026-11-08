@@ -11,9 +11,9 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
  * Glass cut to a hull's curve, as the windscreen's is (see {@link CockpitGlassBlock}), that a window dimmer darkens as
  * it does the rocket's oval windows, through the same {@link OvalWindowPieceBlock#DIM}: the freighter's canopy. Each
  * darkness is drawn with denser glass, from the smoked glass at clear to all but black; it darkens the view through
- * it, not the light inside. LINED is whether her canopy's lining draws its inside (see {@link CanopyLiningBlock}): then
- * only its outside is drawn, from outside, and from inside the lining's smooth glass shows instead; a canopy built
- * before there was a lining, or without one, is drawn whole as any glass.
+ * it, not the light inside. LINED is whether her canopy's lining draws her canopy (see {@link CanopyLiningBlock}): then
+ * the block draws nothing, and the lining's smooth dome shows inside and out instead of her blocks stepping round her
+ * curve; a canopy built before there was a lining, or without one, is drawn whole as any glass.
  */
 public class DimmingGlassBlock extends CockpitGlassBlock {
     public static final BooleanProperty LINED = BooleanProperty.create("lined");

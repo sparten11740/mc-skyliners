@@ -2598,18 +2598,20 @@ toward you, and operators can build one with `/skyliners build <pos> <north|east
 built at the same size, whatever the server config's scale: a disc 60 blocks across, a low dome over and under a short
 upright rim, with two flat prongs reaching forward either side of a loading gap, 84 blocks long in all from their tips
 to her stern, standing on five landing legs, a strut down to a square foot plate each from a leg bay set into her belly,
-a block of gunmetal housing ringed in hazard stripes, her belly a couple of blocks off the ground. Her cockpit is a pod out on a tube at her front right edge, its cone glazed between four spokes and a ring
-of struts; a glass dome stands on her top and another under her belly, four dark gunmetal ribs running over each from
+a block of gunmetal housing ringed in hazard stripes, her belly a couple of blocks off the ground. Her cockpit is a pod out on a tube at her front right edge, its nose a
+glazed dome; a glass dome stands on her top and another under her belly, four dark gunmetal ribs running over each from
 her hull to its crown, where her ball turrets will go. Her canopy's
 glass dims: the window dimmer at the pilot's left hand, the rocket's, has four buttons, the oval window in each going
 from clear to dark, and touching one darkens the whole canopy at once, all but black at the darkest: it darkens the view
 through the glass, not the light inside. The server config's `freighter.canopyDimmer` builds her canopy of plain smoked glass, with no dimmer.
-From her seats her canopy is one smooth round cone of tinted glass with a flat glazed front, not glass stepping round
-her curve block by block: her four spokes, the ring half way along and the rims round the cone's base and its front are
-chunky dark gunmetal ribs studded with rivets, a row of small amber lamps glowing round the base, and dimmed it is just
-as smooth, the whole cone darkening evenly to all but black. From outside she looks as ever, her struts her silver
-cover and her glass smoked. The server config's `freighter.smoothCanopy` draws her canopy block by block from inside
-too, as freighters built before it are.
+Inside and out her canopy is one smooth round dome of smoked glass, its shoulder rounding in to a flat window at its
+front, not glass stepping round her curve block by block: six slim dark gunmetal ribs run over it from a deeper rim
+round its base, set into her pod, to a rim round the front window, rivets along them and a row of small amber lamps
+glowing round the base inside. The glass gives back a little of the sky where it faces up and where it is seen edge on,
+and dimmed it is just as smooth, the whole dome darkening evenly to a glossy black. The server config's
+`freighter.smoothCanopy` builds and draws her canopy block by block instead, glass between four spokes and a ring of
+struts of her silver cover. Freighters built with a smooth canopy before its nose was rounded keep their cone, drawn
+smooth inside and out the same way, with its four ribs and its ring.
 
 Before her seats her console curves round in a half circle, from in front of the pilot round ahead of the control head
 to in front of the co-pilot: a worn desk of dark gunmetal, a glowing strip along its front, its top crowded with chunky

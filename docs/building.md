@@ -322,12 +322,15 @@ tilts, turns and moves, and holds each set of thrusters at a signal until it is 
 not set back and forth with every jitter. Her jets fire inside her, so she never runs them at a third of full or more,
 where Create Propulsion sets fire to whatever stands in a thruster's exhaust. Her canopy is `DimmingGlassBlock`, cut to
 her curve as the windscreen is and drawn denser for each darkness, which the rocket's window dimmer sets, as it does her
-oval windows, through the same `OvalWindowPieceBlock.DIM`. Seen from inside her canopy is smooth: its glass, lined
-(`DimmingGlassBlock.LINED`), and the struts between its panes, made her `CANOPY_FRAME`, are drawn from outside only
-(`ShellModel`'s `outside_only`, a whole block telling which way is out from the cut blocks round it), and the unseen
-`CanopyLiningBlock` near the canopy's tip, whose `CanopyLiningBlockEntity` `FreighterLayout.canopyLining()` tells the
-cone a skin's thickness in from her surface and a pane of her glass to follow, has `CanopyLiningRenderer` draw the
-inside as one cone of tinted glass, darkening with that pane, framed by ribs. `FreighterConsole` lays her console round
+oval windows, through the same `OvalWindowPieceBlock.DIM`. Her canopy is smooth inside and out: her nose rounds in over
+a quarter-ellipse shoulder (`FreighterShape.shoulder`), its glass, lined (`DimmingGlassBlock.LINED`), draws nothing,
+`FreighterLayout.fillCanopy()` glazes any open block of her nose with a corner past her surface, so nothing laid inside
+her stands through the glass, and the unseen `CanopyLiningBlock` near the canopy's tip, whose `CanopyLiningBlockEntity`
+`FreighterLayout.canopyLining()` tells the dome a skin's thickness in from her surface, how thick the skin is and a
+pane of her glass to follow, has `CanopyLiningRenderer` draw the whole canopy at her surface: glass whose outside and
+inside are each drawn from their own side only, darkening with that pane, and slim ribs on it. The `CANOPY_FRAME`
+struts of the first smooth canopies, which had a straight cone (a lining with no `Rounded`), draw nothing either.
+`FreighterConsole` lays her console round
 her control head, a `ConsoleBlock` of each `ConsoleKind` (in `console/`) in the block each slice's middle falls in, its
 `ConsoleBlockEntity` told its slice of the ring (`ConsoleShape.Facet`) and the way to her head through a `Fitting`;
 `ConsoleShape` says where a module stands in its block, a slice, a desk of its own, a plate or a wedge, for the server to
