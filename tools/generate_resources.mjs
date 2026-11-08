@@ -984,8 +984,19 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [[`facing=${facing},mount=floor`, { model: `${ID}:block/tiki_torch` }],
       [`facing=${facing},mount=wall`, { model: `${ID}:block/tiki_torch_wall`, ...(y ? { y } : {}) }]])),
   });
+  // The parasol, two and a half blocks across and two high, and the palm, nearly as big, are drawn smaller as items, to
+  // fit their slots in an inventory, in the hand and on the ground: at a block's size they spilled over the slots round
+  // them.
+  const shrunk = (scale, up) => ({ display: {
+    gui: { rotation: [30, 225, 0], translation: [0, -up, 0], scale: [scale, scale, scale] },
+    ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [scale / 2, scale / 2, scale / 2] },
+    fixed: { rotation: [0, 0, 0], translation: [0, -up, 0], scale: [scale, scale, scale] },
+    thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [scale * 0.6, scale * 0.6, scale * 0.6] },
+    firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [scale / 2, scale / 2, scale / 2] },
+  } });
+  const asItems = { parasol: shrunk(0.3, 2.5), potted_palm: shrunk(0.4, 2) };
   for (const name of ["potted_palm", "parasol", "sun_lounger", "tiki_torch"]) {
-    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}`, ...asItems[name] });
     dropsItself(name);
     cubes[name] = null;
   }
