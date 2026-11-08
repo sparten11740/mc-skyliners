@@ -1153,6 +1153,33 @@
       }
     ]
   },
+  "bowling_roll": {
+    "subtitle": "subtitles.skyliners.bowling_roll",
+    "sounds": [
+      {
+        "name": "skyliners:bowling_roll",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "bowling_pin_clonk": {
+    "subtitle": "subtitles.skyliners.bowling_pin_clonk",
+    "sounds": [
+      {
+        "name": "skyliners:bowling_pin_clonk",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "bowling_strike": {
+    "subtitle": "subtitles.skyliners.bowling_strike",
+    "sounds": [
+      {
+        "name": "skyliners:bowling_strike",
+        "attenuation_distance": 40
+      }
+    ]
+  },
   "freighter_computer_jump_charged": {
     "subtitle": "subtitles.skyliners.freighter_computer_jump_charged",
     "sounds": [

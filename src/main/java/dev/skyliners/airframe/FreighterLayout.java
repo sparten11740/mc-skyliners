@@ -495,6 +495,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterZeroGravity.build(layout, layout.deck, layout.side, layout.front);
         FreighterPortholes.build(layout, layout.deck, layout.scale);
         FreighterLookout.build(layout, layout.deck, layout.jets[PORT_NOSE_JET]);
+        FreighterBowling.build(layout, layout.deck, layout.jets[STARBOARD_NOSE_JET]);
         layout.lights();
         if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
             DarkCorners.light(layout, LightTone.WARM, layout::leastLight);

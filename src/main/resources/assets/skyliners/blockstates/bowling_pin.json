@@ -1,0 +1,184 @@
+{
+  "variants": {
+    "facing=north,on_lane=false,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing"
+    },
+    "facing=north,on_lane=true,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing_on_lane"
+    },
+    "facing=north,on_lane=false,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted"
+    },
+    "facing=north,on_lane=true,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted_on_lane"
+    },
+    "facing=north,on_lane=false,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling"
+    },
+    "facing=north,on_lane=true,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling_on_lane"
+    },
+    "facing=north,on_lane=false,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted"
+    },
+    "facing=north,on_lane=true,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted_on_lane"
+    },
+    "facing=north,on_lane=false,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen"
+    },
+    "facing=north,on_lane=true,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen_on_lane"
+    },
+    "facing=north,on_lane=false,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted"
+    },
+    "facing=north,on_lane=true,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted_on_lane"
+    },
+    "facing=east,on_lane=false,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing",
+      "y": 90
+    },
+    "facing=east,on_lane=true,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing_on_lane",
+      "y": 90
+    },
+    "facing=east,on_lane=false,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted",
+      "y": 90
+    },
+    "facing=east,on_lane=true,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted_on_lane",
+      "y": 90
+    },
+    "facing=east,on_lane=false,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling",
+      "y": 90
+    },
+    "facing=east,on_lane=true,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling_on_lane",
+      "y": 90
+    },
+    "facing=east,on_lane=false,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted",
+      "y": 90
+    },
+    "facing=east,on_lane=true,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted_on_lane",
+      "y": 90
+    },
+    "facing=east,on_lane=false,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen",
+      "y": 90
+    },
+    "facing=east,on_lane=true,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen_on_lane",
+      "y": 90
+    },
+    "facing=east,on_lane=false,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted",
+      "y": 90
+    },
+    "facing=east,on_lane=true,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted_on_lane",
+      "y": 90
+    },
+    "facing=south,on_lane=false,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing",
+      "y": 180
+    },
+    "facing=south,on_lane=true,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing_on_lane",
+      "y": 180
+    },
+    "facing=south,on_lane=false,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted",
+      "y": 180
+    },
+    "facing=south,on_lane=true,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted_on_lane",
+      "y": 180
+    },
+    "facing=south,on_lane=false,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling",
+      "y": 180
+    },
+    "facing=south,on_lane=true,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling_on_lane",
+      "y": 180
+    },
+    "facing=south,on_lane=false,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted",
+      "y": 180
+    },
+    "facing=south,on_lane=true,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted_on_lane",
+      "y": 180
+    },
+    "facing=south,on_lane=false,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen",
+      "y": 180
+    },
+    "facing=south,on_lane=true,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen_on_lane",
+      "y": 180
+    },
+    "facing=south,on_lane=false,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted",
+      "y": 180
+    },
+    "facing=south,on_lane=true,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted_on_lane",
+      "y": 180
+    },
+    "facing=west,on_lane=false,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing",
+      "y": 270
+    },
+    "facing=west,on_lane=true,pose=standing,shifted=false": {
+      "model": "skyliners:block/bowling_pin_standing_on_lane",
+      "y": 270
+    },
+    "facing=west,on_lane=false,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted",
+      "y": 270
+    },
+    "facing=west,on_lane=true,pose=standing,shifted=true": {
+      "model": "skyliners:block/bowling_pin_standing_shifted_on_lane",
+      "y": 270
+    },
+    "facing=west,on_lane=false,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling",
+      "y": 270
+    },
+    "facing=west,on_lane=true,pose=wobbling,shifted=false": {
+      "model": "skyliners:block/bowling_pin_wobbling_on_lane",
+      "y": 270
+    },
+    "facing=west,on_lane=false,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted",
+      "y": 270
+    },
+    "facing=west,on_lane=true,pose=wobbling,shifted=true": {
+      "model": "skyliners:block/bowling_pin_wobbling_shifted_on_lane",
+      "y": 270
+    },
+    "facing=west,on_lane=false,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen",
+      "y": 270
+    },
+    "facing=west,on_lane=true,pose=fallen,shifted=false": {
+      "model": "skyliners:block/bowling_pin_fallen_on_lane",
+      "y": 270
+    },
+    "facing=west,on_lane=false,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted",
+      "y": 270
+    },
+    "facing=west,on_lane=true,pose=fallen,shifted=true": {
+      "model": "skyliners:block/bowling_pin_fallen_shifted_on_lane",
+      "y": 270
+    }
+  }
+}

@@ -23,7 +23,7 @@ import dev.skyliners.client.AtisScreenRenderer;
 import dev.skyliners.client.AutopilotRenderer;
 import dev.skyliners.client.AutopilotScreenRenderer;
 import dev.skyliners.client.BandstandRenderer;
-import dev.skyliners.client.BasketballRenderer;
+import dev.skyliners.client.BallRenderer;
 import dev.skyliners.client.BirthdayBanner;
 import dev.skyliners.client.BlastFlash;
 import dev.skyliners.client.BlastPuffParticle;
@@ -524,7 +524,8 @@ public final class SkylinersClient {
         event.registerBlockEntityRenderer(SkylinersRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
         event.registerBlockEntityRenderer(SkylinersRegistry.CANOPY_LINING_ENTITY.get(), context -> new CanopyLiningRenderer());
         event.registerBlockEntityRenderer(SkylinersRegistry.CONSOLE_ENTITY.get(), context -> new ConsoleRenderer());
-        event.registerEntityRenderer(SkylinersRegistry.BASKETBALL.get(), BasketballRenderer::new);
+        event.registerEntityRenderer(SkylinersRegistry.BASKETBALL.get(), context -> new BallRenderer<>(context, BallRenderer.BASKETBALL));
+        event.registerEntityRenderer(SkylinersRegistry.BOWLING_BALL.get(), context -> new BallRenderer<>(context, BallRenderer.BOWLING_BALL));
         event.registerEntityRenderer(SkylinersRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);
         event.registerEntityRenderer(SkylinersRegistry.LIFT_CAR.get(), LiftCarRenderer::new);

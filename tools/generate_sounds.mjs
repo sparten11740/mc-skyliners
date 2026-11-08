@@ -6324,6 +6324,65 @@ const ZERO_GRAVITY = {
   writeSound("zero_gravity_bump", bump.map((sample, i) => sample + pad[i]), 0.6);
 }
 
+// The freighter's bowling lane (see FreighterBowling), each from a random sequence of its own.
+// A ball rolling away down the lane: a low wooden rumble, noise deep down under a hum that wavers as the ball turns,
+// the faint tick of the boards' seams passing under it, swelling in and dying away.
+{
+  const noise = ownRandom(0x626f776c);
+  const seconds = 1.6;
+  const raw = new Float64Array(Math.round(seconds * RATE));
+  raw.forEach((_, i) => (raw[i] = noise() * 2 - 1));
+  const rumble = lowPassed(lowPassed(raw, 160), 160);
+  const samples = new Float64Array(raw.length);
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (62 + 6 * Math.sin(2 * Math.PI * 3 * t))) / RATE;
+    const swell = Math.min(1, t / 0.08) * Math.min(1, (seconds - t) / 0.6);
+    samples[i] = swell * (4 * rumble[i] + 0.35 * Math.sin(phase) * (0.8 + 0.2 * Math.sin(2 * Math.PI * 5 * t)));
+  }
+  for (let t = 0.05; t < seconds - 0.3; t += 0.09) {
+    click(samples, t, 900, 0.04, noise);
+  }
+  writeSound("bowling_roll", samples, 0.8);
+}
+// A pin knocked over: a hollow wooden clonk, two knocks of its maple ringing together, and the softer tap of it hitting
+// the deck a moment later.
+{
+  const noise = ownRandom(0x70696e73);
+  const samples = new Float64Array(Math.round(0.4 * RATE));
+  const knock = (start, gain) => {
+    const burst = new Float64Array(Math.round(0.2 * RATE));
+    for (let i = 0; i < Math.round(0.003 * RATE); i++) {
+      burst[i] = (noise() * 2 - 1) * (1 - i / (0.003 * RATE));
+    }
+    const wood = resonance(burst, 720, 9).map((value, i) => value + 0.6 * resonance(burst, 1180, 8)[i]);
+    const begin = Math.round(start * RATE);
+    for (let i = 0; i < wood.length && begin + i < samples.length; i++) {
+      samples[begin + i] += gain * wood[i];
+    }
+  };
+  knock(0, 1);
+  knock(0.11, 0.35);
+  writeSound("bowling_pin_clonk", samples, 0.8);
+}
+// A strike: a bright arcade fanfare, a quick run up a major chord and the chord held, shimmering.
+{
+  const samples = new Float64Array(Math.round(1.6 * RATE));
+  const RUN = ["C5", "E5", "G5", "C6"];
+  RUN.forEach((note, k) => bell(samples, k * 0.08, noteHertz(noteNumber(note)), 0.12));
+  for (let i = Math.round(0.36 * RATE); i < samples.length; i++) {
+    const t = i / RATE - 0.36;
+    const envelope = Math.min(1, t * 60) * Math.exp(-t / 0.5);
+    for (const note of RUN) {
+      const hertz = noteHertz(noteNumber(note)) * (1 + 0.004 * Math.sin(2 * Math.PI * 6 * t));
+      const square = Math.sign(Math.sin(2 * Math.PI * hertz * t));
+      samples[i] += envelope * (0.18 * square + 0.25 * Math.sin(2 * Math.PI * hertz * t));
+    }
+  }
+  writeSound("bowling_strike", lowPassed(samples, 5000), 0.75);
+}
+
 // The carrier clips: someone pressing the button and saying nothing, and a pilot's two quick clicks.
 receive("atc_static_open", [press(new Float64Array(Math.round(0.6 * RATE)), RADIO.speakers.nobody, RADIO.timing.press)], RADIO.gap,
   RADIO.carrierLevel, ATC_CARRIER_LONGEST);

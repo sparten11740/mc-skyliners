@@ -9899,4 +9899,44 @@ function stickerMapTextures() {
   }, 0);
 }
 stickerMapTextures();
+
+// The freighter's bowling lane (see FreighterBowling). The lane's boards: polished maple strips two pixels wide running
+// along it, by turns a shade lighter and darker, a thin seam between each. The ball return's casing: deep navy, a
+// chrome band round its foot and a neon strip across it, magenta over teal. The balls on it, marbled each its own
+// colour: nebula purple, Mars red, Neptune teal. The ball in the hand: deep blue swirled with nebula purple, a gleam at
+// its top left, three finger holes.
+function bowlingTextures() {
+  const MAPLE = [0xd8, 0xb0, 0x78];
+  const MAPLE_LIGHT = [0xe4, 0xc2, 0x8c];
+  const MAPLE_SEAM = [0xa8, 0x80, 0x50];
+  texture(blockOutput, "bowling_lane", (x) => {
+    if (x % 4 === 3) return MAPLE_SEAM;
+    return (x >> 2) % 2 === 0 ? MAPLE_LIGHT : MAPLE;
+  }, 3);
+  const NAVY = [0x16, 0x1c, 0x34];
+  texture(blockOutput, "ball_return", (x, y) => {
+    if (y >= 14) return y === 14 ? CHROME : STEEL;
+    if (y === 6) return [0xff, 0x4c, 0xc8];
+    if (y === 7) return [0x40, 0xe8, 0xe0];
+    return (x + y) % 8 === 0 ? mixColour(NAVY, CHROME, 0.15) : NAVY;
+  }, 2);
+  const marbled = (dark, light) => (x, y) => {
+    const swirl = Math.sin(x * 0.9 + Math.sin(y * 0.7) * 2.2) + Math.sin(y * 0.5 - x * 0.3);
+    return mixColour(dark, light, Math.max(0, Math.min(1, (swirl + 0.6) / 2.4))).map(Math.round);
+  };
+  texture(blockOutput, "bowling_ball_purple", marbled([0x24, 0x10, 0x48], [0x9a, 0x50, 0xe0]), 3);
+  texture(blockOutput, "bowling_ball_red", marbled([0x5a, 0x10, 0x10], [0xe0, 0x58, 0x30]), 3);
+  texture(blockOutput, "bowling_ball_teal", marbled([0x0c, 0x30, 0x40], [0x40, 0xc8, 0xc8]), 3);
+  const nebula = marbled([0x14, 0x1c, 0x5a], [0x9a, 0x50, 0xe0]);
+  const HOLES = [[6, 5], [9, 5], [7.5, 8.5]];
+  texture(itemOutput, "bowling_ball", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r > 7) return CLEAR;
+    if (r > 6.2) return [0x0a, 0x0c, 0x24];
+    if (HOLES.some(([hx, hy]) => Math.hypot(x - hx, y - hy) < 0.9)) return [0x06, 0x06, 0x10];
+    if (Math.hypot(x - 4.5, y - 4) < 1.2) return [0xd8, 0xd0, 0xff];
+    return mixColour(nebula(x, y), [0x06, 0x08, 0x20], Math.max(0, (x + y - 15) / 18)).map(Math.round);
+  }, 2);
+}
+bowlingTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);

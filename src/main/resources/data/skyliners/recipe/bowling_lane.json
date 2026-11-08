@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:birch_slab"
+    }
+  },
+  "result": {
+    "id": "skyliners:bowling_lane",
+    "count": 6
+  }
+}

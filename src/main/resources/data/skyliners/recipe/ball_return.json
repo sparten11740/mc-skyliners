@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "III",
+    "IBI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "B": {
+      "item": "skyliners:bowling_ball"
+    }
+  },
+  "result": {
+    "id": "skyliners:ball_return",
+    "count": 1
+  }
+}

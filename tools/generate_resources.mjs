@@ -2613,6 +2613,11 @@ const FREIGHTER_SOUNDS = {
   gravity_switch_on: { subtitle: "Gravity switches on", heard: 24 },
   zero_gravity_hum: { subtitle: "Weightless air hums", heard: 24 },
   zero_gravity_bump: { subtitle: "Someone bumps off a wall" },
+  // Her bowling lane: a ball rolling away down it or up the ball return's track, a pin knocked over, and every pin of a
+  // rack down, the strike's fanfare heard down her prong and into her cargo hold.
+  bowling_roll: { subtitle: "Bowling ball rumbles", heard: 24 },
+  bowling_pin_clonk: { subtitle: "Bowling pin clatters", heard: 24 },
+  bowling_strike: { subtitle: "Strike: fanfare", heard: 40 },
   // Her computer's voice, each line subtitled with what it says, her own words for the flight deck's announcements
   // with their gist.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
@@ -4905,6 +4910,99 @@ function smugglerHoldLang() {
   return {
     "block.skyliners.secret_panel": "Secret Panel",
     "block.skyliners.loose_rivet": "Loose Rivet",
+  };
+}
+// The freighter's bowling lane (see FreighterBowling). A pin, drawn facing north with its bowler at its north side:
+// white, turned from boxes, foot, belly, shoulder, neck and head, two red stripes round its neck; upright, wobbling
+// tipped away from the bowler on its foot, or lying fallen away from them; on its block's middle or shifted half a
+// block to the bowler's right, to the west; and each on the floor or on a square of the lane's boards, raised by them.
+// The lane's boards: maple a pixel thick, running north and south. The ball return, its front to the north: on a floor,
+// a navy casing under a domed hood, chrome rails across its front with three marbled balls on them; on a wall to its
+// south, a chrome shelf on a back plate with the three balls on it. The ball in the hand: a flat icon.
+{
+  const pinParts = [
+    [[6.5, 0, 6.5], [9.5, 1, 9.5], "#body"], [[6, 1, 6], [10, 5, 10], "#body"], [[6.5, 5, 6.5], [9.5, 7, 9.5], "#body"],
+    [[7, 7, 7], [9, 8, 9], "#stripe"], [[7.25, 8, 7.25], [8.75, 9, 8.75], "#body"], [[7.25, 9, 7.25], [8.75, 9.75, 8.75], "#stripe"],
+    [[6.75, 9.75, 6.75], [9.25, 13, 9.25], "#body"],
+  ];
+  // Lying, its foot at the block's middle and its head out to the south, resting on its belly's side.
+  const BELLY_RADIUS = 2;
+  const FOOT_AT = 3;
+  const lying = ([[x0, y0, z0], [x1, y1, z1], texture]) =>
+    [[x0, z0 - 8 + BELLY_RADIUS, y0 + FOOT_AT], [x1, z1 - 8 + BELLY_RADIUS, y1 + FOOT_AT], texture];
+  const moved = (dx, dy) => ([[x0, y0, z0], [x1, y1, z1], texture]) => [[x0 + dx, y0 + dy, z0], [x1 + dx, y1 + dy, z1], texture];
+  // Tipped away from the bowler, toward the south, on the far edge of its foot.
+  const WOBBLE = { axis: "x", angle: 22.5 };
+  const FOOT_EDGE = 9.5;
+  const pinTextures = { body: "minecraft:block/white_concrete", stripe: "minecraft:block/red_concrete", lane: `${ID}:block/bowling_lane`,
+    particle: "minecraft:block/white_concrete" };
+  for (const pose of ["standing", "wobbling", "fallen"]) {
+    for (const shifted of [false, true]) {
+      for (const onLane of [false, true]) {
+        const parts = (pose === "fallen" ? pinParts.map(lying) : pinParts).map(moved(shifted ? -8 : 0, onLane ? 1 : 0));
+        const model = boxes(pinTextures, [...(onLane ? [[[0, 0, 0], [16, 1, 16], "#lane"]] : []), ...parts]);
+        if (pose === "wobbling") {
+          model.elements.slice(onLane ? 1 : 0).forEach((element) => {
+            element.rotation = { ...WOBBLE, origin: [shifted ? 0 : 8, onLane ? 1 : 0, FOOT_EDGE] };
+          });
+        }
+        model.ambientocclusion = false;
+        write(`assets/${ID}/models/block/bowling_pin_${pose}${shifted ? "_shifted" : ""}${onLane ? "_on_lane" : ""}.json`, model);
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/bowling_pin.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["standing", "wobbling", "fallen"].flatMap((pose) =>
+      [false, true].flatMap((shifted) => [false, true].map((onLane) => [`facing=${facing},on_lane=${onLane},pose=${pose},shifted=${shifted}`,
+        { model: `${ID}:block/bowling_pin_${pose}${shifted ? "_shifted" : ""}${onLane ? "_on_lane" : ""}`, ...(y ? { y } : {}) }]))))),
+  });
+  write(`assets/${ID}/models/item/bowling_pin.json`, { parent: `${ID}:block/bowling_pin_standing` });
+
+  write(`assets/${ID}/models/block/bowling_lane.json`, boxes({ lane: `${ID}:block/bowling_lane`, particle: `${ID}:block/bowling_lane` },
+    [[[0, 0, 0], [16, 1, 16], "#lane"]]));
+  facing("bowling_lane");
+  write(`assets/${ID}/models/item/bowling_lane.json`, { parent: `${ID}:block/bowling_lane` });
+
+  // A ball on the return, round enough from two crossed boxes, its middle at the point given.
+  const ball = ([x, y, z], texture) => [[[x - 2, y - 1.5, z - 1.5], [x + 2, y + 1.5, z + 1.5], texture], [[x - 1.5, y - 2, z - 2], [x + 1.5, y + 2, z + 2], texture]];
+  const BALLS = [[4, "#purple"], [8, "#red"], [12, "#teal"]];
+  const returnTextures = { casing: `${ID}:block/ball_return`, chrome: "minecraft:block/iron_block", purple: `${ID}:block/bowling_ball_purple`,
+    red: `${ID}:block/bowling_ball_red`, teal: `${ID}:block/bowling_ball_teal`, particle: `${ID}:block/ball_return` };
+  write(`assets/${ID}/models/block/ball_return.json`, boxes(returnTextures, [
+    [[1, 0, 2], [15, 8, 14], "#casing"], [[2, 8, 7], [14, 12, 14], "#casing"], [[3, 12, 8], [13, 13, 13], "#casing"],
+    [[1, 8, 2.5], [15, 9, 3.5], "#chrome"], [[1, 8, 5.5], [15, 9, 6.5], "#chrome"],
+    ...BALLS.flatMap(([x, texture]) => ball([x, 11, 4.5], texture)),
+  ]));
+  write(`assets/${ID}/models/block/ball_return_wall.json`, boxes(returnTextures, [
+    [[1, 3, 15], [15, 10, 16], "#casing"], [[1, 3, 10], [15, 4, 15], "#chrome"], [[1, 4, 10], [15, 5, 11], "#chrome"],
+    ...BALLS.flatMap(([x, texture]) => ball([x, 6, 13], texture)),
+  ]));
+  write(`assets/${ID}/blockstates/ball_return.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [["floor", "ball_return"], ["wall", "ball_return_wall"]].map(([mount, model]) =>
+      [`facing=${facing},mount=${mount}`, { model: `${ID}:block/${model}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/ball_return.json`, { parent: `${ID}:block/ball_return` });
+  write(`assets/${ID}/models/item/bowling_ball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/bowling_ball` } });
+  for (const name of ["bowling_pin", "bowling_lane", "ball_return"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// A pin from birch planks and red dye; a ball from deepslate and amethyst; maple boards from birch slabs; a ball return
+// from iron round a ball.
+function bowlingRecipes() {
+  shaped("bowling_pin", [" P ", " D ", " P "], { P: "minecraft:birch_planks", D: "minecraft:red_dye" }, 3);
+  shaped("bowling_ball", [" D ", "DAD", " D "], { D: "minecraft:polished_deepslate", A: "minecraft:amethyst_shard" }, 1);
+  shaped("bowling_lane", ["SSS"], { S: "minecraft:birch_slab" }, 6);
+  shaped("ball_return", ["III", "IBI"], { I: "minecraft:iron_ingot", B: `${ID}:bowling_ball` }, 1);
+}
+function bowlingLang() {
+  return {
+    "block.skyliners.bowling_pin": "Bowling Pin",
+    "block.skyliners.bowling_lane": "Bowling Lane",
+    "block.skyliners.ball_return": "Ball Return",
+    "item.skyliners.bowling_ball": "Bowling Ball",
+    "entity.skyliners.bowling_ball": "Bowling Ball",
   };
 }
 // The ball pit: a plain cube of balls, its faces shown inside it too, so someone sunk in it sees balls all round. It
@@ -11346,6 +11444,8 @@ FITTINGS.push("sticker_map");
 // Her running repairs' fault spots and board are fitted round her rooms, and set up by hand anywhere.
 FITTINGS.push("fault_panel", "leaky_pipe", "repair_board");
 FITTINGS.push("gravity_switch");
+// Her bowling lane's pins, boards and ball return are fitted down her starboard prong, and set up by hand anywhere.
+FITTINGS.push("bowling_pin", "bowling_lane", "ball_return");
 // Her console's modules are fitted into her cockpit, and set up by hand anywhere.
 FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
@@ -11429,7 +11529,7 @@ write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight); the
 // rocket's rover, stowed in its cradle (see Rover); and her lab's tardigrade (see Tardigrade).
 write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`, `${ID}:lift_car`,
-  `${ID}:rover`, `${ID}:tardigrade`, `${ID}:spookie`]));
+  `${ID}:rover`, `${ID}:tardigrade`, `${ID}:spookie`, `${ID}:bowling_ball`]));
 // A lift's car lives among its ship's blocks and goes with them: taken away, it goes too.
 write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`, `${ID}:tardigrade`, `${ID}:spookie`]));
 // What the sky crane's hook lifts (see CraneHook): animals and vehicles, never players, villagers or monsters; and in its
@@ -11631,6 +11731,7 @@ shaped("cabin_arch", ["PDP", "P P"], { P: `${ID}:cabin_partition`, D: "minecraft
 shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "minecraft:glowstone_dust" }, 2);
 holdAndTailRecipes();
 smugglerHoldRecipes();
+bowlingRecipes();
 // The vacuum toilet: a bucket for its bowl in iron.
 shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecraft:bucket" }, 1);
 flightDeckRecipes();
@@ -12238,6 +12339,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cabinDecorLang,
   ...holdAndTailLang(),
   ...smugglerHoldLang(),
+  ...bowlingLang(),
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
   ...cockpitDoorLang(),

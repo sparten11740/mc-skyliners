@@ -671,6 +671,18 @@ const LEGS_UP_TICKS = 300;
 const LEGS_LOOK_EVERY = 5;
 const LEGS_TOUCHING = 2.5;
 const STEPS = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
+// Each way's next a quarter turn anticlockwise, seen from above: a pin's right as its bowler sees it.
+const COUNTER_CLOCKWISE = { north: "west", west: "south", south: "east", east: "north" };
+// A freighter's bowling lane: how many pins its rack has; how far back from the head pin the ball is bowled, in
+// blocks; how long the ball is given to roll into the rack and scatter it, well short of the pinsetter's first pin
+// standing up again, and how many pins it must have knocked down by then at least, the head pin and the one its fall
+// most likely topples; and how long the pinsetter is given to stand them all up again and the ball to go back down the
+// return, in ticks.
+const BOWLING_PINS = 10;
+const BOWL_FROM = 14;
+const BOWL_REACHES_TICKS = 50;
+const BOWLING_LEAST_DOWN = 2;
+const PINSETTER_TICKS = 160;
 // A rocket's self-destruct button: how long she is given to assemble and arm, and for a blast to be heard, in ticks;
 // how long to leave it armed before pressing it again, longer than it waits to take a press, in ticks; how far above
 // her resting place she is flying as it is pressed, in blocks; and how long whoever bailed out is given to float down,
@@ -3642,6 +3654,89 @@ function checkBeachOnWalls() {
   BEACH_ON_WALLS.forEach((id, i) => putUpEveryWay(id, x0 + i * STAND_APART, z0, ["floor", "wall"]));
 }
 
+// A freighter's bowling lane down her starboard prong, played as a player would: a ball taken from the ball return at
+// its head, bowled from the middle of the lane straight at the rack of ten, knocks pins down with a clatter, the head
+// pin among them; the ball goes back down the return by itself; and a few seconds later the pinsetter has stood every
+// pin up again.
+function checkFreighterBowling() {
+  ship("freighter");
+  const [ballReturn] = must("find skyliners:ball_return 128 1").rows;
+  const pinsAt = () => must(`find skyliners:bowling_pin 128 ${BOWLING_PINS + 5} side=server`).rows;
+  const pins = pinsAt();
+  expect(Boolean(ballReturn) && pins.length === BOWLING_PINS, "freighter: her starboard prong has a bowling lane, a rack of ten pins and a ball return",
+    `${pins.length} pins, ${ballReturn ? "a" : "no"} ball return`);
+  if (!ballReturn || pins.length === 0) {
+    return;
+  }
+  const [rx, ry, rz] = ballReturn.at_abs;
+  const near = (row) => Math.hypot(row.at_abs[0] - rx, row.at_abs[2] - rz);
+  const head = pins.reduce((nearest, row) => (near(row) < near(nearest) ? row : nearest));
+  const { facing, shifted } = must(`block ${head.at_abs.join(",")} side=server`).props;
+  const [tx, tz] = STEPS[facing];
+  const [sx, sz] = STEPS[COUNTER_CLOCKWISE[facing]];
+  const shift = shifted === "true" ? 0.5 : 0;
+  const [hx, hz] = [head.at_abs[0] + 0.5 + sx * shift, head.at_abs[2] + 0.5 + sz * shift];
+  const [fx, fz] = STEPS[must(`block ${rx},${ry},${rz}`).props.facing];
+  emptyHands();
+  must(`server tp @p ${rx + 0.5 + fx * 2} ${ry + 0.1} ${rz + 0.5 + fz * 2}; wait 10t`);
+  const took = now();
+  must(`use ${rx},${ry},${rz}; wait 5t`);
+  const held = must("inv").rows.some((row) => row.item === "skyliners:bowling_ball");
+  expect(held && Boolean(heard("skyliners:bowling_roll", took, LOOK_EVERY)), "freighter: used, her ball return hands over a bowling ball with a rumble");
+  const yaw = Math.round((Math.atan2(tx, -tz) * 180) / Math.PI);
+  // Written with decimals: a whole number in a command is taken as the middle of its block, half a block off the line.
+  must(`server tp @p ${(hx + tx * BOWL_FROM).toFixed(2)} ${ry + 0.1} ${(hz + tz * BOWL_FROM).toFixed(2)} ${yaw} 0; wait 10t; select 0`);
+  const corners = [0, 2].map((axis) => pins.map((row) => row.at_abs[axis]));
+  const rack = () => read([Math.min(...corners[0]), ry, Math.min(...corners[1])], [Math.max(...corners[0]), ry, Math.max(...corners[1])]);
+  const fallen = (states) => pins.filter((row) => (propsOf(states.get(row.at_abs.join(",")) ?? "").pose ?? "standing") !== "standing");
+  const bowled = now();
+  must(`use; wait ${BOWL_REACHES_TICKS}t`);
+  const down = fallen(rack());
+  const clatter = played("skyliners:bowling_pin_clonk", bowled).length > 0;
+  const headDown = down.some((row) => row.at_abs.join(",") === head.at_abs.join(","));
+  expect(Boolean(clatter) && headDown && down.length >= BOWLING_LEAST_DOWN, "freighter: a ball bowled down the middle of her lane knocks pins down with a clatter, the head pin among them",
+    `${down.length} down, head pin ${headDown ? "down" : "standing"}, ${clatter ? "clattered" : "silent"}`);
+  must(`wait ${PINSETTER_TICKS}t`);
+  const standing = BOWLING_PINS - fallen(rack()).length;
+  const gone = must("server execute unless entity @e[type=skyliners:bowling_ball]").result === 1;
+  expect(standing === BOWLING_PINS && gone, "freighter: the ball goes back down the return, and the pinsetter stands every pin up again",
+    `${standing} of ${BOWLING_PINS} standing, the ball ${gone ? "gone back" : "still out"}`);
+}
+
+// A bowling pin, a lane's boards and a ball return put up by hand away from any ship: the pin stands on a floor and is
+// refused on a wall, where a pin makes no sense; set down on the boards it stands on a square of them; and the ball
+// return takes a shape of its own on a floor and on a wall.
+function checkBowlingByHand() {
+  const [x0, z0] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  must(`server tp @p ${x0} ${ground} ${z0 - 3}; wait ${CHUNKS_TICKS}t`);
+  must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x0 + 2 * STAND_APART} ${ground + STAND_HIGH} ${z0 + 3} stone`);
+  putUpEveryWay("ball_return", x0, z0, ["floor", "wall"]);
+  const x = x0 + STAND_APART;
+  emptyHands();
+  must(`server give @p skyliners:bowling_pin 3; server give @p skyliners:bowling_lane 1; wait 5t; select 0`);
+  must(`server tp @p ${x + 0.5} ${ground} ${z0 - 5.5} 0 20; wait 10t`);
+  send(`place skyliners:bowling_pin ${x},${ground},${z0 - 3}`);
+  send(`place skyliners:bowling_pin ${x},${ground + 2},${z0 + 2}`);
+  const floor = must(`block ${x},${ground},${z0 - 3} side=server`);
+  const wall = must(`block ${x},${ground + 2},${z0 + 2} side=server`).id ?? "";
+  expect(floor.id === "skyliners:bowling_pin" && floor.props?.pose === "standing" && !wall.includes("bowling_pin"),
+    "bowling pin: put up by hand, it stands on a floor and is refused on a wall", `floor ${floor.id}, wall ${wall}`);
+  survival();
+  must(`select 8; face ${x},${ground},${z0 - 3}; key press key.attack 1t; wait 5t`);
+  creative();
+  const struck = must(`block ${x},${ground},${z0 - 3} side=server`).props?.pose;
+  must(`use ${x},${ground},${z0 - 3}; wait 5t`);
+  const used = must(`block ${x},${ground},${z0 - 3} side=server`).props?.pose;
+  expect(struck === "fallen" && used === "standing", "bowling pin: struck, it goes over, and used fallen, it stands up again", `struck ${struck}, used ${used}`);
+  must("select 1");
+  send(`place skyliners:bowling_lane ${x + 1},${ground},${z0 - 3}`);
+  must(`select 0; use ${x + 1},${ground},${z0 - 3}; wait 5t`);
+  const onLane = must(`block ${x + 1},${ground},${z0 - 3} side=server`);
+  expect(onLane.id === "skyliners:bowling_pin" && onLane.props?.on_lane === "true", "bowling pin: set down on a lane's boards, it stands on a square of them",
+    `${onLane.id} on_lane=${onLane.props?.on_lane}`);
+}
+
 // A freighter lifting off takes all of her outside along: no piece of it is left on the ground where she stood.
 function checkFreighterExteriorLiftOff() {
   layDown("freighter");
@@ -4350,6 +4445,8 @@ const CHECKS = {
   "secret-panel": { run: checkSecretPanelByHand, about: "a secret panel set into a wall by hand opens and shuts at its loose rivet, and a rivet goes on a wall, a floor and a ceiling" },
   "freighter-lookout": { run: checkFreighterLookout, about: "a freighter's port prong has seats by its portholes and a nook at its tip facing a screen" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
+  "freighter-bowling": { run: checkFreighterBowling, about: "a freighter's bowling lane hands over a ball that knocks pins down with a clatter, goes back down the return, and the pins stand up again" },
+  "bowling-by-hand": { run: checkBowlingByHand, about: "a bowling pin stands on a floor and on a lane's boards but not on a wall, and a ball return goes up on a floor and a wall" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass, her palms in the open" },
   "freighter-exterior": { run: checkFreighterExterior, about: "a freighter is built in her own hull with her outside, and each outside fitting goes up on a floor, a wall or a ceiling" },
   "freighter-exterior-flush": { run: checkFreighterExteriorFlush, about: "every piece of a freighter's outside meets her hull face to face, no gap under it" },

@@ -106,6 +106,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_STICKER_MAP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ZERO_GRAVITY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_REPAIRS;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_BOWLING;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -923,6 +924,14 @@ public final class SkylinersConfig {
                 "she has no fault spots or board, and no fault spot ever goes off, not even on redstone."
             )
             .define("repairs", true);
+        FREIGHTER_BOWLING = builder
+            .comment(
+                "Whether the tunnel down the freighter's starboard prong is a bowling lane: maple boards down it to a rack of ten",
+                "pins at its end, and a ball return at its head that hands over a ball to bowl. A ball knocks the pins down with a",
+                "clatter, all ten a strike with a fanfare, and the pinsetter stands them up again a few seconds later. Without",
+                "it, that tunnel is bare. Freighters already built keep theirs."
+            )
+            .define("bowling", true);
         builder.pop();
 
         SPEC = builder.build();

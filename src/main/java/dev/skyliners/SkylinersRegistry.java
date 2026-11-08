@@ -339,6 +339,11 @@ import dev.skyliners.block.NeonSignBlock;
 import dev.skyliners.block.TelegraphBlock;
 import dev.skyliners.block.TrimWinchBlock;
 import dev.skyliners.block.TrimWinchBlockEntity;
+import dev.skyliners.bowling.BallReturnBlock;
+import dev.skyliners.bowling.BowlingBall;
+import dev.skyliners.bowling.BowlingBallItem;
+import dev.skyliners.bowling.BowlingLaneBlock;
+import dev.skyliners.bowling.BowlingPinBlock;
 import dev.skyliners.cabin.Passengers;
 import dev.skyliners.christening.ChristeningBottleItem;
 import dev.skyliners.club.BandstandBlock;
@@ -1741,6 +1746,34 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GravitySwitchBlockEntity>> GRAVITY_SWITCH_ENTITY =
         BLOCK_ENTITIES.register("gravity_switch", () -> BlockEntityType.Builder.of(GravitySwitchBlockEntity::new, GRAVITY_SWITCH.get()).build(null));
     public static final DeferredItem<BlockItem> GRAVITY_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(GRAVITY_SWITCH);
+    /**
+     * The freighter's bowling lane down her starboard prong (see {@code airframe.FreighterBowling}): its pins, which a
+     * rolling ball knocks over, its maple boards, and the ball return at its head handing over balls.
+     */
+    public static final DeferredBlock<BowlingPinBlock> BOWLING_PIN = BLOCKS.registerBlock(
+        "bowling_pin", BowlingPinBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.BAMBOO_WOOD).noOcclusion().noCollission()
+            .pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredBlock<BowlingLaneBlock> BOWLING_LANE = BLOCKS.registerBlock(
+        "bowling_lane", BowlingLaneBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.8F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredBlock<BallReturnBlock> BALL_RETURN = BLOCKS.registerBlock("ball_return", BallReturnBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
+    public static final DeferredItem<BlockItem> BOWLING_PIN_ITEM = ITEMS.registerSimpleBlockItem(BOWLING_PIN);
+    public static final DeferredItem<BlockItem> BOWLING_LANE_ITEM = ITEMS.registerSimpleBlockItem(BOWLING_LANE);
+    public static final DeferredItem<BlockItem> BALL_RETURN_ITEM = ITEMS.registerSimpleBlockItem(BALL_RETURN);
+    /** A bowling ball, in the hand and rolling down a lane (see {@link BowlingBall}). */
+    public static final DeferredHolder<EntityType<?>, EntityType<BowlingBall>> BOWLING_BALL = ENTITY_TYPES.register(
+        "bowling_ball", () -> EntityType.Builder.<BowlingBall>of(BowlingBall::new, MobCategory.MISC).sized(0.45F, 0.45F)
+            .clientTrackingRange(8).updateInterval(2).build("bowling_ball")
+    );
+    public static final DeferredItem<BowlingBallItem> BOWLING_BALL_ITEM = ITEMS.register("bowling_ball", () -> new BowlingBallItem(new Item.Properties().stacksTo(4)));
+    /** A bowling ball rolling away down a lane, or up a ball return's track: a low wooden rumble. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOWLING_ROLL = sound("bowling_roll");
+    /** A bowling pin knocked over: a hollow wooden clonk. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOWLING_PIN_CLONK = sound("bowling_pin_clonk");
+    /** Every pin of a rack down: a bright arcade fanfare. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOWLING_STRIKE = sound("bowling_strike");
     /** The laser crossbow's rack in the freighter's entry hall (see {@link CrossbowRackBlock}). */
     public static final DeferredBlock<CrossbowRackBlock> CROSSBOW_RACK = BLOCKS.registerBlock(
         "crossbow_rack", CrossbowRackBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.8F).sound(SoundType.WOOD).noOcclusion()
@@ -3429,7 +3462,11 @@ public final class SkylinersRegistry {
             PARASOL_ITEM,
             SUN_LOUNGER_ITEM,
             TIKI_TORCH_ITEM,
-            CREW_LADDER_ITEM
+            CREW_LADDER_ITEM,
+            BOWLING_BALL_ITEM,
+            BOWLING_PIN_ITEM,
+            BOWLING_LANE_ITEM,
+            BALL_RETURN_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

@@ -254,6 +254,14 @@ through the plate it is set in; the panel is a `DoorBlock` that swings at the st
 itself as `SecretBookshelfBlock` does and never on anyone in its doorway, however it is told to (sharing its
 `inDoorway` and `heldOpen`), only sounds hollow knocked on from its front and is
 pushed open from behind, and stands on her cut skin as well as on a full block.
+`FreighterBowling`, after her lookout and before her lights, lays a bowling lane down her starboard tunnel, found from
+the same jet's relay: `BowlingLaneBlock` boards down its inner half from the den's wall, a rack of ten
+`BowlingPinBlock`s at its end standing on squares of boards (`ON_LANE`), rows by turns shifted half a block (`SHIFTED`),
+and a `BallReturnBlock` at its head; `freighter.bowling` switches it. The `bowling` package holds them and the
+`BowlingBall`, a loose thing kept among a ship's blocks as the basketball is (`retain_in_sub_level`), which knocks over
+the pins its box touches, swept along each tick's move, each knocked pin wobbling the row behind it by scheduled ticks
+(`POSE`) and standing up again on a later one, a random tick settling one whose scheduled tick was lost (an assembly
+drops them), and which goes back to the nearest ball return once done. `BallRenderer` draws it and the basketball.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.

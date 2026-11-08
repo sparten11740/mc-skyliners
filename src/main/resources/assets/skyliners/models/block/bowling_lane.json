@@ -1,0 +1,41 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "lane": "skyliners:block/bowling_lane",
+    "particle": "skyliners:block/bowling_lane"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lane"
+        },
+        "south": {
+          "texture": "#lane"
+        },
+        "east": {
+          "texture": "#lane"
+        },
+        "west": {
+          "texture": "#lane"
+        },
+        "up": {
+          "texture": "#lane"
+        },
+        "down": {
+          "texture": "#lane"
+        }
+      }
+    }
+  ]
+}

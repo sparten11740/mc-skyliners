@@ -2727,6 +2727,28 @@ nobody stands in its doorway, or when the rivet is pressed again; from inside, j
 anyone in its doorway: pressed or pushed then, it chimes and waits for them. The server config's
 `freighter.smugglerHold` leaves the hold out, her starboard tunnel then running on to the jet's housing.
 
+Her crew have made the long tunnel down her starboard prong into a bowling lane. Polished maple boards four blocks wide
+run down its inner half from her cargo hold to a rack of ten pins at its far end, white with red stripes round their
+necks, standing in a triangle with its point toward you; the tunnel's outer half stays open, so its portholes and the
+wall at its end are walked to as before, and the pins stop nobody walking through them. At the head of the lane stands
+the ball return, a navy machine with a neon stripe and three marbled balls on its chrome rails, nebula purple, Mars red
+and Neptune teal: use it and it hands you a bowling ball with a rumble. Hold the ball and use it to bowl it along the
+floor the way you face, gently if you sneak; it rumbles away down the boards and knocks over every pin it rolls into
+with a wooden clonk. Each pin going over wobbles the pins behind it, which most likely go over a moment later, so a ball
+into the head pin scatters the rack; once every pin is down it is a strike, with an arcade fanfare and sparks over the
+pins. A ball that has stopped, or thudded into the wall at the end, goes back down the ball return by itself with a
+puff and a rumble, and a few seconds after each pin fell the pinsetter stands it up again with a soft knock. The server
+config's `freighter.bowling` leaves the lane out.
+
+The Bowling Ball, the Bowling Pin, the Bowling Lane and the Ball Return are among her blocks in the creative tab, for
+a lane of your own. A pin stands only on a floor; set down on the lane's boards it stands on a square of them, as the
+rack does, and using a standing pin nudges it half a block to one side, to line a rack up in rows. Strike a standing pin
+and it goes over as a ball would knock it; use a fallen one and it stands up again at once. The boards go down
+on any floor, running the way you face, a pixel thick. The ball return stands on a floor, or is fixed to a wall as a
+rack of three balls on a chrome shelf. A ball rolling near any ball return goes back down it once it is done, and with
+none near it stays where it stopped, to be picked up by walking over it, until after five minutes it is left lying there
+as a dropped ball. A pin that was down or wobbling when its ship took off settles by itself a while later.
+
 The Secret Panel and the Loose Rivet are in the creative tab under The Den, for a secret door of your own: set the panel
 in a gap in a wall, as a door, and the rivet, a button no bigger than a fingertip, on the wall beside it. Pressed, the
 rivet swings the panel open, and pressed again shuts it; any redstone pulse does the same. Knocked on from its front
