@@ -372,9 +372,11 @@ const DIMMER_FACE = 0.12;
 const DIMMER_DARKEST = [0.8, 0.15];
 const DIMMER_CLEAR = [0.2, 0.75];
 // Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
+// Her slam button takes the toggles' place, as the server config's freighter.slamLanding has her built by default.
 const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1, console_scanner: 1, console_jump: 1, console_engines: 1,
-  console_switches: 1 };
-const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump", "console_climb"];
+  console_slam: 1 };
+const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump", "console_climb",
+  "console_slam"];
 // Her boost: the speed she cruises at before it, in blocks a second; how long she is watched boosting, in ticks; how
 // much faster she must go meanwhile at least, in blocks a second; how long she is given after it to slow back near her
 // speed, in ticks, and how near, in blocks a second.
@@ -2198,7 +2200,8 @@ function checkFreighterCanopy() {
 }
 
 // A freighter's console: her modules curve round her seats, each a slice of one ring; on the ground her boost button
-// will not boost, saying so with a low note; and a bank of toggles clicks a toggle up under the hand.
+// will not boost, saying so with a low note; and a bank of toggles, where she is built with one in place of her slam
+// button, clicks a toggle up under the hand.
 function checkFreighterConsole() {
   ship("freighter");
   const slices = Object.entries(CONSOLE_SLICES).map(([kind, count]) => [kind, count, must(`find skyliners:${kind} 128 ${count + 1}`).rows]);
