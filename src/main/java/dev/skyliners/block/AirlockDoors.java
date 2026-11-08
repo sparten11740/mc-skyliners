@@ -192,8 +192,8 @@ public final class AirlockDoors {
     private void hold(ServerLevel level) {
         held = true;
         cooldown = CLEAR_CHECK_TICKS;
-        level.playSound(null, middle(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
-            BoardingAirstairs.WAITING_PITCH);
+        level.playSound(null, middle(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, StandClear.WAITING_VOLUME,
+            StandClear.WAITING_PITCH);
         show(level, AirlockPanelBlock.Cycle.CLEAR);
         keeper.sync();
     }

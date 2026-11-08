@@ -242,8 +242,8 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
             }
         }
         if (now && level.getGameTime() % WAITING_CHIME == 0) {
-            level.playSound(null, rocket.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
-                BoardingAirstairs.WAITING_PITCH);
+            level.playSound(null, rocket.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, StandClear.WAITING_VOLUME,
+                StandClear.WAITING_PITCH);
         }
         holding = now;
     }

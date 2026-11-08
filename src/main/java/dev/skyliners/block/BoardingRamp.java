@@ -52,11 +52,9 @@ public final class BoardingRamp {
     public static final int PRESSURE = 10;
     public static final int SWUNG = 80;
     public static final int OUT = 90;
-    /** While someone stands on it or on the stowed plate, how often it looks again whether they have stepped off. */
-    private static final int CLEAR_CHECK_TICKS = 10;
     /**
-     * While it waits so, how often its chime sounds again, in ticks, so whoever holds it hears it waits for them for as
-     * long as it does, not only as it stops, with no need to read anything.
+     * While someone stands on it or on the stowed plate, how often its chime sounds again, in ticks, so whoever holds
+     * it hears it waits for them for as long as it does, not only as it stops, with no need to read anything.
      */
     private static final int CHIME_AGAIN_TICKS = 40;
     /** How thick the plate is under its top, in blocks, as it is drawn. */
@@ -159,11 +157,8 @@ public final class BoardingRamp {
     private boolean deploying;
     private int ticks;
     private int lastTicks;
-    /** Someone stands on it, or on the stowed plate, and it waits for them to step off; the chime has sounded. */
-    private boolean held;
-    private int cooldown;
-    /** How long it has waited so, in ticks, for its chime to sound again; not saved. */
-    private int waitedFor;
+    /** The wait while someone stands on it, or on the stowed plate, until they step off. */
+    private final StandClear standClear = new StandClear(CHIME_AGAIN_TICKS);
     /** Whether its deck is laid, and the hatch's blocks taken away. */
     private boolean laid;
     private boolean hatchOpen;
@@ -191,7 +186,7 @@ public final class BoardingRamp {
 
     /** Whether it waits for someone to step off it, or off the stowed plate. */
     boolean held() {
-        return held;
+        return standClear.held();
     }
 
     /** Whether it is all the way down, its deck laid. */
@@ -285,7 +280,7 @@ public final class BoardingRamp {
             return false;
         }
         deploying = true;
-        held = false;
+        standClear.release();
         if (shut && AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), plateSpots())) {
             waitFor(level);
         } else if (shut) {
@@ -322,7 +317,7 @@ public final class BoardingRamp {
     /** Sets it going away: at once, or once nobody stands on it. */
     private void fold(ServerLevel level) {
         deploying = false;
-        held = false;
+        standClear.release();
         if (laid && AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), deckSpots())) {
             waitFor(level);
             return;
@@ -343,22 +338,13 @@ public final class BoardingRamp {
 
     /** Someone stands where it would move: it waits, with a chime, looking again now and then. */
     private void waitFor(ServerLevel level) {
-        held = true;
-        cooldown = CLEAR_CHECK_TICKS;
-        waitedFor = 0;
-        chime(level);
-    }
-
-    /** The chime that says it waits for someone to step off or out of its way. */
-    private void chime(ServerLevel level) {
-        level.playSound(null, panel.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
-            BoardingAirstairs.WAITING_PITCH);
+        standClear.hold(level, panel.getBlockPos());
     }
 
     /** Once a tick, on the server: a tick further on its way, waiting while someone stands where it would move. */
     void tick(ServerLevel level) {
         lastTicks = ticks;
-        if (held) {
+        if (standClear.held()) {
             waitForClear(level);
             return;
         }
@@ -431,18 +417,14 @@ public final class BoardingRamp {
      * then on its way again, the hydraulics heard again where the plate is part way through its swing.
      */
     private void waitForClear(ServerLevel level) {
-        if (++waitedFor % CHIME_AGAIN_TICKS == 0) {
-            chime(level);
-        }
-        if (--cooldown > 0) {
+        if (!standClear.looksAgain(level, panel.getBlockPos())) {
             return;
         }
-        cooldown = CLEAR_CHECK_TICKS;
         boolean opening = deploying && ticks == 0 && !hatchOpen;
         if (stillInTheWay(level, opening)) {
             return;
         }
-        held = false;
+        standClear.release();
         if (opening) {
             unlatch(level);
         } else if (!deploying && laid) {
@@ -471,7 +453,7 @@ public final class BoardingRamp {
     /** On a client, each tick: the same clock the server runs, and steam as the latches let go or the plate seals. */
     void clientTick() {
         lastTicks = ticks;
-        if (held) {
+        if (standClear.held()) {
             return;
         }
         ticks = Math.clamp(ticks + (deploying ? 1 : -1), 0, OUT);
@@ -751,7 +733,7 @@ public final class BoardingRamp {
         hatch.save(tag);
         tag.putBoolean("Deploying", deploying);
         tag.putInt("Ticks", ticks);
-        tag.putBoolean("Held", held);
+        standClear.save(tag);
         tag.putBoolean("Laid", laid);
         tag.putBoolean("HatchOpen", hatchOpen);
     }
@@ -768,9 +750,9 @@ public final class BoardingRamp {
             Math.max(1, tag.getInt("Width")), Math.max(1, tag.getInt("Rise")));
         BoardingRamp ramp = new BoardingRamp(panel, frame, Hatch.load(tag, turn, registries));
         ramp.deploying = tag.getBoolean("Deploying");
-        ramp.held = tag.getBoolean("Held");
+        ramp.standClear.load(tag);
         int told = Math.clamp(tag.getInt("Ticks"), 0, OUT);
-        ramp.ticks = before == null || ramp.held ? told : ToldTicks.count(panel.getLevel(), before.ticks, told, ramp.deploying);
+        ramp.ticks = before == null || ramp.standClear.held() ? told : ToldTicks.count(panel.getLevel(), before.ticks, told, ramp.deploying);
         ramp.lastTicks = before != null && ramp.ticks == before.ticks ? before.lastTicks : ramp.ticks;
         ramp.laid = tag.getBoolean("Laid");
         ramp.hatchOpen = tag.getBoolean("HatchOpen");

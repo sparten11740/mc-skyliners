@@ -36,8 +36,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * where it is going, each client running the same clock to draw it in between.
  */
 final class BoardingAirstairs {
-    /** While someone stands on the stairs, how often folding looks again whether they have stepped off. */
-    private static final int CLEAR_CHECK_TICKS = 10;
     private static final float MOTOR_VOLUME = 0.9F;
     private static final float LATCH_VOLUME = 1.0F;
     /** The latch clunks higher coming free than going home. */
@@ -45,9 +43,6 @@ final class BoardingAirstairs {
     /** The low note of stairs that cannot come down, or a button that does nothing now: how loud, and its pitch. */
     static final float REFUSED_VOLUME = 1.0F;
     static final float REFUSED_PITCH = 0.6F;
-    /** The chime of stairs or doors waiting for someone to step clear: how loud, and its pitch. */
-    static final float WAITING_VOLUME = 1.0F;
-    static final float WAITING_PITCH = 0.7F;
     /** The feet's legs not measured yet. */
     private static final float UNMEASURED = -1;
 
@@ -111,9 +106,8 @@ final class BoardingAirstairs {
      * measured yet, as for stairs built down or saved before they had feet, measured on the next tick.
      */
     private float legs = UNMEASURED;
-    /** Folding is held up by someone on the stairs; the chime has sounded. */
-    private boolean held;
-    private int cooldown;
+    /** The wait while folding is held up by someone on the stairs, until they step off. */
+    private final StandClear standClear = new StandClear(StandClear.CHIME_ONCE);
     /** Whether the steps are laid, a foot below them, and the hatch's blocks taken away. */
     private boolean laid;
     private boolean foot;
@@ -141,7 +135,7 @@ final class BoardingAirstairs {
 
     /** Whether folding is held up by someone on the stairs. */
     boolean held() {
-        return held;
+        return standClear.held();
     }
 
     /** Whether the stairs are all away and staying that way: folded in, the hatch shut. */
@@ -225,7 +219,7 @@ final class BoardingAirstairs {
             sound(level, SkylinersRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
         }
         deploying = true;
-        held = false;
+        standClear.release();
         doorToShut = false;
         button.doorTo(level, true);
         if (ticks < AirstairFlight.OUT) {
@@ -238,9 +232,7 @@ final class BoardingAirstairs {
         deploying = false;
         doorToShut = true;
         if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, width, length))) {
-            held = true;
-            cooldown = CLEAR_CHECK_TICKS;
-            level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, WAITING_VOLUME, WAITING_PITCH);
+            standClear.hold(level, button.getBlockPos());
             return;
         }
         takeUp(level);
@@ -254,7 +246,7 @@ final class BoardingAirstairs {
             legs = AirstairSteps.legs(level, this::step, width, length);
             button.sync();
         }
-        if (held) {
+        if (standClear.held()) {
             waitForClear(level);
             return;
         }
@@ -298,12 +290,11 @@ final class BoardingAirstairs {
 
     /** Held up by someone on the stairs: now and then a look whether they have stepped off, and then away. */
     private void waitForClear(ServerLevel level) {
-        if (--cooldown > 0) {
+        if (!standClear.looksAgain(level, button.getBlockPos())) {
             return;
         }
-        cooldown = CLEAR_CHECK_TICKS;
         if (!AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, width, length))) {
-            held = false;
+            standClear.release();
             takeUp(level);
             sound(level, SkylinersRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
             button.sync();
@@ -313,7 +304,7 @@ final class BoardingAirstairs {
     /** On a client, each tick: the same clock the server runs, toward where the stairs are going. */
     void clientTick() {
         lastTicks = ticks;
-        if (!held) {
+        if (!standClear.held()) {
             ticks = Math.clamp(ticks + (deploying ? 1 : -1), 0, AirstairFlight.OUT);
         }
     }
@@ -393,7 +384,7 @@ final class BoardingAirstairs {
         tag.putInt("Ticks", ticks);
         tag.putInt("Length", length);
         tag.putFloat("Legs", legs);
-        tag.putBoolean("Held", held);
+        standClear.save(tag);
         tag.putBoolean("Laid", laid);
         tag.putBoolean("Foot", foot);
         tag.putBoolean("HatchOpen", hatchOpen);
@@ -421,7 +412,7 @@ final class BoardingAirstairs {
         stairs.lastTicks = before != null && stairs.ticks == before.ticks ? before.lastTicks : stairs.ticks;
         stairs.length = Math.clamp(tag.getInt("Length"), 0, rise);
         stairs.legs = tag.contains("Legs") ? Math.min(tag.getFloat("Legs"), AirstairSteps.LEGS_LONGEST) : UNMEASURED;
-        stairs.held = tag.getBoolean("Held");
+        stairs.standClear.load(tag);
         stairs.laid = tag.getBoolean("Laid");
         stairs.foot = tag.getBoolean("Foot");
         stairs.hatchOpen = tag.getBoolean("HatchOpen");

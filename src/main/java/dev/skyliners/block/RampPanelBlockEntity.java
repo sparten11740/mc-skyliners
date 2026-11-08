@@ -266,8 +266,8 @@ public class RampPanelBlockEntity extends BlockEntity implements BoardingRamp.Ke
         Vec3 here = SableFlight.toWorld(level, Vec3.atCenterOf(worldPosition));
         for (ServerPlayer player : Aboard.players(this)) {
             if (player.position().distanceTo(here) > RAMP_HEARD) {
-                player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
-                    BoardingAirstairs.WAITING_PITCH);
+                player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, StandClear.WAITING_VOLUME,
+                    StandClear.WAITING_PITCH);
             }
         }
     }

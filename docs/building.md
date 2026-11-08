@@ -428,7 +428,8 @@ her frame; and her take-off waits for it through `FreighterFlight.holdTakeoffWhi
 long off and shows the clients what holds her (`FreighterFlight.heldBy`), drawn on her console's scanner by its picture.
 Her computer's line as it comes down holds her cockpit's floor (`AutopilotBlockEntity.holdFloor`), and after
 a landing it comes down only once her cockpit is `quiet`, so it and her announcements never talk over each other.
-`Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back. The
+`Hatch` is the hatch both the ramp and the zeppelin's and rocket's airstairs take away and put back, and `StandClear`
+the wait both keep for whoever stands where they would go, a chime and a look again now and then. The
 `LaserCrossbowItem` fires at each use and keeps its heat on its stack as a data component, worked out on its holder's
 client as on the server, which `LaserCrossbowLooks` draws, `LaserCrossbowGauge` shows under the crosshair and
 `LaserCrossbowHands` poses in hand, as the game poses only its own crossbow; it traces its bolt with `LaserFire`, as

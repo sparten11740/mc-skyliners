@@ -149,8 +149,8 @@ public class SecretBookshelfBlock extends DoorBlock {
         if (!inDoorway(level, lower)) {
             return false;
         }
-        level.playSound(null, lower, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
-            BoardingAirstairs.WAITING_PITCH);
+        level.playSound(null, lower, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, StandClear.WAITING_VOLUME,
+            StandClear.WAITING_PITCH);
         return true;
     }
 
