@@ -465,6 +465,8 @@ const FITTINGS_PUT_UP = [
   "hull_floodlight", "hull_light_strip",
 ];
 const STAND_AWAY = 24;
+// How many of a freighter's passenger screens the screens check tries pressing at most.
+const SCREENS_TRIED = 6;
 const STAND_APART = 3;
 const STAND_HIGH = 5;
 // The pieces of a freighter's outside that stand against her hull rather than in it, the most of each looked for, and
@@ -2410,23 +2412,32 @@ function checkFreighterScreens() {
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
   must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
   const freighter = findShipFlying("skyliners:engine_grille");
-  const [screen] = must(`sable:find ${freighter} skyliners:passenger_screen 1 side=server`).rows;
-  expect(Boolean(screen), "freighter: aboard her flying, she has passenger screens");
-  if (!screen) {
-    return;
-  }
-  const at = screen.at.join(",");
-  const [dx, dz] = STEPS[must(`block ${at}`).props?.facing ?? "north"];
-  const [sx, sy, sz] = screen.at;
+  const screens = must(`sable:find ${freighter} skyliners:passenger_screen ${SCREENS_TRIED} side=server`).rows;
+  expect(screens.length > 0, "freighter: aboard her flying, she has passenger screens");
   emptyHands();
+  // Each screen in turn until one is reached and pressed: one before a row of seats, as her lookout's nook has, is
+  // stood in front of among the seats and may not be reached from there.
+  let pressed;
+  for (const screen of screens) {
+    pressed = pressScreen(screen.at);
+    if (pressed.click) {
+      break;
+    }
+  }
+  expect(Boolean(pressed?.click) && pressed.thud === 0 && Boolean(must("wait 40t; status").pos),
+    "freighter: pressed, a screen shows her outside camera and the game runs on", `${pressed?.click ? "a click" : "no click"}, ${pressed?.thud ?? 0} thuds`);
+  must("key left_shift 5t; wait 10t");
+}
+
+// Stands before a passenger screen aboard a flying ship, at a plot position, and presses it: whether it clicked, and how
+// many thuds were heard.
+function pressScreen([sx, sy, sz]) {
+  const at = [sx, sy, sz].join(",");
+  const [dx, dz] = STEPS[must(`block ${at}`).props?.facing ?? "north"];
   must(`sable:tp ${sx + dx * SCREEN_STAND},${sy - 1},${sz + dz * SCREEN_STAND}; wait 20t; face ${at}`);
   const since = now();
   send(`use ${at}`);
-  const click = heard("*ui.button.click*", since, LOOK_EVERY);
-  const thud = played("*note_block.bass*", since).length;
-  expect(Boolean(click) && thud === 0 && Boolean(must("wait 40t; status").pos), "freighter: pressed, a screen shows her outside camera and the game runs on",
-    `${click ? "a click" : "no click"}, ${thud} thuds`);
-  must("key left_shift 5t; wait 10t");
+  return { click: heard("*ui.button.click*", since, LOOK_EVERY), thud: played("*note_block.bass*", since).length };
 }
 
 // The Oval Window and the Porthole, each set by hand into an opening in a stone wall as a player would: each goes in
@@ -2844,6 +2855,7 @@ function checkFreighterLookout() {
 function checkBeachOnWalls() {
   const [x0, z0] = [nextSite++ * SITE_APART, STAND_AWAY];
   creative();
+  must(`server tp @p ${x0} ${ground} ${z0 - 3}; wait ${CHUNKS_TICKS}t`);
   must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x0 + BEACH_ON_WALLS.length * STAND_APART} ${ground + STAND_HIGH} ${z0 + 3} stone`);
   BEACH_ON_WALLS.forEach((id, i) => putUpEveryWay(id, x0 + i * STAND_APART, z0, ["floor", "wall"]));
 }
