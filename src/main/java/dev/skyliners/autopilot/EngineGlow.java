@@ -53,10 +53,11 @@ final class EngineGlow {
         return full ? 2 : 1;
     }
 
-    /** One block of the grille set to glow as it should, if it is still a grille. */
+    /** One block of the grille set to glow as it should, if it is still one of hers and not one set there by hand. */
     private void light(ServerLevel level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        if (state.getBlock() instanceof EngineGrilleBlock && state.getValue(EngineGrilleBlock.GLOW) != glow) {
+        boolean hers = state.getBlock() instanceof EngineGrilleBlock && !state.getValue(EngineGrilleBlock.BY_HAND);
+        if (hers && state.getValue(EngineGrilleBlock.GLOW) != glow) {
             level.setBlock(pos, state.setValue(EngineGrilleBlock.GLOW, glow), Block.UPDATE_CLIENTS);
         }
     }

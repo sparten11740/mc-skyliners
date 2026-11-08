@@ -335,7 +335,8 @@ her disc's middle is from her control head, from which `FreighterRoar` plays her
 jets' blast under her belly, their thump and her mains' spooling up as they light, her hum aboard, the ground shaking
 near her and her thunder going by; and `EngineGlow` lights her `EngineGrilleBlock`s across her stern from the same
 shares, laid in place of her skin round her mains and wired to her head with her thrusters, changing them seldom, as
-each change redraws her round them; `FreighterPlumes` shows her lift thrusters' plumes only close over the ground,
+each change redraws her round them (a grille set by hand, which no ship lights, goes by the redstone signal it receives
+instead, and sends none on); `FreighterPlumes` shows her lift thrusters' plumes only close over the ground,
 and unless `freighter.everyPlume` is on, only the middle one's of each cluster and four of her six mains'
 (`Thrusters.plume`), since every puff is sent to every player near. Her pilot smooths what it reads of how fast she
 tilts, turns and moves, and holds each set of thrusters at a signal until it is asked a step and more away, so they are

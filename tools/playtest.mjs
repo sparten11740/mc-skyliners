@@ -157,6 +157,13 @@ const NOZZLE_LIP_OUT = 0.88;
 const NOZZLE_LIP_ASTERN = 1.22;
 const NOZZLE_LIP_ACROSS = 0.08;
 const NOZZLE_LIP_LUMA = 110;
+// An engine grille set by hand: how far ahead of the player it is set, in blocks; how far its lever stands along a run
+// of wire to it, in blocks, far enough that the lever's signal arrives weak; how long a change of signal is given to
+// reach it, in ticks; and how long a flying freighter is given to have lit her own grille, in ticks.
+const GRILLE_AHEAD = 4;
+const GRILLE_WIRE = 12;
+const GRILLE_SETTLE_TICKS = 10;
+const GRILLE_LIGHT_TICKS = 60;
 const FREIGHTER_UP_TICKS = 900;
 const FREIGHTER_DOWN_TICKS = 2400;
 const FREIGHTER_HOLD_WITHIN = 1.5;
@@ -2268,8 +2275,6 @@ function checkCargoScanner() {
   expect(Boolean(heard("*scanner_sweep*", used, LOOK_EVERY)), "freighter: used, the parcel scanner sweeps its crate");
 }
 
-// A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage
-// and her ring corridor all round, so nobody walks her deck in the dark.
 // A freighter's main engines read as engines from behind her, parked with nothing firing: straight behind one, a bright
 // lip stands out round its nozzle, where it used to be only a black socket in her grille.
 function checkFreighterNozzles() {
@@ -2285,6 +2290,46 @@ function checkFreighterNozzles() {
   expect(lip.p90 >= NOZZLE_LIP_LUMA, "nozzles: behind her, each main has a bright nozzle lip, not a black socket", `lip's brightest tenth, luma ${round(lip.p90)}`);
 }
 
+// An engine grille set by hand goes by the redstone it is given, dark with none, idling on a weak signal and at full on
+// a strong one; a grille of a freighter's own keeps to her autopilot, however much redstone stands against it.
+function checkEngineGrilleRedstone() {
+  const x = nextSite++ * SITE_APART;
+  creative();
+  must(`server tp @p ${x} ${ground} 0; turn 0 0; wait 40t; server give @p skyliners:engine_grille; server give @p minecraft:redstone_block; select 0`);
+  const grille = `${x},${ground},${GRILLE_AHEAD}`;
+  const glow = (at) => Number(must(`block ${at} side=server`).props?.glow ?? 0);
+  must(`place skyliners:engine_grille ${grille}; wait 5t`);
+  expect(glow(grille) === 0, "grille: set by hand with no signal it stays dark");
+  const block = `${x + 1},${ground},${GRILLE_AHEAD}`;
+  must(`place minecraft:redstone_block ${block}; wait ${GRILLE_SETTLE_TICKS}t`);
+  expect(glow(grille) === 2, "grille: a strong signal has it glowing at full");
+  must(`mine ${block} timeout=5s; wait ${GRILLE_SETTLE_TICKS}t`);
+  expect(glow(grille) === 0, "grille: with the signal gone it goes dark again");
+  const lever = `${x + GRILLE_WIRE},${ground},${GRILLE_AHEAD}`;
+  must(`server setblock ${x + GRILLE_WIRE} ${ground} ${GRILLE_AHEAD} lever[face=floor,facing=north,powered=true]; server fill ${x + 1} ${ground} ${GRILLE_AHEAD} ${x + GRILLE_WIRE - 1} ${ground} ${GRILLE_AHEAD} redstone_wire; wait ${GRILLE_SETTLE_TICKS}t`);
+  expect(glow(grille) === 1, `grille: down ${GRILLE_WIRE - 1} blocks of wire, a weak signal has it idling`, `glow ${glow(grille)}`);
+  must(`server tp @p ${x + GRILLE_WIRE} ${ground} ${GRILLE_AHEAD - 3}; wait 20t; use ${lever}; wait ${GRILLE_SETTLE_TICKS}t`);
+  expect(glow(grille) === 0, "grille: the lever thrown off, it goes dark");
+
+  layDown("freighter");
+  const grilles = must("find skyliners:engine_grille 128 400").rows.map((row) => row.at_abs);
+  const sternmost = Math.min(...grilles.map(([, , z]) => z));
+  const [gx, gy, gz] = grilles.find((at) => at[2] === sternmost);
+  const hers = `${gx},${gy},${gz}`;
+  must(`server setblock ${gx} ${gy} ${gz - 1} minecraft:redstone_block; wait ${GRILLE_SETTLE_TICKS}t`);
+  expect(glow(hers) === 0, "grille: one of a freighter's own takes no signal from redstone against it");
+  must(`server setblock ${gx} ${gy} ${gz - 1} air`);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  expect(waitForReport(freighterReport, (report) => report.lift > 0, FREIGHTER_UP_TICKS), "grille: she lifts off");
+  const [{ at }] = must(`sable:find ${freighter} skyliners:engine_grille 1 side=server`).rows;
+  must(`wait ${GRILLE_LIGHT_TICKS}t`);
+  expect(glow(at.join(",")) === 1, "grille: her autopilot still lights her own grille as her engines idle", `glow ${glow(at.join(","))}`);
+}
+
+// A freighter's lights: she is built with wall washers round her corridor and rooms, her club is lit before its stage
+// and her ring corridor all round, so nobody walks her deck in the dark.
 function checkFreighterLights() {
   ship("freighter");
   const lights = must("find skyliners:wall_light 128 100").rows.length;
@@ -5375,6 +5420,7 @@ const CHECKS = {
   "freighter-tardigrade": { run: checkFreighterTardigrade, about: "a freighter's small tardigrade lives in her lounge's tank and comes to its hatch to munch moss" },
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
   "birthday-greeting": { run: checkBirthdayGreeting, slow: true, about: "a freighter greets whoever the client config names as they come aboard on their birthday, once, and nobody the day before" },
+  "grille-redstone": { run: checkEngineGrilleRedstone, slow: true, about: "an engine grille set by hand goes by redstone, and a freighter's own keeps to her autopilot" },
   "freighter-nozzles": { run: checkFreighterNozzles, about: "a freighter's main engines show a nozzle with a bright lip from behind her, not a black socket" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
