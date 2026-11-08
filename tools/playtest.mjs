@@ -3885,9 +3885,12 @@ function checkStickerMapByHand() {
   if (parts.length !== STICKER_PARTS) {
     return;
   }
+  // The plains the player stands on are granted along with the rest: revoked, the game gives them back by itself within
+  // a second or so, and coming back between the two uses they would be put up as new.
   send("?server advancement revoke @p only minecraft:adventure/adventuring_time");
   must("server advancement grant @p only minecraft:adventure/adventuring_time minecraft:desert; "
     + "server advancement grant @p only minecraft:adventure/adventuring_time minecraft:cherry_grove");
+  send("?server advancement grant @p only minecraft:adventure/adventuring_time minecraft:plains");
   const used = now();
   must(`select 1; use ${at.join(",")}; wait ${STICKER_POPS_TICKS}t`);
   const up = stickersOn(at);
