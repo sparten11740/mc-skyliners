@@ -2704,9 +2704,16 @@ const FREIGHTER_SOUNDS = {
   jump_drive_sputter: { subtitle: "Jump drive sputters", heard: 48 },
   jump_drive_thump: { subtitle: "Jump drive kicks back in", heard: 48 },
   jump_drive_jump: { subtitle: "Jump drive jumps", heard: 64 },
-  // Her hyperspace jump heard from outside, as far off as it is seen (HyperspaceWake.SEEN_WITHIN): going and coming out.
-  freighter_hyperspace_out: { subtitle: "Freighter jumps to hyperspace", heard: 192 },
-  freighter_hyperspace_in: { subtitle: "Freighter drops out of hyperspace", heard: 192 },
+  // Her hyperspace jump heard from outside (see the client's HyperspaceSounds): her charge as she lets go and the rush
+  // where she is about to come out, heard round each, past where the jump is seen (HyperspaceWake.SEEN_WITHIN); her
+  // whump as she goes and the thunderclap as she comes out, carrying as far as they are sent
+  // (HyperspaceSound.HEARD_WITHIN), each with a duller one for those far off.
+  freighter_hyperspace_charge: { subtitle: "Freighter charges for a jump", heard: 320 },
+  freighter_hyperspace_out: { subtitle: "Freighter jumps to hyperspace", heard: 640 },
+  freighter_hyperspace_out_far: { subtitle: "Freighter jumps to hyperspace far off", heard: 640 },
+  freighter_hyperspace_rush: { subtitle: "Hyperspace rushes open", heard: 320 },
+  freighter_hyperspace_in: { subtitle: "Freighter drops out of hyperspace", heard: 640 },
+  freighter_hyperspace_in_far: { subtitle: "Thunder of a freighter out of hyperspace", heard: 640 },
   // The Spookie's voice, each in two takes a little higher and lower, its roar carrying through her.
   spookie_greet: { subtitle: "Spookie hoots hello", heard: 24, takes: SPOOKIE_TAKES },
   spookie_happy: { subtitle: "Spookie purrs happily", heard: 24, takes: SPOOKIE_TAKES },

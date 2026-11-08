@@ -5413,102 +5413,310 @@ const JUMP_DRIVE = {
   writeSound("jump_drive_jump", lowPassed(jump.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.8);
 }
 
-// The freighter's hyperspace jump heard from outside (see the client's HyperspaceWakes), far off: the tardigrade's
-// spore-drive jump, its hum rising into a whump, grown to a ship her size, each with a random sequence of its own.
-// Going, played as she lets go: a deep hum rising from 40 to 160 hertz under a rush of air swelling up to her going,
-// as long as her last moment before she goes (FreighterJump.GO_TICKS); then a whoomph, a sub falling from 110 to 30
-// hertz with a blast of low noise and a crack, a bright zing shooting up from 1.5 to 6 kilohertz as her streaks shoot
-// off, and the air rushing back into where she was. Coming out, played as the streaks start rushing in: a rush of air
-// swelling and falling from 4 kilohertz to 400 hertz as they come, as long again; then a boom, a crack, a sub falling
-// from 90 to 28 hertz and a long rumble rolling away.
-const HYPERSPACE_OUTSIDE = {
-  // How long the lead up to the jump is, in seconds, as long as her last moment before she goes; and how long each
-  // sound rings on after it.
-  leadSeconds: 1.25,
-  ringSeconds: 2.6,
-  // The hum going: from and to, in hertz; the whoomph's sub, from and to, in hertz, and how fast it falls, a second.
+// The freighter's hyperspace jump heard from outside (see the client's HyperspaceSounds), each sound with a random
+// sequence of its own, the bangs loud enough to carry hundreds of blocks: their bodies driven hard into saturation and
+// their sharp edges laid over them, so they stand among the loudest sounds there are (the slam, the self-destruct's
+// blast) and still cut through on a laptop's speakers. Going, played as she lets go: her charge, a whine climbing from
+// 160 to 1,400 hertz over a hum, throbbing faster and faster, energy crackling round it, until the air is sucked in
+// toward her, a swell of noise rising in pitch over the reverse of a boom; then, played as she goes, her whump, a sub
+// falling from 110 to 30 hertz with a blast of low noise, a sharp crack, the air ripping back in to fill where she was,
+// fluttering and falling from 6 kilohertz, the zing of her streaks falling away and a short rumble echoing off the land.
+// Coming out, played as the streaks start rushing in: a rush of air climbing from 250 hertz to 5 kilohertz under three
+// streaks whistling up a chord, held for a breath; then, as she is there, a thunderclap, close lightning's tearing crack
+// and its later strokes rolling off along the sky, a boom falling from 150 to 36 hertz, and thunder rolling on for
+// seconds in surges, echoing off the land. Far off (past HyperspaceSounds.FAR_FROM), each bang is heard as air carries
+// it there: its highs swallowed, its crack dulled and its rumble longer, louder and echoing more.
+const HYPERSPACE_HEARD = {
+  // How long each build-up runs before its bang, in seconds: her last moment before she goes (FreighterJump.GO_TICKS)
+  // and the moment later a client shows her (HyperspaceWakes.SHOWN_LATER), 29 ticks; and how long it rings on past
+  // that, so a bang a tick late still follows straight on.
+  leadSeconds: 1.45,
+  tailSeconds: 0.04,
+  // The charge: its whine from and to, in hertz; its throb, from and to, a second; its hum, from and to, in hertz; and
+  // how long before the whump the air is sucked in, in seconds.
+  whineFrom: 160,
+  whineTo: 1400,
+  throbFrom: 5,
+  throbTo: 36,
   humFrom: 40,
-  humTo: 160,
-  whoomphFrom: 110,
-  whoomphTo: 30,
-  whoomphFall: 3,
-  // The zing of her streaks shooting off, from and to, in hertz, over so many seconds.
-  zingFrom: 1500,
-  zingTo: 6000,
-  zingSeconds: 0.35,
-  // The rush coming out: from and to, in hertz; the boom's sub, from and to, in hertz, and how fast it falls, a second.
-  rushFrom: 4000,
-  rushTo: 400,
-  boomFrom: 90,
-  boomTo: 28,
-  boomFall: 1.8,
+  humTo: 85,
+  suckSeconds: 0.35,
+  // The whump: its sub from and to, in hertz, and how fast it falls, a second; the rip of air rushing back in, from and
+  // to, in hertz; and the zing of her streaks falling away, from and to, in hertz.
+  whumpFrom: 110,
+  whumpTo: 30,
+  whumpFall: 4,
+  ripFrom: 6000,
+  ripTo: 220,
+  zingFrom: 2600,
+  zingTo: 600,
+  // The rush coming out, from and to, in hertz, and its streaks whistling up a chord, the lowest from and to, in hertz;
+  // the thunderclap's boom, from and to, in hertz, near and far, and how fast it falls, a second.
+  rushFrom: 250,
+  rushTo: 5000,
+  streakFrom: 400,
+  streakTo: 2400,
+  boomFrom: 150,
+  boomTo: 36,
+  boomFarFrom: 110,
+  boomFarTo: 32,
+  boomFall: 3,
+  // How long the whump and the thunderclap last, near and far, in seconds.
+  outSeconds: 3.4,
+  outFarSeconds: 4.4,
+  inSeconds: 6.5,
+  inFarSeconds: 8.5,
+  // Far off, what is left of each bang's highs: the cutoff, in hertz, of what the air lets through.
+  farCutoff: 1500,
 };
-{
-  const H = HYPERSPACE_OUTSIDE;
-  const seconds = H.leadSeconds + H.ringSeconds;
-  const n = Math.round(seconds * RATE);
-  const lead = Math.round(H.leadSeconds * RATE);
 
-  // Going.
-  const outRandom = ownRandom(0x48797031);
-  const swell = sweptResonance(whiteNoise(seconds, outRandom), (t) => 250 + 2200 * Math.min(1, t / H.leadSeconds) ** 2, 1.4);
-  const backIn = sweptResonance(whiteNoise(seconds, outRandom), (t) => 1800 * Math.exp(-Math.max(0, t - H.leadSeconds) / 0.5) + 150, 1);
-  const out = new Float64Array(n);
-  let hum = 0;
-  let whoomph = 0;
+/**
+ * Echoes off the land round: each [delay in seconds, gain, cutoff in hertz] a copy of the samples, low-passed, coming
+ * back that much later.
+ */
+function echoed(samples, echoes) {
+  const out = Float64Array.from(samples);
+  for (const [delay, gain, cutoff] of echoes) {
+    mixInto(out, delay, lowPassed(samples, cutoff), gain);
+  }
+  return out;
+}
+
+/**
+ * A tearing crack mixed in from a time in seconds, so long and so loud, as close lightning tears the air: the shock
+ * front's N-wave, a push and a pull two milliseconds long, then noise in grains, thick at first and thinning out, rung
+ * through the bands given, each [centre in hertz, q, weight].
+ */
+function tear(samples, start, seconds, noise, bands, gain) {
+  const n = Math.round((seconds + 0.03) * RATE);
+  const grains = new Float64Array(n);
+  const front = Math.round(0.0015 * RATE);
+  for (let i = 0; i < front; i++) {
+    const t = i / RATE;
+    grains[i] += 3 * (t < 0.0004 ? 1 : 1 - (1.7 * (t - 0.0004)) / 0.0011);
+  }
+  let next = front;
+  while (next < seconds * RATE) {
+    const share = next / (seconds * RATE);
+    const length = Math.round((0.0003 + 0.0015 * noise()) * RATE);
+    const size = (1 - share) ** 1.2 * (0.3 + 0.7 * noise());
+    for (let k = 0; k < length && next + k < n; k++) {
+      grains[next + k] += size * (noise() * 2 - 1) * (1 - k / length);
+    }
+    next += Math.max(1, Math.round((RATE / (6000 * (1 - share) ** 2 + 150)) * (0.2 + 1.6 * noise())));
+  }
+  const rung = highPassed(grains, 500).map((s) => 0.5 * s);
+  for (const [centre, q, weight] of bands) {
+    mixInto(rung, 0, resonance(grains, centre, q), weight);
+  }
+  mixInto(samples, start, rung, gain);
+}
+
+/**
+ * Thunder rolling on for so many seconds in surges, each swell [at, how long, how big] in seconds, dying away over the
+ * decay given, in seconds: its rumble, brown noise through a low-pass opening from 60 to 240 hertz as it swells, and its
+ * grumble, a band of noise rising from 200 to 520 hertz with it.
+ */
+function rolling(seconds, noise, swells, decay) {
+  const n = Math.round(seconds * RATE);
+  const rumble = new Float64Array(n);
+  const surges = new Float64Array(n);
+  let brown = 0;
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    brown = (brown + 0.03 * (noise() * 2 - 1)) * 0.997;
+    surges[i] = swells.reduce((sum, [at, width, size]) => sum + size * Math.exp(-(((t - at) / width) ** 2)), 0);
+    // A state variable low-pass, so its cutoff may move as it goes.
+    const tune = 2 * Math.sin((Math.PI * (60 + 180 * Math.min(1, surges[i]))) / RATE);
+    low += tune * band;
+    band += tune * (brown - low - 1.2 * band);
+    rumble[i] = low * (0.05 + surges[i]) * Math.exp(-t / decay) * Math.min(1, t / 0.05);
+  }
+  const surgeAt = (t) => Math.min(1, surges[Math.min(n - 1, Math.round(t * RATE))]);
+  const grumble = sweptResonance(whiteNoise(seconds, noise), (t) => 200 + 320 * surgeAt(t), 0.8)
+    .map((s, i) => s * (0.08 + surges[i]) * Math.exp(-i / RATE / decay) * Math.min(1, i / RATE / 0.05));
+  return { rumble, grumble };
+}
+
+/** So many swells of thunder at random between two times in seconds, each [at, how long, how big], dwindling. */
+function swellsOver(from, to, count, noise) {
+  return Array.from({ length: count }, (_, k) => {
+    const at = from + ((to - from) * (k + noise() * 0.8)) / count;
+    return [at, 0.12 + 0.3 * noise(), (1 - (0.6 * k) / count) * (0.4 + 0.6 * noise())];
+  });
+}
+
+/** The samples with their last so many seconds faded out to nothing. */
+function fadedOut(samples, seconds) {
+  const tail = Math.round(seconds * RATE);
+  for (let i = Math.max(0, samples.length - tail); i < samples.length; i++) {
+    samples[i] *= (samples.length - i) / tail;
+  }
+  return samples;
+}
+
+/** The level all but the loudest share of samples stay under: a peak that a click or two does not set. */
+function nearPeak(samples, share) {
+  const sorted = Float64Array.from(samples, Math.abs).sort();
+  return sorted[Math.floor((1 - share) * (sorted.length - 1))];
+}
+
+/**
+ * A bang made loud: its body, cleared of what is too low to hear, driven into saturation so hard (1 barely), its sharp
+ * edge laid over it so loud beside it, and the two driven together into saturation so hard again, its loudest grains
+ * rounded off rather than setting its level.
+ */
+function mastered(body, edge, drive, edgeLevel, together) {
+  const driven = saturate(highPassed(body, 30), drive);
+  const peak = nearPeak(edge, 0.002);
+  return driven.map((s, i) => Math.tanh(together * (s + (edgeLevel * edge[i]) / peak)));
+}
+
+/** Samples heard far off: twice through a low-pass at the cutoff given, in hertz, as the air swallows their highs. */
+function carried(samples, cutoff) {
+  return lowPassed(lowPassed(samples, cutoff), cutoff);
+}
+
+/** Her whump as she goes, heard near or far off. */
+function hyperspaceWhump(far) {
+  const H = HYPERSPACE_HEARD;
+  const noise = ownRandom(far ? 0x4857466d : 0x4857506d);
+  const seconds = far ? H.outFarSeconds : H.outSeconds;
+  const n = Math.round(seconds * RATE);
+  const body = new Float64Array(n);
+  const edge = new Float64Array(n);
+  const rip = sweptResonance(whiteNoise(seconds, noise), (t) => H.ripTo + (H.ripFrom - H.ripTo) * Math.exp(-t / (far ? 0.45 : 0.35)), 0.6);
+  const { rumble, grumble } = rolling(seconds, noise, swellsOver(0.2, seconds - 1, far ? 5 : 3, noise), far ? 1.4 : 0.9);
+  let sub = 0;
   let zing = 0;
+  let flutter = 0;
   let brown = 0;
   let blast = 0;
   for (let i = 0; i < n; i++) {
     const t = i / RATE;
-    const after = t - H.leadSeconds;
-    if (i < lead) {
-      const rising = t / H.leadSeconds;
-      hum += (H.humFrom + (H.humTo - H.humFrom) * rising ** 2) / RATE;
-      const shimmer = 0.6 + 0.4 * Math.sin(2 * Math.PI * (4 + 14 * rising) * t);
-      const tone = Math.sin(2 * Math.PI * hum) + 0.4 * Math.sin(4 * Math.PI * hum) + 0.2 * Math.sin(6.02 * Math.PI * hum);
-      out[i] = rising * (0.6 * shimmer * tone + 1.6 * rising ** 2 * swell[i]);
-      continue;
-    }
-    whoomph += (H.whoomphTo + (H.whoomphFrom - H.whoomphTo) * Math.exp(-after * H.whoomphFall)) / RATE;
-    const zinging = Math.min(1, after / H.zingSeconds);
-    zing += (H.zingFrom * (H.zingTo / H.zingFrom) ** zinging) / RATE;
-    const white = outRandom() * 2 - 1;
-    brown = (brown + 0.02 * white) * 0.996;
+    sub += (H.whumpTo + (H.whumpFrom - H.whumpTo) * Math.exp(-t * H.whumpFall)) / RATE;
+    zing += (H.zingTo + (H.zingFrom - H.zingTo) * Math.exp(-t / 0.18)) / RATE;
+    flutter += (9 + 24 * Math.exp(-t / 0.3)) / RATE;
+    brown = (brown + 0.02 * (noise() * 2 - 1)) * 0.996;
     blast += 0.05 * (brown - blast);
-    const crack = after < 0.012 ? white * (1 - after / 0.012) : 0;
-    const ending = Math.min(1, (seconds - t) / 0.3);
-    out[i] = ending * (1.8 * Math.exp(-after * 1.1) * Math.min(1, after * 300) * Math.sin(2 * Math.PI * whoomph) + 10 * Math.exp(-after / 0.35) * blast
-      + 0.7 * crack + 0.35 * Math.exp(-after / 0.12) * Math.sin(2 * Math.PI * zing) + 0.9 * Math.exp(-after / 0.6) * backIn[i]);
+    const thump = Math.min(1, t / (far ? 0.012 : 0.003)) * Math.exp(-t / (far ? 0.8 : 0.6))
+      * (Math.sin(2 * Math.PI * sub) + 0.4 * Math.sin(4 * Math.PI * sub));
+    const ripping = Math.min(1, t / 0.015) * Math.exp(-t / (far ? 0.7 : 0.55)) * (0.6 + 0.4 * Math.sin(2 * Math.PI * flutter));
+    const zinging = far ? 0 : Math.exp(-t / 0.2) * (Math.sin(2 * Math.PI * zing) + 0.6 * Math.sin(2 * Math.PI * zing * 1.5));
+    body[i] = 2.2 * thump + 9 * Math.exp(-t / 0.35) * blast + 1.3 * rumble[i] + 0.8 * grumble[i];
+    edge[i] = 3 * ripping * rip[i] + 0.15 * zinging;
   }
-  writeSound("freighter_hyperspace_out", lowPassed(out.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.85);
+  tear(edge, 0, far ? 0.08 : 0.06, noise, [[1200, 1.5, 1], [2600, 2, 0.8], [5200, 2.5, 0.5]], 1);
+  const echoes = far ? [[0.38, 0.4, 1200], [0.9, 0.3, 900], [1.5, 0.2, 700]] : [[0.33, 0.25, 2500], [0.82, 0.15, 1500]];
+  const heard = mastered(echoed(body, echoes), echoed(far ? carried(edge, H.farCutoff) : edge, echoes), far ? 2.6 : 2.2, far ? 0.5 : 0.8, 1.8);
+  return fadedOut(far ? carried(heard, H.farCutoff * 1.6) : lowPassed(heard, 13000), 0.6);
+}
 
-  // Coming out.
-  const inRandom = ownRandom(0x48797032);
-  const rush = sweptResonance(whiteNoise(seconds, inRandom), (t) => H.rushTo + (H.rushFrom - H.rushTo) * (1 - Math.min(1, t / H.leadSeconds)) ** 2, 1.6);
-  const away = sweptResonance(whiteNoise(seconds, inRandom), (t) => 150 + 1500 * Math.exp(-Math.max(0, t - H.leadSeconds) / 0.7), 1);
-  const into = new Float64Array(n);
+/** Her thunderclap as she comes out, heard near or far off. */
+function hyperspaceThunder(far) {
+  const H = HYPERSPACE_HEARD;
+  const noise = ownRandom(far ? 0x4854466d : 0x4854506d);
+  const seconds = far ? H.inFarSeconds : H.inSeconds;
+  const n = Math.round(seconds * RATE);
+  const body = new Float64Array(n);
+  const edge = new Float64Array(n);
+  const { rumble, grumble } = rolling(seconds, noise, swellsOver(0.3, seconds - 1.5, far ? 9 : 7, noise), far ? 3 : 2);
+  const [from, to] = far ? [H.boomFarFrom, H.boomFarTo] : [H.boomFrom, H.boomTo];
   let boom = 0;
-  brown = 0;
-  blast = 0;
+  let brown = 0;
+  let blast = 0;
   for (let i = 0; i < n; i++) {
     const t = i / RATE;
-    const after = t - H.leadSeconds;
-    if (i < lead) {
-      const coming = t / H.leadSeconds;
-      into[i] = 2.2 * coming ** 3 * rush[i];
-      continue;
-    }
-    boom += (H.boomTo + (H.boomFrom - H.boomTo) * Math.exp(-after * H.boomFall)) / RATE;
-    const white = inRandom() * 2 - 1;
-    brown = (brown + 0.02 * white) * 0.997;
-    blast += 0.04 * (brown - blast);
-    const crack = after < 0.015 ? white * (1 - after / 0.015) : 0;
-    const ending = Math.min(1, (seconds - t) / 0.4);
-    into[i] = ending * (1.8 * Math.exp(-after * 0.8) * Math.min(1, after * 300) * Math.sin(2 * Math.PI * boom) + 12 * Math.exp(-after / 0.6) * blast
-      + 0.8 * crack + 1.0 * Math.exp(-after / 0.9) * away[i]);
+    boom += (to + (from - to) * Math.exp(-t * H.boomFall)) / RATE;
+    brown = (brown + 0.02 * (noise() * 2 - 1)) * 0.997;
+    blast += 0.06 * (brown - blast);
+    const bang = Math.min(1, t / (far ? 0.02 : 0.002)) * Math.exp(-t / (far ? 0.9 : 0.7))
+      * (Math.sin(2 * Math.PI * boom) + 0.7 * Math.sin(4 * Math.PI * boom) + 0.35 * Math.sin(6 * Math.PI * boom));
+    body[i] = 2.4 * bang + 7 * Math.exp(-t / 0.4) * blast + (far ? 2.6 : 1.8) * rumble[i] + (far ? 1.2 : 1.4) * grumble[i];
   }
-  writeSound("freighter_hyperspace_in", lowPassed(into.map((sample) => Math.tanh(1.2 * sample)), 10000), 0.85);
+  // The clap, and its later strokes rolling off along the sky, each [at, how long, how loud].
+  const bands = [[1000, 1.2, 1], [2000, 1.6, 0.9], [3800, 2, 0.7], [6500, 2.5, 0.5]];
+  tear(edge, 0, far ? 0.3 : 0.25, noise, bands, 1);
+  for (const [at, length, gain] of [[0.07, 0.08, 0.7], [0.19, 0.1, 0.5], [0.45, 0.12, 0.4], [0.95, 0.15, 0.28], [1.7, 0.18, 0.2]]) {
+    tear(edge, at, length, noise, bands.slice(0, 3), gain);
+  }
+  const echoes = far ? [[0.45, 0.45, 1000], [1.1, 0.35, 800], [1.9, 0.25, 600]] : [[0.42, 0.3, 2200], [0.95, 0.2, 1400], [1.7, 0.12, 900]];
+  const heard = mastered(echoed(body, echoes), echoed(far ? carried(edge, H.farCutoff) : edge, echoes), far ? 2.8 : 2.4, far ? 0.5 : 0.9, 1.8);
+  return fadedOut(far ? carried(heard, H.farCutoff * 1.6) : lowPassed(heard, 13000), 1.2);
+}
+{
+  const H = HYPERSPACE_HEARD;
+  const leadSeconds = H.leadSeconds + H.tailSeconds;
+  const n = Math.round(leadSeconds * RATE);
+
+  // Her charge.
+  const noise = ownRandom(0x48436867);
+  const charge = new Float64Array(n);
+  const suckFrom = H.leadSeconds - H.suckSeconds;
+  const inhale = sweptResonance(whiteNoise(leadSeconds, noise), (t) => 350 + 3200 * Math.max(0, (t - suckFrom) / H.suckSeconds) ** 2, 1.3);
+  const sparks = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const rising = Math.min(1, i / RATE / H.leadSeconds);
+    if (noise() < (4 + 70 * rising ** 2) / RATE) {
+      sparks[i] = (noise() < 0.5 ? -1 : 1) * (0.4 + 0.6 * noise());
+    }
+  }
+  const crackling = resonance(highPassed(sparks, 1500), 3400, 2.5);
+  let whine = 0;
+  let detuned = 0;
+  let hum = 0;
+  let throb = 0;
+  let reverse = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const rising = Math.min(1, t / H.leadSeconds);
+    const sucking = Math.max(0, (t - suckFrom) / H.suckSeconds);
+    const after = t - H.leadSeconds;
+    // The whine yanked higher still as she is sucked away.
+    const pitch = H.whineFrom * (H.whineTo / H.whineFrom) ** (rising ** 1.4) * (1 + 0.6 * sucking ** 3);
+    whine += pitch / RATE;
+    detuned += (pitch * 1.006) / RATE;
+    hum += (H.humFrom + (H.humTo - H.humFrom) * rising ** 1.5) / RATE;
+    throb += (H.throbFrom + (H.throbTo - H.throbFrom) * rising ** 1.6) / RATE;
+    reverse += (25 + 55 * sucking ** 2) / RATE;
+    const tone = Math.sin(2 * Math.PI * whine) + 0.45 * Math.sin(4 * Math.PI * whine) + 0.2 * Math.sin(6 * Math.PI * whine)
+      + 0.7 * Math.sin(2 * Math.PI * detuned);
+    const throbbing = 0.55 + 0.45 * Math.sin(2 * Math.PI * throb);
+    const humming = Math.sin(2 * Math.PI * hum) + 0.5 * Math.sin(4 * Math.PI * hum) + 0.25 * Math.sin(6 * Math.PI * hum);
+    const ending = after < 0 ? 1 : Math.exp(-after / 0.012);
+    charge[i] = ending * (0.6 * rising ** 1.3 * throbbing * tone + 0.7 * rising ** 1.2 * throbbing * humming
+      + 0.6 * rising ** 2 * crackling[i] + 2.4 * sucking ** 3 * inhale[i] + 1.4 * sucking ** 2.5 * Math.sin(2 * Math.PI * reverse));
+  }
+  writeSound("freighter_hyperspace_charge", saturate(lowPassed(charge, 9000), 2.2), 0.9);
+  writeSound("freighter_hyperspace_out", hyperspaceWhump(false), 0.95);
+  writeSound("freighter_hyperspace_out_far", hyperspaceWhump(true), 0.95);
+
+  // The rush where she comes out.
+  const rushNoise = ownRandom(0x48527368);
+  const rush = new Float64Array(n);
+  const rising = (t) => H.rushFrom * (H.rushTo / H.rushFrom) ** (Math.min(1, t / H.leadSeconds) ** 1.5);
+  const air = sweptResonance(whiteNoise(leadSeconds, rushNoise), rising, 1.4);
+  const low = lowPassed(whiteNoise(leadSeconds, rushNoise), 120);
+  const streaks = [1, 1.26, 1.5];
+  const phases = streaks.map(() => 0);
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const coming = Math.min(1, t / H.leadSeconds);
+    const after = t - H.leadSeconds;
+    // The air pulled tight for a breath before the clap.
+    const held = after > 0 ? Math.exp(-after / 0.008) : Math.min(1, (H.leadSeconds - t) / 0.035 + 0.15);
+    let tones = 0;
+    for (let k = 0; k < streaks.length; k++) {
+      phases[k] += (streaks[k] * H.streakFrom * (H.streakTo / H.streakFrom) ** (coming ** 2)) / RATE;
+      tones += Math.sin(2 * Math.PI * phases[k]);
+    }
+    rush[i] = held * (2.4 * coming ** 2.5 * air[i] + 0.4 * coming ** 3 * tones + 6 * coming ** 2 * low[i]);
+  }
+  writeSound("freighter_hyperspace_rush", saturate(rush, 1.6), 0.9);
+  writeSound("freighter_hyperspace_in", hyperspaceThunder(false), 0.95);
+  writeSound("freighter_hyperspace_in_far", hyperspaceThunder(true), 0.95);
 }
 
 // The Spookie's voice (see the plan's "The Spookie"), each sound with a random sequence of its own: a big creature's

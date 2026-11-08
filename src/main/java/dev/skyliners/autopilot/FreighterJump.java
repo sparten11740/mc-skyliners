@@ -13,6 +13,7 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
@@ -37,8 +38,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * {@link #CLEARANCE} over the highest block anywhere under her and round her, everyone aboard with her (see
  * {@link SableFlight#jump}). Then her autopilot carries on as if she had flown there: over the pin, she hovers or comes
  * down on it. Everyone aboard is told each step (see {@link HyperspaceJump}) and sees and hears it; everyone near where
- * she goes from or comes out but not aboard sees and hears it from outside (see {@link HyperspaceWake}). The ticket lets
- * go by itself a while after. Called off if she stops flying along before she goes.
+ * she goes from or comes out but not aboard sees it from outside (see {@link HyperspaceWake}), and everyone within
+ * earshot, much further off, hears it (see {@link HyperspaceSound}). The ticket lets go by itself a while after. Called
+ * off if she stops flying along before she goes.
  */
 public final class FreighterJump {
     /** How long her drive spools up before she can let go, in ticks: as long as her computer takes to say so. */
@@ -144,6 +146,8 @@ public final class FreighterJump {
     private int guessed;
     /** How many ticks after the button the land round the pin was in, for play-testing; -1 before it is. */
     private int loadedAfter = -1;
+    /** The game time she last jumped at, for play-testing; -1 before she has. */
+    private long jumpedAt = -1;
     /**
      * Those aboard as she jumped, each by where they were among her blocks, to put back aboard any she left behind,
      * and for how many ticks more they are looked after.
@@ -163,6 +167,11 @@ public final class FreighterJump {
     /** How many ticks after the button the land round the pin was in last jump, for play-testing; -1 before. */
     int loadedAfter() {
         return loadedAfter;
+    }
+
+    /** The game time she last jumped at, for play-testing; -1 before she has. */
+    long jumpedAt() {
+        return jumpedAt;
     }
 
     /**
@@ -298,8 +307,10 @@ public final class FreighterJump {
         List<ServerPlayer> aboard = Aboard.players(autopilot);
         Vec3 among = SableFlight.toPlot(level, autopilot.getBlockPos(), middle, false);
         show(level, new HyperspaceWake(HyperspaceWake.Stage.GATHER, middle, among, state.nose(), hull, GO_TICKS), aboard);
+        sound(level, HyperspaceSound.Part.CHARGE, middle, aboard);
         Vec3 out = new Vec3(toX, middle.y + heightOut(level, autopilot, state) - state.position().y, toZ);
         show(level, new HyperspaceWake(HyperspaceWake.Stage.INBOUND, out, out, state.nose(), hull, GO_TICKS), aboard);
+        sound(level, HyperspaceSound.Part.RUSH, out, aboard);
     }
 
     /**
@@ -347,9 +358,12 @@ public final class FreighterJump {
         autopilot.targetAltitude = Math.max(autopilot.targetAltitude, height);
         pilot.jumped();
         aboard.forEach(player -> PacketDistributor.sendToPlayer(player, new HyperspaceJump(HyperspaceJump.Stage.ARRIVE, GO_TICKS)));
+        jumpedAt = level.getGameTime();
         show(level, new HyperspaceWake(HyperspaceWake.Stage.DEPART, middle, middle, state.nose(), hull, 0), aboard);
+        sound(level, HyperspaceSound.Part.WHUMP, middle, aboard);
         Vec3 out = middle.add(by);
         show(level, new HyperspaceWake(HyperspaceWake.Stage.ARRIVE, out, among, state.nose(), hull, 0), aboard);
+        sound(level, HyperspaceSound.Part.THUNDER, out, aboard);
         JumpDriveBlock.fireForJump(level, drive == null ? null : autopilot.getBlockPos().offset(drive));
         autopilot.changed();
     }
@@ -370,12 +384,25 @@ public final class FreighterJump {
      * from inside; to nobody when the server's config leaves the sight out.
      */
     private static void show(ServerLevel level, HyperspaceWake wake, List<ServerPlayer> aboard) {
+        tellOutside(level, wake, wake.at(), HyperspaceWake.SEEN_WITHIN, aboard);
+    }
+
+    /**
+     * One of the jump's sounds, made where given, sent to everyone within earshot of it, much further than it is seen,
+     * but not those aboard her, who hear the jump from inside; to nobody when the server's config leaves the sight out.
+     */
+    private static void sound(ServerLevel level, HyperspaceSound.Part part, Vec3 at, List<ServerPlayer> aboard) {
+        tellOutside(level, new HyperspaceSound(part, at), at, HyperspaceSound.HEARD_WITHIN, aboard);
+    }
+
+    /** A message sent to everyone within so many blocks of where given but not aboard her, while the config has it. */
+    private static void tellOutside(ServerLevel level, CustomPacketPayload message, Vec3 at, double within, List<ServerPlayer> aboard) {
         if (!SkylinersConfig.FREIGHTER_HYPERSPACE_WAKE.get()) {
             return;
         }
         for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(wake.at()) < HyperspaceWake.SEEN_WITHIN * HyperspaceWake.SEEN_WITHIN && !aboard.contains(player)) {
-                PacketDistributor.sendToPlayer(player, wake);
+            if (player.distanceToSqr(at) < within * within && !aboard.contains(player)) {
+                PacketDistributor.sendToPlayer(player, message);
             }
         }
     }

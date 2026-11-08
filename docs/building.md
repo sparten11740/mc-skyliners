@@ -364,10 +364,13 @@ ticket of its own (which lets go by itself), her lowest block kept clear over th
 `MOTION_BLOCKING` heightmap under her, and `SableFlight.jump` moving her, Sable carrying whoever stands or sits on her
 and the rest aboard moved with her; each step goes to everyone aboard as a `HyperspaceJump`, which the client's
 `HyperspaceOverlay` shows and sounds, her computer's lines generated with the rest of hers (`COMPUTER_JUMP_LINES`).
-Those outside her within `HyperspaceWake.SEEN_WITHIN` are sent each step as a `HyperspaceWake`, which the client's
-`HyperspaceWakes` draws as streaks and flashes, and `HyperspaceStretch` draws her stretching into the jump and out of
-it: her blocks drawn a second time from Sable's own meshes through a stretching model-view matrix
-(`SableClient.drawBlocks`), nudged toward the camera to show over her, with Sable's vanilla renderer only.
+Those outside her within `HyperspaceWake.SEEN_WITHIN` are sent each step as a `HyperspaceWake`, and those within
+`HyperspaceSound.HEARD_WITHIN`, much further, each of its sounds as a `HyperspaceSound`, which the client's
+`HyperspaceSounds` plays as late as sound takes to come from where it is made, and from far off the duller one of each
+bang. The client's `HyperspaceWakes` draws the steps as streaks and flashes, and `HyperspaceStretch` draws her
+stretching into the jump and out of it: her blocks drawn a second time from Sable's own meshes through a stretching
+model-view matrix (`SableClient.drawBlocks`), nudged toward the camera to show over her, with Sable's vanilla renderer
+only.
 After a jump, `SableFlight.letGoAboard` and `SableClient.keepAboard` let go of the jump's length Sable would otherwise
 keep everyone carried across going at, and on each client `SableClient.settleJumps`, run by `CarriedAboard` before
 anything moves each tick, takes a ship seen to move further in a tick than any flies as put there, carrying the player
