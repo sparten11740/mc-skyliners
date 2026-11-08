@@ -3326,6 +3326,18 @@ function checkSecretPanelByHand() {
   expect(panel().props?.open === "true", "secret panel: the rivet beside it pressed, it swings open");
   must(`wait 30t; use ${x + 1},${ground + 1},-1; wait 10t`);
   expect(panel().props?.open === "false", "secret panel: the rivet pressed again, it shuts");
+  // Opened once more, and pushed shut by hand by whoever stands in its doorway: it would shut them inside its solid
+  // blocks, hurting them, so it waits for them with a chime.
+  must(`wait 30t; use ${x + 1},${ground + 1},-1; wait 10t`);
+  survival();
+  must(`server tp @p ${x + 0.5} ${ground} 0.5 180 0; wait 5t`);
+  const pushed = now();
+  must(`use ${x},${ground + 1},0; wait 10t`);
+  const chimed = heard("minecraft:block.note_block.bell", pushed, LOOK_EVERY);
+  expect(panel().props?.open === "true" && healthOf() === FULL_HEALTH && Boolean(chimed),
+    "secret panel: pushed shut from inside its doorway, it waits with a chime and shuts nobody in",
+    `${panel().props?.open === "true" ? "open" : "shut"}, health ${healthOf()}, ${chimed ? "chimed" : "no chime"}`);
+  creative();
 }
 
 // A freighter's port prong a lookout: a seat faces a porthole down its tunnel, and at its tip, past her nose jet's

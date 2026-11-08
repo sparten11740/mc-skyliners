@@ -836,7 +836,8 @@ upper deck). Each is out of the doors' aisles and above everyone's head.
 
 Behind the lounge's bar a wall of bookshelves closes off the tail. One of its books glows: that bookshelf is a secret
 door, and while someone is near, sparks drift into the book with a faint shimmer. Use it and it swings open with a
-deep creak; it swings shut by itself after ten seconds, once nobody stands in the doorway, or when used again. Behind
+deep creak; it swings shut by itself after ten seconds, once nobody stands in the doorway, or when used again, but
+used with someone in the doorway it chimes and waits for them instead. Behind
 it the tail is a den for children: a landing with two bean bags, a ball pit with a disco ball (see below) turning over
 it, hung from the crown on a cable and throwing its coloured spots round the den, then the tail cone's steps climbing
 to the top of the tail, each carpeted in the next colour of the rainbow, with bunks (see below, their reading lights on)
@@ -2694,7 +2695,8 @@ with a clunk and a hiss of air. Behind it a way runs past the jet's housing to a
 bulkhead: a cot along her hull, care-package crates, barrels of smuggled goods, one with a lantern on it, a mail sack,
 and a chest of loot, cookies, emeralds, a spyglass, a Nebula Fizz and twinkling rockets; the barrel under the lantern
 holds cocoa, sugar, glow berries, honey and amethyst. The panel shuts by itself a while after you go through, once
-nobody stands in its doorway, or when the rivet is pressed again; from inside, just push it open. The server config's
+nobody stands in its doorway, or when the rivet is pressed again; from inside, just push it open. It never shuts on
+anyone in its doorway: pressed or pushed then, it chimes and waits for them. The server config's
 `freighter.smugglerHold` leaves the hold out, her starboard tunnel then running on to the jet's housing.
 
 The Secret Panel and the Loose Rivet are in the creative tab under The Den, for a secret door of your own: set the panel

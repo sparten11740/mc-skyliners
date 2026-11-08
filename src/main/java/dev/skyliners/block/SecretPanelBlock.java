@@ -32,8 +32,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * but it stays shut: a redstone pulse opens it, as the loose rivet set in the wall beside it gives (see
  * {@link LooseRivetBlock}), and it swings back with a clunk and a hiss of air. From behind, it is pushed open by hand,
  * so nobody is ever shut in. It swings shut by itself after a while once nobody stands in its doorway, at the next
- * pulse, or pushed by hand. Shut, it fills its blocks as solidly as the wall round it. As with any door, FACING is the
- * way it swings open, away from its front, and its front faces whoever set it.
+ * pulse, or pushed by hand, but never on anyone in its doorway, waiting for them with a chime. Shut, it fills its
+ * blocks as solidly as the wall round it. As with any door, FACING is the way it swings open, away from its front, and
+ * its front faces whoever set it.
  */
 public class SecretPanelBlock extends DoorBlock {
     private static final MapCodec<SecretPanelBlock> CODEC = simpleCodec(SecretPanelBlock::new);
@@ -160,10 +161,16 @@ public class SecretPanelBlock extends DoorBlock {
         return new Vec3(pos.getX() + x, pos.getY() + up, pos.getZ() + z);
     }
 
-    /** Opens or shuts it with a clunk and a hiss and a puff of air; opened, it shuts again by itself in a while. */
+    /**
+     * Opens or shuts it with a clunk and a hiss and a puff of air; opened, it shuts again by itself in a while. Never
+     * shut on anyone in its doorway, by a pulse or by hand: it waits for them with a chime instead.
+     */
     private void swing(ServerLevel level, BlockState state, BlockPos pos, boolean open) {
-        setOpen(null, level, state, pos, open);
         BlockPos lower = lowerHalf(state, pos);
+        if (!open && SecretBookshelfBlock.heldOpen(level, lower)) {
+            return;
+        }
+        setOpen(null, level, state, pos, open);
         level.playSound(null, lower, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, HISS_VOLUME, HISS_PITCH);
         level.sendParticles(ParticleTypes.CLOUD, lower.getX() + 0.5, lower.getY() + 1, lower.getZ() + 0.5, SWING_PUFFS, 0.4, 0.8, 0.4, 0.05);
         if (open) {

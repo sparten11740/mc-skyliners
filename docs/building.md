@@ -249,7 +249,8 @@ beside it, and furnishes the den behind, a chest and a barrel filled from `chest
 `chests/smuggler_contraband`; nothing that a redstone pulse sends off stands beside a thrust relay, whose signal it
 would take for one; `freighter.smugglerHold` switches it. The rivet is a `ButtonBlock`, its pulse reaching the panel
 through the plate it is set in; the panel is a `DoorBlock` that swings at the start of each pulse and stays, shuts by
-itself as `SecretBookshelfBlock` does (sharing its `inDoorway`), only sounds hollow knocked on from its front and is
+itself as `SecretBookshelfBlock` does and never on anyone in its doorway, however it is told to (sharing its
+`inDoorway` and `heldOpen`), only sounds hollow knocked on from its front and is
 pushed open from behind, and stands on her cut skin as well as on a full block.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face

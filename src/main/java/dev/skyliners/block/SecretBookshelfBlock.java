@@ -67,8 +67,12 @@ public class SecretBookshelfBlock extends DoorBlock {
         return isOpen(state) ? super.getShape(state, level, pos, context) : Shapes.block();
     }
 
+    /** Used, it swings open or shut; open with anyone in its doorway, it waits for them with a chime instead. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (level instanceof ServerLevel server && isOpen(state) && heldOpen(server, lowerHalf(state, pos))) {
+            return InteractionResult.SUCCESS;
+        }
         InteractionResult result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (level instanceof ServerLevel server) {
             BlockPos lower = lowerHalf(state, pos);
@@ -134,6 +138,20 @@ public class SecretBookshelfBlock extends DoorBlock {
             }
         }
         return false;
+    }
+
+    /**
+     * Whether a secret door two blocks tall, open, is held open by anyone standing in its doorway over the lower half
+     * here, who would be shut inside its solid blocks: if so, it chimes, as a boarding ramp waiting for someone does,
+     * and stays open, shutting by itself once they have stepped through.
+     */
+    static boolean heldOpen(ServerLevel level, BlockPos lower) {
+        if (!inDoorway(level, lower)) {
+            return false;
+        }
+        level.playSound(null, lower, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
+            BoardingAirstairs.WAITING_PITCH);
+        return true;
     }
 
     private static BlockPos lowerHalf(BlockState state, BlockPos pos) {
