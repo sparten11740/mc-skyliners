@@ -30,6 +30,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -833,6 +834,7 @@ public final class SpaceWeather {
         if (braced.isEmpty()) {
             return;
         }
+        braced.removeIf(Entity::isRemoved);
         if (now > bracedUntil) {
             braced.clear();
             return;
@@ -968,7 +970,8 @@ public final class SpaceWeather {
     /**
      * A rock coming at her struck: chipped, slowed and knocked aside, away from where the shot met it across its way,
      * by a share of how fast it comes as big as the share of it the shot takes; burst to pieces once it has taken all
-     * it can; and everyone near shown its new course, which may now miss her.
+     * it can; and everyone near shown its new course, which may now miss her. One already flying on past her, having
+     * missed, is only chipped: its course is behind it.
      */
     private void knock(ServerLevel level, Strike strike, Vec3 at, Vec3 way, double force) {
         long now = level.getGameTime();
@@ -982,8 +985,11 @@ public final class SpaceWeather {
             bursts(level, strike.id, middle, way);
             return;
         }
+        if (now >= strike.at) {
+            return;
+        }
         double share = force / strike.toughness;
-        double still = strike.speed * Math.max(0, strike.at - now) / TICKS;
+        double still = strike.speed * (strike.at - now) / TICKS;
         strike.aside = strike.aside.add(strike.drift.scale((now - strike.changed) / TICKS));
         strike.drift = strike.drift.add(knockedAway(strike.way, at.subtract(middle), way).scale(KNOCKED_ASIDE * share * strike.firstSpeed));
         strike.speed = Math.max(strike.firstSpeed * SLOWEST_SHARE, strike.speed - SLOWED * share * strike.firstSpeed);
