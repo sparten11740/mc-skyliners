@@ -934,6 +934,12 @@ function feedThroughHatch(hatch) {
   throw new Error("it never took the ice cream");
 }
 
+// Drops an ice cream into its tank over it. Its hatch stays open once used, and it waits at it, in the way of a click.
+function throwIceCream() {
+  const [creature] = must("find skyliners:tardigrade 128 1").rows;
+  must(`server summon item ${creature.at_abs[0]} ${creature.at_abs[1] + 2} ${creature.at_abs[2]} {Item:{id:"skyliners:ice_cream",count:1}}`);
+}
+
 // How alike two frames are, in decibels.
 function decibels(first, second) {
   const done = spawnSync("ffmpeg", ["-hide_banner", "-i", first, "-i", second, "-lavfi", "psnr", "-f", "null", "-"], { encoding: "utf8" });
@@ -946,12 +952,13 @@ const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.l
 // Feeds it, then stands on the ground at the rocket's foot looking at the empty horizon, clouds off: nothing can change
 // one frame from the next there but the view itself. It is measured from there because a look at a wall by the hatch
 // passed with the shake taken out: the burp's cloud drifts across anything near it. And it is felt that far from it.
-function checkTheShipShakes(hatch, site) {
+function checkTheShipShakes(site) {
   if (spawnSync("ffmpeg", ["-version"]).error) {
     console.log("  skip the view shaking: it takes FFmpeg to measure");
     return;
   }
-  must(`face ${hatch}; use ${hatch}; option renderClouds off; server tp @p ${site.x} ${ground} ${site.z + SHAKE_STAND_OFF}; turn 0 -10; wait 10t`);
+  throwIceCream();
+  must(`option renderClouds off; server tp @p ${site.x} ${ground} ${site.z + SHAKE_STAND_OFF}; turn 0 -10; wait 10t`);
   const frames = must(`screenshot 640 burst=${SHAKE_FRAMES} every=${SHAKE_EVERY}t hud=off`).rows;
   const changes = frames.slice(1).map((frame, index) => decibels(frames[index].file, frame.file));
   frames.forEach((frame) => rmSync(frame.file, { force: true }));
@@ -987,12 +994,11 @@ function checkTardigradeIceCream() {
   expect(particles.end_rod >= STREAKS, "tardigrade: a streak of light as it goes", `${particles.end_rod ?? 0} streaks`);
   creative();
   must(`wait 60t; server tp @p ${hx + 0.5 + dx * 2.5} ${hy - 1} ${hz + 0.5 + dz * 2.5}`);
-  checkTheShipShakes(hatch, site);
+  checkTheShipShakes(site);
 
   must(`server tp @p ${hx + 0.5 + dx * 2.5} ${hy - 1} ${hz + 0.5 + dz * 2.5}; wait ${BACK_AGAIN_TICKS}t`);
-  const [creature] = must("find skyliners:tardigrade 128 1").rows;
   const thrown = now();
-  must(`server summon item ${creature.at_abs[0]} ${creature.at_abs[1] + 2} ${creature.at_abs[2]} {Item:{id:"skyliners:ice_cream",count:1}}`);
+  throwIceCream();
   expect(Boolean(heard("*tardigrade_burp*", thrown, BURP_WITHIN_TICKS)), "tardigrade: thrown into its tank, an ice cream does the same");
 }
 
