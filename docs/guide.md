@@ -2146,7 +2146,8 @@ them, ready to be packed and dropped; out to either side a wall of pallet racks 
 boxes, drums and crates and now and then a bay left empty, parts the front from the back (with a gap in it in a big
 rocket); at the back right is a workbench corner, a crafting table, a stool and a grindstone under shelves of tool
 cases, and at the back left crates are piled where they were set down. By the way in on its left stands the Parcel
-Scanner, a conveyor under a striped gantry with an empty crate waiting on its belt: set a crate on it, or use it, and a
+Scanner, a conveyor under a striped gantry with an empty crate waiting on its belt, the gantry as solid as it looks:
+set a crate on it, or use it, and a
 red curtain of laser light fills the gantry with a rising whirr while a line sweeps down the crate on its screen, then a
 bright double beep and a green tick if something is packed in the crate, ready to drop, or a low buzz and a red cross if
 not. Halo lights hang round the shaft as in the entry, and the middle of its back is left to the rover (below). The
@@ -2750,7 +2751,8 @@ Mind your landing." Her autopilot screen and the settings
 screen show her in pictures of her own: a saucer lifting off on a blue glow, landing, climbing and turning.
 
 Her outside is a working ship's. On her top, to port of her stern, a big white satellite dish nearly four blocks across
-turns slowly round on its pedestal, tipped up at the sky; off her port bow stands a little farm of antenna masts, two
+turns slowly round on its pedestal, tipped up at the sky, the middle of its bowl solid enough to stand on; off her port
+bow stands a little farm of antenna masts, two
 more to starboard, each with a red lamp at its tip blinking a second on and three off; there are cream sensor domes with
 a cyan band round their foot, banks of heat-sink fins glowing orange at their roots either side of her stern over her
 engines, exhaust vents between them and flush vent grilles inboard of them letting off white wisps, and runs of
