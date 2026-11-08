@@ -1041,7 +1041,7 @@
   "message.skyliners.console.climb_busy": "She is climbing hard already",
   "message.skyliners.console.climb_resting": "The climb boost is resting",
   "message.skyliners.console.climb_not_flying": "She climbs hard only while she flies along",
-  "message.skyliners.console.climb_at_top": "She is at the edge of space already",
+  "message.skyliners.console.climb_at_top": "She is as high as she may go already",
   "message.skyliners.console.climb_switched_off": "The climb boost is switched off on this server",
   "message.skyliners.console.climb_no_ship": "No freighter here to climb",
   "block.skyliners.console_slam": "Slam Landing Console",

@@ -2536,10 +2536,10 @@ config's `rocket.boost`, `rocket.stabilitySwitch` and `rocket.arcAscent`; switch
 low refusal note.
 
 She can go to space. Her autopilot climbs her far past the top of the world, where the airliner and the zeppelin may not
-go and there is only sky, up to y 1,400 (the server config's `rocket.ceiling`); the climb, the hold and the fall back
-are as they are lower down, only longer. Her settings screen's sky reaches as high, numbered more sparsely so the
-numbers keep apart, and from y 1,000, the edge of space, black space stands over it with its stars, along a thin blue
-glow of air, so you can see where space begins.
+go and there is only sky, up to y 2,500 (the server config's `rocket.highestAltitude`, which goes as high as
+10,000); the climb, the hold and the fall back are as they are lower down, only longer. Her settings screen's sky
+reaches as high, numbered more sparsely so the numbers keep apart, and from y 1,000, the edge of space, black space
+stands over it with its stars, along a thin blue glow of air, so you can see where space begins.
 
 As she climbs, the sky turns to space round her. From y 400 it deepens through darker and darker blues to all but black
 by y 1,200; the stars come out from y 500, by day too, and by the edge of space they are all out, more of them than a
@@ -2646,10 +2646,12 @@ Right before the pilot, the big orange button in its ring of orange and black st
 flames, climbs her hard. It glows orange while she flies along, hovering or cruising; pressed then, her computer says
 she is climbing hard and to hold on to your stomachs, her lift roars flat out and she climbs straight up far faster
 than she ever flies along, holding her spot and her heading, dashes racing up past the arrow on its screen, her legs
-drawn up into her belly as she goes. She slows as she nears the top and stops 300 blocks higher, or at the edge of
-space if that is nearer, and her autopilot holds that height from then on rather than bringing her back down. Then
+drawn up into her belly as she goes. She slows as she nears the top and stops 300 blocks higher, or as high as her
+autopilot may be set to hold if that is nearer (y 2,500, the server config's `rocket.highestAltitude`), so a few
+presses take her past the edge of space and up to where space weather blows (see below), and her autopilot holds that
+height from then on rather than bringing her back down. Then
 the button rests for fifteen seconds, the arrow red in a ring of segments lighting one by one, and glows orange again
-when it is ready. On the ground, lifting off, landing, resting or at the edge of space it only says no with a low
+when it is ready. On the ground, lifting off, landing, resting or as high as she may go it only says no with a low
 note. Climbing straight up brings no new land into view, as flying along does, so the server keeps up however fast
 she climbs. The server config's `freighter.climbBoost` switches it off; her console then has a second bank of toggles
 where the climb button was.

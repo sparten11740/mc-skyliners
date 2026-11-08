@@ -13,16 +13,17 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The freighter's climb boost (see {@link FreighterFlight#climbBoost}), asked for from her console's climb button while
  * she flies along: her lift thrusters fire flat out and she climbs straight up far faster than she ever flies along,
- * holding her spot and her heading (see {@link FreighterPilot}), until she has gained {@link #GAIN} or reached the edge
- * of space, whichever is nearer. Her autopilot takes that height as the one it holds, so it never pulls her back down,
+ * holding her spot and her heading (see {@link FreighterPilot}), until she has gained {@link #GAIN} or reached the
+ * highest her autopilot may be set to hold (see {@link AutopilotBlockEntity#ceiling}), whichever is nearer, so a few
+ * presses take her up past the edge of space to where space weather blows. Her autopilot takes that height as the one
+ * it holds, so it never pulls her back down,
  * and the boost rests a while before it fires again. Climbing straight up brings no new land into view, as flying along
  * does, so the server keeps up with her however fast she climbs. Her lift roars as it fires and her computer says so;
  * none with the server config's {@code freighter.climbBoost} off.
  */
 public final class FreighterClimbBoost {
-    /** How much height a climb boost gains, in blocks, and the highest it takes her: the edge of space. */
+    /** How much height a climb boost gains, in blocks. */
     static final double GAIN = 300;
-    static final double TOP = EdgeOfSpace.HEIGHT;
     /** The least height a climb boost must have left to gain to fire, in blocks: with less, she is at the top. */
     private static final double LEAST_GAIN = 20;
     /** How near the height it climbs to counts as there, in blocks. */
@@ -45,7 +46,7 @@ public final class FreighterClimbBoost {
         RESTING,
         /** She is not flying along: on the ground, lifting off, coming down or switched off. */
         NOT_FLYING,
-        /** She is at the edge of space, as high as it takes her. */
+        /** She is as high as her autopilot may hold her, as high as it takes her. */
         AT_TOP,
         /** The server's config has it switched off. */
         SWITCHED_OFF,
@@ -101,7 +102,7 @@ public final class FreighterClimbBoost {
         if (restUntil != NO_REST && level.getGameTime() < restUntil) {
             return Answer.RESTING;
         }
-        double top = Math.min(height + GAIN, TOP);
+        double top = Math.min(height + GAIN, autopilot.ceiling(level));
         if (top - height < LEAST_GAIN) {
             return Answer.AT_TOP;
         }

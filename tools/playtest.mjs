@@ -444,6 +444,18 @@ const CLIMB_BOOST_HELD_WITHIN = 15;
 // it, in blocks; how long after she is off her ramp is given to come down, in ticks; and
 // how far the player may end up from where they stood at her console, along the ground, or from her deck's height, in
 // blocks, and still be aboard there.
+// A freighter far past the edge of space: the highest her autopilot takes her, in blocks; where her climb button is
+// pressed from, over the edge of space, how long she is watched climbing, in ticks, and how high she must have climbed
+// by then, in blocks; how long she is given to settle after being moved, in ticks; how far under the top she is set
+// going there, in blocks, how long she is given, in ticks, and how near it she must hold, in blocks.
+const HIGHEST_ALTITUDE = 2500;
+const SPACE_CLIMB_FROM = 1100;
+const SPACE_CLIMB_WATCH_TICKS = 400;
+const SPACE_CLIMB_GAINED = 250;
+const SPACE_SETTLE_TICKS = 100;
+const SPACE_TOP_UNDER = 40;
+const SPACE_TOP_TICKS = 600;
+const SPACE_HELD_WITHIN = 5;
 const SLAM_HEIGHT = 90;
 const SLAM_WATCH_TICKS = 300;
 const SLAM_FASTEST_LEAST = 10;
@@ -2676,6 +2688,41 @@ function checkFreighterClimbBoost() {
   must("skyliners:autopilot land");
 }
 
+// A freighter sent far past the edge of space: her autopilot takes y 2,500, past the 1,400 it stopped at before; her
+// climb button still climbs hard over the edge of space, where it used to say she was at the top; and set to the new
+// height she gets there and holds it.
+function checkFreighterSpaceCeiling() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${HIGHEST_ALTITUDE} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  const set = freighterReport();
+  expect(set?.target_altitude >= HIGHEST_ALTITUDE, "freighter: her autopilot can be set to y 2,500, far past the edge of space",
+    `set to ${set?.target_altitude}`);
+  lift(freighter, SPACE_CLIMB_FROM);
+  must(`skyliners:autopilot fly altitude=${SPACE_CLIMB_FROM} speed=0; wait ${SPACE_SETTLE_TICKS}t`);
+  const before = freighterReport();
+  const { at } = must(`sable:find ${freighter} skyliners:console_climb 1 side=server`).rows[0];
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  expect(Boolean(heard("*speed_boost*", pressed, LOOK_EVERY)), "freighter: past the edge of space, her climb button still roars into it");
+  const climbed = must(`wait ${SPACE_CLIMB_WATCH_TICKS}t; skyliners:freighter`);
+  expect(climbed.altitude - before.altitude >= SPACE_CLIMB_GAINED, "freighter: and she climbs on hard, past the edge of space",
+    `from y ${before.altitude} to ${climbed.altitude}`);
+  lift(freighter, HIGHEST_ALTITUDE - SPACE_TOP_UNDER);
+  must(`skyliners:autopilot fly altitude=${HIGHEST_ALTITUDE} speed=0; wait ${SPACE_TOP_TICKS}t`, BUILD_SECONDS);
+  const top = freighterReport();
+  expect(Math.abs(top.altitude - HIGHEST_ALTITUDE) <= SPACE_HELD_WITHIN && Math.abs(top.climb) < 1, "freighter: set to y 2,500, she gets there and holds it",
+    `at y ${top.altitude}, climbing ${top.climb}`);
+}
+
+// Moves a flying ship straight up or down to a height at once, as a long climb would take her, and puts the player back
+// aboard at her climb button.
+function lift(ship, height) {
+  const { at_abs: at } = must(`sable:info ${ship} side=server`);
+  must(`server sable teleport ${ship} ${at[0]} ${height} ${at[2]}; wait 40t; sable:tp ${ship} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+}
+
 // A freighter's slam landing: hovering, its button lit, her thrusters roar and her computer braces everyone, and she
 // drives straight down where she is far faster than she ever lands, strikes the ground with her crash heard, yet
 // touches it slowly enough that nothing breaks, then stands level on her legs and switches off, its button dark. The
@@ -4668,6 +4715,7 @@ const CHECKS = {
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
+  "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },

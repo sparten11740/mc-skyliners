@@ -534,10 +534,11 @@ public final class SkylinersConfig {
         ROCKET_CEILING = builder
             .comment(
                 "How high a rocket's or a freighter's autopilot can be set to climb, in world blocks: far over the top of the world,",
-                "where there is only sky and it turns to space as she climbs (black by y 1,200). The airliner and the zeppelin stay",
-                "under the top of the world."
+                "where there is only sky and it turns to space as she climbs (black by y 1,200). She flies as well at 9,000 as at",
+                "1,000; the higher, the longer the trip up and back down. The airliner and the zeppelin stay under the top of the",
+                "world."
             )
-            .defineInRange("ceiling", 1400, 100, 4000);
+            .defineInRange("highestAltitude", 2500, 100, 10000);
         LED_STRIPS = builder
             .comment(
                 "Whether a rocket is built with LED strips round each of her stories, along the floor and under the ceiling, in ten",
@@ -773,8 +774,9 @@ public final class SkylinersConfig {
             .comment(
                 "Whether the freighter can climb hard from the climb button on her console: while she flies along, her lift",
                 "fires flat out and she climbs straight up far faster than she flies, holding her spot, until she is 300",
-                "blocks higher or at the edge of space, which her autopilot then holds. Climbing loads no new land, so the",
-                "server keeps up. Without it, the button only says no, and her console has a bank of toggles in its place."
+                "blocks higher or as high as rocket.highestAltitude lets her go, which her autopilot then holds. Climbing",
+                "loads no new land, so the server keeps up. Without it, the button only says no, and her console has a bank",
+                "of toggles in its place."
             )
             .define("climbBoost", true);
         FREIGHTER_SLAM_LANDING = builder
