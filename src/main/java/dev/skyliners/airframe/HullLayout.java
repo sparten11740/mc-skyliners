@@ -4,6 +4,7 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.OvalWindowPieceBlock;
 import dev.skyliners.block.ShellBlock;
 import dev.skyliners.block.ShellGeometry;
+import dev.skyliners.block.SteelGirderBlock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,27 @@ abstract class HullLayout implements Layout {
     }
 
     BlockState stateAt(int x, int y, int z) {
-        return cells.getOrDefault(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
+        return stateAt(new BlockPos(x, y, z));
+    }
+
+    private BlockState stateAt(BlockPos at) {
+        return cells.getOrDefault(at, Blocks.AIR.defaultBlockState());
+    }
+
+    /**
+     * Joins each of the ship's steel girders to what stands beside it each way (see {@link SteelGirderBlock#joined}),
+     * once everything else stands: girders stacked into a column run on as one, one standing on her floor stands on
+     * its footing, and an end against a wall or under a ceiling is bolted to it.
+     */
+    void joinGirders() {
+        Map<BlockPos, BlockState> joined = new HashMap<>();
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            BlockPos at = cell.getKey();
+            if (cell.getValue().getBlock() instanceof SteelGirderBlock) {
+                joined.put(at, SteelGirderBlock.joined(cell.getValue(), way -> stateAt(at.relative(way))));
+            }
+        }
+        cells.putAll(joined);
     }
 
     /** Whether nothing of the ship stands at the block yet: inside the hull, its open air. */

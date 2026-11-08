@@ -4000,30 +4000,108 @@ function towerInstrumentsLang() {
   dropsHaloLight("wall_light");
   cubes.wall_light = null;
 }
-// The rocket's steel girder (see SkylinersRegistry.STEEL_GIRDER): an I-beam, drawn standing up, two broad flanges, riveted
-// along their edges, either side of a narrow web between them; laid along the way it runs, its flanges top and bottom.
+// The rocket's steel girder (see SteelGirderBlock): an I-beam, drawn standing up, two broad flanges, riveted along
+// their edges, either side of a narrow web between them; laid along the way it runs, its flanges top and bottom. Its
+// joints are parts drawn in the same frame, standing up: its ends up and down, its flanges' faces north and south, its
+// open sides, where the web shows between the flanges, east and west; each part is turned with the girder.
 {
-  const model = boxes(
-    { steel: `${ID}:block/steel_girder`, flange: `${ID}:block/steel_girder_flange`, end: `${ID}:block/steel_girder_end`, particle: `${ID}:block/steel_girder` },
-    [
-      [[1, 0, 1], [15, 16, 3], { north: "#flange", up: "#end", down: "#end", all: "#steel" }],
-      [[1, 0, 13], [15, 16, 15], { south: "#flange", up: "#end", down: "#end", all: "#steel" }],
-      [[7, 0, 3], [9, 16, 13], { up: "#end", down: "#end", all: "#steel" }],
-    ],
-  );
+  const beamTextures = {
+    steel: `${ID}:block/steel_girder`, flange: `${ID}:block/steel_girder_flange`, end: `${ID}:block/steel_girder_end`,
+    particle: `${ID}:block/steel_girder`,
+  };
+  const textures = { ...beamTextures, bolt: "minecraft:block/iron_block", concrete: "minecraft:block/smooth_stone" };
+  const model = boxes(beamTextures, [
+    [[1, 0, 1], [15, 16, 3], { north: "#flange", up: "#end", down: "#end", all: "#steel" }],
+    [[1, 0, 13], [15, 16, 15], { south: "#flange", up: "#end", down: "#end", all: "#steel" }],
+    [[7, 0, 3], [9, 16, 13], { up: "#end", down: "#end", all: "#steel" }],
+  ]);
   // Its ends, flush with its block's top and bottom, are hidden where it stands on another girder or under one.
   for (const element of model.elements) {
     element.faces.up.cullface = "up";
     element.faces.down.cullface = "down";
   }
   write(`assets/${ID}/models/block/steel_girder.json`, model);
-  write(`assets/${ID}/blockstates/steel_girder.json`, {
-    variants: {
-      "axis=y": { model: `${ID}:block/steel_girder` },
-      "axis=z": { model: `${ID}:block/steel_girder`, x: 90 },
-      "axis=x": { model: `${ID}:block/steel_girder`, x: 90, y: 90 },
-    },
-  });
+  // A part's boxes mirrored across its block one way (0 for x, 1 for y, 2 for z), for the same joint on the other side.
+  const mirrored = (axis) => ([from, to, texture]) => {
+    const [mirroredFrom, mirroredTo] = [[...from], [...to]];
+    mirroredFrom[axis] = 16 - to[axis];
+    mirroredTo[axis] = 16 - from[axis];
+    return [mirroredFrom, mirroredTo, texture];
+  };
+  // Bolt heads or nuts at each of the spots given, each box placed by the function given.
+  const bolts = (spots, place) => spots.map((spot) => [...place(spot), "#bolt"]);
+  const part = (name, parts) => write(`assets/${ID}/models/block/steel_girder_${name}.json`, boxes(textures, parts));
+  // Where another girder meets its side, it is stiffened across between its flanges, a plate each side of its web
+  // just inside each end of its block, in line with the flanges of a beam coming in.
+  part("stiffeners", [1, 13].flatMap((y) => [[[1, y, 3], [7, y + 2, 13], "#steel"], [[9, y, 3], [15, y + 2, 13], "#steel"]]));
+  // Another girder's end against its flange's face, or a beam crossing over or under it: a plate as big as that
+  // girder's end between the two, and the nuts of its bolts on the flange's inside, either side of the web.
+  const face = [
+    [[1, 1, 0], [15, 15, 1], "#steel"],
+    ...bolts([[3.5, 5], [11.5, 5], [3.5, 10], [11.5, 10]], ([x, y]) => [[x, y, 3], [x + 1, y + 1, 4]]),
+  ];
+  part("face_north", face);
+  part("face_south", face.map(mirrored(2)));
+  // A beam's end against a column's open side: a fin plate from the column's web out to the beam's, bolted through,
+  // and the beam's flanges carried on to the column's side.
+  const column = [
+    [[9, 3, 7], [16, 13, 9], "#steel"],
+    [[15, 1, 1], [16, 3, 15], "#steel"],
+    [[15, 13, 1], [16, 15, 15], "#steel"],
+    ...bolts([[11, 5], [13, 5], [11, 10], [13, 10]], ([x, y]) => [[x, y, 6], [x + 1, y + 1, 10]]),
+  ];
+  part("column_east", column);
+  part("column_west", column.map(mirrored(0)));
+  // A beam's end against another beam's open side, a tee: the web carried on to the other's web, bolted through, and
+  // the flanges out to its side, so the flanges of the two meet as one.
+  const beam = [
+    [[9, 7, 3], [16, 9, 13], "#steel"],
+    [[15, 1, 1], [16, 15, 3], "#steel"],
+    [[15, 1, 13], [16, 15, 15], "#steel"],
+    ...bolts([[11, 5], [13, 5], [11, 10], [13, 10]], ([x, z]) => [[x, 6, z], [x + 1, 10, z + 1]]),
+  ];
+  part("beam_east", beam);
+  part("beam_west", beam.map(mirrored(0)));
+  // An end bolted to a wall or a ceiling: a fixing plate over it, a little wider than the beam, and the nuts of its
+  // bolts under it in the channels either side of the web.
+  const nuts = [[3, 5], [11, 5], [3, 9], [11, 9]];
+  const plate = [
+    [[0.5, 15, 0.5], [15.5, 16, 15.5], "#steel"],
+    ...bolts(nuts, ([x, z]) => [[x, 14, z], [x + 2, 15, z + 2]]),
+  ];
+  part("plate_up", plate);
+  part("plate_down", plate.map(mirrored(1)));
+  // A column standing on the ground or on a block: a concrete footing across its block, a base plate on it, and the
+  // nuts of its anchor bolts in the channels; the footing's sides are hidden against a block beside it.
+  const foot = boxes(textures, [
+    [[0, 0, 0], [16, 3, 16], "#concrete"],
+    [[0.5, 3, 0.5], [15.5, 4.5, 15.5], "#steel"],
+    ...bolts(nuts, ([x, z]) => [[x, 4.5, z], [x + 2, 5.5, z + 2]]),
+  ]);
+  for (const side of ["north", "south", "east", "west", "down"]) {
+    foot.elements[0].faces[side].cullface = side;
+  }
+  write(`assets/${ID}/models/block/steel_girder_foot.json`, foot);
+  // For a girder along each axis, its model's turn and which of its model's ways each way of the world is.
+  const along = {
+    y: [{}, { up: "up", down: "down", north: "north", south: "south", east: "east", west: "west" }],
+    z: [{ x: 90 }, { north: "up", south: "down", down: "north", up: "south", east: "east", west: "west" }],
+    x: [{ x: 90, y: 90 }, { east: "up", west: "down", down: "north", up: "south", south: "east", north: "west" }],
+  };
+  const multipart = [];
+  for (const [axis, [turn, own]] of Object.entries(along)) {
+    const apply = (name) => ({ model: `${ID}:block/steel_girder${name ? `_${name}` : ""}`, ...turn });
+    const open = axis === "y" ? "column" : "beam";
+    const sides = Object.keys(own).filter((world) => own[world] !== "up" && own[world] !== "down");
+    multipart.push({ when: { axis }, apply: apply("") });
+    multipart.push({ when: { OR: sides.map((world) => ({ axis, [world]: "girder" })) }, apply: apply("stiffeners") });
+    for (const [world, way] of Object.entries(own)) {
+      const met = { north: "face_north", south: "face_south", east: `${open}_east`, west: `${open}_west` }[way];
+      const fixed = { up: "plate_up", down: axis === "y" ? "foot" : "plate_down" }[way];
+      multipart.push(met ? { when: { axis, [world]: "girder" }, apply: apply(met) } : { when: { axis, [world]: "fixed" }, apply: apply(fixed) });
+    }
+  }
+  write(`assets/${ID}/blockstates/steel_girder.json`, { multipart });
   write(`assets/${ID}/models/item/steel_girder.json`, { parent: `${ID}:block/steel_girder` });
   dropsItself("steel_girder");
   cubes.steel_girder = null;

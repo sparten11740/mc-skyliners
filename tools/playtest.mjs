@@ -3362,6 +3362,39 @@ function checkFreighterLookout() {
     `${seats.length} blocks of seats, ${screens.length} screens`);
 }
 
+// Steel girders put down by hand next to each other, as a player starts a frame: the first, put down on the ground,
+// stands up on its footing as a pillar; one put on top runs on up as one column with it; one put against the column's
+// side lies out from it, the two bolted together there; and the one on top broken again, the others let go of it.
+// Girders used to overlap and clash where they met, and one on the ground read as a beam lying on its side.
+function checkGirdersJoin() {
+  const [x, z] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  emptyHands();
+  must("server give @p skyliners:steel_girder 3; wait 5t; select 0");
+  must(`server tp @p ${x + 0.5} ${ground} ${z - 2.5} 0 20; wait ${CHUNKS_TICKS}t`);
+  send(`place skyliners:steel_girder ${x},${ground},${z}`);
+  send(`place skyliners:steel_girder ${x},${ground + 1},${z}`);
+  must(`server tp @p ${x + 2.5} ${ground} ${z - 2.5} 30 20; wait 10t`);
+  send(`place skyliners:steel_girder ${x + 1},${ground + 1},${z}`);
+  const [foot, top, beam] = [[x, ground, z], [x, ground + 1, z], [x + 1, ground + 1, z]].map((at) => must(`block ${at.join(",")} side=server`));
+  // Blockpilot leaves a property at its default off: a girder stands up and joins nothing unless it says.
+  const joint = (girder, way) => girder.props?.[way] ?? "none";
+  const axis = (girder) => girder.props?.axis ?? "y";
+  const girders = [foot, top, beam].filter((girder) => girder.id === "skyliners:steel_girder").length;
+  expect(girders === 3 && axis(foot) === "y" && joint(foot, "down") === "fixed", "steel girder: put down on the ground, it stands up on its footing",
+    `${girders} of 3 put down, the first along ${axis(foot)}, its foot ${joint(foot, "down")}`);
+  expect(axis(top) === "y" && joint(foot, "up") === "girder" && joint(top, "down") === "girder", "steel girder: one put on top of it runs on up as one column",
+    `along ${axis(top)}, joined ${joint(foot, "up")} and ${joint(top, "down")}`);
+  expect(axis(beam) === "x" && joint(beam, "west") === "girder" && joint(top, "east") === "girder", "steel girder: one put against the column's side lies out from it, bolted to it",
+    `along ${axis(beam)}, its end ${joint(beam, "west")}, the column's side ${joint(top, "east")}`);
+  // The top one broken again, nothing beside it is left joined to the air.
+  must(`server tp @p ${x - 1.5} ${ground} ${z - 2.5} -30 20; wait 10t`);
+  send(`mine ${x},${ground + 1},${z}`);
+  const [bare, loose] = [[x, ground, z], [x + 1, ground + 1, z]].map((at) => must(`block ${at.join(",")} side=server`));
+  expect(joint(bare, "up") === "none" && joint(loose, "west") === "none", "steel girder: the one on top broken, neither the column under it nor the beam beside it stays joined to it",
+    `the column's top ${joint(bare, "up")}, the beam's end ${joint(loose, "west")}`);
+}
+
 // The beach's tiki torch and the floor window's panel, put up by hand on the ground and on a wall, each take a shape of
 // their own there: a torch standing tall or held out on a bracket, a panel on its post or flat in its rim.
 function checkBeachOnWalls() {
@@ -4070,6 +4103,7 @@ const CHECKS = {
   "freighter-engine-bays": { run: checkFreighterEngineBays, about: "a freighter's thrusters in her prongs' tips are boxed in, out of reach from the tunnels, their bays unbroken by a pickaxe" },
   "freighter-smuggler-hold": { run: checkFreighterSmugglerHold, about: "a freighter's loose rivet chimes, its panel knocks hollow, opens onto a den of loot, shuts by itself and opens from inside" },
   "secret-panel": { run: checkSecretPanelByHand, about: "a secret panel set into a wall by hand opens and shuts at its loose rivet, and a rivet goes on a wall, a floor and a ceiling" },
+  "girders-join": { run: checkGirdersJoin, about: "steel girders put down by hand join up, a column on its footing, one on top, a beam bolted to its side, and let go when one is broken" },
   "freighter-lookout": { run: checkFreighterLookout, about: "a freighter's port prong has seats by its portholes and a nook at its tip facing a screen" },
   "beach-on-walls": { run: checkBeachOnWalls, about: "a tiki torch and a floor window panel go up on a floor and on a wall, each in a shape of its own" },
   "freighter-beach": { run: checkFreighterBeach, about: "a freighter's beach: her round floor window in its sand, opened from its panel down to her belly's glass, her palms in the open" },
