@@ -34,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -444,6 +446,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * airliner's own blocks (see {@link #framing}).
      */
     private static final Loaded<AutopilotBlockEntity> LOADED = new Loaded<>(AutopilotBlockEntity.class, true);
+    /** What is done each time a ship is down again after flying, on the server (see {@link #whenArrived}). */
+    private static final List<BiConsumer<ServerLevel, AutopilotBlockEntity>> ARRIVALS = new CopyOnWriteArrayList<>();
     /**
      * The steps the targets are set in by touch, on the flight deck's controls and the settings screen's: degrees of
      * heading, blocks of height and blocks a second. Typed into the screen, any whole number goes.
@@ -787,6 +791,26 @@ public class AutopilotBlockEntity extends BlockEntity {
             }
         }
         return false;
+    }
+
+    /**
+     * The autopilot of the ship a block entity is part of, on either side: one whose box round its blueprint's blocks it
+     * lies in (see {@link #framing}), standing as built or assembled, or one aboard the same assembled ship, as on a
+     * ship of a player's own with an autopilot set down by hand; null for none.
+     */
+    @Nullable
+    public static AutopilotBlockEntity shipOf(BlockEntity blockEntity) {
+        Level level = blockEntity.getLevel();
+        if (level == null) {
+            return null;
+        }
+        for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
+            BoundingBox frame = autopilot.frame();
+            if ((frame != null && frame.isInside(blockEntity.getBlockPos())) || SableFlight.sameAirliner(autopilot, blockEntity)) {
+                return autopilot;
+            }
+        }
+        return null;
     }
 
     /** The box round the blocks its blueprint laid, where they stand now; null for an autopilot put down by hand. */
@@ -1792,6 +1816,18 @@ public class AutopilotBlockEntity extends BlockEntity {
     private void arrive() {
         flown = false;
         announcements.announce(Announcement.ARRIVAL, this);
+        if (level instanceof ServerLevel server) {
+            ARRIVALS.forEach(arrival -> arrival.accept(server, this));
+        }
+    }
+
+    /**
+     * Has something done each time a ship is down again after flying, however she was flown, as she is welcomed to her
+     * destination (see {@link #watchArrival}): her sticker map's sticker for where she landed, for one, which {@code
+     * Skyliners} registers once as the mod starts, so the autopilot need know nothing of sticker maps.
+     */
+    public static void whenArrived(BiConsumer<ServerLevel, AutopilotBlockEntity> arrival) {
+        ARRIVALS.add(arrival);
     }
 
     /**

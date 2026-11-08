@@ -9,6 +9,7 @@ import dev.skyliners.block.LaserBolt;
 import dev.skyliners.block.LiftPanelInteraction;
 import dev.skyliners.block.LookIntoMicroscope;
 import dev.skyliners.autopilot.AssemblyFailed;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.HyperspaceJump;
 import dev.skyliners.autopilot.LaunchShock;
@@ -77,6 +78,7 @@ import dev.skyliners.selfdestruct.BlastPayload;
 import dev.skyliners.selfdestruct.SelfDestruct;
 import dev.skyliners.selfdestruct.SelfDestructAlarmPayload;
 import dev.skyliners.selfdestruct.ThrownClearPayload;
+import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.GunnerTrigger;
 import dev.skyliners.turret.RocketBlast;
 import net.minecraft.server.level.ServerLevel;
@@ -146,6 +148,7 @@ public final class Skyliners {
         RocketPilot.holdCountdownWhile(RoverBayBlockEntity::holdsCountdown);
         RocketPilot.holdCountdownWhile(RocketStairsBlockEntity::holdsCountdown);
         FreighterFlight.holdTakeoffWhile("ramp", RampPanelBlockEntity::holdsTakeoff);
+        AutopilotBlockEntity.whenArrived(StickerMapBlockEntity::shipLanded);
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);

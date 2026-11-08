@@ -2898,6 +2898,32 @@ from the corridor, the crossbow lying across its two brass pegs: use it with an 
 and use it holding the crossbow to rack it again; an empty rack shows its bare pegs. The Crossbow Rack is among her
 blocks in the creative tab, put up empty.
 
+On the wall of her entry hall, where her ramp comes up, hangs her sticker map: an old parchment map in a dark wooden
+frame, four blocks wide and two tall, with eighteen stickers on it in three rows of six, each a little picture of a
+kind of land. Along the top are the green lands, plains, a flower field, a forest, a spruce forest, a dark forest with
+its giant mushroom and a cherry grove; across the middle the warm ones, a desert, a savanna, the badlands' striped
+mesas, a jungle with its parrot, a bamboo forest with its panda and a swamp; and along the bottom the cold, wet and
+far-off ones, snow with a snowman, ice spikes, snowy peaks, the seaside, a mushroom island and space. A sticker she
+has not got yet shows as a grey shadow of its picture in a dashed edge, so you can see what is still to find. Each
+time she comes down somewhere and stops, however she was flown, the kind of land under her middle earns its sticker
+if she has not got it yet: it pops onto the board glowing, swelling and settling, a halo round it and a burst of stars
+flying out of it, a bright little fanfare plays, and once her cockpit is quiet her computer says "New sticker. Another
+place I got dragged to." Space is earned by climbing to its edge. Filling a row plays a bigger fanfare, the row shining
+sticker by sticker from left to right and keeping a gold ribbon behind it from then on, and her computer calls it a
+whole row; filling the whole board plays a celebration, a drum roll, a held chord and a cymbal, its rows shining one
+after another and its frame glowing through the rainbow and then edged in gold for good, and her computer says the
+map's full. Landing in the same kind of land again earns nothing more, and land that is none of them, such as the
+Nether's, earns nothing. The stickers are hers, and stay with the board. Use the board and it only rustles: hers fill
+as she lands.
+
+The Sticker Map is among her blocks in the creative tab, crafted from a map with three dark oak planks over it and one
+either side. Set up by hand on a wall it hangs upright, reaching to your right and up from where it is put. Aboard any
+ship with an autopilot it fills as she lands, as hers does, with its fanfares alone on a ship with no voice of her own;
+anywhere else, on the ground or aboard a ship with no autopilot, use it and it puts up a sticker for each kind of land
+you have been to yourself, one popping up after another, and space if you have reached it aboard a ship, or with nothing
+new sounds a low note. The server config's `freighter.stickerMap` builds her without it and keeps every sticker map as
+it is.
+
 Her club, the room through the doorway at her port bow, has a bar along its straight wall, as the rocket's club has:
 a counter with stools and two drink taps, the robot bartender behind it selling mocktails, and back bars of bottles
 beside him; the server config's `freighter.clubBar` builds her without it. It has a band too: on a little dark-oak stage with footlights, a

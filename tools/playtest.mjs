@@ -414,6 +414,18 @@ const ENGINEERING_SWITCH = "0.77,0.31,0.88";
 const VALVE_TURNS = 4;
 const VALVE_WHEEL = "0.5,0.4,0.55";
 const VALVE_VENTS = 120;
+// Her sticker map: how many blocks it has; how far round the player the land under a hovering freighter is turned into
+// another biome, and from how far under the ground to how far over it, in blocks, and how many blocks a command may
+// change at once for that; how long after she is told to land her fanfare may be heard, and her computer's line, which
+// waits for her cockpit to fall quiet, in ticks; and how long stickers put up together take to pop up, in ticks.
+const STICKER_PARTS = 8;
+const STICKER_BIOME_REACH = 48;
+const STICKER_BIOME_UNDER = 4;
+const STICKER_BIOME_OVER = 24;
+const STICKER_FILL_MOST = 2000000;
+const STICKER_HEARD_TICKS = 100;
+const STICKER_VOICE_TICKS = 600;
+const STICKER_POPS_TICKS = 40;
 // Her tractor beam: how long something takes at most to ride it up onto its pad or down to the ground, in ticks; how
 // near the pad's top a thing's feet must be to stand on it, in blocks; how far aside the player steps to leave the
 // beam, in blocks; how long a zombie under it is watched, in ticks; and a player's full health, in half hearts.
@@ -3610,6 +3622,109 @@ function shutAirlockDoor(blocks, at) {
   must(`server setblock ${at.join(" ")} skyliners:airlock_door[facing=${facing},open=false]`);
 }
 
+// The stickers up on a sticker map, by the position of its part holding them (a plot position aboard), sorted.
+function stickersOn(at) {
+  const [reply] = send(`?nbt ${at.join(",")} path=Stickers`);
+  return reply.ok === false || typeof reply.value !== "object" ? [] : Object.keys(reply.value).sort();
+}
+
+// Flies the freighter up from where she stands, so high over her control head as it stood when she was built, with the
+// player aboard by her sticker map, turns the land round her into a biome and lands her there. Her board's part holding
+// its stickers, as a plot position, and the tick she was told to land; undefined if she did not get up or down.
+function stickerLanding(head, biome) {
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const parts = must(`sable:find ${freighter} skyliners:sticker_map ${STICKER_PARTS} side=server`).rows;
+  const holding = parts.find((row) => must(`block ${row.at.join(",")} side=server`).props?.part === "0");
+  if (!holding) {
+    expect(false, "freighter: her sticker map goes up with her whole");
+    return undefined;
+  }
+  // The client is sent her as a ship a moment after the server has her, and the player cannot board her before.
+  must(`wait ${CHUNKS_TICKS}t; sable:tp ${freighter} skyliners:sticker_map; wait 10t`);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(Boolean(up), `freighter: she lifts off to be set down in the ${biome}`);
+  if (!up) {
+    return undefined;
+  }
+  const reach = STICKER_BIOME_REACH;
+  must(`server fillbiome ~-${reach} ${ground - STICKER_BIOME_UNDER} ~-${reach} ~${reach} ${ground + STICKER_BIOME_OVER} ~${reach} minecraft:${biome}`);
+  const landed = now();
+  must("skyliners:autopilot land");
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(Boolean(down), `freighter: she comes down in the ${biome}`);
+  return down ? { board: holding.at, landed } : undefined;
+}
+
+// A freighter's sticker map: she is built with it on her wall; set down in the desert, it puts up the desert's sticker
+// with a fanfare, and her computer says so once her cockpit is quiet; set down there again, it puts up nothing more;
+// and the sticker is still up once the world has been left and joined again.
+function checkFreighterStickerMap() {
+  layDown("freighter");
+  const parts = must(`find skyliners:sticker_map 128 ${STICKER_PARTS} side=server`).rows;
+  expect(parts.length === STICKER_PARTS, "freighter: she is built with her sticker map, four blocks wide and two tall", `${parts.length} parts`);
+  if (parts.length !== STICKER_PARTS) {
+    return;
+  }
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`server gamerule commandModificationBlockLimit ${STICKER_FILL_MOST}`);
+  const [holding] = parts.filter((row) => must(`block ${row.at_abs.join(",")} side=server`).props?.part === "0");
+  expect(Boolean(holding) && stickersOn(holding.at_abs).length === 0, "freighter: her sticker map is built with no sticker up",
+    holding ? stickersOn(holding.at_abs).join(",") : "no part holding its stickers");
+  const first = stickerLanding(head, "desert");
+  if (!first) {
+    return;
+  }
+  const up = stickersOn(first.board);
+  expect(up.includes("desert") && Boolean(heard("skyliners:sticker_map_new", first.landed, STICKER_HEARD_TICKS)),
+    "freighter: set down in the desert, her map puts up its sticker with a fanfare", up.join(","));
+  expect(Boolean(heard("skyliners:freighter_computer_sticker", first.landed, STICKER_VOICE_TICKS)), "freighter: and her computer says so once her cockpit is quiet");
+  const again = stickerLanding(head, "desert");
+  if (!again) {
+    return;
+  }
+  expect(!heard("skyliners:sticker_map_*", again.landed, STICKER_HEARD_TICKS) && stickersOn(first.board).join(",") === up.join(","),
+    "freighter: set down in the desert again, her map puts up nothing more", stickersOn(first.board).join(","));
+  must(`leave; join world ${WORLD}; wait ${CHUNKS_TICKS}t`, BUILD_SECONDS);
+  expect(stickersOn(first.board).join(",") === up.join(","), "freighter: her sticker is still up once the world has been left and joined again",
+    stickersOn(first.board).join(","));
+}
+
+// A sticker map set up by hand on the ground: it hangs whole on a wall; used, it puts up a sticker for each kind of land
+// the player has been to, with a fanfare; used again with nothing new, it puts up nothing and sounds a low note; and its
+// stickers are still up once the world has been left and joined again.
+function checkStickerMapByHand() {
+  const [x, z] = [nextSite++ * SITE_APART, STAND_AWAY];
+  creative();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${ground} ${z + 0.5} 180 0; wait 40t`);
+  must(`server fill ${x - 2} ${ground} ${z - 4} ${x + 5} ${ground + 3} ${z - 4} stone`);
+  must("server give @p skyliners:sticker_map 1; wait 5t; select 0");
+  const at = [x, ground + 1, z - 3];
+  send(`place skyliners:sticker_map ${at.join(",")}`);
+  const parts = must(`find skyliners:sticker_map 16 ${STICKER_PARTS} side=server`).rows;
+  expect(parts.length === STICKER_PARTS && must(`block ${at.join(",")} side=server`).props?.part === "0",
+    "sticker map: put up by hand on a wall, it hangs there whole, four blocks wide and two tall", `${parts.length} parts`);
+  if (parts.length !== STICKER_PARTS) {
+    return;
+  }
+  send("?server advancement revoke @p only minecraft:adventure/adventuring_time");
+  must("server advancement grant @p only minecraft:adventure/adventuring_time minecraft:desert; "
+    + "server advancement grant @p only minecraft:adventure/adventuring_time minecraft:cherry_grove");
+  const used = now();
+  must(`select 1; use ${at.join(",")}; wait ${STICKER_POPS_TICKS}t`);
+  const up = stickersOn(at);
+  expect(up.includes("desert") && up.includes("cherry_grove") && !up.includes("jungle") && Boolean(heard("skyliners:sticker_map_new", used, LOOK_EVERY)),
+    "sticker map: used on the ground, it puts up a sticker for each kind of land the player has been to, with a fanfare", up.join(","));
+  const again = now();
+  must(`use ${at.join(",")}; wait 10t`);
+  expect(stickersOn(at).join(",") === up.join(",") && Boolean(heard("block.note_block.bass", again, LOOK_EVERY)) && !heard("skyliners:sticker_map_*", again, 0),
+    "sticker map: used again with nothing new, it puts up nothing and sounds a low note", stickersOn(at).join(","));
+  must(`leave; join world ${WORLD}; wait ${CHUNKS_TICKS}t`, BUILD_SECONDS);
+  expect(stickersOn(at).join(",") === up.join(","), "sticker map: its stickers are still up once the world has been left and joined again",
+    stickersOn(at).join(","));
+}
+
 const CHECKS = {
   "curtain-parts": { run: checkCurtainParts, about: "a curtain parts as someone walks through it and shuts behind them" },
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
@@ -3657,6 +3772,8 @@ const CHECKS = {
   "freighter-coolant-valve": { run: checkFreighterCoolantValve, about: "a freighter's coolant valve is cranked up to a blast of steam and lets it off" },
   "freighter-tractor-beam": { run: checkFreighterTractorBeam, about: "a freighter's tractor beam lets the player down from its pad and beams them and a cow up, never a zombie" },
   "freighter-beam-flight": { run: checkFreighterTractorBeamInFlight, about: "a hovering freighter's tractor beam lets the player down to the ground unhurt and beams them back up", slow: true },
+  "freighter-sticker-map": { run: checkFreighterStickerMap, slow: true, about: "a freighter's sticker map puts up the desert's sticker with a fanfare as she lands there, not again next time, and keeps it through a rejoin" },
+  "sticker-map-by-hand": { run: checkStickerMapByHand, about: "a sticker map set up by hand puts up the lands the player has been to, nothing twice, and keeps them through a rejoin" },
   "tractor-beam-by-hand": { run: checkTractorBeamByHand, about: "tractor beams set up by hand hang or stand, beam a sheep onto a pad and float a player up and down" },
   "freighter-crossbow-rack": { run: checkFreighterCrossbowRack, about: "a freighter's crossbow rack gives the laser crossbow down and takes it back" },
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
