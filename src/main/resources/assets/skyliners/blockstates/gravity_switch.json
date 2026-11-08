@@ -1,0 +1,132 @@
+{
+  "variants": {
+    "facing=north,mount=floor,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 0
+    },
+    "facing=north,mount=floor,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 0
+    },
+    "facing=north,mount=floor,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 0
+    },
+    "facing=north,mount=floor,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 0
+    },
+    "facing=north,mount=wall,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 0
+    },
+    "facing=north,mount=wall,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 0
+    },
+    "facing=north,mount=wall,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 0
+    },
+    "facing=north,mount=wall,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 0
+    },
+    "facing=east,mount=floor,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 90
+    },
+    "facing=east,mount=floor,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 90
+    },
+    "facing=east,mount=floor,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 90
+    },
+    "facing=east,mount=floor,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 90
+    },
+    "facing=east,mount=wall,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 90
+    },
+    "facing=east,mount=wall,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 90
+    },
+    "facing=east,mount=wall,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 90
+    },
+    "facing=east,mount=wall,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 90
+    },
+    "facing=south,mount=floor,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 180
+    },
+    "facing=south,mount=floor,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 180
+    },
+    "facing=south,mount=floor,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 180
+    },
+    "facing=south,mount=floor,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 180
+    },
+    "facing=south,mount=wall,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 180
+    },
+    "facing=south,mount=wall,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 180
+    },
+    "facing=south,mount=wall,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 180
+    },
+    "facing=south,mount=wall,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 180
+    },
+    "facing=west,mount=floor,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 270
+    },
+    "facing=west,mount=floor,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_floor",
+      "y": 270
+    },
+    "facing=west,mount=floor,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 270
+    },
+    "facing=west,mount=floor,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_floor_weightless",
+      "y": 270
+    },
+    "facing=west,mount=wall,powered=false,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 270
+    },
+    "facing=west,mount=wall,powered=true,weightless=false": {
+      "model": "skyliners:block/gravity_switch_wall",
+      "y": 270
+    },
+    "facing=west,mount=wall,powered=false,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 270
+    },
+    "facing=west,mount=wall,powered=true,weightless=true": {
+      "model": "skyliners:block/gravity_switch_wall_weightless",
+      "y": 270
+    }
+  }
+}

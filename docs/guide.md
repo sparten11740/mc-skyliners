@@ -2934,6 +2934,27 @@ loud as the game's Jukebox/Note Blocks volume sets, and the client config's `clu
 among her blocks in the creative tab, to set down anywhere, and the server config's `freighter.bandstand` builds her
 without it.
 
+Her club floats. Just in through its doorway, beside its LED panel, a gravity switch hangs on the wall at the eyes
+of whoever comes in: a chunky plate in yellow and black hazard stripes, on it a big round button painted with a
+little white figure floating, arms thrown up and legs kicked apart, among yellow sparkles and over rising chevrons, and
+over the button a small lamp, green while the club's gravity is on. Press it and it whirrs down, its lamp and the ring
+round its button glowing cyan, and her computer says "Gravity off. Try not to hit your head."; everyone in the club
+rises gently off the floor, weightless, a soft airy hum fills the room and little sparkles drift in its air. Floating,
+hold jump to drift up, sneak to drift down and walk to steer, and bump softly back off the walls, the floor and the
+ceiling with a boing. The rubber duck on each of its cocktail tables drifts up off it, bobbing and slowly turning over;
+mobs that wander in and anything dropped there float too, rising off the floor, drifting and bouncing slowly. Nobody is
+ever pushed into a block, and nobody is ever hurt: press the switch again and gravity comes back on with a thunk, her
+computer saying "Gravity back on. Mind your landing.", and everyone falls slowly back down for a few seconds. Floating
+out through the club's doorway does the same, and so does her landing hard or hitting something, which puts gravity
+back on by itself. It works as she flies too, everyone in the club floating along with her; while she moves along,
+though, only people float, mobs and dropped things keeping their weight until she slows, as she would leave them
+behind. The Gravity Switch is among her blocks in the creative tab (crafted from a stone button over a feather between
+two iron ingots, a yellow dye either side of the button and an iron ingot under the feather); put up by hand on a wall,
+or standing on its post on a floor, it works a room of its own, the room round it as far as its walls, floor and
+ceiling reach from where it stands, up to ten blocks each way, and a redstone pulse presses it as a hand does. The
+server config's `freighter.zeroGravity` builds her without it or the ducks, and keeps every gravity switch from
+working, a press then only buzzing.
+
 Her crew quarters, the room through the doorway at her port quarter, have four bunks against their wall, each in its
 own blanket with its reading light on; her lounge, aft of the entry hall, a booth, a low table among four seats with
 leg room before it, and a galley along its wall, worktops and stowage with an oven, a coffee machine and a stocked

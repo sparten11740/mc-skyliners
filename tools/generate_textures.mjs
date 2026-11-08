@@ -8847,6 +8847,74 @@ function floorWindowTextures() {
   texture(blockOutput, "floor_window_panel_post", (x) => (x % 4 === 0 ? STEEL_DARK : STEEL), 2);
 }
 floorWindowTextures();
+// The gravity switch (see GravitySwitchBlock): its big round button's face, drawn finer than a block's sixteen pixels so
+// the picture on it reads, a cheerful little white figure floating, arms thrown up and legs kicked apart, chevrons
+// rising under its feet and yellow sparkles round it, on a deep night-blue disc in a steel lip, the lamp ring round it green
+// while the room's gravity is on and glowing cyan, the disc brighter and the figure higher, while it is off; its plate's
+// yellow and black hazard stripes in a dark steel edge; its lamp, green or cyan; and its item, the button on its plate.
+function gravitySwitchTextures() {
+  const FINE = 32;
+  const STEEL_DARK = [0x4c, 0x52, 0x5a];
+  const STEEL = [0x9a, 0xa1, 0xa8];
+  const YELLOW = [0xf2, 0xc0, 0x1c];
+  const BLACK = [0x1c, 0x1c, 0x20];
+  const WHITE = [0xfa, 0xfc, 0xff];
+  const SPARKLE = [0xff, 0xe4, 0x5a];
+  const ON = [0x48, 0xe8, 0x6a];
+  const OFF = [0x40, 0xf0, 0xff];
+  // How far a point is from a line between two others, in pixels.
+  const fromLine = (x, y, [ax, ay], [bx, by]) => {
+    const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)));
+    return Math.hypot(x - ax - t * (bx - ax), y - ay - t * (by - ay));
+  };
+  // The figure, so far up: a head, a body, arms thrown up and out and legs kicked apart, each line so thick.
+  const figure = (x, y, up) => {
+    const at = (px, py) => [px, py - up];
+    if (Math.hypot(x - 16, y - (6.5 - up)) < 2.4) return true;
+    const limbs = [[at(16, 10), at(16, 16)], [at(16, 11), at(10, 6)], [at(16, 11), at(22, 6)], [at(16, 16), at(11, 21)],
+      [at(16, 16), at(21, 21)]];
+    return limbs.some(([a, b]) => fromLine(x, y, a, b) < 0.8);
+  };
+  // A little four-pointed sparkle on a pixel, a pixel wide and five across.
+  const sparkle = (x, y, [sx, sy]) => (x === sx && Math.abs(y - sy) <= 2) || (y === sy && Math.abs(x - sx) <= 2);
+  const SPARKLES = [[7, 12], [25, 10], [8, 20], [24, 19]];
+  // Two chevrons rising under its feet.
+  const chevron = (x, y, up) => [23.5, 26.5].some((tip) => [[11.5, tip + 2.5], [20.5, tip + 2.5]]
+    .some((end) => fromLine(x, y, [16, tip - up], [end[0], end[1] - up]) < 0.6));
+  const disc = (x, y, weightless) => {
+    const up = weightless ? 1 : 0;
+    if (figure(x, y, up)) return WHITE;
+    if (SPARKLES.some((spot) => sparkle(x, y, spot))) return SPARKLE;
+    if (chevron(x, y, up)) return weightless ? OFF : [0x9a, 0xb8, 0xff];
+    const glow = weightless ? 0.5 : 0;
+    const depth = (y / FINE) * 0.6;
+    return [0x14 + 0x20 * glow, 0x1c + 0x50 * glow + 0x10 * depth, 0x48 + 0x40 * glow - 0x10 * depth].map(Math.round);
+  };
+  const face = (weightless) => (x, y) => {
+    const out = Math.hypot(x - 15.5, y - 15.5);
+    if (out > 15.5) return STEEL_DARK;
+    if (out > 13.4) return out > 14.9 ? STEEL_DARK : weightless ? OFF : ON;
+    if (out > 12.4) return STEEL;
+    return disc(x, y, weightless);
+  };
+  texture(blockOutput, "gravity_switch_face", face(false), 2, FINE, FINE);
+  texture(blockOutput, "gravity_switch_face_weightless", face(true), 2, FINE, FINE);
+  texture(blockOutput, "gravity_switch_plate", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return STEEL_DARK;
+    return (x + y) % 6 < 3 ? YELLOW : BLACK;
+  }, 3);
+  texture(blockOutput, "gravity_switch_lamp", (x, y) => (Math.hypot(x - 6, y - 6) < 3 ? [0xd8, 0xff, 0xe0] : ON), 2);
+  texture(blockOutput, "gravity_switch_lamp_weightless", (x, y) => (Math.hypot(x - 6, y - 6) < 3 ? [0xe0, 0xff, 0xff] : OFF), 2);
+  texture(itemOutput, "gravity_switch", (x, y) => {
+    const corner = Math.max(Math.abs(x - 15.5), Math.abs(y - 15.5));
+    if (corner > 15) return CLEAR;
+    const out = Math.hypot(x - 15.5, y - 15.5);
+    if (out <= 12.5) return face(false)(Math.round(15.5 + (x - 15.5) * 15.5 / 12.5), Math.round(15.5 + (y - 15.5) * 15.5 / 12.5));
+    if (corner > 13.5) return STEEL_DARK;
+    return (x + y) % 10 < 5 ? YELLOW : BLACK;
+  }, 0, FINE, FINE);
+}
+gravitySwitchTextures();
 
 // The freighter's beach in her lounge (see the beach in generate_resources.mjs): warm sand with the odd pale shell; a
 // palm's ringed trunk, its pot of terracotta with a lighter rim, and a frond, a midrib out from the trunk at its left

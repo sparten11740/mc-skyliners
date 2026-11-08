@@ -1100,6 +1100,41 @@
       }
     ]
   },
+  "gravity_switch_off": {
+    "subtitle": "subtitles.skyliners.gravity_switch_off",
+    "sounds": [
+      {
+        "name": "skyliners:gravity_switch_off",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "gravity_switch_on": {
+    "subtitle": "subtitles.skyliners.gravity_switch_on",
+    "sounds": [
+      {
+        "name": "skyliners:gravity_switch_on",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "zero_gravity_hum": {
+    "subtitle": "subtitles.skyliners.zero_gravity_hum",
+    "sounds": [
+      {
+        "name": "skyliners:zero_gravity_hum",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "zero_gravity_bump": {
+    "subtitle": "subtitles.skyliners.zero_gravity_bump",
+    "sounds": [
+      {
+        "name": "skyliners:zero_gravity_bump"
+      }
+    ]
+  },
   "freighter_computer_jump_charged": {
     "subtitle": "subtitles.skyliners.freighter_computer_jump_charged",
     "sounds": [
@@ -1150,6 +1185,15 @@
     "sounds": [
       {
         "name": "skyliners:freighter_computer_magpie_ready",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_zero_gravity": {
+    "subtitle": "subtitles.skyliners.freighter_computer_zero_gravity",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_zero_gravity",
         "attenuation_distance": 1024
       }
     ]

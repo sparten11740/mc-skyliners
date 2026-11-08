@@ -406,6 +406,8 @@ import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.CannonRocket;
 import dev.skyliners.turret.LaserCannonBlock;
 import dev.skyliners.turret.LaserCannonBlockEntity;
+import dev.skyliners.zerog.GravitySwitchBlock;
+import dev.skyliners.zerog.GravitySwitchBlockEntity;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -999,6 +1001,16 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> STICKER_MAP_ROW = sound("sticker_map_row");
     /** A whole sticker map filled: a celebration, a drum roll, a triumphant chord, a cymbal and sparkles. */
     public static final DeferredHolder<SoundEvent, SoundEvent> STICKER_MAP_FULL = sound("sticker_map_full");
+    /** A gravity switch turning gravity off: a power-down whirr sinking away into an airy shimmer. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GRAVITY_SWITCH_OFF = sound("gravity_switch_off");
+    /** A gravity switch turning gravity back on: a rising whine and a heavy thunk. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GRAVITY_SWITCH_ON = sound("gravity_switch_on");
+    /** A weightless room's soft, airy hum, a seamless loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ZERO_GRAVITY_HUM = sound("zero_gravity_hum");
+    /** Someone floating bumping off a wall, the floor or the ceiling: a soft, padded boing. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ZERO_GRAVITY_BUMP = sound("zero_gravity_bump");
+    /** Her computer, a gravity switch turned off: "Gravity off. Try not to hit your head." */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_ZERO_GRAVITY = sound("freighter_computer_zero_gravity");
     /** Her computer, after its falling blip: "Jump drive charged." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_JUMP_CHARGED =
         sound("freighter_computer_jump_charged");
@@ -1677,6 +1689,17 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BeamPadBlockEntity>> BEAM_PAD_ENTITY =
         BLOCK_ENTITIES.register("beam_pad", () -> BlockEntityType.Builder.of(BeamPadBlockEntity::new, BEAM_PAD.get()).build(null));
     public static final DeferredItem<BlockItem> BEAM_PAD_ITEM = ITEMS.registerSimpleBlockItem(BEAM_PAD);
+    /**
+     * The gravity switch by the freighter's club's doorway (see {@link GravitySwitchBlock}), turning gravity off in the
+     * room it stands in.
+     */
+    public static final DeferredBlock<GravitySwitchBlock> GRAVITY_SWITCH = BLOCKS.registerBlock(
+        "gravity_switch", GravitySwitchBlock::new, metal(MapColor.COLOR_YELLOW).noOcclusion()
+            .lightLevel(state -> state.getValue(GravitySwitchBlock.WEIGHTLESS) ? GravitySwitchBlock.GLOW_WEIGHTLESS : GravitySwitchBlock.GLOW)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GravitySwitchBlockEntity>> GRAVITY_SWITCH_ENTITY =
+        BLOCK_ENTITIES.register("gravity_switch", () -> BlockEntityType.Builder.of(GravitySwitchBlockEntity::new, GRAVITY_SWITCH.get()).build(null));
+    public static final DeferredItem<BlockItem> GRAVITY_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(GRAVITY_SWITCH);
     /** The laser crossbow's rack in the freighter's entry hall (see {@link CrossbowRackBlock}). */
     public static final DeferredBlock<CrossbowRackBlock> CROSSBOW_RACK = BLOCKS.registerBlock(
         "crossbow_rack", CrossbowRackBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.8F).sound(SoundType.WOOD).noOcclusion()
@@ -3318,6 +3341,7 @@ public final class SkylinersRegistry {
             STICKER_MAP_ITEM,
             TRACTOR_BEAM_ITEM,
             BEAM_PAD_ITEM,
+            GRAVITY_SWITCH_ITEM,
             CONSOLE_READOUTS_ITEM,
             CONSOLE_SCANNER_ITEM,
             CONSOLE_ENGINES_ITEM,

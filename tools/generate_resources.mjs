@@ -828,6 +828,46 @@ const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "j
   cubes.floor_window_panel = null;
 }
 
+// The gravity switch (see GravitySwitchBlock): on a wall, a plate in hazard stripes, flat to it, and proud of it a big
+// round button, its face the floating figure, glowing whatever the light round it, and over it a little lamp, green or
+// cyan; drawn facing north, its wall to the south. On a floor, a steel foot and post and a head in hazard stripes, the
+// button on top and the lamp at its back. Its item is the button on its plate, flat.
+{
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const glowing = (texture) => ({ texture, ...lit });
+  for (const weightless of [false, true]) {
+    const suffix = weightless ? "_weightless" : "";
+    const textures = { plate: `${ID}:block/gravity_switch_plate`, steel: `${ID}:block/floor_window_panel_post`, foot: `${ID}:block/lab_chrome`,
+      face: `${ID}:block/gravity_switch_face${suffix}`, lamp: `${ID}:block/gravity_switch_lamp${suffix}`, particle: `${ID}:block/gravity_switch_plate` };
+    write(`assets/${ID}/models/block/gravity_switch_wall${suffix}.json`, {
+      parent: "minecraft:block/block",
+      textures,
+      elements: [solid([2, 1, 15], [14, 15, 16], "#plate"),
+        { from: [4, 2.5, 13], to: [12, 10.5, 15], shade: false,
+          faces: { north: { ...glowing("#face"), uv: [0, 0, 16, 16] }, up: { texture: "#steel" }, down: { texture: "#steel" }, east: { texture: "#steel" }, west: { texture: "#steel" } } },
+        { from: [6.5, 11.5, 14], to: [9.5, 13.5, 15], shade: false,
+          faces: { north: glowing("#lamp"), up: glowing("#lamp"), down: glowing("#lamp"), east: glowing("#lamp"), west: glowing("#lamp") } }],
+    });
+    write(`assets/${ID}/models/block/gravity_switch_floor${suffix}.json`, {
+      parent: "minecraft:block/block",
+      textures,
+      elements: [solid([4, 0, 4], [12, 1, 12], "#foot"), solid([6.5, 1, 6.5], [9.5, 10, 9.5], "#steel"), solid([3, 10, 3], [13, 13, 13], "#plate"),
+        { from: [4, 13, 3.5], to: [12, 14.5, 11.5], shade: false,
+          faces: { up: { ...glowing("#face"), uv: [0, 0, 16, 16] }, north: { texture: "#steel" }, south: { texture: "#steel" }, east: { texture: "#steel" }, west: { texture: "#steel" } } },
+        { from: [6.5, 13, 12], to: [9.5, 15, 13], shade: false,
+          faces: { north: glowing("#lamp"), up: glowing("#lamp"), south: glowing("#lamp"), east: glowing("#lamp"), west: glowing("#lamp") } }],
+    });
+  }
+  write(`assets/${ID}/blockstates/gravity_switch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["floor", "wall"].flatMap((mount) => [false, true]
+      .flatMap((weightless) => [false, true].map((powered) => [`facing=${facing},mount=${mount},powered=${powered},weightless=${weightless}`,
+        { model: `${ID}:block/gravity_switch_${mount}${weightless ? "_weightless" : ""}`, y }]))))),
+  });
+  write(`assets/${ID}/models/item/gravity_switch.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/gravity_switch` } });
+  dropsItself("gravity_switch");
+  cubes.gravity_switch = null;
+}
+
 // The freighter's beach in her lounge. A potted palm (see TropicalPieceBlock): a terracotta pot with a lighter rim and
 // earth in it, a ringed trunk leaning a little as it rises a block and a half, and fronds spreading from its crown,
 // four drooping out to its sides and two more crossing over them, drawn on both faces and clear between their leaflets.
@@ -2124,6 +2164,7 @@ function zeppelinControlsLang() {
     "block.skyliners.coolant_valve": "Coolant Valve",
     "block.skyliners.tractor_beam": "Tractor Beam",
     "block.skyliners.beam_pad": "Beam Pad",
+    "block.skyliners.gravity_switch": "Gravity Switch",
     "block.skyliners.crossbow_rack": "Crossbow Rack",
     "block.skyliners.sticker_map": "Sticker Map",
     "message.skyliners.sticker_map.aboard": "Her stickers go up as she lands somewhere new",
@@ -2496,6 +2537,12 @@ const FREIGHTER_SOUNDS = {
   sticker_map_new: { subtitle: "Sticker goes up: fanfare", heard: 32 },
   sticker_map_row: { subtitle: "Sticker row filled: fanfare", heard: 40 },
   sticker_map_full: { subtitle: "Sticker map filled: celebration", heard: 48 },
+  // A gravity switch: gravity going off with a whirr down and coming back on with a thunk, heard all through a room;
+  // a weightless room's hum while it is off; and someone floating bumping softly off a wall.
+  gravity_switch_off: { subtitle: "Gravity switches off", heard: 24 },
+  gravity_switch_on: { subtitle: "Gravity switches on", heard: 24 },
+  zero_gravity_hum: { subtitle: "Weightless air hums", heard: 24 },
+  zero_gravity_bump: { subtitle: "Someone bumps off a wall" },
   // Her computer's voice, each line subtitled with what it says, her own words for the flight deck's announcements
   // with their gist.
   freighter_computer_jump_charged: { subtitle: "Computer: Jump drive charged", aboard: true },
@@ -2504,6 +2551,7 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_turret_ready: { subtitle: "Computer: Gun turret online", aboard: true },
   freighter_computer_jump_countdown: { subtitle: "Computer: Jump in three, two, one", aboard: true },
   freighter_computer_magpie_ready: { subtitle: "Computer: Magpie's awake", aboard: true },
+  freighter_computer_zero_gravity: { subtitle: "Computer: Gravity off", aboard: true },
   // Her computer through her hyperspace jump, the lines generate_sounds.mjs keeps together in COMPUTER_JUMP_LINES,
   // each with its gist.
   freighter_computer_jump_spooling: { subtitle: "Computer: Jump drive spooling up", aboard: true },
@@ -11203,6 +11251,7 @@ FITTINGS.push("spookie_hammock", "jump_drive", "breaker_board", "coolant_valve",
 FITTINGS.push("tractor_beam", "beam_pad");
 // Her sticker map hangs on her entry hall's wall, and goes up by hand anywhere.
 FITTINGS.push("sticker_map");
+FITTINGS.push("gravity_switch");
 // Her console's modules are fitted into her cockpit, and set up by hand anywhere.
 FITTINGS.push(...CONSOLE_KINDS.map((kind) => `console_${kind}`));
 // The round floor window and its panel are fitted into her lounge, and laid and taken out by hand anywhere.
@@ -11356,6 +11405,7 @@ shaped("crew_ladder", ["I I", "III", "I I"], { I: "minecraft:iron_ingot" }, 4);
 shaped("floor_window_panel", [" B ", "IRI", " I "], { B: "minecraft:stone_button", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("coolant_valve", [" R ", "IPI", " I "], { R: "minecraft:red_dye", I: "minecraft:iron_ingot", P: "minecraft:piston" }, 1);
 shaped("tractor_beam", ["IRI", "IEI", " G "], { I: "minecraft:iron_ingot", R: "minecraft:redstone", E: "minecraft:ender_pearl", G: "minecraft:lime_stained_glass" }, 1);
+shaped("gravity_switch", ["YBY", "IFI", " I "], { Y: "minecraft:yellow_dye", B: "minecraft:stone_button", I: "minecraft:iron_ingot", F: "minecraft:feather" }, 1);
 shaped("beam_pad", ["LRL", "III"], { L: "minecraft:lime_dye", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 2);
 shaped("breaker_board", ["ILI", "LRL", "ILI"], { I: "minecraft:iron_ingot", L: "minecraft:lever", R: "minecraft:redstone" }, 1);
 shaped("jump_drive", ["ICI", "BEB", "III"], { I: "minecraft:iron_ingot", C: "minecraft:end_crystal", B: "minecraft:blue_ice", E: "minecraft:ender_eye" }, 1);

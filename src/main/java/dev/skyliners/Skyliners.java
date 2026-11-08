@@ -81,6 +81,7 @@ import dev.skyliners.selfdestruct.ThrownClearPayload;
 import dev.skyliners.stickers.StickerMapBlockEntity;
 import dev.skyliners.turret.GunnerTrigger;
 import dev.skyliners.turret.RocketBlast;
+import dev.skyliners.zerog.ZeroGravity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
@@ -129,6 +130,9 @@ public final class Skyliners {
         NeoForge.EVENT_BUS.addListener(SlideRide::onMount);
         NeoForge.EVENT_BUS.addListener(SpaceGravity::onTick);
         NeoForge.EVENT_BUS.addListener(SpaceGravity::onLoggedOut);
+        NeoForge.EVENT_BUS.addListener(ZeroGravity::onTick);
+        NeoForge.EVENT_BUS.addListener(ZeroGravity::onLoggedOut);
+        NeoForge.EVENT_BUS.addListener(ZeroGravity::onJoinLevel);
         NeoForge.EVENT_BUS.addListener(Passengers::onInteract);
         NeoForge.EVENT_BUS.addListener(Passengers::onTick);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);

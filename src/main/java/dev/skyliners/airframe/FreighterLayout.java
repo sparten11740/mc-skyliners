@@ -483,6 +483,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterFurnishings.build(layout, layout.deck);
         FreighterSpookie.build(layout, layout.deck);
         FreighterEngineering.breakerBoard(layout, layout.deck, FreighterLedStrips.build(layout, layout.deck, layout.side, layout.front));
+        FreighterZeroGravity.build(layout, layout.deck, layout.side, layout.front);
         FreighterPortholes.build(layout, layout.deck, layout.scale);
         FreighterLookout.build(layout, layout.deck, layout.jets[PORT_NOSE_JET]);
         layout.lights();
