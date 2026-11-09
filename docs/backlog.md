@@ -15,8 +15,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   the control jets but did not free it. At 50 blocks a second it held its height.
 - **A removed ship comes back.** `/sable remove` only drops the loaded copy; Sable's stored copy stays in
   `sable storage find_all_sub_levels` and flies again once its area loads.
-- **At scales 3 and 4 the airliner leaves steps behind.** Built with `airframe.scale` above 2, assembled and folded, six
-  blocks of its airstairs stay on the ground (`airstairs-leave-no-steps`). alpha.26 does it too; scale 2 does not.
 - **Ships far from the world's middle move in steps.** Sable's physics rounds a ship's position so coarsely out there
   that slow speeds vanish while its speed still reads as moving: at x 111,600, told two blocks a second, the freighter
   went 0.3 blocks in ten seconds, and told three it went at nearly six. The freighter's landing copes by nudging herself
@@ -37,4 +35,3 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   ear).
 - The laser path clearer firing at real terrain while flying at speed.
 - Climbing into an upper bunk in the rocket (the test player drops off the ladder).
-- The rocket's cockpit controls flown at scales other than 2.
