@@ -246,6 +246,7 @@ public final class BlockpilotCommands {
             .field("rock_size", "how big that rock is, in blocks across")
             .field("rock_lands", "the game tick that rock lands")
             .field("rock_giant", "whether that rock is a giant asteroid's giant")
+            .field("rock_target", "where on her hull that rock lands, in the world, x,y,z")
             .field("giant_lands", "the game tick a giant asteroid's giant flying in lands, -1 for none")
             .field("giant_size", "how big that giant is, in blocks across")
             .field("started", "what asking for weather came to, when asked: coming, busy, not_flying, too_low, nobody_aboard, switched_off or no_ship")
@@ -390,7 +391,8 @@ public final class BlockpilotCommands {
             SpaceWeather.Coming first = coming.getFirst();
             fields.tag("rock_at", round(first.at().x) + "," + round(first.at().y) + "," + round(first.at().z))
                 .tag("rock_vel", round(first.velocity().x) + "," + round(first.velocity().y) + "," + round(first.velocity().z))
-                .tag("rock_size", round(first.size())).tag("rock_lands", first.lands()).tag("rock_giant", first.giant());
+                .tag("rock_size", round(first.size())).tag("rock_lands", first.lands()).tag("rock_giant", first.giant())
+                .tag("rock_target", round(first.target().x) + "," + round(first.target().y) + "," + round(first.target().z));
         }
         SpaceWeather.Coming giant = coming.stream().filter(SpaceWeather.Coming::giant).findFirst().orElse(null);
         fields.tag("giant_lands", giant == null ? -1 : giant.lands()).tag("giant_size", giant == null ? 0 : round(giant.size()));

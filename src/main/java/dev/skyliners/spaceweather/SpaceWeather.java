@@ -410,7 +410,7 @@ public final class SpaceWeather {
 
         /** Where it is at a game time, from where the spot on her it comes at is then, in the world. */
         Vec3 position(Vec3 target, double now) {
-            return target.subtract(way.scale((at - now) / TICKS * speed)).add(aside).add(drift.scale((now - changed) / TICKS));
+            return target.subtract(way.scale((at - now) / TICKS * speed + size / 2)).add(aside).add(drift.scale((now - changed) / TICKS));
         }
 
         /** How far off its course it arrives, in blocks, as it is going now. */
@@ -577,16 +577,17 @@ public final class SpaceWeather {
 
     /**
      * The rocks coming at her now, seen flying in and not yet burst, for the play-test: each one's number, where it is
-     * in the world and how fast it moves, how big it is in blocks across, when it lands, in game time, and whether it is
-     * the giant; the soonest to land first.
+     * in the world and how fast it moves, how big it is in blocks across, when it lands, in game time, whether it is
+     * the giant, and where on her hull it lands, in the world; the soonest to land first.
      */
     public List<Coming> coming(ServerLevel level) {
         List<Coming> coming = new ArrayList<>();
         long now = level.getGameTime();
         for (Strike strike : strikes) {
             if (strike.flying() && strike.size > 0 && strike.at > now) {
-                Vec3 at = strike.position(SableFlight.toWorld(level, strike.onHer), now);
-                coming.add(new Coming(strike.id, at, strike.way.scale(strike.speed).add(strike.drift), strike.size, strike.at, strike.giant));
+                Vec3 target = SableFlight.toWorld(level, strike.onHer);
+                Vec3 at = strike.position(target, now);
+                coming.add(new Coming(strike.id, at, strike.way.scale(strike.speed).add(strike.drift), strike.size, strike.at, strike.giant, target));
             }
         }
         coming.sort(Comparator.comparingLong(Coming::lands));
@@ -594,7 +595,7 @@ public final class SpaceWeather {
     }
 
     /** A rock coming at her, for the play-test (see {@link #coming}), how fast it moves too, in blocks a second. */
-    public record Coming(int id, Vec3 at, Vec3 velocity, double size, long lands, boolean giant) {
+    public record Coming(int id, Vec3 at, Vec3 velocity, double size, long lands, boolean giant, Vec3 target) {
     }
 
     /**

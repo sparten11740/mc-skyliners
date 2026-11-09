@@ -608,6 +608,8 @@ const ROCK_WEATHER_TICKS = 1300;
 // at least, in blocks a second, and how many times an ordinary rock's at least; how fast it must set her turning at
 // least, in degrees a second; how long a server tick may take at most through it, on average and at the worst, in
 // milliseconds, so a tumbling ship never stalls the game.
+// How far a giant asteroid's middle may be from half its size off where it lands, in blocks: a tick or so of its flight.
+const GIANT_FRONT_WITHIN = 4;
 const GIANT_TICKS = 1100;
 const GIANT_SHOVE_LEAST = 15;
 const GIANT_HARDER = 2;
@@ -3963,6 +3965,13 @@ function checkGiantAsteroid() {
   if (!coming) {
     creative();
     return;
+  }
+  const first = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.rock_giant === true, GIANT_TICKS);
+  if (first) {
+    const [at, vel, target] = [first.rock_at, first.rock_vel, first.rock_target].map((value) => value.split(",").map(Number));
+    const left = (first.rock_lands - now()) / 20;
+    const off = Math.hypot(...at.map((value, i) => value + vel[i] * left - target[i]));
+    expect(Math.abs(off - first.rock_size / 2) <= GIANT_FRONT_WITHIN, "giant asteroid: it reaches her hull with its front, not its middle", `its middle ${round(off)} blocks from where it lands, ${round(first.rock_size)} across`);
   }
   must("perf start giant");
   const giant = strikeAt(freighter, coming.giant_lands);

@@ -65,10 +65,11 @@ public record IncomingStrike(SpaceWeather.Kind kind, int id, Vec3 onHer, Vec3 wa
 
     /**
      * Where it is at a game time, from where the spot on her it comes at is then, in the world: back along its way as
-     * far as it has still to come, and as far off its course as it has been knocked.
+     * far as it has still to come, and as far off its course as it has been knocked. Its front reaches her as it lands,
+     * its middle half its size short.
      */
     public Vec3 position(Vec3 target, double now) {
-        return target.subtract(way.scale((at - now) / TICKS * speed)).add(aside).add(drift.scale((now - changed) / TICKS));
+        return target.subtract(way.scale((at - now) / TICKS * speed + size / 2)).add(aside).add(drift.scale((now - changed) / TICKS));
     }
 
     /** Whether it is a rock, which her cannon can shoot at, rather than a meteor. */
