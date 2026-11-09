@@ -4,7 +4,9 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -18,6 +20,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
@@ -74,6 +77,9 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
      * then, but the client takes a frame or so to draw them, and the leg would flash out of sight in between.
      */
     private static final int DRAWN_AFTER_LOCK = 3;
+    /** A leg that telescopes: how often it goes a block further or back, in ticks, and how loud that is. */
+    private static final int REACH_EVERY = 4;
+    private static final float REACH_VOLUME = 0.5F;
     /** The legs loaded, so the controls' and the autopilot's links into a stowed leg are not taken for broken ones. */
     private static final Loaded<RetractableLegBlockEntity> LOADED = new Loaded<>(RetractableLegBlockEntity.class);
 
@@ -84,6 +90,9 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
     private Motion motion = Motion.DOWN;
     /** How far through its movement the leg is, in ticks. */
     private int ticks;
+    /** How many blocks longer than built the leg reaches now, and how many it has been told to. */
+    private int reach;
+    private int reachWanted;
     /**
      * On a client, the blocks it drew coming down, kept for {@link #DRAWN_AFTER_LOCK} once it has locked, and how many
      * ticks longer they are drawn.
@@ -109,6 +118,16 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
 
     /** How many rows below its lowest block the leg reaches down: its tires below their mounts, or none for a foot. */
     protected abstract int reachBelow();
+
+    /** How many blocks further than built the leg can reach: none, unless the kind of leg telescopes. */
+    protected int mostReach() {
+        return 0;
+    }
+
+    /** What it is lengthened with, a block at a time, if it telescopes (see {@link #mostReach}). */
+    protected BlockState extension() {
+        return Blocks.AIR.defaultBlockState();
+    }
 
     /** The pitch its sound plays at: as recorded, unless the kind of leg sets each of its legs apart. */
     protected float pitch() {
@@ -210,7 +229,11 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, RetractableLegBlockEntity leg) {
-        if (!leg.motion.moving() || !(level instanceof ServerLevel serverLevel)) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        leg.stepReach(serverLevel);
+        if (!leg.motion.moving()) {
             return;
         }
         leg.ticks++;
@@ -233,6 +256,68 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
         leg.drawnFor = Math.max(0, leg.drawnFor - 1);
     }
 
+    /**
+     * How high the ground is under its foot, as the first air over it: the highest under its foot plate, which stands
+     * on that. However the ship leans, the same ground.
+     */
+    public int groundUnder(Level level) {
+        int footRow = footRow();
+        return leg.stream().filter(offset -> offset.getY() == footRow)
+            .mapToInt(offset -> groundAt(level, offset)).max().orElse(0);
+    }
+
+    /** How high the ground is under one block of the leg, as the first air over it. */
+    private int groundAt(Level level, BlockPos offset) {
+        Vec3 at = SableFlight.toWorld(level, Vec3.atBottomCenterOf(worldPosition.offset(offset)));
+        return level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
+    }
+
+    /** The row of its lowest blocks, its foot's, from its top. */
+    private int footRow() {
+        return leg.stream().mapToInt(BlockPos::getY).min().orElse(0);
+    }
+
+    /** How many blocks further than built it reaches now (see {@link #mostReach}). */
+    public int reach() {
+        return reach;
+    }
+
+    /** Tells a leg that telescopes how many blocks further than built to reach, which it goes to a block at a time. */
+    public void reachTo(int blocks) {
+        reachWanted = Mth.clamp(blocks, 0, mostReach());
+    }
+
+    /** Down and locked, a block nearer the reach it was told, every {@link #REACH_EVERY} ticks. */
+    private void stepReach(ServerLevel level) {
+        if (motion != Motion.DOWN || reach == reachWanted || level.getGameTime() % REACH_EVERY != 0) {
+            return;
+        }
+        boolean longer = reachWanted > reach;
+        moveFoot(level, reach, reach + (longer ? 1 : -1));
+        SoundEvent sound = longer ? SoundEvents.PISTON_EXTEND : SoundEvents.PISTON_CONTRACT;
+        level.playSound(null, worldPosition, sound, SoundSource.BLOCKS, REACH_VOLUME, pitch());
+    }
+
+    /** Its foot moved from one reach to another, the column over it lengthened or shortened to follow. */
+    private void moveFoot(ServerLevel level, int from, int to) {
+        int footRow = footRow();
+        List<BlockPos> plate = leg.stream().filter(offset -> offset.getY() == footRow).toList();
+        Map<BlockPos, BlockState> foot = new HashMap<>();
+        for (BlockPos cell : plate) {
+            BlockPos at = worldPosition.offset(cell).below(from);
+            foot.put(cell, level.getBlockState(at));
+            level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
+        }
+        for (int row = Math.min(from, to); row < Math.max(from, to); row++) {
+            BlockPos column = worldPosition.above(footRow - row);
+            BlockState state = to > from ? extension() : Blocks.AIR.defaultBlockState();
+            level.setBlock(column, state, Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
+        }
+        foot.forEach((cell, state) -> level.setBlock(worldPosition.offset(cell).below(to), state, Block.UPDATE_ALL));
+        reach = to;
+        setChanged();
+    }
+
     /** All the way down: the leg's blocks back where they were and locked, once its foot has room under it. */
     private void lockDown(ServerLevel level) {
         if (aboveGround(level) < ROOM_BELOW) {
@@ -249,6 +334,10 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
 
     /** Takes the leg's blocks away, each kept with its data; what hangs on the leg first, so nothing falls off it. */
     private void stow(ServerLevel level) {
+        reachWanted = 0;
+        if (reach > 0) {
+            moveFoot(level, reach, 0);
+        }
         List<Part> parts = new ArrayList<>();
         for (BlockPos offset : leg) {
             BlockPos at = worldPosition.offset(offset);
@@ -303,7 +392,8 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
      */
     public double aboveGround(Level level) {
         int lowest = leg.stream().mapToInt(BlockPos::getY).min().orElse(0);
-        Vec3 foot = SableFlight.toWorld(level, Vec3.atBottomCenterOf(worldPosition.above(lowest - reachBelow())));
+        BlockPos bottom = worldPosition.above(lowest - reachBelow() - reach);
+        Vec3 foot = SableFlight.toWorld(level, Vec3.atBottomCenterOf(bottom));
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(foot.x), Mth.floor(foot.z));
         return foot.y - ground;
     }
@@ -365,6 +455,8 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
         tag.put("Leg", Relays.write(leg));
         tag.putString("Motion", motion.name());
         tag.putInt("Ticks", ticks);
+        tag.putInt("Reach", reach);
+        tag.putInt("ReachWanted", reachWanted);
         ListTag parts = new ListTag();
         for (Part part : stowed) {
             CompoundTag saved = new CompoundTag();
@@ -392,6 +484,8 @@ public abstract class RetractableLegBlockEntity extends BlockEntity {
             drawnFor = DRAWN_AFTER_LOCK;
         }
         ticks = tag.getInt("Ticks");
+        reach = tag.getInt("Reach");
+        reachWanted = tag.getInt("ReachWanted");
         List<Part> parts = new ArrayList<>();
         for (Tag entry : tag.getList("Stowed", Tag.TAG_COMPOUND)) {
             CompoundTag saved = (CompoundTag) entry;

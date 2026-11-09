@@ -311,6 +311,8 @@ public final class FreighterLayout extends HullLayout {
     private static final Map<Integer, List<Offset>> UNDER_HULL = new ConcurrentHashMap<>();
     /** Every block of her legs' foot plates (see {@link #feet}). */
     private static final List<Offset> FEET = footPlates();
+    /** How many blocks each of her foot plates is made of, in the order of {@link #feet}, a plate's together. */
+    public static final int FOOT_CELLS = 9;
 
     private final double scale;
     /** Her deck's floor row. */
@@ -401,7 +403,7 @@ public final class FreighterLayout extends HullLayout {
         for (double[] leg : FreighterShape.LEGS) {
             int x = (int) Math.round(leg[0] * SCALE);
             int z = (int) Math.round(leg[1] * SCALE);
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i < FOOT_CELLS; i++) {
                 feet.add(new Offset(x + i % 3 - 1, z + i / 3 - 1, 0));
             }
         }
@@ -831,7 +833,7 @@ public final class FreighterLayout extends HullLayout {
                 set(x, y, z, strut);
                 parts.add(new BlockPos(x, y, z));
             }
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i < FOOT_CELLS; i++) {
                 BlockPos plate = new BlockPos(x + i % 3 - 1, 0, z + i / 3 - 1);
                 set(plate.getX(), 0, plate.getZ(), foot);
                 parts.add(plate);

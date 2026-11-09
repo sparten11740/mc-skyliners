@@ -40,6 +40,14 @@ final class FreighterLegs {
      * take to come down and lock, and a second more.
      */
     private static final double LOOK_AHEAD = (double) LegBayBlockEntity.LOWER_TICKS / SharedConstants.TICKS_PER_SECOND + 1;
+    /**
+     * Landing, how near the ground her lowest foot comes before each leg is told how far to reach to its own ground,
+     * and how near before they are left as they are, in blocks: late, so she has settled over her spot, and early
+     * enough for them to get there, and to stop before she stands on them. Higher than the first, they draw back to
+     * the length they were built.
+     */
+    private static final double REACH_FROM = 4;
+    private static final double REACH_UNTIL = 1;
 
     /** Her leg bays, as offsets from her control head; none for a freighter built before her legs drew up. */
     private List<BlockPos> bays = List.of();
@@ -72,6 +80,21 @@ final class FreighterLegs {
         } else if (feetOverGround > RAISE_HEIGHT && soon > LOWER_HEIGHT && SkylinersConfig.FREIGHTER_RETRACTING_LEGS.get()) {
             legs(level, origin).forEach(leg -> leg.raise(level));
         }
+        if (feetOverGround > REACH_FROM) {
+            legs(level, origin).forEach(leg -> leg.reachTo(0));
+        } else if (phase == AutopilotBlockEntity.Phase.LAND && feetOverGround > REACH_UNTIL) {
+            reachGround(level, origin);
+        }
+    }
+
+    /**
+     * Each leg told how much further to reach than the one over the highest ground, so that every foot meets its own
+     * ground with her hull level: from the ground itself, not how high her feet are over it, which a lean would change.
+     */
+    private void reachGround(ServerLevel level, BlockPos origin) {
+        List<LegBayBlockEntity> legs = legs(level, origin);
+        int highest = legs.stream().mapToInt(leg -> leg.groundUnder(level)).max().orElse(0);
+        legs.forEach(leg -> leg.reachTo(highest - leg.groundUnder(level)));
     }
 
     /**

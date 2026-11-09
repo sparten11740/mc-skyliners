@@ -209,6 +209,17 @@ const PAD_STONE_HIGH = 9;
 const PAD_DOWN_TICKS = 2400;
 const PAD_LEVEL_WITHIN = 2;
 const PAD_REACH = 64;
+// A freighter landing on a slope: how far ahead of her it is, how far it reaches round the pin, how wide each step
+// of the slope is and how many steps there are, in blocks, how far she may lean on it, in degrees, how high to look
+// from, and how many blocks a fill command may set, as it needs for a layer of the slope, then back to its usual limit.
+const UNEVEN_PIN_AHEAD = 240;
+const UNEVEN_REACH = 110;
+const UNEVEN_STEP_WIDE = 16;
+const UNEVEN_STEPS = 13;
+const UNEVEN_LEVEL_WITHIN = 1;
+const UNEVEN_LOOK_UP = 30;
+const UNEVEN_FILL_MOST = 60000;
+const FILL_LIMIT = 32768;
 // A freighter landing far from the world's middle: the number of the site she is laid down on, 180,000 blocks out, far
 // past the sites the other checks reach, where Sable's physics rounds her position so that she cannot creep.
 const FAR_SITE = 150;
@@ -2660,6 +2671,34 @@ function checkFreighterFarLanding() {
   if (rideFreighterUp(head)) {
     landFreighterAt(head, site.x, site.z - PAD_PIN_AHEAD, "far from the world's middle");
   }
+}
+
+// A freighter set to land on a long, gentle slope, too steep for all her feet to stand within a block of each other:
+// her legs telescope, each to its own ground, and she stands with her hull level, her ramp neither stuck moving nor
+// left waiting. Before, she held over the pin for ever, finding no ground.
+function checkFreighterUnevenLanding() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const [x, z] = [site.x, site.z - UNEVEN_PIN_AHEAD];
+  must(`server gamerule commandModificationBlockLimit ${UNEVEN_FILL_MOST}; server tp @p ${x} ${ground + UNEVEN_LOOK_UP} ${z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
+  for (let step = 1; step <= UNEVEN_STEPS; step++) {
+    must(`server fill ${x - UNEVEN_REACH + step * UNEVEN_STEP_WIDE} ${ground + step - 1} ${z - UNEVEN_REACH} ${x + UNEVEN_REACH} ${ground + step - 1} ${z + UNEVEN_REACH} stone`);
+  }
+  must(`server gamerule commandModificationBlockLimit ${FILL_LIMIT}; server tp @p ${site.x} ${ground} ${site.z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const down = landFreighterAt(head, x, z, "on sloping ground");
+  if (!down) {
+    return;
+  }
+  const lean = Math.max(Math.abs(down.tilt_front), Math.abs(down.tilt_right));
+  expect(lean < UNEVEN_LEVEL_WITHIN, "freighter: her legs telescope, each to its own ground, and she stands level", `leaning ${lean} degrees`);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const { at: panelAt } = must(`sable:find ${freighter} skyliners:ramp_panel 1 side=server`).rows[0];
+  must(`wait ${RAMP_DOWN_TICKS}t`);
+  const lamp = must(`block ${panelAt.join(",")} side=server`).props?.status;
+  expect(lamp !== "busy", "freighter: on the slope, her ramp is not left moving", `lamp ${lamp}`);
 }
 
 // Ground higher under a freighter's nose than under the rest of her: one foot touches first and she settles from
@@ -6024,6 +6063,7 @@ const CHECKS = {
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-balked": { run: checkFreighterBalked, about: "a freighter told to land where she is over stone taller than her belly's clearance climbs back, says so and comes down on clear ground beside it", slow: true },
   "freighter-far-landing": { run: checkFreighterFarLanding, about: "a freighter set to land far from the world's middle, where she cannot creep, comes down where she stops short of her spot", slow: true },
+  "freighter-uneven-landing": { run: checkFreighterUnevenLanding, slow: true, about: "a freighter set to land on a gentle slope telescopes her legs and stands level" },
   "freighter-balked-slope": { run: checkFreighterBalkedSlope, about: "a freighter with one foot on higher ground settles and switches off, not taken for a landing she cannot finish", slow: true },
   "freighter-balked-lag": { run: checkFreighterBalkedLag, about: "a freighter landing with the server far behind still comes down and switches off, not taken for a landing she cannot finish", slow: true },
   "freighter-balked-nowhere": { run: checkFreighterBalkedNowhere, about: "a freighter that cannot finish landing and has nowhere else to try holds and says so, and told to switch off lets go on what stopped her", slow: true },

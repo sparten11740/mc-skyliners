@@ -1,6 +1,7 @@
 package dev.skyliners.autopilot;
 
 import dev.skyliners.airframe.FreighterLayout;
+import dev.skyliners.block.LegBayBlockEntity;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,8 +23,13 @@ public final class PadSearch {
     /** How far from the pin she may come down, in blocks, and how far apart the spots she tries are. */
     static final int REACH = 64;
     private static final int STEP = 4;
-    /** How much higher one of her feet's ground may be than another's, in blocks. */
-    private static final int LEVEL = 1;
+    /**
+     * How much higher one of her feet's ground may be than another's, in blocks: a block less than her legs telescope,
+     * for the ground to differ a little where she comes down off the spot; and how much across one foot plate, which
+     * stands on the highest of it.
+     */
+    private static final int LEVEL = LegBayBlockEntity.MOST_REACH - 1;
+    private static final int PLATE_LEVEL = 1;
     /**
      * How far apart the columns under her hull are looked at, in blocks: every one, as a block just under her rim is
      * enough to tip her; and how many spots are tried each tick, a spot she fits taking some 4,000 columns' looks.
@@ -48,6 +54,10 @@ public final class PadSearch {
 
     /** Whether she fits over a spot, as far as its ground has been read. */
     private enum Fit { YES, NO, UNREAD }
+
+    /** How a foot plate stands: whether it can, and how high the ground under it is, as the first air over it. */
+    private record Standing(Fit fit, int ground) {
+    }
 
     private final GroundSurvey ground = new GroundSurvey();
     /** The spots to try round the pin, nearest first, as offsets from it, and the next to try. */
@@ -240,21 +250,37 @@ public final class PadSearch {
         double cos = Math.cos(turn);
         int lowest = Integer.MAX_VALUE;
         int highest = Integer.MIN_VALUE;
-        for (FreighterLayout.Offset foot : FreighterLayout.feet()) {
-            int footX = atX(x, foot, sin, cos);
-            int footZ = atZ(z, foot, sin, cos);
-            GroundSurvey.Patch patch = ground.at(footX, footZ);
-            if (patch == null) {
-                return Fit.UNREAD;
+        List<FreighterLayout.Offset> feet = FreighterLayout.feet();
+        for (int plate = 0; plate < feet.size(); plate += FreighterLayout.FOOT_CELLS) {
+            Standing on = standing(feet.subList(plate, plate + FreighterLayout.FOOT_CELLS), x, z, sin, cos);
+            if (on.fit() != Fit.YES) {
+                return on.fit();
             }
-            int under = patch.ground(footX, footZ);
-            if (patch.wet(footX, footZ) || patch.top(footX, footZ) != under) {
-                return Fit.NO;
+            lowest = Math.min(lowest, on.ground());
+            highest = Math.max(highest, on.ground());
+        }
+        return highest - lowest > LEVEL ? Fit.NO : clearUnder(x, z, sin, cos, highest);
+    }
+
+    /** Whether one foot plate can stand, her middle over a column, and the highest ground under it. */
+    private Standing standing(List<FreighterLayout.Offset> plate, int x, int z, double sin, double cos) {
+        int lowest = Integer.MAX_VALUE;
+        int highest = Integer.MIN_VALUE;
+        for (FreighterLayout.Offset cell : plate) {
+            int cellX = atX(x, cell, sin, cos);
+            int cellZ = atZ(z, cell, sin, cos);
+            GroundSurvey.Patch patch = ground.at(cellX, cellZ);
+            if (patch == null) {
+                return new Standing(Fit.UNREAD, 0);
+            }
+            int under = patch.ground(cellX, cellZ);
+            if (patch.wet(cellX, cellZ) || patch.top(cellX, cellZ) != under) {
+                return new Standing(Fit.NO, 0);
             }
             lowest = Math.min(lowest, under);
             highest = Math.max(highest, under);
         }
-        return highest - lowest > LEVEL ? Fit.NO : clearUnder(x, z, sin, cos, highest);
+        return new Standing(highest - lowest > PLATE_LEVEL ? Fit.NO : Fit.YES, highest);
     }
 
     /** Whether nothing under her hull reaches up to it, her feet standing at a height. */

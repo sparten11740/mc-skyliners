@@ -32,6 +32,8 @@ public class LegBayBlockEntity extends RetractableLegBlockEntity {
     private static final float PITCH_SPREAD = 0.06F;
     /** How many pitches her legs' sounds are spread over. */
     private static final int PITCHES = 5;
+    /** How much further than built each of her legs telescopes, in blocks, to meet lower ground under its foot. */
+    public static final int MOST_REACH = 4;
 
     public LegBayBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.LEG_BAY_ENTITY.get(), pos, state);
@@ -60,6 +62,16 @@ public class LegBayBlockEntity extends RetractableLegBlockEntity {
     @Override
     protected int reachBelow() {
         return FOOT_BELOW;
+    }
+
+    @Override
+    protected int mostReach() {
+        return MOST_REACH;
+    }
+
+    @Override
+    protected BlockState extension() {
+        return SkylinersRegistry.LANDING_GEAR.get().defaultBlockState();
     }
 
     /** Each leg its own pitch, from where its bay stands, within {@link #PITCH_SPREAD} either side of as recorded. */
