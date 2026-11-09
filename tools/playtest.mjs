@@ -332,10 +332,12 @@ const SOUVENIR_FROM = 2.5;
 // how long, in ticks: fast enough that every block of it looks whether it is a leftover several times.
 const FAST_RANDOM_TICKS = 4096;
 const RAMP_TICKED = 60;
-// How long after her ramp folds away its call button is pressed again, and how long her take-off may be held before
-// she calls it off, with a margin, in ticks.
+// How long after her ramp folds away its call button is pressed again, how long her take-off may be held before she
+// calls it off, with a margin, and how long her ramp's lamp may then lag behind it, as it is only looked at now and
+// then, in ticks.
 const CALL_AGAIN_TICKS = 20;
 const TAKEOFF_CALLED_OFF_TICKS = 700;
+const RAMP_LAMP_LAGS_TICKS = 40;
 // A freighter's top turret: how long the walk up her core's ladder takes, in ticks; how far up and ahead of her cannon
 // a creeper is hung to shoot at, in blocks; and how long attack is held, in ticks, several bolts' worth.
 const LADDER_CLIMB_TICKS = 100;
@@ -1976,7 +1978,8 @@ function holdFreighterOnHerRamp(deck, x, y, z, lamp) {
   const [{ at: panelAboard }] = must(`sable:find ${freighter} skyliners:ramp_panel 1 side=server`).rows;
   const lampAboard = () => must(`block ${panelAboard.join(",")} side=server`).props?.status;
   const off = waitForReport(freighterReport, (report) => report.phase === "off", TAKEOFF_CALLED_OFF_TICKS);
-  expect(off && lampAboard() === "down", "freighter: held a long while, she calls her take-off off, her ramp left down",
+  const lampDown = waitForReport(() => ({ status: lampAboard() }), (read) => read.status === "down", RAMP_LAMP_LAGS_TICKS);
+  expect(off && lampDown, "freighter: held a long while, she calls her take-off off, her ramp left down",
     `${freighterReport()?.phase}, lamp ${lampAboard()}`);
   must(`sable:tp ${freighter} skyliners:autopilot; wait 20t; skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`);
   const up = waitForReport(freighterReport, (report) => report.phase === "climb" || report.phase === "cruise", FREIGHTER_UP_TICKS);
