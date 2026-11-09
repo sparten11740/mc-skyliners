@@ -4,8 +4,8 @@
 
 Giant aircraft for [Create](https://modrinth.com/mod/create) and
 [Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each laid down whole by a single blueprint: an
-A380-style airliner, a Hindenburg-sized zeppelin and a retro rocket. They are big enough to walk around in, furnished
-inside, and they really fly, on their own autopilots, with you and your friends aboard.
+A380-style airliner, a Hindenburg-sized zeppelin, a retro rocket and a battered saucer freighter. They are big enough
+to walk around in, furnished inside, and they really fly, on their own autopilots, with you and your friends aboard.
 
 ## What's inside
 
@@ -20,6 +20,9 @@ inside, and they really fly, on their own autopilots, with you and your friends 
 - **The rocket**: as tall as the airliner is long, standing on four fins, with storeys round a glass lift, a lab, a
   greenhouse, an observation deck, a rover and a cockpit in the nose. She lifts off from her pad, climbs to the edge of
   space, where everyone aboard floats, and lands back where she rose.
+- **The freighter**: a battered saucer 60 blocks across with two prongs, a ramp that comes down by itself, a club with
+  a robot jazz trio and a laser cannon with rocket pods. She climbs into the black of space, rides out meteor showers
+  and asteroid storms, slams down to the ground for show and jumps through hyperspace to a pin on her map.
 - **The airfield**: a runway sized for the airliner, a control tower, a launch pad and a jet bridge.
 - **Things to do aboard**: skydive, take villagers along with boarding passes, push the meal trolley down the aisle,
   fold paper planes, hunt for rubber ducks and earn the First Flight advancements.
@@ -77,10 +80,10 @@ Then:
 3. Climb the airstairs to the flight deck and fold them away with the lit button by the door.
 4. Open the autopilot, set a speed, a heading and a height, or drop a pin on its map, and press Take Off. It assembles
    the airliner into one flying body and goes. The zeppelin's autopilot is in her control car under the bow, the
-   rocket's in her cockpit at the top.
+   rocket's in her cockpit at the top, the freighter's between her pilot's and co-pilot's seats.
 
-Operators can also run `/skyliners build <pos> <north|east|south|west> [furnished|zeppelin|rocket|launch_pad]`. The
-settings are under Mods → Create: Skyliners → Config.
+Operators can run `/skyliners build <pos> <north|east|south|west> [furnished|zeppelin|rocket|freighter|launch_pad]`.
+The settings are under Mods → Create: Skyliners → Config.
 
 ## Learn more
 
