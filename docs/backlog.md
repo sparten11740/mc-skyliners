@@ -19,8 +19,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 ## The freighter
 
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
-- Now and then she comes to rest leaning some 2.6 degrees beside a stone built where she stood (`freighter-pad`: twice
-  in twelve runs, both on the pad 1236,-158, which other runs landed on level). Not looked into.
+- Now and then she comes to rest leaning some 2.6 to 2.8 degrees beside a stone built where she stood (`freighter-pad`
+  and `freighter-balked`, on several pads; alpha.26 does it too, so it is older than her landing guard). The cause is
+  unproven: `PadSearch.clearUnder` leaves no margin and she lands about a block off her pad, so her rim may rest on the
+  stone.
 
 ## Not yet checked
 
