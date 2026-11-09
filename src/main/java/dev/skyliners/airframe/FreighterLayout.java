@@ -303,9 +303,10 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * How near her hull a block counts as under it, looking for ground to come down on, in blocks: a little wide, so a
-     * block just past her rim, or missed between columns as she is turned, still counts.
+     * block just past her rim, or missed between columns as she is turned, still counts, and wider than the block and a
+     * half she may come down off her spot: at one, she came to rest with her stern on stone beside it, leaning.
      */
-    private static final double HULL_MARGIN = 1;
+    private static final double HULL_MARGIN = 2;
     /** The columns under her hull, worked out once for each spacing asked (see {@link #underHull}). */
     private static final Map<Integer, List<Offset>> UNDER_HULL = new ConcurrentHashMap<>();
     /** Every block of her legs' foot plates (see {@link #feet}). */
