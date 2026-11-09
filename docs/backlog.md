@@ -15,6 +15,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   the control jets but did not free it. At 50 blocks a second it held its height.
 - **A removed ship comes back.** `/sable remove` only drops the loaded copy; Sable's stored copy stays in
   `sable storage find_all_sub_levels` and flies again once its area loads.
+- **Ships far from the world's middle move in steps.** Sable's physics rounds a ship's position so coarsely out there
+  that slow speeds vanish while its speed still reads as moving: at x 111,600, told two blocks a second, the freighter
+  went 0.3 blocks in ten seconds, and told three it went at nearly six. The freighter's landing copes by nudging herself
+  closer. The airliner, the zeppelin and the rocket have not been tried out there.
 
 ## The freighter
 
