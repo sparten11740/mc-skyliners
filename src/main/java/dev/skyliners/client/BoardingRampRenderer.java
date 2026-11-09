@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -44,6 +45,31 @@ import org.joml.Quaternionf;
  * panel.
  */
 public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockEntity> {
+    /**
+     * What this client has drawn of a ramp's latest swing, for its play-test, which has one ramp in view; several would
+     * mix their numbers here. None before one has swung.
+     */
+    @Nullable
+    private static BoardingRamp.Drawn drawn;
+
+    /** What this client has drawn of a ramp's latest swing (see {@link BoardingRamp.Drawn}). */
+    @Nullable
+    public static BoardingRamp.Drawn drawn() {
+        return drawn;
+    }
+
+    /** Notes where a ramp was drawn this frame, a swing counted afresh as it leaves either end of its travel. */
+    private static void noteDrawn(BoardingRamp ramp, double at) {
+        BoardingRamp.Drawn last = drawn;
+        if (last != null && at == last.at() || last == null && at == 0) {
+            return;
+        }
+        boolean setOut = last == null || last.at() == 0 || last.at() == BoardingRamp.OUT;
+        double step = setOut ? 0 : (at - last.at()) * (ramp.down() ? 1 : -1);
+        drawn = setOut ? new BoardingRamp.Drawn(1, at, 0, 0)
+            : new BoardingRamp.Drawn(last.frames() + 1, at, Math.max(last.back(), -step), Math.max(last.jump(), step));
+    }
+
     /** The panel's face, from the middle of the block toward the way it looks, lifted just off its front. */
     private static final float FACE = -0.5F + RampPanelBlock.THICKNESS / 16F + 0.002F;
     /** The gap round each button and the lamp, in blocks. */
@@ -130,6 +156,9 @@ public class BoardingRampRenderer implements BlockEntityRenderer<RampPanelBlockE
         }
         BoardingRamp ramp = panel.ramp();
         float ticks = ramp == null ? 0 : ramp.ticks(partialTick);
+        if (ramp != null) {
+            noteDrawn(ramp, ticks);
+        }
         if (ramp != null && (ramp.hatchOpen() || ticks > 0)) {
             ramp(panel, ramp, ticks, pose, buffers, level);
         }

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -179,6 +180,17 @@ public final class BoardingRamp {
             return out.getCounterClockWise();
         }
     }
+
+    /**
+     * What a client has drawn of a ramp's latest swing, for its play-test to read: in how many frames it moved, how far
+     * through coming down it was last drawn, and the most it ever went back, or leapt on, between one frame and the
+     * next, all in ticks. A client counts its ramp itself, so with a server running behind it should do neither.
+     */
+    public record Drawn(int frames, double at, double back, double jump) {
+    }
+
+    /** What this client has drawn of a ramp's latest swing; none on a dedicated server or before one has swung. */
+    public static Supplier<Drawn> clientDrawn = () -> null;
 
     private final Keeper panel;
     private final Frame frame;

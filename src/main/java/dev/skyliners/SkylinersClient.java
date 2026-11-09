@@ -3,6 +3,7 @@ package dev.skyliners;
 import dev.skyliners.autopilot.HyperspaceWake;
 import dev.skyliners.beam.TractorBeamBlockEntity;
 import dev.skyliners.block.BeanBagBlock;
+import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.BunkBlock;
 import dev.skyliners.block.CabinCarpetBlock;
 import dev.skyliners.block.CabinSeatBlock;
@@ -231,6 +232,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(SpaceWeatherSky::stage);
         NeoForge.EVENT_BUS.addListener(SpaceWeatherSky::loggingOut);
         LaserBolt.clientSeen = LaserBolts::seen;
+        BoardingRamp.clientDrawn = BoardingRampRenderer::drawn;
         NeoForge.EVENT_BUS.addListener(FreighterEngineGlow::stage);
         NeoForge.EVENT_BUS.addListener(FreighterNozzles::stage);
         NeoForge.EVENT_BUS.addListener(GunnerControls::tick);

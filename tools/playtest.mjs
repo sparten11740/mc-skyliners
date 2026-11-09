@@ -242,6 +242,13 @@ const BALKED_LAG_WITHIN_TICKS = 2400;
 // falls, in blocks, which walking up it climbs, and how long the walk up from just past its foot takes, in ticks; how
 // many blocks up from its foot someone stands on it to hold her take-off; and how long she is watched held, in ticks.
 const RAMP_DOWN_TICKS = 300;
+// A freighter's ramp with the server running behind: how far behind, in milliseconds a tick; how long a whole swing is
+// given, in ticks, read only after it so that nothing stalls the client meanwhile; and the most its drawn count may go
+// back or leap on from one frame to the next, in ticks: a frame never spans much more than a tick.
+const RAMP_LAG_MILLIS = 70;
+const RAMP_SWING_TICKS = 180;
+const RAMP_MOST_BACK = 0.01;
+const RAMP_MOST_LEAP = 2;
 // How far into its way down her ramp is pressed again to turn it round, in ticks: halfway through its swing.
 const RAMP_HALFWAY_TICKS = 40;
 // A freighter saved and joined again with her ramp down, then set to fly: how long her heat map is given to be built
@@ -1790,6 +1797,35 @@ function rampFootOf(panelAt) {
   const across = deck.filter(([x, , z]) => x * dx + z * dz === outermost).sort((a, b) => a[0] - b[0] || a[2] - b[2]);
   const [x, , z] = across[Math.floor(across.length / 2)];
   return { deck, x, z, dx, dz, yaw, outermost, width: across.length, head: rampHeadStand(deck, [dx, dz]), panelAt };
+}
+
+// A freighter's ramp with the server running behind: each client counts the swing itself, so it is drawn folding away
+// and coming down again evenly, never back from where it had got to and never leaping on. Nothing is read from the
+// server while it swings, as each such read stalls the client's own frames.
+function checkFreighterRampLag() {
+  layDown("freighter");
+  const [panel] = must("find skyliners:ramp_panel 128 1").rows;
+  expect(panel, "freighter: she is built with her ramp's panel");
+  if (!panel) {
+    return;
+  }
+  const lamp = () => must(`block ${panel.at_abs.join(",")} side=server`).props?.status;
+  const lampTurns = (status, within) => waitForReport(() => ({ status: lamp() }), (read) => read.status === status, within);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: laid down, her ramp comes down by itself", `lamp ${lamp()}`);
+  const foot = rampFootOf(panel.at_abs);
+  if (!foot) {
+    return;
+  }
+  const swing = (name, status) => {
+    const drawn = must(`server tp @p ${foot.head.join(" ")}; wait 20t; use ${foot.panelAt.join(",")}; wait ${RAMP_SWING_TICKS}t; skyliners:ramp`, BUILD_SECONDS);
+    expect(drawn.frames > 0 && drawn.back <= RAMP_MOST_BACK && drawn.jump <= RAMP_MOST_LEAP,
+      `freighter: with the server behind, her ramp is drawn ${name} evenly`, `${drawn.frames} frames, back ${drawn.back}, on ${drawn.jump} ticks at the worst`);
+    expect(lampTurns(status, RAMP_DOWN_TICKS), `freighter: with the server behind, her ramp finishes ${name}`, `lamp ${lamp()}`);
+  };
+  must(`load server ${RAMP_LAG_MILLIS}`);
+  swing("folding away", "ready");
+  swing("coming down", "down");
+  must("load off");
 }
 
 // Presses a freighter's ramp's panel from just in from its head, on her deck.
@@ -5850,6 +5886,7 @@ const CHECKS = {
   "freighter-drag": { run: checkFreighterUnlearnsDrag, about: "a freighter that has learnt far too much drag is not pushed on past the speed set, and unlearns it", slow: true },
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
+  "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
   "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },
   "freighter-keeps-her-belly": { run: checkFreighterKeepsHerBelly, slow: true, about: "a freighter loaded from a save folds her ramp and sheds no piece of her belly, her ramp comes down again, and a real break still comes away" },
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
@@ -6037,7 +6074,7 @@ function closeGame() {
 
 // A check that throws has failed, but the others still run; only losing the game itself ends it all. A player left dead
 // would fail every check after it for nothing, with nothing to say why: that is said once, here, and they are brought
-// back.
+// back. A check that threw may have left the server slowed down on purpose, so that is ended here too.
 function runCheck(name) {
   try {
     CHECKS[name].run();
@@ -6047,6 +6084,7 @@ function runCheck(name) {
     }
     expect(false, `${name} could not finish`, error.message);
     send("?server gamemode creative @p");
+    send("?load off");
   }
   const [status] = send("?status");
   if (status?.hp === 0) {

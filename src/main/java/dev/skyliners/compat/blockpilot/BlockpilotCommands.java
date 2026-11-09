@@ -24,6 +24,7 @@ import dev.skyliners.autopilot.ZeppelinAssembly;
 import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
+import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.repairs.RepairBoardBlockEntity;
@@ -197,6 +198,14 @@ public final class BlockpilotCommands {
             .field("from_camera", "where it was drawn leaving from, from the camera: blocks right, up and ahead as it looks")
             .field("flown", "for a bolt from a weapon in hand, how far its tail had flown from where it left, in blocks, when last drawn")
             .field("streak", "for a bolt from a weapon in hand, how long it was drawn, head to tail, in blocks, when last drawn"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("ramp", (context, args) -> ramp())
+            .needsWorld()
+            .group("skyliners")
+            .help("what this client drew of a boarding ramp's latest swing: in how many frames it moved, and the worst it went back or leapt on from one frame to the next")
+            .field("frames", "in how many frames it moved, 0 before one has swung")
+            .field("at", "how far through coming down it was last drawn, in ticks")
+            .field("back", "the most it went back between one frame and the next, in ticks")
+            .field("jump", "the most it leapt on between one frame and the next, in ticks"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("stretch", (context, args) -> stretch())
             .needsWorld()
             .group("skyliners")
@@ -558,6 +567,16 @@ public final class BlockpilotCommands {
             .tag("shown", seen.shown()).tag("from_muzzle", seen.fromMuzzle()).tag("flown", round(seen.flown())).tag("streak", round(seen.streak()));
         Vec3 at = seen.fromCamera();
         return Result.ok(at == null ? fields : fields.tag("from_camera", round(at.x) + "," + round(at.y) + "," + round(at.z)));
+    }
+
+    /** What this client drew of a boarding ramp's latest swing. */
+    private static Result ramp() {
+        BoardingRamp.Drawn drawn = BoardingRamp.clientDrawn.get();
+        if (drawn == null) {
+            return Result.ok(new Fields().tag("frames", 0));
+        }
+        return Result.ok(new Fields().tag("frames", drawn.frames()).tag("at", round(drawn.at()))
+            .tag("back", round(drawn.back())).tag("jump", round(drawn.jump())));
     }
 
     /** What this client last drew of a freighter stretching into a jump and out of it, watched from outside. */
