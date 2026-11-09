@@ -26,8 +26,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 - On natural ground she seldom finds anywhere to land at a pin: of ten pins tried in a default world (seed 12345) she
   came down at one, on plains, level with her ramp down, and held over the other nine. Her five feet must stand on dry,
   bare ground within a block of each other, some 40 blocks apart. Whether to loosen that is open.
-- A mob standing in her ramp's swing holds it, for as long as it stands there: on a flat world at night, zombies kept it
-  half down for minutes.
 
 ## Not yet checked
 

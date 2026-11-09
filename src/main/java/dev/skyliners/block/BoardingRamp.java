@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -377,7 +378,7 @@ public final class BoardingRamp {
         }
         deploying = true;
         standClear.release();
-        if (shut && AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), plateSpots())) {
+        if (shut && someoneIn(level, plateSpots())) {
             waitFor(level);
         } else if (shut) {
             unlatch(level);
@@ -430,7 +431,7 @@ public final class BoardingRamp {
     private void fold(ServerLevel level) {
         deploying = false;
         standClear.release();
-        if (laid && AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), deckSpots())) {
+        if (laid && someoneIn(level, deckSpots())) {
             waitFor(level);
             return;
         }
@@ -493,15 +494,28 @@ public final class BoardingRamp {
         panel.sync();
     }
 
+    /**
+     * Whether someone counts as standing in its way: anyone living but a hostile mob, or a zombie that wandered under
+     * it would keep it from moving for as long as it stood there.
+     */
+    private static boolean holdsIt(LivingEntity entity) {
+        return entity.isAlive() && !(entity instanceof Enemy);
+    }
+
+    /** Whether anyone who counts stands in any of some spots, given from its panel (see {@link #holdsIt}). */
+    private boolean someoneIn(ServerLevel level, List<AABB> spots) {
+        return AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), spots, BoardingRamp::holdsIt);
+    }
+
     /** Whether anyone stands where it would move next coming down: in its swing, or where its foot would run out to. */
     private boolean inTheWayComingDown(ServerLevel level) {
         return anyoneInTheSwing(level, ticks, ticks + 1)
-            || ticks >= SWUNG && AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), footRunSpots());
+            || ticks >= SWUNG && someoneIn(level, footRunSpots());
     }
 
     /** Whether anyone stands where it would move next going up: in its hatch as it would shut, or in its swing. */
     private boolean inTheWayGoingUp(ServerLevel level) {
-        return ticks <= 1 ? AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), hatchSpots()) : anyoneInTheSwing(level, ticks, ticks - 1);
+        return ticks <= 1 ? someoneIn(level, hatchSpots()) : anyoneInTheSwing(level, ticks, ticks - 1);
     }
 
     /**
@@ -568,12 +582,12 @@ public final class BoardingRamp {
      */
     private boolean stillInTheWay(ServerLevel level, boolean opening) {
         if (opening) {
-            return AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), plateSpots());
+            return someoneIn(level, plateSpots());
         }
         if (deploying) {
             return inTheWayComingDown(level);
         }
-        return laid ? AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), deckSpots()) : inTheWayGoingUp(level);
+        return laid ? someoneIn(level, deckSpots()) : inTheWayGoingUp(level);
     }
 
     /** On a client, each tick: the same clock the server runs, and steam as the latches let go or the plate seals. */
@@ -856,7 +870,7 @@ public final class BoardingRamp {
         Vec3 hinge = Vec3.atBottomCenterOf(panel.getBlockPos().offset(frame.head()).above()).subtract(out.scale(0.5));
         Vec3 middle = SableFlight.toWorld(level, hinge.add(out.scale(reach / 2)).add(0, -frame.rise() / 2.0, 0));
         AABB near = new AABB(middle, middle).inflate(reach / 2 + frame.rise() + frame.width());
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, near, LivingEntity::isAlive)) {
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, near, BoardingRamp::holdsIt)) {
             Vec3 centre = SableFlight.toPlot(level, panel.getBlockPos(), entity.getBoundingBox().getCenter(), false).subtract(hinge);
             if (inTheSwing(entity, centre, reach, before, after)) {
                 return true;

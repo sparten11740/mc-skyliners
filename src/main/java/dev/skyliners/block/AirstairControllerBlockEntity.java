@@ -3,6 +3,7 @@ package dev.skyliners.block;
 import dev.skyliners.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -234,6 +235,11 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
      * the world, or aboard an assembled airliner or zeppelin, where everyone is seen in its frame.
      */
     static boolean anyoneIn(ServerLevel level, BlockPos holder, List<AABB> spots) {
+        return anyoneIn(level, holder, spots, LivingEntity::isAlive);
+    }
+
+    /** Whether anyone of those it counts stands in any of some spots, given in the holder's own frame. */
+    static boolean anyoneIn(ServerLevel level, BlockPos holder, List<AABB> spots, Predicate<LivingEntity> counts) {
         if (spots.isEmpty()) {
             return false;
         }
@@ -244,7 +250,8 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
         // However the airliner is turned, the boxes lie within half their diagonal of their middle.
         Vec3 middle = SableFlight.toWorld(level, all.getCenter());
         double reach = Math.sqrt(all.getXsize() * all.getXsize() + all.getYsize() * all.getYsize() + all.getZsize() * all.getZsize()) / 2 + 2;
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(middle, middle).inflate(reach), LivingEntity::isAlive)) {
+        AABB near = new AABB(middle, middle).inflate(reach);
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, near, counts)) {
             Vec3 centre = SableFlight.toPlot(level, holder, entity.getBoundingBox().getCenter(), false);
             AABB box = AABB.ofSize(centre, entity.getBbWidth(), entity.getBbHeight(), entity.getBbWidth());
             for (AABB spot : spots) {

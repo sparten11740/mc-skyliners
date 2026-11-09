@@ -252,6 +252,10 @@ const RAMP_LAG_MILLIS = 70;
 const RAMP_SWING_TICKS = 180;
 const RAMP_MOST_BACK = 0.01;
 const RAMP_MOST_LEAP = 2;
+// What stands under a freighter's ramp: how far in under it from its foot, in blocks, and how long an animal is watched
+// holding it, in ticks.
+const RAMP_MOB_UNDER = -5;
+const RAMP_ANIMAL_HOLDS_TICKS = 200;
 // How far into its way down her ramp is pressed again to turn it round, in ticks: halfway through its swing.
 const RAMP_HALFWAY_TICKS = 40;
 // A freighter saved and joined again with her ramp down, then set to fly: how long her heat map is given to be built
@@ -1829,6 +1833,42 @@ function checkFreighterRampLag() {
   swing("folding away", "ready");
   swing("coming down", "down");
   must("load off");
+}
+
+// What holds a freighter's ramp as it comes down: a hostile mob standing in its swing does not, and it comes down all
+// the same; an animal there does, until it is gone. Before, a zombie that wandered under it held it for as long as it
+// stood.
+function checkFreighterRampMobs() {
+  layDown("freighter");
+  const [panel] = must("find skyliners:ramp_panel 128 1").rows;
+  expect(panel, "freighter: she is built with her ramp's panel");
+  if (!panel) {
+    return;
+  }
+  const lamp = () => must(`block ${panel.at_abs.join(",")} side=server`).props?.status;
+  const lampTurns = (status, within) => waitForReport(() => ({ status: lamp() }), (read) => read.status === status, within);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: laid down, her ramp comes down by itself", `lamp ${lamp()}`);
+  const foot = rampFootOf(panel.at_abs);
+  if (!foot) {
+    return;
+  }
+  const under = nearRampFoot(foot, RAMP_MOB_UNDER, 0, ground);
+  must("server difficulty easy");
+  pressRampPanel(foot);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: her ramp folds away", `lamp ${lamp()}`);
+  must(`server summon creeper ${under} {NoAI:1b,PersistenceRequired:1b}`);
+  pressRampPanel(foot);
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: a creeper under her ramp does not hold it", `lamp ${lamp()}`);
+  must("server kill @e[type=creeper]");
+  pressRampPanel(foot);
+  expect(lampTurns("ready", RAMP_DOWN_TICKS), "freighter: her ramp folds away again", `lamp ${lamp()}`);
+  must(`server summon sheep ${under} {NoAI:1b,PersistenceRequired:1b}`);
+  pressRampPanel(foot);
+  must(`wait ${RAMP_ANIMAL_HOLDS_TICKS}t`);
+  expect(lamp() === "busy", "freighter: a sheep under her ramp holds it", `lamp ${lamp()}`);
+  must("server kill @e[type=sheep]");
+  expect(lampTurns("down", RAMP_DOWN_TICKS), "freighter: with the sheep gone, her ramp comes down", `lamp ${lamp()}`);
+  must("server difficulty peaceful");
 }
 
 // Presses a freighter's ramp's panel from just in from its head, on her deck.
@@ -5901,6 +5941,7 @@ const CHECKS = {
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
+  "freighter-ramp-mobs": { run: checkFreighterRampMobs, slow: true, about: "a hostile mob under a freighter's ramp does not hold it, an animal does" },
   "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },
   "freighter-keeps-her-belly": { run: checkFreighterKeepsHerBelly, slow: true, about: "a freighter loaded from a save folds her ramp and sheds no piece of her belly, her ramp comes down again, and a real break still comes away" },
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
