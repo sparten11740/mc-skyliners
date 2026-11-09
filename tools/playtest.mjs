@@ -244,6 +244,14 @@ const BALKED_LAG_WITHIN_TICKS = 2400;
 const RAMP_DOWN_TICKS = 300;
 // How far into its way down her ramp is pressed again to turn it round, in ticks: halfway through its swing.
 const RAMP_HALFWAY_TICKS = 40;
+// A freighter saved and joined again with her ramp down, then set to fly: how long her heat map is given to be built
+// again before she sets off, in ticks; how long her ramp is given to fold and Sable to finish working out that she is
+// whole, in ticks; how far round her a piece shed as a ship of its own is looked for, in blocks; and how tall the post
+// of stone is that is stood on her crown and cut at its foot to see a real break still comes away, in blocks.
+const RELOADED_SETTLE_TICKS = 200;
+const RAMP_FOLD_FLOOD_TICKS = 260;
+const SHED_LOOK_BLOCKS = 200;
+const SHED_POST_BLOCKS = 8;
 const RAMP_RISE = 7;
 const RAMP_WALK_TICKS = 110;
 const RAMP_STAND_UP = 3;
@@ -1713,6 +1721,47 @@ function checkFreighterRampFoot() {
   rampRefuses(foot, lamp, { name: "two blocks higher", from: ground, to: ground + 1, fill: "stone replace air", undo: "air replace stone" });
   rampRefuses(foot, lamp, { name: "two blocks lower", from: ground - 2, to: ground - 1, fill: "air", undo: "dirt replace air" });
   rampRefusedByABlock(foot, lamp);
+}
+
+// A freighter saved and joined again with her ramp down, set to fly: her ramp folds and the blocks of its hatch, put
+// back, stay hers. Sable's heat map used to shed them as ships of their own at a fold of a ship loaded from a save,
+// pieces of her belly left lying under her and in the way of her ramp. Nothing lies round her but herself; and back on
+// her legs her ramp comes down again.
+function checkFreighterKeepsHerBelly() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0; wait ${IMPACT_ABOARD_TICKS}t; skyliners:autopilot off`, BUILD_SECONDS);
+  const parked = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(parked, "freighter: assembled and switched off, she stands on her legs", parked ? "" : `still ${freighterReport()?.phase}`);
+  if (!parked) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [{ at: panelAt }] = must(`sable:find ${freighter} skyliners:ramp_panel 1 side=server`).rows;
+  const lamp = () => must(`block ${panelAt.join(",")} side=server`).props?.status;
+  const lampTurns = (status, within) => waitForReport(() => ({ status: lamp() }), (read) => read.status === status, within);
+  expect(lampTurns("down", FREIGHTER_DOWN_TICKS), "freighter: stopped, her ramp comes down by itself", `lamp ${lamp()}`);
+  must(`sable:tp ${freighter} skyliners:autopilot; wait ${LOOK_EVERY}t`);
+  must(`leave; join world ${WORLD}; wait ${RELOADED_SETTLE_TICKS}t`, BUILD_SECONDS);
+  must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0; wait ${RAMP_FOLD_FLOOD_TICKS}t`, BUILD_SECONDS);
+  const shed = () => must(`sable:list ${SHED_LOOK_BLOCKS} side=server`).rows.filter((row) => row.id !== freighter);
+  const pieces = shed();
+  expect(pieces.length === 0, "freighter: loaded from a save, her ramp folds and leaves no piece of her belly behind",
+    pieces.map((piece) => `${piece.id} size ${piece.size}`).join(", "));
+  must("skyliners:autopilot off", BUILD_SECONDS);
+  const down = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(down, "freighter: she comes back to her legs", down ? "" : `still ${freighterReport()?.phase}`);
+  expect(lampTurns("down", FREIGHTER_DOWN_TICKS), "freighter: and her ramp comes down again with nothing lying in its way", `lamp ${lamp()}`);
+  const after = shed();
+  expect(after.length === 0, "freighter: and still nothing of hers lies apart from her", after.map((piece) => `${piece.id} size ${piece.size}`).join(", "));
+  const crown = must(`sable:find ${freighter} skyliners:freighter_cover 1000 side=server`).rows.map((row) => row.at)
+    .reduce((top, at) => (at[1] > top[1] ? at : top));
+  const onCrown = (rise) => `${crown[0]} ${crown[1] + rise} ${crown[2]}`;
+  must(`server fill ${onCrown(1)} ${onCrown(SHED_POST_BLOCKS)} stone; wait ${RAMP_FOLD_FLOOD_TICKS}t`, BUILD_SECONDS);
+  must(`server setblock ${onCrown(1)} air; wait ${RAMP_FOLD_FLOOD_TICKS}t`, BUILD_SECONDS);
+  const cutOff = shed();
+  expect(cutOff.length === 1, "freighter: and a post of stone cut at its foot really does come away as a ship of its own",
+    `${cutOff.length} apart from her`);
+  cutOff.forEach((piece) => send(`?server sable remove ${piece.id}`));
 }
 
 // A freighter's ramp down on flat ground, as its laid deck shows it: the middle of its foot, the way it climbs, how many
@@ -5789,6 +5838,7 @@ const CHECKS = {
   "freighter-pad": { run: checkFreighterPad, about: "a freighter set to land at a pin with stone on it comes down beside it, level, and looks again next time", slow: true },
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },
+  "freighter-keeps-her-belly": { run: checkFreighterKeepsHerBelly, slow: true, about: "a freighter loaded from a save folds her ramp and sheds no piece of her belly, her ramp comes down again, and a real break still comes away" },
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },

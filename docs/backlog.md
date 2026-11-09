@@ -19,11 +19,6 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 ## The freighter
 
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
-- Dropped hard with her ramp down (lifted 25 blocks by `sable physics translation` and let fall), she sheds pieces of
-  her belly over the ramp well as ships of their own, 3 by 1 by 3 of `freighter_cover` and one block more, and sheds
-  them again at every later fold of her ramp; a fresh freighter never does. The cause is not found (the hatch cells at
-  -5..-7, -4, 0..2 and -13, -4, 2 from the ramp panel). A check: fly, land, drop her, and look that `sable:list` near her
-  shows only her after the next fold.
 
 ## Not yet checked
 

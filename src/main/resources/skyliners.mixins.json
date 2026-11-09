@@ -4,7 +4,8 @@
   "package": "dev.skyliners.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "GirderBlockMixin"
+    "GirderBlockMixin",
+    "SubLevelHeatMapManagerMixin"
   ],
   "client": [
     "AdvancedFboImplMixin",

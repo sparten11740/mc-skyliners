@@ -62,8 +62,10 @@ renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's de
 gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only places Veil is touched, besides the mixin
 `mixin/AdvancedFboImplMixin`, which lets a Veil framebuffer borrowing another's depth see its stencil; of the other
 mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn without losing their beams, which Create's
-own turn does (the gym hall's trusses of an airliner built facing east or west), and `mixin/HotAirBurnerMixin` lets
-`BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff; `CloudlessCabin` leaves the clouds out of
+own turn does (the gym hall's trusses of an airliner built facing east or west), `mixin/HotAirBurnerMixin` lets
+`BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff, and `mixin/SubLevelHeatMapManagerMixin` keeps
+Sable from shedding as ships of their own the blocks put back aboard while its heat map is still flooding a ship, as
+the hatch of the freighter's ramp is; `CloudlessCabin` leaves the clouds out of
 the player's view while the camera is inside a hull in the cloud layer; `ShipWeather`, through
 `mixin/LevelRendererMixin` and `mixin/LevelMixin`, lets rain and snow fall only onto a ship's roof, keeps their
 splashes off the freighter's canopy and fades the weather over the clouds (a `ShellBlock` counts as solid however thin

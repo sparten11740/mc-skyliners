@@ -61,6 +61,7 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
   a `ModList` check. The exceptions are `SableFlight.fitsAboard`, which the client also calls for its own player's pose,
   `SableFlight.aboard`, which `FrameProtection` calls on both sides, and `SableFlight.toWorld`, by which the sky crane's
   `CraneHook` hangs from her winch on clients too and blocks' client-side chimes sound where the block is in flight.
+  `mixin/SubLevelHeatMapManagerMixin` mends Sable's own heat map, which sheds what is put back while it floods a ship.
   Veil is touched only in `TailCameraFeed`, `VeilLights` and `mixin/AdvancedFboImplMixin`. Blockpilot, the
   play-testing client mod, is touched only in `compat/blockpilot`, compiled only when Blockpilot's API is in the local
   Maven repository and reached by name from `compat/Blockpilot` behind a `ModList` check. Create Propulsion and Create
