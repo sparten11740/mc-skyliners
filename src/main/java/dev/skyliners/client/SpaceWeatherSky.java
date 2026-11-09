@@ -112,13 +112,15 @@ public final class SpaceWeatherSky {
     /** How long a rock takes to fade in from nothing once it sets out, and out again at the end, in ticks. */
     private static final double FADE_TICKS = 40;
     /**
-     * A rock flying in to strike her: how long its faint glowing trail of dust is, in blocks, as a share of its size;
-     * how wide, as a share of its size; and how bright, from 0 to 1; how long one knocked off its course flies on past
-     * her after it would have landed, in ticks, as the server lets it.
+     * A rock flying in to strike her: how long the faint wake of dust behind it is, in blocks, as a share of its size;
+     * how wide to each side of its middle, as a share of its size; how bright along its middle, from 0 to 1; and its
+     * colour; how long one knocked off its course flies on past her after it would have landed, in ticks, as the server
+     * lets it.
      */
-    private static final double TRAIL_SHARE = 4;
-    private static final float TRAIL_WIDTH = 0.12F;
-    private static final float TRAIL_BRIGHT = 0.45F;
+    private static final double TRAIL_SHARE = 3;
+    private static final float TRAIL_WIDTH = 0.3F;
+    private static final float TRAIL_BRIGHT = 0.3F;
+    private static final int ROCK_DUST = 0xC8B8A0;
     private static final int FLIES_ON_TICKS = 100;
     /**
      * A rock bursting: how many chunks it bursts into, at least and how many more at most; how big each is, as a share
@@ -569,7 +571,7 @@ public final class SpaceWeatherSky {
         }
     }
 
-    /** What flies in to strike her: a meteor's streak, or the glowing trail of a rock, along its course. */
+    /** What flies in to strike her: a meteor's streak, or the wake of dust behind a rock, along its course. */
     private static void drawTrails(Sky sky, double now, float partial) {
         VertexConsumer glow = sky.buffers().getBuffer(GLOWING);
         Matrix4f matrix = sky.pose().last().pose();
@@ -579,9 +581,12 @@ public final class SpaceWeatherSky {
             }
             Vec3 at = strike.position(target(strike, partial), now);
             Vec3 course = strike.way().scale(strike.speed()).add(strike.drift()).normalize();
-            double tail = strike.rock() ? strike.size() * TRAIL_SHARE : TAIL_LONGEST;
-            float width = strike.rock() ? (float) Math.max(STREAK_WIDTH, strike.size() * TRAIL_WIDTH) : STREAK_WIDTH * 1.5F;
-            ribbon(glow, matrix, sky.eye(), at, at.subtract(course.scale(tail)), width, sky.fade(at) * (strike.rock() ? TRAIL_BRIGHT : 1));
+            if (strike.rock()) {
+                float width = (float) Math.max(STREAK_WIDTH, strike.size() * TRAIL_WIDTH);
+                dustWake(glow, matrix, sky.eye(), at, at.subtract(course.scale(strike.size() * TRAIL_SHARE)), width, sky.fade(at) * TRAIL_BRIGHT);
+            } else {
+                ribbon(glow, matrix, sky.eye(), at, at.subtract(course.scale(TAIL_LONGEST)), STREAK_WIDTH * 1.5F, sky.fade(at));
+            }
         }
     }
 
@@ -638,16 +643,51 @@ public final class SpaceWeatherSky {
     private static void ribbon(VertexConsumer glow, Matrix4f matrix, Vec3 eye, Vec3 head, Vec3 tail, float width, float strength) {
         Vec3 from = head.subtract(eye);
         Vec3 to = tail.subtract(eye);
-        Vec3 side = from.subtract(to).cross(from);
-        if (side.lengthSqr() < 1e-9 || strength <= 0) {
+        Vec3 half = halfAcross(from, to, width);
+        if (half == null || strength <= 0) {
             return;
         }
-        Vec3 half = side.normalize().scale(Math.max(width, from.length() * STREAK_SEEN_WIDTH));
         int headColour = FastColor.ARGB32.color(Math.round(255 * Math.min(1, strength)), STREAK_HEAD);
         int tailColour = FastColor.ARGB32.color(0, STREAK_TAIL);
         glow.addVertex(matrix, (float) (from.x + half.x), (float) (from.y + half.y), (float) (from.z + half.z)).setColor(headColour);
         glow.addVertex(matrix, (float) (from.x - half.x), (float) (from.y - half.y), (float) (from.z - half.z)).setColor(headColour);
         glow.addVertex(matrix, (float) to.x, (float) to.y, (float) to.z).setColor(tailColour);
         glow.addVertex(matrix, (float) to.x, (float) to.y, (float) to.z).setColor(tailColour);
+    }
+
+    /**
+     * The faint wake of dust behind a rock, from the rock back along its course, both in the world, drawn from the
+     * camera's eye and turned to face it: brightest along its middle and fading to nothing at both edges and at its far
+     * end, so that behind even the biggest rock it reads as a haze and not a flat bar, as bright as the strength given.
+     */
+    private static void dustWake(VertexConsumer glow, Matrix4f matrix, Vec3 eye, Vec3 head, Vec3 tail, float width, float strength) {
+        Vec3 from = head.subtract(eye);
+        Vec3 to = tail.subtract(eye);
+        Vec3 half = halfAcross(from, to, width);
+        if (half == null || strength <= 0) {
+            return;
+        }
+        int middle = FastColor.ARGB32.color(Math.round(255 * Math.min(1, strength)), ROCK_DUST);
+        wakeSide(glow, matrix, from, half, to, middle);
+        wakeSide(glow, matrix, from, half.reverse(), to, middle);
+    }
+
+    /** One side of a wake of dust: from its bright middle out to its faded edge, and back to its far end. */
+    private static void wakeSide(VertexConsumer glow, Matrix4f matrix, Vec3 from, Vec3 half, Vec3 to, int middle) {
+        int faded = FastColor.ARGB32.color(0, middle);
+        glow.addVertex(matrix, (float) from.x, (float) from.y, (float) from.z).setColor(middle);
+        glow.addVertex(matrix, (float) (from.x + half.x), (float) (from.y + half.y), (float) (from.z + half.z)).setColor(faded);
+        glow.addVertex(matrix, (float) to.x, (float) to.y, (float) to.z).setColor(faded);
+        glow.addVertex(matrix, (float) to.x, (float) to.y, (float) to.z).setColor(faded);
+    }
+
+    /**
+     * From the middle of a ribbon's head to one edge, across its length and facing the camera, as wide as given and no
+     * thinner than it can be seen from there; null seen exactly end on, when it has no side to show.
+     */
+    @Nullable
+    private static Vec3 halfAcross(Vec3 from, Vec3 to, float width) {
+        Vec3 side = from.subtract(to).cross(from);
+        return side.lengthSqr() < 1e-9 ? null : side.normalize().scale(Math.max(width, from.length() * STREAK_SEEN_WIDTH));
     }
 }
