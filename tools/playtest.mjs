@@ -33,6 +33,8 @@ const STAIRS_ACROSS = 64;
 const STAIRS_AHEAD = 196;
 const STAIRS_BEHIND = 64;
 // How many rows over the ground the lowest steps are looked for in: more than any flight should stop short by.
+// How long an airliner's airstairs are given to fold or come down, in ticks.
+const STAIRS_SWING_TICKS = 200;
 const STAIRS_ROWS = 4;
 // The most blocks Blockpilot reads in one go is 4096, so a region is read in tiles this wide, a row at a time.
 const TILE = 60;
@@ -1133,17 +1135,56 @@ function checkRocketStairs() {
   walksUp("rocket");
 }
 
+// Presses an airliner's stairs' button, a block in front of it, and waits for them to fold or come down.
+function pressStairsButton(button) {
+  const [dx, dz] = STEPS[must(`block ${button.join(",")}`).props.facing];
+  must(`server tp @p ${button[0] + 0.5 + dx * 1.5} ${button[1] - 1} ${button[2] + 0.5 + dz * 1.5}; wait 20t; use ${button.join(",")}; wait ${STAIRS_SWING_TICKS}t`);
+}
+
+// What holds an airliner's airstairs from folding: a hostile mob standing on them does not, and they fold all the same;
+// an animal there does, until it is gone. Before, a zombie that wandered onto them held them for as long as it stood.
+function checkAirstairsMobs() {
+  const site = layDown("airliner");
+  const bottom = bottomOfStairs(site);
+  expect(bottom.length > 0, "airliner: its stairs have come down");
+  const [button] = must("find skyliners:airstair_button 128 1").rows;
+  expect(button, "airliner: its stairs have a button");
+  if (bottom.length === 0 || !button) {
+    return;
+  }
+  const [x, y, z] = bottom[0].at;
+  const on = `${x + 0.5} ${y + 1} ${z + 0.5}`;
+  const at = button.at_abs;
+  must("server difficulty easy");
+  must(`server summon creeper ${on} {NoAI:1b,PersistenceRequired:1b}`);
+  pressStairsButton(at);
+  expect(bottomOfStairs(site).length === 0, "airliner: a creeper on its stairs does not stop them folding");
+  must("server kill @e[type=creeper]");
+  pressStairsButton(at);
+  expect(bottomOfStairs(site).length > 0, "airliner: its stairs come down again");
+  must(`server summon sheep ${on} {NoAI:1b,PersistenceRequired:1b}`);
+  pressStairsButton(at);
+  expect(bottomOfStairs(site).length > 0, "airliner: a sheep on its stairs holds them");
+  must("server kill @e[type=sheep]");
+  must(`wait ${STAIRS_SWING_TICKS}t`);
+  expect(bottomOfStairs(site).length === 0, "airliner: with the sheep gone, its stairs fold");
+  must("server difficulty peaceful");
+}
+
 function checkNoStepsLeftBehind() {
   const site = layDown("airliner");
   const bottom = bottomOfStairs(site);
   expect(bottom.length > 0, "airliner: its stairs are down before it flies");
   const xs = bottom.map((step) => step.at[0]);
   const zs = bottom.map((step) => step.at[2]);
+  const [fromX, toX, fromZ, toZ] = [Math.min(...xs) - STAIRS_MARGIN, Math.max(...xs) + STAIRS_MARGIN, Math.min(...zs) - STAIRS_MARGIN, Math.max(...zs) + STAIRS_MARGIN];
   board();
+  // She is soon past where the player aboard keeps the ground loaded: held loaded, it is still there to be read.
+  must(`server forceload add ${fromX} ${fromZ} ${toX} ${toZ}`);
   must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
   must(`wait ${FOLDED_TICKS}t`);
-  const [fromX, toX, fromZ, toZ] = [Math.min(...xs) - STAIRS_MARGIN, Math.max(...xs) + STAIRS_MARGIN, Math.min(...zs) - STAIRS_MARGIN, Math.max(...zs) + STAIRS_MARGIN];
   const area = [...read([fromX, ground - 1, fromZ], [toX, ground + 1, toZ])];
+  must(`server forceload remove ${fromX} ${fromZ} ${toX} ${toZ}`);
   const left = area.filter(([, state]) => idOf(state) === "skyliners:airstair_step").map(([at]) => at);
   expect(left.length === 0, "airliner: no steps stay on the ground once it has assembled and folded them", left.join(" "));
   const earth = area.filter(([at]) => Number(at.split(",")[1]) === ground - 1).length;
@@ -5973,6 +6014,7 @@ const CHECKS = {
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
   "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },
+  "airstairs-mobs": { run: checkAirstairsMobs, about: "a hostile mob on an airliner's stairs does not hold them, an animal does" },
   "airstairs-leave-no-steps": { run: checkNoStepsLeftBehind, about: "taking off from a new build leaves no steps behind and takes no ground along" },
   "zeppelin-stairs": { run: checkZeppelinStairs, about: "a zeppelin's stairs can be walked up from the ground" },
   "rocket-stairs": { run: checkRocketStairs, about: "a rocket's stairs can be walked up from the ground" },

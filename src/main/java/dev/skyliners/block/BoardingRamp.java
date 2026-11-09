@@ -25,7 +25,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -494,17 +493,10 @@ public final class BoardingRamp {
         panel.sync();
     }
 
-    /**
-     * Whether someone counts as standing in its way: anyone living but a hostile mob, or a zombie that wandered under
-     * it would keep it from moving for as long as it stood there.
-     */
-    private static boolean holdsIt(LivingEntity entity) {
-        return entity.isAlive() && !(entity instanceof Enemy);
-    }
-
-    /** Whether anyone who counts stands in any of some spots, given from its panel (see {@link #holdsIt}). */
+    /** Whether anyone who holds it still stands in any of some spots, given from its panel. */
     private boolean someoneIn(ServerLevel level, List<AABB> spots) {
-        return AirstairControllerBlockEntity.anyoneIn(level, panel.getBlockPos(), spots, BoardingRamp::holdsIt);
+        BlockPos at = panel.getBlockPos();
+        return AirstairControllerBlockEntity.anyoneIn(level, at, spots, AirstairControllerBlockEntity::holds);
     }
 
     /** Whether anyone stands where it would move next coming down: in its swing, or where its foot would run out to. */
@@ -870,7 +862,9 @@ public final class BoardingRamp {
         Vec3 hinge = Vec3.atBottomCenterOf(panel.getBlockPos().offset(frame.head()).above()).subtract(out.scale(0.5));
         Vec3 middle = SableFlight.toWorld(level, hinge.add(out.scale(reach / 2)).add(0, -frame.rise() / 2.0, 0));
         AABB near = new AABB(middle, middle).inflate(reach / 2 + frame.rise() + frame.width());
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, near, BoardingRamp::holdsIt)) {
+        List<LivingEntity> standing = level.getEntitiesOfClass(
+            LivingEntity.class, near, AirstairControllerBlockEntity::holds);
+        for (LivingEntity entity : standing) {
             Vec3 centre = SableFlight.toPlot(level, panel.getBlockPos(), entity.getBoundingBox().getCenter(), false).subtract(hinge);
             if (inTheSwing(entity, centre, reach, before, after)) {
                 return true;

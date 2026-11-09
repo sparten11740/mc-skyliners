@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -223,11 +224,20 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
     }
 
     /**
-     * Whether anyone alive is in any of the boxes, given among the controller's own blocks: where it stands in the
-     * world, or aboard an assembled airliner, where everyone is seen in the airliner's frame.
+     * Whether anyone who holds stairs still (see {@link #holds}) is in any of the boxes, given among the controller's
+     * own blocks: where it stands in the world, or aboard an assembled airliner, where everyone is seen in the
+     * airliner's frame.
      */
     protected boolean anyoneIn(ServerLevel level, List<AABB> spots) {
-        return anyoneIn(level, worldPosition, spots);
+        return anyoneIn(level, worldPosition, spots, AirstairControllerBlockEntity::holds);
+    }
+
+    /**
+     * Whether someone holds stairs or a ramp still by standing in their way: anyone living but a hostile mob, or a
+     * zombie that wandered onto them would keep them from moving for as long as it stood there.
+     */
+    static boolean holds(LivingEntity entity) {
+        return entity.isAlive() && !(entity instanceof Enemy);
     }
 
     /**

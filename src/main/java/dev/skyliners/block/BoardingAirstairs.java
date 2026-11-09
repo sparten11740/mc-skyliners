@@ -227,11 +227,17 @@ final class BoardingAirstairs {
         }
     }
 
+    /** Whether anyone who holds stairs still (see {@link AirstairControllerBlockEntity#holds}) is on the steps. */
+    private boolean someoneOn(ServerLevel level) {
+        return AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(),
+            AirstairSteps.spots(this::step, width, length), AirstairControllerBlockEntity::holds);
+    }
+
     /** Sets the stairs going away: at once, or once nobody is on them. */
     private void fold(ServerLevel level) {
         deploying = false;
         doorToShut = true;
-        if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, width, length))) {
+        if (laid && someoneOn(level)) {
             standClear.hold(level, button.getBlockPos());
             return;
         }
@@ -293,7 +299,7 @@ final class BoardingAirstairs {
         if (!standClear.looksAgain(level, button.getBlockPos())) {
             return;
         }
-        if (!AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, width, length))) {
+        if (!someoneOn(level)) {
             standClear.release();
             takeUp(level);
             sound(level, SkylinersRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
