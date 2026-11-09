@@ -2872,7 +2872,7 @@ function checkFreighterTardigrade() {
   if (!hatchRow) {
     return;
   }
-  const scale = must("server execute as @e[type=skyliners:tardigrade] run attribute @s minecraft:generic.scale get").rows[0]?.line ?? "";
+  const scale = must("server execute as @e[type=skyliners:tardigrade,sort=nearest,limit=1] run attribute @s minecraft:generic.scale get").rows[0]?.line ?? "";
   const size = Number(scale.split(" ").at(-1));
   expect(size === SMALL_TARDIGRADE, "freighter: a small tardigrade lives in it, a quarter the rocket's one's size", `size ${size}`);
   const pad = must("find minecraft:moss_carpet 128 20").rows.find(({ at_abs: [x, y, z] }) =>
@@ -3783,7 +3783,6 @@ function checkFreighterSlam() {
   }
   expect(hovering.slam === "ready", "freighter: flying along over the ground, her slam button is lit", `slam ${hovering.slam}`);
   const freighter = findShipFlying("skyliners:engine_grille");
-  const ships = must("sable:list 2048 side=server").rows.length;
   const { at } = must(`sable:find ${freighter} skyliners:console_slam 1 side=server`).rows[0];
   const stood = must(`sable:tp ${at.join(",")}; wait 20t; status`).pos;
   survival();
@@ -3822,8 +3821,8 @@ function checkFreighterSlam() {
   expect(away < SLAM_ABOARD_WITHIN && Math.abs(pos[1] - head[1]) < SLAM_ABOARD_WITHIN, "freighter: the player is still aboard at her console",
     `${round(away)} blocks from where they stood, at y ${round(pos[1])}, her control head at y ${head[1]}`);
   must(`wait ${SLAM_RAMP_TICKS}t`);
-  const shipsAfter = must("sable:list 2048 side=server").rows.length;
-  expect(shipsAfter === ships, "freighter: no piece of her is shed as a ship of its own", `${shipsAfter} ships, ${ships} before`);
+  const pieces = must(`sable:list ${SHED_LOOK_BLOCKS} side=server`).rows.filter((row) => row.id !== freighter);
+  expect(pieces.length === 0, "freighter: no piece of her is shed as a ship of its own", pieces.map((piece) => `${piece.id} size ${piece.size}`).join(", "));
   creative();
 }
 
