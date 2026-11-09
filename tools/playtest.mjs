@@ -211,13 +211,15 @@ const PAD_LEVEL_WITHIN = 2;
 const PAD_REACH = 64;
 // A freighter landing on a slope: how far ahead of her it is, how far it reaches round the pin, how wide each step
 // of the slope is and how many steps there are, in blocks, how far she may lean on it, in degrees, how high to look
-// from, and how many blocks a fill command may set, as it needs for a layer of the slope, then back to its usual limit.
+// from, how many blocks a fill command may set, as it needs for a layer of the slope, then back to its usual limit, and
+// how far behind her a flat pin is for her to land at after it.
 const UNEVEN_PIN_AHEAD = 240;
 const UNEVEN_REACH = 110;
 const UNEVEN_STEP_WIDE = 16;
 const UNEVEN_STEPS = 13;
 const UNEVEN_LEVEL_WITHIN = 1;
 const UNEVEN_LOOK_UP = 30;
+const UNEVEN_FLAT_BEHIND = 200;
 const UNEVEN_FILL_MOST = 60000;
 const FILL_LIMIT = 32768;
 // A freighter landing far from the world's middle: the number of the site she is laid down on, 180,000 blocks out, far
@@ -2699,6 +2701,13 @@ function checkFreighterUnevenLanding() {
   must(`wait ${RAMP_DOWN_TICKS}t`);
   const lamp = must(`block ${panelAt.join(",")} side=server`).props?.status;
   expect(lamp !== "busy", "freighter: on the slope, her ramp is not left moving", `lamp ${lamp}`);
+  must(`sable:tp ${freighter} skyliners:autopilot; wait ${LOOK_EVERY}t; leave; join world ${WORLD}; wait ${RELOADED_SETTLE_TICKS}t`, BUILD_SECONDS);
+  must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && report.legs === "up", FREIGHTER_UP_TICKS);
+  expect(up, "freighter: saved and joined again on the slope, she lifts off her telescoped legs and draws them up", up ? "" : `still ${freighterReport()?.phase}, legs ${freighterReport()?.legs}`);
+  if (up) {
+    landFreighterAt(head, site.x, site.z + UNEVEN_FLAT_BEHIND, "on flat ground after the slope");
+  }
 }
 
 // Ground higher under a freighter's nose than under the rest of her: one foot touches first and she settles from
