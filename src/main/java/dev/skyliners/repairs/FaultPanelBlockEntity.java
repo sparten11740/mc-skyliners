@@ -1,6 +1,8 @@
 package dev.skyliners.repairs;
 
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.autopilot.Craft;
 import dev.skyliners.block.Loaded;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +18,19 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * A fault spot's block entity (see {@link FaultPanelBlock}): nothing to save, as whether it is at fault is its block
  * state, but kept track of on the server, so a repair board finds the spots round it to set off, and on clients, so
- * her console's scanner shows those at fault. At fault, it crackles or hisses every so often, on the server, loud
- * enough to be heard across her deck, so a child can track it down by ear; ticking only while at fault.
+ * her console's scanner shows those at fault. At fault, it crackles or hisses now and then, on the server, loud
+ * enough to be heard across her deck, so a child can track it down by ear, and not at all while she is parked; ticking
+ * only while at fault.
  */
 public class FaultPanelBlockEntity extends BlockEntity {
     private static final Loaded<FaultPanelBlockEntity> LOADED = new Loaded<>(FaultPanelBlockEntity.class, true);
     /**
-     * How often a spot at fault crackles or hisses, in ticks, give or take a little so two never keep step; and how
-     * loud, which sets how far off it is heard: sixteen blocks for each, so across her deck from wall to wall.
+     * How often a spot at fault crackles or hisses, in ticks: every quarter of a minute or so, give or take a little so
+     * two never keep step, enough to track it down by without it going on and on; and how loud, which sets how far off
+     * it is heard: sixteen blocks for each, so across her deck from wall to wall.
      */
-    private static final int NOISE_EVERY = 30;
-    private static final int NOISE_SPREAD = 15;
+    private static final int NOISE_EVERY = 300;
+    private static final int NOISE_SPREAD = 100;
     private static final float NOISE_VOLUME = 2.5F;
     /** How loud the first burst of a fault is, as it breaks down, heard further still. */
     private static final float BREAK_VOLUME = 3.0F;
@@ -73,15 +77,24 @@ public class FaultPanelBlockEntity extends BlockEntity {
         level.playSound(null, pos, noise(kind), SoundSource.BLOCKS, BREAK_VOLUME, kind == FaultPanelBlock.Kind.PANEL ? 0.8F : 0.9F);
     }
 
-    /** At fault, each tick on the server: its crackle or hiss, every so often. */
+    /** At fault, each tick on the server: its crackle or hiss, now and then, and none while she is parked. */
     void tick(ServerLevel level, FaultPanelBlock.Kind kind) {
         long now = level.getGameTime();
         if (now < nextNoise) {
             return;
         }
         nextNoise = now + NOISE_EVERY + level.getRandom().nextInt(NOISE_SPREAD);
+        if (parked(level)) {
+            return;
+        }
         float pitch = 0.8F + level.getRandom().nextFloat() * 0.4F;
         level.playSound(null, worldPosition, noise(kind), SoundSource.BLOCKS, NOISE_VOLUME, pitch);
+    }
+
+    /** Whether it is aboard a freighter switched off; put up by hand it is aboard none, and goes on as ever. */
+    private boolean parked(Level level) {
+        AutopilotBlockEntity freighter = AutopilotBlockEntity.framedBy(level, worldPosition, Craft.FREIGHTER);
+        return freighter != null && freighter.phase() == AutopilotBlockEntity.Phase.OFF;
     }
 
     /** The sound a fault spot makes at fault: the panel's electric crackle, or the pipe's hiss of steam. */

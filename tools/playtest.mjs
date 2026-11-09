@@ -737,6 +737,10 @@ const REPAIR_SPOTS_LEAST = 3;
 const REPAIR_TEST_EVERY = 100;
 const REPAIR_FAULT_WITHIN = 400;
 const REPAIR_GROUND_WATCH = 300;
+// How long a fault is listened to in flight, and how many noises it may make meanwhile, in ticks; and how long parked.
+const REPAIR_NOISE_WATCH = 240;
+const REPAIR_NOISES_MOST = 1;
+const REPAIR_PARKED_WATCH = 500;
 const REPAIR_FIXED_WITHIN = 40;
 const REPAIR_VOICE_WITHIN = 300;
 // A gravity switch: how far before it the player and a dropped cookie stand, in blocks; how long they are given to
@@ -5986,6 +5990,7 @@ function checkFreighterRepairs() {
   const standing = repairsReport();
   expect(standing && standing.waiting === 0 && !standing.flying, "freighter: standing on the ground, no fault goes off", JSON.stringify(standing));
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const since = now();
   must(`skyliners:autopilot fly altitude=${head[1] + FREIGHTER_CLIMB} speed=0`, BUILD_SECONDS);
   findShipFlying("skyliners:engine_grille");
   const up = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
@@ -5994,7 +5999,6 @@ function checkFreighterRepairs() {
     repairsReport("every=0");
     return;
   }
-  const since = now();
   const broken = waitForReport(repairsReport, (report) => report.waiting > 0, REPAIR_FAULT_WITHIN);
   const noise = heard("skyliners:fault_*", since, LOOK_EVERY);
   expect(Boolean(broken) && Boolean(noise), "freighter: hovering, a fault goes off within the time set, crackling or hissing",
@@ -6004,6 +6008,15 @@ function checkFreighterRepairs() {
   if (!fault) {
     return;
   }
+  const flying = now();
+  must(`wait ${REPAIR_NOISE_WATCH}t`);
+  const noises = played("skyliners:fault_*", flying).length;
+  expect(noises <= REPAIR_NOISES_MOST, "freighter: flying with a fault, it crackles or hisses only now and then", `${noises} in ${REPAIR_NOISE_WATCH} ticks`);
+  must("skyliners:autopilot off", BUILD_SECONDS);
+  const parked = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  const quiet = now();
+  must(`wait ${REPAIR_PARKED_WATCH}t`);
+  expect(Boolean(parked) && played("skyliners:fault_*", quiet).length === 0, "freighter: parked and switched off, a fault makes no more noise", parked ? "" : `still ${freighterReport()?.phase}`);
   emptyHands();
   must(`server give @p skyliners:spanner 1; wait 5t; select 0; sable:tp ${fault}; wait 20t`);
   const fixedAt = now();
