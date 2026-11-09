@@ -1003,11 +1003,20 @@ function readTile(blocks, from, to) {
   }
 }
 
+// Stands the player on the ground at a far spot to build there, facing a way, as Minecraft yaw, north unless told. A
+// client not yet sent its chunks there tells the server nothing, so the server still has the way they faced before, and
+// someone just off a tumbling ship drifts on: ships were built facing south and six blocks up. So once the chunks have
+// come they are put there again, by the server, which is what a build goes by.
+function standToBuild(x, z, yaw = 180) {
+  must(`server tp @p ${x} ${ground} ${z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
+  must(`server tp @p ${x} ${ground} ${z} ${yaw} 0; wait 5t`);
+}
+
 // Lays a ship down on a site of its own, the player facing north, and gives its stairs time to come down.
 function layDown(what) {
   const site = { x: nextSite++ * SITE_APART, z: 0, what };
   creative();
-  must(`server tp @p ${site.x} ${ground} ${site.z}; turn 180 0; wait 40t`);
+  standToBuild(site.x, site.z);
   must(`skyliners:build ${what}`, BUILD_SECONDS);
   must(`wait ${STAIRS_DOWN_TICKS}t`);
   return site;
@@ -1021,7 +1030,7 @@ function ship(what) {
   }
   const site = built.get(what);
   creative();
-  must(`server tp @p ${site.x} ${ground + 5} ${site.z}; wait ${CHUNKS_TICKS}t`);
+  must(`server tp @p ${site.x} ${ground + 5} ${site.z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
   return site;
 }
 
@@ -2231,7 +2240,7 @@ function checkShipHits() {
     expect(false, "ship hits: the freighter has a laser cannon and a gunner's seat under it");
     return;
   }
-  must(`server tp @p ${site.x + HIT_TARGET_ABEAM} ${ground} ${site.z}; turn 180 0; wait 40t`);
+  standToBuild(site.x + HIT_TARGET_ABEAM, site.z);
   must("skyliners:build freighter", BUILD_SECONDS);
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
   must(`skyliners:autopilot fly altitude=${head[1] + HIT_TARGET_UP} speed=0`, BUILD_SECONDS);
@@ -2725,7 +2734,8 @@ function checkFreighterNozzles() {
 function checkEngineGrilleRedstone() {
   const x = nextSite++ * SITE_APART;
   creative();
-  must(`server tp @p ${x} ${ground} 0; turn 0 0; wait 40t; server give @p skyliners:engine_grille; server give @p minecraft:redstone_block; select 0`);
+  standToBuild(x, 0, 0);
+  must("server give @p skyliners:engine_grille; server give @p minecraft:redstone_block; select 0");
   const grille = `${x},${ground},${GRILLE_AHEAD}`;
   const glow = (at) => Number(must(`block ${at} side=server`).props?.glow ?? 0);
   must(`place skyliners:engine_grille ${grille}; wait 5t`);
