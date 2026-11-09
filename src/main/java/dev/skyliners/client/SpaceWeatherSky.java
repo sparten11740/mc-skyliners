@@ -11,6 +11,8 @@ import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.spaceweather.IncomingStrike;
 import dev.skyliners.spaceweather.RockBurst;
 import dev.skyliners.spaceweather.RockField;
+import dev.skyliners.spaceweather.RockReal;
+import dev.skyliners.spaceweather.RockShape;
 import dev.skyliners.spaceweather.SpaceRocks;
 import dev.skyliners.spaceweather.SpaceWeather;
 import dev.skyliners.spaceweather.SpaceWeatherShown;
@@ -20,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
@@ -49,10 +52,10 @@ import org.joml.Vector3f;
  * way it comes from while it is told, then streaming past all round her; an asteroid storm's rocks, lumpy, cratered
  * stones tumbling as they go (see {@link RockMeshes}), a few big ones far off on the horizon at first, then dozens
  * sweeping by, some close enough to fill the view; a giant asteroid's giant, many times bigger; and each meteor or rock
- * that strikes her, seen flying in to the spot on her hull where it lands, knocked off its course and slowed where her
- * laser cannon strikes it. A rock her cannon breaks bursts in a flash into tumbling chunks and a cloud of dust, with a
- * crunch. A solar flare shows on the sun and the sky (see {@link SolarFlare}) and over the view (see
- * {@link SpaceWeatherHud}).
+ * that strikes her, seen flying in to the spot on her hull where it lands. A rock near her is a real body of blocks,
+ * no longer drawn here (see {@code RockBodies}); one her cannon wears through bursts in a flash into tumbling chunks
+ * and a cloud of dust, with a crunch. A solar flare shows on the sun and the sky (see {@link SolarFlare}) and over the
+ * view (see {@link SpaceWeatherHud}).
  *
  * <p>Nothing pops into view: every streak and rock sets out from far beyond the farthest the game draws, and fades in
  * as it comes, faint and small at first, and out again as it goes; so does each that strikes her.
@@ -114,8 +117,7 @@ public final class SpaceWeatherSky {
     /**
      * A rock flying in to strike her: how long the faint wake of dust behind it is, in blocks, as a share of its size;
      * how wide to each side of its middle, as a share of its size; how bright along its middle, from 0 to 1; and its
-     * colour; how long one knocked off its course flies on past her after it would have landed, in ticks, as the server
-     * lets it.
+     * colour; how long one goes on being drawn after it should have landed, in ticks, in case it comes late.
      */
     private static final double TRAIL_SHARE = 3;
     private static final float TRAIL_WIDTH = 0.3F;
@@ -193,11 +195,15 @@ public final class SpaceWeatherSky {
     private static final List<Streak> STREAKS = new ArrayList<>();
     private static List<RockField.Rock> rocks = List.of();
     /** How each of its rocks looks, by number, worked out as it is first drawn. */
-    private static final Map<Integer, RockMeshes.Look> LOOKS = new HashMap<>();
+    private static final Map<Integer, RockShape.Look> LOOKS = new HashMap<>();
     /** What strikes her, seen flying in, by number, as the server last told it. */
     private static final Map<Integer, IncomingStrike> INCOMING = new LinkedHashMap<>();
+    /** The bodies of those of its rocks close enough to be real, as the server told them, by the rocks' numbers. */
+    private static final Map<Integer, UUID> REAL = new HashMap<>();
     /** The numbers of its rocks burst by a laser cannon, as the server told them. */
     private static final Set<Integer> BURST = new HashSet<>();
+    /** The numbers of its rocks let go of once worn or knocked, drawn no more though none saw them burst. */
+    private static final Set<Integer> LET_GO = new HashSet<>();
     /** The chunks, dust and flashes of rocks bursting. */
     private static final List<Chunk> CHUNKS_FLYING = new ArrayList<>();
     private static final List<Puff> PUFFS_SEEN = new ArrayList<>();
@@ -218,7 +224,7 @@ public final class SpaceWeatherSky {
      * A chunk of a rock burst: where it set out, in the world, and when, in game time; how fast it flies, in blocks a
      * second; how big it is, in blocks across; and how it looks.
      */
-    private record Chunk(Vec3 from, double born, Vec3 velocity, double size, RockMeshes.Look look) {
+    private record Chunk(Vec3 from, double born, Vec3 velocity, double size, RockShape.Look look) {
     }
 
     /**
@@ -294,7 +300,23 @@ public final class SpaceWeatherSky {
 
     /** Whether a rock, by its number, has been burst. */
     private static boolean gone(int id) {
-        return BURST.contains(id);
+        UUID body = REAL.get(id);
+        return BURST.contains(id) || LET_GO.contains(id) || body != null && SableClient.bodyCentre(body) != null;
+    }
+
+    /** A rock of the weather shown made a real body of blocks, or let go of again, as the server told it. */
+    public static void real(RockReal told) {
+        if (shown == null || shown.startedAt() != told.startedAt()) {
+            return;
+        }
+        if (told.stage() == RockReal.Stage.BODY) {
+            REAL.put(told.id(), told.body());
+            return;
+        }
+        REAL.remove(told.id());
+        if (told.stage() == RockReal.Stage.GONE) {
+            LET_GO.add(told.id());
+        }
     }
 
     /**
@@ -308,7 +330,7 @@ public final class SpaceWeatherSky {
             double speed = CHUNK_SPEED * size * (1 + (random.nextDouble() * 2 - 1) * CHUNK_SPREAD);
             Vec3 velocity = out.scale(speed).add(shot.scale(CHUNK_SPEED * size * CHUNK_CARRIED)).add(moving.scale(CHUNK_KEEPS));
             double chunk = size * Mth.lerp(random.nextDouble(), CHUNK_SMALLEST, CHUNK_BIGGEST);
-            CHUNKS_FLYING.add(new Chunk(at.add(out.scale(size * 0.3)), now, velocity, chunk, RockMeshes.look(random.nextLong())));
+            CHUNKS_FLYING.add(new Chunk(at.add(out.scale(size * 0.3)), now, velocity, chunk, RockShape.look(random.nextLong())));
         }
         for (int i = 0; i < PUFFS; i++) {
             Vec3 off = new Vec3(random.nextDouble() - 0.5, random.nextDouble() - 0.5, random.nextDouble() - 0.5).scale(size * 0.6);
@@ -370,36 +392,38 @@ public final class SpaceWeatherSky {
         rocks = List.of();
         LOOKS.clear();
         INCOMING.clear();
+        REAL.clear();
         BURST.clear();
+        LET_GO.clear();
         CHUNKS_FLYING.clear();
         PUFFS_SEEN.clear();
     }
 
     /**
      * Whether a laser cannon's sight from a point along a way rests on a rock of the weather shown within so many
-     * blocks, as the server would find it (see {@link SpaceRocks}): for the sight to lock on to it.
+     * blocks that is a real body, as the server would find it (see {@link SpaceRocks}): for the sight to lock on to it.
      */
     static boolean rockSighted(Vec3 from, Vec3 way, double reach) {
         if (shown == null || overAt != NEVER) {
             return false;
         }
         Vec3 unit = way.normalize();
-        double now = DrawingClock.gameTime(0);
-        double since = now - shown.startedAt();
-        Vec3 anchor = shown.anchor(since);
-        for (RockField.Rock rock : rocks) {
-            boolean seen = !gone(rock.id()) && rock.flying(since);
-            if (seen && SpaceRocks.meets(from, unit, rock.at(anchor, since), rock.size() / 2 + SpaceRocks.GRACE, reach) >= 0) {
-                return true;
-            }
-        }
-        for (IncomingStrike strike : INCOMING.values()) {
-            boolean seen = strike.rock() && now < strike.at() + (strike.misses() ? FLIES_ON_TICKS : 0);
-            if (seen && SpaceRocks.meets(from, unit, strike.position(target(strike, 0), now), strike.size() / 2 + SpaceRocks.GRACE, reach) >= 0) {
+        for (Map.Entry<Integer, UUID> real : REAL.entrySet()) {
+            Vec3 at = SableClient.bodyCentre(real.getValue());
+            if (at != null && SpaceRocks.meets(from, unit, at, sizeOf(real.getKey()) / 2 + SpaceRocks.GRACE, reach) >= 0) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** How big one of its rocks is, in blocks across, by its number; none for none. */
+    private static double sizeOf(int id) {
+        IncomingStrike strike = INCOMING.get(id);
+        if (strike != null) {
+            return strike.size();
+        }
+        return id >= 0 && id < rocks.size() ? rocks.get(id).size() : 0;
     }
 
     /**
@@ -462,7 +486,7 @@ public final class SpaceWeatherSky {
             shown = null;
             return;
         }
-        INCOMING.values().removeIf(strike -> now > strike.at() + (strike.misses() ? FLIES_ON_TICKS : 0));
+        INCOMING.values().removeIf(strike -> now > strike.at() + FLIES_ON_TICKS);
         CHUNKS_FLYING.removeIf(chunk -> now - chunk.born() > CHUNK_TICKS);
         PUFFS_SEEN.removeIf(puff -> now - puff.born() > puff.life());
         Camera camera = event.getCamera();
@@ -521,8 +545,8 @@ public final class SpaceWeatherSky {
     }
 
     /** How a rock looks, by its number and seed, worked out once. */
-    private static RockMeshes.Look look(int id, long seed) {
-        return LOOKS.computeIfAbsent(id, key -> RockMeshes.look(seed));
+    private static RockShape.Look look(int id, long seed) {
+        return LOOKS.computeIfAbsent(id, key -> RockShape.look(seed));
     }
 
     /**
@@ -539,7 +563,7 @@ public final class SpaceWeatherSky {
             Vec3 at = rock.at(anchor, since);
             float fade = Math.min(sky.fade(at), (float) Math.min(1, Math.min(age, 1 - age) * rock.life() / FADE_TICKS));
             if (fade > 0 && sky.inSight(at, rock.size() * 2)) {
-                RockMeshes.Look look = look(rock.id(), rock.seed());
+                RockShape.Look look = look(rock.id(), rock.seed());
                 Vec3 off = at.subtract(sky.eye());
                 RockMeshes.draw(buffer, sky.pose(), off.x, off.y, off.z, rock.size(), look, look.turned(since / TICKS), fade, sky.sun());
             }
@@ -556,7 +580,7 @@ public final class SpaceWeatherSky {
             Vec3 at = strike.position(target(strike, partial), now);
             float fade = sky.fade(at);
             if (fade > 0 && sky.inSight(at, strike.size() * 2)) {
-                RockMeshes.Look look = look(strike.id(), strike.seed());
+                RockShape.Look look = look(strike.id(), strike.seed());
                 Vec3 off = at.subtract(sky.eye());
                 RockMeshes.draw(buffer, sky.pose(), off.x, off.y, off.z, strike.size(), look, look.turned((strike.at() - now) / TICKS), fade, sky.sun());
             }
@@ -603,7 +627,7 @@ public final class SpaceWeatherSky {
                 continue;
             }
             Vec3 at = strike.position(target(strike, partial), now);
-            Vec3 course = strike.way().scale(strike.speed()).add(strike.drift()).normalize();
+            Vec3 course = strike.way();
             if (strike.rock()) {
                 float width = (float) Math.max(STREAK_WIDTH, strike.size() * TRAIL_WIDTH);
                 dustWake(glow, matrix, sky.eye(), at, at.subtract(course.scale(strike.size() * TRAIL_SHARE)), width, sky.fade(at) * TRAIL_BRIGHT);

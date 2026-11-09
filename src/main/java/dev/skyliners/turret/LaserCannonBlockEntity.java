@@ -16,7 +16,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -54,12 +53,12 @@ import net.minecraft.world.phys.Vec3;
  * <p>Either side of its housing, tilting with its barrels, it carries a rocket pod of two tubes, unless the server
  * config's {@code freighter.rockets} is off. Holding use launches a rocket (see {@link CannonRocket}) from the next
  * loaded tube every few ticks, flying to where the sight looks and homing in on the hostile mob or the space rock it
- * rests on, if any, until the pods are empty; a tap launches one. A moment after the last launch the pods load again, a rocket at a time
- * with a clack. It holds its rockets where it holds its bolts.
+ * rests on, if any, until the pods are empty; a tap launches one. A moment after the last launch the pods load again, a
+ * rocket at a time with a clack. It holds its rockets where it holds its bolts.
  *
- * <p>Far past the edge of space, its bolts and rockets shoot at the rocks of an asteroid storm too, out to
- * {@link #ROCK_REACH}, as nothing out there stops them: each strike chips a rock, knocks one coming at her off its
- * course and slows it, and bursts it once struck often enough (see {@link SpaceRocks}); its sight locks on to one.
+ * <p>Far past the edge of space, its bolts and rockets shoot at the rocks of an asteroid storm too, out to {@link
+ * #ROCK_REACH}, as nothing out there stops them: each bolt breaks the one block of a rock it meets, a rocket a hole in
+ * it, and a rock worn through bursts (see {@link SpaceRocks}); its sight locks on to one.
  *
  * <p>The server works out the aim each tick: what the gunner looks at, along their look from the sight, and the way to
  * it from the cannon's pivot, turned into her frame, so its bolts land under the sight's crosshair at any range. It
@@ -117,8 +116,6 @@ public class LaserCannonBlockEntity extends BlockEntity {
      * at: nothing in space stops them, and a rock flying in is worth meeting far out.
      */
     public static final double ROCK_REACH = 256;
-    /** How hard one of its bolts strikes a rock, in bolts' worth, as a rocket's is told (see {@link CannonRocket}). */
-    private static final double BOLT_FORCE = 1;
     /**
      * How long its sight stays locked on to a space rock after it last rested on it, in ticks, as a gun's lock-on holds
      * a quick target the gunner's look slips off; the same the client's sight shows (see {@code GunnerView}).
@@ -461,8 +458,8 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /**
      * A bolt from the muzzle of its next barrel along its aim: hostile mobs hurt, never anyone aboard her; drawn for
      * every client near, sparks where it strikes and a blast where it meets a block (see {@link TurretBlast}), another
-     * ship rocked where it strikes one of hers (see {@link ShipHits}), a space rock chipped where it strikes one first
-     * (see {@link SpaceRocks}), and its shot heard.
+     * ship rocked where it strikes one of hers (see {@link ShipHits}), the block of a space rock it strikes broken (see
+     * {@link SpaceRocks}), and its shot heard.
      */
     private void bolt(ServerLevel level) {
         Vec3 way = way(yaw, pitch);
@@ -471,18 +468,11 @@ public class LaserCannonBlockEntity extends BlockEntity {
         Vec3 muzzle = pivot().add(way.scale(BARREL)).add(across);
         Vec3 from = SableFlight.toWorld(level, muzzle);
         Vec3 along = SableFlight.toWorld(level, muzzle.add(way)).subtract(from);
-        HitResult hit = LaserFire.trace(level, gunner, from, along, RANGE, notAboard());
-        SpaceRocks.Hit rock = SpaceRocks.along(level, from, along, rockReach(hit, from));
-        if (rock != null) {
-            LaserFire.strike(level, gunner, from, BlockHitResult.miss(rock.at(), Direction.UP, BlockPos.containing(rock.at())), DAMAGE, LaserBolt.RED,
-                BOLTS_SEEN);
-            SpaceRocks.shoot(level, rock, along, BOLT_FORCE);
-            shotHeard(level, from);
-            return;
-        }
+        HitResult hit = LaserFire.trace(level, gunner, from, along, SpaceRocks.flying(level) ? ROCK_REACH : RANGE, notAboard());
         LaserFire.strike(level, gunner, from, hit, DAMAGE, LaserBolt.RED, BOLTS_SEEN);
         if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK) {
             ShipHits.struck(level, block.getBlockPos(), hit.getLocation(), along, ShipHits.Shot.BOLT, SableFlight.bodyAt(level, worldPosition));
+            SpaceRocks.breakBlock(level, block.getBlockPos(), hit.getLocation(), along);
         }
         TurretBlast.throwStruck(level, gunner, hit, along, notAboard(), DAMAGE);
         if (SkylinersConfig.FREIGHTER_TURRET_BLASTS.get()) {

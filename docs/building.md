@@ -407,17 +407,23 @@ from `SEEN_FROM` (820 blocks) out, so it flies into view; each strike lands thro
 sound at the plot position. A `GIANT_ASTEROID`'s giant lands unclamped by weight and with a far looser turn limit, and
 everyone aboard as a rock lands is `Braced`: a `LivingIncomingDamageEvent` handler cancels falls, walls and cramming,
 and each tick re-arms `SafetyCanopy.thrown` and forgets falls while still aboard. The rocks streaming past are
-`RockField`, common code that the server and every client work out from the seed alike, so `SpaceRocks` (the weather
-blowing, added as it is told) can trace the laser cannon's bolts (`LaserCannonBlockEntity.bolt`, out to `ROCK_REACH`)
-and rockets (`CannonRocket.rockAhead`, homing on a `SpaceRocks.Target`) against them; `SpaceWeather.shot` chips a rock
-and bursts it at its size in bolts' worth, one `RockBurst` to everyone shown, and knocks a strike flying in off its
-course (`knock`: drift across its way, slower, a later landing), sending its `IncomingStrike` again; `Strike.share`
-scales its landing by what is left of it, its speed and how far off course it arrives, past `missesFrom` a miss. The
-client's `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon), rocks (`RockMeshes`: eight procedural shapes,
-lumps, craters, ridges and grain pushed out of an icosphere at three levels of detail, coloured per corner and lit
-flat per face by the sun on the client, see-through as they fade in) and bursts (chunks, dust and a flash) after the
+`RockField`, common code that the server and every client work out from the seed alike. A rock near her is a real
+body: `RockBodies` works its blocks out away from the server's thread (`RockCells`: `RockShape`, roughened, cut by the
+hull's `SurfaceCut` into `SpaceRockBlock`s, solid all through), has `SableFlight.makeRock` make a body with no blocks in
+the world (the build limit is far below it), gives an untouched rock back its speed each tick against Sable's gravity
+and drag, tells clients with `RockReal` so they stop drawing it once the body has reached them, and lets it go well past
+her. What meets her lands by touch (`RockBodies.tookHer`, the shove being Sable's own), so only a meteor or a rock not
+yet a body lands through `SableFlight.strike`. Bodies carry a mark and a keep-loaded ticket: `SpaceRocks.tick` sweeps up
+any no weather is flying, and `SpaceRocks.stopping` takes the rest out before the save. `LaserCannonBlockEntity.bolt`
+traces out to `ROCK_REACH` while rocks fly and `SpaceRocks.breakBlock` breaks the one block a bolt met; a rocket blows a
+hole (`SpaceRocks.blast`, `CannonRocket.rockAhead` homing on a `SpaceRocks.Target`). What is cut off flies away as a body
+Sable splits off, which `RockBodies` takes up for a while, and a rock worn through bursts, one `RockBurst` to everyone
+shown. The client's `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon), rocks not yet bodies (`RockMeshes`:
+`RockShape`'s procedural shapes, lumps, craters, ridges and grain pushed out of an icosphere at three levels of detail,
+coloured per corner and lit flat per face by the sun on the client, see-through as they fade in) and bursts (chunks,
+dust and a flash) after the
 particles, past the fog, fading everything in by distance under the far plane; `GunnerView` locks the sight on with
-`SpaceWeatherSky.rockSighted`. `SolarFlare` swells and colours the sun `SpaceSky` draws, adds its corona, tendrils and
+`SpaceWeatherSky.rockSighted`, on rocks that are bodies. `SolarFlare` swells and colours the sun `SpaceSky` draws, adds its corona, tendrils and
 rings of light round it and tints the dome; `SpaceWeatherHud` draws the badge and the flare's glare, and `ConsoleArt`
 the scanner's picture and the flare's flicker. A strike's shove scales with the ship's weight against a freighter's, and a ship
 taller than wide is struck near her middle line and anywhere up her, so she tips rather than spins. `/skyliners

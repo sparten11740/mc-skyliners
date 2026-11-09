@@ -64,8 +64,6 @@ public class CannonRocket extends Projectile {
      * rock comes at it fast.
      */
     private static final double ROCK_TURN = 10;
-    /** How hard it strikes a space rock, in bolts' worth of the cannon's: a rock five bolts break, one rocket does. */
-    private static final double ROCK_FORCE = 5;
     /** How much bigger than its box a mob is to it, in blocks each way, so a near miss still strikes. */
     private static final double GRAZE = 0.3;
     /**
@@ -177,12 +175,13 @@ public class CannonRocket extends Projectile {
         SpaceRocks.Hit struck = rockAhead(level, from, wall == null ? to : wall.getLocation());
         if (struck != null) {
             goOff(struck.at());
-            SpaceRocks.shoot(level, struck, step, ROCK_FORCE);
+            SpaceRocks.blast(level, struck, step);
             return;
         }
         if (wall != null) {
             goOff(wall.getLocation().subtract(step.normalize().scale(BACK_OFF)));
             ShipHits.struck(level, wall.getBlockPos(), wall.getLocation(), step, ShipHits.Shot.ROCKET, her);
+            SpaceRocks.blast(level, wall.getBlockPos(), wall.getLocation(), step);
             return;
         }
         setDeltaMovement(step);

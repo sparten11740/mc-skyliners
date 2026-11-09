@@ -65,12 +65,15 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
  * reveal) is read from the world as the block's section is built for drawing ({@link Baked#getModelData}). The
  * lined faces take the tint {@code "lining_tint_index"} names, none if it names none, so a rocket's cover is painted
  * by her livery outside while its lining keeps its room's colours.
+ * <p>
+ * Given more skins too ("skin1", "skin2", and so on), each block is drawn with one of them, turned any of four ways,
+ * the same one every time for its place, so a rock's stone never repeats block after block.
  */
 public final class ShellModel implements IUnbakedGeometry<ShellModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "shell");
     public static final IGeometryLoader<ShellModel> READER = (json, context) ->
         new ShellModel(GsonHelper.getAsBoolean(json, "single_pane", false), GsonHelper.getAsInt(json, "tint_index", -1),
-            GsonHelper.getAsInt(json, "lining_tint_index", -1));
+            GsonHelper.getAsInt(json, "lining_tint_index", -1), GsonHelper.getAsBoolean(json, "always_lit", false));
     /** What is round a block that its lined walls take their look from, as {@link Lining#context} gives it. */
     private static final ModelProperty<Integer> CONTEXT = new ModelProperty<>();
     /**
@@ -89,6 +92,12 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
      */
     private static final double OUTSIDE_COSINE = 0.1;
     private static final Lining.Look[] LOOKS = Lining.Look.values();
+    /** How many ways round a skin may be laid on a block, with several skins given: a quarter turn each. */
+    private static final int TURNS = 4;
+    /**
+     * The light baked into the faces of a model always lit, packed as the lightmap has it: as bright as a torch's near.
+     */
+    private static final int ALWAYS_LIT = LightTexture.pack(12, 15);
 
     /** Whether the glass is drawn as one pane (see the class's description). */
     private final boolean singlePane;
@@ -103,10 +112,17 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
      */
     private final int liningTintIndex;
 
-    private ShellModel(boolean singlePane, int tintIndex, int liningTintIndex) {
+    /**
+     * Whether its faces are baked with {@link #ALWAYS_LIT} (a rock in space, from {@code "always_lit"}): a body
+     * tumbling up there gets light by its own plot's sky, however it is turned, which would leave its underside black.
+     */
+    private final boolean alwaysLit;
+
+    private ShellModel(boolean singlePane, int tintIndex, int liningTintIndex, boolean alwaysLit) {
         this.singlePane = singlePane;
         this.tintIndex = tintIndex;
         this.liningTintIndex = liningTintIndex;
+        this.alwaysLit = alwaysLit;
     }
 
     @Override
@@ -114,6 +130,10 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                            ModelState modelState, ItemOverrides overrides) {
         TextureAtlasSprite skin = spriteGetter.apply(context.getMaterial("skin"));
         TextureAtlasSprite particle = spriteGetter.apply(context.getMaterial("particle"));
+        List<TextureAtlasSprite> skins = new ArrayList<>(List.of(skin));
+        for (int more = 1; context.hasMaterial("skin" + more); more++) {
+            skins.add(spriteGetter.apply(context.getMaterial("skin" + more)));
+        }
         boolean lining = context.hasMaterial("lining");
         TextureAtlasSprite[] looks = new TextureAtlasSprite[LOOKS.length];
         for (Lining.Look look : LOOKS) {
@@ -122,8 +142,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         ResourceLocation hint = context.getRenderTypeHint();
         RenderTypeGroup group = hint != null ? context.getRenderType(hint) : RenderTypeGroup.EMPTY;
         RenderType renderType = group.isEmpty() ? RenderType.solid() : group.block();
-        return new Baked(looks, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane, tintIndex,
-            liningTintIndex);
+        return new Baked(looks, skins, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane, tintIndex,
+            liningTintIndex, alwaysLit);
     }
 
     /** The texture a look is drawn with, by its name in the model's JSON. */
@@ -152,11 +172,16 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * they are needed, since a block only ever takes some of the shapes; chunks are meshed on several threads at
          * once, and two of them baking the same shape bake the same quads.
          */
-        private final AtomicReferenceArray<Shape> shapes = new AtomicReferenceArray<>(ShellGeometry.COUNT);
+        private final List<AtomicReferenceArray<Shape>> shapes = new ArrayList<>();
         /** The same for a shape with some faces lined, by the shape, its faces lined and what is round it. */
         private final Map<Long, Shape> lined = new ConcurrentHashMap<>();
         /** Each look's texture, by {@link Lining.Look#ordinal()}; all the skin without the lining's. */
         private final TextureAtlasSprite[] looks;
+        /**
+         * The skin and the others it may be drawn with, block by block, with several given (see the class's
+         * description).
+         */
+        private final List<TextureAtlasSprite> skins;
         private final boolean lining;
         private final TextureAtlasSprite particle;
         private final ChunkRenderTypeSet renderTypes;
@@ -165,6 +190,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         private final boolean singlePane;
         private final int tintIndex;
         private final int liningTintIndex;
+        private final boolean alwaysLit;
         /**
          * For single-pane glass, each shape's outside both ways round, baked as they are needed: by side index the
          * sides that look out, and last the cut faces.
@@ -176,9 +202,13 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         private record Shape(List<List<BakedQuad>> quads, List<List<BakedQuad>> wholeCulled) {
         }
 
-        Baked(TextureAtlasSprite[] looks, boolean lining, TextureAtlasSprite particle, RenderType renderType, ItemTransforms transforms,
-              boolean ambientOcclusion, boolean singlePane, int tintIndex, int liningTintIndex) {
+        Baked(TextureAtlasSprite[] looks, List<TextureAtlasSprite> skins, boolean lining, TextureAtlasSprite particle, RenderType renderType, ItemTransforms transforms,
+              boolean ambientOcclusion, boolean singlePane, int tintIndex, int liningTintIndex, boolean alwaysLit) {
             this.looks = looks;
+            this.skins = skins;
+            for (int way = 0; way < ways(); way++) {
+                shapes.add(new AtomicReferenceArray<>(ShellGeometry.COUNT));
+            }
             this.lining = lining;
             this.particle = particle;
             this.renderTypes = ChunkRenderTypeSet.of(renderType);
@@ -187,6 +217,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             this.singlePane = singlePane;
             this.tintIndex = tintIndex;
             this.liningTintIndex = liningTintIndex;
+            this.alwaysLit = alwaysLit;
         }
 
         /**
@@ -262,16 +293,21 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             return x * out[0] + y * out[1] + z * out[2] > 0;
         }
 
-        private Shape shape(int shape) {
-            Shape baked = shapes.get(shape);
+        /** How many ways a block may be drawn: each skin, four ways round, with several given; otherwise the one. */
+        private int ways() {
+            return skins.size() > 1 ? skins.size() * TURNS : 1;
+        }
+
+        private Shape shape(int shape, int way) {
+            Shape baked = shapes.get(way).get(shape);
             if (baked == null) {
-                baked = bake(shape, 0, 0);
-                shapes.set(shape, baked);
+                baked = bake(shape, 0, 0, way);
+                shapes.get(way).set(shape, baked);
             }
             return baked;
         }
 
-        private Shape bake(int shape, int linedFaces, int context) {
+        private Shape bake(int shape, int linedFaces, int context, int way) {
             int rest = Direction.values().length;
             List<List<BakedQuad>> bySide = new ArrayList<>();
             List<List<BakedQuad>> byWholeSide = new ArrayList<>();
@@ -285,7 +321,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                 Direction side = face.side();
                 Lining.Look look = Lining.look(face, (linedFaces & 1 << i) != 0, context);
                 int tint = look == Lining.Look.SKIN ? tintIndex : liningTintIndex;
-                List<BakedQuad> baked = bake(face, looks[look.ordinal()], look == Lining.Look.REVEAL_LEFT, tint);
+                TextureAtlasSprite sprite = look == Lining.Look.SKIN && skins.size() > 1 ? skins.get(way / TURNS) : looks[look.ordinal()];
+                List<BakedQuad> baked = bake(face, sprite, look == Lining.Look.REVEAL_LEFT, tint, way % TURNS);
                 bySide.get(side == null ? rest : side.get3DDataValue()).addAll(baked);
                 byWholeSide.get(side == null || !ShellGeometry.whole(shape, side) ? rest : side.get3DDataValue()).addAll(baked);
             }
@@ -296,8 +333,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * A face as quads fanned out from its first corner; a triangle is a quad with its last corner doubled. Mirrored
          * left to right, the texture is laid on the other way round.
          */
-        private List<BakedQuad> bake(ShellGeometry.Face face, TextureAtlasSprite sprite, boolean mirrored, int tint) {
-            return quads(face.corners(), face.nx(), face.ny(), face.nz(), face.facing(), face.side() != null, true, sprite, mirrored, tint);
+        private List<BakedQuad> bake(ShellGeometry.Face face, TextureAtlasSprite sprite, boolean mirrored, int tint, int turn) {
+            return quads(face.corners(), face.nx(), face.ny(), face.nz(), face.facing(), face.side() != null, true, sprite, mirrored, tint, turn);
         }
 
         /**
@@ -305,7 +342,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * instead of its facets each taking the shade for the way they face.
          */
         private List<BakedQuad> even(List<float[]> corners, float nx, float ny, float nz, Direction facing) {
-            return quads(corners, nx, ny, nz, facing, false, false, looks[Lining.Look.SKIN.ordinal()], false, tintIndex);
+            return quads(corners, nx, ny, nz, facing, false, false, looks[Lining.Look.SKIN.ordinal()], false, tintIndex, 0);
         }
 
         /**
@@ -313,7 +350,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * the skin is, by the side it lies on (flat) or the way it faces, or evenly lit.
          */
         private List<BakedQuad> quads(List<float[]> corners, float nx, float ny, float nz, Direction facing, boolean flat, boolean shaded,
-                                      TextureAtlasSprite sprite, boolean mirrored, int tint) {
+                                      TextureAtlasSprite sprite, boolean mirrored, int tint, int turn) {
             List<BakedQuad> baked = new ArrayList<>();
             for (int i = 1; i + 1 < corners.size(); i += 2) {
                 float[][] quad = {corners.getFirst(), corners.get(i), corners.get(i + 1), corners.get(Math.min(i + 2, corners.size() - 1))};
@@ -328,10 +365,10 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                 builder.setHasAmbientOcclusion(shaded && flat);
                 int grey = flat || !shaded ? 255 : Math.round(255 * diffuse(nx, ny, nz));
                 for (float[] p : quad) {
-                    float[] uv = uv(p, facing);
+                    float[] uv = turned(uv(p, facing), turn);
                     float u = mirrored ? 1 - uv[0] : uv[0];
                     builder.addVertex(p[0], p[1], p[2]).setColor(grey, grey, grey, 255).setUv(sprite.getU(u), sprite.getV(uv[1]))
-                        .setUv2(0, 0).setNormal(nx, ny, nz);
+                        .setLight(alwaysLit ? ALWAYS_LIT : 0).setNormal(nx, ny, nz);
                 }
                 baked.add(builder.bakeQuad());
             }
@@ -355,6 +392,16 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                 case SOUTH -> new float[]{p[0], 1 - p[1]};
                 case WEST -> new float[]{p[2], 1 - p[1]};
                 case EAST -> new float[]{1 - p[2], 1 - p[1]};
+            };
+        }
+
+        /** A place on a texture with the texture turned so many quarters. */
+        private static float[] turned(float[] uv, int turn) {
+            return switch (turn) {
+                case 1 -> new float[]{1 - uv[1], uv[0]};
+                case 2 -> new float[]{1 - uv[0], 1 - uv[1]};
+                case 3 -> new float[]{uv[1], 1 - uv[0]};
+                default -> uv;
             };
         }
 
@@ -399,12 +446,12 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             int linedFaces = state != null && lining ? Lining.faces(state) : 0;
             Shape baked;
             if (linedFaces == 0) {
-                baked = shape(shape);
+                baked = shape(shape, state != null && ways() > 1 ? rand.nextInt(ways()) : 0);
             } else {
                 Integer around = extraData.get(CONTEXT);
                 int context = around != null ? around : 0;
                 long key = shape | (long) linedFaces << LINED_SHIFT | (long) context << CONTEXT_SHIFT;
-                baked = lined.computeIfAbsent(key, ignored -> bake(shape, linedFaces, context));
+                baked = lined.computeIfAbsent(key, ignored -> bake(shape, linedFaces, context, 0));
             }
             List<List<BakedQuad>> culled = state != null && state.canOcclude() ? baked.wholeCulled() : baked.quads();
             List<BakedQuad> quads = culled.get(side == null ? Direction.values().length : side.get3DDataValue());

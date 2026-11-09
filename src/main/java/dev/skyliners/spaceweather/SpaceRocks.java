@@ -1,22 +1,33 @@
 package dev.skyliners.spaceweather;
 
+import dev.skyliners.block.SpaceRockBlock;
+import dev.skyliners.compat.SableFlight;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.IntSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * The rocks of every asteroid storm and giant asteroid blowing on the server, as a laser cannon shoots at them (see
- * {@code LaserCannonBlockEntity} and {@code CannonRocket}): its bolts and rockets meet a rock where it is, worked out
- * from its weather's seed as every client works it out to draw it (see {@link RockField}), or, for one on its way in to
- * strike her, from its course; each strike chips it, and a rock struck often enough bursts to pieces, every client told
- * so once (see {@link RockBurst}). A rock coming at her is knocked off its course and slowed by each strike besides,
- * and lands softer, or misses her, for it (see {@link SpaceWeather}).
+ * {@code LaserCannonBlockEntity} and {@code CannonRocket}): a rock near her is a real body of blocks (see {@link
+ * RockBodies}), and a bolt that meets one breaks just the block it meets, a rocket a hole's worth round where it went
+ * off. What is no longer joined on to a rock flies off as a piece of its own; a rock worn through bursts, every client
+ * told so once (see {@link RockBurst}).
  *
- * <p>Nothing is kept but the weather blowing: each adds itself as it is told and takes itself away as it is over, or
- * is let go once the ship it blew round is gone, unloaded mid-storm.
+ * <p>Nothing is kept but the weather blowing: each adds itself as it is told and takes itself away as it is over, or is
+ * let go once the ship it blew round is gone, unloaded mid-storm. Its bodies are never saved: any found with no weather
+ * flying them is taken away.
  */
 public final class SpaceRocks {
     /**
@@ -24,6 +35,16 @@ public final class SpaceRocks {
      * gunner saw it, and a quick small rock moves three blocks a tick.
      */
     public static final double GRACE = 1.5;
+    /**
+     * How big a hole a rocket makes in a rock, in blocks around where it went off: at least, and for each block across
+     * the rock is.
+     */
+    private static final double BLAST_FROM = 4;
+    private static final double BLAST_PER_BLOCK = 0.15;
+    /** How often rocks with no weather flying them are looked for, in ticks. */
+    private static final int SWEEP_EVERY = 200;
+    /** How a broken rock's block is told: to clients, no neighbours prodded, for a rock has none that care. */
+    private static final int BREAK_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /** The weather blowing now, in any level. */
     private static final List<SpaceWeather> BLOWING = new ArrayList<>();
     /**
@@ -77,6 +98,46 @@ public final class SpaceRocks {
         BLOWING.clear();
     }
 
+    /** Each server tick: now and then, every rock with no weather still flying it taken away. */
+    public static void tick(MinecraftServer server) {
+        if (server.getTickCount() % SWEEP_EVERY == 0) {
+            BLOWING.removeIf(SpaceWeather::stale);
+            sweep(server, flown());
+        }
+    }
+
+    /**
+     * As the server stops, before the world is saved: every rock taken away, for none to come back when it is opened.
+     */
+    public static void stopping(MinecraftServer server) {
+        sweep(server, Set.of());
+    }
+
+    private static void sweep(MinecraftServer server, Set<UUID> flown) {
+        for (ServerLevel level : server.getAllLevels()) {
+            SableFlight.sweepRocks(level, flown);
+        }
+    }
+
+    /** Every rock's body and every piece of one that weather blowing is flying. */
+    private static Set<UUID> flown() {
+        Set<UUID> all = new HashSet<>();
+        for (SpaceWeather weather : BLOWING) {
+            all.addAll(weather.bodies());
+        }
+        return all;
+    }
+
+    /** Whether any rock is a real body now in a level, for a shot there to reach out as far as it could be. */
+    public static boolean flying(ServerLevel level) {
+        for (SpaceWeather weather : BLOWING) {
+            if (weather.hasBodies(level)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * The nearest rock a shot from a point along a way meets within so many blocks, of any weather blowing in the
      * level; none for none.
@@ -97,11 +158,104 @@ public final class SpaceRocks {
     }
 
     /**
-     * A rock struck where a shot met it, travelling along a way, with so many bolts' worth of force: chipped, and
-     * knocked off its course if it is coming at her; burst to pieces if struck often enough.
+     * A bolt meeting a block, travelling along a way: if the block is a space rock's, that block alone is broken, chips
+     * of its stone flying where it met it, and its rock goes where it is knocked from now on. Whether it was.
      */
-    public static void shoot(ServerLevel level, Hit hit, Vec3 way, double force) {
-        hit.weather().shot(level, hit.rock(), hit.at(), way.normalize(), force);
+    public static boolean breakBlock(ServerLevel level, BlockPos block, Vec3 at, Vec3 way) {
+        BlockState stone = level.getBlockState(block);
+        if (!(stone.getBlock() instanceof SpaceRockBlock)) {
+            return false;
+        }
+        UUID rock = SableFlight.bodyAt(level, block);
+        level.setBlock(block, Blocks.AIR.defaultBlockState(), BREAK_FLAGS);
+        SpaceWeather.chips(level, SableFlight.toWorld(level, at), way.normalize(), stone);
+        tellShot(rock, way.normalize());
+        return true;
+    }
+
+    /**
+     * A rocket going off against a block, travelling along a way: if the block is a space rock's, a hole blown there.
+     * Whether it was.
+     */
+    public static boolean blast(ServerLevel level, BlockPos block, Vec3 at, Vec3 way) {
+        BlockState stone = level.getBlockState(block);
+        if (!(stone.getBlock() instanceof SpaceRockBlock)) {
+            return false;
+        }
+        UUID rock = SableFlight.bodyAt(level, block);
+        Vec3 inWorld = SableFlight.toWorld(level, at);
+        crater(level, rock, inWorld, blastRadius(rock));
+        SpaceWeather.chips(level, inWorld, way.normalize(), stone);
+        tellShot(rock, way.normalize());
+        return true;
+    }
+
+    /**
+     * A rocket going off as it passes the rock it homes in on, travelling along a way: a hole blown in it where its
+     * blocks lie nearest, along the line from where it went off to the rock's middle.
+     */
+    public static void blast(ServerLevel level, Hit hit, Vec3 way) {
+        Vec3 middle = hit.weather().rockCentre(level, hit.rock());
+        UUID rock = hit.weather().rockBody(hit.rock());
+        if (middle == null || rock == null) {
+            return;
+        }
+        Vec3 inward = middle.subtract(hit.at());
+        Vec3 unit = inward.lengthSqr() < 1e-6 ? way.normalize() : inward.normalize();
+        Vec3 met = firstBlockAlong(level, rock, hit.at(), unit, hit.weather().rockSize(hit.rock()));
+        crater(level, rock, met, blastRadius(rock));
+        tellShot(rock, way.normalize());
+    }
+
+    /** Where a line from a point first meets a block of a rock's, within so far; the point itself if it meets none. */
+    private static Vec3 firstBlockAlong(ServerLevel level, UUID rock, Vec3 from, Vec3 unit, double far) {
+        for (double along = 0; along < far; along += 0.5) {
+            Vec3 point = from.add(unit.scale(along));
+            if (level.getBlockState(BlockPos.containing(SableFlight.toRock(level, rock, point))).getBlock() instanceof SpaceRockBlock) {
+                return point;
+            }
+        }
+        return from;
+    }
+
+    /** How big a hole a rocket makes in a rock, in blocks. */
+    private static double blastRadius(@Nullable UUID rock) {
+        return BLAST_FROM + BLAST_PER_BLOCK * sizeOf(rock);
+    }
+
+    /** How big a rock's body is, in blocks across, among those weather is flying; none if it is not one of them. */
+    private static double sizeOf(@Nullable UUID rock) {
+        for (SpaceWeather weather : BLOWING) {
+            double size = weather.sizeOf(rock);
+            if (size > 0) {
+                return size;
+            }
+        }
+        return 0;
+    }
+
+    private static void tellShot(@Nullable UUID rock, Vec3 way) {
+        if (rock != null) {
+            BLOWING.forEach(weather -> weather.shotAt(rock, way));
+        }
+    }
+
+    /**
+     * A hole in a rock's body, every block of it so far round a point in the world broken: what it no longer holds on
+     * to flies off as Sable finds it has come apart.
+     */
+    static void crater(ServerLevel level, @Nullable UUID rock, Vec3 at, double radius) {
+        if (rock == null) {
+            return;
+        }
+        Vec3 inRock = SableFlight.toRock(level, rock, at);
+        BlockPos middle = BlockPos.containing(inRock);
+        int reach = Mth.ceil(radius);
+        for (BlockPos block : BlockPos.betweenClosed(middle.offset(-reach, -reach, -reach), middle.offset(reach, reach, reach))) {
+            if (block.getCenter().distanceToSqr(inRock) <= radius * radius && level.getBlockState(block).getBlock() instanceof SpaceRockBlock) {
+                level.setBlock(block, Blocks.AIR.defaultBlockState(), BREAK_FLAGS);
+            }
+        }
     }
 
     /**

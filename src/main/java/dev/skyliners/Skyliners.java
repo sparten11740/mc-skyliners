@@ -87,6 +87,7 @@ import dev.skyliners.selfdestruct.ThrownClearPayload;
 import dev.skyliners.spaceweather.Braced;
 import dev.skyliners.spaceweather.IncomingStrike;
 import dev.skyliners.spaceweather.RockBurst;
+import dev.skyliners.spaceweather.RockReal;
 import dev.skyliners.spaceweather.SpaceRocks;
 import dev.skyliners.spaceweather.SpaceWeatherShown;
 import dev.skyliners.stickers.StickerMapBlockEntity;
@@ -106,6 +107,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
@@ -154,6 +157,8 @@ public final class Skyliners {
         NeoForge.EVENT_BUS.addListener(Braced::onDamage);
         NeoForge.EVENT_BUS.addListener(Braced::forget);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SpaceRocks.forget());
+        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> SpaceRocks.stopping(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> SpaceRocks.tick(event.getServer()));
         // Last, so a placement another mod turned down is not marked.
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, HandPlaced::onPlace);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, HandPlaced::onArrive);
@@ -207,7 +212,7 @@ public final class Skyliners {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("43")
+        event.registrar("44")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -275,6 +280,8 @@ public final class Skyliners {
             .playToClient(IncomingStrike.TYPE, IncomingStrike.STREAM_CODEC,
                 (payload, context) -> SpaceWeatherSky.incoming(payload))
             .playToClient(RockBurst.TYPE, RockBurst.STREAM_CODEC,
-                (payload, context) -> SpaceWeatherSky.burst(payload));
+                (payload, context) -> SpaceWeatherSky.burst(payload))
+            .playToClient(RockReal.TYPE, RockReal.STREAM_CODEC,
+                (payload, context) -> SpaceWeatherSky.real(payload));
     }
 }

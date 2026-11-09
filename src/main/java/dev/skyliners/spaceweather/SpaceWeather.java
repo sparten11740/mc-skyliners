@@ -15,6 +15,7 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -36,6 +37,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -58,11 +60,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * wind pushes her steadily aside. Her autopilot fights her back onto her course and her height. Then she says it is all
  * clear, a green tick showing.
  *
- * <p>A freighter's laser cannon can shoot the rocks down (see {@link SpaceRocks}): every rock is where every client
- * draws it, worked out from the weather's seed (see {@link RockField}), and each strike of a bolt or a rocket chips it
- * until it bursts. A rock coming at her is knocked off its course and slowed by every strike besides, and lands softer
- * for it, scaled by how much of it was chipped, how much it was slowed and how far off its course it arrives; knocked
- * far enough off, it misses her.
+ * <p>A rock coming close is a real flying body of blocks (see {@link RockBodies}): one that meets her stops at her hull
+ * and shoves her as hard as it hits her, breaking up where it struck, and a freighter's laser cannon can shoot it to
+ * pieces block by block (see {@link SpaceRocks}), a rock shot at knocked off the way it was going and a rock worn away
+ * landing the softer. Far off, a rock is only drawn, worked out from the weather's seed on every client alike (see
+ * {@link RockField}).
  *
  * <p>No strike breaks a block of hers, nor harms anyone aboard: she is only shoved, through Sable, and those aboard as a
  * rock lands are kept a while from falls and walls, their safety canopy opening should they be thrown clear (see
@@ -208,20 +210,18 @@ public final class SpaceWeather {
     private static final int BRACED_TICKS = 100;
     private static final int GIANT_BRACED_TICKS = 600;
     /**
-     * How a rock takes the cannon's strikes: how many bolts' worth it takes to burst, for each block across it is (a
-     * rocket is several bolts' worth, see {@code CannonRocket}); for each share of that a strike takes, how much of how
-     * fast it first came it is knocked across its way, and how much it is slowed, never below the least share of it;
-     * and how much of her half width, across the least of the box round her, it must arrive off its course to miss
-     * her, its own half width besides.
+     * How big a hole a rock makes in itself as it meets her, as a share of how big it is across, in blocks around where
+     * it struck: it breaks up as it lands.
      */
-    private static final double TOUGHNESS = 1.0;
-    private static final double KNOCKED_ASIDE = 0.25;
-    private static final double SLOWED = 0.5;
-    private static final double SLOWEST_SHARE = 0.3;
-    private static final double MISSES_SHARE = 0.6;
-    /** How long a rock knocked off its course flies on past her after it would have landed, in ticks, before it is let go. */
+    private static final double CRATER_AS_IT_LANDS = 0.3;
+    /**
+     * How long a rock that failed to meet her flies on past her after it would have landed, in ticks, before it is
+     * given up on.
+     */
     private static final int FLIES_ON_TICKS = 100;
-    /** The least share of its jolt a rock that lands softer for being shot at still jolts the view aboard with. */
+    /**
+     * The least share of its jolt a rock that lands softer for having been worn away still jolts the view aboard with.
+     */
     private static final float JOLT_SHOT_LEAST = 0.25F;
     /**
      * The chips of stone and sparks flying off a rock where a shot strikes it: how far back along the shot they burst,
@@ -233,7 +233,7 @@ public final class SpaceWeather {
     private static final int CHIP_SPARKS = 14;
     private static final int CHIP_STONES = 10;
     private static final double CHIPS_SPREAD = 0.4;
-    /** A chip of stone off a rock. */
+    /** A chip of stone off a rock that has landed. */
     private static final ParticleOptions STONE_CHIP = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.TUFF.defaultBlockState());
     /** Ticks a second. */
     private static final double TICKS = 20;
@@ -372,15 +372,14 @@ public final class SpaceWeather {
 
     /**
      * A strike planned for a moment of the bout, and once it is seen flying in, where on her it lands and from where;
-     * for a rock, also how big it is, how much of it is left, and how it has been knocked off its course by her
-     * cannon on its way in (see {@link IncomingStrike}, which tells the clients the same).
+     * for a rock, also how big it is (see {@link IncomingStrike}, which tells the clients the same).
      */
     private static final class Strike {
         /** Its number among the weather's rocks, past every number of its rocks streaming by. */
         final int id;
         /** Whether it is the giant asteroid's giant. */
         final boolean giant;
-        /** When it lands, in game time, later once it has been slowed. */
+        /** When it lands, in game time. */
         long at;
         @Nullable
         BlockPos block;
@@ -388,26 +387,15 @@ public final class SpaceWeather {
         Vec3 onHer;
         @Nullable
         Vec3 way;
-        /** How big it is, in blocks across, none for a meteor; its seed, for its shape. */
+        /**
+         * How big it is, in blocks across, none for a meteor; its seed, for its shape; how fast it comes, in blocks a
+         * second.
+         */
         double size;
         long seed;
-        /** How fast it comes, in blocks a second, and how fast it came before it was struck. */
         double speed;
-        double firstSpeed;
-        /** How many bolts' worth of strikes it takes to break up, and how many it has taken. */
-        double toughness;
-        double taken;
-        /**
-         * How far it had been knocked off its course, in blocks, as of a game time, and how fast it drifts on off it
-         * since, in blocks a second; how far off its course it must arrive to miss her, in blocks.
-         */
-        Vec3 aside = Vec3.ZERO;
-        Vec3 drift = Vec3.ZERO;
-        long changed;
-        double missesFrom;
-        /** Whether it has been aimed at her, seen flying in; whether it will miss her, flying on past; and whether it has burst. */
+        /** Whether it has been aimed at her, seen flying in; and whether it has been shot through. */
         boolean aimed;
-        boolean misses;
         boolean burst;
 
         Strike(int id, long at, boolean giant) {
@@ -423,25 +411,7 @@ public final class SpaceWeather {
 
         /** Where it is at a game time, from where the spot on her it comes at is then, in the world. */
         Vec3 position(Vec3 target, double now) {
-            return target.subtract(way.scale((at - now) / TICKS * speed + size / 2)).add(aside).add(drift.scale((now - changed) / TICKS));
-        }
-
-        /** How far off its course it arrives, in blocks, as it is going now. */
-        double offAtArrival() {
-            return aside.add(drift.scale((at - changed) / TICKS)).length();
-        }
-
-        /**
-         * How much of a whole strike it lands, from 1 for a rock never shot at to none: less for what was chipped off
-         * it, for how much it was slowed, and for how far off its course it arrives, glancing her.
-         */
-        double share() {
-            if (size <= 0) {
-                return 1;
-            }
-            double left = Math.max(0, 1 - taken / toughness);
-            double glancing = Math.max(0, 1 - offAtArrival() / missesFrom);
-            return left * (speed / firstSpeed) * glancing;
+            return target.subtract(way.scale((at - now) / TICKS * speed + size / 2));
         }
     }
 
@@ -461,9 +431,12 @@ public final class SpaceWeather {
     @Nullable
     private SpaceWeatherShown told;
     private List<RockField.Rock> rocks = List.of();
-    /** How many bolts' worth of strikes each of its rocks streaming past has taken, by number; and those burst. */
-    private double[] taken = new double[0];
+    /** Those of its rocks streaming past that have been shot through, by number. */
     private final BitSet burst = new BitSet();
+    /** How fast she was going as of the last tick of its rocks, in blocks a second. */
+    private Vec3 herLastVelocity = Vec3.ZERO;
+    /** Those of its rocks close enough to be real bodies of blocks now. */
+    private RockBodies bodies = new RockBodies(new NothingTold(), 0);
     /** The autopilot of the ship it blows round, while it blows, for the rocks shot at to be shown to those near. */
     @Nullable
     private AutopilotBlockEntity autopilot;
@@ -475,9 +448,9 @@ public final class SpaceWeather {
     private final List<ServerPlayer> braced = new ArrayList<>();
     private long bracedUntil;
     /**
-     * For the play-test, since she was loaded: how many strikes have landed on her, and when the last did, in game time;
-     * how much of a whole strike the last landed, as a share; how many rocks her cannon has burst, and how many rocks
-     * coming at her it knocked far enough off to miss her.
+     * For the play-test, since she was loaded: how many strikes have landed on her, and when the last did, in game
+     * time; how much of its rock was left of the last to land, as a share; how many rocks her cannon has shot through,
+     * and how many rocks coming at her flew on past without meeting her.
      */
     private int landed;
     private long lastLanded = -1;
@@ -586,8 +559,7 @@ public final class SpaceWeather {
     }
 
     /**
-     * How many rocks coming at her her cannon knocked far enough off to miss her since she was loaded; for the
-     * play-test.
+     * How many rocks coming at her flew on past without meeting her since she was loaded; for the play-test.
      */
     public int missed() {
         return missed;
@@ -605,11 +577,32 @@ public final class SpaceWeather {
             if (strike.flying() && strike.size > 0 && strike.at > now) {
                 Vec3 target = SableFlight.toWorld(level, strike.onHer);
                 Vec3 at = strike.position(target, now);
-                coming.add(new Coming(strike.id, at, strike.way.scale(strike.speed).add(strike.drift), strike.size, strike.at, strike.giant, target));
+                coming.add(new Coming(strike.id, at, strike.way.scale(strike.speed), strike.size, strike.at, strike.giant, target));
             }
         }
         coming.sort(Comparator.comparingLong(Coming::lands));
         return coming;
+    }
+
+    /**
+     * The rocks that are real bodies now, for the play-test: each one's number, where it is in the world and how fast
+     * it moves, how heavy it is, how big it is and whether it is coming at her; those coming at her first, then the
+     * heaviest.
+     */
+    public List<Real> realRocks(ServerLevel level) {
+        List<Real> real = new ArrayList<>();
+        for (int id : bodies.numbers()) {
+            Vec3 at = bodies.centre(level, id);
+            if (at != null) {
+                real.add(new Real(id, at, bodies.velocity(id), SableFlight.massOf(level, bodies.body(id)), bodies.size(id), id >= STRIKE_NUMBERS));
+            }
+        }
+        real.sort(Comparator.comparing(Real::coming, Comparator.reverseOrder()).thenComparing(Real::mass, Comparator.reverseOrder()));
+        return real;
+    }
+
+    /** A rock that is a real body, for the play-test (see {@link #realRocks}). */
+    public record Real(int id, Vec3 at, Vec3 velocity, double mass, double size, boolean coming) {
     }
 
     /** A rock coming at her, for the play-test (see {@link #coming}), how fast it moves too, in blocks a second. */
@@ -647,8 +640,8 @@ public final class SpaceWeather {
         }
         this.told = new SpaceWeatherShown(told, startedAt, WARNING_TICKS, told.stormTicks, seed, from, body.centre(), body.velocity(), false);
         rocks = RockField.of(this.told);
-        taken = new double[rocks.size()];
         burst.clear();
+        bodies = new RockBodies(new WeatherTold(level), startedAt);
         SpaceRocks.blowing(this);
         show(level, body, this.told);
         List<ServerPlayer> aboard = Aboard.players(autopilot);
@@ -682,7 +675,11 @@ public final class SpaceWeather {
             flare(level, autopilot, into);
             blackout(level, autopilot, into);
         }
+        if (kind.rocky()) {
+            rocksTick(level, autopilot, now);
+        }
         strikes.removeIf(strike -> strikeTick(level, autopilot, strike, now));
+        herLastVelocity = herVelocity(autopilot);
         boolean passed = into >= WARNING_TICKS + kind.stormTicks + LINGER_TICKS && strikes.isEmpty();
         boolean systemsBack = now >= blackoutEnds + ALL_CLEAR_AFTER_BLACKOUT;
         if (systemsBack && (height < FROM - LEFT_BY || passed)) {
@@ -691,8 +688,9 @@ public final class SpaceWeather {
     }
 
     /**
-     * A strike's tick: seen flying in so long before it lands, then landing, or missing her if it found no hull or was
-     * knocked far enough off its course, flying on past a while; done with once burst. Whether it is done with.
+     * A strike's tick: seen flying in so long before it lands, then landing, on the moment it should for one still only
+     * drawn, as a meteor always is; one a real body lands as it meets her, or gives up flying on past if it never does.
+     * Done with once burst. Whether it is done with.
      */
     private boolean strikeTick(ServerLevel level, AutopilotBlockEntity autopilot, Strike strike, long now) {
         if (strike.burst) {
@@ -702,12 +700,11 @@ public final class SpaceWeather {
             strike.aimed = true;
             aim(level, autopilot, strike, now);
         }
+        if (bodies.real(strike.id)) {
+            return realStrikeTick(level, autopilot, strike, now);
+        }
         if (now < strike.at) {
             return false;
-        }
-        if (strike.misses) {
-            missed += now == strike.at ? 1 : 0;
-            return now >= strike.at + FLIES_ON_TICKS;
         }
         if (strike.block != null) {
             land(level, autopilot, strike);
@@ -716,9 +713,88 @@ public final class SpaceWeather {
     }
 
     /**
+     * A real rock's strike: landing as it meets her, or given up on some time after it should have, having flown past.
+     */
+    private boolean realStrikeTick(ServerLevel level, AutopilotBlockEntity autopilot, Strike strike, long now) {
+        if (bodies.tookHer(strike.id)) {
+            land(level, autopilot, strike);
+            return true;
+        }
+        boolean flownPast = now >= strike.at + FLIES_ON_TICKS;
+        missed += flownPast ? 1 : 0;
+        return flownPast;
+    }
+
+    /**
+     * A tick of a bout's rocks: those that are bodies coasting on, and those near enough made bodies; the bodies coming
+     * at her kept on course.
+     */
+    private void rocksTick(ServerLevel level, AutopilotBlockEntity autopilot, long now) {
+        SableFlight.Body ship = SableFlight.body(autopilot);
+        if (ship == null) {
+            return;
+        }
+        bodies.tick(level, ship.bounds(), ship.centre(), now);
+        double since = now - startedAt;
+        Vec3 anchor = told.anchor(since);
+        for (RockField.Rock rock : rocks) {
+            streamingBy(level, ship, rock, anchor, since);
+        }
+        for (Strike strike : strikes) {
+            comingIn(level, ship, strike, now);
+        }
+    }
+
+    /** How much faster she is going than as of the last tick, in blocks a second: what meeting a real rock gave her. */
+    private double herSpeedGained(AutopilotBlockEntity autopilot) {
+        return herVelocity(autopilot).subtract(herLastVelocity).length();
+    }
+
+    /** How fast she is going now, in blocks a second; still for a ship no longer there. */
+    private static Vec3 herVelocity(AutopilotBlockEntity autopilot) {
+        SableFlight.Body ship = SableFlight.body(autopilot);
+        return ship == null ? Vec3.ZERO : ship.velocity();
+    }
+
+    /** How far she spreads from her middle, in blocks. */
+    private static double herReach(SableFlight.Body ship) {
+        return Math.max(ship.bounds().getXsize(), ship.bounds().getZsize()) / 2;
+    }
+
+    /** One of its rocks streaming past, made a body if near enough. */
+    private void streamingBy(ServerLevel level, SableFlight.Body ship, RockField.Rock rock, Vec3 anchor, double since) {
+        if (burst.get(rock.id()) || !rock.flying(since) || !bodies.wanted(rock.id(), rock.at(anchor, since), rock.speed(), ship.centre())) {
+            return;
+        }
+        RockShape.Look look = RockShape.look(rock.seed());
+        bodies.approach(level, ship.centre(), herReach(ship), new RockBodies.Flight(rock.id(), rock.seed(), rock.size(), rock.at(anchor, since),
+            rock.way().scale(rock.speed()).add(told.velocity()), look.turned(since / TICKS), look.spin()));
+    }
+
+    /**
+     * One coming at her: made a body if near enough, and if it is one, kept coming at the spot on her it should strike.
+     */
+    private void comingIn(ServerLevel level, SableFlight.Body ship, Strike strike, long now) {
+        if (!strike.flying() || strike.size <= 0) {
+            return;
+        }
+        Vec3 target = SableFlight.toWorld(level, strike.onHer);
+        if (bodies.real(strike.id)) {
+            bodies.aimAt(level, strike.id, target, strike.speed, ship.velocity());
+            return;
+        }
+        Vec3 at = strike.position(target, now);
+        if (bodies.wanted(strike.id, at, strike.speed, ship.centre())) {
+            RockShape.Look look = RockShape.look(strike.seed);
+            bodies.approach(level, ship.centre(), herReach(ship), new RockBodies.Flight(strike.id, strike.seed, strike.size, at, strike.way.scale(strike.speed).add(ship.velocity()),
+                look.turned((strike.at - now) / TICKS), look.spin()));
+        }
+    }
+
+    /**
      * Where a strike lands, worked out as it is first seen flying in: from the way the bout comes, give or take, at a
-     * spot across her hull, traced in until it meets one of her blocks; for a rock, how big it is and how tough, and
-     * how far off its course it must arrive to miss her; everyone near shown it flying in to there.
+     * spot across her hull, traced in until it meets one of her blocks; for a rock, how big it is; everyone near shown
+     * it flying in to there.
      */
     private void aim(ServerLevel level, AutopilotBlockEntity autopilot, Strike strike, long now) {
         SableFlight.Body body = SableFlight.body(autopilot);
@@ -738,21 +814,15 @@ public final class SpaceWeather {
         }
         strike.seed = seed ^ strike.at;
         strike.speed = strike.giant ? GIANT_SPEED : kind.speed;
-        strike.firstSpeed = strike.speed;
         double smallest = strike.giant ? GIANT_SMALLEST : kind.smallest;
         double biggest = strike.giant ? GIANT_BIGGEST : kind.biggest;
         strike.size = Mth.lerp(random.nextDouble(), smallest, biggest);
-        strike.toughness = Math.max(1, strike.size * TOUGHNESS);
-        strike.changed = now;
-        AABB box = body.bounds();
-        strike.missesFrom = MISSES_SHARE * Math.min(box.getXsize(), box.getZsize()) / 2 + strike.size / 2;
         show(level, body, incoming(strike));
     }
 
     /** What the clients are told of a strike flying in, as it is now. */
     private IncomingStrike incoming(Strike strike) {
-        return new IncomingStrike(kind, strike.id, strike.onHer, strike.way, strike.at, strike.seed, (float) strike.size, (float) strike.speed, strike.aside,
-            strike.drift, strike.changed, strike.misses);
+        return new IncomingStrike(kind, strike.id, strike.onHer, strike.way, strike.at, strike.seed, (float) strike.size, (float) strike.speed);
     }
 
     /**
@@ -780,22 +850,30 @@ public final class SpaceWeather {
     }
 
     /**
-     * A strike landing where it was aimed: she is shoved along its way and set turning there, as hard as the server's
-     * config says, less for a rock her cannon chipped, slowed or knocked off its course, and a giant never held back;
-     * it rings out, sparks and debris burst there among her blocks, and the view of everyone aboard is jolted, an
-     * asteroid's shaking it a while after. Everyone aboard as a rock lands is kept from coming to harm by it a while.
+     * A strike landing: it shoves her along its way and sets her turning there as hard as the server's config says, a
+     * rock that is a real body the less for what has been shot off it, and breaking up where it struck; a real giant
+     * makes up only what its own blow fell short of, for one that only glances her throws her less by itself, and it
+     * spins her besides; it rings out, sparks and debris burst there among her blocks, and the view of everyone aboard
+     * is jolted, an asteroid's shaking it a while after. Everyone aboard as a rock lands is kept from coming to harm by
+     * it a while.
      */
     private void land(ServerLevel level, AutopilotBlockEntity autopilot, Strike strike) {
         Vec3 inWorld = SableFlight.toWorld(level, strike.onHer);
         double mass = SableFlight.mass(autopilot);
         double heavy = mass > 0 ? Math.sqrt(REFERENCE_MASS / mass) : 1;
         double weight = strike.giant ? heavy : Mth.clamp(heavy, HEAVIEST_SHARE, LIGHTEST_SHARE);
-        double share = strike.share();
+        boolean real = bodies.real(strike.id);
+        double share = bodies.massShare(level, strike.id);
         double strength = SkylinersConfig.SPACE_WEATHER_STRENGTH.get() / FULL_STRENGTH * weight * share;
         double shove = strike.giant ? GIANT_SHOVE : kind.shove;
         double turn = strike.giant ? GIANT_TURN : kind.turn;
-        if (strength > 0) {
-            SableFlight.strike(level, strike.block, inWorld, strike.way.scale(shove * strength), Math.toRadians(turn * strength));
+        double given = real && strike.giant ? herSpeedGained(autopilot) : 0;
+        double shoveLeft = Math.max(0, shove * strength - given);
+        if (strength > 0 && shoveLeft > 0) {
+            SableFlight.strike(level, strike.block, inWorld, strike.way.scale(shoveLeft), Math.toRadians(turn * strength));
+        }
+        if (real) {
+            SpaceRocks.crater(level, bodies.body(strike.id), inWorld, strike.size * CRATER_AS_IT_LANDS);
         }
         if (strength > 0 && strike.giant) {
             SableFlight.spin(level, strike.block, giantSpin(strike.way, level.getRandom()).scale(strength));
@@ -895,8 +973,8 @@ public final class SpaceWeather {
     }
 
     /**
-     * The nearest of its rocks a shot from a point along a way of length 1 meets within so many blocks, streaming past
-     * or coming at her; none for none (see {@link SpaceRocks#along}).
+     * The nearest of its rocks a shot from a point along a way of length 1 meets within so many blocks, of those that
+     * are real bodies; none for none (see {@link SpaceRocks#along}).
      */
     @Nullable
     SpaceRocks.Hit along(ServerLevel level, Vec3 from, Vec3 unit, double reach) {
@@ -904,11 +982,8 @@ public final class SpaceWeather {
             return null;
         }
         SpaceRocks.Hit nearest = null;
-        for (RockField.Rock rock : rocks) {
-            nearest = nearer(level, rock.id(), from, unit, nearest == null ? reach : nearest.distance(), nearest);
-        }
-        for (Strike strike : strikes) {
-            nearest = nearer(level, strike.id, from, unit, nearest == null ? reach : nearest.distance(), nearest);
+        for (int id : bodies.numbers()) {
+            nearest = nearer(level, id, from, unit, nearest == null ? reach : nearest.distance(), nearest);
         }
         return nearest;
     }
@@ -924,36 +999,32 @@ public final class SpaceWeather {
         return met < 0 ? nearest : new SpaceRocks.Hit(this, id, from.add(unit.scale(met)), met);
     }
 
+    /** Whether any of its rocks is a real body now, in a level, for a shot to reach out to. */
+    boolean hasBodies(ServerLevel level) {
+        return autopilot != null && autopilot.getLevel() == level && bodies.count() > 0;
+    }
+
+    /** The bodies of its rocks and of the pieces they have shed. */
+    Set<UUID> bodies() {
+        return bodies.ids();
+    }
+
     /** Whether the ship it blew round is gone, unloaded while it blew, so its rocks are gone too. */
     boolean stale() {
         return autopilot == null || autopilot.isRemoved();
     }
 
-    /** Where the middle of one of its rocks is now, in the world, by its number; null once it is gone. */
+    /**
+     * Where the middle of one of its rocks is now, in the world, by its number, if it is a real body; null otherwise.
+     */
     @Nullable
     Vec3 rockCentre(ServerLevel level, int id) {
-        if (told == null) {
-            return null;
-        }
-        Strike strike = strike(id);
-        if (strike != null) {
-            return strike.flying() && strike.size > 0 ? strike.position(SableFlight.toWorld(level, strike.onHer), level.getGameTime()) : null;
-        }
-        if (id < 0 || id >= rocks.size() || burst.get(id)) {
-            return null;
-        }
-        double since = level.getGameTime() - startedAt;
-        RockField.Rock rock = rocks.get(id);
-        return rock.flying(since) ? rock.at(told.anchor(since), since) : null;
+        return told == null ? null : bodies.centre(level, id);
     }
 
-    /** How big one of its rocks is, by its number, in blocks across; none for none. */
+    /** How big one of its rocks that is a real body is, by its number, in blocks across; none for none. */
     double rockSize(int id) {
-        Strike strike = strike(id);
-        if (strike != null) {
-            return strike.size;
-        }
-        return id >= 0 && id < rocks.size() ? rocks.get(id).size() : 0;
+        return bodies.size(id);
     }
 
     @Nullable
@@ -966,86 +1037,46 @@ public final class SpaceWeather {
         return null;
     }
 
-    /**
-     * One of its rocks struck by a shot where it met it, travelling along a way of length 1, with so many bolts' worth
-     * of force: chips and sparks fly off it, seen far off; one coming at her is knocked off its course away from where
-     * it was struck and slowed, everyone shown its new course; and one struck often enough bursts to pieces, everyone
-     * shown so once.
-     */
-    void shot(ServerLevel level, int id, Vec3 at, Vec3 way, double force) {
-        chips(level, at, way);
+    /** The body of one of its rocks, by its number; none for none. */
+    @Nullable
+    UUID rockBody(int id) {
+        return bodies.body(id);
+    }
+
+    /** How big a rock's body is, in blocks across, by the body's id; none if it is not one of its. */
+    double sizeOf(@Nullable UUID rock) {
+        for (int id : bodies.numbers()) {
+            if (rock != null && rock.equals(bodies.body(id))) {
+                return bodies.size(id);
+            }
+        }
+        return 0;
+    }
+
+    /** A shot at a rock's body, travelling along a way, for it to go where it is knocked. */
+    void shotAt(UUID rock, Vec3 way) {
+        bodies.shot(rock, way);
+    }
+
+    /** One of its rocks shot through: done with, all that is left of it bursting where it was. */
+    private void wornThrough(ServerLevel level, int id, Vec3 at, Vec3 way) {
         Strike strike = strike(id);
         if (strike != null) {
-            knock(level, strike, at, way, force);
-            return;
-        }
-        Vec3 middle = rockCentre(level, id);
-        if (middle == null) {
-            return;
-        }
-        taken[id] += force;
-        if (taken[id] >= Math.max(1, rocks.get(id).size() * TOUGHNESS)) {
-            burst.set(id);
-            bursts(level, id, middle, way);
-        }
-    }
-
-    /**
-     * A rock coming at her struck: chipped, slowed and knocked aside, away from where the shot met it across its way,
-     * by a share of how fast it comes as big as the share of it the shot takes; burst to pieces once it has taken all
-     * it can; and everyone near shown its new course, which may now miss her. One already flying on past her, having
-     * missed, is only chipped: its course is behind it.
-     */
-    private void knock(ServerLevel level, Strike strike, Vec3 at, Vec3 way, double force) {
-        long now = level.getGameTime();
-        if (!strike.flying() || strike.size <= 0) {
-            return;
-        }
-        Vec3 middle = strike.position(SableFlight.toWorld(level, strike.onHer), now);
-        strike.taken += force;
-        if (strike.taken >= strike.toughness) {
             strike.burst = true;
-            bursts(level, strike.id, middle, way);
-            return;
+        } else if (id >= 0 && id < rocks.size()) {
+            burst.set(id);
         }
-        if (now >= strike.at) {
-            return;
-        }
-        double share = force / strike.toughness;
-        double still = strike.speed * (strike.at - now) / TICKS;
-        strike.aside = strike.aside.add(strike.drift.scale((now - strike.changed) / TICKS));
-        strike.drift = strike.drift.add(knockedAway(strike.way, at.subtract(middle), way).scale(KNOCKED_ASIDE * share * strike.firstSpeed));
-        strike.speed = Math.max(strike.firstSpeed * SLOWEST_SHARE, strike.speed - SLOWED * share * strike.firstSpeed);
-        strike.at = now + Math.max(1, (long) Math.ceil(still / strike.speed * TICKS));
-        strike.changed = now;
-        strike.misses = strike.offAtArrival() >= strike.missesFrom;
-        SableFlight.Body body = autopilot == null ? null : SableFlight.body(autopilot);
-        if (body != null) {
-            show(level, body, incoming(strike));
-        }
+        bursts(level, id, at, way);
     }
 
-    /**
-     * The way a rock going along a way of length 1 is knocked across it by a shot travelling along another that met it
-     * so far off its middle: away from the side it was struck on; along the shot, across the rock's way, where it was
-     * struck dead in the middle; to one side where the shot came straight at it as well. Of length 1.
-     */
-    private static Vec3 knockedAway(Vec3 going, Vec3 off, Vec3 shot) {
-        Vec3 struckSide = off.subtract(going.scale(off.dot(going)));
-        if (struckSide.lengthSqr() > Mth.EPSILON) {
-            return struckSide.normalize().reverse();
-        }
-        Vec3 shotAcross = shot.subtract(going.scale(shot.dot(going)));
-        return shotAcross.lengthSqr() > Mth.EPSILON ? shotAcross.normalize() : new Vec3(-going.z, 0, going.x).normalize();
-    }
-
-    /** Sparks and chips of stone flying off a rock where a shot met it, back along the shot, seen far off. */
-    private static void chips(ServerLevel level, Vec3 at, Vec3 way) {
+    /** Sparks and chips of its own stone flying off a rock where a shot met it, back along the shot, seen far off. */
+    static void chips(ServerLevel level, Vec3 at, Vec3 way, BlockState stone) {
         Vec3 back = at.subtract(way.scale(CHIPS_BACK));
+        ParticleOptions chip = new BlockParticleOption(ParticleTypes.BLOCK, stone);
         for (ServerPlayer player : level.players()) {
             if (player.position().distanceTo(at) <= CHIPS_SEEN) {
                 particles(level, player, ParticleTypes.ELECTRIC_SPARK, back, CHIP_SPARKS, CHIPS_SPREAD, SPARK_SPEED);
-                particles(level, player, STONE_CHIP, back, CHIP_STONES, CHIPS_SPREAD, SPARK_SPEED);
+                particles(level, player, chip, back, CHIP_STONES, CHIPS_SPREAD, SPARK_SPEED);
             }
         }
     }
@@ -1128,6 +1159,7 @@ public final class SpaceWeather {
         if (allClear) {
             say(level, Aboard.players(autopilot), autopilot.says(SkylinersRegistry.ANNOUNCEMENT_ALL_CLEAR), SoundSource.VOICE);
         }
+        bodies.clear(level);
         kind = null;
         told = null;
         rocks = List.of();
@@ -1144,6 +1176,39 @@ public final class SpaceWeather {
     public static Vec3 toward(float bearing) {
         double turned = Math.toRadians(bearing);
         return new Vec3(-Math.sin(turned), 0, Math.cos(turned));
+    }
+
+    /** Nothing told, for the time before any weather blows. */
+    private static final class NothingTold implements RockBodies.Told {
+        @Override
+        public void real(RockReal told) {
+        }
+
+        @Override
+        public void wornThrough(ServerLevel level, int id, Vec3 at, Vec3 way) {
+        }
+    }
+
+    /** What its rocks' bodies have to say, passed on. */
+    private final class WeatherTold implements RockBodies.Told {
+        private final ServerLevel level;
+
+        WeatherTold(ServerLevel level) {
+            this.level = level;
+        }
+
+        @Override
+        public void real(RockReal told) {
+            SableFlight.Body body = autopilot == null ? null : SableFlight.body(autopilot);
+            if (body != null) {
+                show(level, body, told);
+            }
+        }
+
+        @Override
+        public void wornThrough(ServerLevel level, int id, Vec3 at, Vec3 way) {
+            SpaceWeather.this.wornThrough(level, id, at, way);
+        }
     }
 
     /** Sends a step of the weather to everyone within {@link #SHOWN_WITHIN} of her, aboard or not. */

@@ -1,0 +1,13 @@
+{
+  "loader": "skyliners:shell",
+  "render_type": "minecraft:solid",
+  "tint_index": 0,
+  "always_lit": true,
+  "textures": {
+    "skin": "skyliners:block/space_rock_magma_0",
+    "skin1": "skyliners:block/space_rock_magma_1",
+    "skin2": "skyliners:block/space_rock_magma_2",
+    "skin3": "skyliners:block/space_rock_magma_3",
+    "particle": "skyliners:block/space_rock_magma_0"
+  }
+}

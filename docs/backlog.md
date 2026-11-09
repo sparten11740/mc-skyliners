@@ -27,6 +27,13 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   held over five, mostly forest, hills and rivers. Her search reaches 200 blocks and her legs take gentle slopes, but
   trees and water under a disc 60 blocks across still turn her away, and a ramp may not reach uneven ground.
 
+## Space rocks
+
+- A giant asteroid (up to 47,000 blocks) cannot be shot down in time: one bolt breaks one block and a rocket a hole a
+  few blocks wide, so it still strikes her. A rock shot at is knocked aside only by what Sable makes of the shot.
+- Sable logs "Received a sub-level movement packet for a non-existent sub-level" on a client each time a body is
+  taken out while it moves. It is harmless, but noisy during a storm.
+
 ## Not yet checked
 
 - By ear: the greenhouse's and the pool's sounds (measured and heard playing in game, but nobody has judged them by

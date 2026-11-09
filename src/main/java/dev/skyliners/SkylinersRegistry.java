@@ -273,6 +273,7 @@ import dev.skyliners.block.SelfDestructButtonBlockEntity;
 import dev.skyliners.block.ShaftDecorBlock;
 import dev.skyliners.block.ShelfUnitBlock;
 import dev.skyliners.block.ShellBlock;
+import dev.skyliners.block.SpaceRockBlock;
 import dev.skyliners.block.SignalFlareBlock;
 import dev.skyliners.block.SignalFlareBlockEntity;
 import dev.skyliners.block.SlideControlBlock;
@@ -490,6 +491,8 @@ public final class SkylinersRegistry {
     /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see AirframeBlueprintItem). */
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
+    /** How much light a magma rock's stone gives off, its cracks glowing. */
+    private static final int MAGMA_ROCK_LIGHT = 7;
     private static final float ROCKET_MODEL_MIDDLE = 8;
     private static final float FREIGHTER_MODEL_MIDDLE = 7;
 
@@ -834,6 +837,13 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<ShellBlock> AIRFRAME_SHELL = BLOCKS.registerBlock(
         "airframe_shell", properties -> new ShellBlock(properties, SkylinersRegistry.AIRFRAME_PANEL), metal(MapColor.SNOW)
     );
+    /**
+     * What the rocks of space weather are made of, cut to their lumps as the hull is to her curve; and a rock of dark
+     * stone with magma glowing through its cracks. Only space weather places them, so they have no items, and they drop
+     * nothing.
+     */
+    public static final DeferredBlock<SpaceRockBlock> SPACE_ROCK = BLOCKS.registerBlock("space_rock", SpaceRockBlock::new, spaceRock(0));
+    public static final DeferredBlock<SpaceRockBlock> SPACE_ROCK_MAGMA = BLOCKS.registerBlock("space_rock_magma", SpaceRockBlock::new, spaceRock(MAGMA_ROCK_LIGHT));
     /** A cabin window cut to the hull's curve, where the fuselage's side curves; placed only by the blueprints too. */
     public static final DeferredBlock<CabinWindowShellBlock> CABIN_WINDOW_SHELL = BLOCKS.registerBlock(
         "cabin_window_shell", properties -> new CabinWindowShellBlock(properties, SkylinersRegistry.CABIN_WINDOW), glass()
@@ -3619,6 +3629,11 @@ public final class SkylinersRegistry {
         .build());
 
     private SkylinersRegistry() {
+    }
+
+    /** A space rock's stone: as hard as stone, dropping nothing, and giving off so much light. */
+    private static BlockBehaviour.Properties spaceRock(int light) {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE).noLootTable().lightLevel(state -> light);
     }
 
     /**

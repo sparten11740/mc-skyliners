@@ -8,6 +8,7 @@ import dev.skyliners.block.RampDeckBlock;
 import dev.skyliners.block.RampPlateBlock;
 import dev.skyliners.block.RoverPlatformBlock;
 import dev.skyliners.block.SlideStepBlock;
+import dev.skyliners.block.SpaceRockBlock;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
@@ -27,6 +28,7 @@ import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
+import dev.ryanhcode.sable.companion.math.Pose3d;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.LivingEntityMovementExtension;
@@ -36,11 +38,14 @@ import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
+import dev.ryanhcode.sable.sublevel.plot.ServerLevelPlot;
 import dev.ryanhcode.sable.sublevel.system.SubLevelPhysicsSystem;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -53,13 +58,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Unit;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -185,6 +193,96 @@ public final class SableFlight {
      */
     public static boolean sameAirliner(BlockEntity one, BlockEntity other) {
         return SABLE && one.getLevel() != null && one.getLevel() == other.getLevel() && Access.sameAirliner(one, other);
+    }
+
+    /** A rock of space weather being laid into a body of its own, some blocks at a time (see {@link #makeRock}). */
+    public interface RockMaking {
+        /** Its body's id. */
+        UUID id();
+
+        /** Lays at most so many more of its blocks; how many it laid. */
+        int lay(int most);
+
+        /** Whether all its blocks are laid. */
+        boolean laid();
+
+        /**
+         * All laid, sets it flying with its middle at a point in the world, turned so, at a speed, in blocks a second,
+         * and turning, in radians a second; its id, or none if nothing came of it.
+         */
+        @Nullable
+        UUID release(Vec3 at, Quaterniond turned, Vec3 velocity, Vec3 spin);
+    }
+
+    /**
+     * Starts a rock of space weather as a flying body of its own, made in space with no blocks placed in the world
+     * first, which could not hold them up there: its blocks round its middle, given in its own frame. Without Sable,
+     * none.
+     */
+    @Nullable
+    public static RockMaking makeRock(ServerLevel level, Vec3 at, Map<BlockPos, BlockState> blocks) {
+        return SABLE ? Access.makeRock(level, at, blocks) : null;
+    }
+
+    /** A flying rock held up against Sable's gravity for a tick, as nothing pulls it down there; whether it is yet. */
+    public static boolean holdUpRock(ServerLevel level, UUID rock) {
+        return SABLE && Access.holdUpRock(level, rock);
+    }
+
+    /** Where a flying rock's middle is, in the world; null once it is gone. */
+    @Nullable
+    public static Vec3 rockCentre(ServerLevel level, UUID rock) {
+        return SABLE ? Access.rockCentre(level, rock) : null;
+    }
+
+    /** How fast a flying rock moves, in blocks a second; still once it is gone. */
+    public static Vec3 rockVelocity(ServerLevel level, UUID rock) {
+        return SABLE ? Access.rockVelocity(level, rock) : Vec3.ZERO;
+    }
+
+    /** Sets a flying rock moving at a speed, in blocks a second. */
+    public static void setRockVelocity(ServerLevel level, UUID rock, Vec3 velocity) {
+        if (SABLE) {
+            Access.setRockVelocity(level, rock, velocity);
+        }
+    }
+
+    /** Where a point in the world lies among a flying rock's blocks; the point itself once it is gone. */
+    public static Vec3 toRock(ServerLevel level, UUID rock, Vec3 point) {
+        return SABLE ? Access.toRock(level, rock, point) : point;
+    }
+
+    /** Takes a flying rock out of the world for good, keeping nothing of it in the save. */
+    public static void removeRock(ServerLevel level, UUID rock) {
+        if (SABLE) {
+            Access.removeRock(level, rock);
+        }
+    }
+
+    /**
+     * The pieces of flying rocks a level holds, not yet taken up: bodies of nothing but space rock with no mark on
+     * them, neither known already nor found before to be anything else. Sable forgets what it split a body from almost
+     * at once, so a piece is known by what it is made of, and what is found to be no piece is noted in the set of
+     * those.
+     */
+    public static List<UUID> rockPieces(ServerLevel level, Set<UUID> known, Set<UUID> notRock) {
+        return SABLE ? Access.rockPieces(level, known, notRock) : List.of();
+    }
+
+    /**
+     * Marks a body as a rock of space weather and keeps it loaded, so it is never stored and is found if it ever is.
+     */
+    public static void markRock(ServerLevel level, UUID rock) {
+        if (SABLE) {
+            Access.markRock(level, rock);
+        }
+    }
+
+    /** Takes out every rock in a level but those still flown by weather, left behind by a crash or an unloaded ship. */
+    public static void sweepRocks(ServerLevel level, Set<UUID> flown) {
+        if (SABLE) {
+            Access.sweepRocks(level, flown);
+        }
     }
 
     /**
@@ -746,6 +844,227 @@ public final class SableFlight {
         static boolean sameAirliner(BlockEntity one, BlockEntity other) {
             SubLevel airliner = Sable.HELPER.getContaining(one);
             return airliner != null && airliner == Sable.HELPER.getContaining(other);
+        }
+
+        /** What marks a body as a rock of space weather in its saved data. */
+        private static final String ROCK_MARK = "skyliners_rock";
+
+        /** {@link SableFlight#makeRock}: a new body made where the rock is, its blocks laid straight into its plot. */
+        static RockMaking makeRock(ServerLevel level, Vec3 at, Map<BlockPos, BlockState> blocks) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
+            if (bodies == null) {
+                return null;
+            }
+            Pose3d pose = new Pose3d();
+            pose.position().set(at.x, at.y, at.z);
+            ServerSubLevel rock = (ServerSubLevel) bodies.allocateNewSubLevel(pose);
+            markRock(level, rock.getUniqueId());
+            return new Laying(level, bodies, rock, new ArrayList<>(blocks.entrySet()));
+        }
+
+        /** A rock being laid into its body. */
+        private static final class Laying implements RockMaking {
+            private final ServerLevel level;
+            private final ServerSubLevelContainer bodies;
+            private final ServerSubLevel rock;
+            private final List<Map.Entry<BlockPos, BlockState>> blocks;
+            private final BlockPos middle;
+            private int laid;
+
+            Laying(ServerLevel level, ServerSubLevelContainer bodies, ServerSubLevel rock, List<Map.Entry<BlockPos, BlockState>> blocks) {
+                this.level = level;
+                this.bodies = bodies;
+                this.rock = rock;
+                this.blocks = blocks;
+                this.middle = rock.getPlot().getCenterBlock();
+                makeRoom();
+            }
+
+            /** Opens every chunk of its plot that its blocks fall in. */
+            private void makeRoom() {
+                ServerLevelPlot plot = rock.getPlot();
+                plot.newEmptyChunk(plot.getCenterChunk());
+                for (Map.Entry<BlockPos, BlockState> block : blocks) {
+                    ChunkPos chunk = new ChunkPos(middle.offset(block.getKey()));
+                    if (plot.getChunkHolder(plot.toLocal(chunk)) == null) {
+                        plot.newEmptyChunk(chunk);
+                    }
+                }
+            }
+
+            @Override
+            public UUID id() {
+                return rock.getUniqueId();
+            }
+
+            @Override
+            public int lay(int most) {
+                int from = laid;
+                int until = Math.min(blocks.size(), laid + most);
+                for (; laid < until; laid++) {
+                    Map.Entry<BlockPos, BlockState> block = blocks.get(laid);
+                    level.setBlock(middle.offset(block.getKey()), block.getValue(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                }
+                return laid - from;
+            }
+
+            @Override
+            public boolean laid() {
+                return laid >= blocks.size();
+            }
+
+            /**
+             * Its point of turning, its centre of mass, goes where it falls with the rock's middle at the point given;
+             * Sable told to put it there, with the speed and spin it flies with.
+             */
+            @Override
+            public UUID release(Vec3 at, Quaterniond turned, Vec3 velocity, Vec3 spin) {
+                if (rock.isRemoved()) {
+                    return null;
+                }
+                rock.getPlot().updateBoundingBox();
+                if (rock.getMassTracker().isInvalid()) {
+                    bodies.removeSubLevel(rock, SubLevelRemovalReason.REMOVED);
+                    return null;
+                }
+                Vector3dc mass = rock.getMassTracker().getCenterOfMass();
+                Vector3d off = turned.transform(new Vector3d(mass.x() - middle.getX(), mass.y() - middle.getY(), mass.z() - middle.getZ()));
+                Pose3d pose = rock.logicalPose();
+                pose.orientation().set(turned);
+                pose.rotationPoint().set(mass.x(), mass.y(), mass.z());
+                pose.position().set(at.x + off.x, at.y + off.y, at.z + off.z);
+                bodies.physicsSystem().getPipeline().teleport(rock, pose.position(), pose.orientation());
+                rock.updateLastPose();
+                RigidBodyHandle.of(rock).addLinearAndAngularVelocity(new Vector3d(velocity.x, velocity.y, velocity.z), new Vector3d(spin.x, spin.y, spin.z));
+                return rock.getUniqueId();
+            }
+        }
+
+        @Nullable
+        private static ServerSubLevel rock(ServerLevel level, UUID id) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
+            return bodies != null && bodies.getSubLevel(id) instanceof ServerSubLevel rock && !rock.isRemoved() ? rock : null;
+        }
+
+        static boolean holdUpRock(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock == null) {
+                return false;
+            }
+            Vector3dc at = rock.logicalPose().position();
+            double lift = gravity(level, new Vec3(at.x(), at.y(), at.z())) / 20;
+            RigidBodyHandle.of(rock).addLinearAndAngularVelocity(new Vector3d(0, lift, 0), new Vector3d());
+            return true;
+        }
+
+        @Nullable
+        static Vec3 rockCentre(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock == null) {
+                return null;
+            }
+            Vector3dc at = rock.logicalPose().position();
+            return new Vec3(at.x(), at.y(), at.z());
+        }
+
+        static Vec3 rockVelocity(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock == null) {
+                return Vec3.ZERO;
+            }
+            Vector3d speed = RigidBodyHandle.of(rock).getLinearVelocity(new Vector3d());
+            return new Vec3(speed.x, speed.y, speed.z);
+        }
+
+        static void setRockVelocity(ServerLevel level, UUID id, Vec3 velocity) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock != null) {
+                RigidBodyHandle handle = RigidBodyHandle.of(rock);
+                Vector3d change = new Vector3d(velocity.x, velocity.y, velocity.z).sub(handle.getLinearVelocity(new Vector3d()));
+                handle.addLinearAndAngularVelocity(change, new Vector3d());
+            }
+        }
+
+        static Vec3 toRock(ServerLevel level, UUID id, Vec3 point) {
+            ServerSubLevel rock = rock(level, id);
+            return rock == null ? point : rock.logicalPose().transformPositionInverse(point);
+        }
+
+        static void removeRock(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock != null) {
+                SubLevelContainer.getContainer(level).removeSubLevel(rock, SubLevelRemovalReason.REMOVED);
+            }
+        }
+
+        static List<UUID> rockPieces(ServerLevel level, Set<UUID> known, Set<UUID> notRock) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
+            List<UUID> pieces = new ArrayList<>();
+            if (bodies == null) {
+                return pieces;
+            }
+            for (ServerSubLevel body : bodies.getAllSubLevels()) {
+                UUID id = body.getUniqueId();
+                if (!known.contains(id) && !notRock.contains(id) && !marked(body)) {
+                    sortOut(level, body, pieces, notRock);
+                }
+            }
+            return pieces;
+        }
+
+        /** One unmarked body sorted, by what it is made of: a piece of rock, or not; with no blocks yet, neither. */
+        private static void sortOut(ServerLevel level, ServerSubLevel body, List<UUID> pieces, Set<UUID> notRock) {
+            Boolean rock = madeOfRock(level, body);
+            if (Boolean.TRUE.equals(rock)) {
+                pieces.add(body.getUniqueId());
+            } else if (rock != null) {
+                notRock.add(body.getUniqueId());
+            }
+        }
+
+        private static boolean marked(ServerSubLevel body) {
+            CompoundTag mark = body.getUserDataTag();
+            return mark != null && mark.getBoolean(ROCK_MARK);
+        }
+
+        /** Whether a body's first block is space rock, which only a rock's are; null for a body with no blocks yet. */
+        @Nullable
+        private static Boolean madeOfRock(ServerLevel level, ServerSubLevel body) {
+            BoundingBox3ic box = body.getPlot().getBoundingBox();
+            if (box == BoundingBox3i.EMPTY) {
+                return null;
+            }
+            for (BlockPos at : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+                BlockState state = level.getBlockState(at);
+                if (!state.isAir()) {
+                    return state.getBlock() instanceof SpaceRockBlock;
+                }
+            }
+            return null;
+        }
+
+        /** The mark is kept with the body, and the ticket keeps it loaded however far out of sight it flies. */
+        static void markRock(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock == null) {
+                return;
+            }
+            CompoundTag mark = new CompoundTag();
+            mark.putBoolean(ROCK_MARK, true);
+            rock.setUserDataTag(mark);
+            SubLevelContainer.getContainer(level).addForceLoadTicket(rock, KEPT, Unit.INSTANCE);
+        }
+
+        static void sweepRocks(ServerLevel level, Set<UUID> flown) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
+            if (bodies == null) {
+                return;
+            }
+            for (ServerSubLevel body : List.copyOf(bodies.getAllSubLevels())) {
+                if (!flown.contains(body.getUniqueId()) && (marked(body) || Boolean.TRUE.equals(madeOfRock(level, body)))) {
+                    bodies.removeSubLevel(body, SubLevelRemovalReason.REMOVED);
+                }
+            }
         }
 
         static boolean remove(BlockEntity blockEntity) {

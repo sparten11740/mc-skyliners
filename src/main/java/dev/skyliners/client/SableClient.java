@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -332,6 +334,14 @@ public final class SableClient {
      * the world to its blocks, use {@link SableClient#toPlot}.
      */
     public record Placing(Matrix4d transform, Quaterniond turn) {
+    }
+
+    /**
+     * Where a flying body's middle is on this client, in the world, by its id; null while this client has none of it.
+     */
+    @Nullable
+    static Vec3 bodyCentre(UUID body) {
+        return SABLE ? Access.bodyCentre(body) : null;
     }
 
     /**
@@ -666,6 +676,17 @@ public final class SableClient {
             public Vec3 among(double x, double y, double z) {
                 return pose.transformPositionInverse(new Vec3(x, y, z));
             }
+        }
+
+        @Nullable
+        static Vec3 bodyCentre(UUID id) {
+            ClientLevel level = Minecraft.getInstance().level;
+            ClientSubLevelContainer bodies = level == null ? null : SubLevelContainer.getContainer(level);
+            if (bodies == null || !(bodies.getSubLevel(id) instanceof ClientSubLevel body) || body.isRemoved()) {
+                return null;
+            }
+            Vector3dc at = body.logicalPose().position();
+            return new Vec3(at.x(), at.y(), at.z());
         }
 
         @Nullable

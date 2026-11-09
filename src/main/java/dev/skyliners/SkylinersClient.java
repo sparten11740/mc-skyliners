@@ -131,6 +131,7 @@ import dev.skyliners.client.SearchlightBeams;
 import dev.skyliners.client.SelfDestructButtonRenderer;
 import dev.skyliners.client.SelfDestructWarning;
 import dev.skyliners.client.ShellModel;
+import dev.skyliners.client.SpaceRockTint;
 import dev.skyliners.client.ShipWeather;
 import dev.skyliners.client.ShipsColoursRenderer;
 import dev.skyliners.client.ShipsPlaqueRenderer;
@@ -307,6 +308,8 @@ public final class SkylinersClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(ZeppelinPaint::tint,
             SkylinersRegistry.ZEPPELIN_COVER.get(), SkylinersRegistry.ZEPPELIN_FABRIC.get(), SkylinersRegistry.ROCKET_LINED_COVER.get(),
             SkylinersRegistry.ROCKET_LINING_PANEL.get(), SkylinersRegistry.CANOPY_FRAME.get(), SkylinersRegistry.FREIGHTER_COVER.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(SpaceRockTint::tint, SkylinersRegistry.SPACE_ROCK.get(),
+            SkylinersRegistry.SPACE_ROCK_MAGMA.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(OvalWindowWall::tint,
             SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get(), SkylinersRegistry.PORTHOLE.get(),
             SkylinersRegistry.FLAT_PORTHOLE.get()));

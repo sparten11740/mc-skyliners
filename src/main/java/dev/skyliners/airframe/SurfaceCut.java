@@ -9,12 +9,12 @@ import dev.skyliners.block.ShellGeometry;
  * the block's middle. A hull gives its surface as the depth of a point under it and the way out of it there, in blocks
  * in its layout's own frame.
  */
-final class SurfaceCut {
+public final class SurfaceCut {
     private SurfaceCut() {
     }
 
     /** A hull's surface, in blocks in its layout's frame. */
-    interface Surface {
+    public interface Surface {
         /** How far a point lies outside the surface, in blocks, negative inside. */
         double depth(double x, double y, double z);
 
@@ -27,7 +27,7 @@ final class SurfaceCut {
      * wholly inside or outside it. Its corners (corner {@code x + 2y + 4z} of the block, as {@link ShellGeometry} counts
      * them) lie inside, on or outside the surface; a block with all of them inside is the hull's open space.
      */
-    static int shape(Surface surface, double x0, double y0, double z0) {
+    public static int shape(Surface surface, double x0, double y0, double z0) {
         int[] corners = new int[8];
         boolean within = false;
         boolean inside = true;

@@ -1474,6 +1474,26 @@ for (const [name, skin, renderType, part, singlePane, tinted] of [
   });
   cubes[name] = null;
 }
+// The stone of space weather's rocks, cut to their lumps by the same "shell" loader: four skins each, one picked for
+// each block and turned any of four ways, so a rock's stone never repeats; tinted by its kind of stone (see
+// SpaceRockTint). Only space weather places them, and they drop nothing.
+for (const name of ["space_rock", "space_rock_magma"]) {
+  write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
+  write(`assets/${ID}/models/block/${name}.json`, {
+    loader: `${ID}:shell`,
+    render_type: "minecraft:solid",
+    tint_index: 0,
+    always_lit: true,
+    textures: {
+      skin: `${ID}:block/${name}_0`,
+      skin1: `${ID}:block/${name}_1`,
+      skin2: `${ID}:block/${name}_2`,
+      skin3: `${ID}:block/${name}_3`,
+      particle: `${ID}:block/${name}_0`,
+    },
+  });
+  cubes[name] = null;
+}
 // The struts of the freighter's first smooth canopies, her cover cut to her curve: nothing drawn, her canopy's lining
 // drawing her whole canopy and its ribs inside and out (see CanopyLiningRenderer); it gives back fabric.
 write(`assets/${ID}/blockstates/canopy_frame.json`, { variants: { "": { model: `${ID}:block/canopy_frame` } } });
@@ -11658,7 +11678,7 @@ write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gy
 const GROUND = ["launch_pad_grate", "launch_pad_hub", "landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "floor_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
+const FITTINGS = ["space_rock", "space_rock_magma", "light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "floor_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "model_zeppelin", "model_rocket", "model_freighter", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
@@ -12079,6 +12099,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.airstair_controller": "Airstair Controller",
   "block.skyliners.airstair_call_button": "Airstair Call Button",
   "block.skyliners.airframe_shell": "Airframe Shell",
+  "block.skyliners.space_rock": "Space Rock",
+  "block.skyliners.space_rock_magma": "Magma Space Rock",
   "block.skyliners.cockpit_glass": "Cockpit Glass",
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",

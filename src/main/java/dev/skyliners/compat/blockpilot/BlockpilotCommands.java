@@ -243,9 +243,17 @@ public final class BlockpilotCommands {
             .field("from", "the side of the sky the weather blowing comes out of, as a bearing in degrees as the game turns a look")
             .field("landed", "how many strikes have landed on her since she was loaded")
             .field("last_landed", "the game tick the last strike landed on her, -1 before any")
-            .field("last_share", "how much of a whole strike the last to land landed, from 1 for a rock never shot at down")
+            .field("last_share", "how much of its rock was left of the last to land on her, as a share")
             .field("shot_down", "how many rocks a laser cannon has burst since she was loaded")
-            .field("missed", "how many rocks coming at her a laser cannon knocked off course to miss her since she was loaded")
+            .field("missed", "how many rocks coming at her flew on past without meeting her since she was loaded")
+            .field("real", "how many rocks are real bodies of blocks now")
+            .field("tick", "the game time of this report")
+            .field("real_id", "the first of those, one coming at her if any, the heaviest otherwise: its number among the weather's rocks")
+            .field("real_at", "where it is, in the world, x,y,z")
+            .field("real_vel", "how fast it moves, in blocks a second, x,y,z")
+            .field("real_mass", "how heavy it is, in Sable's units, a quarter for each of its blocks")
+            .field("real_size", "how big it is, in blocks across")
+            .field("real_coming", "whether it is coming at her to strike her")
             .field("coming", "how many rocks are flying in to strike her now")
             .field("rock_at", "where the first rock flying in to strike her is, in the world, x,y,z")
             .field("rock_vel", "how fast that rock moves, in blocks a second, x,y,z")
@@ -393,6 +401,14 @@ public final class BlockpilotCommands {
         fields.tag("blowing", weather.blowingNamed()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
             .tag("last_landed", weather.lastLanded()).tag("last_share", round(weather.lastShare())).tag("shot_down", weather.shotDown())
             .tag("missed", weather.missed()).tag("coming", coming.size());
+        List<SpaceWeather.Real> real = weather.realRocks(player.serverLevel());
+        fields.tag("real", real.size()).tag("tick", player.serverLevel().getGameTime());
+        if (!real.isEmpty()) {
+            SpaceWeather.Real first = real.getFirst();
+            fields.tag("real_id", first.id()).tag("real_at", round(first.at().x) + "," + round(first.at().y) + "," + round(first.at().z))
+                .tag("real_vel", round(first.velocity().x) + "," + round(first.velocity().y) + "," + round(first.velocity().z))
+                .tag("real_mass", round(first.mass())).tag("real_size", round(first.size())).tag("real_coming", first.coming());
+        }
         if (!coming.isEmpty()) {
             SpaceWeather.Coming first = coming.getFirst();
             fields.tag("rock_at", round(first.at().x) + "," + round(first.at().y) + "," + round(first.at().z))

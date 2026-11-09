@@ -43,6 +43,8 @@
   "block.skyliners.airstair_controller": "Airstair Controller",
   "block.skyliners.airstair_call_button": "Airstair Call Button",
   "block.skyliners.airframe_shell": "Airframe Shell",
+  "block.skyliners.space_rock": "Space Rock",
+  "block.skyliners.space_rock_magma": "Magma Space Rock",
   "block.skyliners.cockpit_glass": "Cockpit Glass",
   "block.skyliners.hull_glass": "Hull Glass",
   "block.skyliners.smoked_glass": "Smoked Glass",

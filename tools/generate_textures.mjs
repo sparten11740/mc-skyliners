@@ -6756,6 +6756,47 @@ domeSkyTexture();
 orreryGlowTexture();
 orrerySheetTexture();
 
+// The stone of space weather's rocks: four skins of each kind, every one its own mottling, cracks and pits, wrapping at
+// its edges so neighbouring blocks run on into each other; the plain stone pale, for its tint to colour, and the magma
+// dark with glowing cracks.
+function spaceRockTextures() {
+  const SIDE = 32;
+  const wrap = (value, period) => ((value % period) + period) % period;
+  const ease = (t) => t * t * (3 - 2 * t);
+  const mix = (a, b, t) => a + (b - a) * t;
+  const tiled = (x, y, period, salt) => {
+    const u = (x / SIDE) * period, v = (y / SIDE) * period;
+    const ui = Math.floor(u), vi = Math.floor(v);
+    const at = (du, dv) => latticeValue(wrap(ui + du, period), wrap(vi + dv, period), salt);
+    return mix(mix(at(0, 0), at(1, 0), ease(u - ui)), mix(at(0, 1), at(1, 1), ease(u - ui)), ease(v - vi));
+  };
+  const stone = (salt) => (x, y) => {
+    const warpX = x + (tiled(x, y, 4, salt + 1) - 0.5) * 7;
+    const warpY = y + (tiled(x, y, 4, salt + 2) - 0.5) * 7;
+    const mottled = tiled(x, y, 3, salt + 3) * 0.55 + tiled(x, y, 7, salt + 4) * 0.3 + tiled(x, y, 16, salt + 5) * 0.15;
+    const crack = Math.abs(tiled(warpX, warpY, 5, salt + 6) * 2 - 1);
+    const pit = tiled(x, y, 16, salt + 7);
+    return { mottled, crack, pit };
+  };
+  for (let variant = 0; variant < 4; variant++) {
+    const look = stone(100 + variant * 10);
+    texture(blockOutput, `space_rock_${variant}`, (x, y) => {
+      const { mottled, crack, pit } = look(x, y);
+      const dark = (crack < 0.07 ? 62 : crack < 0.13 ? 30 : 0) + (pit > 0.8 ? 42 : 0);
+      const value = 150 + mottled * 110 - dark;
+      return [value + 3, value, value - 3];
+    }, 5, SIDE, SIDE);
+    const magma = stone(200 + variant * 10);
+    texture(blockOutput, `space_rock_magma_${variant}`, (x, y) => {
+      const { mottled, crack, pit } = magma(x, y);
+      if (crack < 0.04) return [255, 170 + (1 - crack / 0.04) * 60, 60];
+      if (crack < 0.09) return [214, 84, 22];
+      const value = 34 + mottled * 44 - (pit > 0.8 ? 14 : 0);
+      return [value + 4, value, value - 2];
+    }, 3, SIDE, SIDE);
+  }
+}
+
 // Smooth noise over the sky, for the planetarium's clouds and mottling: value noise on a lattice in three dimensions,
 // so a pattern sampled round a sphere has no seam, and its sum over a few octaves.
 function latticeValue(x, y, z) {
@@ -10280,4 +10321,5 @@ function bowlingTextures() {
   }, 2);
 }
 bowlingTextures();
+spaceRockTextures();
 console.log("Textures written to", blockOutput, "and", itemOutput);
