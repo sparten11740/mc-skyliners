@@ -19,6 +19,8 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 ## The freighter
 
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
+- Now and then she comes to rest leaning some 2.6 degrees beside a stone built where she stood (`freighter-pad`: twice
+  in twelve runs, both on the pad 1236,-158, which other runs landed on level). Not looked into.
 
 ## Not yet checked
 
