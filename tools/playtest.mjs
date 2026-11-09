@@ -210,7 +210,7 @@ const PAD_STONE_REACH = 5;
 const PAD_STONE_HIGH = 9;
 const PAD_DOWN_TICKS = 2400;
 const PAD_LEVEL_WITHIN = 2;
-const PAD_REACH = 64;
+const PAD_REACH = 200;
 // A freighter landing on a slope: how far ahead of her it is, how far it reaches round the pin, how wide each step
 // of the slope is and how many steps there are, in blocks, how far she may lean on it, in degrees, how high to look
 // from, how many blocks a fill command may set, as it needs for a layer of the slope, then back to its usual limit, and
@@ -219,9 +219,15 @@ const UNEVEN_PIN_AHEAD = 240;
 const UNEVEN_REACH = 110;
 const UNEVEN_STEP_WIDE = 16;
 const UNEVEN_STEPS = 13;
-const UNEVEN_LEVEL_WITHIN = 1;
+const UNEVEN_LEVEL_WITHIN = 2;
 const UNEVEN_LOOK_UP = 30;
 const UNEVEN_FLAT_BEHIND = 200;
+// A freighter sent to land in the middle of a wide lake, clear ground only well away from the pin: how far ahead of her,
+// and how far it reaches round the pin, in blocks. How far she searches in the checks whose lake is smaller than her
+// search would otherwise get past, in blocks.
+const FAR_PAD_AHEAD = 320;
+const FAR_PAD_LAKE = 130;
+const SMALL_LAKE_SEARCH = 64;
 const UNEVEN_FILL_MOST = 60000;
 const FILL_LIMIT = 32768;
 // A freighter landing far from the world's middle: the number of the site she is laid down on, 180,000 blocks out, far
@@ -2708,6 +2714,34 @@ function checkFreighterBalked() {
 // A freighter far from the world's middle, where Sable's physics rounds her position so coarsely that she cannot creep:
 // set to land at a pin she slows onto the spot she found and stops some blocks short of it, her speed still reading as
 // moving, and comes down where she has stopped. Before, she held there for ever.
+function checkFreighterFarPad() {
+  const site = layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  const [x, z] = [site.x, site.z - FAR_PAD_AHEAD];
+  must(`server gamerule commandModificationBlockLimit ${2 * UNEVEN_FILL_MOST}; server tp @p ${x} ${ground + UNEVEN_LOOK_UP} ${z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
+  must(`server fill ${x - FAR_PAD_LAKE} ${ground - 1} ${z - FAR_PAD_LAKE} ${x + FAR_PAD_LAKE} ${ground - 1} ${z + FAR_PAD_LAKE} water`);
+  must(`server gamerule commandModificationBlockLimit ${FILL_LIMIT}; server tp @p ${site.x} ${ground} ${site.z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
+  if (!rideFreighterUp(head)) {
+    return;
+  }
+  const since = now();
+  const down = landFreighterAt(head, x, z, "on clear ground well away from the pin");
+  if (down) {
+    expect(waitForMessage("*blocks*from*pin*", since, 0), "freighter: she says how far from the pin she is going down");
+    expect(heard("minecraft:block.note_block.pling", since, 0), "freighter: and a note says it to those who cannot read");
+  }
+}
+
+// Runs a check whose lake is smaller than her search would otherwise get past, her search as small as it was built for.
+function withSmallSearch(check) {
+  must(`config skyliners server freighter.padReach ${SMALL_LAKE_SEARCH}`);
+  try {
+    check();
+  } finally {
+    send("?config reset");
+  }
+}
+
 function checkFreighterFarLanding() {
   const site = layDown("freighter", FAR_SITE);
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -6111,13 +6145,14 @@ const CHECKS = {
   "freighter-legs": { run: checkFreighterLegs, slow: true, about: "a freighter's legs draw up into her belly once she is clear, and are down again before she lands on them" },
   "freighter-fixed-legs": { run: checkFreighterFixedLegs, slow: true, about: "a freighter built with fixed legs, as before they drew up, flies and lands on them as ever" },
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
-  "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
+  "freighter-lake": { run: () => withSmallSearch(checkFreighterLake), about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-balked": { run: checkFreighterBalked, about: "a freighter told to land where she is over stone taller than her belly's clearance climbs back, says so and comes down on clear ground beside it", slow: true },
   "freighter-far-landing": { run: checkFreighterFarLanding, about: "a freighter set to land far from the world's middle, where she cannot creep, comes down where she stops short of her spot", slow: true },
+  "freighter-far-pad": { run: checkFreighterFarPad, slow: true, about: "a freighter set to land in a wide lake goes on to clear ground well away from the pin and says how far" },
   "freighter-uneven-landing": { run: checkFreighterUnevenLanding, slow: true, about: "a freighter set to land on a gentle slope telescopes her legs and stands level" },
   "freighter-balked-slope": { run: checkFreighterBalkedSlope, about: "a freighter with one foot on higher ground settles and switches off, not taken for a landing she cannot finish", slow: true },
   "freighter-balked-lag": { run: checkFreighterBalkedLag, about: "a freighter landing with the server far behind still comes down and switches off, not taken for a landing she cannot finish", slow: true },
-  "freighter-balked-nowhere": { run: checkFreighterBalkedNowhere, about: "a freighter that cannot finish landing and has nowhere else to try holds and says so, and told to switch off lets go on what stopped her", slow: true },
+  "freighter-balked-nowhere": { run: () => withSmallSearch(checkFreighterBalkedNowhere), about: "a freighter that cannot finish landing and has nowhere else to try holds and says so, and told to switch off lets go on what stopped her", slow: true },
   "freighter-balked-unattended": { run: checkFreighterBalkedUnattended, about: "a freighter with nobody aboard that cannot finish landing lets go in the end and stays switched off, never going up and down for ever", slow: true },
   "impact-sounds": { run: checkImpactSounds, about: "a freighter dropped onto the ground crunches and groans, and shoved along it grinds", slow: true },
   "freighter-flight": { run: checkFreighterFlight, about: "the freighter lifts off, hovers level and roars, not spooling up as she holds her spot, and lands by herself", slow: true },

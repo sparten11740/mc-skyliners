@@ -114,6 +114,11 @@ final class GroundSurvey {
         }
     }
 
+    /** How many chunks' ground has been read so far, for telling whether any more has come in. */
+    int read() {
+        return patches.size();
+    }
+
     /** Whether a chunk is one to read: within the survey's radius of the pin, and not read yet. */
     private boolean wanted(long chunk) {
         long dx = ChunkPos.getX(chunk) - ChunkPos.getX(pinChunk);

@@ -1,5 +1,6 @@
 package dev.skyliners.autopilot;
 
+import dev.skyliners.SkylinersConfig;
 import dev.skyliners.airframe.FreighterLayout;
 import dev.skyliners.block.LegBayBlockEntity;
 import java.util.ArrayList;
@@ -10,18 +11,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Where the freighter comes down near a pin she is set to land at: the nearest spot to it, within {@link #REACH},
+ * Where the freighter comes down near a pin she is set to land at: the nearest spot to it, within {@link #reach},
  * where her five legs' feet all stand on dry, bare ground, level within {@link #LEVEL}, and nothing under the rest of
  * her reaches up to her hull, as far as the ground round the pin is known (see {@link GroundSurvey}). She looks as she
  * comes, from the pin outward, a few spots a tick, her hull turned the way she points as each round of spots begins; a
  * spot over ground not read yet is looked at again on the next round. Once she slides onto the spot found, pointing as
  * she will come down, it is looked at once more that way (see {@link #verify}), and if her prongs would now reach over
  * something she looks on that way. Having looked at every spot with all their ground read and found none, she has
- * none (see {@link #exhausted}): she holds over the pin rather than come down on whatever stands there.
+ * none (see {@link #exhausted}): she holds over the pin rather than come down on whatever stands there. Spots whose
+ * ground never loads, past where the world round her is loaded, do not keep her looking for ever: a round in which no
+ * more ground came in counts as all of it read.
  */
 public final class PadSearch {
-    /** How far from the pin she may come down, in blocks, and how far apart the spots she tries are. */
-    static final int REACH = 64;
+    /** How far apart the spots she tries are, in blocks. */
     private static final int STEP = 4;
     /**
      * How much higher one of her feet's ground may be than another's, in blocks: a block less than her legs telescope,
@@ -31,11 +33,18 @@ public final class PadSearch {
     private static final int LEVEL = LegBayBlockEntity.MOST_REACH - 1;
     private static final int PLATE_LEVEL = 1;
     /**
+     * Ground that does not load counts as all there is: how near the pin she must be for that, in blocks, and after how
+     * many rounds in a row with no more ground come in, so a slow chunk is not taken for one that never comes.
+     */
+    private static final double NEAR_PIN = 32;
+    private static final int ROUNDS_UNCHANGED = 2;
+    /**
      * How far apart the columns under her hull are looked at, in blocks: every one, as a block just under her rim is
-     * enough to tip her; and how many spots are tried each tick, a spot she fits taking some 4,000 columns' looks.
+     * enough to tip her; and how many spots are tried each tick: most fall at her feet, and a spot she fits takes some
+     * 4,000 columns' looks.
      */
     private static final int SAMPLE = 1;
-    private static final int PER_TICK = 4;
+    private static final int PER_TICK = 8;
     /**
      * How far either side of the way she holds she is looked at swinging, in degrees: her jets hold her heading only
      * within a few degrees, and her prongs' tips, over fifty blocks ahead, swing a block for every degree.
@@ -63,8 +72,18 @@ public final class PadSearch {
     /** The spots to try round the pin, nearest first, as offsets from it, and the next to try. */
     private final List<int[]> spots = new ArrayList<>();
     private int next;
+    /** How far from the pin the spots were worked out to reach, in blocks; none yet. */
+    private int spotsReach = -1;
     /** Whether a spot tried this round stood over ground not read yet, so another round may find it. */
     private boolean unread;
+    /**
+     * How much ground had been read as this round began, so ground that never loads does not keep her looking, once
+     * she is over the pin (see {@link #NEAR_PIN}) and all that will load round it has.
+     */
+    private int readAtRound;
+    private boolean overPin;
+    /** How many rounds in a row no more ground has come in. */
+    private int roundsUnchanged;
     /** The pin looked round; none, so the next look starts afresh. */
     private int pinX = Integer.MIN_VALUE;
     private int pinZ = Integer.MIN_VALUE;
@@ -80,15 +99,27 @@ public final class PadSearch {
     /** The spots she gave up landing on this flight (see {@link #refuse}). */
     private final List<Pad> refused = new ArrayList<>();
 
-    PadSearch() {
-        for (int dx = -REACH; dx <= REACH; dx += STEP) {
-            for (int dz = -REACH; dz <= REACH; dz += STEP) {
-                if (dx * dx + dz * dz <= REACH * REACH) {
-                    spots.add(new int[]{dx, dz});
-                }
-            }
+    /** The spots to try, worked out afresh for how far the server's config has her search reach now. */
+    private void readySpots() {
+        int reach = reach();
+        if (reach == spotsReach) {
+            return;
+        }
+        spotsReach = reach;
+        spots.clear();
+        for (int dx = -reach; dx <= reach; dx += STEP) {
+            addRow(dx, reach);
         }
         spots.sort(Comparator.comparingInt(spot -> spot[0] * spot[0] + spot[1] * spot[1]));
+    }
+
+    /** The spots in one row of them, so far across from the pin, within her reach. */
+    private void addRow(int dx, int reach) {
+        for (int dz = -reach; dz <= reach; dz += STEP) {
+            if (dx * dx + dz * dz <= reach * reach) {
+                spots.add(new int[]{dx, dz});
+            }
+        }
     }
 
     /** Forgets what was found and the ground read, for a new flight: the ground may have changed since. */
@@ -122,6 +153,7 @@ public final class PadSearch {
         if (x != pinX || z != pinZ) {
             restart(x, z, pointing);
         }
+        overPin = Math.hypot(middle.x - x, middle.z - z) < NEAR_PIN;
         ground.tick(level, middle);
         for (int tried = 0; tried < PER_TICK && found == null && !exhausted; tried++) {
             tryNext(pointing);
@@ -186,14 +218,22 @@ public final class PadSearch {
         return headingFixed;
     }
 
+    /** How far from the pin she may come down, in blocks, as the server's config has it now. */
+    int reach() {
+        return SkylinersConfig.FREIGHTER_PAD_REACH.get();
+    }
+
     /** Whether she has looked at every spot with all their ground read and found none. */
     boolean exhausted() {
         return exhausted;
     }
 
     private void restart(int x, int z, double pointing) {
+        readySpots();
         pinX = x;
         pinZ = z;
+        readAtRound = -1;
+        roundsUnchanged = 0;
         ground.aim(x, z);
         next = 0;
         unread = false;
@@ -210,7 +250,9 @@ public final class PadSearch {
      */
     private void tryNext(double pointing) {
         if (next >= spots.size()) {
-            exhausted = !unread;
+            roundsUnchanged = ground.read() == readAtRound ? roundsUnchanged + 1 : 0;
+            exhausted = !unread || overPin && roundsUnchanged >= ROUNDS_UNCHANGED;
+            readAtRound = ground.read();
             next = 0;
             unread = false;
             heading = headingFixed ? heading : pointing;

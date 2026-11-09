@@ -882,6 +882,20 @@ public final class FreighterPilot {
         return landingAtPin(orders) && pads.exhausted();
     }
 
+    /** How far from the pin she may come down, in blocks. */
+    int padReach() {
+        return pads.reach();
+    }
+
+    /**
+     * How far from the pin she is set to land at the spot she will come down on stands, in whole blocks; 0 with no spot
+     * looked at again yet, or not landing at a pin.
+     */
+    int padFromPin(Orders orders) {
+        PadSearch.Pad pad = landingAtPin(orders) && pads.verified() ? pads.pad() : null;
+        return pad == null ? 0 : (int) Math.round(Math.hypot(pad.x() - orders.pinX(), pad.z() - orders.pinZ()));
+    }
+
     /**
      * Where she flies to, at a height: the middle of the spot she found to come down on, set to land at a pin and
      * having found one, or else the pin itself.

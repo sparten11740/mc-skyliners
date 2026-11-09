@@ -75,6 +75,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_ENGINE_GLOW;
     public static final ModConfigSpec.BooleanValue FREIGHTER_EVERY_PLUME;
     public static final ModConfigSpec.BooleanValue FREIGHTER_NOZZLE_RIMS;
+    public static final ModConfigSpec.IntValue FREIGHTER_PAD_REACH;
     public static final ModConfigSpec.BooleanValue FREIGHTER_GALLERY;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_BLASTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_TURRET_THROWS_PLAYERS;
@@ -737,6 +738,12 @@ public final class SkylinersConfig {
                 "as many as she lifts off and lands. A freighter already flying takes it up once she is next loaded."
             )
             .define("everyPlume", false);
+        FREIGHTER_PAD_REACH = builder
+            .comment(
+                "How far from a pin the freighter looks for clear ground to come down on, in blocks. She can only look",
+                "as far as the world round her is loaded, so past the server's view distance more does nothing."
+            )
+            .defineInRange("padReach", 200, 32, 256);
         FREIGHTER_NOZZLE_RIMS = builder
             .comment(
                 "Whether the freighter's main engines show a nozzle standing out of her stern, a steel bell with a bright lip,",

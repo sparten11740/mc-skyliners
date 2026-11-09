@@ -29,8 +29,8 @@ flies on thrusters that need no fuel, and she is as much a ship to explore as on
 - **The tractor beam.** Press the pad in the cargo hold and a green beam lifts whoever stands below up into her.
 - **Running repairs.** She breaks down now and then in flight. Find the sparking panel or leaking pipe and whack it
   with the spanner.
-- **Landing.** Drop a pin and she picks clear ground near it and comes down by herself. Her legs telescope to stand her
-  level on a gentle slope; forest, water and steep ground turn her away, and she says so.
+- **Landing.** Drop a pin and she picks clear ground near it, as far as 200 blocks off, and comes down by herself. Her
+  legs telescope to stand her level on a gentle slope; forest, water and steep ground turn her away, and she says so.
 - **Stickers.** Each new kind of land she touches down on earns a sticker on the map in her entry hall.
 - **Secrets.** The long tunnel down her starboard prong is a bowling lane, and a brass rivet in the wall at its end
   opens a smugglers' hold.

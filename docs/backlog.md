@@ -23,9 +23,9 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 ## The freighter
 
 - Create Propulsion's plasma plumes on her mains, big pale balls, hide much of her engine grille at full thrust.
-- On natural ground she still needs a clearing: at four pins in a default world (seed 12345) she came down at one, on
-  plains, and held over three, in snowy forest and rivers. Her legs telescope for slopes, but trees and water under a
-  disc 60 blocks across still turn her away.
+- On natural ground she still needs a clearing: at seven pins in a default world (seed 12345) she came down at two and
+  held over five, mostly forest, hills and rivers. Her search reaches 200 blocks and her legs take gentle slopes, but
+  trees and water under a disc 60 blocks across still turn her away, and a ramp may not reach uneven ground.
 
 ## Not yet checked
 

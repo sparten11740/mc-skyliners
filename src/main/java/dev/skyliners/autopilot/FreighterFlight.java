@@ -43,6 +43,8 @@ import net.minecraft.world.phys.Vec3;
  * client's FreighterRoar), and where her disc's middle is among her blocks goes with her, for them to place it.
  */
 public final class FreighterFlight extends StandingFlight {
+    /** How far from her pin a spot she will come down on stands before she says so, in blocks. */
+    private static final int FAR_PAD = 80;
     /** Engaged on the ground she rises this far above it, in blocks. */
     private static final int CLIMB = 40;
     /** Engaged on the ground she cruises at this speed, in blocks a second. */
@@ -128,6 +130,8 @@ public final class FreighterFlight extends StandingFlight {
      * clients are shown it, her autopilot's screen dimming its landing picture by it.
      */
     private boolean noGround;
+    /** Whether she has said how far from the pin she comes down, on this landing (see {@link #sayFarPad}). */
+    private boolean padSaid;
     /** What she does about a landing she cannot finish. */
     private final BalkedLanding balked = new BalkedLanding();
     /** Her engine grille glowing with her engines, and which of her thrusters trail their plumes. */
@@ -729,6 +733,7 @@ public final class FreighterFlight extends StandingFlight {
                 autopilot.advance(next, AutopilotBlockEntity.Phase.DESCENT);
             }
             noGroundNow = pilot.noGroundAtPin(orders);
+            sayFarPad(level, autopilot, pilot.padFromPin(orders));
         }
         sayNoGround(level, autopilot, noGroundNow);
         slam.tick(level, autopilot, flight, pilot.middle(flight), radio, pilot.wiring().clusters(), pilot.wiring().feet(),
@@ -759,6 +764,25 @@ public final class FreighterFlight extends StandingFlight {
     }
 
     /**
+     * Set to land at a pin and having found clear ground well away from it, she says how far once to everyone aboard, a
+     * high note saying it to those who cannot read; a spot near the pin goes without saying.
+     */
+    private void sayFarPad(ServerLevel level, AutopilotBlockEntity autopilot, int fromPin) {
+        if (fromPin < FAR_PAD) {
+            padSaid = false;
+            return;
+        }
+        if (padSaid) {
+            return;
+        }
+        padSaid = true;
+        Component words = Component.translatable("message.skyliners.autopilot.far_pad_freighter", fromPin);
+        Aboard.players(autopilot).forEach(player -> player.displayClientMessage(words, false));
+        level.playSound(null, autopilot.getBlockPos(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS,
+            AutopilotBlockEntity.NOTE_VOLUME, AutopilotBlockEntity.NOTE_HIGH);
+    }
+
+    /**
      * Set to land at a pin with no clear, level ground round it, she says so once to everyone aboard as she holds over
      * it, the sky's lowest note saying it to those who cannot read: set another pin, or land her where she is. The
      * clients are told of it as it starts and as it ends, her autopilot's screen dimming its landing picture meanwhile.
@@ -771,7 +795,7 @@ public final class FreighterFlight extends StandingFlight {
         autopilot.changed();
         if (noGround) {
             BalkedLanding.sayAboard(autopilot, SkylinersRegistry.FREIGHTER_COMPUTER_HOLDING,
-                Component.translatable("message.skyliners.autopilot.no_ground_freighter"));
+                Component.translatable("message.skyliners.autopilot.no_ground_freighter", pilot.padReach()));
             level.playSound(null, autopilot.getBlockPos(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS,
                 AutopilotBlockEntity.NOTE_VOLUME, AutopilotBlockEntity.NOTE_LOW);
         }
