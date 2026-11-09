@@ -6035,7 +6035,9 @@ function closeGame() {
   }
 }
 
-// A check that throws has failed, but the others still run; only losing the game itself ends it all.
+// A check that throws has failed, but the others still run; only losing the game itself ends it all. A player left dead
+// would fail every check after it for nothing, with nothing to say why: that is said once, here, and they are brought
+// back.
 function runCheck(name) {
   try {
     CHECKS[name].run();
@@ -6045,6 +6047,12 @@ function runCheck(name) {
     }
     expect(false, `${name} could not finish`, error.message);
     send("?server gamemode creative @p");
+  }
+  const [status] = send("?status");
+  if (status?.hp === 0) {
+    expect(false, `${name}: the player is left dead`, `at ${status.pos?.map(round).join(",")}`);
+    send("?respawn; wait 40t");
+    send("?server gamemode creative @p; fly on");
   }
 }
 
