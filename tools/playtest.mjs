@@ -2371,7 +2371,8 @@ function checkLaserCrossbow() {
 // Fires the laser crossbow in hand by a script ending in its use, and looks at its bolt as the player sees it: drawn
 // leaving the crossbow's muzzle in front of them, not where the server had them, and flying out as a short bolt rather
 // than a ray from the muzzle; fired where it flies its whole range, it is still shown a moment later, not gone in a
-// blink. Fired where it soon strikes something, as aboard a ship, it rightly vanishes as it gets there.
+// blink. Fired where it soon strikes something, as aboard a ship, it rightly vanishes as it gets there, having no
+// length left by the time it is looked at; a ray from the muzzle would still be far too long.
 function seesItsBolt(what, fire, aimed = "", fliesItsRange = false) {
   const before = must("skyliners:bolts").received ?? 0;
   const bolt = must(`${fire}; wait ${BOLT_LOOKED_FOR_TICKS}t; skyliners:bolts`);
@@ -2380,7 +2381,7 @@ function seesItsBolt(what, fire, aimed = "", fliesItsRange = false) {
   expect(bolt.received > before && bolt.from_muzzle === true && ahead > 0 && fromEye <= BOLT_NEAR_EYE,
     `${what}, its bolt is drawn leaving the crossbow's muzzle in front of the player`,
     `${bolt.received - before} sent, from the muzzle ${bolt.from_muzzle}, from the eye ${right}, ${up}, ${ahead}${aimed ? `, ${aimed}` : ""}`);
-  expect(bolt.flown >= BOLT_FLOWN_LEAST && bolt.streak > 0 && bolt.streak <= BOLT_LONGEST,
+  expect(bolt.flown >= BOLT_FLOWN_LEAST && (bolt.streak > 0 || !fliesItsRange) && bolt.streak <= BOLT_LONGEST,
     `${what}, its bolt flies out as a short bolt, not a ray from the muzzle`, `its tail ${bolt.flown} blocks out, ${bolt.streak} blocks long`);
   if (fliesItsRange) {
     const later = must(`wait ${BOLT_LATER_TICKS}t; skyliners:bolts`);
