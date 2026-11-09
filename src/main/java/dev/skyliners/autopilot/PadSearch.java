@@ -149,6 +149,18 @@ public final class PadSearch {
     }
 
     /**
+     * She has stopped short of the spot found and gets no nearer (see {@link FreighterPilot}): if she fits with her
+     * middle over the column she has stopped over, pointing as she will come down, that is her spot now. Says if so.
+     */
+    boolean settleAt(int x, int z) {
+        if (!verified() || fits(x, z) != Fit.YES) {
+            return false;
+        }
+        found = new Pad(x, z);
+        return true;
+    }
+
+    /**
      * The way she pointed as the spot found was looked at again, as Minecraft yaw: the way she must keep pointing to
      * come down on it, her prongs reaching far ahead over ground looked at only that way.
      */

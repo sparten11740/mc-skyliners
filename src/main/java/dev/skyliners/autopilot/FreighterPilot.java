@@ -191,6 +191,24 @@ public final class FreighterPilot {
     private static final int OVER_TICKS = 40;
     private static final double BRAKING = 1.0;
     /**
+     * Stopped short of a spot: how far across she may stray and still count as stopped, in blocks, and how long she
+     * tries before seeing whether she fits where she is, in ticks. Far from the world's middle Sable's physics rounds
+     * her position so coarsely that she cannot creep: at x 111,600 told to go two blocks a second she went 0.3 blocks
+     * in ten seconds, her speed reading two all the while, and told to go three she went at nearly six. Slowing onto a
+     * spot out there she stops some blocks short of it and would hold for ever.
+     */
+    private static final double STOPPED_DRIFT = 1;
+    private static final int STOPPED_TICKS = 100;
+    /**
+     * So she is told a speed that moves her: how long she stops before that, in ticks; no nearer the spot than this, in
+     * blocks, where she may be waiting to come down; how fast that speed grows, in blocks a second each second; and how
+     * fast it gets at most, in blocks a second.
+     */
+    private static final int NUDGE_AFTER = 40;
+    private static final double NUDGE_NEARER_THAN = 1.5;
+    private static final double NUDGE_RATE = 2;
+    private static final double NUDGE_MOST = 12;
+    /**
      * Coming down: how high over the ground she sinks fast to, in blocks, before she comes the rest of the way at her
      * landing speed, in blocks a second; how near the ground counts as touching, in blocks; and how long her lift runs
      * down once she touches and how long she rests still before switching off, in ticks.
@@ -400,6 +418,10 @@ public final class FreighterPilot {
     private int overFor;
     private int touchingFor;
     private int settled;
+    /** How long she has hardly moved across, in ticks, and where she was as that began (see {@link #stoppedShort}). */
+    private int stoppedFor;
+    @Nullable
+    private Vec3 stoppedAt;
     /** Her tilt and heading the tick before, to tell how fast each changes. */
     private Tilt lastTilt = Tilt.LEVEL;
     private double lastHeading;
@@ -496,6 +518,7 @@ public final class FreighterPilot {
     private void startCounting() {
         spooled = 0;
         overFor = 0;
+        stoppedFor = 0;
         touchingFor = 0;
         settled = 0;
     }
@@ -515,6 +538,7 @@ public final class FreighterPilot {
     void balked(Vec3 middle) {
         pads.refuse(Mth.floor(middle.x), Mth.floor(middle.z));
         overFor = 0;
+        stoppedFor = 0;
         touchingFor = 0;
         settled = 0;
     }
@@ -629,7 +653,7 @@ public final class FreighterPilot {
         boolean holding = phase == AutopilotBlockEntity.Phase.TAKEOFF || phase == AutopilotBlockEntity.Phase.DESCENT
             || phase == AutopilotBlockEntity.Phase.LAND || orders.climbBoost();
         if (holding && spot != null) {
-            return toward(state, middle, spot, spotHeading, MOST_SETTLING);
+            return toward(state, middle, spot, spotHeading, MOST_SETTLING, 0);
         }
         return switch (orders.lateral()) {
             case HEADING -> new Course(orders.speed(), 0, orders.heading());
@@ -652,7 +676,8 @@ public final class FreighterPilot {
         boolean fixed = orders.landAtPin() && (pads.verified() || pads.headingFixed());
         if (distance < SLIDE || fixed) {
             double holding = fixed ? pads.heading() : state.heading();
-            return toward(state, middle, pin, holding, Math.min(orders.speed(), Math.sqrt(2 * BRAKING * distance)));
+            double fastest = Math.min(orders.speed(), Math.sqrt(2 * BRAKING * distance));
+            return toward(state, middle, pin, holding, fastest, nudge(distance));
         }
         double bearing = Steering.bearingTo(middle, pin.x, pin.z);
         double pointing = Math.max(0, Math.cos(Math.toRadians(Mth.wrapDegrees(bearing - state.heading()))));
@@ -661,15 +686,27 @@ public final class FreighterPilot {
     }
 
     /**
-     * Toward a spot: the speed ahead and across that closes on it, eased in as she nears it and never more than so
-     * fast, holding the heading given.
+     * How fast at least she is told to go, stopped short of the spot she slides onto (see {@link #stoppedShort}): more
+     * each second she stays stopped, until she is told a speed that moves her; none yet, or once she is nearly there.
      */
-    private static Course toward(SableFlight.State state, Vec3 middle, Vec3 spot, double heading, double fastest) {
+    private double nudge(double distance) {
+        if (distance < NUDGE_NEARER_THAN || stoppedFor <= NUDGE_AFTER) {
+            return 0;
+        }
+        return Math.min(NUDGE_MOST, (stoppedFor - NUDGE_AFTER) * NUDGE_RATE / SharedConstants.TICKS_PER_SECOND);
+    }
+
+    /**
+     * Toward a spot: the speed ahead and across that closes on it, eased in as she nears it, never more than so fast
+     * nor less than so fast, holding the heading given.
+     */
+    private static Course toward(SableFlight.State state, Vec3 middle, Vec3 spot, double heading, double fastest,
+                                 double least) {
         Vec3 off = new Vec3(spot.x - middle.x, 0, spot.z - middle.z);
         Vec3 wanted = off.scale(POSITION_GAIN);
         double speed = wanted.length();
-        if (speed > fastest) {
-            wanted = wanted.scale(fastest / speed);
+        if (speed > 0) {
+            wanted = wanted.scale(Math.max(least, Math.min(fastest, speed)) / speed);
         }
         Vec3 front = flat(state.nose());
         Vec3 right = flat(state.right());
@@ -768,7 +805,8 @@ public final class FreighterPilot {
         return switch (phase) {
             case TAKEOFF -> radio > CLEAR ? AutopilotBlockEntity.Phase.CLIMB : phase;
             case CLIMB -> Math.abs(orders.altitude() - state.position().y) < AT_HEIGHT ? AutopilotBlockEntity.Phase.CRUISE : phase;
-            case CRUISE -> arrived(orders, going, middle) && orders.landAtPin() ? comeDownAtPin(orders) : phase;
+            case CRUISE -> arrived(orders, going, middle) && orders.landAtPin() || stoppedShort(orders, middle)
+                ? comeDownAtPin(orders) : phase;
             case DESCENT -> radio <= PAD_HOVER + 1 && orders.legsDown() ? AutopilotBlockEntity.Phase.LAND : phase;
             default -> phase;
         };
@@ -792,6 +830,26 @@ public final class FreighterPilot {
             && Math.hypot(target.x - middle.x, target.z - middle.z) < OVER && Math.hypot(going.x, going.z) < STILL;
         overFor = over ? overFor + 1 : 0;
         return overFor >= OVER_TICKS;
+    }
+
+    /**
+     * Whether, sliding onto the spot she found, she has stopped short of it (see {@link #STOPPED_DRIFT}), told a speed
+     * that should move her (see {@link #nudge}) and still not moved, and fits where she has stopped: she comes down
+     * there.
+     */
+    private boolean stoppedShort(Orders orders, Vec3 middle) {
+        boolean moved = stoppedAt == null || Math.hypot(middle.x - stoppedAt.x, middle.z - stoppedAt.z) > STOPPED_DRIFT;
+        if (moved || !landingAtPin(orders) || !pads.verified()) {
+            stoppedAt = middle;
+            stoppedFor = 0;
+            return false;
+        }
+        stoppedFor++;
+        if (stoppedFor % STOPPED_TICKS != 0 || !pads.settleAt(Mth.floor(middle.x), Mth.floor(middle.z))) {
+            return false;
+        }
+        lastPad = pads.pad();
+        return true;
     }
 
     /**
@@ -997,6 +1055,7 @@ public final class FreighterPilot {
         pads.reset();
         lastPad = null;
         overFor = 0;
+        stoppedFor = 0;
     }
 
     /** Where her disc's middle is in the world, from where her control head is and the way she points. */

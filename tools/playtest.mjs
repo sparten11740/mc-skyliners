@@ -209,6 +209,9 @@ const PAD_STONE_HIGH = 9;
 const PAD_DOWN_TICKS = 2400;
 const PAD_LEVEL_WITHIN = 2;
 const PAD_REACH = 64;
+// A freighter landing far from the world's middle: the number of the site she is laid down on, 180,000 blocks out, far
+// past the sites the other checks reach, where Sable's physics rounds her position so that she cannot creep.
+const FAR_SITE = 150;
 // A freighter set to land at a pin in a lake: how far round the pin the water reaches, past where she may come down,
 // in blocks; how long she is given to say she finds no ground, in ticks; and how near the pin she must hold, in blocks.
 const LAKE_REACH = 70;
@@ -1020,8 +1023,8 @@ function standToBuild(x, z, yaw = 180) {
 }
 
 // Lays a ship down on a site of its own, the player facing north, and gives its stairs time to come down.
-function layDown(what) {
-  const site = { x: nextSite++ * SITE_APART, z: 0, what };
+function layDown(what, number = nextSite++) {
+  const site = { x: number * SITE_APART, z: 0, what };
   creative();
   standToBuild(site.x, site.z);
   must(`skyliners:build ${what}`, BUILD_SECONDS);
@@ -2606,6 +2609,17 @@ function checkFreighterBalked() {
   const [mx, mz] = String(down.middle).split(",").map(Number);
   const away = Math.hypot(mx - x, mz - z);
   expect(away > PAD_STONE_REACH && away <= PAD_REACH + 2, "freighter: she comes down off the stone, near it", `${away.toFixed(1)} blocks from it`);
+}
+
+// A freighter far from the world's middle, where Sable's physics rounds her position so coarsely that she cannot creep:
+// set to land at a pin she slows onto the spot she found and stops some blocks short of it, her speed still reading as
+// moving, and comes down where she has stopped. Before, she held there for ever.
+function checkFreighterFarLanding() {
+  const site = layDown("freighter", FAR_SITE);
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  if (rideFreighterUp(head)) {
+    landFreighterAt(head, site.x, site.z - PAD_PIN_AHEAD, "far from the world's middle");
+  }
 }
 
 // Ground higher under a freighter's nose than under the rest of her: one foot touches first and she settles from
@@ -5968,6 +5982,7 @@ const CHECKS = {
   "freighter-robot": { run: checkFreighterRobot, about: "a freighter's deck robot chirps hello as someone walks up to it, and trills when touched" },
   "freighter-lake": { run: checkFreighterLake, about: "a freighter set to land at a pin in a lake holds over it and says she finds no ground", slow: true },
   "freighter-balked": { run: checkFreighterBalked, about: "a freighter told to land where she is over stone taller than her belly's clearance climbs back, says so and comes down on clear ground beside it", slow: true },
+  "freighter-far-landing": { run: checkFreighterFarLanding, about: "a freighter set to land far from the world's middle, where she cannot creep, comes down where she stops short of her spot", slow: true },
   "freighter-balked-slope": { run: checkFreighterBalkedSlope, about: "a freighter with one foot on higher ground settles and switches off, not taken for a landing she cannot finish", slow: true },
   "freighter-balked-lag": { run: checkFreighterBalkedLag, about: "a freighter landing with the server far behind still comes down and switches off, not taken for a landing she cannot finish", slow: true },
   "freighter-balked-nowhere": { run: checkFreighterBalkedNowhere, about: "a freighter that cannot finish landing and has nowhere else to try holds and says so, and told to switch off lets go on what stopped her", slow: true },
