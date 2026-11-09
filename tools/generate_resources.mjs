@@ -2786,6 +2786,8 @@ const FREIGHTER_SOUNDS = {
   freighter_computer_climb_boost: { subtitle: "Computer: Climbing hard", aboard: true },
   freighter_computer_slam: { subtitle: "Computer: Quick way down, brace", aboard: true },
   freighter_computer_balked: { subtitle: "Computer: Can't set her down here", aboard: true },
+  freighter_computer_blackout: { subtitle: "Computer: Everything's gone dark", aboard: true },
+  freighter_computer_systems_back: { subtitle: "Computer: Systems back online", aboard: true },
   freighter_computer_holding: { subtitle: "Computer: Nowhere to put her down", aboard: true },
   // Space weather (see SpaceWeather): her computer telling of each kind and of the all-clear, and the alarm whooping
   // through her first, heard by everyone aboard wherever they are.

@@ -19,7 +19,8 @@ flies on thrusters that need no fuel, and she is as much a ship to explore as on
 - **Hyperspace.** Stars stretch into streaks for everyone aboard. Anyone outside sees her stretch and vanish in a white
   flash, and hears the thunder arrive late, as sound would.
 - **Space weather.** High above the black of space, meteor showers, asteroid storms and solar flares blow through.
-  Nobody aboard is hurt, however hard she is thrown.
+  Nobody aboard is hurt, however hard she is thrown. A solar flare's pulse knocks out her lights, screens and engines
+  for a few seconds.
 - **Guns.** Climb the crew ladder to the gunner's seat for a laser cannon with rocket pods, good for shooting space
   rocks. The Laser Crossbow hangs on a rack in the entry hall.
 - **The club.** A robot jazz trio plays on its stage and a robot bartender serves mocktails. A switch on the wall turns

@@ -1109,9 +1109,14 @@ public final class SkylinersRegistry {
     /** Her computer giving up a landing she cannot finish: "Can't set her down here. Going around." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_BALKED =
         sound("freighter_computer_balked");
-    /** Her computer as she holds with no ground to come down on: "Nowhere to put her down. Holding here." */
+    /** Her computer as she holds with no ground to come down on: "Nowhere to put her down. Beam's in the hold." */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_HOLDING =
         sound("freighter_computer_holding");
+    /** Her computer as a solar flare knocks her systems out, and as they come back. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_BLACKOUT =
+        sound("freighter_computer_blackout");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_COMPUTER_SYSTEMS_BACK =
+        sound("freighter_computer_systems_back");
     /** The freighter slamming into the ground (see {@code FreighterSlam}): a deep boom and a crunch of metal. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FREIGHTER_SLAM = sound("freighter_slam");
     /** Her computer as a meteor shower is told: "Meteor shower ahead. Hold on to something bolted down." */

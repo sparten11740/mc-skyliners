@@ -239,6 +239,8 @@
   "subtitles.skyliners.freighter_computer_climb_boost": "Computer: Climbing hard",
   "subtitles.skyliners.freighter_computer_slam": "Computer: Quick way down, brace",
   "subtitles.skyliners.freighter_computer_balked": "Computer: Can't set her down here",
+  "subtitles.skyliners.freighter_computer_blackout": "Computer: Everything's gone dark",
+  "subtitles.skyliners.freighter_computer_systems_back": "Computer: Systems back online",
   "subtitles.skyliners.freighter_computer_holding": "Computer: Nowhere to put her down",
   "subtitles.skyliners.freighter_computer_meteors": "Computer: Meteor shower ahead",
   "subtitles.skyliners.freighter_computer_asteroids": "Computer: Asteroid storm, brace",

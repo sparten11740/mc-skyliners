@@ -80,6 +80,9 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
 
     @Override
     public void render(AutopilotScreenBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (SpaceWeatherSky.blackedOut()) {
+            return;
+        }
         Direction facing = screen.getBlockState().getValue(AutopilotScreenBlock.FACING);
         AutopilotBlockEntity autopilot = screen.autopilot();
         SableClient.Attitude attitude = SableClient.attitude(screen, facing.getOpposite(), partialTick);

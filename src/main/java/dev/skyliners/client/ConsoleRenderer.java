@@ -66,6 +66,9 @@ public class ConsoleRenderer implements BlockEntityRenderer<ConsoleBlockEntity> 
 
     @Override
     public void render(ConsoleBlockEntity console, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (SpaceWeatherSky.blackedOut()) {
+            return;
+        }
         Level level = console.getLevel();
         if (level == null || !(console.getBlockState().getBlock() instanceof ConsoleBlock block) || !Sight.ahead(pose.last(), REACH)) {
             return;

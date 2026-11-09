@@ -1465,6 +1465,24 @@
       }
     ]
   },
+  "freighter_computer_blackout": {
+    "subtitle": "subtitles.skyliners.freighter_computer_blackout",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_blackout",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "freighter_computer_systems_back": {
+    "subtitle": "subtitles.skyliners.freighter_computer_systems_back",
+    "sounds": [
+      {
+        "name": "skyliners:freighter_computer_systems_back",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "freighter_computer_holding": {
     "subtitle": "subtitles.skyliners.freighter_computer_holding",
     "sounds": [

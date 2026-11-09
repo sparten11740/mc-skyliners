@@ -8,6 +8,7 @@ import dev.skyliners.block.Relays;
 import dev.skyliners.block.RetractableLegBlockEntity;
 import dev.skyliners.block.Turning;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -132,6 +133,8 @@ public final class FreighterFlight extends StandingFlight {
     private boolean noGround;
     /** Whether she has said how far from the pin she comes down, on this landing (see {@link #sayFarPad}). */
     private boolean padSaid;
+    /** Whether a solar flare had her systems out as of the last tick. */
+    private boolean systemsOut;
     /** What she does about a landing she cannot finish. */
     private final BalkedLanding balked = new BalkedLanding();
     /** Her engine grille glowing with her engines, and which of her thrusters trail their plumes. */
@@ -704,6 +707,7 @@ public final class FreighterFlight extends StandingFlight {
     void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         double radio = aloft(level, autopilot, flight);
         autopilot.watchUnattended(level, flight, radio);
+        boolean systemsDown = systemsOut(level, autopilot);
         String why = takeoffHeld(level, autopilot.getBlockPos(), autopilot.phase);
         boolean held = why != null;
         heldFor = held ? heldFor + 1 : 0;
@@ -718,7 +722,7 @@ public final class FreighterFlight extends StandingFlight {
         boolean legsDown = legsDown(level, autopilot, phase);
         climb.tick(level, autopilot, flight.position().y);
         boolean noGroundNow = false;
-        if (phase != AutopilotBlockEntity.Phase.OFF && !held) {
+        if (phase != AutopilotBlockEntity.Phase.OFF && !held && !systemsDown) {
             FreighterPilot.Orders orders = new FreighterPilot.Orders(phase, autopilot.targetAltitude, autopilot.targetSpeed,
                 autopilot.targetHeading, autopilot.lateral, autopilot.orbitX, autopilot.orbitZ, autopilot.orbitRadius, autopilot.landAtPin,
                 legsDown, boostNow(level, autopilot), climb.firing(), slam.firing(), slam.legsDueIn());
@@ -761,6 +765,20 @@ public final class FreighterFlight extends StandingFlight {
         boolean landing = phase == AutopilotBlockEntity.Phase.DESCENT || phase == AutopilotBlockEntity.Phase.LAND;
         legsAwaited = landing && !down ? legsAwaited + 1 : 0;
         return down || legsAwaited > LEGS_AWAITED_LONGEST;
+    }
+
+    /**
+     * Whether a solar flare has her systems out: as it begins every thruster is let go and she falls, her autopilot
+     * flying nothing until they are back, when she takes up holding where she has got to.
+     */
+    private boolean systemsOut(ServerLevel level, AutopilotBlockEntity autopilot) {
+        SpaceWeather weather = spaceWeather();
+        boolean out = weather != null && weather.blackedOut(level);
+        if (out && !systemsOut) {
+            pilot.stop(level, autopilot.getBlockPos());
+        }
+        systemsOut = out;
+        return out;
     }
 
     /**

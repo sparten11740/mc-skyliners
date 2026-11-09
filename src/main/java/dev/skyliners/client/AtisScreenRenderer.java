@@ -84,6 +84,9 @@ public class AtisScreenRenderer implements BlockEntityRenderer<AtisScreenBlockEn
 
     @Override
     public void render(AtisScreenBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (SpaceWeatherSky.blackedOut()) {
+            return;
+        }
         Level level = screen.getLevel();
         if (level == null) {
             return;

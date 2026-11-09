@@ -324,6 +324,12 @@ public final class SpaceWeatherSky {
         return shown == null || overAt != NEVER ? null : shown.kind();
     }
 
+    /** Whether a solar flare has this client's ship's systems out now (see {@link SpaceWeather#blackedOut}). */
+    public static boolean blackedOut() {
+        double since = shown == null ? 0 : DrawingClock.gameTime(0F) - shown.startedAt();
+        return shown != null && SpaceWeather.blackedOut(shown.kind(), since, shown.warningTicks());
+    }
+
     /** The weather shown now, told or on her or over a moment since; null for none. */
     @Nullable
     static SpaceWeatherShown shown() {

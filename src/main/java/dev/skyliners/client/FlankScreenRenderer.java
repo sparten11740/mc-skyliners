@@ -91,6 +91,9 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
 
     @Override
     public void render(PictureBoardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (SpaceWeatherSky.blackedOut()) {
+            return;
+        }
         if (!(board.getLevel() instanceof ClientLevel level)) {
             return;
         }

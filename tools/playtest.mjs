@@ -603,6 +603,8 @@ const ROCK_ROCKET_TICKS = 80;
 const ROCK_BOLTS = 2;
 const ROCK_FIRE_AFTER = 6;
 const ROCK_SETTLE_TICKS = 400;
+// How long a freighter is watched for a solar flare's blackout to begin and then to end, in ticks.
+const BLACKOUT_WITHIN = 500;
 const ROCK_WEATHER_TICKS = 1300;
 // A giant asteroid: how long it is given to land, from the alarm, in ticks; how much its strike must change her speed
 // at least, in blocks a second, and how many times an ordinary rock's at least; how fast it must set her turning at
@@ -3912,6 +3914,37 @@ function checkSpaceRocksShot() {
   quietSpace();
 }
 
+// A solar flare's pulse: hovering in space, as it arrives her systems go out for a few seconds, as a real one's could:
+// every thruster let go, the lights out and her computer saying so, then all of it coming back by itself and her holding
+// again.
+function checkFreighterBlackout() {
+  const freighter = freighterInSpace("blackout");
+  if (!freighter) {
+    return;
+  }
+  const [{ at: strip }] = must(`sable:find ${freighter} skyliners:led_strip 1 side=server`).rows;
+  const bright = () => Number(must(`block ${strip.join(",")} side=server`).props?.brightness ?? 0);
+  expect(bright() > 0, "blackout: her lights are on to start with", `brightness ${bright()}`);
+  const since = now();
+  const asked = must("skyliners:spaceweather start=solar_flare");
+  expect(asked.started === "coming", "blackout: a solar flare is brought over her", `${asked.started}`);
+  const out = waitForReport(freighterReport, (report) => report.lift === 0, BLACKOUT_WITHIN);
+  expect(out, "blackout: as the flare reaches her, every thruster is let go", out ? "" : `lift ${freighterReport()?.lift}`);
+  if (!out) {
+    quietSpace();
+    return;
+  }
+  must(`wait ${LOOK_EVERY}t`);
+  expect(bright() === 0, "blackout: every light aboard goes out", `brightness ${bright()}`);
+  expect(heard("skyliners:freighter_computer_blackout", since, 0), "blackout: her computer says everything's gone dark");
+  const back = waitForReport(freighterReport, (report) => report.lift > 0, BLACKOUT_WITHIN);
+  expect(back, "blackout: her thrusters come back by themselves", back ? `having fallen ${round(out.altitude - back.altitude)} blocks` : `lift ${freighterReport()?.lift}`);
+  must(`wait ${2 * LOOK_EVERY}t`);
+  expect(bright() > 0, "blackout: her lights come back as they were", `brightness ${bright()}`);
+  expect(heard("skyliners:freighter_computer_systems_back", since, 0), "blackout: and her computer says her systems are back");
+  quietSpace();
+}
+
 // A rock knocked off its course: a freighter hovering at y 1,600, the player at her laser cannon; in one asteroid
 // storm the first rock to strike her is left alone, and in a second, once she has settled from the first, the first
 // rock is struck by her cannon's bolts on its way in: it lands a smaller strike than the one left alone, shoving her
@@ -6117,6 +6150,7 @@ const CHECKS = {
   "freighter-slam-from-space": { run: checkFreighterSlamFromSpace, slow: true, about: "a freighter's slam button works far out in space and brings her down hard all the way, nobody hurt" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },
+  "freighter-blackout": { run: checkFreighterBlackout, slow: true, about: "a solar flare's pulse knocks out a freighter's thrusters and lights for a few seconds, then they come back by themselves" },
   "space-rocks-shot": { run: checkSpaceRocksShot, slow: true, about: "from a freighter's laser cannon in space, the sight locks on to a rock flying in and rockets burst it, her client told so" },
   "space-rock-knocked": { run: checkSpaceRockKnocked, slow: true, about: "a rock struck by a freighter's cannon on its way in lands softer than one left alone, misses her or breaks up" },
   "giant-asteroid": { run: checkGiantAsteroid, slow: true, about: "a giant asteroid shoves a freighter far harder than a rock and spins her, the server never stalling, nobody hurt" },

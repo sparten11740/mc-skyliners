@@ -16,6 +16,9 @@ import net.minecraft.world.phys.AABB;
 public class LedConsoleRenderer implements BlockEntityRenderer<LedConsoleBlockEntity> {
     @Override
     public void render(LedConsoleBlockEntity console, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (SpaceWeatherSky.blackedOut()) {
+            return;
+        }
         if (console.getLevel() == null) {
             return;
         }

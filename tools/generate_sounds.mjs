@@ -6082,6 +6082,8 @@ const COMPUTER_SLAM_LINES = {
 // look for ground near by, and holding with nowhere to come down.
 const COMPUTER_BALKED_LINES = {
   freighter_computer_balked: "Can't set her down here. | Going around.",
+  freighter_computer_blackout: "Everything's gone dark. | Hold on.",
+  freighter_computer_systems_back: "Systems back online.",
   freighter_computer_holding: "Nowhere to put her down. | Beam's in the hold.",
 };
 // Her computer through space weather (see SpaceWeather), our own lines in the same voice: a meteor shower, an asteroid

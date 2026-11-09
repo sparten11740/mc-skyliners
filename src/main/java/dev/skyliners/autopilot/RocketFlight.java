@@ -4,6 +4,7 @@ import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.block.Announcement;
 import dev.skyliners.compat.SableFlight;
+import dev.skyliners.spaceweather.SpaceWeather;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -29,6 +30,8 @@ import net.minecraft.world.level.block.Rotation;
  * and play her rooms by.
  */
 public final class RocketFlight extends StandingFlight {
+    /** Whether a solar flare had her systems out as of the last tick. */
+    private boolean systemsOut;
     /**
      * The pitch her countdown notes start at (1 the note as it is): they rise from it each second, the last before
      * lift-off one whole higher.
@@ -395,6 +398,9 @@ public final class RocketFlight extends StandingFlight {
         RocketGroundFire.tick(level, flight, radio, wheelsBelow, pilot.report().thrust());
         RocketScorch.tick(level, flight, radio, wheelsBelow, pilot.report().thrust());
         launchBlast.tick(level, autopilot, flight, radio, wheelsBelow, pilot.report().thrust());
+        if (systemsOut(level, autopilot)) {
+            return;
+        }
         AutopilotBlockEntity.Phase phase = autopilot.phase;
         // Launch control counts her down only once the cabin has heard its take-off announcement (see RocketSounds),
         // and nothing else holds her countdown, as her rover out of its bay does.
@@ -446,6 +452,17 @@ public final class RocketFlight extends StandingFlight {
         } else if (counted > 0) {
             level.playSound(null, origin, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, COUNTDOWN_VOLUME, COUNTDOWN_LOWEST + rising);
         }
+    }
+
+    /** Whether a solar flare has her systems out: as it begins her engines are let go, until they come back. */
+    private boolean systemsOut(ServerLevel level, AutopilotBlockEntity autopilot) {
+        SpaceWeather weather = spaceWeather();
+        boolean out = weather != null && weather.blackedOut(level);
+        if (out && !systemsOut) {
+            pilot.stop(level, autopilot.getBlockPos());
+        }
+        systemsOut = out;
+        return out;
     }
 
     @Override

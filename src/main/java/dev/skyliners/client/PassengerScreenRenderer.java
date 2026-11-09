@@ -164,6 +164,9 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
 
     @Override
     public void render(PassengerScreenBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        if (SpaceWeatherSky.blackedOut()) {
+            return;
+        }
         Level level = screen.getLevel();
         if (level == null) {
             return;
