@@ -3796,22 +3796,28 @@ function checkRocketSpaceWeather() {
 }
 
 // A freighter hovering at y 1,600, past the black of space, the player aboard at her climb button and no weather
-// blowing; her id, or undefined if she never got there.
+// blowing; her id, or undefined if she never got there. Weather that blew by itself meanwhile may have left her low, a
+// solar flare's blackout dropping her, so she is waited for to be back up there.
 function freighterInSpace(what) {
   layDown("freighter");
   must(`skyliners:autopilot fly altitude=${WEATHER_HEIGHT} speed=0`, BUILD_SECONDS);
   const freighter = findShipFlying("skyliners:engine_grille");
   must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
   lift(freighter, WEATHER_HEIGHT);
-  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.altitude - WEATHER_HEIGHT) < SPACE_HELD_WITHIN
-    && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
+  const hovering = waitForReport(freighterReport, hoveringInSpace, FREIGHTER_UP_TICKS);
   expect(hovering, `${what}: she hovers at y 1,600, past the black of space`);
   if (!hovering) {
     return undefined;
   }
   must(`wait ${SPACE_SETTLE_TICKS}t`);
   quietSpace();
+  waitForReport(freighterReport, hoveringInSpace, FREIGHTER_UP_TICKS);
   return freighter;
+}
+
+// Whether a freighter's report has her hovering at y 1,600, past the black of space.
+function hoveringInSpace(report) {
+  return report.phase === "cruise" && Math.abs(report.altitude - WEATHER_HEIGHT) < SPACE_HELD_WITHIN && Math.abs(report.climb) < 1;
 }
 
 // Waits for any space weather blowing over the nearest ship to pass: it may blow by itself up there.
@@ -3929,14 +3935,26 @@ function shootRocks(before) {
 }
 
 // Space rocks shot down: a freighter hovering at y 1,600, the player at her laser cannon and an asteroid storm brought
-// over her; aimed at a rock flying in to strike her, the cannon's sight locks on to it, and rockets launched at it home
-// in and burst it, at the third try at the latest: the server counts it shot down, and the player's client is told so,
-// drawing it no more.
+// over her, the server's config having strikes shove her none, so her cannon's aim holds; aimed at a rock flying in to
+// strike her, the cannon's sight locks on to it, and rockets launched at it home in and burst it, at the third try at
+// the latest: the server counts it shot down, and the player's client is told so, drawing it no more.
 function checkSpaceRocksShot() {
   const freighter = freighterInSpace("space rocks");
   if (!freighter || !atTheGun(freighter)) {
     return;
   }
+  must("config skyliners server spaceWeather.strength 0");
+  try {
+    shootSpaceRocks();
+  } finally {
+    send("?config reset");
+  }
+  must(`key press key.sneak 10t; wait 10t`);
+  quietSpace();
+}
+
+// Bolts and rockets fired at the rocks of asteroid storms from the cannon the player sits at, for checkSpaceRocksShot.
+function shootSpaceRocks() {
   const before = must("skyliners:spaceweather");
   const asked = must("skyliners:spaceweather start=asteroid_storm");
   expect(asked.started === "coming", "space rocks: an asteroid storm is brought over her", `${asked.started}`);
@@ -3948,14 +3966,15 @@ function checkSpaceRocksShot() {
   }
   expect(lost === ROCK_BLOCK_WEIGHT, "space rocks: one bolt breaks exactly one block of the rock it strikes", `its weight fell by ${lost}`);
   quietSpace();
-  must("skyliners:spaceweather start=asteroid_storm");
-  const [[aimed, after] = []] = shootRocks(before);
-  expect(aimed?.locked === true, "space rocks: aimed at a rock flying in to strike her, her cannon's sight locks on to it");
+  waitForReport(freighterReport, hoveringInSpace, FREIGHTER_UP_TICKS);
+  const storm = must("skyliners:spaceweather start=asteroid_storm");
+  expect(storm.started === "coming", "space rocks: another asteroid storm is brought over her", `${storm.started}`);
+  const tries = shootRocks(before);
+  const [[aimed, after] = []] = tries;
+  expect(aimed?.locked === true, "space rocks: aimed at a rock flying in to strike her, her cannon's sight locks on to it", `${tries.length} tries`);
   const weather = must("skyliners:spaceweather");
   expect(weather.shot_down > before.shot_down, "space rocks: rockets launched at it home in and wear it through", `${weather.shot_down - before.shot_down} burst`);
   expect(after?.bursts_seen > 0, "space rocks: the player's client is told it burst, and draws it no more", `${after?.bursts_seen} seen burst`);
-  must(`key press key.sneak 10t; wait 10t`);
-  quietSpace();
 }
 
 // What the cannon is aimed by, in a report of the space weather, for the heaviest rock that is a real body.
@@ -3964,7 +3983,8 @@ function realRockIn(weather) {
 }
 
 // Fires one bolt, at most, at a rock that is a real body, a rock at a time until one hits or it has tried
-// ROCK_BOLT_TRIES times; how much weight that rock lost to the bolt that hit it, undefined if none did.
+// ROCK_BOLT_TRIES times; how much weight that rock lost to the bolt that hit it, undefined if none did. A rock that
+// landed meanwhile, breaking up on her, is no measure of the bolt.
 function boltAtARealRock() {
   for (let tried = 0; tried < ROCK_BOLT_TRIES; tried++) {
     const rock = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.real_coming === true && weather.real_mass >= ROCK_BOLT_LEAST
@@ -3975,7 +3995,7 @@ function boltAtARealRock() {
     const replies = send(`${aimAhead(realRockIn(rock), ROCK_BOLT_AHEAD)}; wait ${ROCK_BOLT_AFTER}t; skyliners:spaceweather; key down key.attack; wait 1t; key up key.attack; `
       + "wait 6t; skyliners:spaceweather", BUILD_SECONDS).filter((reply) => "real" in reply);
     const [aimed, after] = replies;
-    if (aimed?.real_id === after?.real_id && after.real_mass < aimed.real_mass) {
+    if (aimed?.real_id === after?.real_id && after.real_mass < aimed.real_mass && after.landed === aimed.landed) {
       return aimed.real_mass - after.real_mass;
     }
     must(`wait ${ROCK_BOLT_BETWEEN}t`);
