@@ -629,6 +629,10 @@ const ROCK_AIM_TRIES = 3;
 const ROCK_RELOAD_TICKS = 180;
 const ROCK_LAUNCH_AFTER = 18;
 const ROCK_ROCKET_TICKS = 80;
+// How far from her middle at least a rock of an asteroid storm becomes a real body, in blocks, rocks once becoming real
+// only 150 out; and how far from the player at her cannon her client holds one at least.
+const FAR_ROCK_MADE = 200;
+const FAR_ROCK_SEEN = 180;
 // How long a freighter is watched for a solar flare's blackout to begin and then to end, in ticks.
 const BLACKOUT_WITHIN = 500;
 // How long a solar flare's blackout lasts by default and as the check sets it, longer, in seconds; how far either may
@@ -4083,6 +4087,39 @@ function boltAtARealRock() {
   return undefined;
 }
 
+// Space rocks to shoot at from afar: a freighter hovering at y 1,600, the player at her laser cannon and an asteroid
+// storm brought over her, strikes shoving her none; rocks become real bodies, which the cannon's sight locks on to and
+// its bolts and rockets break, well over 150 blocks from her middle, where they used to only then, too late for
+// rockets to crack a giant clear of her; and the player's client holds one that far off.
+function checkSpaceRocksFar() {
+  const freighter = freighterInSpace("far rocks");
+  if (!freighter || !atTheGun(freighter)) {
+    return;
+  }
+  must("config skyliners server spaceWeather.strength 0");
+  try {
+    farRocks();
+  } finally {
+    send("?config reset");
+  }
+  must(`key press key.sneak 10t; wait 10t`);
+  quietSpace();
+}
+
+// How far out an asteroid storm's rocks become real, on the server and on the player's client, for checkSpaceRocksFar.
+function farRocks() {
+  const asked = must("skyliners:spaceweather start=asteroid_storm");
+  expect(asked.started === "coming", "far rocks: an asteroid storm is brought over her", `${asked.started}`);
+  let seen = 0;
+  const far = waitForReport(() => {
+    seen = Math.max(seen, must("skyliners:gunner").real_farthest ?? 0);
+    return must("skyliners:spaceweather");
+  }, (weather) => weather.real_farthest >= FAR_ROCK_MADE && seen >= FAR_ROCK_SEEN, ROCK_WEATHER_TICKS);
+  const made = far?.real_farthest ?? must("skyliners:spaceweather").real_farthest;
+  expect(made >= FAR_ROCK_MADE, "far rocks: rocks become real bodies, for her cannon to shoot at, well over 150 blocks out", `${made} blocks out at the farthest`);
+  expect(seen >= FAR_ROCK_SEEN, "far rocks: the player's client holds a rock's body that far off", `${round(seen)} blocks off at the farthest`);
+}
+
 // A rock that strikes her stops at her hull: an asteroid storm brought over a freighter hovering in space, and the
 // rock that is a real body and coming at her followed until it has landed. It never gets anywhere near her middle, and
 // it has landed having met her.
@@ -6459,6 +6496,7 @@ const CHECKS = {
   "space-rocks-shot": { run: checkSpaceRocksShot, slow: true, about: "from a freighter's laser cannon in space, one bolt breaks exactly one block of a rock, the sight locks on to a rock flying in and rockets wear it through, her client told so" },
   "space-rocks-not-saved": { run: checkSpaceRocksNotSaved, slow: true, about: "left mid-storm and joined again, a world holds none of the rocks that were flying as real bodies" },
   "space-rock-solid": { run: checkSpaceRockSolid, slow: true, about: "a rock coming at a freighter in space is a real body of blocks that stops at her hull" },
+  "space-rocks-far": { run: checkSpaceRocksFar, slow: true, about: "a freighter's laser cannon can shoot at space rocks well over 150 blocks off: they are real bodies there, on the server and her gunner's client" },
   "giant-asteroid": { run: checkGiantAsteroid, slow: true, about: "a giant asteroid shoves a freighter far harder than a rock and spins her, the server never stalling, nobody hurt" },
   "giant-asteroid-cracked": { run: checkGiantAsteroidCracked, slow: true, about: "from a freighter's laser cannon, rockets crack a giant asteroid into pieces that fly apart off its course and land softer, the server never stalling" },
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },

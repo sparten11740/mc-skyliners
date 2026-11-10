@@ -41,15 +41,18 @@ import org.slf4j.Logger;
  */
 final class RockBodies {
     /**
-     * How near her middle a rock becomes a body, in blocks, or nearer where the server shows less of the world; how far
-     * past it a rock is let go; and at most how many of a bout's rocks are bodies at once, the rest going on being
-     * drawn.
+     * How near her middle a rock becomes a body, in blocks, for her laser cannon to shoot at, or nearer where Sable
+     * shows bodies less far; how far past that a rock is let go; and at most how many of a bout's rocks are bodies at
+     * once, the rest going on being drawn.
      */
-    private static final double REAL_WITHIN = 150;
-    private static final double LET_GO_BEYOND = 230;
+    private static final double REAL_WITHIN = 240;
+    private static final double LET_GO_PAST = 50;
     private static final int MOST_AT_ONCE = 24;
-    /** How far inside what the server shows a rock's body must lie, in blocks: a little under its view distance. */
-    private static final double SHOWN_MARGIN = 24;
+    /**
+     * How far inside the distance Sable shows bodies to players a rock's body is let go of, in blocks: room for those
+     * aboard, spread over her, and for the rock's own half width.
+     */
+    private static final double SHOWN_MARGIN = 30;
     /**
      * How many seconds of its flight ahead of becoming a body a rock's shape starts being worked out: a giant's can
      * take a few.
@@ -235,6 +238,8 @@ final class RockBodies {
     private int laidLeft;
     /** The number the next piece cracked off a rock is given. */
     private int nextPiece = PIECE_NUMBERS;
+    /** For the play-test: how far from her middle the farthest rock made a body was as it began to be made. */
+    private double farthestMade;
 
     RockBodies(Told told, long startedAt) {
         this.told = told;
@@ -247,12 +252,20 @@ final class RockBodies {
     }
 
     /**
-     * How near her a rock becomes a body, in blocks from her middle; none where the server shows too little of the
-     * world for a rock to be made clear of her, as it then goes on being drawn. Her reach is how far she spreads from
+     * How far from her middle a rock is let go of, in blocks: where everyone near her can still be shown its body,
+     * whose force-load ticket keeps it flying wherever it goes, however little of the world the server shows.
+     */
+    private static double letGoBeyond() {
+        return Math.min(REAL_WITHIN + LET_GO_PAST, SableFlight.bodiesShownWithin() - SHOWN_MARGIN);
+    }
+
+    /**
+     * How near her a rock becomes a body, in blocks from her middle; none where Sable shows bodies so short a way off
+     * that a rock could not be made clear of her, as it then goes on being drawn. Her reach is how far she spreads from
      * her middle.
      */
-    private static double realWithin(ServerLevel level, double herReach) {
-        double limit = Math.min(REAL_WITHIN, level.getServer().getPlayerList().getViewDistance() * 16 - SHOWN_MARGIN);
+    private static double realWithin(double herReach) {
+        double limit = letGoBeyond() - LET_GO_PAST;
         return limit > herReach + ROOM_ROUND_HER ? limit : 0;
     }
 
@@ -277,7 +290,7 @@ final class RockBodies {
         if (!shaping.containsKey(flight.id())) {
             shaping.put(flight.id(), CompletableFuture.supplyAsync(() -> RockCells.of(flight.size(), flight.seed()), Util.backgroundExecutor()));
         }
-        if (flight.at().distanceTo(herMiddle) >= realWithin(level, herReach) || bodies.size() + making.size() >= MOST_AT_ONCE) {
+        if (flight.at().distanceTo(herMiddle) >= realWithin(herReach) || bodies.size() + making.size() >= MOST_AT_ONCE) {
             return;
         }
         CompletableFuture<Map<BlockPos, BlockState>> shape = shaping.get(flight.id());
@@ -286,8 +299,14 @@ final class RockBodies {
             shaping.remove(flight.id());
             done.add(flight.id());
         } else if (shape.isDone()) {
+            farthestMade = Math.max(farthestMade, flight.at().distanceTo(herMiddle));
             start(level, flight, shape.join());
         }
+    }
+
+    /** How far from her middle the farthest of the rocks made bodies was as it began to be made, in blocks. */
+    double farthestMade() {
+        return farthestMade;
     }
 
     /** A rock's body started, its first blocks laid at once: Sable would take a body with none away next tick. */
@@ -442,7 +461,7 @@ final class RockBodies {
     /** Whether a rock is well past her and let go of: drawn again along its way if nothing has touched it, or gone. */
     private boolean letGo(ServerLevel level, Vec3 herMiddle, Body body) {
         Vec3 middle = SableFlight.rockCentre(level, body.body);
-        if (middle != null && middle.distanceTo(herMiddle) < LET_GO_BEYOND) {
+        if (middle != null && middle.distanceTo(herMiddle) < letGoBeyond()) {
             return false;
         }
         SableFlight.removeRock(level, body.body);
@@ -466,7 +485,7 @@ final class RockBodies {
 
     private boolean pieceOver(ServerLevel level, Vec3 herMiddle, Piece piece, long now) {
         Vec3 middle = SableFlight.rockCentre(level, piece.body());
-        boolean over = middle == null || now >= piece.lastsUntil() || middle.distanceTo(herMiddle) > LET_GO_BEYOND;
+        boolean over = middle == null || now >= piece.lastsUntil() || middle.distanceTo(herMiddle) > letGoBeyond();
         if (over) {
             SableFlight.removeRock(level, piece.body());
             return true;

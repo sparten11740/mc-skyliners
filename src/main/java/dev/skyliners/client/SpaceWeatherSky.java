@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -318,6 +319,20 @@ public final class SpaceWeatherSky {
     /** How many rocks this client has seen burst in the weather it shows, for a play-test to read. */
     public static int burstsSeen() {
         return BURST.size();
+    }
+
+    /**
+     * How far from the player the farthest of the weather's rocks is that this client holds as a real body, in blocks,
+     * none for none: as far out as the cannon's sight can lock on to one; for a play-test to read.
+     */
+    public static double realFarthest() {
+        LocalPlayer player = Minecraft.getInstance().player;
+        double farthest = 0;
+        for (UUID body : REAL.values()) {
+            Vec3 at = player == null ? null : SableClient.bodyCentre(body);
+            farthest = at == null ? farthest : Math.max(farthest, at.distanceTo(player.getEyePosition()));
+        }
+        return farthest;
     }
 
     /**

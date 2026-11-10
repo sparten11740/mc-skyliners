@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -54,6 +55,11 @@ public final class SpaceRocks {
      * (see {@code BlockpilotCommands}).
      */
     public static IntSupplier clientBurstsSeen = () -> 0;
+    /**
+     * How far from its player the farthest rock is that this client holds as a real body, in blocks; the client sets it,
+     * for a play-test to read.
+     */
+    public static DoubleSupplier clientRealFarthest = () -> 0;
 
     private SpaceRocks() {
     }

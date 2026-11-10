@@ -49,9 +49,10 @@ import org.joml.Vector3f;
  * hides the game's own; then the planet under the rim and the glow along it; by night the northern lights along the
  * rim (see {@link Aurora}); and last, now and then, a shooting star (see {@link ShootingStars}), over the planet when
  * it burns up below the camera. The land fades into the fog's colour at the edge of the world drawn, and the fog takes
- * the planet's colour (see {@link #fog}), so the land meets the planet without a seam. The clouds fade through the
- * colour the game draws them in, set just before it draws them and put back once the weather is drawn; gone, they are
- * left out altogether by the cabin's hold on them (see {@link CloudlessCabin}).
+ * the planet's colour (see {@link #fog}), so the land meets the planet without a seam; so high that no land is drawn,
+ * the fog is pushed far out, for ships and rocks out there to be seen as they are (see {@link #fogOut}). The clouds
+ * fade through the colour the game draws them in, set just before it draws them and put back once the weather is
+ * drawn; gone, they are left out altogether by the cabin's hold on them (see {@link CloudlessCabin}).
  *
  * <p>All of it goes by the camera each drawing of the world is from, not by the player, so a camera display's picture
  * (see {@link TailCameraFeed}) shows space as its camera sees it. Only in a world with the overworld's sky, never with
@@ -82,6 +83,12 @@ public final class SpaceSky {
     private static final double CLOUDS_GONE = 800;
     /** How high the fog the land fades into has taken the planet's colour, in world blocks. */
     private static final double PLANET_FULL = 800;
+    /**
+     * How far off the fog begins and is thick far out in space, in blocks (see {@link #fogOut}): past the 320 blocks
+     * Sable shows any ship or rock from by default.
+     */
+    private static final float SPACE_FOG_FROM = 480;
+    private static final float SPACE_FOG_TO = 560;
     /** The planet by day, a hazy blue, and how much of its light it keeps by night, as a share. */
     private static final int PLANET = 0x3D6A99;
     private static final float PLANET_NIGHT = 0.06F;
@@ -226,6 +233,24 @@ public final class SpaceSky {
         event.setRed(Mth.lerp(share, event.getRed(), (float) planet.x));
         event.setGreen(Mth.lerp(share, event.getGreen(), (float) planet.y));
         event.setBlue(Mth.lerp(share, event.getBlue(), (float) planet.z));
+    }
+
+    /**
+     * The fog far out in space, once the top of the world lies further under the camera than anything is drawn, so none
+     * of its land can be: all the fog would hide then is the ships and rocks flying out there, as shapes of the
+     * planet's haze, so it is pushed out past {@link #SPACE_FOG_FROM}, and a space rock 200 blocks off is seen as stone.
+     */
+    public static void fogOut(ViewportEvent.RenderFog event) {
+        Camera camera = event.getCamera();
+        ClientLevel level = shownFor(camera);
+        if (level == null || event.getMode() != FogRenderer.FogMode.FOG_TERRAIN) {
+            return;
+        }
+        if (camera.getPosition().y - level.getMaxBuildHeight() > Minecraft.getInstance().gameRenderer.getDepthFar()) {
+            event.setNearPlaneDistance(SPACE_FOG_FROM);
+            event.setFarPlaneDistance(SPACE_FOG_TO);
+            event.setCanceled(true);
+        }
     }
 
     /**

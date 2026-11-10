@@ -141,7 +141,8 @@ public final class BlockpilotCommands {
             .field("locked", "whether the sight is locked on to a hostile mob or a space rock in reach")
             .field("rockets", "how many rockets its pods hold, as the sight shows them")
             .field("loading", "how far the next rocket is loaded, from 0 to 1, as the sight shows it filling")
-            .field("bursts_seen", "how many space rocks this client has seen burst in the weather it shows"));
+            .field("bursts_seen", "how many space rocks this client has seen burst in the weather it shows")
+            .field("real_farthest", "how far from the player the farthest space rock this client holds as a real body is, in blocks"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -248,6 +249,7 @@ public final class BlockpilotCommands {
             .field("shot_down", "how many rocks a laser cannon has burst since she was loaded")
             .field("missed", "how many rocks coming at her flew on past without meeting her since she was loaded")
             .field("real", "how many rocks are real bodies of blocks now")
+            .field("real_farthest", "how far from her middle the farthest rock made a real body was as it began to be made, in blocks")
             .field("tick", "the game time of this report")
             .field("real_id", "the first of those, one coming at her if any, the heaviest otherwise: its number among the weather's rocks")
             .field("real_at", "where it is, in the world, x,y,z")
@@ -289,7 +291,7 @@ public final class BlockpilotCommands {
         return Result.ok(new Fields().tag("on", true).tag("at", round(eye.x) + "," + round(eye.y) + "," + round(eye.z))
             .tag("look", round(look.x) + "," + round(look.y) + "," + round(look.z))
             .tag("locked", sighting.lockedOn()).tag("rockets", sighting.rockets()).tag("loading", round(sighting.loading()))
-            .tag("bursts_seen", SpaceRocks.clientBurstsSeen.getAsInt()));
+            .tag("bursts_seen", SpaceRocks.clientBurstsSeen.getAsInt()).tag("real_farthest", round(SpaceRocks.clientRealFarthest.getAsDouble())));
     }
 
     private static Result zeppelin() throws CommandException {
@@ -406,7 +408,7 @@ public final class BlockpilotCommands {
             .tag("last_landed", weather.lastLanded()).tag("last_share", round(weather.lastShare())).tag("last_giant", weather.lastGiant()).tag("shot_down", weather.shotDown())
             .tag("missed", weather.missed()).tag("coming", coming.size());
         List<SpaceWeather.Real> real = weather.realRocks(player.serverLevel());
-        fields.tag("real", real.size()).tag("tick", player.serverLevel().getGameTime());
+        fields.tag("real", real.size()).tag("real_farthest", round(weather.realFarthest())).tag("tick", player.serverLevel().getGameTime());
         if (!real.isEmpty()) {
             SpaceWeather.Real first = real.getFirst();
             fields.tag("real_id", first.id()).tag("real_at", round(first.at().x) + "," + round(first.at().y) + "," + round(first.at().z))

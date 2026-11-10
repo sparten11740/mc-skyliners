@@ -407,8 +407,9 @@ from `SEEN_FROM` (820 blocks) out, so it flies into view; each strike lands thro
 sound at the plot position. A `GIANT_ASTEROID`'s giant lands unclamped by weight and with a far looser turn limit, and
 everyone aboard as a rock lands is `Braced`: a `LivingIncomingDamageEvent` handler cancels falls, walls and cramming,
 and each tick re-arms `SafetyCanopy.thrown` and forgets falls while still aboard. The rocks streaming past are
-`RockField`, common code that the server and every client work out from the seed alike. A rock near her is a real
-body: `RockBodies` works its blocks out away from the server's thread (`RockCells`: `RockShape`, roughened, cut by the
+`RockField`, common code that the server and every client work out from the seed alike. A rock within 240 blocks
+of her, inside Sable's 320-block tracking range, is a real body: `RockBodies` works its blocks out away from the
+server's thread (`RockCells`: `RockShape`, roughened, cut by the
 hull's `SurfaceCut` into `SpaceRockBlock`s, solid all through), has `SableFlight.makeRock` make a body with no blocks in
 the world (the build limit is far below it), gives an untouched rock back its speed each tick against Sable's gravity
 and drag, tells clients with `RockReal` so they stop drawing it once the body has reached them, and lets it go well past

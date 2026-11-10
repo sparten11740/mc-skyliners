@@ -593,6 +593,14 @@ public final class SpaceWeather {
     }
 
     /**
+     * How far from her middle the farthest of the weather's rocks made real bodies was as it began to be made, in
+     * blocks, none before any; for the play-test.
+     */
+    public double realFarthest() {
+        return bodies.farthestMade();
+    }
+
+    /**
      * The rocks coming at her now, seen flying in and not yet burst, for the play-test: each one's number, where it is
      * in the world and how fast it moves, how big it is in blocks across, when it lands, in game time, whether it is
      * the giant, and where on her hull it lands, in the world; the soonest to land first.

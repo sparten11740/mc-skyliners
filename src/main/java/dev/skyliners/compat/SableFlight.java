@@ -10,6 +10,7 @@ import dev.skyliners.block.RoverPlatformBlock;
 import dev.skyliners.block.SlideStepBlock;
 import dev.skyliners.block.SpaceRockBlock;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.SableConfig;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
 import dev.ryanhcode.sable.api.block.BlockWithSubLevelCollisionCallback;
@@ -228,6 +229,14 @@ public final class SableFlight {
     /** A flying rock held up against Sable's gravity for a tick, as nothing pulls it down there; whether it is yet. */
     public static boolean holdUpRock(ServerLevel level, UUID rock) {
         return SABLE && Access.holdUpRock(level, rock);
+    }
+
+    /**
+     * How far from a player Sable sends them flying bodies, in blocks, by its config: past that a rock's body is not
+     * seen at all. Nothing without Sable.
+     */
+    public static double bodiesShownWithin() {
+        return SABLE ? Access.bodiesShownWithin() : 0;
     }
 
     /** Where a flying rock's middle is, in the world; null once it is gone. */
@@ -979,6 +988,10 @@ public final class SableFlight {
         private static ServerSubLevel rock(ServerLevel level, UUID id) {
             ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
             return bodies != null && bodies.getSubLevel(id) instanceof ServerSubLevel rock && !rock.isRemoved() ? rock : null;
+        }
+
+        static double bodiesShownWithin() {
+            return SableConfig.SUB_LEVEL_TRACKING_RANGE.getAsDouble();
         }
 
         static boolean holdUpRock(ServerLevel level, UUID id) {

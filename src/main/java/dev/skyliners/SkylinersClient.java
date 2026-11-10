@@ -281,6 +281,7 @@ public final class SkylinersClient {
         NeoForge.EVENT_BUS.addListener(ShipWeather::strikeBelow);
         NeoForge.EVENT_BUS.addListener(SpaceSky::sky);
         NeoForge.EVENT_BUS.addListener(SpaceSky::fog);
+        NeoForge.EVENT_BUS.addListener(SpaceSky::fogOut);
         // The clouds' colour faded last of all before they are drawn, and put back first of all after the weather.
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, SpaceSky::fadeClouds);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, SpaceSky::cloudsFaded);
@@ -428,6 +429,7 @@ public final class SkylinersClient {
         LaserCannonBlockEntity.clientSighting = GunnerView::sighting;
         SpaceWeather.clientBlackedOut = SpaceWeatherSky::blackedOut;
         SpaceRocks.clientBurstsSeen = SpaceWeatherSky::burstsSeen;
+        SpaceRocks.clientRealFarthest = SpaceWeatherSky::realFarthest;
         CannonRocket.clientTicker = CannonRockets::tick;
     }
 

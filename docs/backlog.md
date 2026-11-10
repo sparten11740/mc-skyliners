@@ -29,10 +29,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 
 ## Space rocks
 
-- A giant asteroid becomes a body only within 150 blocks of her middle (`RockBodies.REAL_WITHIN`), which at 35 blocks
-  a second is under four seconds before it lands, so rockets crack it late: its two sides fly apart at 20 blocks a
-  second (`APART`), which may not take them clear of a ship 60 blocks across. A rock shot at is otherwise knocked
-  aside only by what Sable makes of the shot.
+- A giant asteroid becomes a body within 240 blocks of her middle (`RockBodies.REAL_WITHIN`, held inside Sable's
+  320-block tracking range), about seven seconds before it lands at 35 blocks a second; its two sides fly apart at 20
+  blocks a second (`APART`), so one cracked in the last few seconds may still clip a ship 60 blocks across. A rock
+  shot at is otherwise knocked aside only by what Sable makes of the shot.
 - Sable logs "Received a sub-level movement packet for a non-existent sub-level" on a client each time a body is
   taken out while it moves. It is harmless, but noisy during a storm.
 
