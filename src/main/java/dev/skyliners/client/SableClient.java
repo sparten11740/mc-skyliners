@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.autopilot.ZeppelinFlight;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
+import dev.skyliners.airframe.CameraSpot;
 import dev.skyliners.airframe.ZeppelinSize;
 import dev.skyliners.autopilot.Craft;
 import dev.ryanhcode.sable.Sable;
@@ -25,6 +26,7 @@ import dev.ryanhcode.sable.sublevel.render.dispatcher.VanillaSubLevelRenderDispa
 import dev.ryanhcode.sable.sublevel.render.vanilla.VanillaChunkedSubLevelRenderData;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -591,9 +593,15 @@ public final class SableClient {
             return null;
         }
 
+        /**
+         * An airliner's frame: from the ground under its lowest block, or, for one whose lowest block does not stay
+         * put, under its control head as it is built (see {@link CameraSpot#feetUnderHead}).
+         */
         private static Frame frame(AutopilotBlockEntity autopilot, BoundingBox3ic bounds) {
             Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
             Vec3 centreline = Vec3.atCenterOf(autopilot.getBlockPos());
+            OptionalInt feet = CameraSpot.feetUnderHead(autopilot.craft());
+            double ground = feet.isPresent() ? autopilot.getBlockPos().getY() - feet.getAsInt() : bounds.minY();
             // The far face of the blocks furthest the way the nose points.
             double tip = switch (nose) {
                 case NORTH -> bounds.minZ();
@@ -602,8 +610,8 @@ public final class SableClient {
                 default -> bounds.maxX() + 1;
             };
             Vec3 origin = nose.getAxis() == Direction.Axis.Z
-                ? new Vec3(centreline.x, bounds.minY(), tip)
-                : new Vec3(tip, bounds.minY(), centreline.z);
+                ? new Vec3(centreline.x, ground, tip)
+                : new Vec3(tip, ground, centreline.z);
             return new Frame(origin, nose, autopilot.craft(), ZeppelinFlight.sizeOf(autopilot));
         }
 

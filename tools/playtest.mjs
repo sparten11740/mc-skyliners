@@ -166,6 +166,15 @@ const NOZZLE_MAINS = 6;
 const NOZZLE_MAINS_DEEP = 1;
 const NOZZLE_STANDS_OFF_MOST = 2;
 const NOZZLE_ROUND_MOUTH = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+// A freighter's underside camera: the height she is sent to hover at, in world blocks, low over the flat world's grass;
+// how long a passenger screen is given to show it, in ticks; the halves of its picture read, as frame fractions from
+// the top left, clear of its label; and how much greener than red and blue each must be to be the grass, the inside of
+// her hull plate being browner (red 55, green 52, blue 43).
+const UNDERSIDE_HOVER = -30;
+const UNDERSIDE_SETTLE = 60;
+const UNDERSIDE_LEFT = "0.05,0.15,0.45,0.85";
+const UNDERSIDE_RIGHT = "0.55,0.15,0.95,0.85";
+const UNDERSIDE_GREEN = 1.15;
 // An engine grille set by hand: how far ahead of the player it is set, in blocks; how far its lever stands along a run
 // of wire to it, in blocks, far enough that the lever's signal arrives weak; how long a change of signal is given to
 // reach it, in ticks; and how long a flying freighter is given to have lit her own grille, in ticks.
@@ -3007,6 +3016,27 @@ function checkFreighterNozzles() {
   must("camera reset; option hud on");
   expect(mains.length === NOZZLE_MAINS && dark.length === 0, "nozzles: behind her, each main has a bright nozzle lip all round, not a black socket or her grille",
     `${mains.length} mains${dark.length ? `, dark: ${dark.join(", ")}` : ""}`);
+}
+
+// A freighter's underside camera, as her passengers see it: with her flying, her legs drawn up, a passenger screen
+// aboard shows the ground under her through it, green across the picture, where the camera used to rise into her belly
+// as her legs went up and show the inside of her hull plate over half the picture.
+function checkFreighterUndersideCamera() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${UNDERSIDE_HOVER} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const up = waitForReport(freighterReport, (report) => report.phase === "cruise" && report.legs === "up", FREIGHTER_UP_TICKS);
+  expect(up, "underside camera: she lifts off and draws her legs up", `legs ${freighterReport()?.legs}`);
+  const [screen] = must(`sable:find ${freighter} skyliners:passenger_screen 1 side=server`).rows;
+  if (!up || !screen) {
+    return;
+  }
+  const at = screen.at.join(",");
+  const { left, right } = must(`sable:tp ${at}; wait 10t; use ${at}; wait ${UNDERSIDE_SETTLE}t; pixels left=${UNDERSIDE_LEFT} right=${UNDERSIDE_RIGHT}`, BUILD_SECONDS);
+  must("key press key.sneak 10t; wait 10t");
+  const green = (half) => half.g > half.r * UNDERSIDE_GREEN && half.g > half.b * UNDERSIDE_GREEN;
+  expect(green(left) && green(right), "underside camera: through it a passenger sees the ground under her, not the inside of her belly",
+    `left rgb ${round(left.r)},${round(left.g)},${round(left.b)}, right ${round(right.r)},${round(right.g)},${round(right.b)}`);
 }
 
 // How many blocks a freighter's nozzle stands out past the face of her main thruster at a block, her stern to the
@@ -6409,6 +6439,7 @@ const CHECKS = {
   "birthday-greeting": { run: checkBirthdayGreeting, slow: true, about: "a freighter greets whoever the client config names as they come aboard on their birthday, once, and nobody the day before" },
   "grille-redstone": { run: checkEngineGrilleRedstone, slow: true, about: "an engine grille set by hand goes by redstone, and a freighter's own keeps to her autopilot" },
   "freighter-nozzles": { run: checkFreighterNozzles, about: "a freighter's main engines show a nozzle with a bright lip all round from behind her, not a black socket or her grille cutting in" },
+  "freighter-underside-camera": { run: checkFreighterUndersideCamera, about: "a freighter's underside camera shows the ground under her with her legs drawn up in flight, not the inside of her belly" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },

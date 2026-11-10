@@ -4,6 +4,7 @@ import dev.skyliners.SkylinersConfig;
 import dev.skyliners.autopilot.Craft;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 /**
@@ -89,6 +90,15 @@ public interface CameraSpot {
     static CameraSpot named(String name, CameraSpot fallback) {
         return Stream.of(Craft.values()).flatMap(craft -> of(craft).stream()).filter(camera -> camera.name().equals(name)).findFirst()
             .orElse(fallback);
+    }
+
+    /**
+     * How far under its control head the ground under an airframe of a kind stands as it is built, in blocks, for one
+     * whose lowest block does not stay put: a freighter draws her legs up into her belly as she flies, which would lift
+     * her cameras into it. None for one whose cameras are measured from its lowest block.
+     */
+    static OptionalInt feetUnderHead(Craft craft) {
+        return craft == Craft.FREIGHTER ? OptionalInt.of(FreighterLayout.headOverFeet()) : OptionalInt.empty();
     }
 
     /**

@@ -454,6 +454,11 @@ public final class FreighterLayout extends HullLayout {
         return (int) Math.round(DECK * scale) - 1;
     }
 
+    /** How many rows over her feet's soles her autopilot's control head stands, as {@link #cockpit} lays it. */
+    public static int headOverFeet() {
+        return deckRow(SCALE) + 1;
+    }
+
     /** The finished freighter at her scale: her legs' feet at y 0, her axis through x 0, z 0. */
     public static FreighterLayout create() {
         FreighterLayout layout = new FreighterLayout(SCALE);
