@@ -182,6 +182,17 @@ const GRILLE_AHEAD = 4;
 const GRILLE_WIRE = 12;
 const GRILLE_SETTLE_TICKS = 10;
 const GRILLE_LIGHT_TICKS = 60;
+// A freighter knocked upside down: the height she hovers at as she is turned over, y 300, some 360 blocks over the
+// flat world's ground, well over the 270 her fall upside down and then caught was seen to take; how far over she is
+// turned, in degrees, a degree short of straight over so the way back is the one this check expects; how long she is
+// watched, in ticks, and how often read; how near upright counts as upright again, in degrees; and how near the
+// ground her lowest block may come, in blocks.
+const FLIP_HEIGHT = 300;
+const FLIP_OVER = 179;
+const FLIP_WATCH_TICKS = 400;
+const FLIP_EVERY = 5;
+const FLIP_UPRIGHT = 10;
+const FLIP_CLEAR = 20;
 const FREIGHTER_UP_TICKS = 900;
 const FREIGHTER_DOWN_TICKS = 2400;
 const FREIGHTER_HOLD_WITHIN = 1.5;
@@ -3787,6 +3798,45 @@ function checkFreighterSlamFromSpace() {
   creative();
 }
 
+// A freighter knocked upside down rights herself: hovering high over the ground, she is turned over onto her back, and
+// her autopilot turns her back upright the shortest way and catches her fall well clear of the ground, then hovers
+// level again and climbs back to her height. Upside down she used to read herself as level and drive herself into the
+// ground on her own lift, lying there on her back.
+function checkFreighterRightsHerself() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${FLIP_HEIGHT} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  lift(freighter, FLIP_HEIGHT);
+  const steady = (report) => report.phase === "cruise" && Math.abs(report.altitude - FLIP_HEIGHT) < SPACE_HELD_WITHIN && Math.abs(report.climb) < 1;
+  expect(Boolean(waitForReport(freighterReport, steady, FREIGHTER_UP_TICKS)), "flipped: she hovers high over the ground");
+  const { at_abs: at } = must(`sable:info ${freighter} side=server`);
+  must("perf start flip");
+  const rows = must(`server sable teleport ${freighter} ${at.join(" ")} 0 ${FLIP_OVER}; sample sable:info ${freighter} side=server every ${FLIP_EVERY}t x${FLIP_WATCH_TICKS / FLIP_EVERY}`,
+    BUILD_SECONDS).rows.filter((row) => row.vel);
+  const { summary } = must("perf stop");
+  const mspt = summary?.server?.mspt ?? summary?.mspt ?? {};
+  expect((mspt.avg ?? 0) <= GIANT_TICK_MS && (mspt.max ?? 0) <= GIANT_WORST_TICK_MS, "flipped: the server keeps up as she rights herself",
+    `server ticks ${round(mspt.avg ?? NaN)} ms on average, ${round(mspt.max ?? NaN)} ms at the worst`);
+  const turnedOver = rows.length > 0 && upsetOf(rows[0]) > 90;
+  expect(turnedOver, "flipped: she is turned over onto her back", rows.length > 0 ? `${round(upsetOf(rows[0]))} degrees from upright` : "never read");
+  const upright = rows.findIndex((row) => upsetOf(row) < FLIP_UPRIGHT);
+  expect(upright >= 0, "flipped: her autopilot turns her back upright", upright >= 0 ? `in ${round(upright * FLIP_EVERY / 20)} s`
+    : `still ${round(upsetOf(rows.at(-1) ?? { pitch: 180, roll: 0 }))} degrees over`);
+  const lowest = Math.min(...rows.map((row) => row.agl ?? 0));
+  const lost = FLIP_HEIGHT - Math.min(...rows.map((row) => row.at_abs[1]));
+  expect(lowest >= FLIP_CLEAR, "flipped: she catches her fall well clear of the ground", `${round(lost)} blocks lost, ${round(lowest)} over the ground at the lowest`);
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  const level = waitForReport(freighterReport, (report) => !report.righting && report.upset < FREIGHTER_LEVEL_WITHIN && report.climb > 1, FREIGHTER_UP_TICKS);
+  expect(Boolean(level), "flipped: she hovers level again and climbs back to her height", level ? `climbing ${level.climb} from y ${level.altitude}` : "");
+  must("skyliners:autopilot land");
+}
+
+// How far a ship's deck leans from upright, in degrees from 0 to 180, from a sampled reading of her pitch and roll.
+function upsetOf(row) {
+  return Math.acos(Math.cos(row.pitch * Math.PI / 180) * Math.cos(row.roll * Math.PI / 180)) * 180 / Math.PI;
+}
+
 // Moves a flying ship straight up or down to a height at once, as a long climb would take her, and puts the player back
 // aboard at her climb button.
 function lift(ship, height) {
@@ -6527,6 +6577,7 @@ const CHECKS = {
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
+  "freighter-rights-herself": { run: checkFreighterRightsHerself, slow: true, about: "a freighter turned upside down in flight rights herself well clear of the ground and hovers level again" },
   "freighter-slam-from-space": { run: checkFreighterSlamFromSpace, slow: true, about: "a freighter's slam button works far out in space and brings her down hard all the way, nobody hurt" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },

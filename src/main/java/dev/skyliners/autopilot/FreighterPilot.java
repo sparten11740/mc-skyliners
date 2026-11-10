@@ -33,7 +33,8 @@ import net.minecraft.world.phys.Vec3;
  * tick she works out the climb she wants and the lift that gives it, from the weight she carries (Sable weighs it) and
  * a trim she learns for how hard her thrusters push; the lift is spread over her clusters, more on the side that dips,
  * as a quadcopter levels itself, with a trim it learns for where her weight sits; and the speed ahead and across she
- * wants, and the heading, set her mains, retros and jets, each against what she does now.
+ * wants, and the heading, set her mains, retros and jets, each against what she does now. Knocked far over, upside
+ * down even, as a giant asteroid may knock her, she first rights herself on her lift alone (see {@link #right}).
  */
 public final class FreighterPilot {
     /** How strong a signal drives a thruster at most. */
@@ -238,6 +239,27 @@ public final class FreighterPilot {
     private static final double SMOOTHING = 0.3;
     /** How short a way flattened onto the ground may be before it counts as none: one pointing straight up or down. */
     private static final double NO_WAY = 1e-9;
+    /** Straight up in the world, which her deck's up is held to. */
+    private static final Vec3 STRAIGHT_UP = new Vec3(0, 1, 0);
+    /**
+     * Righting her once she is knocked far over (see {@link #right}): how far her deck's up must lean from straight up
+     * for her to right herself, in degrees, well past anything her levelling (see {@link #LEVEL_GAIN}) is made for,
+     * which past a quarter turn reads her wrongly and upside down as level; and how near upright she must come again,
+     * in degrees, and how slowly she must still swing, in degrees a second, for her levelling to take her back: sooner,
+     * it lets her swing on past level.
+     */
+    private static final double RIGHTING_FROM = 45;
+    private static final double RIGHTED = 10;
+    private static final double RIGHTED_SWING = 15;
+    /**
+     * How she rights herself: how fast she swings back toward upright at most, in degrees a second; how hard she plans
+     * on slowing that swing, in degrees a second each second, about half the 29 her lift was seen to give her loaded
+     * only with her furnishing, so the side of her lift not slowing it is left lifting, catching her fall; and how far
+     * off the swing she wants she may be before a cluster turning her is run flat out, in degrees a second.
+     */
+    private static final double RIGHTING_SWING = 90;
+    private static final double RIGHTING_BRAKE = 15;
+    private static final double RIGHTING_FULL_SPLIT = 20;
 
     /**
      * Her four lift clusters, in this order, as which way each is ahead and to her right, 1 or -1: ahead on her right,
@@ -332,13 +354,13 @@ public final class FreighterPilot {
      * across her front and to her right, in degrees, each lift cluster's signal, her mains' and retros', each jet's
      * (nose right, nose left, tail right, tail left), how fast her middle climbs and goes ahead and across, in blocks a
      * second, the climb, speed ahead and across and heading she last wanted, the spot she found near a pin to come down
-     * on or came down on last, its middle's column, null while she has found none, and where her disc's middle was last
-     * in the world.
+     * on or came down on last, its middle's column, null while she has found none, where her disc's middle was last
+     * in the world, how far her deck's up leans from straight up, in degrees, and whether she is righting herself.
      */
     public record Report(double lift, double trim, double pitchTrim, double rollTrim, double drag, double tiltFront,
                          double tiltRight, List<Integer> clusters, int mains, int retros, List<Integer> jets, double climb,
                          double ahead, double across, double climbWanted, double aheadWanted, double acrossWanted,
-                         double headingWanted, @Nullable PadSearch.Pad pad, Vec3 middle) {
+                         double headingWanted, @Nullable PadSearch.Pad pad, Vec3 middle, double upset, boolean righting) {
     }
 
     /**
@@ -367,6 +389,23 @@ public final class FreighterPilot {
     /** How her lift is split for her weight to be held up where it sits, as shares moved ahead and to her right. */
     private record Balance(double ahead, double right) {
         static final Balance EVEN = new Balance(0, 0);
+    }
+
+    /**
+     * How far over she is, however far, as the turn that would bring her deck's up back to straight up the shortest
+     * way, and how fast her deck's up swings, each about an axis in the world, in radians and radians a second: her
+     * levelling's tilt (see {@link Tilt}) reads only up to a quarter turn, and upside down reads as level.
+     */
+    private record Upset(Vec3 turn, Vec3 swing) {
+        /** How far her deck's up leans from straight up, in degrees, from 0 to 180. */
+        double degrees() {
+            return Math.toDegrees(turn.length());
+        }
+
+        /** How fast her deck's up swings, in degrees a second. */
+        double swingDegrees() {
+            return Math.toDegrees(swing.length());
+        }
     }
 
     /**
@@ -422,9 +461,16 @@ public final class FreighterPilot {
     private int stoppedFor;
     @Nullable
     private Vec3 stoppedAt;
-    /** Her tilt and heading the tick before, to tell how fast each changes. */
+    /**
+     * Her tilt and heading the tick before, to tell how fast each changes, and her deck's up, to tell how fast it
+     * swings.
+     */
     private Tilt lastTilt = Tilt.LEVEL;
     private double lastHeading;
+    private Vec3 lastUp = STRAIGHT_UP;
+    /** Whether she is righting herself, knocked far over (see {@link #right}); how far over she was, in degrees. */
+    private boolean righting;
+    private double lastUpset;
     /** How fast she tilts, turns and moves, smoothed (see {@link #SMOOTHING}); none to begin with. */
     private Motion smoothed = Motion.STILL;
     @Nullable
@@ -440,7 +486,11 @@ public final class FreighterPilot {
     private double climbLead;
     /** Whether her climb boost fired last tick, so the spot she holds is taken as it begins. */
     private boolean climbBoosting;
-    /** The signals each set of her thrusters was last set to together: her clusters, her mains and her retros. */
+    /**
+     * The share of full each of her clusters is set to this tick, in the order of {@link #CLUSTER_SIDES}; and the
+     * signals each set of her thrusters was last set to together: her clusters, her mains and her retros.
+     */
+    private final double[] clusterShares = new double[CLUSTER_SIDES.length];
     private final int[] clusterTotals = new int[4];
     private int mainsTotal;
     private int retrosTotal;
@@ -507,6 +557,8 @@ public final class FreighterPilot {
         startCounting();
         lastTilt = Tilt.of(state);
         lastHeading = state.heading();
+        lastUp = state.up();
+        righting = false;
         pads.reset();
         lastPad = null;
         smoothed = Motion.STILL;
@@ -555,6 +607,7 @@ public final class FreighterPilot {
         }
         AutopilotBlockEntity.Phase phase = orders.phase();
         Motion motion = motion(state);
+        Upset upset = upset(state);
         Vec3 middle = middle(state);
         lastMiddle = middle;
         Vec3 going = smoothedGoing(going(state, middle, motion));
@@ -573,6 +626,8 @@ public final class FreighterPilot {
         touchingFor = phase == AutopilotBlockEntity.Phase.LAND && radio < TOUCHING ? touchingFor + 1 : 0;
         if (touchingFor > 0) {
             runDown(level, origin, state, going, mass, balance);
+        } else if (righting(upset)) {
+            right(level, origin, state, going, mass, upset);
         } else {
             lookForPad(level, phase, orders, state, middle);
             Course course = course(phase, orders, state, middle);
@@ -605,6 +660,82 @@ public final class FreighterPilot {
         smoothed = new Motion(tilt, Mth.lerp(SMOOTHING, smoothed.frontRate(), frontRate), Mth.lerp(SMOOTHING, smoothed.rightRate(), rightRate),
             Mth.lerp(SMOOTHING, smoothed.yawRate(), yawRate));
         return smoothed;
+    }
+
+    /**
+     * How far over she is and how fast her deck's up swings (see {@link Upset}), from how it stood the tick before,
+     * which it notes for the next. Exactly upside down no way back is shorter than another: she rolls, about her
+     * length.
+     */
+    private Upset upset(SableFlight.State state) {
+        Vec3 up = state.up();
+        Vec3 axis = up.cross(STRAIGHT_UP);
+        double angle = Math.acos(Mth.clamp(up.y, -1, 1));
+        Vec3 way = axis.lengthSqr() < NO_WAY ? state.nose() : axis.normalize();
+        Vec3 swing = lastUp.cross(up).scale(SharedConstants.TICKS_PER_SECOND);
+        lastUp = up;
+        Upset upset = new Upset(way.scale(angle), swing);
+        lastUpset = upset.degrees();
+        return upset;
+    }
+
+    /**
+     * Whether she rights herself this tick: from once she leans past {@link #RIGHTING_FROM} until she is back near
+     * upright and hardly swinging, when her levelling takes her again.
+     */
+    private boolean righting(Upset upset) {
+        boolean righted = upset.degrees() < RIGHTED && upset.swingDegrees() < RIGHTED_SWING;
+        righting = righting ? !righted : upset.degrees() > RIGHTING_FROM;
+        return righting;
+    }
+
+    /**
+     * Knocked far over, by a giant asteroid or worse: she rights herself the shortest way round on her lift, more on
+     * the side that brings her up, swinging toward upright no faster than she can slow in time to stop there, and
+     * slowing first any swing the wrong way. While her deck faces more down or aside than up, only the clusters that
+     * turn her fire, as hard as the turn asks, since any other push of her lift would drive her down; once it faces at
+     * least half up, her lift catches her fall too, as hard as it would upright, but for what the turn takes from the
+     * side it lowers. Nothing else pushes her, and her speed and her heading wait until she is upright again.
+     */
+    private void right(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, Upset upset) {
+        double off = upset.turn().length();
+        Vec3 toward = off > 0 ? upset.turn().scale(1 / off) : Vec3.ZERO;
+        double swing = Math.min(Math.toRadians(RIGHTING_SWING), Math.sqrt(2 * Math.toRadians(RIGHTING_BRAKE) * off));
+        Vec3 wanted = toward.scale(swing).subtract(upset.swing());
+        double full = Math.toRadians(RIGHTING_FULL_SPLIT);
+        double ahead = Mth.clamp(wanted.dot(state.right()) / full, -1, 1);
+        double right = Mth.clamp(-wanted.dot(state.nose()) / full, -1, 1);
+        if (state.up().y < LEAST_UPRIGHT) {
+            turnOnly(level, origin, ahead, right);
+        } else {
+            lift(level, origin, Mth.clamp(liftShare(state, going, mass, easedClimb, false, false), 0, 1), ahead, right);
+        }
+        quiet(level, origin);
+    }
+
+    /**
+     * Her lift turning her and doing nothing else: each cluster as far as it helps the turn asked ahead and to her
+     * right, as shares of full, the others quiet but for their idle.
+     */
+    private void turnOnly(ServerLevel level, BlockPos origin, double ahead, double right) {
+        double total = 0;
+        for (int i = 0; i < CLUSTER_SIDES.length; i++) {
+            clusterShares[i] = Mth.clamp(CLUSTER_SIDES[i][0] * ahead + CLUSTER_SIDES[i][1] * right, 0, 1);
+            total += clusterShares[i];
+        }
+        lastShare = total / CLUSTER_SIDES.length;
+        fire(level, origin);
+    }
+
+    /** Her mains, retros and jets let go, her lift alone at work. */
+    private void quiet(ServerLevel level, BlockPos origin) {
+        mainsTotal = 0;
+        retrosTotal = 0;
+        Relays.spread(level, origin, wiring.mains(), 0, false);
+        Relays.spread(level, origin, wiring.retros(), 0, false);
+        Jets jets = wiring.jets();
+        pair(level, origin, jets.noseRight(), jets.noseLeft(), 0, NOSE_PAIR);
+        pair(level, origin, jets.tailRight(), jets.tailLeft(), 0, TAIL_PAIR);
     }
 
     /** How fast her middle moves, smoothed as her rates are (see {@link #SMOOTHING}). */
@@ -970,12 +1101,19 @@ public final class FreighterPilot {
      */
     private void lift(ServerLevel level, BlockPos origin, double share, double ahead, double right) {
         lastShare = Mth.clamp(share, 0, 1);
+        for (int i = 0; i < CLUSTER_SIDES.length; i++) {
+            clusterShares[i] = Mth.clamp(lastShare * (1 + CLUSTER_SIDES[i][0] * ahead + CLUSTER_SIDES[i][1] * right), 0, 1);
+        }
+        fire(level, origin);
+    }
+
+    /** Each of her clusters at the share of full set for it, held at its idle signal at least while she lifts. */
+    private void fire(ServerLevel level, BlockPos origin) {
         List<List<BlockPos>> clusters = wiring.clusters();
         for (int i = 0; i < clusters.size() && i < CLUSTER_SIDES.length; i++) {
-            double each = Mth.clamp(lastShare * (1 + CLUSTER_SIDES[i][0] * ahead + CLUSTER_SIDES[i][1] * right), 0, 1);
             List<BlockPos> cluster = clusters.get(i);
             int least = lastShare > 0 ? IDLE_SIGNAL * cluster.size() : 0;
-            clusterTotals[i] = Math.max(least, held(each * FULL * cluster.size(), clusterTotals[i]));
+            clusterTotals[i] = Math.max(least, held(clusterShares[i] * FULL * cluster.size(), clusterTotals[i]));
             Relays.spread(level, origin, cluster, clusterTotals[i], false);
         }
     }
@@ -1124,6 +1262,7 @@ public final class FreighterPilot {
     void stop(ServerLevel level, BlockPos origin) {
         rest(level, origin);
         primed = false;
+        righting = false;
         spot = null;
         pads.reset();
         startCounting();
@@ -1133,7 +1272,8 @@ public final class FreighterPilot {
     Report report() {
         return new Report(lastShare, learnt.lift, learnt.pitch, learnt.roll, learnt.drag, lastTilt.front(), lastTilt.right(),
             Arrays.stream(clusterTotals).boxed().toList(), mainsTotal, retrosTotal, Arrays.stream(jetSignals).boxed().toList(), lastClimb,
-            lastGoingAhead, lastGoingAcross, easedClimb, lastAhead, lastAcross, lastHeadingWanted, lastPad, lastMiddle);
+            lastGoingAhead, lastGoingAcross, easedClimb, lastAhead, lastAcross, lastHeadingWanted, lastPad, lastMiddle, lastUpset,
+            righting);
     }
 
     CompoundTag save() {

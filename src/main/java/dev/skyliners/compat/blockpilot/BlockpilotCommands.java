@@ -376,6 +376,8 @@ public final class BlockpilotCommands {
             .tag("heading_wanted", AutopilotBlockEntity.bearing(report.headingWanted()))
             .tag("tilt_front", round(report.tiltFront()))
             .tag("tilt_right", round(report.tiltRight()))
+            .tag("upset", round(report.upset()))
+            .tag("righting", report.righting())
             .tag("target_altitude", Math.round(autopilot.targetAltitude()))
             .tag("mass", Math.round(SableFlight.mass(autopilot)))
             .tag("lift", round(report.lift()))

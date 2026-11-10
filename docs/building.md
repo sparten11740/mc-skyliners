@@ -332,7 +332,11 @@ round a circle or onto a pin with the zeppelin's `Steering`, set to land near a 
 level spot `PadSearch` finds round it over the airliner's `GroundSurvey`, from her feet and the columns under her hull
 that `FreighterLayout` gives (`feet`, `underHull`), flying by how her middle moves rather than her control head out in
 her cockpit's pod, and her height over the ground from the lowest of her legs' feet (`Legs`, which the rocket's fins
-share). A landing she cannot finish, held up by something her feet do not reach, is `BalkedLanding`, owned by
+share). Knocked further over than `RIGHTING_FROM`, as far as upside down, where her levelling's tilt no longer reads
+her rightly, `FreighterPilot.right` takes over until she is near upright again: her lift turns her the shortest way back
+(its `Upset`), only the clusters doing the turning fire while her deck faces down, and once it faces up again her lift
+catches her fall as well. A landing she cannot finish, held up by something her feet do not reach, is `BalkedLanding`,
+owned by
 `FreighterFlight`: it watches her height while she is set to come down, gives the landing up after some seconds
 stopped, and climbs her back to look round there with `PadSearch`, holding over the pin once she has tried enough; with
 nobody aboard to tell her otherwise, or told to switch off, she lets go on what stopped her instead, and counts as down.
