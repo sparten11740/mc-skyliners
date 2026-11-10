@@ -159,6 +159,13 @@ const NOZZLE_LIP_OUT = 0.88;
 const NOZZLE_LIP_ASTERN = 1.22;
 const NOZZLE_LIP_ACROSS = 0.08;
 const NOZZLE_LIP_LUMA = 110;
+// Her main engines: how many she has; how far forward of the sternmost of their relays the rest stand at most, in
+// blocks, as her rim curves; and, as each client draws a nozzle, at most how many blocks it stands out past its
+// thruster's face, and the blocks round its mouth, so many across and up from its axis, that make it stand out.
+const NOZZLE_MAINS = 6;
+const NOZZLE_MAINS_DEEP = 1;
+const NOZZLE_STANDS_OFF_MOST = 2;
+const NOZZLE_ROUND_MOUTH = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 // An engine grille set by hand: how far ahead of the player it is set, in blocks; how far its lever stands along a run
 // of wire to it, in blocks, far enough that the lever's signal arrives weak; how long a change of signal is given to
 // reach it, in ticks; and how long a flying freighter is given to have lit her own grille, in ticks.
@@ -2973,19 +2980,48 @@ function checkCargoScanner() {
   expect(Boolean(heard("*scanner_sweep*", used, LOOK_EVERY)), "freighter: used, the parcel scanner sweeps its crate");
 }
 
-// A freighter's main engines read as engines from behind her, parked with nothing firing: straight behind one, a bright
-// lip stands out round its nozzle, where it used to be only a black socket in her grille.
+// A freighter's main engines read as engines from behind her, parked with nothing firing: straight behind each, a
+// bright lip stands out round its nozzle, over it and on its side toward her middle, where it used to be only a black
+// socket in her grille, and where her rim, stepping out a block beside the two second from her sides, cut into theirs.
 function checkFreighterNozzles() {
   layDown("freighter");
   const relays = must("find skyliners:thrust_relay 128 64").rows.map((row) => row.at_abs);
   const sternmost = Math.min(...relays.map(([, , z]) => z));
-  const [x, y, z] = relays.find((relay) => relay[2] === sternmost);
-  const thruster = z - 1;
-  const axis = `${x + 0.5},${y + 0.5}`;
-  must(`option hud off; camera at ${axis},${thruster - NOZZLE_CAMERA_BACK} look ${axis},${thruster}; wait 20t; settle`);
-  const lip = must(`pixels lip=@${x + 0.5},${y + 0.5 + NOZZLE_LIP_OUT},${thruster - NOZZLE_LIP_ASTERN} r=${NOZZLE_LIP_ACROSS}`).lip;
+  const sternY = relays.find((relay) => relay[2] === sternmost)[1];
+  const mains = relays.filter(([, y, z]) => y === sternY && z - sternmost <= NOZZLE_MAINS_DEEP);
+  const middle = mains.reduce((sum, [x]) => sum + x + 0.5, 0) / mains.length;
+  const dark = [];
+  for (const [x, y, z] of mains) {
+    const thruster = z - 1;
+    const face = thruster - standingOff(x, y, thruster);
+    const axis = `${x + 0.5},${y + 0.5}`;
+    const inward = Math.sign(middle - x - 0.5) || 1;
+    must(`option hud off; camera at ${axis},${face - NOZZLE_CAMERA_BACK} look ${axis},${face}; wait 20t; settle`);
+    const { over, inner } = must(`pixels over=@${x + 0.5},${y + 0.5 + NOZZLE_LIP_OUT},${face - NOZZLE_LIP_ASTERN} `
+      + `inner=@${x + 0.5 + inward * NOZZLE_LIP_OUT},${y + 0.5},${face - NOZZLE_LIP_ASTERN} r=${NOZZLE_LIP_ACROSS}`);
+    const least = Math.min(over.p90, inner.p90);
+    if (least < NOZZLE_LIP_LUMA) {
+      dark.push(`x ${x}: luma ${round(least)}`);
+    }
+  }
   must("camera reset; option hud on");
-  expect(lip.p90 >= NOZZLE_LIP_LUMA, "nozzles: behind her, each main has a bright nozzle lip, not a black socket", `lip's brightest tenth, luma ${round(lip.p90)}`);
+  expect(mains.length === NOZZLE_MAINS && dark.length === 0, "nozzles: behind her, each main has a bright nozzle lip all round, not a black socket or her grille",
+    `${mains.length} mains${dark.length ? `, dark: ${dark.join(", ")}` : ""}`);
+}
+
+// How many blocks a freighter's nozzle stands out past the face of her main thruster at a block, her stern to the
+// north, as each client draws it: past each layer astern of it with a block of hers round its mouth.
+function standingOff(x, y, thruster) {
+  let standing = 0;
+  while (standing < NOZZLE_STANDS_OFF_MOST) {
+    const layer = thruster - standing - 1;
+    const mouth = NOZZLE_ROUND_MOUTH.map(([across, up]) => `?block ${x + across},${y + up},${layer}`).join("; ");
+    if (send(mouth, BUILD_SECONDS).filter((reply) => reply.id).every((reply) => reply.id === "air")) {
+      break;
+    }
+    standing++;
+  }
+  return standing;
 }
 
 // An engine grille set by hand goes by the redstone it is given, dark with none, idling on a weak signal and at full on
@@ -6372,7 +6408,7 @@ const CHECKS = {
   "fleet-on-freighter": { run: checkFleetOnTheFreighter, about: "the airliner, zeppelin and rocket paintings hang whole on the freighter" },
   "birthday-greeting": { run: checkBirthdayGreeting, slow: true, about: "a freighter greets whoever the client config names as they come aboard on their birthday, once, and nobody the day before" },
   "grille-redstone": { run: checkEngineGrilleRedstone, slow: true, about: "an engine grille set by hand goes by redstone, and a freighter's own keeps to her autopilot" },
-  "freighter-nozzles": { run: checkFreighterNozzles, about: "a freighter's main engines show a nozzle with a bright lip from behind her, not a black socket" },
+  "freighter-nozzles": { run: checkFreighterNozzles, about: "a freighter's main engines show a nozzle with a bright lip all round from behind her, not a black socket or her grille cutting in" },
   "freighter-lights": { run: checkFreighterLights, about: "a freighter is built with wall washers round her rooms, her club and ring corridor lit" },
   "freighter-band": { run: checkFreighterBand, about: "a freighter's club has a bar and a band that plays her song to whoever comes near, silent as they go" },
   "freighter-spookie": { run: checkFreighterSpookie, about: "a freighter's Spookie greets, purrs, eats a cookie, is never hurt and walks its rounds" },

@@ -48,6 +48,13 @@ public final class FreighterNozzles {
     private static final int THROAT = 3;
     /** How far a nozzle reaches from its axis and out of her stern, in blocks, for leaving it out unseen. */
     private static final double REACH = 1.6;
+    /**
+     * At most how many blocks a nozzle stands out past its thruster's face, where her rim steps out beside it (see
+     * {@link #standOff}).
+     */
+    private static final int STAND_OFF_MOST = 2;
+    /** The blocks round a nozzle's mouth its bell would cut into, so many across and up from its axis. */
+    private static final int[][] ROUND_MOUTH = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
     /** Which way a part of a nozzle faces, to be seen from the right side: off its axis, toward it, or astern. */
     private enum Facing { OUT, IN, ASTERN }
 
@@ -93,20 +100,50 @@ public final class FreighterNozzles {
         buffers.endBatch(type);
     }
 
-    /** One freighter's nozzles, each where its thruster is in the world this frame, a block astern of its relay. */
+    /**
+     * One freighter's nozzles, each where its thruster is in the world this frame, a block astern of its relay, and
+     * standing out past whatever of her rim stands out round it.
+     */
     private static void nozzles(ClientLevel level, VertexConsumer consumer, PoseStack pose, Frustum frustum, AutopilotBlockEntity autopilot, Vec3 camera,
                                 float partialTick) {
         Direction astern = autopilot.getBlockState().getValue(AutopilotBlock.FACING).getOpposite();
+        Vec3 out = Vec3.atLowerCornerOf(astern.getNormal());
         SableClient.Placing placing = SableClient.placing(Vec3.atCenterOf(autopilot.getBlockPos()), partialTick);
         for (BlockPos relay : FreighterFlight.mainRelaysOf(autopilot)) {
             BlockPos thruster = autopilot.getBlockPos().offset(relay).relative(astern);
-            Vec3 face = Vec3.atCenterOf(thruster).add(Vec3.atLowerCornerOf(astern.getNormal()).scale(0.5));
-            Vec3 at = LaserBolts.inWorld(placing, face);
-            boolean inView = at.distanceTo(camera) <= SEEN && (frustum == null || frustum.isVisible(new AABB(at, at).inflate(REACH)));
+            Vec3 face = Vec3.atCenterOf(thruster).add(out.scale(0.5));
+            Vec3 near = LaserBolts.inWorld(placing, face);
+            boolean inView = near.distanceTo(camera) <= SEEN && (frustum == null || frustum.isVisible(new AABB(near, near).inflate(REACH + STAND_OFF_MOST)));
             if (inView && !level.getBlockState(thruster).isAir()) {
-                nozzle(consumer, pose, at.subtract(camera), placing, astern, SableClient.light(level, thruster.relative(astern)));
+                int standing = standOff(level, thruster, astern);
+                Vec3 at = LaserBolts.inWorld(placing, face.add(out.scale(standing)));
+                nozzle(consumer, pose, at.subtract(camera), placing, astern, SableClient.light(level, thruster.relative(astern, standing + 1)));
             }
         }
+    }
+
+    /**
+     * How many blocks a nozzle stands out past its thruster's face: past every layer astern of it with a block round
+     * its mouth, where her rim, cut into blocks along its curve, steps out a block beside a thruster, so that none of
+     * her blocks cuts into its bell. Its collar, starting inside her hull, meets her skin wherever it stands out.
+     */
+    private static int standOff(ClientLevel level, BlockPos thruster, Direction astern) {
+        Direction across = astern.getClockWise();
+        int standing = 0;
+        while (standing < STAND_OFF_MOST && roundMouth(level, thruster.relative(astern, standing + 1), across)) {
+            standing++;
+        }
+        return standing;
+    }
+
+    /** Whether any of the blocks round a nozzle's mouth stands in a layer square to her stern, its axis at a block. */
+    private static boolean roundMouth(ClientLevel level, BlockPos axis, Direction across) {
+        for (int[] off : ROUND_MOUTH) {
+            if (!level.getBlockState(axis.relative(across, off[0]).above(off[1])).isAir()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** One nozzle, its axis astern of her, its face at a point from the camera, turned with her. */
