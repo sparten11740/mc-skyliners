@@ -90,6 +90,11 @@ public final class SpaceWeather {
     private static final int LINGER_TICKS = 40;
     /** The least time between one bout's all-clear and the next one's alarm, in ticks: a minute. */
     private static final int QUIET_TICKS = 60 * 20;
+    /**
+     * How long the rocks of weather over fly on at most, in ticks, before whatever is left of them is let go: long
+     * enough for the slowest of the big rocks far off to drift out of sight.
+     */
+    private static final int ROCKS_FLY_ON_MOST = 2 * 60 * 20;
     /** How many ticks a minute has, for how often weather blows, set in minutes. */
     private static final double TICKS_PER_MINUTE = 60 * 20;
     /** How often a bout under way looks whether anyone is still aboard, in ticks. */
@@ -451,6 +456,11 @@ public final class SpaceWeather {
     @Nullable
     private SpaceWeatherShown told;
     private List<RockField.Rock> rocks = List.of();
+    /**
+     * When the weather was over, in game time, while its rocks still fly on: none of them sets out after it. Never
+     * while it blows, or once they are gone.
+     */
+    private long overAt = Long.MAX_VALUE;
     /** Those of its rocks streaming past that have been shot through, by number. */
     private final BitSet burst = new BitSet();
     /** How fast she was going as of the last tick of its rocks, in blocks a second. */
@@ -482,8 +492,8 @@ public final class SpaceWeather {
 
     /**
      * Each tick of an assembled rocket's or freighter's: those kept from harm after a strike looked after; weather under
-     * way goes on; with none, flying above {@link #FROM} with someone aboard, one may begin, about as often as the
-     * server's config says.
+     * way goes on; the rocks of weather over fly on, and no weather begins until they are gone; with none, flying above
+     * {@link #FROM} with someone aboard, one may begin, about as often as the server's config says.
      */
     public void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         if (level.getGameTime() == blackoutEnds) {
@@ -494,6 +504,10 @@ public final class SpaceWeather {
         double height = flight.position().y;
         if (kind != null) {
             blow(level, autopilot, height, now);
+            return;
+        }
+        if (told != null) {
+            flyOn(level, autopilot, now);
             return;
         }
         if (!SkylinersConfig.SPACE_WEATHER.get() || height < FROM || now < quietUntil) {
@@ -546,6 +560,11 @@ public final class SpaceWeather {
     /** Whether any blows now, told or on her: the rocket waits it out up there before starting down. */
     public boolean blowing() {
         return kind != null;
+    }
+
+    /** Whether the rocks of weather over still fly on, there to be shot at; for the play-test. */
+    public boolean flyingOn() {
+        return kind == null && told != null;
     }
 
     /** What blows now, by name, or "none"; for the play-test. */
@@ -653,6 +672,9 @@ public final class SpaceWeather {
         SableFlight.Body body = SableFlight.body(autopilot);
         if (body == null) {
             return;
+        }
+        if (this.told != null) {
+            letGoOfRocks(level);
         }
         RandomSource random = level.getRandom();
         kind = told;
@@ -808,7 +830,7 @@ public final class SpaceWeather {
 
     /** One of its rocks streaming past, made a body if near enough. */
     private void streamingBy(ServerLevel level, SableFlight.Body ship, RockField.Rock rock, Vec3 anchor, double since) {
-        if (burst.get(rock.id()) || !rock.flying(since) || !bodies.wanted(rock.id(), rock.at(anchor, since), rock.speed(), ship.centre())) {
+        if (burst.get(rock.id()) || !setOut(rock) || !rock.flying(since) || !bodies.wanted(rock.id(), rock.at(anchor, since), rock.speed(), ship.centre())) {
             return;
         }
         RockShape.Look look = RockShape.look(rock.seed());
@@ -1264,7 +1286,8 @@ public final class SpaceWeather {
 
     /**
      * The weather over: everyone shown so, and, when it passed by rather than was left, her flight deck saying it is
-     * all clear to everyone aboard; none blows again for a while, and its rocks are gone.
+     * all clear to everyone aboard; none blows again for a while, and none of its rocks sets out any more, but those on
+     * their way fly on (see {@link #flyOn}).
      */
     private void end(ServerLevel level, AutopilotBlockEntity autopilot, long now, boolean allClear) {
         SableFlight.Body body = SableFlight.body(autopilot);
@@ -1274,14 +1297,54 @@ public final class SpaceWeather {
         if (allClear) {
             say(level, Aboard.players(autopilot), autopilot.says(SkylinersRegistry.ANNOUNCEMENT_ALL_CLEAR), SoundSource.VOICE);
         }
-        bodies.clear(level);
         kind = null;
+        strikes.clear();
+        quietUntil = now + QUIET_TICKS;
+        overAt = now;
+        bodies.over();
+        if (!rocksFlying(now)) {
+            letGoOfRocks(level);
+        }
+    }
+
+    /**
+     * A tick of the rocks of weather over, flying on: none sets out any more, those on their way go on as ever, there to
+     * be shot at, and once the last has gone, burst or out of sight, or they have flown on a good while, they are let
+     * go of.
+     */
+    private void flyOn(ServerLevel level, AutopilotBlockEntity autopilot, long now) {
+        rocksTick(level, autopilot, now);
+        if (now - overAt > ROCKS_FLY_ON_MOST || !rocksFlying(now)) {
+            letGoOfRocks(level);
+        }
+    }
+
+    /** Whether one of its rocks has set out: any while the weather blows, and only those that had once it is over. */
+    private boolean setOut(RockField.Rock rock) {
+        return kind != null || rock.born() <= overAt - startedAt;
+    }
+
+    /**
+     * Whether any of its rocks is still on its way: a real body, or a drawn one that set out before the weather was over
+     * and has neither burst nor come to the end of its way, out of sight.
+     */
+    private boolean rocksFlying(long now) {
+        if (bodies.any()) {
+            return true;
+        }
+        double since = now - startedAt;
+        return rocks.stream().anyMatch(rock -> setOut(rock) && !burst.get(rock.id()) && rock.age(since) < 1);
+    }
+
+    /** The rocks of weather over let go of: whatever is left of them taken out of the world, none to be shot at. */
+    private void letGoOfRocks(ServerLevel level) {
+        bodies.clear(level);
         told = null;
         rocks = List.of();
-        this.autopilot = null;
-        strikes.clear();
+        burst.clear();
+        autopilot = null;
+        overAt = Long.MAX_VALUE;
         SpaceRocks.over(this);
-        quietUntil = now + QUIET_TICKS;
     }
 
     /**

@@ -401,7 +401,10 @@ scaled down to the lift she has spare (`slamBrake`), so a heavy load still touch
 `FreighterFlight.says` turns into her computer's lines, and `RocketPilot.Orders.waitUp` keeps the rocket up till the
 all-clear; above `FROM` it rolls for a bout, plans its strikes, tells everyone near with
 one `SpaceWeatherShown` (seed, bearing, her middle and velocity, so every client streams the same streaks and rocks
-past where she would be) and again as it is over, and sends one `IncomingStrike` a strike as it is seen flying in,
+past where she would be) and again as it is over, when no more of its rocks set out and those on their way fly on
+(`SpaceWeather.flyOn`) until each is burst or out of sight, one knocked near her drifting off her and the client
+drawing one let go of on as it went (`SpaceWeatherSky.flyOff`); it sends one `IncomingStrike` a strike as it is seen
+flying in,
 from `SEEN_FROM` (820 blocks) out, so it flies into view; each strike lands through `SableFlight.strike` at a block a
 `level.clip` from outside found of hers, with `ImpactJolt` and `TurbulencePayload`, particles among her blocks and a
 sound at the plot position. A `GIANT_ASTEROID`'s giant lands unclamped by weight and with a far looser turn limit, and

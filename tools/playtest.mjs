@@ -633,6 +633,11 @@ const ROCK_ROCKET_TICKS = 80;
 // only 150 out; and how far from the player at her cannon her client holds one at least.
 const FAR_ROCK_MADE = 200;
 const FAR_ROCK_SEEN = 180;
+// A storm's rocks flying on after it: how long after its all-clear they are looked for, in ticks, past the three
+// seconds its rocks once lasted; and how long they are given to fly out of sight at most, in ticks: the server lets the
+// last go two minutes on, and one that drifted off her is drawn on until it is out of sight.
+const FLY_ON_LOOK_AFTER = 100;
+const FLY_ON_TICKS_MOST = 4200;
 // How long a freighter is watched for a solar flare's blackout to begin and then to end, in ticks.
 const BLACKOUT_WITHIN = 500;
 // How long a solar flare's blackout lasts by default and as the check sets it, longer, in seconds; how far either may
@@ -4120,6 +4125,39 @@ function farRocks() {
   expect(seen >= FAR_ROCK_SEEN, "far rocks: the player's client holds a rock's body that far off", `${round(seen)} blocks off at the farthest`);
 }
 
+// A storm's rocks fly on once it is over: an asteroid storm brought over a freighter hovering in space, strikes shoving
+// her none. Some seconds after her computer says it is all clear, rocks are still on their way past her, drawn by the
+// player's client, and the server has them there to be shot at; only once each has flown out of sight, a minute or so
+// on, are they all gone. They used to vanish where they were the moment it was over.
+function checkSpaceRocksFlyOn() {
+  const freighter = freighterInSpace("rocks fly on");
+  if (!freighter) {
+    return;
+  }
+  must("config skyliners server spaceWeather.strength 0");
+  try {
+    rocksFlyOn();
+  } finally {
+    send("?config reset");
+  }
+}
+
+// An asteroid storm's rocks watched as it passes and after, for checkSpaceRocksFlyOn.
+function rocksFlyOn() {
+  const since = now();
+  const asked = must("skyliners:spaceweather start=asteroid_storm");
+  expect(asked.started === "coming", "rocks fly on: an asteroid storm is brought over her", `${asked.started}`);
+  const over = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.blowing === "none", WEATHER_TICKS_MOST);
+  expect(Boolean(over) && played("skyliners:freighter_computer_all_clear", since).length > 0, "rocks fly on: the storm passes, her computer saying it is all clear");
+  const drawn = must(`wait ${FLY_ON_LOOK_AFTER}t; skyliners:gunner`).rocks_flying;
+  const weather = must("skyliners:spaceweather");
+  expect(drawn > 0 && weather.flying_on === true, "rocks fly on: seconds after, its rocks are still on their way past her, there to be shot at",
+    `${drawn} on their way for the player, flying on ${weather.flying_on}`);
+  const gone = waitForReport(() => ({ ...must("skyliners:spaceweather"), drawn: must("skyliners:gunner").rocks_flying }),
+    (report) => report.flying_on === false && report.drawn === 0, FLY_ON_TICKS_MOST);
+  expect(Boolean(gone), "rocks fly on: once each has flown out of sight, the last of them is gone", gone ? "" : `${must("skyliners:gunner").rocks_flying} still on their way`);
+}
+
 // A rock that strikes her stops at her hull: an asteroid storm brought over a freighter hovering in space, and the
 // rock that is a real body and coming at her followed until it has landed. It never gets anywhere near her middle, and
 // it has landed having met her.
@@ -6496,6 +6534,7 @@ const CHECKS = {
   "space-rocks-shot": { run: checkSpaceRocksShot, slow: true, about: "from a freighter's laser cannon in space, one bolt breaks exactly one block of a rock, the sight locks on to a rock flying in and rockets wear it through, her client told so" },
   "space-rocks-not-saved": { run: checkSpaceRocksNotSaved, slow: true, about: "left mid-storm and joined again, a world holds none of the rocks that were flying as real bodies" },
   "space-rock-solid": { run: checkSpaceRockSolid, slow: true, about: "a rock coming at a freighter in space is a real body of blocks that stops at her hull" },
+  "space-rocks-fly-on": { run: checkSpaceRocksFlyOn, slow: true, about: "a storm's rocks fly on out of sight once it is over, still there to be shot at, rather than vanishing where they are" },
   "space-rocks-far": { run: checkSpaceRocksFar, slow: true, about: "a freighter's laser cannon can shoot at space rocks well over 150 blocks off: they are real bodies there, on the server and her gunner's client" },
   "giant-asteroid": { run: checkGiantAsteroid, slow: true, about: "a giant asteroid shoves a freighter far harder than a rock and spins her, the server never stalling, nobody hurt" },
   "giant-asteroid-cracked": { run: checkGiantAsteroidCracked, slow: true, about: "from a freighter's laser cannon, rockets crack a giant asteroid into pieces that fly apart off its course and land softer, the server never stalling" },

@@ -26,9 +26,9 @@ import net.minecraft.world.phys.Vec3;
  * off, cracking a giant's rock right through besides. What is no longer joined on to a rock flies off as a piece of its
  * own; a rock worn through bursts, every client told so once (see {@link RockBurst}).
  *
- * <p>Nothing is kept but the weather blowing: each adds itself as it is told and takes itself away as it is over, or is
- * let go once the ship it blew round is gone, unloaded mid-storm. Its bodies are never saved: any found with no weather
- * flying them is taken away.
+ * <p>Nothing is kept but the weather blowing or its rocks flying on: each adds itself as it is told and takes itself
+ * away once its rocks are gone, after it is over, or is let go once the ship it blew round is gone, unloaded
+ * mid-storm. Its bodies are never saved: any found with no weather flying them is taken away.
  */
 public final class SpaceRocks {
     /**
@@ -60,6 +60,10 @@ public final class SpaceRocks {
      * for a play-test to read.
      */
     public static DoubleSupplier clientRealFarthest = () -> 0;
+    /**
+     * How many of the weather's rocks this client still has on their way; the client sets it, for a play-test to read.
+     */
+    public static IntSupplier clientRocksFlying = () -> 0;
 
     private SpaceRocks() {
     }
@@ -96,7 +100,7 @@ public final class SpaceRocks {
         }
     }
 
-    /** Weather over, whose rocks are gone. */
+    /** Weather whose rocks are all gone, burst or flown on out of sight after it was over. */
     static void over(SpaceWeather weather) {
         BLOWING.remove(weather);
     }

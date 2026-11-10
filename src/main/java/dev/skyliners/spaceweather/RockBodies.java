@@ -36,8 +36,9 @@ import org.slf4j.Logger;
  * A rocket cracks a rock as heavy as a giant's right through (see {@link #crack}): the piece broken off flies on as a
  * body of its own, a rock in its own right under a number of its own, and lands on her for its share of the whole
  * should it still meet her.
- * Nothing of them is saved: every body is taken out as its weather ends, and any found with no weather flying it is
- * swept away (see {@link SpaceRocks}).
+ * Once its weather is over a rock flies on until it is burst or out of sight. Nothing of them is saved: every body
+ * left is taken out as its weather's rocks are let go, and any found with no weather flying it is swept away (see
+ * {@link SpaceRocks}).
  */
 final class RockBodies {
     /**
@@ -71,6 +72,11 @@ final class RockBodies {
     private static final double STRUCK_BY = 2.5;
     /** How near her box a struck rock must be for what it met to be her, in blocks, past its own half width. */
     private static final double MET_HER_WITHIN = 8;
+    /**
+     * How fast a rock knocked near her drifts off her once its weather is over, in blocks a second: no faster than the
+     * slowest rocks sweep past, out of her way and on out of sight within a minute and a half.
+     */
+    private static final double DRIFTS_OFF = 8;
     /**
      * A rock worn down by shots: how much of its weight must be gone before the rest is taken to burst.
      */
@@ -240,6 +246,8 @@ final class RockBodies {
     private int nextPiece = PIECE_NUMBERS;
     /** For the play-test: how far from her middle the farthest rock made a body was as it began to be made. */
     private double farthestMade;
+    /** Whether its weather is over: from then on a rock knocked near her drifts off her rather than being held there. */
+    private boolean over;
 
     RockBodies(Told told, long startedAt) {
         this.told = told;
@@ -388,7 +396,7 @@ final class RockBodies {
      * it had, whatever Sable's gravity and drag took off it; what jolts it past that knocks it, and from then on it
      * keeps the speed it was knocked to. Knocked near her, it met her, unless it was just cracked; and once knocked,
      * near her it is only held up against gravity, as given back its speed pressed against her it would push her
-     * along like a thruster.
+     * along like a thruster, until its weather is over, when it drifts off her instead, to fly on out of sight.
      */
     private boolean coast(ServerLevel level, AABB herBox, Body body) {
         Vec3 middle = SableFlight.rockCentre(level, body.body);
@@ -407,11 +415,20 @@ final class RockBodies {
             body.velocity = velocity;
         }
         if (body.struck && nearHer(herBox, body, middle)) {
-            body.velocity = velocity;
-            return SableFlight.holdUpRock(level, body.body);
+            if (!over) {
+                body.velocity = velocity;
+                return SableFlight.holdUpRock(level, body.body);
+            }
+            body.velocity = offHer(herBox, middle);
         }
         SableFlight.setRockVelocity(level, body.body, body.velocity);
         return true;
+    }
+
+    /** How a rock near her drifts off her, its middle somewhere in the world: straight away from hers, slowly. */
+    private static Vec3 offHer(AABB herBox, Vec3 middle) {
+        Vec3 away = middle.subtract(herBox.getCenter());
+        return (away.lengthSqr() < 1e-6 ? new Vec3(0, 1, 0) : away.normalize()).scale(DRIFTS_OFF);
     }
 
     /** Whether a rock, its middle somewhere in the world, is near enough her box to be touching her. */
@@ -749,8 +766,22 @@ final class RockBodies {
         }
     }
 
-    /** All of it out of the world: the weather is over. */
+    /** Its weather over: a rock knocked near her drifts off her from now on. */
+    void over() {
+        over = true;
+    }
+
+    /** Whether any of it is left: a rock's body flying or being laid or cracked, or a piece split off one. */
+    boolean any() {
+        return !bodies.isEmpty() || !making.isEmpty() || !cracks.isEmpty() || !pieces.isEmpty();
+    }
+
+    /**
+     * All of it out of the world: the weather's rocks are let go of, each body still flying told gone, for its clients
+     * to draw it on as it went rather than lose it where it is.
+     */
     void clear(ServerLevel level) {
+        bodies.values().forEach(body -> told.real(body.told(startedAt, RockReal.Stage.GONE)));
         SableFlight.rockPieces(level, ids(), notRock).forEach(piece -> SableFlight.removeRock(level, piece));
         ids().forEach(rock -> SableFlight.removeRock(level, rock));
         shaping.values().forEach(shape -> shape.cancel(false));

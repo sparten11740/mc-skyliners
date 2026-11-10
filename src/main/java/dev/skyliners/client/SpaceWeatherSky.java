@@ -58,18 +58,26 @@ import org.joml.Vector3f;
  * and a cloud of dust, with a crunch. A solar flare shows on the sun and the sky (see {@link SolarFlare}) and over the
  * view (see {@link SpaceWeatherHud}).
  *
- * <p>Nothing pops into view: every streak and rock sets out from far beyond the farthest the game draws, and fades in
- * as it comes, faint and small at first, and out again as it goes; so does each that strikes her.
+ * <p>Nothing pops into view or out of it: every streak and rock sets out from far beyond the farthest the game draws,
+ * and fades in as it comes, faint and small at first, and out again as it goes; so does each that strikes her. Once the
+ * weather is over none sets out any more, and those on their way fly on out of sight, a rock knocked off its way and
+ * let go of drawn on as it went.
  *
  * <p>The weather shown is one for the player, the last they were told of: a second ship blowing her own near by
  * replaces it. Every streak and rock is worked out once, as the weather is told, from its seed, so everyone near sees
  * the same ones at the same moments, as the server knows them to shoot at (see {@link RockField}), and they stream past
  * where she would be had nothing struck her: she is seen thrown about among them. They are drawn after the particles,
- * past the fog; those the camera cannot see are left out, and nothing at all is drawn while no weather blows.
+ * past the fog; those the camera cannot see are left out, and nothing at all is drawn while no weather blows or flies
+ * on.
  */
 public final class SpaceWeatherSky {
     /** How long after the weather should have passed it is let go, unless told so before, in ticks. */
     private static final int GRACE_TICKS = 200;
+    /**
+     * How long past the end of the last way any of its streaks and rocks took the weather is let go at the latest, in
+     * ticks, rocks' bodies told or not: past the longest the server flies its rocks on and one let go of is drawn on.
+     */
+    private static final int LOST_TICKS = 5 * 60 * 20;
     /** How long its all-clear shows, in ticks, after it is told over. */
     private static final int CLEAR_TICKS = 60;
     /**
@@ -183,6 +191,12 @@ public final class SpaceWeatherSky {
     private static final long NEVER = Long.MAX_VALUE;
     /** How big a rock burst is drawn, in blocks across, when this client was never told how big it was. */
     private static final double BURST_SIZE_UNKNOWN = 3;
+    /**
+     * How often a rock's body this client holds is looked at, in ticks, for how fast it moves; and at most how long a
+     * rock let go of is drawn on, in ticks, should it never fly out of sight.
+     */
+    private static final double SIGHTED_EVERY = 5;
+    private static final double FLOWN_OFF_MOST = 2 * 60 * TICKS;
 
     /**
      * When a solar flare told to this client knocks out her systems, in game time; {@link #NEVER} with none coming.
@@ -194,6 +208,16 @@ public final class SpaceWeatherSky {
     private static SpaceWeatherShown shown;
     /** When it was told over, in game time; never while it still blows. */
     private static long overAt = NEVER;
+    /**
+     * How long after it was told it was told over, in ticks, none of its streaks and rocks setting out after that; far
+     * off while it still blows.
+     */
+    private static double overSince = Double.MAX_VALUE;
+    /**
+     * When the last of its streaks and rocks to set out comes to the end of its way, in ticks after it was told, out of
+     * sight; no sooner than it was to pass. Well past that it is let go of, told over or not.
+     */
+    private static double lastWayEnds;
     /** Its streaks and rocks, worked out once from its seed as it was told. */
     private static final List<Streak> STREAKS = new ArrayList<>();
     private static List<RockField.Rock> rocks = List.of();
@@ -219,6 +243,12 @@ public final class SpaceWeatherSky {
     /** The chunks, dust and flashes of rocks bursting. */
     private static final List<Chunk> CHUNKS_FLYING = new ArrayList<>();
     private static final List<Puff> PUFFS_SEEN = new ArrayList<>();
+    /**
+     * Where each rock's body this client holds was last seen, by number, every {@link #SIGHTED_EVERY} ticks; and the
+     * rocks let go of once knocked off their ways, drawn on from there until out of sight.
+     */
+    private static final Map<Integer, Sighting> SIGHTED = new HashMap<>();
+    private static final List<FlownOff> FLOWN_OFF = new ArrayList<>();
 
     /**
      * A streak: when it comes, in ticks after the weather was told; where along its way it passes nearest her, from
@@ -246,15 +276,38 @@ public final class SpaceWeatherSky {
     private record Puff(Vec3 at, double born, double from, double to, double life, int colour, float bright) {
     }
 
+    /**
+     * Where a rock's body was seen, in the world, and when, in game time, and how fast it was moving then, in blocks a
+     * second, from where it was seen before.
+     */
+    private record Sighting(Vec3 at, double time, Vec3 velocity) {
+    }
+
+    /**
+     * A rock let go of once knocked off its way, drawn on from where its body was last seen, as it was moving then:
+     * where and when, in game time, how fast, in blocks a second, how big across, in blocks, and how it looks.
+     */
+    private record FlownOff(Vec3 from, double at, Vec3 velocity, double size, RockShape.Look look) {
+        /** Where it is at a game time, in the world. */
+        Vec3 now(double time) {
+            return from.add(velocity.scale((time - at) / TICKS));
+        }
+    }
+
     private SpaceWeatherSky() {
     }
 
-    /** Weather told, or told over, by the server. */
+    /**
+     * Weather told, or told over, by the server: once it is over none of its streaks and rocks sets out any more, and
+     * those on their way fly on out of sight.
+     */
     public static void shown(SpaceWeatherShown told) {
         if (told.over()) {
             if (shown != null && shown.startedAt() == told.startedAt()) {
                 overAt = DrawingClock.wholeTicks();
+                overSince = DrawingClock.gameTime(0F) - told.startedAt();
                 shown = told;
+                lastWayEnds = lastWayEnds();
                 callOffBlackout();
             }
             return;
@@ -273,6 +326,22 @@ public final class SpaceWeatherSky {
             meteors(random, out, told.warningTicks(), told.warningTicks() + told.stormTicks(), STORM_DUST, false);
         }
         rocks = RockField.of(told);
+        lastWayEnds = lastWayEnds();
+    }
+
+    /**
+     * When the last of the weather's streaks and rocks to have set out comes to the end of its way, in ticks after it
+     * was told; no sooner than it was to pass.
+     */
+    private static double lastWayEnds() {
+        double last = shown.warningTicks() + shown.stormTicks();
+        for (Streak streak : STREAKS) {
+            last = streak.born() <= overSince ? Math.max(last, streak.born() + streak.life()) : last;
+        }
+        for (RockField.Rock rock : rocks) {
+            last = rock.born() <= overSince ? Math.max(last, rock.born() + rock.life()) : last;
+        }
+        return last;
     }
 
     /**
@@ -322,6 +391,19 @@ public final class SpaceWeatherSky {
     }
 
     /**
+     * How many of the weather's rocks this client still has on their way, drawn, real bodies or flying off; for a
+     * play-test to read.
+     */
+    public static int rocksFlying() {
+        if (shown == null) {
+            return 0;
+        }
+        double since = DrawingClock.gameTime(0F) - shown.startedAt();
+        long drawn = rocks.stream().filter(rock -> rock.age(since) > 0 && rock.age(since) < 1 && rock.born() <= overSince && !gone(rock.id())).count();
+        return (int) drawn + REAL.size() + FLOWN_OFF.size();
+    }
+
+    /**
      * How far from the player the farthest of the weather's rocks is that this client holds as a real body, in blocks,
      * none for none: as far out as the cannon's sight can lock on to one; for a play-test to read.
      */
@@ -358,10 +440,43 @@ public final class SpaceWeatherSky {
             return;
         }
         REAL.remove(told.id());
-        REAL_SIZES.remove(told.id());
+        Float size = REAL_SIZES.remove(told.id());
         SEEN_REAL.remove(told.id());
+        Sighting last = SIGHTED.remove(told.id());
         if (told.stage() == RockReal.Stage.GONE) {
             LET_GO.add(told.id());
+            flyOff(told.id(), last, size);
+        }
+    }
+
+    /**
+     * A rock's body let go of once knocked off its way, drawn on from where this client last saw it, as it was moving
+     * then, until it is out of sight: far off, where the server lets it go, it flies on rather than vanishing.
+     */
+    private static void flyOff(int id, @Nullable Sighting last, @Nullable Float size) {
+        if (last != null && size != null && last.velocity().lengthSqr() > 0) {
+            FLOWN_OFF.add(new FlownOff(last.at(), last.time(), last.velocity(), size, look(id, seedOf(id))));
+        }
+    }
+
+    /** The seed of a rock's shape, by its number: its own, or one of its own for a piece cracked off a rock. */
+    private static long seedOf(int id) {
+        IncomingStrike strike = INCOMING.get(id);
+        if (strike != null) {
+            return strike.seed();
+        }
+        return id >= 0 && id < rocks.size() ? rocks.get(id).seed() : id * 31L + shown.startedAt();
+    }
+
+    /** Each rock's body this client holds looked at every so often: where it is, and how fast it has moved since. */
+    private static void sight(double now) {
+        for (Map.Entry<Integer, UUID> real : REAL.entrySet()) {
+            Vec3 at = SableClient.bodyCentre(real.getValue());
+            Sighting last = SIGHTED.get(real.getKey());
+            if (at != null && (last == null || now - last.time() >= SIGHTED_EVERY)) {
+                Vec3 velocity = last == null ? Vec3.ZERO : at.subtract(last.at()).scale(TICKS / (now - last.time()));
+                SIGHTED.put(real.getKey(), new Sighting(at, now, velocity));
+            }
         }
     }
 
@@ -434,6 +549,9 @@ public final class SpaceWeatherSky {
 
     private static void forget() {
         overAt = NEVER;
+        overSince = Double.MAX_VALUE;
+        SIGHTED.clear();
+        FLOWN_OFF.clear();
         STREAKS.clear();
         rocks = List.of();
         LOOKS.clear();
@@ -452,7 +570,7 @@ public final class SpaceWeatherSky {
      * blocks that is a real body, as the server would find it (see {@link SpaceRocks}): for the sight to lock on to it.
      */
     static boolean rockSighted(Vec3 from, Vec3 way, double reach) {
-        if (shown == null || overAt != NEVER) {
+        if (shown == null) {
             return false;
         }
         Vec3 unit = way.normalize();
@@ -535,7 +653,7 @@ public final class SpaceWeatherSky {
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         double now = DrawingClock.gameTime(partial);
         double since = now - shown.startedAt();
-        if (since > shown.warningTicks() + shown.stormTicks() + GRACE_TICKS || (overAt != NEVER && DrawingClock.wholeTicks() - overAt > CLEAR_TICKS)) {
+        if (passed(since)) {
             forget();
             shown = null;
             return;
@@ -543,11 +661,13 @@ public final class SpaceWeatherSky {
         INCOMING.values().removeIf(strike -> now > strike.at() + FLIES_ON_TICKS);
         CHUNKS_FLYING.removeIf(chunk -> now - chunk.born() > CHUNK_TICKS);
         PUFFS_SEEN.removeIf(puff -> now - puff.born() > puff.life());
+        sight(now);
         Camera camera = event.getCamera();
         Vec3 eye = camera.getPosition();
         Vec3 anchor = shown.anchor(since);
         Vector3f sun = sunWay(partial);
         double seen = Math.min(SEEN_FARTHEST, Minecraft.getInstance().gameRenderer.getDepthFar() * SEEN_SHARE);
+        FLOWN_OFF.removeIf(rock -> rock.now(now).distanceTo(eye) > seen || now - rock.at() > FLOWN_OFF_MOST);
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -557,6 +677,7 @@ public final class SpaceWeatherSky {
         FogRenderer.setupNoFog();
         Sky sky = new Sky(pose, buffers, event.getFrustum(), eye, sun, seen);
         drawRocks(sky, anchor, since);
+        drawFlownOff(sky, now);
         drawIncoming(sky, now, partial);
         drawChunks(sky, now);
         buffers.endBatch(RockMeshes.ROCK);
@@ -568,6 +689,18 @@ public final class SpaceWeatherSky {
         RenderSystem.setShaderFogEnd(fogEnd);
         RenderSystem.setShaderFogShape(fogShape);
         pose.popPose();
+    }
+
+    /**
+     * Whether the weather shown is done with: every streak and rock at the end of its way, no rock's body told and
+     * none flying off, and either told over a moment ago, its all-clear shown, or, never told, well past that end; or,
+     * whatever is still told, long past it.
+     */
+    private static boolean passed(double since) {
+        boolean bodies = !REAL.isEmpty() || !FLOWN_OFF.isEmpty();
+        boolean toldOver = overAt != NEVER && DrawingClock.wholeTicks() - overAt > CLEAR_TICKS;
+        boolean ended = since > lastWayEnds && !bodies && (toldOver || since > lastWayEnds + GRACE_TICKS);
+        return ended || since > lastWayEnds + LOST_TICKS;
     }
 
     /**
@@ -611,7 +744,7 @@ public final class SpaceWeatherSky {
         VertexConsumer buffer = sky.buffers().getBuffer(RockMeshes.ROCK);
         for (RockField.Rock rock : rocks) {
             double age = rock.age(since);
-            if (age <= 0 || age >= 1 || gone(rock.id())) {
+            if (age <= 0 || age >= 1 || rock.born() > overSince || gone(rock.id())) {
                 continue;
             }
             Vec3 at = rock.at(anchor, since);
@@ -620,6 +753,19 @@ public final class SpaceWeatherSky {
                 RockShape.Look look = look(rock.id(), rock.seed());
                 Vec3 off = at.subtract(sky.eye());
                 RockMeshes.draw(buffer, sky.pose(), off.x, off.y, off.z, rock.size(), look, look.turned(since / TICKS), fade, sky.sun());
+            }
+        }
+    }
+
+    /** The rocks let go of once knocked off their ways, flying on as they went, fading as they go out of sight. */
+    private static void drawFlownOff(Sky sky, double now) {
+        VertexConsumer buffer = sky.buffers().getBuffer(RockMeshes.ROCK);
+        for (FlownOff rock : FLOWN_OFF) {
+            Vec3 at = rock.now(now);
+            float fade = sky.fade(at);
+            if (fade > 0 && sky.inSight(at, rock.size() * 2)) {
+                Vec3 off = at.subtract(sky.eye());
+                RockMeshes.draw(buffer, sky.pose(), off.x, off.y, off.z, rock.size(), rock.look(), rock.look().turned(now / TICKS), fade, sky.sun());
             }
         }
     }
@@ -662,7 +808,7 @@ public final class SpaceWeatherSky {
         Matrix4f matrix = sky.pose().last().pose();
         for (Streak streak : STREAKS) {
             double age = (since - streak.born()) / streak.life();
-            if (age <= 0 || age >= 1) {
+            if (age <= 0 || age >= 1 || streak.born() > overSince) {
                 continue;
             }
             double along = (age - 0.5) * STREAK_PATH;

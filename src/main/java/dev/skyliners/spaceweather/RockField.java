@@ -40,6 +40,13 @@ public final class RockField {
     private static final double FAR_BIGGEST = 34;
     private static final double FAR_SPEED = 14;
     /**
+     * How near her the far rocks' ways pass at the least, in blocks, past where rocks become real bodies, so each stays
+     * a far-off sight and never comes at her; and how far on they drift once the weather is over, in blocks, out of
+     * everyone's sight, the slowest taking a little over a minute.
+     */
+    private static final double FAR_PASSES_NEAREST = 280;
+    private static final double FAR_DRIFTS_ON = 1200;
+    /**
      * The rocks sweeping past her while it is on her: how big they are at least and at most, in blocks across, more of
      * them small than big; how fast they go, in blocks a second; how far off they pass her, at the nearest and
      * farthest; and how far they are seen going, from far beyond where anyone draws them to as far again past her.
@@ -64,8 +71,9 @@ public final class RockField {
     }
 
     /**
-     * A rock: its number among the weather's; when it comes, in ticks after the weather was told; where along its way
-     * it passes nearest her, from where she would be; the way it goes, of length 1, and how fast, in blocks a second;
+     * A rock: its number among the weather's; when it comes, in ticks after the weather was told; the middle of its
+     * way, from where she would be, where one sweeping past passes nearest her; the way it goes, of length 1, and how
+     * fast, in blocks a second;
      * how far it is seen going, in blocks; how big it is, in blocks across; and its seed, for its shape and its tumble.
      */
     public record Rock(int id, double born, Vec3 passing, Vec3 way, double speed, double path, double size, long seed) {
@@ -105,17 +113,35 @@ public final class RockField {
         return rocks;
     }
 
-    /** The big rocks on the horizon while it is told, drifting slowly in from far beyond sight. */
+    /**
+     * The big rocks on the horizon while it is told, drifting slowly in from far beyond sight, and once the weather is
+     * over drifting on past her, never near, out of sight again.
+     */
     private static void far(RandomSource random, Vec3 out, SpaceWeatherShown told, int count, List<Rock> rocks) {
         for (int i = 0; i < count; i++) {
             Vec3 across = new Vec3(-out.z, 0, out.x);
             double off = Mth.lerp(random.nextDouble(), FAR_NEAREST, FAR_FARTHEST);
-            Vec3 passing = out.scale(off).add(across.scale((random.nextDouble() * 2 - 1) * FAR_ACROSS)).add(0, (random.nextDouble() - 0.3) * off * 0.15, 0);
+            Vec3 drawnIn = out.scale(off).add(across.scale((random.nextDouble() * 2 - 1) * FAR_ACROSS)).add(0, (random.nextDouble() - 0.3) * off * 0.15, 0);
             Vec3 way = strayed(random, out.reverse(), FAR_STRAY, FAR_STRAY_UP);
             double size = Mth.lerp(random.nextDouble(), FAR_SMALLEST, FAR_BIGGEST);
-            double path = FAR_SPEED * (told.warningTicks() + told.stormTicks()) / TICKS;
-            rocks.add(new Rock(rocks.size(), 0, passing, way, FAR_SPEED, path, size, random.nextLong()));
+            double drift = FAR_SPEED * (told.warningTicks() + told.stormTicks()) / TICKS;
+            Vec3 passing = passingClear(drawnIn, way).add(way.scale(FAR_DRIFTS_ON / 2));
+            rocks.add(new Rock(rocks.size(), 0, passing, way, FAR_SPEED, drift + FAR_DRIFTS_ON, size, random.nextLong()));
         }
+    }
+
+    /**
+     * A spot a far rock's way runs through, from her, moved out to one side of its way as far as it takes for the way
+     * to pass her no nearer than {@link #FAR_PASSES_NEAREST}.
+     */
+    private static Vec3 passingClear(Vec3 spot, Vec3 way) {
+        Vec3 nearest = spot.subtract(way.scale(spot.dot(way)));
+        double off = nearest.length();
+        if (off >= FAR_PASSES_NEAREST) {
+            return spot;
+        }
+        Vec3 aside = off > 1e-6 ? nearest.scale(1 / off) : new Vec3(-way.z, 0, way.x).normalize();
+        return spot.add(aside.scale(FAR_PASSES_NEAREST - off));
     }
 
     /**

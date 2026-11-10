@@ -430,6 +430,7 @@ public final class SkylinersClient {
         SpaceWeather.clientBlackedOut = SpaceWeatherSky::blackedOut;
         SpaceRocks.clientBurstsSeen = SpaceWeatherSky::burstsSeen;
         SpaceRocks.clientRealFarthest = SpaceWeatherSky::realFarthest;
+        SpaceRocks.clientRocksFlying = SpaceWeatherSky::rocksFlying;
         CannonRocket.clientTicker = CannonRockets::tick;
     }
 

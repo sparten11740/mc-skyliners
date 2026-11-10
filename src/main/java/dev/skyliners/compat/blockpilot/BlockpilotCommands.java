@@ -142,7 +142,8 @@ public final class BlockpilotCommands {
             .field("rockets", "how many rockets its pods hold, as the sight shows them")
             .field("loading", "how far the next rocket is loaded, from 0 to 1, as the sight shows it filling")
             .field("bursts_seen", "how many space rocks this client has seen burst in the weather it shows")
-            .field("real_farthest", "how far from the player the farthest space rock this client holds as a real body is, in blocks"));
+            .field("real_farthest", "how far from the player the farthest space rock this client holds as a real body is, in blocks")
+            .field("rocks_flying", "how many space rocks this client still has on their way, drawn, real or flying off, sitting at the sight or not"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("skyliners")
@@ -241,6 +242,7 @@ public final class BlockpilotCommands {
             .option("start", "brings space weather of a kind over the nearest rocket or freighter at once, from y 1,500 up", WEATHER_KINDS)
             .help("the space weather over the nearest rocket or freighter: what blows, how many strikes have landed on her and the tick the last did")
             .field("blowing", "what blows now: meteor_shower, asteroid_storm, solar_flare, giant_asteroid or none")
+            .field("flying_on", "whether the rocks of weather over still fly on, there to be shot at")
             .field("from", "the side of the sky the weather blowing comes out of, as a bearing in degrees as the game turns a look")
             .field("landed", "how many strikes have landed on her since she was loaded")
             .field("last_landed", "the game tick the last strike landed on her, -1 before any")
@@ -284,14 +286,15 @@ public final class BlockpilotCommands {
     private static Result gunner() {
         LaserCannonBlockEntity.Sighting sighting = LaserCannonBlockEntity.clientSighting.get();
         if (sighting == null) {
-            return Result.ok(new Fields().tag("on", false));
+            return Result.ok(new Fields().tag("on", false).tag("rocks_flying", SpaceRocks.clientRocksFlying.getAsInt()));
         }
         Vec3 eye = sighting.eye();
         Vec3 look = sighting.look();
         return Result.ok(new Fields().tag("on", true).tag("at", round(eye.x) + "," + round(eye.y) + "," + round(eye.z))
             .tag("look", round(look.x) + "," + round(look.y) + "," + round(look.z))
             .tag("locked", sighting.lockedOn()).tag("rockets", sighting.rockets()).tag("loading", round(sighting.loading()))
-            .tag("bursts_seen", SpaceRocks.clientBurstsSeen.getAsInt()).tag("real_farthest", round(SpaceRocks.clientRealFarthest.getAsDouble())));
+            .tag("bursts_seen", SpaceRocks.clientBurstsSeen.getAsInt()).tag("real_farthest", round(SpaceRocks.clientRealFarthest.getAsDouble()))
+            .tag("rocks_flying", SpaceRocks.clientRocksFlying.getAsInt()));
     }
 
     private static Result zeppelin() throws CommandException {
@@ -404,7 +407,7 @@ public final class BlockpilotCommands {
             return Result.error("no_ship");
         }
         List<SpaceWeather.Coming> coming = weather.coming(player.serverLevel());
-        fields.tag("blowing", weather.blowingNamed()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
+        fields.tag("blowing", weather.blowingNamed()).tag("flying_on", weather.flyingOn()).tag("from", Math.round(weather.from())).tag("landed", weather.landed())
             .tag("last_landed", weather.lastLanded()).tag("last_share", round(weather.lastShare())).tag("last_giant", weather.lastGiant()).tag("shot_down", weather.shotDown())
             .tag("missed", weather.missed()).tag("coming", coming.size());
         List<SpaceWeather.Real> real = weather.realRocks(player.serverLevel());
