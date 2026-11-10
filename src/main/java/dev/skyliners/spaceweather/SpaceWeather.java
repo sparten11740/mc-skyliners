@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -142,11 +143,13 @@ public final class SpaceWeather {
     private static final double FLARE_WIND = 0.04;
     /**
      * A solar flare's blackout, its pulse knocking out a ship's systems as a real one's can: how long after it reaches
-     * her, and for how long, in ticks. Her lift gone she falls, some 125 blocks in these five seconds, well clear of
-     * anything up here and not so far that she drops out of the weather.
+     * her it begins, in ticks, lasting as long as the server's config says (see {@link #blackoutTicks}); and how long
+     * after it ends her all-clear can come, in ticks, for her computer to be heard saying her systems are back first.
      */
-    private static final int BLACKOUT_AFTER = 30;
-    private static final int BLACKOUT_TICKS = 100;
+    public static final int BLACKOUT_AFTER = 30;
+    private static final int ALL_CLEAR_AFTER_BLACKOUT = 40;
+    /** Whether this client's screens are dark with a flare's blackout, for the play-test; set on the client. */
+    public static BooleanSupplier clientBlackedOut = () -> false;
     private static final int CRACKLE_EVERY = 30;
     /** How long the view of everyone aboard goes on shaking after a strike that leaves them shaking, in ticks. */
     private static final int RUMBLE_TICKS = 30;
@@ -661,7 +664,9 @@ public final class SpaceWeather {
     /**
      * A tick of the weather under way: her flight deck's warning after the alarm; each strike seen flying in, then
      * landing; a flare's wind and crackle while it is on her; and the all-clear once it has passed and the last of it
-     * has flown in, or at once should she come down out of it. Gone quiet with nobody left aboard.
+     * has flown in, or at once should she come down out of it; but never before a flare's blackout is over, as she
+     * falls out of the weather through a long one and nothing aboard is clear while she is still dark. Gone quiet with
+     * nobody left aboard.
      */
     private void blow(ServerLevel level, AutopilotBlockEntity autopilot, double height, long now) {
         long into = now - startedAt;
@@ -679,7 +684,8 @@ public final class SpaceWeather {
         }
         strikes.removeIf(strike -> strikeTick(level, autopilot, strike, now));
         boolean passed = into >= WARNING_TICKS + kind.stormTicks + LINGER_TICKS && strikes.isEmpty();
-        if (height < FROM - LEFT_BY || passed) {
+        boolean systemsBack = now >= blackoutEnds + ALL_CLEAR_AFTER_BLACKOUT;
+        if (systemsBack && (height < FROM - LEFT_BY || passed)) {
             end(level, autopilot, now, true);
         }
     }
@@ -1068,12 +1074,13 @@ public final class SpaceWeather {
     /**
      * A solar flare's blackout beginning: every light aboard her goes out and comes back by itself, her computer saying
      * so, its thrusters and screens seeing to themselves (see {@link #blackedOut}). Its end is kept apart from the
-     * weather's, which may pass first: she falls some way with her lift gone, and can drop out of it.
+     * weather's, which a long one outlasts.
      */
     private void blackout(ServerLevel level, AutopilotBlockEntity autopilot, long into) {
-        if (into - WARNING_TICKS - BLACKOUT_AFTER == 0) {
-            blackoutEnds = level.getGameTime() + BLACKOUT_TICKS;
-            lightsOut(level, autopilot);
+        int ticks = blackoutTicks();
+        if (into - WARNING_TICKS - BLACKOUT_AFTER == 0 && ticks > 0) {
+            blackoutEnds = level.getGameTime() + ticks;
+            lightsOut(level, autopilot, ticks);
             sayBlackout(level, autopilot, SkylinersRegistry.FREIGHTER_COMPUTER_BLACKOUT);
         }
     }
@@ -1088,21 +1095,20 @@ public final class SpaceWeather {
      * Every light aboard her out at once, each told to come back as it was once the blackout is over: a change its
      * panel keeps and saves, so it comes back even if the world is left meanwhile.
      */
-    private static void lightsOut(ServerLevel level, AutopilotBlockEntity autopilot) {
+    private static void lightsOut(ServerLevel level, AutopilotBlockEntity autopilot, int ticks) {
         BoundingBox frame = autopilot.frame();
         for (LedPanelBlockEntity panel : LedPanelBlockEntity.loaded(level)) {
             if (frame != null && frame.isInside(panel.getBlockPos())) {
                 int was = panel.next().brightness();
                 panel.change(setting -> setting.withBrightness(0), 0);
-                panel.change(setting -> setting.withBrightness(was), BLACKOUT_TICKS);
+                panel.change(setting -> setting.withBrightness(was), ticks);
             }
         }
     }
 
-    /** Whether a bout of weather has a ship's systems out, so long since it was told and warned of so long before. */
-    public static boolean blackedOut(Kind kind, double since, int warningTicks) {
-        double into = since - warningTicks - BLACKOUT_AFTER;
-        return kind == Kind.SOLAR_FLARE && into >= 0 && into < BLACKOUT_TICKS;
+    /** How long a solar flare's blackout lasts, in ticks, as the server's config says; none if set to nothing. */
+    public static int blackoutTicks() {
+        return (int) (SkylinersConfig.SPACE_WEATHER_BLACKOUT.get() * TICKS);
     }
 
     /** Whether a solar flare has her systems out now, for her autopilot to let go of her thrusters. */

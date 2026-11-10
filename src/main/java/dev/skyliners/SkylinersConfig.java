@@ -131,6 +131,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue SPACE_WEATHER;
     public static final ModConfigSpec.IntValue SPACE_WEATHER_EVERY;
     public static final ModConfigSpec.IntValue SPACE_WEATHER_STRENGTH;
+    public static final ModConfigSpec.IntValue SPACE_WEATHER_BLACKOUT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -539,6 +540,14 @@ public final class SkylinersConfig {
                 "steady through it, every strike still seen, heard and felt, and 200 shoves her twice as hard."
             )
             .defineInRange("strength", 100, 0, 300);
+        SPACE_WEATHER_BLACKOUT = builder
+            .comment(
+                "How many seconds a solar flare's pulse knocks out a ship's engines, lights and screens; her lift gone, she falls",
+                "until they come back. Five seconds drops a freighter some 140 blocks. Fifteen drop her some 900 and she falls",
+                "1,000 more before she has caught herself, so with less air than that under her she comes down hard on the",
+                "ground, then lifts off again by herself. 0 leaves her systems running through a flare."
+            )
+            .defineInRange("flareBlackoutSeconds", 5, 0, 60);
         builder.pop();
 
         builder.push("rocket");

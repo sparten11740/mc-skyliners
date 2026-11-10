@@ -179,6 +179,11 @@ public final class SpaceWeatherSky {
     /** Long after any game time: never. */
     private static final long NEVER = Long.MAX_VALUE;
 
+    /**
+     * When a solar flare told to this client knocks out her systems, in game time; {@link #NEVER} with none coming.
+     * Kept apart from the weather shown, which a long blackout outlasts.
+     */
+    private static long blackoutBegins = NEVER;
     /** The weather shown now; null while none blows. */
     @Nullable
     private static SpaceWeatherShown shown;
@@ -232,11 +237,15 @@ public final class SpaceWeatherSky {
             if (shown != null && shown.startedAt() == told.startedAt()) {
                 overAt = DrawingClock.wholeTicks();
                 shown = told;
+                callOffBlackout();
             }
             return;
         }
         forget();
         shown = told;
+        if (told.kind() == SpaceWeather.Kind.SOLAR_FLARE) {
+            blackoutBegins = told.startedAt() + told.warningTicks() + SpaceWeather.BLACKOUT_AFTER;
+        }
         RandomSource random = RandomSource.create(told.seed());
         Vec3 out = SpaceWeather.toward(told.from());
         if (told.kind() == SpaceWeather.Kind.METEOR_SHOWER) {
@@ -324,10 +333,17 @@ public final class SpaceWeatherSky {
         return shown == null || overAt != NEVER ? null : shown.kind();
     }
 
-    /** Whether a solar flare has this client's ship's systems out now (see {@link SpaceWeather#blackedOut}). */
+    /** A flare told over before its blackout began never brings one: she came down out of it first. */
+    private static void callOffBlackout() {
+        if (DrawingClock.gameTime(0F) < blackoutBegins) {
+            blackoutBegins = NEVER;
+        }
+    }
+
+    /** Whether a solar flare has this client's ship's systems out now, for as long as the server's config says. */
     public static boolean blackedOut() {
-        double since = shown == null ? 0 : DrawingClock.gameTime(0F) - shown.startedAt();
-        return shown != null && SpaceWeather.blackedOut(shown.kind(), since, shown.warningTicks());
+        double into = DrawingClock.gameTime(0F) - blackoutBegins;
+        return into >= 0 && into < SpaceWeather.blackoutTicks();
     }
 
     /** The weather shown now, told or on her or over a moment since; null for none. */
@@ -345,6 +361,7 @@ public final class SpaceWeatherSky {
     public static void loggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         forget();
         shown = null;
+        blackoutBegins = NEVER;
     }
 
     private static void forget() {

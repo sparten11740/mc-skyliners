@@ -143,6 +143,7 @@ import dev.skyliners.client.SpaceSky;
 import dev.skyliners.client.SpaceWeatherHud;
 import dev.skyliners.client.SpaceWeatherSky;
 import dev.skyliners.spaceweather.SpaceRocks;
+import dev.skyliners.spaceweather.SpaceWeather;
 import dev.skyliners.client.BreakerBoardRenderer;
 import dev.skyliners.client.CoolantValveRenderer;
 import dev.skyliners.client.FloorWindowRenderer;
@@ -422,6 +423,7 @@ public final class SkylinersClient {
         DeckRobotBlockEntity.clientTicker = DeckRobotRenderer::look;
         LaserCannonBlockEntity.clientTicker = CannonServo::listen;
         LaserCannonBlockEntity.clientSighting = GunnerView::sighting;
+        SpaceWeather.clientBlackedOut = SpaceWeatherSky::blackedOut;
         SpaceRocks.clientBurstsSeen = SpaceWeatherSky::burstsSeen;
         CannonRocket.clientTicker = CannonRockets::tick;
     }

@@ -605,6 +605,15 @@ const ROCK_FIRE_AFTER = 6;
 const ROCK_SETTLE_TICKS = 400;
 // How long a freighter is watched for a solar flare's blackout to begin and then to end, in ticks.
 const BLACKOUT_WITHIN = 500;
+// How long a solar flare's blackout lasts by default and as the check sets it, longer, in seconds; how far either may
+// be seen to be off, in ticks, looking once a second; how long into the longer one to look at her screens, in ticks, by
+// when she has fallen out of the weather; and how long after it she is to be climbing again, in ticks.
+const TICKS_A_SECOND = 20;
+const BLACKOUT_SECONDS = 5;
+const BLACKOUT_SET_SECONDS = 12;
+const BLACKOUT_OFF_BY = 50;
+const BLACKOUT_SCREENS_LOOK = 200;
+const BLACKOUT_CLIMBS_WITHIN = 1200;
 const ROCK_WEATHER_TICKS = 1300;
 // A giant asteroid: how long it is given to land, from the alarm, in ticks; how much its strike must change her speed
 // at least, in blocks a second, and how many times an ordinary rock's at least; how fast it must set her turning at
@@ -3914,9 +3923,10 @@ function checkSpaceRocksShot() {
   quietSpace();
 }
 
-// A solar flare's pulse: hovering in space, as it arrives her systems go out for a few seconds, as a real one's could:
-// every thruster let go, the lights out and her computer saying so, then all of it coming back by itself and her holding
-// again.
+// A solar flare's pulse: hovering in space, as it arrives her systems go out for five seconds, as a real one's could:
+// every thruster let go, the lights out and her screens dark, her computer saying so, then all of it coming back by
+// itself, and she climbs back from her fall, nobody aboard hurt. The server's config sets how long it lasts, her
+// screens staying dark all the while, even once she has fallen out of the weather.
 function checkFreighterBlackout() {
   const freighter = freighterInSpace("blackout");
   if (!freighter) {
@@ -3925,6 +3935,8 @@ function checkFreighterBlackout() {
   const [{ at: strip }] = must(`sable:find ${freighter} skyliners:led_strip 1 side=server`).rows;
   const bright = () => Number(must(`block ${strip.join(",")} side=server`).props?.brightness ?? 0);
   expect(bright() > 0, "blackout: her lights are on to start with", `brightness ${bright()}`);
+  survival();
+  const health = healthOf();
   const since = now();
   const asked = must("skyliners:spaceweather start=solar_flare");
   expect(asked.started === "coming", "blackout: a solar flare is brought over her", `${asked.started}`);
@@ -3934,15 +3946,48 @@ function checkFreighterBlackout() {
     quietSpace();
     return;
   }
+  const wentOut = now();
   must(`wait ${LOOK_EVERY}t`);
   expect(bright() === 0, "blackout: every light aboard goes out", `brightness ${bright()}`);
+  expect(must("skyliners:screens").dark, "blackout: her screens go dark");
   expect(heard("skyliners:freighter_computer_blackout", since, 0), "blackout: her computer says everything's gone dark");
   const back = waitForReport(freighterReport, (report) => report.lift > 0, BLACKOUT_WITHIN);
+  const lasted = now() - wentOut;
+  expect(back && Math.abs(lasted - BLACKOUT_SECONDS * TICKS_A_SECOND) <= BLACKOUT_OFF_BY, "blackout: it lasts five seconds", `${lasted} ticks`);
   expect(back, "blackout: her thrusters come back by themselves", back ? `having fallen ${round(out.altitude - back.altitude)} blocks` : `lift ${freighterReport()?.lift}`);
   must(`wait ${2 * LOOK_EVERY}t`);
   expect(bright() > 0, "blackout: her lights come back as they were", `brightness ${bright()}`);
   expect(heard("skyliners:freighter_computer_systems_back", since, 0), "blackout: and her computer says her systems are back");
+  const climbing = waitForReport(freighterReport, (report) => report.climb > 1, BLACKOUT_CLIMBS_WITHIN);
+  expect(climbing, "blackout: having fallen, she climbs back by herself",
+    climbing ? `at y ${climbing.altitude}` : `climb ${freighterReport()?.climb}`);
+  expect(healthOf() >= health, "blackout: nobody aboard is hurt", `health ${healthOf()} of ${health}`);
+  creative();
   quietSpace();
+  longerBlackout(freighter);
+}
+
+// A flare over a freighter with the server's config asking for a longer blackout: it lasts as long as that says, and
+// her screens stay dark all the while, even once she has fallen out of the weather.
+function longerBlackout(freighter) {
+  must(`config skyliners server spaceWeather.flareBlackoutSeconds ${BLACKOUT_SET_SECONDS}`);
+  try {
+    lift(freighter, WEATHER_HEIGHT);
+    must(`wait ${SPACE_SETTLE_TICKS}t; skyliners:spaceweather start=solar_flare`);
+    const out = waitForReport(freighterReport, (report) => report.lift === 0, BLACKOUT_WITHIN);
+    const wentOut = now();
+    if (out) {
+      must(`wait ${BLACKOUT_SCREENS_LOOK}t`);
+      expect(must("skyliners:screens").dark, "blackout: her screens stay dark, even once she has fallen out of the weather",
+        `at y ${freighterReport()?.altitude}`);
+    }
+    const back = out && waitForReport(freighterReport, (report) => report.lift > 0, BLACKOUT_WITHIN);
+    const lasted = now() - wentOut;
+    expect(back && Math.abs(lasted - BLACKOUT_SET_SECONDS * TICKS_A_SECOND) <= BLACKOUT_OFF_BY, "blackout: the server's config sets how long it lasts", `${lasted} ticks`);
+    quietSpace();
+  } finally {
+    send("?config reset");
+  }
 }
 
 // A rock knocked off its course: a freighter hovering at y 1,600, the player at her laser cannon; in one asteroid
@@ -6150,7 +6195,7 @@ const CHECKS = {
   "freighter-slam-from-space": { run: checkFreighterSlamFromSpace, slow: true, about: "a freighter's slam button works far out in space and brings her down hard all the way, nobody hurt" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },
   "space-weather": { run: checkSpaceWeather, slow: true, about: "a meteor shower and an asteroid storm, each warned of, strike a freighter in space and shove her hard, a rock harder; she settles back, nobody hurt" },
-  "freighter-blackout": { run: checkFreighterBlackout, slow: true, about: "a solar flare's pulse knocks out a freighter's thrusters and lights for a few seconds, then they come back by themselves" },
+  "freighter-blackout": { run: checkFreighterBlackout, slow: true, about: "a solar flare's pulse knocks out a freighter's thrusters, lights and screens for five seconds, or as the server's config says, then they come back by themselves and she climbs back" },
   "space-rocks-shot": { run: checkSpaceRocksShot, slow: true, about: "from a freighter's laser cannon in space, the sight locks on to a rock flying in and rockets burst it, her client told so" },
   "space-rock-knocked": { run: checkSpaceRockKnocked, slow: true, about: "a rock struck by a freighter's cannon on its way in lands softer than one left alone, misses her or breaks up" },
   "giant-asteroid": { run: checkGiantAsteroid, slow: true, about: "a giant asteroid shoves a freighter far harder than a rock and spins her, the server never stalling, nobody hurt" },

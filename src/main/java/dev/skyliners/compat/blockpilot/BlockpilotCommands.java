@@ -69,7 +69,8 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * ({@code skyliners:livery}), and the space weather over the nearest rocket or freighter, or bringing some over her
  * ({@code skyliners:spaceweather}); and, on the client, whether the player sees from a laser cannon's sight
  * ({@code skyliners:gunner}), what it last drew of a laser bolt ({@code skyliners:bolts}) and of a freighter
- * stretching into a hyperspace jump and out of it ({@code skyliners:stretch}). Only loaded when
+ * stretching into a hyperspace jump and out of it ({@code skyliners:stretch}), and whether a flare has its
+ * ship's screens dark ({@code skyliners:screens}). Only loaded when
  * Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
@@ -228,6 +229,11 @@ public final class BlockpilotCommands {
             .field("next", "the ticks of flight after which the next goes off, -1 before she first flies")
             .field("spots", "how many fault spots it looks after")
             .example("skyliners:repairs every=100"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("screens", (context, args) -> Result.ok(new Fields().tag("dark", SpaceWeather.clientBlackedOut.getAsBoolean())))
+            .needsWorld()
+            .group("skyliners")
+            .help("whether a solar flare's blackout has this client's ship's screens dark")
+            .field("dark", "whether they are dark with it"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("spaceweather", (context, args) -> spaceWeather(args))
             .onServer()
             .group("skyliners")
