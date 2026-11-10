@@ -180,6 +180,8 @@ public final class SpaceWeatherSky {
     private static final double TICKS = 20;
     /** Long after any game time: never. */
     private static final long NEVER = Long.MAX_VALUE;
+    /** How big a rock burst is drawn, in blocks across, when this client was never told how big it was. */
+    private static final double BURST_SIZE_UNKNOWN = 3;
 
     /**
      * When a solar flare told to this client knocks out her systems, in game time; {@link #NEVER} with none coming.
@@ -198,8 +200,17 @@ public final class SpaceWeatherSky {
     private static final Map<Integer, RockShape.Look> LOOKS = new HashMap<>();
     /** What strikes her, seen flying in, by number, as the server last told it. */
     private static final Map<Integer, IncomingStrike> INCOMING = new LinkedHashMap<>();
-    /** The bodies of those of its rocks close enough to be real, as the server told them, by the rocks' numbers. */
+    /**
+     * The bodies of those of its rocks close enough to be real, and of the pieces cracked off them, as the server told
+     * them, by their numbers; and how big each is, in blocks across.
+     */
     private static final Map<Integer, UUID> REAL = new HashMap<>();
+    private static final Map<Integer, Float> REAL_SIZES = new HashMap<>();
+    /**
+     * The numbers of those of its rocks this client has seen as bodies, drawn no more while they stay bodies, even as a
+     * cracked rock's sides take its place and have yet to reach this client.
+     */
+    private static final Set<Integer> SEEN_REAL = new HashSet<>();
     /** The numbers of its rocks burst by a laser cannon, as the server told them. */
     private static final Set<Integer> BURST = new HashSet<>();
     /** The numbers of its rocks let go of once worn or knocked, drawn no more though none saw them burst. */
@@ -284,7 +295,7 @@ public final class SpaceWeatherSky {
         double now = DrawingClock.gameTime(0);
         IncomingStrike strike = INCOMING.remove(burst.id());
         RockField.Rock rock = burst.id() >= 0 && burst.id() < rocks.size() ? rocks.get(burst.id()) : null;
-        double size = strike != null ? strike.size() : rock != null ? rock.size() : 3;
+        double size = burstSize(burst.id(), strike, rock);
         Vec3 drawn = strike != null ? strike.position(target(strike, 0), now) : rock != null ? rock.at(shown.anchor(now - shown.startedAt()), now - shown.startedAt()) : null;
         Vec3 at = drawn != null && drawn.distanceTo(burst.at()) < size * 2 ? drawn : burst.at();
         RandomSource random = RandomSource.create(burst.id() * 31L + burst.startedAt());
@@ -293,15 +304,32 @@ public final class SpaceWeatherSky {
         crunch(at, size);
     }
 
+    /**
+     * How big a rock burst by its number is, in blocks across: as its body was told, or as its strike or its way past
+     * says, of those it was.
+     */
+    private static double burstSize(int id, @Nullable IncomingStrike strike, @Nullable RockField.Rock rock) {
+        if (REAL_SIZES.containsKey(id)) {
+            return REAL_SIZES.get(id);
+        }
+        return strike != null ? strike.size() : rock != null ? rock.size() : BURST_SIZE_UNKNOWN;
+    }
+
     /** How many rocks this client has seen burst in the weather it shows, for a play-test to read. */
     public static int burstsSeen() {
         return BURST.size();
     }
 
-    /** Whether a rock, by its number, has been burst. */
+    /**
+     * Whether a rock, by its number, is drawn no more: burst, let go, or a body this client has seen, which it
+     * remembers as it first sees it.
+     */
     private static boolean gone(int id) {
         UUID body = REAL.get(id);
-        return BURST.contains(id) || LET_GO.contains(id) || body != null && SableClient.bodyCentre(body) != null;
+        if (body != null && SableClient.bodyCentre(body) != null) {
+            SEEN_REAL.add(id);
+        }
+        return BURST.contains(id) || LET_GO.contains(id) || body != null && SEEN_REAL.contains(id);
     }
 
     /** A rock of the weather shown made a real body of blocks, or let go of again, as the server told it. */
@@ -311,9 +339,12 @@ public final class SpaceWeatherSky {
         }
         if (told.stage() == RockReal.Stage.BODY) {
             REAL.put(told.id(), told.body());
+            REAL_SIZES.put(told.id(), told.size());
             return;
         }
         REAL.remove(told.id());
+        REAL_SIZES.remove(told.id());
+        SEEN_REAL.remove(told.id());
         if (told.stage() == RockReal.Stage.GONE) {
             LET_GO.add(told.id());
         }
@@ -393,6 +424,8 @@ public final class SpaceWeatherSky {
         LOOKS.clear();
         INCOMING.clear();
         REAL.clear();
+        REAL_SIZES.clear();
+        SEEN_REAL.clear();
         BURST.clear();
         LET_GO.clear();
         CHUNKS_FLYING.clear();
@@ -417,8 +450,14 @@ public final class SpaceWeatherSky {
         return false;
     }
 
-    /** How big one of its rocks is, in blocks across, by its number; none for none. */
+    /**
+     * How big one of its rocks or of the pieces cracked off them is, in blocks across, by its number; none for none.
+     */
     private static double sizeOf(int id) {
+        Float real = REAL_SIZES.get(id);
+        if (real != null) {
+            return real;
+        }
         IncomingStrike strike = INCOMING.get(id);
         if (strike != null) {
             return strike.size();

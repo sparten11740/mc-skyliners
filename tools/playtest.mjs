@@ -646,6 +646,20 @@ const GIANT_WORST_TICK_MS = 250;
 const STRIKE_LEAD_TICKS = 4;
 const STRIKE_SAMPLES = 15;
 const GIANT_TUMBLE_TICKS = 200;
+// A giant cracked by rockets: how heavy a rock coming at her must be to be taken for the giant, and a piece for a piece
+// of it rather than an ordinary rock, in Sable's units; how many times rockets are launched at it at most; how many
+// times it is looked at after launching them, every four ticks, its pieces as last seen being judged; how fast its two
+// heaviest pieces must fly apart at least, in blocks a second, and how far off the course it held the heavier must go
+// at least, in degrees.
+const GIANT_MASS_LEAST = 1000;
+const GIANT_PIECE_LEAST = 100;
+const GIANT_CRACK_TRIES = 2;
+const GIANT_CRACK_SAMPLES = 20;
+const GIANT_APART_LEAST = 10;
+const GIANT_TURNED_LEAST = 5;
+// The most of a giant a piece cracked off it can be, as a share: a crack never runs far enough off its middle to leave
+// more than three quarters on one side.
+const GIANT_PIECE_SHARE_MOST = 0.8;
 // Space weather on the rocket: how long she is given to climb to it, in ticks; how much a rock must change her speed
 // and tip her at least, in blocks a second and degrees; how far from the height she waits it out at she may be thrown
 // meanwhile, in blocks; and, a while after, how upright she must stand again, in degrees.
@@ -4162,6 +4176,94 @@ function checkGiantAsteroid() {
   creative();
 }
 
+// A giant asteroid cracked by rockets: a freighter hovering at y 1,600, the player at her laser cannon and a giant
+// asteroid brought over her, the server's config having strikes shove her none, so her cannon's aim holds; aimed at the
+// giant as it comes into reach as a real body, the rockets launched at it crack it right through, the server never
+// stalling. It flies on in pieces, each lighter than the giant, flying apart and off the course it held, and whatever
+// of it still meets her lands softer than the whole would have.
+function checkGiantAsteroidCracked() {
+  const freighter = freighterInSpace("giant cracked");
+  if (!freighter || !atTheGun(freighter)) {
+    return;
+  }
+  must("config skyliners server spaceWeather.strength 0");
+  try {
+    crackGiant();
+  } finally {
+    send("?config reset");
+  }
+  must(`key press key.sneak 10t; wait 10t`);
+  quietSpace();
+}
+
+// Brings a giant asteroid over the freighter the player sits at the cannon of and launches rockets at it as it comes
+// into reach, for checkGiantAsteroidCracked.
+function crackGiant() {
+  const asked = must("skyliners:spaceweather start=giant_asteroid");
+  expect(asked.started === "coming", "giant cracked: a giant asteroid is brought over her", `${asked.started}`);
+  must("perf start crack");
+  let whole;
+  let cracked = [];
+  for (let tried = 0; tried < GIANT_CRACK_TRIES && cracked.length === 0; tried++) {
+    const coming = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.real_coming === true && weather.real_mass >= GIANT_MASS_LEAST
+      && withinTheGun(weather.real_at), GIANT_TICKS);
+    if (!coming || (whole && giantLanded(coming, whole))) {
+      break;
+    }
+    whole ??= coming;
+    cracked = send(`${aimAhead(realRockIn(coming), ROCK_AIM_AHEAD)}; wait ${ROCK_LAUNCH_AFTER}t; key press key.use; wait 6t; key press key.use; `
+      + `sample skyliners:spaceweather every 4t x${GIANT_CRACK_SAMPLES}`, BUILD_SECONDS).flatMap((reply) => reply.rows ?? [])
+      .filter((weather) => giantPieces(weather).length >= 2);
+  }
+  const [first] = cracked;
+  const after = cracked.at(-1);
+  const { summary } = must("perf stop");
+  const mspt = summary?.server?.mspt ?? summary?.mspt ?? {};
+  expect(whole, "giant cracked: the giant comes into her cannon's reach as a real body");
+  if (!whole) {
+    return;
+  }
+  const pieces = giantPieces(after);
+  expect(pieces.length >= 2, "giant cracked: rockets launched at it crack it right through",
+    `${pieces.length} pieces of it coming at her, ${after?.pieces_mass} of ${round(whole.real_mass)}, ${after?.shot_down} shot down, ${after?.real} real`);
+  expect((mspt.max ?? Infinity) <= GIANT_WORST_TICK_MS, "giant cracked: the server never stalls as it cracks", `${round(mspt.max ?? NaN)} ms at the worst`);
+  if (pieces.length >= 2) {
+    const [heaviest, next] = pieces;
+    expect(heaviest.mass < whole.real_mass, "giant cracked: each piece is lighter than the giant was",
+      `${pieces.map((piece) => round(piece.mass)).join(", ")} of ${round(whole.real_mass)}`);
+    const apart = Math.hypot(...heaviest.vel.map((v, i) => v - next.vel[i]));
+    expect(apart >= GIANT_APART_LEAST, "giant cracked: its pieces fly apart", `${round(apart)} blocks a second apart`);
+    const turned = degreesBetween(whole.real_vel.split(",").map(Number), heaviest.vel);
+    expect(turned >= GIANT_TURNED_LEAST, "giant cracked: it goes off the course it held", `${round(turned)} degrees off it`);
+    const struck = waitForReport(() => must("skyliners:spaceweather"), (weather) => giantLanded(weather, first) || weather.blowing === "none", GIANT_TICKS);
+    const landed = giantLanded(struck, first);
+    expect(!landed || struck.last_share <= GIANT_PIECE_SHARE_MOST, "giant cracked: what still meets her lands softer than the whole giant would have",
+      landed ? `a piece of ${round(struck.last_share * 100)}% of it landed` : "none of it met her");
+  }
+}
+
+// Whether the giant, or a piece of it, has landed on her by a report of the space weather, since an earlier report.
+function giantLanded(weather, since) {
+  return weather?.landed > since.landed && weather.last_giant === true;
+}
+
+// The pieces of a giant coming at her in a report of the space weather, the heaviest first: how heavy each is, in
+// Sable's units, and how fast it moves, in blocks a second; none for no report.
+function giantPieces(weather) {
+  if (!weather?.pieces_coming) {
+    return [];
+  }
+  const vels = weather.pieces_vel.split(";").map((vel) => vel.split(",").map(Number));
+  return weather.pieces_mass.split(";").map((mass, i) => ({ mass: Number(mass), vel: vels[i] })).filter((piece) => piece.mass >= GIANT_PIECE_LEAST)
+    .sort((a, b) => b.mass - a.mass);
+}
+
+// The angle between two ways, in degrees.
+function degreesBetween(a, b) {
+  const dot = a.reduce((sum, v, i) => sum + v * b[i], 0);
+  return Math.acos(Math.max(-1, Math.min(1, dot / (Math.hypot(...a) * Math.hypot(...b))))) * 180 / Math.PI;
+}
+
 // A freighter's slam landing: hovering, its button lit, her thrusters roar and her computer braces everyone, and she
 // drives straight down where she is far faster than she ever lands, strikes the ground with her crash heard, yet
 // touches it slowly enough that nothing breaks, then stands level on her legs and switches off, its button dark. The
@@ -6291,6 +6393,7 @@ const CHECKS = {
   "space-rocks-not-saved": { run: checkSpaceRocksNotSaved, slow: true, about: "left mid-storm and joined again, a world holds none of the rocks that were flying as real bodies" },
   "space-rock-solid": { run: checkSpaceRockSolid, slow: true, about: "a rock coming at a freighter in space is a real body of blocks that stops at her hull" },
   "giant-asteroid": { run: checkGiantAsteroid, slow: true, about: "a giant asteroid shoves a freighter far harder than a rock and spins her, the server never stalling, nobody hurt" },
+  "giant-asteroid-cracked": { run: checkGiantAsteroidCracked, slow: true, about: "from a freighter's laser cannon, rockets crack a giant asteroid into pieces that fly apart off its course and land softer, the server never stalling" },
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },

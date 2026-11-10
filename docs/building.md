@@ -412,13 +412,21 @@ body: `RockBodies` works its blocks out away from the server's thread (`RockCell
 hull's `SurfaceCut` into `SpaceRockBlock`s, solid all through), has `SableFlight.makeRock` make a body with no blocks in
 the world (the build limit is far below it), gives an untouched rock back its speed each tick against Sable's gravity
 and drag, tells clients with `RockReal` so they stop drawing it once the body has reached them, and lets it go well past
-her. What meets her lands by touch (`RockBodies.tookHer`, the shove being Sable's own), so only a meteor or a rock not
-yet a body lands through `SableFlight.strike`. Bodies carry a mark and a keep-loaded ticket: `SpaceRocks.tick` sweeps up
+her. What meets her lands by touch (`RockBodies.landing`), where the line from its middle to hers first meets one of her
+blocks (`SpaceWeather.contact`), its shove scaled by the share of its rock it still is; a giant's makes up only what
+Sable's own shove fell short of. Bodies carry a mark and a keep-loaded ticket: `SpaceRocks.tick` sweeps up
 any no weather is flying, and `SpaceRocks.stopping` takes the rest out before the save. `LaserCannonBlockEntity.bolt`
 traces out to `ROCK_REACH` while rocks fly and `SpaceRocks.breakBlock` breaks the one block a bolt met; a rocket blows a
-hole (`SpaceRocks.blast`, `CannonRocket.rockAhead` homing on a `SpaceRocks.Target`). What is cut off flies away as a body
-Sable splits off, which `RockBodies` takes up for a while, and a rock worn through bursts, one `RockBurst` to everyone
-shown. The client's `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon), rocks not yet bodies (`RockMeshes`:
+hole (`SpaceRocks.blast`, `CannonRocket.rockAhead` homing on a `SpaceRocks.Target`) and cracks a rock as heavy as a
+giant's (`RockBodies.crack`): `SableFlight.rockHalves` sorts its blocks either side of a crack three blocks wide
+through the blast along the rocket's way, each side is laid as a body of its own 1,000 blocks up, past Sable's tracking
+range, out of the tick's laying budget, and the tick both are laid they take its place where its blocks were, turned
+and moving as it did, and are sent apart. Moving blocks out of a body that flies costs Sable some 20 µs a block, most
+of a second for a giant, and its own split floods only 200 blocks a tick. The piece flies on as a rock under a number
+of its own that lands for its share; a rock knocked is given back its speed each tick but near her. What else is cut off
+flies away as a body Sable splits off, which `RockBodies` takes up for a while, and a rock worn through bursts, one
+`RockBurst` to everyone shown. The client's `SpaceWeatherSky` draws the streaks (a no-cull glowing ribbon), rocks not
+yet bodies (`RockMeshes`:
 `RockShape`'s procedural shapes, lumps, craters, ridges and grain pushed out of an icosphere at three levels of detail,
 coloured per corner and lit flat per face by the sun on the client, see-through as they fade in) and bursts (chunks,
 dust and a flash) after the

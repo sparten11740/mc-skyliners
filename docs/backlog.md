@@ -29,8 +29,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
 
 ## Space rocks
 
-- A giant asteroid (up to 47,000 blocks) cannot be shot down in time: one bolt breaks one block and a rocket a hole a
-  few blocks wide, so it still strikes her. A rock shot at is knocked aside only by what Sable makes of the shot.
+- A giant asteroid becomes a body only within 150 blocks of her middle (`RockBodies.REAL_WITHIN`), which at 35 blocks
+  a second is under four seconds before it lands, so rockets crack it late: its two sides fly apart at 20 blocks a
+  second (`APART`), which may not take them clear of a ship 60 blocks across. A rock shot at is otherwise knocked
+  aside only by what Sable makes of the shot.
 - Sable logs "Received a sub-level movement packet for a non-existent sub-level" on a client each time a body is
   taken out while it moves. It is harmless, but noisy during a storm.
 

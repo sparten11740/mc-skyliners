@@ -22,7 +22,8 @@ flies on thrusters that need no fuel, and she is as much a ship to explore as on
   Nobody aboard is hurt, however hard she is thrown. A solar flare's pulse briefly knocks out her lights, screens and
   engines.
 - **Guns.** Climb the crew ladder to the gunner's seat for a laser cannon with rocket pods. Its bolts break space rocks
-  block by block. The Laser Crossbow hangs on a rack in the entry hall.
+  block by block, and its rockets crack even a giant asteroid apart. The Laser Crossbow hangs on a rack in the entry
+  hall.
 - **The club.** A robot jazz trio plays on its stage and a robot bartender serves mocktails. A switch on the wall turns
   its gravity off, so everyone floats.
 - **Her rooms.** Cargo hold, lounge, engineering and crew quarters are all furnished, and the lounge has a beach and a

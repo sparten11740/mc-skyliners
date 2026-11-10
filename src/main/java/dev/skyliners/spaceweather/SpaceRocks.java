@@ -22,8 +22,8 @@ import net.minecraft.world.phys.Vec3;
  * The rocks of every asteroid storm and giant asteroid blowing on the server, as a laser cannon shoots at them (see
  * {@code LaserCannonBlockEntity} and {@code CannonRocket}): a rock near her is a real body of blocks (see {@link
  * RockBodies}), and a bolt that meets one breaks just the block it meets, a rocket a hole's worth round where it went
- * off. What is no longer joined on to a rock flies off as a piece of its own; a rock worn through bursts, every client
- * told so once (see {@link RockBurst}).
+ * off, cracking a giant's rock right through besides. What is no longer joined on to a rock flies off as a piece of its
+ * own; a rock worn through bursts, every client told so once (see {@link RockBurst}).
  *
  * <p>Nothing is kept but the weather blowing: each adds itself as it is told and takes itself away as it is over, or is
  * let go once the ship it blew round is gone, unloaded mid-storm. Its bodies are never saved: any found with no weather
@@ -36,11 +36,13 @@ public final class SpaceRocks {
      */
     public static final double GRACE = 1.5;
     /**
-     * How big a hole a rocket makes in a rock, in blocks around where it went off: at least, and for each block across
-     * the rock is.
+     * How big a hole a rocket makes in a rock, in blocks around where it went off: at least, for each block across the
+     * rock is, and at most, as a giant's is cracked right through besides, and every block broken out of a body that
+     * flies costs the server.
      */
     private static final double BLAST_FROM = 4;
     private static final double BLAST_PER_BLOCK = 0.15;
+    private static final double BLAST_MOST = 6;
     /** How often rocks with no weather flying them are looked for, in ticks. */
     private static final int SWEEP_EVERY = 200;
     /** How a broken rock's block is told: to clients, no neighbours prodded, for a rock has none that care. */
@@ -174,8 +176,8 @@ public final class SpaceRocks {
     }
 
     /**
-     * A rocket going off against a block, travelling along a way: if the block is a space rock's, a hole blown there.
-     * Whether it was.
+     * A rocket going off against a block, travelling along a way: if the block is a space rock's, a hole blown there,
+     * and a rock heavy enough cracked through. Whether it was.
      */
     public static boolean blast(ServerLevel level, BlockPos block, Vec3 at, Vec3 way) {
         BlockState stone = level.getBlockState(block);
@@ -187,12 +189,14 @@ public final class SpaceRocks {
         crater(level, rock, inWorld, blastRadius(rock));
         SpaceWeather.chips(level, inWorld, way.normalize(), stone);
         tellShot(rock, way.normalize());
+        crack(level, rock, inWorld, way);
         return true;
     }
 
     /**
      * A rocket going off as it passes the rock it homes in on, travelling along a way: a hole blown in it where its
-     * blocks lie nearest, along the line from where it went off to the rock's middle.
+     * blocks lie nearest, along the line from where it went off to the rock's middle, and a rock heavy enough cracked
+     * through.
      */
     public static void blast(ServerLevel level, Hit hit, Vec3 way) {
         Vec3 middle = hit.weather().rockCentre(level, hit.rock());
@@ -205,6 +209,7 @@ public final class SpaceRocks {
         Vec3 met = firstBlockAlong(level, rock, hit.at(), unit, hit.weather().rockSize(hit.rock()));
         crater(level, rock, met, blastRadius(rock));
         tellShot(rock, way.normalize());
+        crack(level, rock, met, way);
     }
 
     /** Where a line from a point first meets a block of a rock's, within so far; the point itself if it meets none. */
@@ -220,7 +225,7 @@ public final class SpaceRocks {
 
     /** How big a hole a rocket makes in a rock, in blocks. */
     private static double blastRadius(@Nullable UUID rock) {
-        return BLAST_FROM + BLAST_PER_BLOCK * sizeOf(rock);
+        return Math.min(BLAST_MOST, BLAST_FROM + BLAST_PER_BLOCK * sizeOf(rock));
     }
 
     /** How big a rock's body is, in blocks across, among those weather is flying; none if it is not one of them. */
@@ -232,6 +237,13 @@ public final class SpaceRocks {
             }
         }
         return 0;
+    }
+
+    /** A rock a rocket went off against at a point in the world, flying along a way, cracked if heavy enough. */
+    private static void crack(ServerLevel level, @Nullable UUID rock, Vec3 at, Vec3 way) {
+        if (rock != null) {
+            BLOWING.forEach(weather -> weather.crack(level, rock, at, way));
+        }
     }
 
     private static void tellShot(@Nullable UUID rock, Vec3 way) {

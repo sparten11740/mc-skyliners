@@ -43,6 +43,7 @@ import dev.ryanhcode.sable.sublevel.system.SubLevelPhysicsSystem;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -247,9 +248,39 @@ public final class SableFlight {
         }
     }
 
+    /** How a flying rock is turned now, in the world; none once it is gone. */
+    @Nullable
+    public static Quaterniond rockTurned(ServerLevel level, UUID rock) {
+        return SABLE ? Access.rockTurned(level, rock) : null;
+    }
+
+    /** How fast a flying rock turns, about an axis in the world, in radians a second; still once it is gone. */
+    public static Vec3 rockSpin(ServerLevel level, UUID rock) {
+        return SABLE ? Access.rockSpin(level, rock) : Vec3.ZERO;
+    }
+
     /** Where a point in the world lies among a flying rock's blocks; the point itself once it is gone. */
     public static Vec3 toRock(ServerLevel level, UUID rock, Vec3 point) {
         return SABLE ? Access.toRock(level, rock, point) : point;
+    }
+
+    /**
+     * A flying rock's blocks either side of a flat crack through a point in the world, square to a way across it and so
+     * many blocks wide, those in the crack left out; each side's round a middle of its own among the rock's blocks, for
+     * a body to be laid of each (see {@link #makeRock}); none if the crack missed the rock or left nothing on one side.
+     */
+    @Nullable
+    public static Halves rockHalves(ServerLevel level, UUID rock, Vec3 through, Vec3 across, double wide) {
+        return SABLE ? Access.rockHalves(level, rock, through, across, wide) : null;
+    }
+
+    /**
+     * A rock's blocks either side of a crack: the side it keeps, the more, and the side broken off, each round its
+     * middle, a position among the rock's blocks; which side of the crack the piece broken off is, 1 along the way
+     * across it and -1 against it; and how big each is, in blocks across at the widest.
+     */
+    public record Halves(Map<BlockPos, BlockState> kept, BlockPos keptMiddle, Map<BlockPos, BlockState> broken, BlockPos brokenMiddle, int side,
+                         double keptSize, double brokenSize) {
     }
 
     /** Takes a flying rock out of the world for good, keeping nothing of it in the save. */
@@ -915,7 +946,8 @@ public final class SableFlight {
 
             /**
              * Its point of turning, its centre of mass, goes where it falls with the rock's middle at the point given;
-             * Sable told to put it there, with the speed and spin it flies with.
+             * Sable told to put it there, with the speed and spin it flies with, whatever it picked up falling as it
+             * was laid.
              */
             @Override
             public UUID release(Vec3 at, Quaterniond turned, Vec3 velocity, Vec3 spin) {
@@ -935,7 +967,10 @@ public final class SableFlight {
                 pose.position().set(at.x + off.x, at.y + off.y, at.z + off.z);
                 bodies.physicsSystem().getPipeline().teleport(rock, pose.position(), pose.orientation());
                 rock.updateLastPose();
-                RigidBodyHandle.of(rock).addLinearAndAngularVelocity(new Vector3d(velocity.x, velocity.y, velocity.z), new Vector3d(spin.x, spin.y, spin.z));
+                RigidBodyHandle handle = RigidBodyHandle.of(rock);
+                Vector3d moving = new Vector3d(velocity.x, velocity.y, velocity.z).sub(handle.getLinearVelocity(new Vector3d()));
+                Vector3d turning = new Vector3d(spin.x, spin.y, spin.z).sub(handle.getAngularVelocity(new Vector3d()));
+                handle.addLinearAndAngularVelocity(moving, turning);
                 return rock.getUniqueId();
             }
         }
@@ -985,9 +1020,84 @@ public final class SableFlight {
             }
         }
 
+        @Nullable
+        static Quaterniond rockTurned(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            return rock == null ? null : new Quaterniond(rock.logicalPose().orientation());
+        }
+
+        static Vec3 rockSpin(ServerLevel level, UUID id) {
+            ServerSubLevel rock = rock(level, id);
+            if (rock == null) {
+                return Vec3.ZERO;
+            }
+            Vector3d spin = RigidBodyHandle.of(rock).getAngularVelocity(new Vector3d());
+            return new Vec3(spin.x, spin.y, spin.z);
+        }
+
         static Vec3 toRock(ServerLevel level, UUID id, Vec3 point) {
             ServerSubLevel rock = rock(level, id);
             return rock == null ? point : rock.logicalPose().transformPositionInverse(point);
+        }
+
+        /** The rock's blocks sorted to either side of the crack in its own frame, as they stand among its blocks. */
+        @Nullable
+        static Halves rockHalves(ServerLevel level, UUID id, Vec3 through, Vec3 across, double wide) {
+            ServerSubLevel rock = rock(level, id);
+            BoundingBox3ic box = rock == null ? BoundingBox3i.EMPTY : rock.getPlot().getBoundingBox();
+            if (box == BoundingBox3i.EMPTY) {
+                return null;
+            }
+            Pose3d pose = rock.logicalPose();
+            Vec3 point = pose.transformPositionInverse(through);
+            Vec3 normal = pose.transformPositionInverse(through.add(across)).subtract(point);
+            List<BlockPos> beyond = new ArrayList<>();
+            List<BlockPos> within = new ArrayList<>();
+            for (BlockPos at : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+                double off = at.getCenter().subtract(point).dot(normal);
+                if (Math.abs(off) >= wide / 2 && level.getBlockState(at).getBlock() instanceof SpaceRockBlock) {
+                    (off > 0 ? beyond : within).add(at.immutable());
+                }
+            }
+            if (beyond.isEmpty() || within.isEmpty()) {
+                return null;
+            }
+            boolean beyondBreaks = beyond.size() <= within.size();
+            List<BlockPos> broken = beyondBreaks ? beyond : within;
+            List<BlockPos> kept = beyondBreaks ? within : beyond;
+            BlockPos keptMiddle = middleOf(kept);
+            BlockPos brokenMiddle = middleOf(broken);
+            return new Halves(round(level, kept, keptMiddle), keptMiddle, round(level, broken, brokenMiddle), brokenMiddle, beyondBreaks ? 1 : -1,
+                widest(kept), widest(broken));
+        }
+
+        /** The position nearest the middle of some blocks, by the mean of theirs. */
+        private static BlockPos middleOf(List<BlockPos> blocks) {
+            long x = 0;
+            long y = 0;
+            long z = 0;
+            for (BlockPos block : blocks) {
+                x += block.getX();
+                y += block.getY();
+                z += block.getZ();
+            }
+            double count = blocks.size();
+            return new BlockPos((int) Math.round(x / count), (int) Math.round(y / count), (int) Math.round(z / count));
+        }
+
+        /** Some blocks as they stand, each by where it lies from a middle. */
+        private static Map<BlockPos, BlockState> round(ServerLevel level, List<BlockPos> blocks, BlockPos middle) {
+            Map<BlockPos, BlockState> round = new HashMap<>();
+            for (BlockPos block : blocks) {
+                round.put(block.subtract(middle), level.getBlockState(block));
+            }
+            return round;
+        }
+
+        /** How far some blocks spread at the widest, along any of the plot's axes, in blocks. */
+        private static double widest(List<BlockPos> blocks) {
+            BoundingBox3i box = BoundingBox3i.from(blocks);
+            return box == null ? 0 : Math.max(box.maxX() - box.minX(), Math.max(box.maxY() - box.minY(), box.maxZ() - box.minZ())) + 1;
         }
 
         static void removeRock(ServerLevel level, UUID id) {
