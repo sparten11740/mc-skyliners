@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "facing=north,mount=floor": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=east,mount=floor": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=south,mount=floor": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=west,mount=floor": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=north,mount=wall": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=east,mount=wall": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=south,mount=wall": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=west,mount=wall": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=north,mount=ceiling": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=east,mount=ceiling": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=south,mount=ceiling": {
+      "model": "skyliners:block/console_spin"
+    },
+    "facing=west,mount=ceiling": {
+      "model": "skyliners:block/console_spin"
+    }
+  }
+}

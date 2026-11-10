@@ -193,6 +193,13 @@ const FLIP_WATCH_TICKS = 400;
 const FLIP_EVERY = 5;
 const FLIP_UPRIGHT = 10;
 const FLIP_CLEAR = 20;
+// A freighter's spin button: how high over the ground she first hovers, where it says no, in blocks; the height she is
+// then lifted to, well over the height a roll takes, in blocks; how long she is watched rolling, in ticks; and how far
+// from upright she must come to have rolled right over, in degrees.
+const SPIN_LOW = 40;
+const SPIN_HEIGHT = 600;
+const SPIN_WATCH_TICKS = 400;
+const SPIN_OVER = 150;
 const FREIGHTER_UP_TICKS = 900;
 const FREIGHTER_DOWN_TICKS = 2400;
 const FREIGHTER_HOLD_WITHIN = 1.5;
@@ -541,11 +548,12 @@ const RAIN_SETS_IN = 120;
 const RAIN_BLUE = 50;
 const RAIN_PIXELS_MOST = 600;
 // Her console: its modules round her seats, each a slice of its ring, by kind; and the kinds a player can set up by hand.
-// Her slam button takes the toggles' place, as the server config's freighter.slamLanding has her built by default.
-const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1, console_scanner: 1, console_jump: 1, console_engines: 1,
-  console_slam: 1 };
+// Her slam button takes the toggles' place, and her spin button her engine gauges', as the server config's
+// freighter.slamLanding and freighter.spin have her built by default.
+const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1, console_scanner: 1, console_jump: 1, console_slam: 1,
+  console_spin: 1 };
 const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump", "console_climb",
-  "console_slam"];
+  "console_slam", "console_spin"];
 // Airframe fairings put down by hand: how far off the cell the player stands to put one down, in blocks, and how far
 // apart the corners are laid along the site, in blocks.
 const FAIRING_STAND_OFF = 2.5;
@@ -3544,7 +3552,7 @@ function checkFreighterCockpitReach() {
   ship("freighter");
   const seat = pilotSeat();
   must(`server tp @p ${seat[0] + 0.5} ${seat[1]} ${seat[2] + 0.5}; wait 10t; use ${seat.join(",")}; wait 10t`);
-  for (const kind of ["climb", "boost", "jump"]) {
+  for (const kind of ["climb", "spin", "boost", "jump"]) {
     const [module] = must(`find skyliners:console_${kind} 128 1`).rows;
     const reply = module ? send(`use ${module.at_abs.join(",")} at ${DESK_TOP_AT}; wait 10t`)[0] : undefined;
     expect(module && reply.ok !== false, `freighter: from her pilot's seat, her ${kind} button is pressed where it is seen`,
@@ -3829,6 +3837,47 @@ function checkFreighterRightsHerself() {
   must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
   const level = waitForReport(freighterReport, (report) => !report.righting && report.upset < FREIGHTER_LEVEL_WITHIN && report.climb > 1, FREIGHTER_UP_TICKS);
   expect(Boolean(level), "flipped: she hovers level again and climbs back to her height", level ? `climbing ${level.climb} from y ${level.altitude}` : "");
+  must("skyliners:autopilot land");
+}
+
+// A freighter's spin button: hovering near the ground it only says no, with a low note, and she stays level; hovering
+// high, pressed, her lift roars and she rolls right over about her length, onto her back and on round, comes back
+// level well clear of the ground and hovers on.
+function checkFreighterSpin() {
+  layDown("freighter");
+  const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
+  must(`skyliners:autopilot fly altitude=${head[1] + SPIN_LOW} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const low = waitForReport(freighterReport, (report) => report.phase === "cruise" && Math.abs(report.climb) < 1, FREIGHTER_UP_TICKS);
+  expect(Boolean(low), "spin: she lifts off and hovers near the ground");
+  const { at } = must(`sable:find ${freighter} skyliners:console_spin 1 side=server`).rows[0];
+  const refusedAt = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  must(`use ${at.join(",")}`);
+  const refused = must(`wait ${LOOK_EVERY}t; skyliners:freighter`);
+  expect(played("*note_block.bass*", refusedAt).length > 0 && refused.spin !== "rolling" && refused.upset < FREIGHTER_LEVEL_WITHIN,
+    "spin: near the ground her spin button says no, with a low note, and she stays level", `spin ${refused.spin}, ${refused.upset} degrees over`);
+  lift(freighter, SPIN_HEIGHT);
+  must(`skyliners:autopilot fly altitude=${SPIN_HEIGHT} speed=0`);
+  const high = waitForReport(freighterReport, (report) => report.phase === "cruise" && report.spin === "ready" && Math.abs(report.climb) < 1,
+    FREIGHTER_UP_TICKS);
+  expect(Boolean(high), "spin: hovering high over the ground, her spin button is lit", high ? "" : `spin ${freighterReport()?.spin}`);
+  if (!high) {
+    return;
+  }
+  const pressed = must(`sable:tp ${at.join(",")}; wait 20t; messages limit=1`).tick;
+  const rows = must(`use ${at.join(",")}; sample sable:info ${freighter} side=server every ${FLIP_EVERY}t x${SPIN_WATCH_TICKS / FLIP_EVERY}`,
+    BUILD_SECONDS).rows.filter((row) => row.vel);
+  expect(Boolean(heard("*speed_boost*", pressed, 0)), "spin: pressed, her lift roars into it");
+  const over = Math.max(0, ...rows.map(upsetOf));
+  expect(over >= SPIN_OVER, "spin: she rolls right over onto her back", `${round(over)} degrees from upright at the most`);
+  const back = rows.findIndex((row, i) => i > 0 && upsetOf(row) < FLIP_UPRIGHT && rows.slice(0, i).some((before) => upsetOf(before) >= SPIN_OVER));
+  expect(back >= 0, "spin: and on round, back level", back >= 0 ? `in ${round(back * FLIP_EVERY / 20)} s` : `${round(upsetOf(rows.at(-1) ?? { pitch: 180, roll: 0 }))} degrees over at the last`);
+  const lowest = Math.min(...rows.map((row) => row.agl ?? 0));
+  const lost = SPIN_HEIGHT - Math.min(...rows.map((row) => row.at_abs[1]));
+  expect(lowest >= FLIP_CLEAR, "spin: well clear of the ground all the while", `${round(lost)} blocks lost, ${round(lowest)} over the ground at the lowest`);
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  const level = waitForReport(freighterReport, (report) => report.spin !== "rolling" && report.upset < FREIGHTER_LEVEL_WITHIN, FREIGHTER_UP_TICKS);
+  expect(Boolean(level), "spin: her autopilot flies on, level", level ? `spin ${level.spin}` : "");
   must("skyliners:autopilot land");
 }
 
@@ -6574,9 +6623,10 @@ const CHECKS = {
   "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
   "freighter-outside-solid": { run: checkFreighterOutsideSolid, about: "a freighter's cannon housing and big dish are stood on, and her parcel scanner's gantry stops whoever walks into it" },
   "souvenir-shapes": { run: checkSouvenirShapes, about: "the rocket and freighter souvenir models are clicked only where they are drawn" },
-  "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, boost and jump buttons are all in reach from her pilot's seat" },
+  "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, spin, boost and jump buttons are all in reach from her pilot's seat" },
   "freighter-boost": { run: checkFreighterBoost, slow: true, about: "a freighter's boost button fires her mains flat out a while, then rests, and she slows back" },
   "freighter-climb-boost": { run: checkFreighterClimbBoost, slow: true, about: "a freighter's climb button fires her lift flat out, and she climbs straight up hard and holds the height" },
+  "freighter-spin": { run: checkFreighterSpin, slow: true, about: "a freighter's spin button says no near the ground, and high up rolls her right over and back level, well clear of it" },
   "freighter-rights-herself": { run: checkFreighterRightsHerself, slow: true, about: "a freighter turned upside down in flight rights herself well clear of the ground and hovers level again" },
   "freighter-slam-from-space": { run: checkFreighterSlamFromSpace, slow: true, about: "a freighter's slam button works far out in space and brings her down hard all the way, nobody hurt" },
   "freighter-space-ceiling": { run: checkFreighterSpaceCeiling, slow: true, about: "a freighter's autopilot takes her to y 2,500 and holds her there, her climb button climbing on past the edge of space" },

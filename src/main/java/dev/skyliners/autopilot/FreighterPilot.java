@@ -34,7 +34,8 @@ import net.minecraft.world.phys.Vec3;
  * a trim she learns for how hard her thrusters push; the lift is spread over her clusters, more on the side that dips,
  * as a quadcopter levels itself, with a trim it learns for where her weight sits; and the speed ahead and across she
  * wants, and the heading, set her mains, retros and jets, each against what she does now. Knocked far over, upside
- * down even, as a giant asteroid may knock her, she first rights herself on her lift alone (see {@link #right}).
+ * down even, as a giant asteroid may knock her, she first rights herself on her lift alone (see {@link #right}); her
+ * console's spin button rolls her right over the same way and back (see {@link #spin}).
  */
 public final class FreighterPilot {
     /** How strong a signal drives a thruster at most. */
@@ -260,6 +261,12 @@ public final class FreighterPilot {
     private static final double RIGHTING_SWING = 90;
     private static final double RIGHTING_BRAKE = 15;
     private static final double RIGHTING_FULL_SPLIT = 20;
+    /**
+     * Her spin (see {@link #spin}): how fast she rolls at most, in degrees a second; and how far round she rolls before
+     * her righting takes her the rest of the way, past half a turn so the shortest way up is on round.
+     */
+    private static final double SPIN_RATE = 90;
+    private static final double SPIN_HANDOVER = 200;
 
     /**
      * Her four lift clusters, in this order, as which way each is ahead and to her right, 1 or -1: ahead on her right,
@@ -471,6 +478,9 @@ public final class FreighterPilot {
     /** Whether she is righting herself, knocked far over (see {@link #right}); how far over she was, in degrees. */
     private boolean righting;
     private double lastUpset;
+    /** Whether she is spinning (see {@link #spin}), and how far round she has rolled so far, in radians. */
+    private boolean spinning;
+    private double spun;
     /** How fast she tilts, turns and moves, smoothed (see {@link #SMOOTHING}); none to begin with. */
     private Motion smoothed = Motion.STILL;
     @Nullable
@@ -559,6 +569,7 @@ public final class FreighterPilot {
         lastHeading = state.heading();
         lastUp = state.up();
         righting = false;
+        spinning = false;
         pads.reset();
         lastPad = null;
         smoothed = Motion.STILL;
@@ -626,6 +637,8 @@ public final class FreighterPilot {
         touchingFor = phase == AutopilotBlockEntity.Phase.LAND && radio < TOUCHING ? touchingFor + 1 : 0;
         if (touchingFor > 0) {
             runDown(level, origin, state, going, mass, balance);
+        } else if (spinning) {
+            roll(level, origin, state, going, mass, upset);
         } else if (righting(upset)) {
             right(level, origin, state, going, mass, upset);
         } else {
@@ -701,7 +714,43 @@ public final class FreighterPilot {
         double off = upset.turn().length();
         Vec3 toward = off > 0 ? upset.turn().scale(1 / off) : Vec3.ZERO;
         double swing = Math.min(Math.toRadians(RIGHTING_SWING), Math.sqrt(2 * Math.toRadians(RIGHTING_BRAKE) * off));
-        Vec3 wanted = toward.scale(swing).subtract(upset.swing());
+        turnBy(level, origin, state, going, mass, toward.scale(swing).subtract(upset.swing()));
+    }
+
+    /**
+     * Set spinning, by her console's spin button (see {@link FreighterSpin}): she rolls right over about her length, to
+     * her right, until she is well past upside down, when her righting brings her the rest of the way round, up.
+     */
+    void spin() {
+        spinning = true;
+        spun = 0;
+    }
+
+    /** Whether she rolls: spinning, or righting herself after a spin or a knock. */
+    boolean rolling() {
+        return spinning || righting;
+    }
+
+    /**
+     * Spinning: she rolls about her length to her right, as fast as {@link #SPIN_RATE}, on her lift as she rights
+     * herself, keeping count of how far round she has gone; past {@link #SPIN_HANDOVER} her righting takes her on.
+     */
+    private void roll(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, Upset upset) {
+        Vec3 nose = state.nose();
+        spun += Math.max(0, upset.swing().dot(nose)) / SharedConstants.TICKS_PER_SECOND;
+        if (spun >= Math.toRadians(SPIN_HANDOVER)) {
+            spinning = false;
+            righting = true;
+        }
+        turnBy(level, origin, state, going, mass, nose.scale(Math.toRadians(SPIN_RATE)).subtract(upset.swing()));
+    }
+
+    /**
+     * Her lift turning her by as much more swing as is wanted, about an axis in the world, in radians a second: while
+     * her deck faces more down or aside than up, only the clusters that turn her fire; once it faces at least half up,
+     * her lift holds her up and catches her fall too. Her mains and jets wait.
+     */
+    private void turnBy(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 going, double mass, Vec3 wanted) {
         double full = Math.toRadians(RIGHTING_FULL_SPLIT);
         double ahead = Mth.clamp(wanted.dot(state.right()) / full, -1, 1);
         double right = Mth.clamp(-wanted.dot(state.nose()) / full, -1, 1);
@@ -1263,6 +1312,7 @@ public final class FreighterPilot {
         rest(level, origin);
         primed = false;
         righting = false;
+        spinning = false;
         spot = null;
         pads.reset();
         startCounting();

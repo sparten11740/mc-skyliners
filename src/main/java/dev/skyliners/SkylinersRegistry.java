@@ -1877,10 +1877,11 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<ConsoleBlock> CONSOLE_JUMP = consoleModule("console_jump", ConsoleKind.JUMP);
     public static final DeferredBlock<ConsoleBlock> CONSOLE_CLIMB = consoleModule("console_climb", ConsoleKind.CLIMB);
     public static final DeferredBlock<ConsoleBlock> CONSOLE_SLAM = consoleModule("console_slam", ConsoleKind.SLAM);
+    public static final DeferredBlock<ConsoleBlock> CONSOLE_SPIN = consoleModule("console_spin", ConsoleKind.SPIN);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConsoleBlockEntity>> CONSOLE_ENTITY =
         BLOCK_ENTITIES.register("console", () -> BlockEntityType.Builder.of(ConsoleBlockEntity::new, CONSOLE_READOUTS.get(),
             CONSOLE_SCANNER.get(), CONSOLE_ENGINES.get(), CONSOLE_SWITCHES.get(), CONSOLE_BOOST.get(), CONSOLE_JUMP.get(),
-            CONSOLE_CLIMB.get(), CONSOLE_SLAM.get()).build(null));
+            CONSOLE_CLIMB.get(), CONSOLE_SLAM.get(), CONSOLE_SPIN.get()).build(null));
     public static final DeferredItem<BlockItem> CONSOLE_READOUTS_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_READOUTS);
     public static final DeferredItem<BlockItem> CONSOLE_SCANNER_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SCANNER);
     public static final DeferredItem<BlockItem> CONSOLE_ENGINES_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_ENGINES);
@@ -1889,6 +1890,7 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> CONSOLE_JUMP_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_JUMP);
     public static final DeferredItem<BlockItem> CONSOLE_CLIMB_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_CLIMB);
     public static final DeferredItem<BlockItem> CONSOLE_SLAM_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SLAM);
+    public static final DeferredItem<BlockItem> CONSOLE_SPIN_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE_SPIN);
     /**
      * The round floor window (see {@link FloorWindowBlock}), laid as a whole from its item (see {@link FloorWindowItem})
      * and walked over, glass under its iris, as strong as glass is not and proof against blasts, as one blown out by a
@@ -3513,6 +3515,7 @@ public final class SkylinersRegistry {
             CONSOLE_JUMP_ITEM,
             CONSOLE_CLIMB_ITEM,
             CONSOLE_SLAM_ITEM,
+            CONSOLE_SPIN_ITEM,
             FLOOR_WINDOW_ITEM,
             FLOOR_WINDOW_PANEL_ITEM,
             BEACH_SAND_ITEM,

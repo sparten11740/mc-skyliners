@@ -399,7 +399,10 @@ show played as her feet touch: `FREIGHTER_SLAM` carried far by its volume, `Impa
 everyone aboard, block particles at her feet and the rocket's `RocketDustRing`, with the rocket's exhaust puffed over
 her lift clusters through `RocketPlumes.send` as she drives down, so it adds no payload of its own. Her brake is
 scaled down to the lift she has spare (`slamBrake`), so a heavy load still touches down slowly. It refuses while
-`FreighterFlight`'s take-off holds hold (her ramp not all away). Space weather is `spaceweather/SpaceWeather`, owned by
+`FreighterFlight`'s take-off holds hold (her ramp not all away). Her spin is `FreighterSpin`, owned the same way and
+asked for by the spin console: it refuses within `LEAST_HEIGHT` of the ground and otherwise sets her pilot rolling
+(`FreighterPilot.spin`), about her nose at up to `SPIN_RATE` until past `SPIN_HANDOVER`, when her righting takes her
+the rest of the way round, up. Space weather is `spaceweather/SpaceWeather`, owned by
 `StandingFlight` for the rocket and the freighter (`CraftFlight.spaceWeather`, reached through
 `AutopilotBlockEntity.spaceWeather`) and ticked in `aloft`: its warnings are the flight deck's announcements, which
 `FreighterFlight.says` turns into her computer's lines, and `RocketPilot.Orders.waitUp` keeps the rocket up till the

@@ -7,6 +7,7 @@ import dev.skyliners.autopilot.FreighterClimbBoost;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.FreighterJump;
 import dev.skyliners.autopilot.FreighterSlam;
+import dev.skyliners.autopilot.FreighterSpin;
 import dev.skyliners.block.Mount;
 import dev.skyliners.block.MountedModule;
 import dev.skyliners.block.TurnedShapes;
@@ -47,7 +48,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Its renderer draws it all, the client's {@code ConsoleRenderer}, its pictures live, or a standby picture with no
  * ship to read. Used, it answers with a sound and a moment its client draws: a toggle flipped under the hand, its lamp
  * lit; the scope's ping going out; a lamp test; or a big button pressed in, which asks her autopilot to boost, to climb
- * hard, to slam her down where she is or to jump through hyperspace to her pin.
+ * hard, to slam her down where she is, to roll her right over or to jump through hyperspace to her pin.
  * FACING is the way toward whoever works it, MOUNT how it is put up.
  */
 public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBlock {
@@ -151,6 +152,7 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
             case JUMP -> jump(level, pos, console, player);
             case CLIMB -> climb(level, pos, console, player);
             case SLAM -> slam(level, pos, console, player);
+            case SPIN -> spin(level, pos, console, player);
             default -> {
                 console.touch(level);
                 sound(level, pos, SoundEvents.NOTE_BLOCK_BIT.value(), BEEP_PITCH);
@@ -234,6 +236,22 @@ public class ConsoleBlock extends HorizontalDirectionalBlock implements EntityBl
             case SLAMMING -> level.playSound(null, pos, SkylinersRegistry.FREIGHTER_COMPUTER_SLAM.get(), SoundSource.BLOCKS, 1, 1);
             case BUSY -> sound(level, pos, SoundEvents.STONE_BUTTON_CLICK_ON, BEEP_PITCH);
             default -> sound(level, pos, SoundEvents.NOTE_BLOCK_BASS.value(), REFUSED_PITCH);
+        }
+    }
+
+    /**
+     * The spin button pressed in: her autopilot asked to roll her right over, her lift roaring into it (see {@link
+     * FreighterSpin}), or saying why not with a low note, too near the ground among the reasons; only a click while
+     * she is rolling already.
+     */
+    private static void spin(ServerLevel level, BlockPos pos, ConsoleBlockEntity console, Player player) {
+        console.touch(level);
+        FreighterSpin.Answer answer = FreighterFlight.spin(level, console.autopilot());
+        player.displayClientMessage(Component.translatable("message.skyliners.console.spin_" + answer.getSerializedName()), true);
+        if (answer == FreighterSpin.Answer.BUSY) {
+            sound(level, pos, SoundEvents.STONE_BUTTON_CLICK_ON, BEEP_PITCH);
+        } else if (answer != FreighterSpin.Answer.SPINNING) {
+            sound(level, pos, SoundEvents.NOTE_BLOCK_BASS.value(), REFUSED_PITCH);
         }
     }
 

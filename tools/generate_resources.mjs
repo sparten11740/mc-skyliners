@@ -646,7 +646,7 @@ function hullLightLang() {
 // The freighter's cockpit console (see ConsoleBlock), our own design: each module drawn by its renderer alone
 // (ConsoleRenderer), whichever way it faces and however it is put up, its block's model only its particle; its item a
 // little desk, its worn casing under a screen leaning back over its top, showing a picture of what it shows.
-const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump", "climb", "slam"];
+const CONSOLE_KINDS = ["readouts", "scanner", "engines", "switches", "boost", "jump", "climb", "slam", "spin"];
 {
   const MOUNTS = ["floor", "wall", "ceiling"];
   for (const kind of CONSOLE_KINDS) {
@@ -2287,6 +2287,13 @@ function zeppelinControlsLang() {
     "message.skyliners.console.slam_held": "Not with her ramp out",
     "message.skyliners.console.slam_switched_off": "The slam landing is switched off on this server",
     "message.skyliners.console.slam_no_ship": "No freighter here to slam down",
+    "block.skyliners.console_spin": "Spin Console",
+    "message.skyliners.console.spin_spinning": "Hold on! Over she goes!",
+    "message.skyliners.console.spin_busy": "She is rolling already",
+    "message.skyliners.console.spin_not_flying": "She spins only while she flies along",
+    "message.skyliners.console.spin_too_low": "Too near the ground to spin: climb higher first",
+    "message.skyliners.console.spin_switched_off": "The spin is switched off on this server",
+    "message.skyliners.console.spin_no_ship": "No freighter here to spin",
     "block.skyliners.floor_window": "Iris Window",
     "block.skyliners.floor_window_panel": "Iris Window Panel",
     "block.skyliners.beach_sand": "Beach Sand",

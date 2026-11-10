@@ -159,6 +159,8 @@ public final class FreighterFlight extends StandingFlight {
     private final FreighterClimbBoost climb = new FreighterClimbBoost();
     /** Her slam landing (see {@link #slam}), on the server and as the clients are shown it. */
     private final FreighterSlam slam = new FreighterSlam();
+    /** Her spin (see {@link #spin}), on the server and as the clients are shown it. */
+    private final FreighterSpin spin = new FreighterSpin();
     /**
      * Her jump drive in engineering as an offset from her control head, set as she is built, which spools up and fires
      * as she jumps; none for one built before, or without engineering's machines.
@@ -483,6 +485,30 @@ public final class FreighterFlight extends StandingFlight {
         return freighter == null ? FreighterSlam.Stage.UNAVAILABLE : freighter.slam.stage();
     }
 
+    /**
+     * Asks the freighter an autopilot flies to spin, on the server, as her console's spin button does: while she flies
+     * along high enough over the ground, she rolls right over about her length and back level, her autopilot flying
+     * on (see {@link FreighterSpin}). What it came to, for the button to answer with. Standing as she was built, never
+     * yet assembled, she is on the ground, and it says so, rather than that there is no freighter.
+     */
+    public static FreighterSpin.Answer spin(ServerLevel level, @Nullable AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot == null ? null : autopilot.flight(FreighterFlight.class);
+        if (freighter == null) {
+            return FreighterSpin.Answer.NO_SHIP;
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        if (state == null) {
+            return SkylinersConfig.FREIGHTER_SPIN.get() ? FreighterSpin.Answer.NOT_FLYING : FreighterSpin.Answer.SWITCHED_OFF;
+        }
+        return freighter.spin.start(level, autopilot, freighter.pilot, freighter.feetOverGround(level, autopilot));
+    }
+
+    /** Where the spin of the freighter an autopilot flies stands, on either side; unavailable for others. */
+    public static FreighterSpin.Stage spinOf(AutopilotBlockEntity autopilot) {
+        FreighterFlight freighter = autopilot.flight(FreighterFlight.class);
+        return freighter == null ? FreighterSpin.Stage.UNAVAILABLE : freighter.spin.stage();
+    }
+
     /** Whether her autopilot flies her along, climbing or cruising: not lifting off or coming down. */
     private static boolean flyingAlong(AutopilotBlockEntity autopilot) {
         return (autopilot.phase == AutopilotBlockEntity.Phase.CLIMB || autopilot.phase == AutopilotBlockEntity.Phase.CRUISE) && !autopilot.comingIn();
@@ -629,6 +655,7 @@ public final class FreighterFlight extends StandingFlight {
         tag.put("FreighterMainRelays", Relays.write(pilot.wiring().mains()));
         climb.saveShown(tag);
         slam.saveShown(tag);
+        spin.saveShown(tag);
     }
 
     @Override
@@ -645,6 +672,7 @@ public final class FreighterFlight extends StandingFlight {
         mainRelays = Relays.read(tag.getList("FreighterMainRelays", Tag.TAG_INT_ARRAY));
         climb.loadShown(tag);
         slam.loadShown(tag);
+        spin.loadShown(tag);
     }
 
     /**
@@ -742,6 +770,7 @@ public final class FreighterFlight extends StandingFlight {
         sayNoGround(level, autopilot, noGroundNow);
         slam.tick(level, autopilot, flight, pilot.middle(flight), radio, pilot.wiring().clusters(), pilot.wiring().feet(),
             heldNow(level, autopilot.getBlockPos()));
+        spin.tick(autopilot, pilot, radio);
         legs.tick(level, autopilot.getBlockPos(), autopilot.phase, radio, flight.velocity().y);
         long now = level.getGameTime();
         boolean liftShown = lift.take(pilot.report().lift(), now);

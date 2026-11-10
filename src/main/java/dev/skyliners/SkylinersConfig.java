@@ -91,6 +91,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue FREIGHTER_HYPERSPACE_WAKE;
     public static final ModConfigSpec.BooleanValue FREIGHTER_CLIMB_BOOST;
     public static final ModConfigSpec.BooleanValue FREIGHTER_SLAM_LANDING;
+    public static final ModConfigSpec.BooleanValue FREIGHTER_SPIN;
     public static final ModConfigSpec.BooleanValue FREIGHTER_ROBOTS;
     public static final ModConfigSpec.BooleanValue FREIGHTER_RAMP;
     public static final ModConfigSpec.BooleanValue FREIGHTER_LASER_CROSSBOW;
@@ -843,6 +844,15 @@ public final class SkylinersConfig {
                 "Without it, the button only says no, and her console has her flight readouts in its place."
             )
             .define("slamLanding", true);
+        FREIGHTER_SPIN = builder
+            .comment(
+                "Whether the freighter can spin from the spin button on her console: while she flies along high over the",
+                "ground, she rolls right over about her length, a whole turn, and comes back level, her autopilot flying",
+                "on. Too near the ground for the height a roll takes, the button only says no. Without it, the button only",
+                "says no, and her console has her engine gauges in its place. She rights herself when knocked upside down",
+                "either way."
+            )
+            .define("spin", true);
         FREIGHTER_ROBOTS = builder
             .comment(
                 "Whether the freighter is built with her deck robots standing in two of her rooms by the doorways, chirping",

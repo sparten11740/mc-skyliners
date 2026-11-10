@@ -9267,6 +9267,28 @@ function consoleTextures() {
     "################",
     "................",
   ];
+  // The spin's picture: a round arrow going right round, over the top and down her right side, about her saucer seen
+  // from astern, its dome on top.
+  const SPIN_ROWS = [
+    "......####......",
+    "....##....##....",
+    "...#........#...",
+    "..#..........#..",
+    ".#............#.",
+    ".#..........####",
+    "#......##....##.",
+    "#....######.....",
+    "#...########....",
+    "#....######.....",
+    ".#............#.",
+    ".#............#.",
+    "..#..........#..",
+    "...#........#...",
+    "....##....##....",
+    "......####......",
+  ];
+  const VIOLET = [0xb4, 0x6c, 0xf0];
+  const saucer = (x, y) => y >= 6 && y <= 9 && x >= 3 && x <= 12;
   const PICTURES = {
     readouts: (x, y) => (y === 5 && x > 2 && x < 13) || (y > 8 && y < 12 && x > 2 && x < 3 + (x % 3) * 3) ? GREEN : null,
     scanner: (x, y) => {
@@ -9284,6 +9306,7 @@ function consoleTextures() {
     },
     climb: (x, y) => (CLIMB_ROWS[y][x] !== "#" ? null : y < 10 ? [0xff, 0x8a, 0x1e] : y < 13 ? RED : AMBER),
     slam: (x, y) => (SLAM_ROWS[y][x] !== "#" ? null : y < 9 ? RED : y < 12 ? AMBER : [0x9a, 0x8c, 0x7e]),
+    spin: (x, y) => (SPIN_ROWS[y][x] !== "#" ? null : saucer(x, y) ? [0xd8, 0xdc, 0xe2] : VIOLET),
   };
   for (const [kind, paint] of Object.entries(PICTURES)) {
     texture(blockOutput, `console_${kind}_screen`, (x, y) => {
@@ -9327,6 +9350,7 @@ function consoleTextures() {
       "...#...##...#...", "..#....##....#..", ".......##.......", "................"],
     climb_boost: CLIMB_ROWS,
     slam_landing: SLAM_ROWS,
+    spin: SPIN_ROWS,
     held_ramp: HELD_RAMP_ROWS,
     power: ["................", ".......##.......", ".......##.......", "...##..##..##...", "..##...##...##..", ".##....##....##.",
       ".##....##....##.", ".##..........##.", ".##..........##.", ".##..........##.", "..##........##..", "...##......##...",

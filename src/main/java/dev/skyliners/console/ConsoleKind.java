@@ -33,7 +33,12 @@ public enum ConsoleKind implements StringRepresentable {
      * she flies along with the ground in reach, that slams her straight down onto her legs (see her autopilot's slam
      * landing).
      */
-    SLAM(1);
+    SLAM(1),
+    /**
+     * A big violet push-button under a round arrow going right round her saucer, lit while she flies along high over
+     * the ground, that rolls her right over about her length and back level (see her autopilot's spin).
+     */
+    SPIN(1);
 
     /** How many controls stand in a row along its desk: toggles, knobs, levers, or its one big button. */
     private final int controls;

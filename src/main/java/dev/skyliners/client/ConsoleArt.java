@@ -9,6 +9,7 @@ import dev.skyliners.Skyliners;
 import dev.skyliners.autopilot.FreighterClimbBoost;
 import dev.skyliners.autopilot.FreighterFlight;
 import dev.skyliners.autopilot.FreighterSlam;
+import dev.skyliners.autopilot.FreighterSpin;
 import dev.skyliners.console.ConsoleBlockEntity;
 import dev.skyliners.console.ConsoleKind;
 import dev.skyliners.spaceweather.SpaceWeather;
@@ -40,7 +41,9 @@ import org.joml.Matrix4f;
  * dark while she cannot climb so, pulsing orange while she can, flashing as dashes race up past it as
  * it fires and ringed red while it rests, its big orange button lit the same; the slam landing's arrow down onto the
  * ground, dark while she cannot slam down, pulsing red while she can and flashing as dashes race down past it as she
- * drives down, its big red button lit the same; and while something holds her take-off,
+ * drives down, its big red button lit the same; the spin's round arrow about her saucer, dark while she cannot spin,
+ * pulsing violet while she can and flashing inside a ring of segments chasing round it as she rolls, its big violet
+ * button lit the same; and while something holds her take-off,
  * the scanner shows it in place of its scope, her ramp with someone on it flashing amber; and while one of her fault
  * spots is at fault, a red warning sign flashes on the scope at its bearing and another in the scope's corner, so a
  * fault can be tracked down from her cockpit; while space weather is told or blows round her, the scanner flashes its
@@ -145,6 +148,16 @@ final class ConsoleArt {
     private static final float CLIMB_DASH_SPEED = 0.08F;
     /** The slam landing's dull red while she cannot slam down. */
     private static final int SLAM_DARK = 0xFF3A2222;
+    /** The spin's violet, and its dull violet while she cannot spin. */
+    private static final int VIOLET = 0xFFB46CF0;
+    private static final int SPIN_DARK = 0xFF2E2440;
+    /**
+     * The ring round the spin's arrow as she rolls: how many segments, how many of them are lit in the run chasing
+     * round it, fading behind its lead, and how many segments the run moves on each tick.
+     */
+    private static final int SPIN_SEGMENTS = 12;
+    private static final int SPIN_LIT = 4;
+    private static final float SPIN_CHASE_SPEED = 0.6F;
 
     private ConsoleArt() {
     }
@@ -152,14 +165,14 @@ final class ConsoleArt {
     /**
      * The readings a console draws from, read once a frame: whether there is a ship to read, her speed ahead, height,
      * climb and heading as her instruments show them, her lift's and her mains' shares of full and where her boost
-     * stands, her hyperspace jump, her climb boost and her slam landing, and whether she is a freighter at all; the
-     * drawing clock's ticks for what only moves for show; how long ago the console was last touched, in ticks,
-     * negative for never; which of its toggles are up, a bit each; the blips its scope shows; and what holds her
-     * take-off, by its picture's word, if anything does.
+     * stands, her hyperspace jump, her climb boost, her slam landing and her spin, and whether she is a freighter at
+     * all; the drawing clock's ticks for what only moves for show; how long ago the console was last touched, in
+     * ticks, negative for never; which of its toggles are up, a bit each; the blips its scope shows; and what holds
+     * her take-off, by its picture's word, if anything does.
      */
     record Readings(boolean powered, double speed, double height, double climb, double heading, double lift, double mains,
                     FreighterFlight.BoostShown boost, FreighterFlight.JumpShown jump, FreighterClimbBoost.Shown climbBoost,
-                    FreighterSlam.Stage slam, boolean freighter, float ticks,
+                    FreighterSlam.Stage slam, FreighterSpin.Stage spin, boolean freighter, float ticks,
                     float sinceTouched, int toggles,
                     List<Blip> blips, @Nullable String heldBy) {
     }
@@ -205,6 +218,7 @@ final class ConsoleArt {
             case JUMP -> jumpScreen(buffers, matrix, width, height, readings);
             case CLIMB -> climbScreen(buffers, matrix, width, height, readings);
             case SLAM -> slamScreen(buffers, matrix, width, height, readings);
+            case SPIN -> spinScreen(buffers, matrix, width, height, readings);
         }
     }
 
@@ -526,6 +540,44 @@ final class ConsoleArt {
         ScreenDrawing.picture(buffers, matrix, icon("slam_landing"), 0, height * 0.55, size, 5 * LAYER, slamColour(readings));
     }
 
+    /**
+     * The spin: its round arrow about her saucer big in the middle, dark while she cannot spin, pulsing violet while
+     * she can, and flashing violet and white as she rolls, a run of lit segments chasing round it the way she rolls.
+     */
+    private static void spinScreen(MultiBufferSource buffers, Matrix4f matrix, double width, double height, Readings readings) {
+        double size = Math.min(width, height) * 0.28;
+        double y = height * 0.5;
+        if (readings.spin() == FreighterSpin.Stage.ROLLING) {
+            chaseRing(ScreenDrawing.shapes(buffers), matrix, y, size * 1.4, readings.ticks());
+        }
+        ScreenDrawing.picture(buffers, matrix, icon("spin"), 0, y, size, 5 * LAYER, spinColour(readings));
+    }
+
+    /** The colour the spin is lit in, on its screen and its button, as it stands (see {@link #spinScreen}). */
+    private static int spinColour(Readings readings) {
+        if (!readings.freighter()) {
+            return UNLIT;
+        }
+        return switch (readings.spin()) {
+            case UNAVAILABLE -> SPIN_DARK;
+            case READY -> fade(VIOLET, 0.75F + 0.25F * Mth.sin(readings.ticks() * 0.12F)) | 0xFF000000;
+            case ROLLING -> (int) readings.ticks() % 4 < 2 ? VIOLET : JUMP_WHITE;
+        };
+    }
+
+    /** A ring of segments round the spin's arrow as she rolls, a few lit in a run chasing round it clockwise. */
+    private static void chaseRing(VertexConsumer shapes, Matrix4f matrix, double y, double radius, float ticks) {
+        int lead = (int) (ticks * SPIN_CHASE_SPEED) % SPIN_SEGMENTS;
+        for (int segment = 0; segment < SPIN_SEGMENTS; segment++) {
+            double a = Mth.TWO_PI * (segment + 0.15) / SPIN_SEGMENTS;
+            double b = Mth.TWO_PI * (segment + 0.85) / SPIN_SEGMENTS;
+            int behind = Math.floorMod(lead - segment, SPIN_SEGMENTS);
+            int colour = behind < SPIN_LIT ? fade(VIOLET, 1 - (float) behind / SPIN_LIT) | 0xFF000000 : UNLIT;
+            ScreenDrawing.line(shapes, matrix, Math.sin(a) * radius, y + Math.cos(a) * radius, Math.sin(b) * radius, y + Math.cos(b) * radius,
+                4 * LAYER, (float) (radius * 0.1), colour);
+        }
+    }
+
     /** The colour the slam landing is lit in, on its screen and its button, as it stands (see {@link #slamScreen}). */
     private static int slamColour(Readings readings) {
         if (!readings.freighter()) {
@@ -633,6 +685,8 @@ final class ConsoleArt {
                 climbColour(readings), ORANGE, HAZARD_BLACK);
             case SLAM -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
                 slamColour(readings), RED, HAZARD_BLACK);
+            case SPIN -> bigButton(solid, pose, y, slot, light, readings.sinceTouched() >= 0 && readings.sinceTouched() < PRESSED_TICKS,
+                spinColour(readings), VIOLET, HAZARD_BLACK);
             default -> pushButton(solid, pose, x, y, slot, light, LAMP_COLOURS[index % LAMP_COLOURS.length]);
         }
     }

@@ -15,7 +15,8 @@ flies on thrusters that need no fuel, and she is as much a ship to explore as on
 ## What to look for
 
 - **The console.** Her cockpit desk has big buttons: one climbs her hard towards the edge of space, one slams her down
-  to the ground (it only looks like a crash), and one jumps her through hyperspace to a pin set on the map.
+  to the ground (it only looks like a crash), one rolls her right over high up, and one jumps her through hyperspace
+  to a pin set on the map.
 - **Hyperspace.** Stars stretch into streaks for everyone aboard. Anyone outside sees her stretch and vanish in a white
   flash, and hears the thunder arrive late, as sound would.
 - **Space weather.** High above the black of space, meteor showers, asteroid storms and solar flares blow through.

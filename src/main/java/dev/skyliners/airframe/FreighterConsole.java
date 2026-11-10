@@ -18,12 +18,14 @@ import net.minecraft.world.level.block.state.BlockState;
  * her control head between them, from in front of the pilot's seat round ahead of the head to in front of the
  * co-pilot's, every slice of it turned toward the head, so whichever seat she is flown from it faces her. Left to right
  * as they see it: the climb button right before the pilot (a bank of toggles with the server config's
- * {@code freighter.climbBoost} off), the slam button beside it, the boost button, the scanner in the middle, the
- * hyperspace jump button (her flight readouts with {@code freighter.hyperspaceJump} off), her engines, behind the next,
- * and her flight readouts right before the co-pilot, which need no touching. With {@code freighter.slamLanding} off,
- * her flight readouts stand beside the climb button and a bank of toggles before the co-pilot. Each slice is a console
- * module of its own in the block its middle falls in, wired to her control head; one whose block is not open is left
- * out. Laid out nose north; none with the server config's {@code freighter.console} off.
+ * {@code freighter.climbBoost} off), the slam button beside it, the spin button, the boost button, the hyperspace
+ * jump button (her flight readouts with {@code freighter.hyperspaceJump} off), within reach of either seat, the
+ * scanner, and her flight readouts right before the co-pilot, which need no touching. The ring holds seven slices at
+ * most, each in a block of its own; with {@code freighter.spin} off there is no spin button, the scanner stands in the
+ * middle and her engines' gauges behind the jump button. With {@code freighter.slamLanding} off, her flight readouts
+ * stand beside the climb button and a bank of toggles before the co-pilot. Each slice is a console module of its own
+ * in the block its middle falls in, wired to her control head; one whose block is not open is left out. Laid out nose
+ * north; none with the server config's {@code freighter.console} off.
  */
 final class FreighterConsole {
     /** The ring's inner and outer circles round her control head's middle, in blocks: the desk's near and far edges. */
@@ -34,10 +36,16 @@ final class FreighterConsole {
      * which stand two blocks either side of the head.
      */
     private static final double SWEEP = 72;
-    /** The modules round the ring, left to right as her pilots see them. */
+    /**
+     * The modules round the ring, left to right as her pilots see them: with her spin button, or with her engines'
+     * gauges in its place, where the server does not let her spin.
+     */
     private static final List<Supplier<? extends Block>> MODULES = List.of(FreighterConsole::climbOrSwitches, FreighterConsole::slamOrReadouts,
-        SkylinersRegistry.CONSOLE_BOOST, SkylinersRegistry.CONSOLE_SCANNER, FreighterConsole::jumpOrReadouts, SkylinersRegistry.CONSOLE_ENGINES,
+        SkylinersRegistry.CONSOLE_SPIN, SkylinersRegistry.CONSOLE_BOOST, FreighterConsole::jumpOrReadouts, SkylinersRegistry.CONSOLE_SCANNER,
         FreighterConsole::readoutsOrSwitches);
+    private static final List<Supplier<? extends Block>> MODULES_NO_SPIN = List.of(FreighterConsole::climbOrSwitches,
+        FreighterConsole::slamOrReadouts, SkylinersRegistry.CONSOLE_BOOST, SkylinersRegistry.CONSOLE_SCANNER, FreighterConsole::jumpOrReadouts,
+        SkylinersRegistry.CONSOLE_ENGINES, FreighterConsole::readoutsOrSwitches);
 
     private FreighterConsole() {
     }
@@ -70,18 +78,20 @@ final class FreighterConsole {
         if (!SkylinersConfig.FREIGHTER_CONSOLE.get()) {
             return;
         }
-        double step = 2 * SWEEP / MODULES.size();
-        for (int slice = 0; slice < MODULES.size(); slice++) {
+        List<Supplier<? extends Block>> modules = SkylinersConfig.FREIGHTER_SPIN.get() ? MODULES : MODULES_NO_SPIN;
+        double step = 2 * SWEEP / modules.size();
+        for (int slice = 0; slice < modules.size(); slice++) {
             double from = -SWEEP + step * slice;
-            module(layout, head, slice, from, from + step);
+            module(layout, head, modules.get(slice).get(), from, from + step, slice == 0, slice == modules.size() - 1);
         }
     }
 
     /**
-     * One slice of the ring, between two bearings clockwise from her bow, its module set in the block its middle falls
-     * in, where that is open, and told once it stands its slice and the way to her control head.
+     * One slice of the ring, between two bearings clockwise from her bow, the first or the last of it or neither, its
+     * module set in the block its middle falls in, where that is open, and told once it stands its slice and the way to
+     * her control head.
      */
-    private static void module(HullLayout layout, BlockPos head, int slice, double from, double to) {
+    private static void module(HullLayout layout, BlockPos head, Block kind, double from, double to, boolean first, boolean last) {
         double middleX = head.getX() + 0.5;
         double middleZ = head.getZ() + 0.5;
         double bearing = Math.toRadians((from + to) / 2);
@@ -92,10 +102,10 @@ final class FreighterConsole {
         }
         // Facing back toward the head, the way whoever works it stands.
         Direction facing = Direction.getNearest((float) -Math.sin(bearing), 0, (float) Math.cos(bearing));
-        BlockState module = MODULES.get(slice).get().defaultBlockState().setValue(ConsoleBlock.FACING, facing).setValue(ConsoleBlock.MOUNT, Mount.FLOOR);
+        BlockState module = kind.defaultBlockState().setValue(ConsoleBlock.FACING, facing).setValue(ConsoleBlock.MOUNT, Mount.FLOOR);
         layout.set(at.getX(), at.getY(), at.getZ(), module);
         ConsoleShape.Facet facet = new ConsoleShape.Facet(middleX - (at.getX() + 0.5), middleZ - (at.getZ() + 0.5), INNER, OUTER, from, to,
-            slice == 0, slice == MODULES.size() - 1);
+            first, last);
         BlockPos toHead = head.subtract(at);
         layout.fit(at, (blockEntity, rotation) -> {
             if (blockEntity instanceof ConsoleBlockEntity console) {
