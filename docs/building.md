@@ -243,7 +243,8 @@ client `WindowDimmerRenderer` draws its four buttons through `LedControlsArt`, t
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketPaintings` hangs the fleet's paintings, more pictures on that block, on her entry story and by her pool;
-`ZeppelinPaintings` at the head of the zeppelin's dining room, on a panelled wall of its own; and `CabinPaintings` high
+`ZeppelinPaintings` at the head of the zeppelin's dining room, on a panelled wall of its own (`ZeppelinDeckRail` laying
+a glass rail along the rest of the upper deck's front edge, where it ends over her open hull); and `CabinPaintings` high
 on three of the airliner's bulkheads, last of its fit-out and only where the bulkhead carries on past every side of the
 picture; `FreighterPaintings` on the freighter's two straight walls across her beam, each at the first place along its
 wall where it hangs whole, a `FloorLightBlock` under it.
