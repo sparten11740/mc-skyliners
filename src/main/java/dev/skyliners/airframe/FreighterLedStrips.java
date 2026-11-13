@@ -29,7 +29,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * the wedge as well as the box round its strips, which overlaps its neighbours'.
  *
  * <p>A strip goes in every open block over her deck's floor in a room, past the open floor about her core, that has her
- * padded wall or her shell beside it on a side, and runs along those sides; none where something stands. Laid after her
+ * padded wall or her shell beside it on a side, and runs along those sides; none where something stands, and none in
+ * her cockpit's pod, which is no room of hers: its floor meets her canopy's glass rather than a wall, so a ring there
+ * stood out on the glass, and it lies across two rooms' wedges, so the ring came in two rooms' colours. Laid after her
  * rooms are furnished, so it fills in round their fittings. Laid out nose north, as the rest of her; none with the
  * server config's {@code freighter.ledStrips} off.
  */
@@ -80,25 +82,29 @@ final class FreighterLedStrips {
     private final int deck;
     private final int reach;
     private final int ahead;
+    /** How many blocks she is built to a metre of her shape. */
+    private final double scale;
 
-    private FreighterLedStrips(HullLayout layout, int deck, int reach, int ahead) {
+    private FreighterLedStrips(HullLayout layout, int deck, int reach, int ahead, double scale) {
         this.layout = layout;
         this.deck = deck;
         this.reach = reach;
         this.ahead = ahead;
+        this.scale = scale;
     }
 
     /**
      * Lays the strips and panels in a freighter's layout whose deck's floor is the row given, reaching so far out to
-     * either side and astern, and so far ahead, out past her disc to her prongs' tips and her cockpit's pod;
+     * either side and astern, and so far ahead, out past her disc to her prongs' tips and her cockpit's pod, built so
+     * many blocks to a metre;
      * gives where each room's panel went, in the order her cargo hold, entry hall, lounge, engineering, crew quarters
      * and club, null where a room has none, or none at all with the strips switched off.
      */
-    static List<BlockPos> build(HullLayout layout, int deck, int reach, int ahead) {
+    static List<BlockPos> build(HullLayout layout, int deck, int reach, int ahead, double scale) {
         if (!SkylinersConfig.FREIGHTER_LED_STRIPS.get()) {
             return List.of();
         }
-        FreighterLedStrips strips = new FreighterLedStrips(layout, deck, reach, ahead);
+        FreighterLedStrips strips = new FreighterLedStrips(layout, deck, reach, ahead, scale);
         List<BlockPos> panels = new ArrayList<>();
         ROOMS.forEach(room -> panels.add(strips.room(room)));
         return panels;
@@ -133,9 +139,10 @@ final class FreighterLedStrips {
         return panel;
     }
 
-    /** Whether a block lies in a room: in its wedge, past the open floor about her core. */
-    private static boolean inRoom(LedPanelBlockEntity.Wedge wedge, BlockPos at) {
-        return Math.hypot(at.getX(), at.getZ()) >= FreighterLayout.CORRIDOR && wedge.contains(at);
+    /** Whether a block lies in a room: in its wedge, past the open floor about her core, and out of her cockpit pod. */
+    private boolean inRoom(LedPanelBlockEntity.Wedge wedge, BlockPos at) {
+        return Math.hypot(at.getX(), at.getZ()) >= FreighterLayout.CORRIDOR && wedge.contains(at)
+            && FreighterShape.nearest(at.getX() / scale, (at.getY() + 0.5) / scale, at.getZ() / scale) != FreighterShape.Part.POD;
     }
 
     /**
