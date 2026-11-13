@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -84,8 +85,13 @@ final class FreighterSpookie {
         if (!roundTheRing(home, stops, rests)) {
             return;
         }
-        layout.set(hammock.getX(), hammock.getY(), hammock.getZ(),
-            SkylinersRegistry.SPOOKIE_HAMMOCK.get().defaultBlockState().setValue(SpookieHammockBlock.FACING, Direction.NORTH));
+        SpookieHammockBlock block = SkylinersRegistry.SPOOKIE_HAMMOCK.get();
+        BlockState sling = block.defaultBlockState().setValue(SpookieHammockBlock.FACING, Direction.NORTH);
+        layout.set(hammock.getX(), hammock.getY(), hammock.getZ(), sling);
+        for (boolean clockwise : new boolean[]{true, false}) {
+            BlockPos post = SpookieHammockBlock.postAt(hammock, Direction.NORTH, clockwise);
+            layout.set(post.getX(), post.getY(), post.getZ(), SpookieHammockBlock.post(block, Direction.NORTH, clockwise));
+        }
         List<BlockPos> offsets = stops.stream().map(stop -> stop.subtract(hammock)).toList();
         layout.fit(hammock, (blockEntity, rotation) -> keeper(blockEntity, rotation, offsets, rests));
     }

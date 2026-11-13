@@ -1,19 +1,35 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,part=sling": {
       "model": "skyliners:block/spookie_hammock",
       "y": 0
     },
-    "facing=east": {
+    "facing=east,part=sling": {
       "model": "skyliners:block/spookie_hammock",
       "y": 90
     },
-    "facing=south": {
+    "facing=south,part=sling": {
       "model": "skyliners:block/spookie_hammock",
       "y": 180
     },
-    "facing=west": {
+    "facing=west,part=sling": {
       "model": "skyliners:block/spookie_hammock",
+      "y": 270
+    },
+    "facing=north,part=post": {
+      "model": "skyliners:block/spookie_hammock_post",
+      "y": 0
+    },
+    "facing=east,part=post": {
+      "model": "skyliners:block/spookie_hammock_post",
+      "y": 90
+    },
+    "facing=south,part=post": {
+      "model": "skyliners:block/spookie_hammock_post",
+      "y": 180
+    },
+    "facing=west,part=post": {
+      "model": "skyliners:block/spookie_hammock_post",
       "y": 270
     }
   }

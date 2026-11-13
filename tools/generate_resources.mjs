@@ -588,25 +588,54 @@ function hullLightLang() {
 
 // The Spookie's hammock in the freighter's crew quarters (see SpookieHammockBlock): a striped orange and cream canvas
 // sling three blocks long, sagging deep in the middle of its own block, hung from a wooden spreader bar at each end,
-// each bar on a rope slanting down from the top of a steel post standing a block out from the hammock's block. Its
-// parts past its block, near two blocks tall, are drawn without ambient occlusion so they do not go dark aboard. Its
-// item shows it small.
+// each bar on a rope slanting down from the top of a steel post. Each post is a block of its own either side of the
+// sling's, drawing its post, its rope, its bar and the sling's end; drawn facing north, the sling's block is on its
+// west side, as the other post, facing south, is the same model turned. Its parts above its blocks, near two blocks
+// tall, are drawn without ambient occlusion so they do not go dark aboard. Its item shows all three blocks small.
 {
   // A stretch of the sling, from one end to the other along it and from its underside to its top, each stretch's top
-  // the underside of the one nearer the bar, so the canvas runs on unbroken as it sags.
+  // the underside of the one nearer the bar, so the canvas runs on unbroken as it sags; x in pixels from the sling's
+  // block's west side.
   const sling = (from, to, low, high) => solid([from, low, 1.5], [to, high, 14.5], "#cloth");
   const rope = (x) => solid([x - 4.24, 20.5, 7.5], [x + 4.24, 21.5, 8.5], "#rope", { angle: x < 8 ? -45 : 45, axis: "z", origin: [x, 21, 8] });
+  // The east post's block, in pixels from the sling's block's west side, each moved into the post's own block.
+  const eastPost = [
+    sling(16, 17, 12, 15), sling(17, 21, 15, 17), solid([21, 17, 1], [22, 19, 15], "#post"), rope(25), solid([28, 0, 6], [31, 30, 10], "#post"),
+  ];
+  const westPost = [
+    solid([-15, 0, 6], [-12, 30, 10], "#post"), rope(-9), solid([-6, 17, 1], [-5, 19, 15], "#post"), sling(-5, -1, 15, 17), sling(-1, 0, 12, 15),
+  ];
+  const middle = [sling(0, 3, 12, 15), sling(3, 6, 10, 12), sling(6, 10, 8, 10), sling(10, 13, 10, 12), sling(13, 16, 12, 15)];
+  // A copy of a part moved so many pixels east, about its own turn's origin too.
+  const moved = (element, by) => {
+    const copy = structuredClone(element);
+    copy.from[0] += by;
+    copy.to[0] += by;
+    if (copy.rotation) copy.rotation.origin[0] += by;
+    return copy;
+  };
+  const textures = { cloth: `${ID}:block/spookie_hammock`, post: `${ID}:block/habitat_kerb`, rope: "minecraft:block/brown_wool" };
   write(`assets/${ID}/models/block/spookie_hammock.json`, {
     parent: "minecraft:block/block",
     ambientocclusion: false,
-    textures: { cloth: `${ID}:block/spookie_hammock`, post: `${ID}:block/habitat_kerb`, rope: "minecraft:block/brown_wool", particle: `${ID}:block/spookie_hammock` },
-    elements: [
-      solid([-15, 0, 6], [-12, 30, 10], "#post"), solid([28, 0, 6], [31, 30, 10], "#post"),
-      rope(-9), rope(25),
-      solid([-6, 17, 1], [-5, 19, 15], "#post"), solid([21, 17, 1], [22, 19, 15], "#post"),
-      sling(-5, -1, 15, 17), sling(-1, 3, 12, 15), sling(3, 6, 10, 12), sling(6, 10, 8, 10), sling(10, 13, 10, 12), sling(13, 17, 12, 15),
-      sling(17, 21, 15, 17),
-    ],
+    textures: { ...textures, particle: `${ID}:block/spookie_hammock` },
+    elements: middle,
+  });
+  write(`assets/${ID}/models/block/spookie_hammock_post.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { ...textures, particle: `${ID}:block/habitat_kerb` },
+    elements: eastPost.map((element) => moved(element, -16)),
+  });
+  write(`assets/${ID}/blockstates/spookie_hammock.json`, {
+    variants: Object.fromEntries(["sling", "post"].flatMap((part) => Object.entries(yRot).map(([facing, y]) =>
+      [`facing=${facing},part=${part}`, { model: `${ID}:block/spookie_hammock${part === "post" ? "_post" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/spookie_hammock.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { ...textures, particle: `${ID}:block/spookie_hammock` },
+    elements: structuredClone([...westPost, ...middle, ...eastPost]),
     display: {
       gui: { rotation: [30, 225, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3] },
       ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.15, 0.15, 0.15] },
@@ -615,11 +644,7 @@ function hullLightLang() {
       firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.25, 0.25, 0.25] },
     },
   });
-  write(`assets/${ID}/blockstates/spookie_hammock.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/spookie_hammock`, y }])),
-  });
-  write(`assets/${ID}/models/item/spookie_hammock.json`, { parent: `${ID}:block/spookie_hammock` });
-  dropsItself("spookie_hammock");
+  dropsFrom("spookie_hammock", { part: "sling" });
   cubes.spookie_hammock = null;
 }
 

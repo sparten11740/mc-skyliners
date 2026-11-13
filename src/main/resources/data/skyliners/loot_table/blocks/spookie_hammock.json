@@ -12,6 +12,13 @@
       ],
       "conditions": [
         {
+          "condition": "minecraft:block_state_property",
+          "block": "skyliners:spookie_hammock",
+          "properties": {
+            "part": "sling"
+          }
+        },
+        {
           "condition": "minecraft:survives_explosion"
         }
       ]

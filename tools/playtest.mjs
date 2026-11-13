@@ -389,6 +389,11 @@ const DROP_FROM = 3;
 const CANNON_HOUSING_TOP = 1.375;
 const DISH_BOWL_TOP = 1.75;
 const STANDS_WITHIN = 0.05;
+// Walking at a Spookie's hammock set down by hand from beyond either end of it: how far out from the middle of the
+// post's block to start, in blocks, and how far out from it the post stops the player at least, in blocks: its post
+// stands up the far side of its block, and with nothing there the player walked on to the sling, short of its middle.
+const HAMMOCK_WALK_FROM = 2.5;
+const HAMMOCK_POST_OUT = 0.6;
 // The slim souvenir models, the rocket's and the freighter's, each set down on the ground facing north with a point of
 // its block, from 0 to 1 across, up and along, where the box all four once shared took a click though nothing of it is
 // drawn there, and one where it is drawn; and how far off to click them from, in blocks, south of it.
@@ -3789,6 +3794,37 @@ function checkFreighterOutsideSolid() {
     `${along} blocks from its middle`);
 }
 
+// A Spookie's hammock is as solid as it is drawn: its posts are blocks of their own, standing either side of its sling
+// as the freighter builds it and as it is set down by hand, and walked at from beyond either end, each post stops the
+// player; broken by a post in survival, it all comes down and gives back one hammock. With the fault its posts were
+// drawn from the sling's block, a block out either side of it with nothing there, and were walked straight through.
+function checkHammockPosts() {
+  ship("freighter");
+  const built = must("find skyliners:spookie_hammock 128 3").rows.map((row) => must(`block ${row.at_abs.join(",")}`).props?.part);
+  expect(built.filter((part) => part === "post").length === 2 && built.includes("sling"), "freighter: her Spookie's hammock stands on its two posts",
+    built.join(", ") || "not built");
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  const at = [site.x, ground, site.z];
+  creative();
+  emptyHands();
+  must(`server tp @p ${at[0] + 0.5} ${ground} ${at[2] - 2.5} 0 20; wait ${CHUNKS_TICKS}t; server give @p skyliners:spookie_hammock 1; wait 5t; select 0`);
+  send(`place skyliners:spookie_hammock ${at.join(",")}`);
+  for (const way of [[1, 0], [-1, 0]]) {
+    const post = [at[0] + way[0], at[1], at[2]];
+    const part = must(`block ${post.join(",")} side=server`).props?.part;
+    const { along } = bumpInto(post, way, HAMMOCK_WALK_FROM);
+    expect(part === "post" && along > HAMMOCK_POST_OUT && along < HAMMOCK_WALK_FROM - BUMP_MOVED,
+      `spookie hammock: set down by hand, its post ${way[0] > 0 ? "east" : "west"} of it stops the player walking at it`, `${part ?? "nothing"} there, ${along} blocks out from its middle`);
+  }
+  emptyHands();
+  survival();
+  must(`server tp @p ${at[0] + 1 + HAMMOCK_WALK_FROM} ${ground} ${at[2] + 0.5} 90 20; wait 10t; mine ${at[0] + 1},${at[1]},${at[2]} timeout=10s; wait 20t`);
+  const left = must(`find skyliners:spookie_hammock ${WINDOW_REACH} 3`).rows.length;
+  const given = windowsGivenBack("spookie_hammock");
+  creative();
+  expect(left === 0 && given === 1, "spookie hammock: broken by a post, it all comes down and gives back one hammock", `${left} blocks left, ${given} given back`);
+}
+
 // Drops the player, in survival, from over the middle of a block onto it; how high over the block they come to stand.
 function landsOn([x, y, z]) {
   survival();
@@ -6887,6 +6923,7 @@ const CHECKS = {
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
   "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
+  "hammock-posts": { run: checkHammockPosts, about: "a Spookie's hammock stands on two solid posts, built and set down by hand, and broken comes down whole as one hammock" },
   "freighter-outside-solid": { run: checkFreighterOutsideSolid, about: "a freighter's cannon housing and big dish are stood on, and her parcel scanner's gantry stops whoever walks into it" },
   "souvenir-shapes": { run: checkSouvenirShapes, about: "the rocket and freighter souvenir models are clicked only where they are drawn" },
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, spin, boost and jump buttons are all in reach from her pilot's seat" },

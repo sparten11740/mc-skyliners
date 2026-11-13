@@ -51,6 +51,8 @@ public class SpookieHammockBlockEntity extends BlockEntity {
     @Nullable
     private List<Spookie.Stop> rounds;
     private int missing;
+    /** Whether its posts have been looked for since it was loaded, and put up where missing (see its block). */
+    private boolean postsLookedFor;
 
     public SpookieHammockBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.SPOOKIE_HAMMOCK_ENTITY.get(), pos, state);
@@ -73,6 +75,10 @@ public class SpookieHammockBlockEntity extends BlockEntity {
     }
 
     static void tick(ServerLevel level, SpookieHammockBlockEntity keeper) {
+        if (!keeper.postsLookedFor) {
+            keeper.postsLookedFor = true;
+            SpookieHammockBlock.hangPosts(level, keeper.worldPosition, keeper.getBlockState());
+        }
         if (keeper.stops.isEmpty() || keeper.rests.size() != keeper.stops.size()) {
             return;
         }

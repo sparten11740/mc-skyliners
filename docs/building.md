@@ -306,7 +306,8 @@ space; on the client `TardigradeModel` and `TardigradeRenderer` draw it, `SleepP
 the hatch sets as it makes one and which scales its reach, its clouds, its stride and its voice with it: the
 freighter's `LoungeTank` lays a small tank of the same glass on a stand of galley cabinets in her lounge, under a
 hood, a pad of moss beside its hatch, which keeps one a quarter the size. Her `Spookie` lives among her blocks as the
-tardigrade does, kept by its `SpookieHammockBlockEntity`, which hands it the rounds `FreighterSpookie` lays out and
+tardigrade does, kept by its `SpookieHammockBlockEntity` in the sling of its hammock, whose posts are blocks of their
+own either side (`SpookieHammockBlock`, PART), and which hands it the rounds `FreighterSpookie` lays out and
 walks over her blocks as she is built; `WatchVisitors` is the goal both creatures watch whoever comes near by, and
 `SpookieModel` and `SpookieRenderer` draw it, its eyes glowing. `LabBays` lays the food lab and the wet bench
 either side of the shaft: the `BioreactorBlock`s, which grow their steaks on scheduled ticks of their own and hand them
