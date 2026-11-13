@@ -946,6 +946,10 @@ const BIRTHDAY_LIFTED = 5;
 // How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
 // round her control head her cockpit's floor is looked over for carpet, in blocks.
 const TIP_STRIPS_BACK = 3;
+// Fittings that only hang from a ceiling or are fixed to a wall, and the mount each goes up on; the awning's canopy
+// goes up against a wall, never on top of a block.
+const MOUNTED_ONLY = [["light_strip", "wall"], ["fairy_lights", "wall"], ["grow_light", "ceiling"], ["horn_cord", "ceiling"], ["ships_plaque", "wall"],
+  ["searchlight", "ceiling"], ["floodlight", "ceiling"], ["banner_cleat", "wall"], ["awning", "wall"]];
 // An orrery's planetarium: how high over the ground a ceiling is put up to hang one under by hand, how far under the
 // orrery the glass floor of the room is, and how far off it the orrery is looked at from, in blocks; how far up and
 // back from a rocket's site her orrery is looked for from, as she stands some 150 blocks tall, and how far under it her
@@ -5763,6 +5767,37 @@ function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   }
 }
 
+// Fittings hung from a ceiling or fixed to a wall, put up by hand: set down on a bare floor each is refused, where it
+// stood in the air, a cord hanging from nothing or a plaque floating; on its own mount it goes up.
+function checkMountedOnly() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  creative();
+  must(`server tp @p ${site.x} ${ground} ${site.z}; wait ${CHUNKS_TICKS}t`);
+  const [x0, z0] = [site.x, site.z + STAND_AWAY];
+  const x1 = x0 + MOUNTED_ONLY.length * STAND_APART;
+  must(`server fill ${x0 - 1} ${ground} ${z0 + 3} ${x1} ${ground + STAND_HIGH + 1} ${z0 + 3} stone`);
+  must(`server fill ${x0 - 1} ${ground + STAND_HIGH} ${z0} ${x1} ${ground + STAND_HIGH} ${z0 + 2} stone`);
+  MOUNTED_ONLY.forEach(([id, mount], i) => putUpOnly(id, x0 + i * STAND_APART, z0, mount));
+}
+
+// Puts a fitting up by hand on a bare floor, where it is to be refused, and on its own mount, where it is to go up, at
+// the spots before a stand as putUpEveryWay uses them.
+function putUpOnly(id, x, z, mount) {
+  emptyHands();
+  must(`server give @p skyliners:${id} 3; wait 5t; select 0`);
+  const spots = { floor: [x, ground, z - 3], wall: [x, ground + 2, z + 2], ceiling: [x, ground + STAND_HIGH - 1, z] };
+  const putAt = (at) => {
+    must(`server tp @p ${at[0] + 0.5} ${ground} ${at[2] - 2.5} 0 20; wait 10t`);
+    send(`place skyliners:${id} ${at.join(",")}`);
+    return must(`block ${at.join(",")} side=server`).id ?? "";
+  };
+  const name = id.replaceAll("_", " ");
+  const floor = putAt(spots.floor);
+  expect(!floor.includes(id), `${name}: set down on a bare floor, it is refused`, floor);
+  const mounted = putAt(spots[mount]);
+  expect(mounted.includes(id), `${name}: put up on a ${mount}, it goes up`, mounted);
+}
+
 // An orrery hung up by hand in a room built up in the open, a ceiling over it and a glass floor under it, draws no
 // planetarium's sky round it: the ground far under the floor passed for her dome's ring of ceiling, and a cone of night
 // sky filled the room. Hung in a rocket's nose, it draws her planetarium's sky over her cockpit still.
@@ -6755,6 +6790,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
   "freighter-ramp-mobs": { run: checkFreighterRampMobs, slow: true, about: "a hostile mob under a freighter's ramp does not hold it, an animal does" },
+  "mounted-only": { run: checkMountedOnly, about: "fittings that hang from a ceiling or fix to a wall are refused on a bare floor, where they stood in the air, and go up on their mount" },
   "orrery-sky": { run: checkOrrerySky, slow: true, about: "an orrery hung up by hand in the open draws no planetarium's sky, and a rocket's still does" },
   "hoop-stand": { run: checkHoopStand, about: "a basketball hoop set down on a floor stops a player walking into it, rather than being climbed like stairs" },
   "freighter-ramp-well": { run: checkFreighterRampWell, slow: true, about: "a freighter's ramp well is walled in under her deck, so the space under it does not show from the ramp" },

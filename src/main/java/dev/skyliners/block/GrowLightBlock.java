@@ -1,6 +1,8 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -41,9 +43,16 @@ public class GrowLightBlock extends Block {
         builder.add(AXIS);
     }
 
-    /** It runs across the way whoever puts it up looks, as a bar overhead does. */
+    /**
+     * Hung only from a ceiling or a light cable, running across the way whoever puts it up looks, as a bar overhead
+     * does: set down on a floor, it glowed at the top of its block, hung from nothing.
+     */
     @Override
+    @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        if (Mounting.lightSupport(context, List.of(Mount.CEILING)) == null) {
+            return null;
+        }
         return defaultBlockState().setValue(AXIS, context.getHorizontalDirection().getClockWise().getAxis());
     }
 

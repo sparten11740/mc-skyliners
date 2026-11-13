@@ -2,6 +2,7 @@ package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersRegistry;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,9 +50,16 @@ public class FloodlightBlock extends HorizontalDirectionalBlock implements Entit
         builder.add(FACING, LIT);
     }
 
-    /** Put up by hand, it shines away from whoever puts it up. */
+    /**
+     * Put up by hand only under a ceiling, shining away from whoever puts it up: set down on a floor, it floated at the
+     * top of its block, hung from nothing.
+     */
     @Override
+    @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        if (Mounting.support(context, List.of(Mount.CEILING)) == null) {
+            return null;
+        }
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 

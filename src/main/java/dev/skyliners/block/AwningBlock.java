@@ -71,13 +71,17 @@ public class AwningBlock extends HorizontalDirectionalBlock {
 
     /**
      * A rod against the underside of a block or under another rod; anywhere else a canopy with its front toward whoever
-     * puts it up, its valance there unless a canopy carries it on in front.
+     * puts it up, its valance there unless a canopy carries it on in front; none set down on top of a block, where the
+     * canopy, filling the top of its block, stood in the air.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockPos pos = context.getClickedPos();
         if (context.getClickedFace() == Direction.DOWN || isRod(context.getLevel().getBlockState(pos.above()))) {
             return defaultBlockState().setValue(PART, Part.ROD);
+        }
+        if (context.getClickedFace() == Direction.UP) {
+            return null;
         }
         Direction front = context.getHorizontalDirection().getOpposite();
         BlockState canopy = defaultBlockState().setValue(FACING, front);

@@ -2,6 +2,8 @@ package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.horn.ShipHorn;
+import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -9,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -38,6 +41,13 @@ public class HornCordBlock extends Block {
     public HornCordBlock(BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(PULLED, false));
+    }
+
+    /** Hung only from a ceiling, as it is drawn: put down on a floor, its cord hung from nothing. */
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Mounting.support(context, List.of(Mount.CEILING)) == null ? null : defaultBlockState();
     }
 
     @Override

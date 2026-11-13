@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -48,10 +49,12 @@ public class ShipsPlaqueBlock extends HorizontalDirectionalBlock implements Enti
         builder.add(FACING);
     }
 
-    /** Put up by hand, its face looks at whoever puts it up. */
+    /** Put up by hand only on a wall, its face looking out from it: set down on a floor, it stood in the air. */
     @Override
+    @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        Direction wall = Mounting.support(context, List.of(Mount.WALL));
+        return wall == null ? null : defaultBlockState().setValue(FACING, wall.getOpposite());
     }
 
     @Override

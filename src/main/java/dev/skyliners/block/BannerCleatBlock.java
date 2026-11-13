@@ -3,6 +3,7 @@ package dev.skyliners.block;
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -54,10 +55,12 @@ public class BannerCleatBlock extends HorizontalDirectionalBlock implements Enti
         builder.add(FACING, STREAMING);
     }
 
-    /** Put up by hand, it faces whoever puts it up. */
+    /** Put up by hand only on a wall, facing out from it: set down on a floor, it stood in the air. */
     @Override
+    @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        Direction wall = Mounting.support(context, List.of(Mount.WALL));
+        return wall == null ? null : defaultBlockState().setValue(FACING, wall.getOpposite());
     }
 
     @Override

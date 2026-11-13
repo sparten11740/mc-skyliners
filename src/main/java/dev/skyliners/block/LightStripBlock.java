@@ -1,7 +1,9 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -42,10 +44,12 @@ public class LightStripBlock extends HorizontalDirectionalBlock {
         builder.add(FACING, Brightness.PROPERTY, Brightness.ALARM);
     }
 
+    /** Put up by hand only on a wall, fixed to it: set down on a floor, it stood in the air at the top of its block. */
     @Override
+    @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction clicked = context.getClickedFace();
-        return defaultBlockState().setValue(FACING, clicked.getAxis().isHorizontal() ? clicked.getOpposite() : context.getHorizontalDirection());
+        Direction wall = Mounting.support(context, List.of(Mount.WALL));
+        return wall == null ? null : defaultBlockState().setValue(FACING, wall);
     }
 
     @Override

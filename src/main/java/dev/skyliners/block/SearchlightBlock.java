@@ -1,8 +1,10 @@
 package dev.skyliners.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -28,6 +30,13 @@ public class SearchlightBlock extends Block implements EntityBlock {
     public SearchlightBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(LIT, false));
+    }
+
+    /** Hung only under something, as it is drawn: put down on a floor, its yoke reached up to nothing. */
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Mounting.support(context, List.of(Mount.CEILING)) == null ? null : defaultBlockState();
     }
 
     @Override
