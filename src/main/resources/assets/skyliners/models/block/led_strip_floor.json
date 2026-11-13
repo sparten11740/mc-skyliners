@@ -74,6 +74,36 @@
             "block_light": 15,
             "sky_light": 15
           }
+        },
+        "north": {
+          "texture": "#strip",
+          "uv": [
+            0,
+            7,
+            16,
+            9
+          ],
+          "tintindex": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "north"
+        },
+        "down": {
+          "texture": "#strip",
+          "uv": [
+            0,
+            7,
+            16,
+            9
+          ],
+          "tintindex": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "down"
         }
       }
     }

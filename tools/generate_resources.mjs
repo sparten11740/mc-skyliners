@@ -4199,7 +4199,8 @@ function towerInstrumentsLang() {
 // small dark lamp over a narrow slit of light along its top, and over it on the wall, nearly two blocks wide and tall,
 // its fan of light up the wall, drawn flat just off the wall in the tone's colour, fading as it rises and out to
 // its sides; it glows at full brightness, so it shows as light whatever lights the wall. It stands over half a pixel
-// off the wall, too little to see and enough that from across a room the two never fight over the same pixels.
+// off the wall, too little to see and enough that from across a room the two never fight over the same pixels. The
+// lamp is whole, its back too, unseen against a full block: on glass it was seen hollow from behind.
 {
   for (const tone of LIGHT_TONES) {
     const glow = { block_light: 15, sky_light: 15 };
@@ -4208,7 +4209,7 @@ function towerInstrumentsLang() {
       render_type: "minecraft:translucent",
       textures: { lamp: `${ID}:block/halo_light_hub`, slit: `${ID}:block/halo_light_${tone}`, wash: `${ID}:block/wall_light_wash_${tone}`, particle: `${ID}:block/halo_light_hub` },
       elements: [
-        { from: [5, 3, 13], to: [11, 6, 16], faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#lamp" }])) },
+        { from: [5, 3, 13], to: [11, 6, 16], faces: { ...Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#lamp" }])), south: { texture: "#lamp", cullface: "south" } } },
         { from: [5.5, 6, 13.5], to: [10.5, 6.25, 15.5], shade: false, faces: { up: { texture: "#slit", neoforge_data: glow }, north: { texture: "#slit", neoforge_data: glow } } },
         { from: [-6, 6.25, 15.4], to: [22, 32, 15.4], shade: false, faces: { north: { uv: [0, 0, 16, 16], texture: "#wash", neoforge_data: glow } } },
       ],
@@ -6795,21 +6796,27 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // The rocket's LED strips (see LedStripBlock): a thin bar along each side of its block that her skin stands on, lying
 // on the floor or fixed under the ceiling, its faces glowing whatever the light around and tinted in its story's colour
 // (see the client's LedLights); one model for each, drawn along the north side and turned for the others, the bars of
-// a strip along two sides meeting in its corner. The panel by each story's lift door and the console in her cockpit
-// are slim screens of dark glass that their renderers draw over (see LedPanelRenderer and LedConsoleRenderer), so in
-// the hand each is a picture of its own, as the strip is, which is lit only by its tint. All of them give themselves
-// back; fitted into her, so breakable, and light as the rest of her is (see FITTINGS).
+// a strip along two sides meeting in its corner. Its bar is whole, its back and the face it lies on too: where the
+// skin beside it is glass, as round the freighter's cockpit, it is seen from behind and below, and a bar left open
+// there shows as a hollow line. Those two faces go unseen against a full block, so they are left out there. The panel
+// by each story's lift door and the console in her cockpit are slim screens of dark glass that their renderers draw
+// over (see LedPanelRenderer and LedConsoleRenderer), so in the hand each is a picture of its own, as the strip is,
+// which is lit only by its tint. All of them give themselves back; fitted into her, so breakable, and light as the
+// rest of her is (see FITTINGS).
 {
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
-  const face = (uv) => ({ texture: "#strip", uv, tintindex: 0, ...lit });
-  for (const [half, from, to, flat] of [["floor", [0, 0, 0], [16, 2, 2], "up"], ["ceiling", [0, 14, 0], [16, 16, 2], "down"]]) {
+  const face = (uv, cullface) => ({ texture: "#strip", uv, tintindex: 0, ...lit, ...(cullface ? { cullface } : {}) });
+  for (const [half, from, to, flat, under] of [["floor", [0, 0, 0], [16, 2, 2], "up", "down"], ["ceiling", [0, 14, 0], [16, 16, 2], "down", "up"]]) {
     write(`assets/${ID}/models/block/led_strip_${half}.json`, {
       parent: "minecraft:block/block",
       ambientocclusion: false,
       textures: { strip: `${ID}:block/led_strip`, particle: `${ID}:block/led_strip` },
       elements: [{
         from, to, shade: false,
-        faces: { south: face([0, 7, 16, 9]), [flat]: face([0, 7, 16, 9]), east: face([7, 7, 9, 9]), west: face([7, 7, 9, 9]) },
+        faces: {
+          south: face([0, 7, 16, 9]), [flat]: face([0, 7, 16, 9]), east: face([7, 7, 9, 9]), west: face([7, 7, 9, 9]),
+          north: face([0, 7, 16, 9], "north"), [under]: face([0, 7, 16, 9], under),
+        },
       }],
     });
   }
