@@ -171,14 +171,16 @@ public final class FreighterLayout extends HullLayout {
      * Her cockpit's flight deck, in blocks from where the pod's round part meets its nose: the control head and the
      * pilots' seats two blocks behind it, leaving room before them for her console (see {@link FreighterConsole}), the
      * pilots so far either side of the head, the jump seats so far behind them, and the autopilot screen's middle so
-     * far to the head's right and so many rows up, on the ledge of her skin at the co-pilot's right hand, where it
-     * leaves the view ahead through her canopy clear.
+     * far to the head's right, so many rows up and so far behind it, on the ledge of her skin at the co-pilot's right
+     * hand, where it leaves the view ahead through her canopy clear and stands clear of the rim round the canopy's base,
+     * which in line with the head came down over its front corner.
      */
     private static final int SEATS_BEHIND = 2;
     private static final int PILOTS_OUT = 2;
     private static final int JUMP_BEHIND = 2;
     private static final int SCREEN_OUT = 4;
     private static final int SCREEN_UP = 1;
+    private static final int SCREEN_BEHIND = 1;
     /**
      * Her deck robots (see {@link dev.skyliners.block.DeckRobotBlock}): so far out from her axis, in blocks, a couple
      * past the ring corridor's wall, at these bearings clockwise from her bow, in degrees: one in the cargo hold at her
@@ -1081,7 +1083,7 @@ public final class FreighterLayout extends HullLayout {
         seat(x - PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
         seat(x + PILOTS_OUT, y, z + JUMP_BEHIND, PilotSeatBlock.Stick.NONE);
         // Laid out nose north, her right is east: the screen at the co-pilot's right faces west, into her cockpit.
-        autopilotScreen(new BlockPos(x + SCREEN_OUT, y + SCREEN_UP, z - AutopilotScreenBlock.COLUMNS / 2), Direction.WEST);
+        autopilotScreen(new BlockPos(x + SCREEN_OUT, y + SCREEN_UP, z + SCREEN_BEHIND - AutopilotScreenBlock.COLUMNS / 2), Direction.WEST);
         selfDestruct(new BlockPos(x + PILOTS_OUT, y + 1, z + JUMP_BEHIND + 1), at);
         canopyDimmer(new BlockPos(x - PILOTS_OUT - 1, y + DIMMER_UP, z));
         canopyLining();
