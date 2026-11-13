@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "board": "minecraft:block/spruce_planks",
     "post": "minecraft:block/stripped_spruce_log",

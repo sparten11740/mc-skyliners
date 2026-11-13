@@ -88,8 +88,10 @@ what, and `docs/backlog.md` holds what is still open. Its mod id, packages and c
   time in a double.
 - **Models.** A face past its block with no `uv` reads off its texture into its neighbours in the atlas: the generator's
   `facesOnTheirTextures` brings them back on, and `write` is the only way a model reaches the disk. A part above its
-  block, in a block with a full collision shape, draws black aboard anything assembled under smooth lighting: such a
-  model sets `ambientocclusion: false`, as the sprinkler's does. Compare aboard against the ground when looking at one.
+  block can draw black aboard anything assembled under smooth lighting, whatever the block's collision shape (the
+  garden bed's posts did): such a model sets `ambientocclusion: false`, as the sprinkler's does, and in a multipart
+  blockstate every model does, as the whole block takes it from its first. Compare aboard against the ground when
+  looking at one.
 - **Cost.** Nothing scans the world every tick without a bound. Loaded block entities are tracked with `Loaded<T>`,
   heavy work is spread over ticks, and renderers leave out what the camera cannot see: Sable draws an assembled ship's
   block entities every frame unless `Sight` or the renderer says otherwise. A stream of particles goes as one message a

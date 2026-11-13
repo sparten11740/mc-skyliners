@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "tread": "skyliners:block/pool_deck_tile",
     "side": "skyliners:block/pool_deck_tile_side",

@@ -4875,9 +4875,11 @@ dropsItself("passenger_screen");
 cubes.passenger_screen = null;
 // The stand a zeppelin's promenade screen stands on (see ScreenStandBlock): a brass foot along the back of its block
 // and a teak post up from it, past the block's top into the casing of the screen standing over it, drawn as the
-// screen it carries is, facing north with its back to the south side.
+// screen it carries is, facing north with its back to the south side. Its post rises past its block, so it is drawn
+// without ambient occlusion, or aboard anything assembled it draws black.
 write(`assets/${ID}/models/block/screen_stand.json`, {
   parent: "minecraft:block/block",
+  ambientocclusion: false,
   textures: { wood: `${ID}:block/zeppelin_wood`, brass: `${ID}:block/zeppelin_brass`, particle: `${ID}:block/zeppelin_wood` },
   elements: [patched([4, 0, 10], [12, 1, 16], "#brass"), patched([7, 1, 14], [9, 19, 16], "#wood")],
 });
@@ -7888,9 +7890,12 @@ function roomLang() {
   const brass = `${ID}:block/zeppelin_brass`;
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   const soil = { from: [0, 0, 0], to: [16, 15, 16], faces: { up: { texture: "#top" }, down: { texture: "#dirt", cullface: "down" } } };
+  // Its corner posts rise past its block, so it is drawn without ambient occlusion, or aboard anything assembled they
+  // draw black. A multipart block takes that from its first model, the soil, so each of its models says so.
   for (const moist of [false, true]) {
     write(`assets/${ID}/models/block/garden_bed_soil${moist ? "_moist" : ""}.json`, {
       parent: "minecraft:block/block",
+      ambientocclusion: false,
       textures: { top: `minecraft:block/farmland${moist ? "_moist" : ""}`, dirt: "minecraft:block/dirt", particle: "minecraft:block/dirt" },
       elements: [soil],
     });
@@ -7898,12 +7903,12 @@ function roomLang() {
   const post = (from, to) => ({ from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"]
     .map((face) => [face, { texture: face === "up" || face === "down" ? "#end" : "#post" }])) });
   const bedTextures = { board: planks, post: "minecraft:block/stripped_spruce_log", end: "minecraft:block/stripped_spruce_log_top", particle: planks };
-  write(`assets/${ID}/models/block/garden_bed_board.json`, { parent: "minecraft:block/block", textures: bedTextures, elements: [solid([0, 0, 0], [16, 16, 2], "#board")] });
+  write(`assets/${ID}/models/block/garden_bed_board.json`, { parent: "minecraft:block/block", ambientocclusion: false, textures: bedTextures, elements: [solid([0, 0, 0], [16, 16, 2], "#board")] });
   // The corner post stands proud of the boards it meets by a twentieth of a pixel, so its sides and theirs never lie in
   // one plane, flickering through each other.
   const PROUD = 0.05;
   write(`assets/${ID}/models/block/garden_bed_post.json`, {
-    parent: "minecraft:block/block", textures: bedTextures, elements: [post([-PROUD, 0, -PROUD], [3 + PROUD, 17, 3 + PROUD])],
+    parent: "minecraft:block/block", ambientocclusion: false, textures: bedTextures, elements: [post([-PROUD, 0, -PROUD], [3 + PROUD, 17, 3 + PROUD])],
   });
   const corners = [["north", "west", 0], ["north", "east", 90], ["south", "east", 180], ["south", "west", 270]];
   write(`assets/${ID}/blockstates/garden_bed.json`, {
@@ -10587,17 +10592,19 @@ const POOL = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps", "poo
       nosing(8, [0, 0], [0, 16]), nosing(8, [0, 0], [16, 0]), nosing(16, [8, 8], [8, 16]), nosing(16, [8, 8], [16, 8])],
   };
   for (const [name, elements] of Object.entries(steps)) {
-    write(`assets/${ID}/models/block/${name}.json`, { parent: "minecraft:block/stairs", textures, elements });
+    write(`assets/${ID}/models/block/${name}.json`, { parent: "minecraft:block/stairs", ambientocclusion: false, textures, elements });
   }
   // A grab rail at one end of the step, its tubes this far in from the north side: the lower post on the lower
-  // tread's front, the upper one on the upper tread's back, and the handrail between their tops at 45 degrees.
+  // tread's front, the upper one on the upper tread's back, and the handrail between their tops at 45 degrees. It
+  // rises past its block, so the steps are drawn without ambient occlusion, or aboard anything assembled it draws
+  // black; a multipart block takes that from its first model, a step, so each of its models says so.
   const rail = (z) => [
     solid([2, 8, z], [3.5, 20, z + 1.5], "#chrome"),
     solid([12.5, 16, z], [14, 31, z + 1.5], "#chrome"),
     solid([2.75, 19.25, z], [2.75 + 10.5 * Math.SQRT2, 20.75, z + 1.5], "#chrome", { origin: [2.75, 20, z + 0.75], axis: "z", angle: 45 }),
   ];
-  write(`assets/${ID}/models/block/pool_steps_rail_left.json`, { parent: "minecraft:block/block", textures, elements: rail(1) });
-  write(`assets/${ID}/models/block/pool_steps_rail_right.json`, { parent: "minecraft:block/block", textures, elements: rail(13.5) });
+  write(`assets/${ID}/models/block/pool_steps_rail_left.json`, { parent: "minecraft:block/block", ambientocclusion: false, textures, elements: rail(1) });
+  write(`assets/${ID}/models/block/pool_steps_rail_right.json`, { parent: "minecraft:block/block", ambientocclusion: false, textures, elements: rail(13.5) });
   // Vanilla's turns of its stair models, for each way a stair faces, which half it is and the shape its neighbours give it.
   const turns = {
     bottom: {
@@ -10711,9 +10718,10 @@ const POOL = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps", "poo
     piece.push([[3, y, 13.75], [13, y + 1, 14.75], "#chrome"]);
   }
   write(`assets/${ID}/models/block/bunk_ladder.json`, boxes(textures, piece));
-  // Its hooks reach out of the block, textured as they would be inside it (see patched).
+  // Its hooks reach out of the block, textured as they would be inside it (see patched), and past its top, so it is
+  // drawn without ambient occlusion, or aboard anything assembled they draw black.
   const ladder = boxes(textures, piece);
-  write(`assets/${ID}/models/block/bunk_ladder_top.json`, { ...ladder, elements: [...ladder.elements, ...top.map(([from, to, texture]) => patched(from, to, texture))] });
+  write(`assets/${ID}/models/block/bunk_ladder_top.json`, { ...ladder, ambientocclusion: false, elements: [...ladder.elements, ...top.map(([from, to, texture]) => patched(from, to, texture))] });
   write(`assets/${ID}/blockstates/bunk_ladder.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isTop) =>
       [`facing=${facing},top=${isTop}`, { model: `${ID}:block/bunk_ladder${isTop ? "_top" : ""}`, ...(y ? { y } : {}) }]))),

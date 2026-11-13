@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "wood": "skyliners:block/zeppelin_wood",
     "brass": "skyliners:block/zeppelin_brass",

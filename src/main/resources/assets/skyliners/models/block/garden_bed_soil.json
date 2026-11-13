@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "top": "minecraft:block/farmland",
     "dirt": "minecraft:block/dirt",

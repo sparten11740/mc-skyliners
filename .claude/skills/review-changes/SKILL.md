@@ -116,7 +116,8 @@ style preferences the surrounding code does not share.
   `Turning`, `Fitting`, `Sight`, `ScreenDrawing`, `PanelArt`, `MapPainter`, ...), and does not duplicate logic that
   already exists elsewhere in the diff or the codebase.
 - A model with a part past its block is written through the generator's `write`, so its faces stay on their textures; a
-  part above its block in a block with a full collision shape sets `ambientocclusion: false`, or it draws black aboard.
+  part above its block sets `ambientocclusion: false`, whatever its block's collision shape, or it can draw black
+  aboard; in a multipart blockstate every model sets it, as the block takes it from its first model.
 - Tunable numbers are named constants with a comment saying what they mean and in what unit, not literals buried in
   logic.
 - Assets that a tool generates are changed in the tool, never edited by hand.
