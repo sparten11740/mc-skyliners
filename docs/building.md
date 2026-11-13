@@ -66,8 +66,9 @@ own turn does (the gym hall's trusses of an airliner built facing east or west),
 `BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff, and `mixin/SubLevelHeatMapManagerMixin` keeps
 Sable from shedding as ships of their own the blocks put back aboard while its heat map is still flooding a ship, as
 the hatch of the freighter's ramp is, and `mixin/SubLevelEntityCollisionMixin` has Sable collide a player aboard with
-blocks round them as far as a laser cannon's barrels reach, where one is near (`LaserCannonBlockEntity.reaches`), not
-only with those they stand in; `CloudlessCabin` leaves the clouds out of
+blocks round them as far as a laser cannon's barrels or a satellite dish's bowl reach, where one is near
+(`LaserCannonBlockEntity.reaches`, `SatelliteDishBlockEntity.reaches`), not only with those they stand in;
+`CloudlessCabin` leaves the clouds out of
 the player's view while the camera is inside a hull in the cloud layer; `ShipWeather`, through
 `mixin/LevelRendererMixin` and `mixin/LevelMixin`, lets rain and snow fall only onto a ship's roof, keeps their
 splashes off the freighter's canopy and fades the weather over the clouds (a `ShellBlock` counts as solid however thin
@@ -586,8 +587,10 @@ the air inside their hulls, their features `ShipPiece`s.
 for each and an outline from `HullFittings`, in the open block just outside her solid skin (or in place of a sliver of
 it, `FreighterExterior.against`), face to face with it so her assembly takes it along, the skin block behind made whole
 by `FreighterExterior.pad` so no gap shows under it, as her lights' strips and lamps and her laser cannon's hub are too;
-its `SatelliteDishBlock` keeps its dish's pivots and size, which `SatelliteDishRenderer` turns it about by
-`DrawingClock`, and `ExhaustVentBlock`, the exhaust vent's and the vent grille's, lets its wisps off where
+its `SatelliteDishBlock` keeps its dish's pivots and size and turns it by the game's time, which
+`SatelliteDishRenderer` draws it by and its collision shape, never kept by its state, follows (`DishShape`, the
+quarter-block cells the dish takes in, kept for every two degrees of its turn), and `ExhaustVentBlock`, the exhaust
+vent's and the vent grille's, lets its wisps off where
 `SableFlight.toWorld` puts its mouth.
 Her cover is `FREIGHTER_COVER`, a `ShellBlock` of her own that `ZeppelinPaint` tints as it does the zeppelin's cover,
 as light as that by the `zeppelin_fabric` tag. Its blockstate is a weighted list of `ShellModel`s, one for each of her

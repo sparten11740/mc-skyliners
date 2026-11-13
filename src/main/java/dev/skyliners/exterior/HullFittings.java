@@ -21,9 +21,9 @@ public final class HullFittings {
         new float[]{8, 9, 8}, 1, 35, 60);
     /**
      * The big satellite dish: on a floor its pedestal and column up to the turntable at the top of its block, and over
-     * it the middle of its bowl as it turns round tipped up at the sky, to bump into and to stand on (what of the bowl
-     * reaches out past its block is that block's to fill, and no one's); on a wall its heavy plate and twin arms; under
-     * a ceiling its plate and column down to the ring at the foot of its block.
+     * it the middle of its bowl as it turns round tipped up at the sky, to pick out; on a wall its heavy plate and twin
+     * arms; under a ceiling its plate and column down to the ring at the foot of its block. Its whole bowl is solid
+     * besides, out past its block, wherever it is turned (see {@link SatelliteDishBlock#getCollisionShape}).
      */
     public static final HullFittingBlock.Outline BIG_SATELLITE_DISH = new HullFittingBlock.Outline(
         Shapes.or(Block.box(1, 0, 1, 15, 16, 15), Block.box(2, 16, 2, 14, 28, 14)), Block.box(3, 2, 1, 13, 14, 16), Block.box(2, 0, 2, 14, 16, 14));

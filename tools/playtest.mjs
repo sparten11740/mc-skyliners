@@ -383,17 +383,23 @@ const GANTRY_POST_OUT = 0.85;
 // screen, on its front low on its cabinet, under the crate on its belt.
 const SCANNER_SCREEN_AT = "0.5,0.4,0";
 // Dropped onto her laser cannon and her big satellite dish: how high over each to start, in blocks; and how high over
-// each block the player must come to stand, in blocks, with what margin: on the cannon's housing over its pedestal,
-// and on the middle of the dish's bowl over its mount.
+// each block the player must come to stand, lowest and highest, in blocks, with what margin: on the cannon's housing
+// over its pedestal, and on the dish's bowl over its mount, from its hub's top to the quarter-block cells of the tipped
+// bowl over it, which stand a little higher or lower under the player as it turns.
 const DROP_FROM = 3;
-const CANNON_HOUSING_TOP = 1.375;
-const DISH_BOWL_TOP = 1.75;
+const CANNON_HOUSING_TOP = [1.375, 1.375];
+const DISH_BOWL_TOP = [1.75, 2.25];
 const STANDS_WITHIN = 0.05;
 // Walking at a Spookie's hammock set down by hand from beyond either end of it: how far out from the middle of the
 // post's block to start, in blocks, and how far out from it the post stops the player at least, in blocks: its post
 // stands up the far side of its block, and with nothing there the player walked on to the sling, short of its middle.
 const HAMMOCK_WALK_FROM = 2.5;
 const HAMMOCK_POST_OUT = 0.6;
+// Walking at a big satellite dish set down by hand, the game's time stood still, from each side at its foot: how far
+// out from its middle to start, in blocks, and how far out from it the bowl stops the player at least on the side it
+// leans out over furthest, in blocks; its mount alone stops them 0.74 out.
+const DISH_WALK_FROM = 4;
+const DISH_BOWL_OUT = 1.1;
 // The slim souvenir models, the rocket's and the freighter's, each set down on the ground facing north with a point of
 // its block, from 0 to 1 across, up and along, where the box all four once shared took a click though nothing of it is
 // drawn there, and one where it is drawn; and how far off to click them from, in blocks, south of it.
@@ -3776,11 +3782,11 @@ function checkFreighterConsoleSolid() {
 // bowl onto what is under them, and the post stood out past the scanner's block with nothing there.
 function checkFreighterOutsideSolid() {
   ship("freighter");
-  for (const [block, top, what] of [["laser_cannon", CANNON_HOUSING_TOP, "her laser cannon's housing"], ["big_satellite_dish", DISH_BOWL_TOP, "her big dish's bowl"]]) {
+  for (const [block, [low, high], what] of [["laser_cannon", CANNON_HOUSING_TOP, "her laser cannon's housing"], ["big_satellite_dish", DISH_BOWL_TOP, "her big dish's bowl"]]) {
     const [found] = must(`find skyliners:${block} 128 1`).rows;
     const stood = found && landsOn(found.at_abs);
-    expect(stood !== undefined && Math.abs(stood - top) < STANDS_WITHIN, `freighter: dropped onto ${what}, the player stands on it`,
-      found ? `${stood} blocks over its block, ${top} wanted` : "not built");
+    expect(stood !== undefined && stood > low - STANDS_WITHIN && stood < high + STANDS_WITHIN, `freighter: dropped onto ${what}, the player stands on it`,
+      found ? `${stood} blocks over its block, ${low === high ? low : `${low} to ${high}`} wanted` : "not built");
   }
   const [scanner] = must("find skyliners:parcel_scanner 128 1").rows;
   const facing = scanner && (must(`block ${scanner.at_abs.join(",")}`).props.facing ?? "north");
@@ -3823,6 +3829,23 @@ function checkHammockPosts() {
   const given = windowsGivenBack("spookie_hammock");
   creative();
   expect(left === 0 && given === 1, "spookie hammock: broken by a post, it all comes down and gives back one hammock", `${left} blocks left, ${given} given back`);
+}
+
+// A big satellite dish's bowl is as solid as it is drawn, out past its block, however it is turned: set down by hand on
+// the ground, the game's time stood still so it holds still, and walked at from each side at its foot, its bowl stops the
+// player further out than its mount on the side it leans out over. With the fault only its mount and the middle of its
+// bowl over it were solid, and the player walked under the rest of the bowl right up to its mount from every side.
+function checkDishBowl() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  const at = [site.x, ground, site.z];
+  creative();
+  must(`server tp @p ${at[0] + 0.5} ${ground} ${at[2] - DISH_WALK_FROM} 0 20; wait ${CHUNKS_TICKS}t`);
+  must(`server setblock ${at.join(" ")} skyliners:big_satellite_dish[mount=floor,facing=north]; server tick freeze`);
+  const stops = Object.values(STEPS).map((way) => bumpInto(at, way, DISH_WALK_FROM).along);
+  must("server tick unfreeze");
+  expect(Math.max(...stops) > DISH_BOWL_OUT, "big satellite dish: walked at from each side, its bowl stops the player out past its mount on the side it leans over",
+    `stopped ${stops.join(", ")} blocks out from its middle`);
+  must(`server setblock ${at.join(" ")} air`);
 }
 
 // Drops the player, in survival, from over the middle of a block onto it; how high over the block they come to stand.
@@ -6924,6 +6947,7 @@ const CHECKS = {
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
   "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
   "hammock-posts": { run: checkHammockPosts, about: "a Spookie's hammock stands on two solid posts, built and set down by hand, and broken comes down whole as one hammock" },
+  "dish-bowl": { run: checkDishBowl, about: "a big satellite dish's bowl stops whoever walks under it, out past its block, however it is turned" },
   "freighter-outside-solid": { run: checkFreighterOutsideSolid, about: "a freighter's cannon housing and big dish are stood on, and her parcel scanner's gantry stops whoever walks into it" },
   "souvenir-shapes": { run: checkSouvenirShapes, about: "the rocket and freighter souvenir models are clicked only where they are drawn" },
   "freighter-cockpit-reach": { run: checkFreighterCockpitReach, about: "a freighter's climb, spin, boost and jump buttons are all in reach from her pilot's seat" },

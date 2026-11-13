@@ -1627,12 +1627,12 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<SatelliteDishBlock> SATELLITE_DISH = BLOCKS.registerBlock(
         "satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.SATELLITE_DISH, HullFittings.SMALL_DISH),
-        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion().dynamicShape()
     );
     public static final DeferredItem<BlockItem> SATELLITE_DISH_ITEM = ITEMS.registerSimpleBlockItem(SATELLITE_DISH);
     public static final DeferredBlock<SatelliteDishBlock> BIG_SATELLITE_DISH = BLOCKS.registerBlock(
         "big_satellite_dish", properties -> new SatelliteDishBlock(properties, HullFittings.BIG_SATELLITE_DISH, HullFittings.BIG_DISH),
-        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion()
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion().dynamicShape()
     );
     public static final DeferredItem<BlockItem> BIG_SATELLITE_DISH_ITEM = ITEMS.registerSimpleBlockItem(BIG_SATELLITE_DISH);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SatelliteDishBlockEntity>> SATELLITE_DISH_ENTITY = BLOCK_ENTITIES.register(
