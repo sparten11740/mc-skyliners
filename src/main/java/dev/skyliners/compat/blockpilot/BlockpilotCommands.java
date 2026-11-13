@@ -26,7 +26,9 @@ import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.LaserBolt;
+import dev.skyliners.block.LedStripLineBlock;
 import dev.skyliners.block.OrreryBlockEntity;
+import dev.skyliners.block.StripPath;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.repairs.RepairBoardBlockEntity;
 import dev.skyliners.spaceweather.SpaceRocks;
@@ -245,6 +247,15 @@ public final class BlockpilotCommands {
             .group("skyliners")
             .help("whether a solar flare's blackout has this client's ship's screens dark")
             .field("dark", "whether they are dark with it"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("strip", (context, args) -> strip(args))
+            .onServer()
+            .group("skyliners")
+            .option("x", "the block's x", ArgType.INT)
+            .option("y", "the block's y", ArgType.INT)
+            .option("z", "the block's z", ArgType.INT)
+            .help("the way an LED strip laid by hand runs through its block, end to end, and where it goes round a corner")
+            .field("path", "its ends, each the face it lies on and the edge it leaves by, face:edge face:edge; none for no strip")
+            .field("wrap", "at which of its ends it goes on round the outside of a block: first, second, both or none"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("walkthrough", (context, args) -> walkthrough())
             .onServer()
             .group("skyliners")
@@ -319,6 +330,25 @@ public final class BlockpilotCommands {
             }
         }
         return Result.ok(new Fields().tag("count", through.size()).tag("blocks", String.join(",", through)));
+    }
+
+    /** The way the LED strip laid by hand at a block runs through it, as the strip query reads it. */
+    private static Result strip(Args args) throws CommandException {
+        BlockPos at = new BlockPos(args.intOption("x", 0), args.intOption("y", 0), args.intOption("z", 0));
+        BlockState state = player().serverLevel().getBlockState(at);
+        if (!(state.getBlock() instanceof LedStripLineBlock)) {
+            return Result.ok(new Fields().tag("path", "none").tag("wrap", "none"));
+        }
+        StripPath path = LedStripLineBlock.path(state);
+        boolean first = state.getValue(LedStripLineBlock.WRAP_FIRST);
+        boolean second = state.getValue(LedStripLineBlock.WRAP_SECOND);
+        String wrap = first && second ? "both" : first ? "first" : second ? "second" : "none";
+        return Result.ok(new Fields().tag("path", end(path.first()) + " " + end(path.second())).tag("wrap", wrap));
+    }
+
+    /** An end of a strip's way as the strip query gives it: the face it lies on and the edge it leaves by. */
+    private static String end(StripPath.End end) {
+        return end.face().getSerializedName() + ":" + end.edge().getSerializedName();
     }
 
     /**

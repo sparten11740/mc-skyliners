@@ -229,7 +229,10 @@ loop of string or a pot rack across two blocks as one), and her shaft's lift gla
 shaft (`RocketLayout.shaftWall`). Once everything stands, `HullLayout.joinGirders` joins each `SteelGirderBlock` to
 what is beside it (its `Joint` each way), as one put down by hand joins up: its blockstate is a multipart of the I-beam
 and a part for each joint, drawn standing up and turned with the girder.
-`RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
+An LED strip laid by hand is a `LedStripLineBlock`, its way through its block a `StripPath` lying on one face or round
+the inside of a corner across two, joining the strips beside it as track does and going on round the outside of a
+block; the generator lists the paths in the same order. `RocketLedStrips` lays her LED strips (`LedStripBlock`) round
+each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, both touch panels, their tiles laid out by `LedControls`; on the client `LedLights` tints the strips
 and times their

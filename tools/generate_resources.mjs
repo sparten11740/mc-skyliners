@@ -6863,6 +6863,7 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
     selector: `${ID}:led_strip`,
     properties: { "sable:mass": 0.05 },
   });
+  ledStripLine(lit);
   const casing = `${ID}:block/passenger_screen_casing`;
   for (const name of ["led_panel", "led_console"]) {
     slimScreenModels(name, casing, `${ID}:block/rocket_panel_back`);
@@ -6876,7 +6877,79 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   }
 }
 function ledStripFittings() {
-  return ["led_strip", "led_panel", "led_console"];
+  return ["led_strip", "led_strip_line", "led_panel", "led_console"];
+}
+
+// An LED strip as a player lays it (see LedStripLineBlock and StripPath): a thin glowing bar lying on a face of its
+// block through the face's middle, joining the strips beside it as train track does. Each path through its block, out
+// at two ends, each lying on a face at the middle of one of its edges, is the bars from the middle of each face it lies
+// on out to its ends, and on two faces to the edge they share; numbered in the block state as StripPath numbers them:
+// every end by face and then edge in Minecraft's order of directions, and every pair that makes a path, by its first
+// end and then its second. One model for each bar, and one for each short piece past an end filling the corner where a
+// strip goes on round the outside of a block, which WRAP_FIRST and WRAP_SECOND turn on. The faces all take the same
+// bright middle of the strip's texture, so bars meeting at a block's middle or a corner show as one; the face against
+// what it lies on is left out where a full block hides it. Broken, it gives an LED strip back.
+function ledStripLine(lit) {
+  const DIRECTIONS = ["down", "up", "north", "south", "west", "east"];
+  const AXIS = { down: 1, up: 1, north: 2, south: 2, west: 0, east: 0 };
+  const POSITIVE = { up: true, south: true, east: true };
+  const BAR = 2;
+  const ends = DIRECTIONS.flatMap((face) => DIRECTIONS.filter((edge) => AXIS[edge] !== AXIS[face]).map((edge) => ({ face, edge })));
+  const key = ({ face, edge }) => `${face}_${edge}`;
+  const makesPath = (one, other) => one.face === other.face ? one.edge !== other.edge
+    : AXIS[one.face] !== AXIS[other.face] && one.edge !== other.face && other.edge !== one.face;
+  const paths = [];
+  ends.forEach((one, i) => ends.slice(i + 1).forEach((other) => makesPath(one, other) && paths.push([one, other])));
+  const arms = ([one, other]) => one.face === other.face ? [one, other]
+    : [one, { face: one.face, edge: other.face }, { face: other.face, edge: one.face }, other];
+  // A bar lying on a face from its middle out to the edge toward a side, or the piece past that edge, as
+  // LedStripLineBlock.arm draws it.
+  const box = ({ face, edge }, past) => {
+    const from = [8 - BAR / 2, 8 - BAR / 2, 8 - BAR / 2];
+    const to = [8 + BAR / 2, 8 + BAR / 2, 8 + BAR / 2];
+    from[AXIS[face]] = POSITIVE[face] ? 16 - BAR : 0;
+    to[AXIS[face]] = from[AXIS[face]] + BAR;
+    const out = POSITIVE[edge];
+    from[AXIS[edge]] = past ? (out ? 16 : -BAR) : (out ? 8 - BAR / 2 : 0);
+    to[AXIS[edge]] = past ? (out ? 16 + BAR : 0) : (out ? 16 : 8 + BAR / 2);
+    return { from, to };
+  };
+  const face = (cullface) => ({ texture: "#strip", uv: [8, 7, 9, 9], tintindex: 0, ...lit, ...(cullface ? { cullface } : {}) });
+  const model = (end, past) => write(`assets/${ID}/models/block/led_strip_line_${key(end)}${past ? "_past" : ""}.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { strip: `${ID}:block/led_strip`, particle: `${ID}:block/led_strip` },
+    elements: [{
+      ...box(end, past), shade: false,
+      faces: Object.fromEntries(DIRECTIONS.map((side) => [side, face(!past && side === end.face ? side : null)])),
+    }],
+  });
+  ends.forEach((end) => model(end, false));
+  ends.forEach((end) => model(end, true));
+  const indices = (wanted) => paths.flatMap((path, i) => wanted(path) ? [i] : []).join("|");
+  write(`assets/${ID}/blockstates/led_strip_line.json`, {
+    multipart: [
+      ...ends.map((end) => ({
+        when: { path: indices((path) => arms(path).some((arm) => key(arm) === key(end))) },
+        apply: { model: `${ID}:block/led_strip_line_${key(end)}` },
+      })),
+      ...ends.flatMap((end) => [0, 1].map((which) => ({
+        when: { path: indices((path) => key(path[which]) === key(end)), [which === 0 ? "wrap_first" : "wrap_second"]: "true" },
+        apply: { model: `${ID}:block/led_strip_line_${key(end)}_past` },
+      }))).filter((part) => part.when.path !== ""),
+    ],
+  });
+  write(`data/${ID}/loot_table/blocks/led_strip_line.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:led_strip` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/led_strip_line`,
+  });
+  write(`data/${ID}/physics_block_properties/led_strip_line.json`, {
+    priority: 1004,
+    selector: `${ID}:led_strip_line`,
+    properties: { "sable:mass": 0.05 },
+  });
+  cubes.led_strip_line = null;
 }
 
 // The window dimmer by each of the rocket's lift doors (see WindowDimmerBlock): the LED panel's slim screen of dark
@@ -6916,6 +6989,7 @@ write(`data/${ID}/physics_block_properties/canopy_lining.json`, {
 function ledStripLang() {
   return {
     "block.skyliners.led_strip": "LED Strip",
+    "block.skyliners.led_strip_line": "LED Strip",
     "block.skyliners.led_panel": "LED Panel",
     "block.skyliners.led_console": "LED Console",
     "block.skyliners.dome_limit": "Dome Limit",

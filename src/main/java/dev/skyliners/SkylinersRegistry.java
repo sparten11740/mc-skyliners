@@ -200,6 +200,7 @@ import dev.skyliners.block.LedConsoleBlockEntity;
 import dev.skyliners.block.LedPanelBlock;
 import dev.skyliners.block.LedPanelBlockEntity;
 import dev.skyliners.block.LedStripBlock;
+import dev.skyliners.block.LedStripLineBlock;
 import dev.skyliners.block.LiftPanelBlock;
 import dev.skyliners.block.LiftPanelBlockEntity;
 import dev.skyliners.block.LightCableBlock;
@@ -2779,6 +2780,15 @@ public final class SkylinersRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion()
             .lightLevel(LedStripBlock::light)
     );
+    /**
+     * An LED strip as a player lays it, on any face, joining the strips beside it as train track does (see
+     * {@link LedStripLineBlock}); the LED strip item lays it, and both kinds give that item back.
+     */
+    public static final DeferredBlock<LedStripLineBlock> LED_STRIP_LINE = BLOCKS.registerBlock(
+        "led_strip_line", LedStripLineBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion()
+            .lightLevel(LedStripBlock::light)
+    );
     public static final DeferredBlock<LedPanelBlock> LED_PANEL = BLOCKS.registerBlock(
         "led_panel", LedPanelBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
     );
@@ -3439,7 +3449,7 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> HABITAT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(HABITAT_GLASS);
     public static final DeferredItem<BlockItem> HABITAT_HATCH_ITEM = ITEMS.registerSimpleBlockItem(HABITAT_HATCH);
     public static final DeferredItem<BlockItem> HABITAT_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(HABITAT_FLOOR);
-    public static final DeferredItem<BlockItem> LED_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LED_STRIP);
+    public static final DeferredItem<BlockItem> LED_STRIP_ITEM = ITEMS.registerSimpleBlockItem("led_strip", LED_STRIP_LINE);
     public static final DeferredItem<BlockItem> LED_PANEL_ITEM = ITEMS.registerSimpleBlockItem(LED_PANEL);
     public static final DeferredItem<BlockItem> LED_CONSOLE_ITEM = ITEMS.registerSimpleBlockItem(LED_CONSOLE);
     public static final DeferredItem<BlockItem> WINDOW_DIMMER_ITEM = ITEMS.registerSimpleBlockItem(WINDOW_DIMMER);

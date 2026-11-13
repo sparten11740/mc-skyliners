@@ -218,6 +218,7 @@
     "skyliners:lift_board",
     "skyliners:lift_call_button",
     "skyliners:led_strip",
+    "skyliners:led_strip_line",
     "skyliners:led_panel",
     "skyliners:led_console",
     "skyliners:window_dimmer",

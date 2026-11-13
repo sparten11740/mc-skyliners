@@ -71,7 +71,8 @@ public final class LedLights {
 
     /** Hooks the strips' tint, the remeshing and the panels' renderers, with their glows' buffers, in. */
     public static void register(IEventBus modEventBus) {
-        modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(LedLights::tint, SkylinersRegistry.LED_STRIP.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(LedLights::tint, SkylinersRegistry.LED_STRIP.get(),
+            SkylinersRegistry.LED_STRIP_LINE.get()));
         modEventBus.addListener(LedLights::renderers);
         modEventBus.addListener(LedPanelRenderer::registerBuffers);
         NeoForge.EVENT_BUS.addListener(LedLights::tick);

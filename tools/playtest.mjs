@@ -3811,6 +3811,98 @@ function checkFreighterOutsideSolid() {
     `${along} blocks from its middle`);
 }
 
+// LED strips laid by hand join up as train track does (see LedStripLineBlock): on the floor a run turns its corner when
+// a strip is laid beside its end; round a block hung in the air, strips on each of its four sides go on round its
+// corners into a ring; on the floor a run goes up a wall and over its top; under a ceiling a run lies straight; in a
+// room's corner a run along one wall turns onto the other; laid alone looking steeply up, a strip runs up its wall;
+// a run goes up a wall and on along the ceiling; and a strip laid beside the middle of a run leaves the run as it
+// was. Each strip's way through its block is read back,
+// end by end, each the face it lies on and the edge it leaves by. With the fault each strip lay alone along the far
+// side of its block from whoever laid it, joining nothing.
+function checkStripJoins() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  const [x, g, z] = [site.x, ground, site.z];
+  creative();
+  emptyHands();
+  must(`server tp @p ${x + 0.5} ${g} ${z + 3.5} 180 30; wait ${CHUNKS_TICKS}t; server give @p skyliners:led_strip 64; wait 5t; select 0`);
+  const lay = (at, from, yaw, pitch) => must(`server tp @p ${from.join(" ")} ${yaw} ${pitch}; wait 5t; place skyliners:led_strip ${at.join(",")}; wait 5t`);
+  const layOn = (block, point, from, yaw, pitch) => must(`server tp @p ${from.join(" ")} ${yaw} ${pitch}; wait 5t; use ${block.join(",")} at ${point}; wait 5t`);
+  const checks = [];
+  // On the floor: a run north, turning east at its end.
+  const run = [[x, g, z], [x, g, z - 1], [x, g, z - 2]];
+  run.forEach((at) => lay(at, [x + 0.5, g, z + 2.5], 180, 40));
+  lay([x + 1, g, z - 2], [x + 3.5, g, z - 1.5], 90, 40);
+  checks.push(["on the floor, a run goes straight on", [x, g, z - 1], "down:north down:south"],
+    ["on the floor, the run's end turns round to a strip laid beside it", [x, g, z - 2], "down:south down:east"],
+    ["on the floor, the strip laid beside the run's end runs on from it", [x + 1, g, z - 2], "down:west down:east"]);
+  // Beside the middle of the run, a strip leaves the run straight.
+  lay([x - 1, g, z - 1], [x - 3.5, g, z - 0.5], -90, 40);
+  checks.push(["on the floor, a strip laid beside the middle of a run leaves the run straight", [x, g, z - 1], "down:north down:south"]);
+  // Round a block hung in the air, a strip on each of its sides, the ring closing round its corners.
+  const k = [x + 7, g + 3, z];
+  must(`server setblock ${k.join(" ")} stone`);
+  lay([k[0] - 1, k[1], k[2]], [k[0] - 3.5, k[1], k[2] + 0.5], -90, 0);
+  lay([k[0], k[1], k[2] - 1], [k[0] + 0.5, k[1], k[2] - 3.5], 0, 0);
+  lay([k[0] + 1, k[1], k[2]], [k[0] + 3.5, k[1], k[2] + 0.5], 90, 0);
+  lay([k[0], k[1], k[2] + 1], [k[0] + 0.5, k[1], k[2] + 3.5], 180, 0);
+  checks.push(["round a block, its west side's strip runs along it", [k[0] - 1, k[1], k[2]], "east:north east:south", "both"],
+    ["round a block, its north side's strip goes on round the corner from the west's", [k[0], k[1], k[2] - 1], "south:west south:east", "both"],
+    ["round a block, its east side's strip goes on round the corner from the north's", [k[0] + 1, k[1], k[2]], "west:north west:south", "both"],
+    ["round a block, its south side's strip closes the ring round both corners", [k[0], k[1], k[2] + 1], "north:west north:east", "both"]);
+  // On the floor up to a wall, up it and over its top.
+  const w = x + 14;
+  must(`server fill ${w} ${g} ${z - 1} ${w} ${g + 2} ${z - 1} stone`);
+  lay([w, g, z + 1], [w + 0.5, g, z + 3.5], 180, 40);
+  lay([w, g, z], [w + 0.5, g, z + 3.5], 180, 40);
+  layOn([w, g + 1, z - 1], "0.5,0.5,1", [w + 0.5, g + 1, z + 2.5], 180, 0);
+  layOn([w, g + 2, z - 1], "0.5,0.5,1", [w + 0.5, g + 1, z + 2.5], 180, -20);
+  lay([w, g + 3, z - 1], [w + 0.5, g + 4, z + 1.5], 180, 50);
+  checks.push(["up to a wall, the floor's run turns up it", [w, g, z], "down:south north:up"],
+    ["up a wall, the strip runs straight up it", [w, g + 1, z], "north:down north:up"],
+    ["at a wall's top, the strip goes on over its edge", [w, g + 2, z], "north:down north:up", "second"],
+    ["on a wall's top, the strip comes over its edge and runs on along it", [w, g + 3, z - 1], "down:north down:south", "second"]);
+  // Under a ceiling, a run straight along it.
+  const c = x + 20;
+  must(`server fill ${c} ${g + 3} ${z - 1} ${c} ${g + 3} ${z} stone`);
+  lay([c, g + 2, z], [c + 0.5, g, z + 2.5], 180, -40);
+  lay([c, g + 2, z - 1], [c + 0.5, g, z + 2.5], 180, -40);
+  checks.push(["under a ceiling, a run lies straight along it", [c, g + 2, z], "up:north up:south"]);
+  // In a room's corner, a run along one wall turns onto the other; and laid alone looking steeply up, a strip runs up
+  // its wall.
+  const r = x + 26;
+  must(`server fill ${r} ${g} ${z - 1} ${r + 3} ${g + 2} ${z - 1} stone; server fill ${r} ${g} ${z} ${r} ${g + 2} ${z + 3} stone`);
+  layOn([r + 2, g + 1, z - 1], "0.5,0.5,1", [r + 2.5, g + 1, z + 2.5], 180, 0);
+  layOn([r + 1, g + 1, z - 1], "0.5,0.5,1", [r + 2.5, g + 1, z + 2.5], 180, 0);
+  layOn([r, g + 1, z + 1], "1,0.5,0.5", [r + 2.5, g + 1, z + 2.5], 90, 0);
+  layOn([r + 3, g + 2, z - 1], "0.5,0.5,1", [r + 3.5, g, z + 0.6], 180, -60);
+  checks.push(["in a room's corner, a run along one wall turns onto the other", [r + 1, g + 1, z], "north:east west:south"],
+    ["laid alone looking steeply up, a strip runs up its wall", [r + 3, g + 2, z], "north:down north:up"]);
+  // From the floor up a wall and on along the ceiling.
+  const q = x + 34;
+  must(`server fill ${q} ${g} ${z - 1} ${q} ${g + 2} ${z - 1} stone; server fill ${q} ${g + 3} ${z - 1} ${q} ${g + 3} ${z + 3} stone`);
+  lay([q, g, z + 1], [q + 0.5, g, z + 3.5], 180, 40);
+  lay([q, g, z], [q + 0.5, g, z + 3.5], 180, 40);
+  layOn([q, g + 1, z - 1], "0.5,0.5,1", [q + 0.5, g, z + 2.5], 180, 0);
+  layOn([q, g + 2, z - 1], "0.5,0.5,1", [q + 0.5, g, z + 2.5], 180, 0);
+  layOn([q, g + 3, z + 1], "0.5,0,0.5", [q + 0.5, g, z + 2.5], 180, -40);
+  layOn([q, g + 3, z + 2], "0.5,0,0.5", [q + 0.5, g, z + 3.5], 180, -40);
+  checks.push(["up a wall to the ceiling, its top strip turns along the ceiling", [q, g + 2, z], "north:down up:south"],
+    ["along the ceiling from a wall, the run goes on straight", [q, g + 2, z + 1], "up:north up:south"]);
+  for (const [what, at, path, wrap] of checks) {
+    const strip = must(`skyliners:strip x=${at[0]} y=${at[1]} z=${at[2]}`);
+    const same = (strip.path ?? "").split(" ").sort().join(" ") === path.split(" ").sort().join(" ");
+    expect(same && (!wrap || strip.wrap === wrap), `led strip: ${what}`, `${strip.path}${wrap ? `, round a corner at ${strip.wrap}` : ""}`);
+  }
+  // Round the block, its south side's strip broken: the west side's stops filling that corner; the block gone, its
+  // strips go with it.
+  must(`server tp @p ${k[0] + 0.5} ${k[1]} ${k[2] + 3.5} 180 0; wait 5t; mine ${k[0]},${k[1]},${k[2] + 1} timeout=5s; wait 5t`);
+  const west = must(`skyliners:strip x=${k[0] - 1} y=${k[1]} z=${k[2]}`);
+  expect(west.wrap === "first", "led strip: round a block, its south side's strip broken, the west side's leaves that corner", west.wrap);
+  must(`server setblock ${k.join(" ")} air; wait 5t`);
+  const left = must(`skyliners:strip x=${k[0] - 1} y=${k[1]} z=${k[2]}`).path;
+  expect(left === "none", "led strip: the block it lies on gone, a strip goes with it", left);
+}
+
 // Nothing of the mod's is walked through but what must be for what it does (see WALK_THROUGH): every state of every
 // block with a shape to aim at has one to bump into. With the fault some thirty blocks drawn with a body, from buttons
 // and lamps to the disco ball and the bowling pins, were walked through.
@@ -6968,6 +7060,7 @@ const CHECKS = {
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
   "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
+  "strip-joins": { run: checkStripJoins, about: "LED strips laid by hand join up as train track does: round corners on the floor, round a block, up a wall and over it, under a ceiling" },
   "nothing-walk-through": { run: checkNothingWalkThrough, about: "every block of the mod is solid as drawn, but a curtain, a ball pit, a climbing rope and an open door's doorway, walked through for what they do" },
   "hammock-posts": { run: checkHammockPosts, about: "a Spookie's hammock stands on two solid posts, built and set down by hand, and broken comes down whole as one hammock" },
   "dish-bowl": { run: checkDishBowl, about: "a big satellite dish's bowl stops whoever walks under it, out past its block, however it is turned" },

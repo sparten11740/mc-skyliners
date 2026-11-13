@@ -1,0 +1,7 @@
+{
+  "priority": 1004,
+  "selector": "skyliners:led_strip_line",
+  "properties": {
+    "sable:mass": 0.05
+  }
+}
