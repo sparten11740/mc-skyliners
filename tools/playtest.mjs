@@ -1874,6 +1874,35 @@ function checkFreighterRamp() {
 // still comes down, its deck ending where the ground meets it, and is walked up and down with the walk key alone, its
 // plate holding up whoever walks on it while it swings; two blocks higher or lower, or with a block in its way, it
 // refuses with a low note and a red lamp. It used to refuse the block higher, and left a block's step at the block lower.
+// A freighter's ramp well walled in under her deck: down, her ramp's well opens through her deck and her belly, and
+// looking aside from the ramp the player sees wall right under her deck on either side. The low space under her deck
+// lay open beside the well, its thrusters and the underside of her floors in view from the ramp.
+function checkFreighterRampWell() {
+  layDown("freighter");
+  const [panel] = must("find skyliners:ramp_panel 128 1").rows;
+  const lamp = () => (panel ? must(`block ${panel.at_abs.join(",")} side=server`).props?.status : undefined);
+  const down = panel && waitForReport(() => ({ status: lamp() }), (read) => read.status === "down", RAMP_DOWN_TICKS);
+  expect(down, "freighter: laid down, her ramp comes down by itself", `lamp ${lamp()}`);
+  const deck = must("find skyliners:ramp_deck 128 200 side=server").rows.map((row) => row.at_abs);
+  if (!down || deck.length === 0) {
+    return;
+  }
+  const top = Math.max(...deck.map(([, y]) => y));
+  const facing = must(`block ${deck.find(([, y]) => y === top).join(",")} side=server`).props?.facing ?? "north";
+  const [dx, dz] = CLIMBS[facing];
+  const across = ([x, , z]) => x * -dz + z * dx;
+  const edges = [Math.min(...deck.map(across)), Math.max(...deck.map(across))];
+  const open = [];
+  for (const [x, , z] of deck.filter((at) => edges.includes(across(at)))) {
+    const out = across([x, 0, z]) === edges[0] ? -1 : 1;
+    const side = [x - dz * out, top - 1, z + dx * out];
+    if (must(`block ${side.join(",")} side=server`).id === "air") {
+      open.push(side.join(","));
+    }
+  }
+  expect(open.length === 0, "freighter: beside her ramp's well, right under her deck, stands wall", open.length ? `open at ${open.join(" ")}` : "");
+}
+
 function checkFreighterRampFoot() {
   layDown("freighter");
   const [panel] = must("find skyliners:ramp_panel 128 1").rows;
@@ -6661,6 +6690,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
   "freighter-ramp-mobs": { run: checkFreighterRampMobs, slow: true, about: "a hostile mob under a freighter's ramp does not hold it, an animal does" },
+  "freighter-ramp-well": { run: checkFreighterRampWell, slow: true, about: "a freighter's ramp well is walled in under her deck, so the space under it does not show from the ramp" },
   "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },
   "freighter-keeps-her-belly": { run: checkFreighterKeepsHerBelly, slow: true, about: "a freighter loaded from a save folds her ramp and sheds no piece of her belly, her ramp comes down again, and a real break still comes away" },
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },

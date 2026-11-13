@@ -1193,9 +1193,10 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Her boarding ramp, where its well holds nothing but her skin, her deck and her walls: the corridor's wall opened
-     * at its head, the glass rail along its well's open side, its panel on the wall beside its head, and the panel
-     * handed the ramp once it stands, its hatch every block of hers in its well's columns from her deck's floor down,
-     * the row over it kept clear; none with the server config's {@code freighter.ramp} off.
+     * at its head, the glass rail along its well's open side, its well's sides under her deck lined, its panel on the
+     * wall beside its head, and the panel handed the ramp once it stands, its hatch every block of hers in its well's
+     * columns from her deck's floor down, the row over it kept clear; none with the server config's
+     * {@code freighter.ramp} off.
      */
     private void ramp() {
         int rise = deck + 1;
@@ -1206,6 +1207,8 @@ public final class FreighterLayout extends HullLayout {
         }
         openWellHead(left);
         railAlongWell(left - 1, reach);
+        lineWell(left - 1, reach);
+        lineWell(left + RAMP_WIDTH, reach);
         BlockPos panel = new BlockPos(RAMP_HEAD + RAMP_PANEL_OUT, deck + RAMP_PANEL_UP, left + RAMP_WIDTH - 1);
         BlockState panelState = SkylinersRegistry.RAMP_PANEL.get().defaultBlockState().setValue(RampPanelBlock.FACING, Direction.NORTH);
         set(panel.getX(), panel.getY(), panel.getZ(), panelState);
@@ -1702,6 +1705,22 @@ public final class FreighterLayout extends HullLayout {
             int z = left + cell % RAMP_WIDTH;
             for (int y = deck + 1; y <= deck + DOOR_ROWS && onCircle(x, z, CORRIDOR); y++) {
                 cells.remove(new BlockPos(x, y, z));
+            }
+        }
+    }
+
+    /**
+     * Lines a long side of her ramp's well under her deck with padded wall, as her passages are closed off from the
+     * void: the well opens through her deck and her belly, and from the ramp the low space under her deck lay open
+     * beside it, its thrusters and the underside of her floors showing.
+     */
+    private void lineWell(int z, int reach) {
+        BlockState wall = SkylinersRegistry.PADDED_BULKHEAD.get().defaultBlockState();
+        for (int cell = 0; cell < reach * deck; cell++) {
+            int x = RAMP_HEAD + cell / deck;
+            int y = cell % deck;
+            if (isOpen(x, y, z) && surface.depth(x, y + 0.5, z) < 0) {
+                set(x, y, z, wall);
             }
         }
     }
