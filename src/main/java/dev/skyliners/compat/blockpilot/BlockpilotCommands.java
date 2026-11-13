@@ -26,6 +26,7 @@ import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.LaserBolt;
+import dev.skyliners.block.OrreryBlockEntity;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.repairs.RepairBoardBlockEntity;
 import dev.skyliners.spaceweather.SpaceRocks;
@@ -69,8 +70,9 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * ({@code skyliners:livery}), and the space weather over the nearest rocket or freighter, or bringing some over her
  * ({@code skyliners:spaceweather}); and, on the client, whether the player sees from a laser cannon's sight
  * ({@code skyliners:gunner}), what it last drew of a laser bolt ({@code skyliners:bolts}) and of a freighter
- * stretching into a hyperspace jump and out of it ({@code skyliners:stretch}), and whether a flare has its
- * ship's screens dark ({@code skyliners:screens}). Only loaded when
+ * stretching into a hyperspace jump and out of it ({@code skyliners:stretch}), whether a flare has its ship's
+ * screens dark ({@code skyliners:screens}), and whether the orrery nearest draws its planetarium's sky
+ * ({@code skyliners:planetarium}). Only loaded when
  * Blockpilot is installed (see {@link dev.skyliners.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
@@ -236,6 +238,12 @@ public final class BlockpilotCommands {
             .group("skyliners")
             .help("whether a solar flare's blackout has this client's ship's screens dark")
             .field("dark", "whether they are dark with it"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("planetarium", (context, args) -> planetarium())
+            .needsWorld()
+            .group("skyliners")
+            .help("whether the orrery this client drew nearest its player draws its planetarium's sky round it")
+            .field("seen", "whether this client has drawn an orrery")
+            .field("sky", "whether that orrery draws its sky"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("spaceweather", (context, args) -> spaceWeather(args))
             .onServer()
             .group("skyliners")
@@ -280,6 +288,12 @@ public final class BlockpilotCommands {
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("skyliners:build zeppelin"));
+    }
+
+    /** Whether the orrery this client drew nearest its player draws its sky, as the planetarium query reads it. */
+    private static Result planetarium() {
+        Boolean sky = OrreryBlockEntity.clientSkyNearest.get();
+        return Result.ok(new Fields().tag("seen", sky != null).tag("sky", Boolean.TRUE.equals(sky)));
     }
 
     /** What this client's player sees from a laser cannon's sight, on the client, as its gunner's view tells it. */

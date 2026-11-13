@@ -14,6 +14,7 @@ import dev.skyliners.block.EngineCoreBlockEntity;
 import dev.skyliners.block.FogMachineBlockEntity;
 import dev.skyliners.block.LaserBolt;
 import dev.skyliners.block.LookoutGlassBlockEntity;
+import dev.skyliners.block.OrreryBlockEntity;
 import dev.skyliners.block.PassengerScreenBlockEntity;
 import dev.skyliners.block.PropellerBlockEntity;
 import dev.skyliners.block.RobotBartenderBlockEntity;
@@ -428,6 +429,7 @@ public final class SkylinersClient {
         LaserCannonBlockEntity.clientTicker = CannonServo::listen;
         LaserCannonBlockEntity.clientSighting = GunnerView::sighting;
         SpaceWeather.clientBlackedOut = SpaceWeatherSky::blackedOut;
+        OrreryBlockEntity.clientSkyNearest = OrreryRenderer::skyNearest;
         SpaceRocks.clientBurstsSeen = SpaceWeatherSky::burstsSeen;
         SpaceRocks.clientRealFarthest = SpaceWeatherSky::realFarthest;
         SpaceRocks.clientRocksFlying = SpaceWeatherSky::rocksFlying;

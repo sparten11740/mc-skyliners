@@ -946,6 +946,18 @@ const BIRTHDAY_LIFTED = 5;
 // How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
 // round her control head her cockpit's floor is looked over for carpet, in blocks.
 const TIP_STRIPS_BACK = 3;
+// An orrery's planetarium: how high over the ground a ceiling is put up to hang one under by hand, how far under the
+// orrery the glass floor of the room is, and how far off it the orrery is looked at from, in blocks; how far up and
+// back from a rocket's site her orrery is looked for from, as she stands some 150 blocks tall, and how far under it her
+// cockpit is looked up at it from, in blocks; and how long it is looked at before its sky is read, in ticks, past when
+// its dome is first found.
+const ORRERY_CEILING_UP = 12;
+const ORRERY_FLOOR_UNDER = 2;
+const ORRERY_LOOK_FROM = 4;
+const ORRERY_ROCKET_LOOK_UP = 100;
+const ORRERY_ROCKET_LOOK_BACK = 26;
+const ORRERY_COCKPIT_DOWN = 9;
+const ORRERY_LOOK_TICKS = 20;
 // Walking into a hoop on its stand: how far from it the walk starts, in blocks, on the ring's side; how long it lasts,
 // in ticks, ample to cross it; and how high the player may rise on its base, in blocks, short of a step.
 const HOOP_RUN_UP = 3;
@@ -5751,6 +5763,38 @@ function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   }
 }
 
+// An orrery hung up by hand in a room built up in the open, a ceiling over it and a glass floor under it, draws no
+// planetarium's sky round it: the ground far under the floor passed for her dome's ring of ceiling, and a cone of night
+// sky filled the room. Hung in a rocket's nose, it draws her planetarium's sky over her cockpit still.
+function checkOrrerySky() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  creative();
+  must(`server tp @p ${site.x} ${ground} ${site.z + ORRERY_LOOK_FROM}; wait ${CHUNKS_TICKS}t`);
+  const ceiling = ground + ORRERY_CEILING_UP;
+  const floor = ceiling - 1 - ORRERY_FLOOR_UNDER;
+  must(`server fill ${site.x - 1} ${ceiling} ${site.z - 1} ${site.x + 1} ${ceiling} ${site.z + 1} stone`);
+  must(`server fill ${site.x - 1} ${floor} ${site.z - 1} ${site.x + 1} ${floor} ${site.z + ORRERY_LOOK_FROM} glass`);
+  must(`server setblock ${site.x} ${ceiling - 1} ${site.z} skyliners:orrery`);
+  const byHand = skyOf([site.x, ceiling - 1, site.z], [0, -1, ORRERY_LOOK_FROM]);
+  expect(byHand?.seen && !byHand.sky, "orrery: hung up by hand in a room built up in the open, it draws no planetarium's sky round it",
+    `seen ${byHand?.seen}, sky ${byHand?.sky}`);
+  const rocket = ship("rocket");
+  must(`server tp @p ${rocket.x} ${ground + ORRERY_ROCKET_LOOK_UP} ${rocket.z - ORRERY_ROCKET_LOOK_BACK}; wait ${CHUNKS_TICKS}t`);
+  const [orrery] = must("find skyliners:orrery 64 1").rows;
+  const inNose = orrery && skyOf(orrery.at_abs, [0, -ORRERY_COCKPIT_DOWN, 0]);
+  expect(inNose?.sky, "orrery: in a rocket's nose, it draws her planetarium's sky", `seen ${inNose?.seen}, sky ${inNose?.sky}`);
+}
+
+// Whether the orrery nearest the player draws its planetarium's sky, looked at from so far off its block: the player
+// stood there and the camera there, looking at it a while, as only an orrery drawn has its dome found.
+function skyOf([x, y, z], [dx, dy, dz]) {
+  const eye = [x + 0.5 + dx, y + dy, z + 0.5 + dz];
+  must(`server tp @p ${eye.join(" ")}; camera at ${eye.join(",")} look ${x + 0.5},${y + 0.5},${z + 0.5}; wait ${ORRERY_LOOK_TICKS}t`);
+  const read = must("skyliners:planetarium");
+  must("camera reset");
+  return read;
+}
+
 // A basketball hoop on its stand, set down on a floor: walking into it from the ring's side in survival, the player is
 // stopped by its stand. Its base, pole and backboard each rose less than a step, so the player climbed them like
 // stairs, over its top and down its far side.
@@ -6711,6 +6755,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
   "freighter-ramp-mobs": { run: checkFreighterRampMobs, slow: true, about: "a hostile mob under a freighter's ramp does not hold it, an animal does" },
+  "orrery-sky": { run: checkOrrerySky, slow: true, about: "an orrery hung up by hand in the open draws no planetarium's sky, and a rocket's still does" },
   "hoop-stand": { run: checkHoopStand, about: "a basketball hoop set down on a floor stops a player walking into it, rather than being climbed like stairs" },
   "freighter-ramp-well": { run: checkFreighterRampWell, slow: true, about: "a freighter's ramp well is walled in under her deck, so the space under it does not show from the ramp" },
   "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },

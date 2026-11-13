@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -20,6 +21,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * the clients, which draw it (see {@code client.OrreryRenderer}).
  */
 public class OrreryBlockEntity extends BlockEntity {
+    /**
+     * Whether the orrery this client drew nearest its player draws its planetarium's sky round it, null for none drawn;
+     * the client sets it, for a play-test to read (see {@code BlockpilotCommands}).
+     */
+    public static Supplier<Boolean> clientSkyNearest = () -> null;
     /** How far down its sun hangs and how far out its planets circle, in blocks, for one built without them. */
     private static final double DEFAULT_DROP = 6;
     private static final double DEFAULT_REACH = 3;

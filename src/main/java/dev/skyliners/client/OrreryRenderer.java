@@ -3,6 +3,7 @@ package dev.skyliners.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.skyliners.block.OrreryBlockEntity;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -28,6 +29,12 @@ import org.joml.Vector3f;
  * before.
  */
 public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
+    /** Whether the orrery drawn nearest this client's player draws its planetarium's sky, for the play-test. */
+    @Nullable
+    public static Boolean skyNearest() {
+        return OrreryDome.skyNearest();
+    }
+
     /** How far off the orrery and its planetarium are drawn, in blocks: from the cockpit's floor up to the tip. */
     private static final int VIEW_DISTANCE = 96;
     /**

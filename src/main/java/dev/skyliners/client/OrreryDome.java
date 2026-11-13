@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,8 +29,10 @@ import org.joml.Vector3f;
  * <p>Found on the client by looking in along each row from outside her skin, a few dozen ways round, so that whatever
  * is built against the lining is soon seen and the sky drawn in front of it, while whatever stands out in the room, as
  * the orrery does, is not; looked over again every few seconds while it is drawn, and never further than just outside
- * her skin. Nothing of it is saved, so a rocket built before the planetarium has it too. Where her control head is,
- * whose flight the oculus ring's lamps show (see {@link OculusRing}), is found with it.
+ * her skin. A row whose looks all meet nothing at all is open to the world round it, so no dome's: an orrery hung up
+ * by hand under a ceiling in the open has no dome, and draws no sky, which had filled the room round it. Nothing of
+ * it is saved, so a rocket built before the planetarium has it too. Where her control head is, whose flight the oculus
+ * ring's lamps show (see {@link OculusRing}), is found with it.
  */
 final class OrreryDome {
     /** How long a dome is drawn as it was found before it is looked over again, in ticks. */
@@ -127,6 +131,25 @@ final class OrreryDome {
         return dome;
     }
 
+    /**
+     * Whether the orrery drawn nearest this client's player in their level, by its block, draws its planetarium's sky
+     * round it: whether its dome has a shape; null where none has been drawn.
+     */
+    @Nullable
+    static Boolean skyNearest() {
+        Player player = Minecraft.getInstance().player;
+        OrreryBlockEntity nearest = null;
+        double least = Double.MAX_VALUE;
+        for (OrreryBlockEntity orrery : DOMES.keySet()) {
+            double distance = player == null ? 0 : orrery.getBlockPos().distToCenterSqr(player.position());
+            if (distance < least && (player == null || orrery.getLevel() == player.level())) {
+                least = distance;
+                nearest = orrery;
+            }
+        }
+        return nearest == null ? null : DOMES.get(nearest).shaped();
+    }
+
     /** An orrery's dome as last found, if it has been; null before it is first drawn. */
     static OrreryDome known(OrreryBlockEntity orrery) {
         return DOMES.get(orrery);
@@ -214,6 +237,9 @@ final class OrreryDome {
         float outer = 0;
         for (int row = 0; row >= sun - FLOOR_UNDER_SUN; row--) {
             float open = row(level, mount, row, skin);
+            if (open == Float.MAX_VALUE) {
+                break;
+            }
             outer = Math.max(outer, widest(skin));
             open = Math.min(open, outer);
             if (row < sun && open < above - FLOOR_STEP) {
@@ -258,8 +284,9 @@ final class OrreryDome {
     }
 
     /**
-     * How far out from her axis a row is open, the nearest any way round, in blocks; where her skin was found each way
-     * is kept, so the next row down is looked along from just outside it.
+     * How far out from her axis a row is open, the nearest any way round, in blocks, or {@link Float#MAX_VALUE} where no
+     * look met anything at all, the row open to the world all round; where her skin was found each way is kept, so the
+     * next row down is looked along from just outside it.
      */
     private static float row(Level level, BlockPos mount, int row, float[] skin) {
         float nearest = Float.MAX_VALUE;

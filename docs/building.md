@@ -161,7 +161,8 @@ her livery selector, and a `RocketRoom` for each furnished story, from `RocketEn
 them, `RocketPilotSeats` the cockpit's seats, `RocketCockpitLights` the lights over them, `RocketDomeLimit` the invisible `DomeLimitBlock`s that keep anyone from
 getting behind the planetarium's sky, and `RocketDome` the dome
 over it, its `OrreryBlock`'s `OrreryBlockEntity` drawn by `OrreryRenderer`, which finds the dome round it as
-`OrreryDome` and lines it with the `PlanetariumShell`, rimming the hole under it with the `OculusRing`, whose lamps
+`OrreryDome` (none where a row of it lies open to the world round it, as under a ceiling in the open) and lines it
+with the `PlanetariumShell`, rimming the hole under it with the `OculusRing`, whose lamps
 follow her autopilot's phase and launch control's spoken count, and draws the orrery as it stands at the moment
 (`OrreryNow`), its sun and planets as sun-lit `Globe`s (`OrreryPlanets`) and its brass `OrreryWorks`); its rooms' own
 furniture is
