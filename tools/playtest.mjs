@@ -946,6 +946,11 @@ const BIRTHDAY_LIFTED = 5;
 // How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
 // round her control head her cockpit's floor is looked over for carpet, in blocks.
 const TIP_STRIPS_BACK = 3;
+// Walking into a hoop on its stand: how far from it the walk starts, in blocks, on the ring's side; how long it lasts,
+// in ticks, ample to cross it; and how high the player may rise on its base, in blocks, short of a step.
+const HOOP_RUN_UP = 3;
+const HOOP_WALK_TICKS = 30;
+const HOOP_STEP_MOST = 0.3;
 const TIP_STRIPS_NEAR = 4;
 const COCKPIT_FLOOR_NEAR = 5;
 // How far behind her control head her pilots' seats stand, in blocks, where her cockpit's floor is looked over from.
@@ -5746,6 +5751,22 @@ function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   }
 }
 
+// A basketball hoop on its stand, set down on a floor: walking into it from the ring's side in survival, the player is
+// stopped by its stand. Its base, pole and backboard each rose less than a step, so the player climbed them like
+// stairs, over its top and down its far side.
+function checkHoopStand() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  creative();
+  must(`server tp @p ${site.x} ${ground} ${site.z}; wait ${CHUNKS_TICKS}t`);
+  must(`server setblock ${site.x} ${ground} ${site.z} skyliners:hoop[mount=floor,facing=north]`);
+  survival();
+  must(`server tp @p ${site.x + 0.5} ${ground} ${site.z + HOOP_RUN_UP + 0.5} 180 0; wait 20t`);
+  const path = must(`sample status every 1t while move forward ${HOOP_WALK_TICKS}t`).rows.filter((row) => row.pos);
+  creative();
+  const rose = Math.max(...path.map((row) => row.pos[1])) - ground;
+  expect(rose <= HOOP_STEP_MOST, "hoop: walking into its stand on a floor, the player is stopped, not stepped up it", `rose ${round(rose)} blocks`);
+}
+
 // A freighter's galleries: the fleet's models, the freighter's own among them, along the tube out to her cockpit, and
 // space posters on the wall of the tunnel down her port prong, both farther out from her middle than any room's wall
 // (her lounge's shelves have models too, and the walls across her beam the fleet's paintings).
@@ -6690,6 +6711,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
   "freighter-ramp-mobs": { run: checkFreighterRampMobs, slow: true, about: "a hostile mob under a freighter's ramp does not hold it, an animal does" },
+  "hoop-stand": { run: checkHoopStand, about: "a basketball hoop set down on a floor stops a player walking into it, rather than being climbed like stairs" },
   "freighter-ramp-well": { run: checkFreighterRampWell, slow: true, about: "a freighter's ramp well is walled in under her deck, so the space under it does not show from the ramp" },
   "freighter-ramp-foot": { run: checkFreighterRampFoot, slow: true, about: "a freighter's ramp meets ground a block higher or lower at its foot and is walked both ways, and refuses past that" },
   "freighter-keeps-her-belly": { run: checkFreighterKeepsHerBelly, slow: true, about: "a freighter loaded from a save folds her ramp and sheds no piece of her belly, her ramp comes down again, and a real break still comes away" },

@@ -90,6 +90,14 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         Block.box(7, 4, 0.25, 9, 9, 1.75), Block.box(1, 9, 0, 15, 16, 2), LITTLE_BOARD_BRACKET
     ));
     /**
+     * Its stand to collide with: its weighted base and the step on it, and behind them, up from the floor, a wall as
+     * wide and tall as the backboard over the pole. Its base, step, pole and backboard each rise less than a step, so
+     * as drawn a player walking into it climbed them like stairs, over its top and down its far side.
+     */
+    private static final Map<Direction, VoxelShape> STAND_SOLID = TurnedShapes.of(Shapes.or(
+        Block.box(2, 0, 0, 14, 1.5, 7), Block.box(3.5, 1.5, 0, 12.5, 3, 5), Block.box(1, 0, 0, 15, 16, 2.25)
+    ));
+    /**
      * Hung under a ceiling, drawn facing north: the little backboard behind the lowered ring, and the two rods up from
      * it to the ceiling.
      */
@@ -155,7 +163,7 @@ public class HoopBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return holder(state);
+        return state.getValue(MOUNT) == Mount.FLOOR ? STAND_SOLID.get(state.getValue(FACING)) : holder(state);
     }
 
     /** What holds the ring up, the hoop's only solid part: its bracket, its stand or its hanger. */
