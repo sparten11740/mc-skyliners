@@ -369,7 +369,7 @@ const BUMP_MOVED = 0.5;
 // Where on a console module of a freighter its desk is aimed at, as a point of its block from 0 to 1 across, up and
 // along: the middle of its desk's top, which is drawn a little over four fifths of a block up at its back.
 const DESK_TOP_AT = "0.5,0.8,0.5";
-// Walking at a freighter's scanner module from her control head: how far out from its middle to start, in blocks,
+// Walking at a freighter's console module from her control head: how far out from its middle to start, in blocks,
 // clear of the head; and how far past its middle, toward the head, the player may be stopped at most, in blocks: its
 // desk begins just short of its middle, where it was its block's face, half a block out, that stopped them.
 const DESK_FROM = 1.15;
@@ -946,6 +946,8 @@ const BIRTHDAY_LIFTED = 5;
 // How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
 // round her control head her cockpit's floor is looked over for carpet, in blocks.
 const TIP_STRIPS_BACK = 3;
+// A freighter's console modules, any of which a player walks at from her control head to find its desk solid.
+const CONSOLE_MODULES = ["console_scanner", "console_boost", "console_spin", "console_jump", "console_slam", "console_climb", "console_readouts"];
 // Walking off a zeppelin's upper deck at its front corner: how far out past the end of the wall with the paintings,
 // and how far back from the wall's plane, to the middle of the deck's second row, the walk starts, in blocks; how long
 // it lasts, in ticks, ample to reach the edge; and how far under the deck the player may be seen, in blocks, short of a
@@ -3745,19 +3747,21 @@ function checkFreighterSolid() {
   }
 }
 
-// A freighter's console is as solid as it is drawn: walked at from her control head, her scanner module's desk stops
-// the player at its near edge, just short of its block's middle. With the fault its whole block was solid, and its
-// desk's empty room in front of it stopped them half a block short, and took clicks meant for what is beyond.
+// A freighter's console is as solid as it is drawn: walked at from her control head, a module's desk stops the player
+// at its near edge, just short of its block's middle. With the fault its whole block was solid, and its desk's empty
+// room in front of it stopped them half a block short, and took clicks meant for what is beyond. Any module with open
+// floor between it and her control head will do: each has the same desk, and the modules move round as more are added.
 function checkFreighterConsoleSolid() {
   ship("freighter");
-  const [scanner] = must("find skyliners:console_scanner 128 1").rows;
-  const towardHead = scanner && STEPS[must(`block ${scanner.at_abs.join(",")}`).props.facing ?? "north"];
-  if (!scanner || !clearWay(scanner.at_abs, towardHead, 1)) {
-    expect(false, "freighter: her console has its scanner module, with open floor between it and her control head");
+  const module = CONSOLE_MODULES.map((id) => must(`find skyliners:${id} 128 1`).rows[0]).filter(Boolean)
+    .map((row) => ({ at: row.at_abs, toward: STEPS[must(`block ${row.at_abs.join(",")}`).props.facing ?? "north"] }))
+    .find(({ at, toward }) => clearWay(at, toward, 1));
+  if (!module) {
+    expect(false, "freighter: her console has a module with open floor between it and her control head");
     return;
   }
-  const { along } = bumpInto(scanner.at_abs, towardHead, DESK_FROM);
-  expect(along < DESK_STOPS_WITHIN && along < DESK_FROM - BUMP_MOVED, "freighter: walked at from her control head, her scanner module stops the player at its desk",
+  const { along } = bumpInto(module.at, module.toward, DESK_FROM);
+  expect(along < DESK_STOPS_WITHIN && along < DESK_FROM - BUMP_MOVED, "freighter: walked at from her control head, her console module stops the player at its desk",
     `${along} blocks short of its block's middle`);
 }
 
