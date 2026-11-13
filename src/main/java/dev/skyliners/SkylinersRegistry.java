@@ -2947,6 +2947,7 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<TechnoDeckBlock> TECHNO_DECK = BLOCKS.registerBlock(
         "techno_deck", TechnoDeckBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).lightLevel(state -> 7).noOcclusion()
+            .isValidSpawn(SkylinersRegistry::never)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TechnoDeckBlockEntity>> TECHNO_DECK_ENTITY =
         BLOCK_ENTITIES.register("techno_deck", () -> BlockEntityType.Builder.of(TechnoDeckBlockEntity::new, TECHNO_DECK.get()).build(null));
@@ -2955,11 +2956,17 @@ public final class SkylinersRegistry {
     );
     public static final DeferredBlock<SpeakerBlock> SPEAKER = BLOCKS.registerBlock(
         "speaker", SpeakerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.WOOD)
+            .isValidSpawn(SkylinersRegistry::never)
     );
+    /**
+     * The secret techno room's dance floor and walls. The room is kept dark for its lights, so nothing spawns on
+     * either, nor on its speakers or its DJ deck, as on her other blocks: a monster could wait in it for whoever opens
+     * the hatch.
+     */
     public static final DeferredBlock<Block> DANCE_FLOOR = BLOCKS.registerSimpleBlock("dance_floor",
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.GLASS));
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.GLASS).isValidSpawn(SkylinersRegistry::never));
     public static final DeferredBlock<Block> CLUB_WALL = BLOCKS.registerSimpleBlock("club_wall",
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.WOOL));
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.WOOL).isValidSpawn(SkylinersRegistry::never));
     /** The secret techno room's track, a minute of build and drop, looped while anyone is in the room. */
     public static final DeferredHolder<SoundEvent, SoundEvent> TECHNO_TRACK = sound("techno_track");
     /** The DJ deck's record scratched back and forth, as it is used. */

@@ -55,6 +55,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
@@ -174,6 +175,7 @@ public final class BlockpilotCommands {
             .help("spots inside the mod's ships round the player someone could stand in, lit less than the least: how many, how many unlit")
             .field("dark", "spots lit less than the least")
             .field("unlit", "spots with no block light at all, where monsters can spawn")
+            .field("spawnable", "unlit spots whose floor lets a zombie spawn on it")
             .field("first", "where the first few of the darkest stand, lowest first"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("livery", (context, args) -> livery(args))
             .onServer()
@@ -475,7 +477,8 @@ public final class BlockpilotCommands {
 
     /**
      * The spots round the player inside the mod's ships someone could stand in, a floor of the mod's under them that
-     * holds them, room for their head and out of the sky's light, lit by lamps less than the least asked for.
+     * holds them, room for their head and out of the sky's light, lit by lamps less than the least asked for; and of
+     * those unlit, the ones whose floor lets a monster spawn on it.
      */
     private static Result dark(Args args) throws CommandException {
         ServerPlayer player = player();
@@ -485,15 +488,17 @@ public final class BlockpilotCommands {
         BlockPos middle = player.blockPosition();
         List<BlockPos> dark = new ArrayList<>();
         int unlit = 0;
+        int spawnable = 0;
         for (BlockPos at : BlockPos.betweenClosed(middle.offset(-radius, -DARK_BELOW, -radius), middle.offset(radius, DARK_ABOVE, radius))) {
             int light = standableLight(level, at);
             if (light >= 0 && light < least) {
                 dark.add(at.immutable());
                 unlit += light == 0 ? 1 : 0;
+                spawnable += light == 0 && level.getBlockState(at.below()).isValidSpawn(level, at.below(), EntityType.ZOMBIE) ? 1 : 0;
             }
         }
         String first = dark.stream().limit(FIRST_LEFT).map(pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()).collect(Collectors.joining(" "));
-        return Result.ok(new Fields().tag("dark", dark.size()).tag("unlit", unlit).tag("first", first));
+        return Result.ok(new Fields().tag("dark", dark.size()).tag("unlit", unlit).tag("spawnable", spawnable).tag("first", first));
     }
 
     /**

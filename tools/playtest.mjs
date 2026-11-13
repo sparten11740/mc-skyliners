@@ -946,6 +946,12 @@ const BIRTHDAY_LIFTED = 5;
 // How far back from a prong's tip, in blocks, an LED strip is looked for, and within how far of there; and how far
 // round her control head her cockpit's floor is looked over for carpet, in blocks.
 const TIP_STRIPS_BACK = 3;
+// How far round the middle of a zeppelin's techno room its dark spots are looked over, in blocks: the whole room; and
+// how far along her, north of where she was laid, it is looked for from, and how far up, in blocks: laid down she
+// stretches away north, and it hangs under her gangway towards her stern, further than a look reaches from her nose.
+const CLUB_LOOK_ALONG = 200;
+const CLUB_LOOK_UP = 30;
+const CLUB_LOOK_RADIUS = 8;
 // Fittings that only hang from a ceiling or are fixed to a wall, and the mount each goes up on; the awning's canopy
 // goes up against a wall, never on top of a block.
 const MOUNTED_ONLY = [["light_strip", "wall"], ["fairy_lights", "wall"], ["grow_light", "ceiling"], ["horn_cord", "ceiling"], ["ships_plaque", "wall"],
@@ -5767,6 +5773,25 @@ function putUpEveryWay(id, x, z, mounts = ["floor", "wall", "ceiling"]) {
   }
 }
 
+// A furnished zeppelin's secret techno room, kept dark for its lights: nothing spawns in it, so no monster waits there
+// for whoever opens the hatch. Its dance floor and walls let monsters spawn on them, as no other block of hers does.
+function checkZeppelinClubSpawns() {
+  const site = ship("furnished_zeppelin");
+  const floor = [CLUB_LOOK_ALONG / 2, CLUB_LOOK_ALONG, 3 * CLUB_LOOK_ALONG / 2].map((along) => {
+    must(`server tp @p ${site.x} ${ground + CLUB_LOOK_UP} ${site.z - along}; wait ${CHUNKS_TICKS}t`);
+    return must("find skyliners:dance_floor 128 1").rows[0];
+  }).find(Boolean);
+  expect(floor, "zeppelin: she is built with her secret techno room");
+  if (!floor) {
+    return;
+  }
+  const [x, y, z] = floor.at_abs;
+  must(`server tp @p ${x + 0.5} ${y + 1} ${z + 0.5}; wait 10t`);
+  const room = must(`skyliners:dark radius=${CLUB_LOOK_RADIUS}`);
+  expect(Number(room.spawnable) === 0, "zeppelin: no monster can spawn in her secret techno room, dark as it is",
+    `${room.spawnable} spots, ${room.unlit} unlit, first ${room.first || "none"}`);
+}
+
 // Fittings hung from a ceiling or fixed to a wall, put up by hand: set down on a bare floor each is refused, where it
 // stood in the air, a cord hanging from nothing or a plaque floating; on its own mount it goes up.
 function checkMountedOnly() {
@@ -6790,6 +6815,7 @@ const CHECKS = {
   "freighter-ramp": { run: checkFreighterRamp, slow: true, about: "a freighter's ramp comes down by itself, is walked up, is called from her leg, and holds her take-off while someone stands on it" },
   "freighter-ramp-lag": { run: checkFreighterRampLag, slow: true, about: "a freighter's ramp is drawn folding and coming down evenly with the server running behind" },
   "freighter-ramp-mobs": { run: checkFreighterRampMobs, slow: true, about: "a hostile mob under a freighter's ramp does not hold it, an animal does" },
+  "zeppelin-club-spawns": { run: checkZeppelinClubSpawns, slow: true, about: "a furnished zeppelin's dark secret techno room lets no monster spawn in it" },
   "mounted-only": { run: checkMountedOnly, about: "fittings that hang from a ceiling or fix to a wall are refused on a bare floor, where they stood in the air, and go up on their mount" },
   "orrery-sky": { run: checkOrrerySky, slow: true, about: "an orrery hung up by hand in the open draws no planetarium's sky, and a rocket's still does" },
   "hoop-stand": { run: checkHoopStand, about: "a basketball hoop set down on a floor stops a player walking into it, rather than being climbed like stairs" },
