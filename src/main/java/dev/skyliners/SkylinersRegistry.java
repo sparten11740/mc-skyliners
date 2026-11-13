@@ -1187,13 +1187,13 @@ public final class SkylinersRegistry {
     );
     /**
      * The freighter's smooth canopy: the struts between the panes of the first smooth canopies, her cover cut to her
-     * curve but drawn not at all, as her canopy's glass is not, as light as her cover, kept so freighters built with
-     * them still load; and the unseen block in her cockpit whose renderer draws her whole canopy as one smooth dome with
-     * its ribs (see {@link CanopyLiningBlock}). Placed only when she is built, so no items; the frame gives back fabric,
-     * the lining nothing.
+     * curve but drawn not at all, as her canopy's glass is not, so it hides none of its neighbours' faces either, as
+     * light as her cover, kept so freighters built with them still load; and the unseen block in her cockpit whose
+     * renderer draws her whole canopy as one smooth dome with its ribs (see {@link CanopyLiningBlock}). Placed only
+     * when she is built, so no items; the frame gives back fabric, the lining nothing.
      */
     public static final DeferredBlock<ShellBlock> CANOPY_FRAME = BLOCKS.registerBlock(
-        "canopy_frame", properties -> new ShellBlock(properties, SkylinersRegistry.ZEPPELIN_FABRIC), fabric()
+        "canopy_frame", properties -> new ShellBlock(properties, SkylinersRegistry.ZEPPELIN_FABRIC), fabric().noOcclusion()
     );
     public static final DeferredBlock<CanopyLiningBlock> CANOPY_LINING = BLOCKS.registerBlock(
         "canopy_lining", CanopyLiningBlock::new,
