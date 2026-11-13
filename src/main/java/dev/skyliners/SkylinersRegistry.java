@@ -1608,7 +1608,7 @@ public final class SkylinersRegistry {
      * LaserCannonBlock}).
      */
     public static final DeferredBlock<LaserCannonBlock> LASER_CANNON = BLOCKS.registerBlock(
-        "laser_cannon", LaserCannonBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+        "laser_cannon", LaserCannonBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().dynamicShape()
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserCannonBlockEntity>> LASER_CANNON_ENTITY =
         BLOCK_ENTITIES.register("laser_cannon", () -> BlockEntityType.Builder.of(LaserCannonBlockEntity::new, LASER_CANNON.get()).build(null));

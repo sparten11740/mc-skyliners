@@ -65,7 +65,9 @@ mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn wit
 own turn does (the gym hall's trusses of an airliner built facing east or west), `mixin/HotAirBurnerMixin` lets
 `BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff, and `mixin/SubLevelHeatMapManagerMixin` keeps
 Sable from shedding as ships of their own the blocks put back aboard while its heat map is still flooding a ship, as
-the hatch of the freighter's ramp is; `CloudlessCabin` leaves the clouds out of
+the hatch of the freighter's ramp is, and `mixin/SubLevelEntityCollisionMixin` has Sable collide a player aboard with
+blocks round them as far as a laser cannon's barrels reach, where one is near (`LaserCannonBlockEntity.reaches`), not
+only with those they stand in; `CloudlessCabin` leaves the clouds out of
 the player's view while the camera is inside a hull in the cloud layer; `ShipWeather`, through
 `mixin/LevelRendererMixin` and `mixin/LevelMixin`, lets rain and snow fall only onto a ship's roof, keeps their
 splashes off the freighter's canopy and fades the weather over the clouds (a `ShellBlock` counts as solid however thin
@@ -484,7 +486,9 @@ swallows. The client's `GunnerView` moves the seated gunner's view to the sight,
 reticle, thermometer and bearing ring with `GuiShapes`, which the `PilotHud` draws with too; `LaserCannonRenderer`
 draws its swivel and barrels in worn block textures laid on its boxes and eight-sided prisms by `SpriteQuads`, their
 emitters' glow from its heat and from which barrel the update tag says fired last, and `CannonServo` whirrs as they
-swing. Its rockets are `CannonRocket` entities, never
+swing. Its barrels and pods are solid where they point: its block's collision shape, never kept by its state, takes
+them from its block entity, which works them out in `SwivelShape` as a row of boxes along them again once they have
+turned a degree, as drawn on a client and as aimed on the server. Its rockets are `CannonRocket` entities, never
 saved: the cannon launches one from its next loaded tube, worked out in her frame by `tilted` (which
 `LaserCannonRenderer` turns its pods by too) and taken into the world (`SableFlight.toWorld`), carried along at her
 speed there (`SableFlight.velocity`) and homing on the mob its sight rested on; it flies on the server, through her own

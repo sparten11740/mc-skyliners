@@ -411,6 +411,13 @@ const RAMP_LAMP_LAGS_TICKS = 40;
 // a creeper is hung to shoot at, in blocks; and how long attack is held, in ticks, several bolts' worth.
 const LADDER_CLIMB_TICKS = 100;
 const TURRET_TARGET_UP = 10;
+// Walking across a freighter's cannon barrels, resting toward her bow: where the walk starts from the middle of the
+// cannon's block, out to its starboard side, up and toward her bow, in blocks, on her dome's crown beside the barrels;
+// how long the walk lasts, in ticks, ample to cross the crown; and how far out to starboard of the cannon's middle the
+// player is to stop, in blocks: stopped against the near barrel, a little more than 0.38 out, they stand some 0.68 out.
+const BARREL_WALK_FROM = [1.7, 0.3, 1.2];
+const BARREL_WALK_TICKS = 30;
+const BARREL_STOPPED_OUT = 0.5;
 // How many of the nine blocks of stone shot at may still stand once her cannon's bolts have blasted it.
 const TURRET_BLASTED_LEFT = 5;
 const TURRET_TARGET_AHEAD = 10;
@@ -2357,6 +2364,61 @@ function gunnerSight() {
   const reply = must("skyliners:gunner");
   return reply.on ? { at: String(reply.at).split(",").map(Number), look: String(reply.look).split(",").map(Number), locked: reply.locked,
     rockets: reply.rockets, loading: reply.loading } : undefined;
+}
+
+// A freighter's laser cannon barrels are solid: walking across them on her dome's crown, in survival, the player stops
+// against them, on a freighter laid down and aboard one assembled, where Sable collides the player with her blocks.
+// Both walked straight through them, as if they were not there.
+function checkFreighterBarrels() {
+  layDown("freighter");
+  const [cannon] = must("find skyliners:laser_cannon 128 1").rows;
+  expect(cannon, "freighter: she is built with a laser cannon on her top dome");
+  if (!cannon) {
+    return;
+  }
+  const laid = acrossBarrels(cannon.at_abs, must(`block ${cannon.at_abs.join(",")}`).props?.facing);
+  survival();
+  must(`server tp @p ${laid.from.join(" ")} ${laid.yaw} 0; wait 20t; move forward ${BARREL_WALK_TICKS}t; wait 10t`);
+  const stopped = laid.out(must("status").pos);
+  creative();
+  expect(stopped >= BARREL_STOPPED_OUT, "freighter: walking across her cannon's barrels, they stop the player", `${round(stopped)} blocks out from the cannon`);
+  must(`skyliners:autopilot fly altitude=${ground + FREIGHTER_CLIMB} speed=0; wait ${IMPACT_ABOARD_TICKS}t; skyliners:autopilot off`, BUILD_SECONDS);
+  const parked = waitForReport(freighterReport, (report) => report.phase === "off", FREIGHTER_DOWN_TICKS);
+  expect(parked, "freighter: assembled and switched off, she stands on her legs", parked ? "" : `still ${freighterReport()?.phase}`);
+  if (!parked) {
+    return;
+  }
+  const freighter = findShipFlying("skyliners:engine_grille");
+  const [{ at: plot }] = must(`sable:find ${freighter} skyliners:laser_cannon 1 side=server`).rows;
+  const aboard = acrossBarrels(plot, must(`block ${plot.join(",")} side=server`).props?.facing);
+  survival();
+  must(`server execute positioned ${aboard.from.join(" ")} out_sub_level ${freighter} run tp @p ~ ~ ~ ${aboard.yaw} 0`);
+  must(`wait 20t; move forward ${BARREL_WALK_TICKS}t; wait 10t`);
+  const stoppedAboard = aboard.out(aboardAt(freighter));
+  creative();
+  expect(stoppedAboard >= BARREL_STOPPED_OUT, "freighter: aboard her assembled, walking across her cannon's barrels, they stop the player too",
+    `${round(stoppedAboard)} blocks out from the cannon`);
+}
+
+// A walk across a cannon's barrels from its starboard side, its block and the way it faces given, her bow: where it
+// starts, the way it goes as a yaw, and how far out to starboard of the cannon's middle a position is.
+function acrossBarrels([x, y, z], facing = "north") {
+  const [aheadX, aheadZ] = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] }[facing];
+  const [outX, outZ] = [-aheadZ, aheadX];
+  const [out, up, ahead] = BARREL_WALK_FROM;
+  return {
+    from: [x + 0.5 + outX * out + aheadX * ahead, y + up, z + 0.5 + outZ * out + aheadZ * ahead],
+    yaw: Math.round(Math.atan2(outX, -outZ) * 180 / Math.PI),
+    out: (at) => (at[0] - x - 0.5) * outX + (at[2] - z - 0.5) * outZ,
+  };
+}
+
+// Where the player stands aboard a ship, in her plot's blocks.
+function aboardAt(ship) {
+  must(`server execute as @p at @s in_sub_level ${ship} run summon marker ~ ~ ~ {Tags:["aboard_at"]}`);
+  const at = entityAt("@e[tag=aboard_at,limit=1]");
+  must("server kill @e[tag=aboard_at]");
+  return at;
 }
 
 // A freighter's rocket pods: sat at her laser cannon, the sight shows its four rockets; aimed at a creeper in the sky
@@ -6603,6 +6665,7 @@ const CHECKS = {
   "freighter-keeps-her-belly": { run: checkFreighterKeepsHerBelly, slow: true, about: "a freighter loaded from a save folds her ramp and sheds no piece of her belly, her ramp comes down again, and a real break still comes away" },
   "freighter-gunner-takeoff": { run: checkFreighterGunnerTakeoff, slow: true, about: "a freighter set to fly from her gunner's seat lifts off" },
   "freighter-turret": { run: checkFreighterTurret, slow: true, about: "a freighter's core ladder is climbed to her gunner's seat, whose cannon strikes a creeper and blasts stone, breaking none of her" },
+  "freighter-barrels": { run: checkFreighterBarrels, slow: true, about: "walking across a freighter's laser cannon barrels on her dome, laid down and assembled, they stop the player" },
   "freighter-rockets": { run: checkFreighterRockets, slow: true, about: "a freighter's cannon launches its rockets at a creeper and blasts stone, breaking none of her, the sight showing its pods load again" },
   "ship-hits": { run: checkShipHits, slow: true, about: "a freighter's cannon fired at another freighter hovering abeam: bolts ping off her and rock her a little, a rocket harder, a burst never far" },
   "laser-crossbow": { run: checkLaserCrossbow, about: "the laser crossbow fires at a click, its short bolt seen flying out of it, strikes a creeper, never a cow, and held down it vents and cools" },

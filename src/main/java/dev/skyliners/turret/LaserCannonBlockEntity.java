@@ -38,6 +38,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The freighter's laser cannon on her top dome (see {@link LaserCannonBlock}): twin barrels on a swivel over a
@@ -85,6 +87,11 @@ public class LaserCannonBlockEntity extends BlockEntity {
     public static final double PIVOT_UP = 1.19;
     public static final double BARREL = 1.9;
     public static final double BARRELS_APART = 0.28;
+    /**
+     * How far past its block its barrels and rocket pods reach at most, whichever way they point, in whole blocks: so
+     * far round a player a ship's collisions look for it (see {@link #reaches}).
+     */
+    public static final int REACH_BLOCKS = 2;
     /**
      * Where the gunner's sight is from the barrels' pivot, in blocks: so far over it and so far back of it, square to
      * the gunner's look, as if fixed to the swivel; clear of the housing, the muzzles low in the view.
@@ -240,6 +247,12 @@ public class LaserCannonBlockEntity extends BlockEntity {
     private final HeavyTurn shownYaw = new HeavyTurn(SWING_FASTEST, SWING_GATHER, true);
     private final HeavyTurn shownPitch = new HeavyTurn(SWING_FASTEST, SWING_GATHER, false);
     private boolean drawn;
+    /**
+     * What it is to collide with as last worked out (see {@link #collision}), none before: worked out again only once
+     * its barrels have turned a degree. One record, so whoever reads it never pairs a shape with another aim.
+     */
+    @Nullable
+    private Collision collision;
 
     /** Hears its servos on a client each tick; the client sets it, so the server never loads what it reaches for. */
     public static Consumer<LaserCannonBlockEntity> clientTicker = cannon -> { };
@@ -266,6 +279,15 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /** The laser cannons loaded in a level, on the server or a client. */
     public static List<LaserCannonBlockEntity> loaded(Level level) {
         return LOADED.in(level);
+    }
+
+    /**
+     * Whether a laser cannon loaded in a level stands near enough a box of blocks, its lowest and highest corners given
+     * in the level's or a ship's plot's blocks, for its barrels or pods to reach into it: for a ship's collisions,
+     * which otherwise look only at the blocks a player stands in (see {@code SubLevelEntityCollisionMixin}).
+     */
+    public static boolean reaches(Level level, BlockPos low, BlockPos high) {
+        return LOADED.anyNear(level, low, high, REACH_BLOCKS);
     }
 
     /**
@@ -608,6 +630,28 @@ public class LaserCannonBlockEntity extends BlockEntity {
     /** How far up its barrels are drawn at a partial tick, in degrees. */
     public float shownPitch(float partialTick) {
         return shownPitch.at(partialTick);
+    }
+
+    /**
+     * What it is to collide with: its pedestal and housing, and its barrels and rocket pods where they point now, as
+     * drawn on a client, which is what stops its own player, and as aimed on the server, which stops mobs.
+     */
+    VoxelShape collision() {
+        boolean client = level != null && level.isClientSide;
+        int yawNow = Math.round(client && drawn ? shownYaw.at(1) : yaw);
+        int pitchNow = Math.round(client && drawn ? shownPitch.at(1) : pitch);
+        boolean podsNow = client ? pods : SkylinersConfig.FREIGHTER_ROCKETS.get();
+        Collision last = collision;
+        if (last != null && last.yaw() == yawNow && last.pitch() == pitchNow && last.pods() == podsNow) {
+            return last.shape();
+        }
+        VoxelShape shape = Shapes.or(LaserCannonBlock.SHAPE, SwivelShape.of(yawNow, pitchNow, podsNow));
+        collision = new Collision(yawNow, pitchNow, podsNow, shape);
+        return shape;
+    }
+
+    /** Its shape to collide with, worked out for an aim in whole degrees and with or without its pods. */
+    private record Collision(int yaw, int pitch, boolean pods, VoxelShape shape) {
     }
 
     /** How hot it is on a client at a partial tick, as a share of the heat that overheats it: 0 cold, 1 overheated. */

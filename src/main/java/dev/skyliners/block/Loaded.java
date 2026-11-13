@@ -47,6 +47,27 @@ public final class Loaded<T extends BlockEntity> {
         }
     }
 
+    /**
+     * Whether one loaded in a level stands within so many blocks of a box of blocks, its lowest and highest corners
+     * given, without looking any of them up: for a test run too often to look them up each time, as a ship's collisions
+     * ask whether a block whose shape reaches past it is near (see {@code SubLevelEntityCollisionMixin}).
+     */
+    public boolean anyNear(Level level, BlockPos low, BlockPos high, int reach) {
+        Set<BlockPos> loaded = positions.get(level);
+        if (loaded == null) {
+            return false;
+        }
+        for (BlockPos at : loaded) {
+            boolean near = at.getX() >= low.getX() - reach && at.getX() <= high.getX() + reach
+                && at.getY() >= low.getY() - reach && at.getY() <= high.getY() + reach
+                && at.getZ() >= low.getZ() - reach && at.getZ() <= high.getZ() + reach;
+            if (near) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Every one loaded in the level. */
     public List<T> in(Level level) {
         Set<BlockPos> loaded = positions.get(level);
