@@ -772,19 +772,19 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<AirstairCallButtonBlock> AIRSTAIR_CALL_BUTTON = BLOCKS.registerBlock(
         "airstair_call_button",
         properties -> new AirstairCallButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     /** The lit push-button beside the airstairs' controller, inside the cabin and out, a stone button in all it does. */
     public static final DeferredBlock<AirstairButtonBlock> AIRSTAIR_BUTTON = BLOCKS.registerBlock(
         "airstair_button",
         properties -> new AirstairButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     /** The lit push-button inside beside every hull door, which opens the door or shuts it but powers nothing. */
     public static final DeferredBlock<DoorButtonBlock> DOOR_BUTTON = BLOCKS.registerBlock(
         "door_button",
         properties -> new DoorButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
         BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
@@ -883,7 +883,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<LiftCallButtonBlock> LIFT_CALL_BUTTON = BLOCKS.registerBlock(
         "lift_call_button",
         properties -> new LiftCallButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftCallButtonBlockEntity>> LIFT_CALL_BUTTON_ENTITY =
         BLOCK_ENTITIES.register("lift_call_button", () -> BlockEntityType.Builder.of(LiftCallButtonBlockEntity::new, LIFT_CALL_BUTTON.get()).build(null));
@@ -1280,7 +1280,7 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CREW_LOCKER_CLOSE = sound("crew_locker_close");
     /** The exterior lights: navigation lights, strobes and beacons on the wingtips, tail and fuselage. */
     public static final DeferredBlock<NavLightBlock> NAV_LIGHT = BLOCKS.registerBlock(
-        "nav_light", NavLightBlock::new, glass().lightLevel(state -> 9).noCollission()
+        "nav_light", NavLightBlock::new, glass().lightLevel(state -> 9)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NavLightBlockEntity>> NAV_LIGHT_ENTITY =
         BLOCK_ENTITIES.register("nav_light", () -> BlockEntityType.Builder.of(NavLightBlockEntity::new, NAV_LIGHT.get()).build(null));
@@ -1483,7 +1483,7 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<LightStripBlock> LIGHT_STRIP = BLOCKS.registerBlock(
         "light_strip", LightStripBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion()
             .lightLevel(state -> Brightness.light(state, 15))
     );
     public static final DeferredBlock<PendantLightBlock> PENDANT_LIGHT = BLOCKS.registerBlock(
@@ -1493,12 +1493,12 @@ public final class SkylinersRegistry {
     );
     public static final DeferredBlock<LightCableBlock> LIGHT_CABLE = BLOCKS.registerBlock(
         "light_cable", LightCableBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.2F).sound(SoundType.CHAIN).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.2F).sound(SoundType.CHAIN).noOcclusion()
     );
     /** The rocket's wall washer, throwing a fan of light up her wall, warm, blue or pink. */
     public static final DeferredBlock<WallLightBlock> WALL_LIGHT = BLOCKS.registerBlock(
         "wall_light", WallLightBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.3F).sound(SoundType.LANTERN).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.3F).sound(SoundType.LANTERN).noOcclusion()
             .lightLevel(WallLightBlock::light)
     );
     /** The rocket's halo light, hung on the cable above, warm white, a cool blue night light or pink. */
@@ -1538,12 +1538,12 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<TransparentBlock> LIFT_GLASS = BLOCKS.registerBlock("lift_glass", TransparentBlock::new, glass());
     /**
      * What each of her rooms hangs on the outside of her lift shaft's glass, or a room's small one on a floor or
-     * under a ceiling (see {@link ShaftDecorBlock}): nothing collides with it, and it is quick to take down, the fairy
-     * lights and the neon glowing.
+     * under a ceiling (see {@link ShaftDecorBlock}): solid as drawn, and quick to take down, the fairy lights and the
+     * neon glowing.
      */
     public static final DeferredBlock<ShaftDecorBlock> SHAFT_DECOR = BLOCKS.registerBlock(
         "shaft_decor", ShaftDecorBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.3F).sound(SoundType.WOOL).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.3F).sound(SoundType.WOOL).noOcclusion()
             .lightLevel(ShaftDecorBlock::glow).pushReaction(PushReaction.DESTROY).isValidSpawn(SkylinersRegistry::never)
     );
     /**
@@ -1600,7 +1600,7 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<RampButtonBlock> RAMP_BUTTON = BLOCKS.registerBlock(
         "ramp_button", properties -> new RampButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> RAMP_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(RAMP_BUTTON);
     /**
@@ -1801,7 +1801,7 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<BowlingPinBlock> BOWLING_PIN = BLOCKS.registerBlock(
         "bowling_pin", BowlingPinBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.BAMBOO_WOOD).noOcclusion().noCollission()
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.BAMBOO_WOOD).noOcclusion()
             .pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredBlock<BowlingLaneBlock> BOWLING_LANE = BLOCKS.registerBlock(
@@ -1954,11 +1954,11 @@ public final class SkylinersRegistry {
     /**
      * What hangs under the rocket's ceiling girders, themed to each room: banners, a chain hoist, pots and pans, fairy
      * lights, hanging baskets, bunting, spotlights or a cable tray. Put up by hand it can also be fixed to a wall or
-     * stand on the floor; nothing collides with it.
+     * stand on the floor; it is solid as drawn.
      */
     public static final DeferredBlock<GirderDecorBlock> GIRDER_DECOR = BLOCKS.registerBlock(
         "girder_decor", GirderDecorBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.CHAIN).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.CHAIN).noOcclusion()
             .lightLevel(GirderDecorBlock::light).isValidSpawn(SkylinersRegistry::never)
     );
     public static final DeferredItem<BlockItem> GIRDER_DECOR_ITEM = ITEMS.registerSimpleBlockItem(GIRDER_DECOR);
@@ -2016,7 +2016,7 @@ public final class SkylinersRegistry {
      */
     public static final DeferredBlock<ExitSignBlock> EXIT_SIGN = BLOCKS.registerBlock(
         "exit_sign", ExitSignBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F).sound(SoundType.METAL).noOcclusion()
             .isValidSpawn(SkylinersRegistry::never).lightLevel(state -> 4)
     );
     public static final DeferredItem<BlockItem> EXIT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(EXIT_SIGN);
@@ -2032,7 +2032,7 @@ public final class SkylinersRegistry {
     /**
      * The WC signs, lit green while a WC is free and red while it is taken: the one over a WC's door, a block of the
      * bulkhead as tough as the partition, and the slim lightboxes high up in the cabin that point the way to the WCs,
-     * which nothing bumps into. Their faces glow but light nothing, and nothing spawns on either.
+     * solid as drawn. Their faces glow but light nothing, and nothing spawns on either.
      */
     public static final DeferredBlock<WcSignBlock> WC_SIGN = BLOCKS.registerBlock(
         "wc_sign", WcSignBlock::new,
@@ -2043,7 +2043,7 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> WC_SIGN_ITEM = ITEMS.registerSimpleBlockItem(WC_SIGN);
     public static final DeferredBlock<OverheadWcSignBlock> OVERHEAD_WC_SIGN = BLOCKS.registerBlock(
         "overhead_wc_sign", OverheadWcSignBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion()
             .isValidSpawn(SkylinersRegistry::never)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OverheadWcSignBlockEntity>> OVERHEAD_WC_SIGN_ENTITY =
@@ -2092,8 +2092,8 @@ public final class SkylinersRegistry {
     /**
      * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
      * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
-     * away. It melts, so it gives nothing back, and its item is only for copying one; nothing bumps into it, so it
-     * never stands in the way of a wheel.
+     * away. It melts, so it gives nothing back, and its item is only for copying one; it is solid to whoever walks
+     * into it, never to a ship's wheels (see {@link LavIceBlock}).
      */
     public static final DeferredBlock<VacuumToiletBlock> VACUUM_TOILET = BLOCKS.registerBlock(
         "vacuum_toilet", VacuumToiletBlock::new, metal(MapColor.SNOW).noOcclusion()
@@ -2113,14 +2113,14 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> BLUE_ICE_BONK = sound("blue_ice_bonk");
     public static final DeferredBlock<LavIceBlock> LAV_ICE = BLOCKS.registerBlock(
         "lav_ice", LavIceBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.2F).sound(SoundType.GLASS).noCollission().noOcclusion().noLootTable()
+        BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.2F).sound(SoundType.GLASS).noOcclusion().noLootTable()
             .pushReaction(PushReaction.DESTROY)
     );
 
     /** A signal flare to mark a drop zone with a column of coloured smoke. */
     public static final DeferredBlock<SignalFlareBlock> SIGNAL_FLARE = BLOCKS.registerBlock(
         "signal_flare", SignalFlareBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).noCollission().instabreak().sound(SoundType.WOOD).lightLevel(state -> 12)
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instabreak().sound(SoundType.WOOD).lightLevel(state -> 12)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SignalFlareBlockEntity>> SIGNAL_FLARE_ENTITY =
         BLOCK_ENTITIES.register("signal_flare", () -> BlockEntityType.Builder.of(SignalFlareBlockEntity::new, SIGNAL_FLARE.get()).build(null));
@@ -2229,7 +2229,7 @@ public final class SkylinersRegistry {
     );
     public static final DeferredBlock<LightStripBlock> FAIRY_LIGHTS = BLOCKS.registerBlock(
         "fairy_lights", LightStripBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion()
             .lightLevel(state -> Brightness.light(state, FAIRY_GLOW))
     );
     public static final DeferredItem<DoubleHighBlockItem> SECRET_BOOKSHELF_ITEM = ITEMS.register(
@@ -2245,7 +2245,7 @@ public final class SkylinersRegistry {
         "secret_panel", SecretPanelBlock::new, metal(MapColor.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredBlock<LooseRivetBlock> LOOSE_RIVET = BLOCKS.registerBlock(
-        "loose_rivet", LooseRivetBlock::new, metal(MapColor.GOLD).strength(0.5F).noCollission().pushReaction(PushReaction.DESTROY)
+        "loose_rivet", LooseRivetBlock::new, metal(MapColor.GOLD).strength(0.5F).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<DoubleHighBlockItem> SECRET_PANEL_ITEM = ITEMS.register(
         "secret_panel", () -> new DoubleHighBlockItem(SECRET_PANEL.get(), new Item.Properties())
@@ -2286,12 +2286,12 @@ public final class SkylinersRegistry {
     /** The light a disco ball gives while it is on, in light levels: the den stays lit wherever its spots are not drawn. */
     private static final int DISCO_GLOW = 10;
     /**
-     * The den's disco ball: mirror glass, hung overhead, on a wall or on a stand on the floor with nothing to bump
-     * into, quick to take down; it lights the room round it while on.
+     * The den's disco ball: mirror glass, hung overhead, on a wall or on a stand on the floor, quick to take down; it
+     * lights the room round it while on.
      */
     public static final DeferredBlock<DiscoBallBlock> DISCO_BALL = BLOCKS.registerBlock(
         "disco_ball", DiscoBallBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5F).sound(SoundType.GLASS).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5F).sound(SoundType.GLASS).noOcclusion()
             .pushReaction(PushReaction.DESTROY).isValidSpawn(SkylinersRegistry::never)
             .lightLevel(state -> state.getValue(DiscoBallBlock.LIT) ? DISCO_GLOW : 0)
     );
@@ -2425,7 +2425,7 @@ public final class SkylinersRegistry {
     /** Gymnastic rings, hung on chains from the gym hall's roof truss, or put up on their frame or a wall bracket. */
     public static final DeferredBlock<GymRingsBlock> GYM_RINGS = BLOCKS.registerBlock(
         "gym_rings", GymRingsBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOD).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOD).noOcclusion()
     );
     public static final DeferredItem<BlockItem> GYM_RINGS_ITEM = ITEMS.registerSimpleBlockItem(GYM_RINGS);
     /** The button by each hoop that starts hide and seek's countdown on the scoreboards; it glows while pressed. */
@@ -2521,13 +2521,13 @@ public final class SkylinersRegistry {
     public static final DeferredItem<BlockItem> MODEL_FREIGHTER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_FREIGHTER);
 
     /**
-     * The space posters on the rocket's lift shaft (see {@link SpacePosterBlock}), each a few blocks of thin board that
-     * nothing collides with, quick to tear down; and each of them rolled up, to put up by hand (see
+     * The space posters on the rocket's lift shaft (see {@link SpacePosterBlock}), each a few blocks of thin board,
+     * quick to tear down; and each of them rolled up, to put up by hand (see
      * {@link SpacePosterItem}).
      */
     public static final DeferredBlock<SpacePosterBlock> SPACE_POSTER = BLOCKS.registerBlock(
         "space_poster", SpacePosterBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SpacePosterBlock.PAPER).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SpacePosterBlock.PAPER).noOcclusion()
             .pushReaction(PushReaction.DESTROY).isValidSpawn(SkylinersRegistry::never)
     );
     public static final DeferredItem<SpacePosterItem> BLACK_HOLE_POSTER = ITEMS.register(
@@ -2776,7 +2776,7 @@ public final class SkylinersRegistry {
     );
     public static final DeferredBlock<LedStripBlock> LED_STRIP = BLOCKS.registerBlock(
         "led_strip", LedStripBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion()
             .lightLevel(LedStripBlock::light)
     );
     public static final DeferredBlock<LedPanelBlock> LED_PANEL = BLOCKS.registerBlock(
@@ -2826,7 +2826,7 @@ public final class SkylinersRegistry {
      * block entity.
      */
     public static final DeferredBlock<OrreryBlock> ORRERY = BLOCKS.registerBlock(
-        "orrery", OrreryBlock::new, metal(MapColor.GOLD).noCollission().noOcclusion().pushReaction(PushReaction.DESTROY)
+        "orrery", OrreryBlock::new, metal(MapColor.GOLD).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OrreryBlockEntity>> ORRERY_ENTITY =
         BLOCK_ENTITIES.register("orrery", () -> BlockEntityType.Builder.of(OrreryBlockEntity::new, ORRERY.get()).build(null));
@@ -2895,7 +2895,7 @@ public final class SkylinersRegistry {
     );
     public static final DeferredItem<BlockItem> GARDEN_BED_ITEM = ITEMS.registerSimpleBlockItem(GARDEN_BED);
     public static final DeferredBlock<GrowLightBlock> GROW_LIGHT = BLOCKS.registerBlock(
-        "grow_light", GrowLightBlock::new, metal(MapColor.COLOR_MAGENTA).noOcclusion().noCollission().lightLevel(state -> 15)
+        "grow_light", GrowLightBlock::new, metal(MapColor.COLOR_MAGENTA).noOcclusion().lightLevel(state -> 15)
     );
     public static final DeferredItem<BlockItem> GROW_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(GROW_LIGHT);
     public static final DeferredBlock<SprinklerBlock> SPRINKLER = BLOCKS.registerBlock(
@@ -2926,7 +2926,7 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> FLAG_HALYARD_SOUND = sound("flag_halyard");
     /** A ship's plaque, engraved with a zeppelin's name and crest when she is christened. */
     public static final DeferredBlock<ShipsPlaqueBlock> SHIPS_PLAQUE = BLOCKS.registerBlock(
-        "ships_plaque", ShipsPlaqueBlock::new, metal(MapColor.GOLD).noOcclusion().noCollission()
+        "ships_plaque", ShipsPlaqueBlock::new, metal(MapColor.GOLD).noOcclusion()
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShipsPlaqueBlockEntity>> SHIPS_PLAQUE_ENTITY =
         BLOCK_ENTITIES.register("ships_plaque", () -> BlockEntityType.Builder.of(ShipsPlaqueBlockEntity::new, SHIPS_PLAQUE.get()).build(null));
@@ -2983,7 +2983,7 @@ public final class SkylinersRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> TAP_POUR = sound("tap_pour");
     public static final DeferredBlock<NeonSignBlock> NEON_SIGN = BLOCKS.registerBlock(
         "neon_sign", NeonSignBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(0.5F).sound(SoundType.GLASS).noCollission().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(0.5F).sound(SoundType.GLASS).noOcclusion()
             .lightLevel(NeonSignBlock::glow).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> NEON_ON = sound("neon_on");
@@ -3031,7 +3031,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<BoostButtonBlock> BOOST_BUTTON = BLOCKS.registerBlock(
         "boost_button",
         properties -> new BoostButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoostButtonBlockEntity>> BOOST_BUTTON_ENTITY =
         BLOCK_ENTITIES.register("boost_button", () -> BlockEntityType.Builder.of(BoostButtonBlockEntity::new, BOOST_BUTTON.get()).build(null));
@@ -3074,7 +3074,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<BoardingStairsButtonBlock> BOARDING_STAIRS_BUTTON = BLOCKS.registerBlock(
         "boarding_stairs_button",
         properties -> new BoardingStairsButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoardingStairsBlockEntity>> BOARDING_STAIRS_ENTITY =
         BLOCK_ENTITIES.register("boarding_stairs_button", () -> BlockEntityType.Builder.of(BoardingStairsBlockEntity::new, BOARDING_STAIRS_BUTTON.get()).build(null));
@@ -3082,7 +3082,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<RocketStairsButtonBlock> ROCKET_STAIRS_BUTTON = BLOCKS.registerBlock(
         "rocket_stairs_button",
         properties -> new RocketStairsButtonBlock(AIRLINER, properties),
-        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+        BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RocketStairsBlockEntity>> ROCKET_STAIRS_ENTITY =
         BLOCK_ENTITIES.register("rocket_stairs_button", () -> BlockEntityType.Builder.of(RocketStairsBlockEntity::new, ROCKET_STAIRS_BUTTON.get()).build(null));

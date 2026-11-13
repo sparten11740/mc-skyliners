@@ -39,7 +39,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * ROW, which it keeps so that broken it gives back the piece it was: the departures board on a stand or hung on rods,
  * the menu as a sandwich board or hung on chains, strands of fairy lights hung from wires, ivy in a pot or trailing
  * from the ceiling, the life ring on a post, neon tubes standing or hung on wires, and a mobile whiteboard (see
- * {@link #STANDING} and {@link #HUNG}). Nothing collides with any of it, so the walkway round the shaft stays walkable.
+ * {@link #STANDING} and {@link #HUNG}). It is solid as drawn: a wall's piece is thin against its wall, so the walkway
+ * round the shaft stays walkable.
  * FACING is the way it faces: out from the wall, or toward whoever put it up. The bunk room's fairy lights and the
  * club's neon glow, and the entry's departures board is lit; the rest give no light. Broken, a piece gives itself
  * back as it was.

@@ -21,8 +21,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A gym's climbing rope: a thick braided rope hanging from a ceiling, climbed as a ladder is (it is in the climbable
  * tag): jump up into it and keep climbing. Pieces hung one under another make one rope (UP and DOWN say which ways it
- * runs on); at the top it hangs from a steel eye plate, and at its foot it ends in a knot. Nothing bumps into it, so
- * it can be climbed from any side, and a ball flies through it. Whatever it hangs from taken away, it comes down.
+ * runs on); at the top it hangs from a steel eye plate, and at its foot it ends in a knot. It is climbed from inside
+ * its block, so nothing bumps into it: up the zeppelin's shafts (see {@code ZeppelinRopes}) its cage of girders leaves
+ * no room beside it, and solid it could not be climbed at all. Whatever it hangs from taken away, it comes down.
  */
 public class ClimbingRopeBlock extends Block implements Joining {
     private static final MapCodec<ClimbingRopeBlock> CODEC = simpleCodec(ClimbingRopeBlock::new);

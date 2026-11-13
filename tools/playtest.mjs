@@ -390,6 +390,12 @@ const DROP_FROM = 3;
 const CANNON_HOUSING_TOP = [1.375, 1.375];
 const DISH_BOWL_TOP = [1.75, 2.25];
 const STANDS_WITHIN = 0.05;
+// The mod's blocks with a state to aim at that is walked through, each for what it does: a curtain parts round whoever
+// walks through it, a ball pit is waded into, a climbing rope is climbed from inside its block, up the zeppelin's
+// shafts with no room beside it, and an airliner's open plug door and cockpit door leave their doorway clear, a sliver
+// across it only to aim at and shut them. The flight deck's screens are still walked through where they
+// only graze a block, an open fault (see docs/backlog.md), not a choice. Every other block is solid as drawn.
+const WALK_THROUGH = ["cabin_curtain", "ball_pit", "climbing_rope", "plug_door", "cockpit_door", "cockpit_display"];
 // Walking at a Spookie's hammock set down by hand from beyond either end of it: how far out from the middle of the
 // post's block to start, in blocks, and how far out from it the post stops the player at least, in blocks: its post
 // stands up the far side of its block, and with nothing there the player walked on to the sling, short of its middle.
@@ -1003,9 +1009,14 @@ const CLUB_COUNTERS = 5;
 const BAND_AWAY = 40;
 const BAND_TICKS = 60;
 // A freighter's deck robots: how many she is built with, how far in front of one the player walks up to, and how far
-// off they start, in blocks; and how long its hello and its trill are given to be heard, in ticks.
+// off they start, in blocks; and how long its hello and its trill are given to be heard, in ticks. A block in front of
+// one is its room's floor; two in front was the wall it faces, and set down half in it the player was pushed out only
+// while the LED strip along its foot could be walked through.
+// How far in front of her floor window's panel the player stands to press it, in blocks: on the floor before it, short
+// of the wall behind, which half a block further set them down half in it.
+const PANEL_FROM = 1;
 const FREIGHTER_ROBOTS = 2;
-const ROBOT_FRONT = 2;
+const ROBOT_FRONT = 1;
 const ROBOT_AWAY = 30;
 const ROBOT_HEARD_TICKS = 80;
 // A freighter's outside: how many of each piece of it she is built with at least, by block id, her fittings, her
@@ -3800,6 +3811,17 @@ function checkFreighterOutsideSolid() {
     `${along} blocks from its middle`);
 }
 
+// Nothing of the mod's is walked through but what must be for what it does (see WALK_THROUGH): every state of every
+// block with a shape to aim at has one to bump into. With the fault some thirty blocks drawn with a body, from buttons
+// and lamps to the disco ball and the bowling pins, were walked through.
+function checkNothingWalkThrough() {
+  const { blocks } = must("skyliners:walkthrough");
+  const through = blocks ? blocks.split(",") : [];
+  const unexpected = through.filter((id) => !WALK_THROUGH.includes(id));
+  expect(unexpected.length === 0, "every block of the mod is solid as drawn, but those walked through for what they do",
+    unexpected.length ? `walked through: ${unexpected.join(", ")}` : `only ${through.join(", ") || "none"}`);
+}
+
 // A Spookie's hammock is as solid as it is drawn: its posts are blocks of their own, standing either side of its sling
 // as the freighter builds it and as it is set down by hand, and walked at from beyond either end, each post stops the
 // player; broken by a post in survival, it all comes down and gives back one hammock. With the fault its posts were
@@ -5718,7 +5740,7 @@ function checkFreighterBeach() {
     `${data("Floor.Name")}; shaft ${shaft}`);
   const [dx, dz] = STEPS[must(`block ${panel.at_abs.join(",")}`).props?.facing ?? "north"];
   const [px, py, pz] = panel.at_abs;
-  must(`server tp @p ${px + 0.5 + dx * 1.5} ${py} ${pz + 0.5 + dz * 1.5}; wait 10t; use ${panel.at_abs.join(",")}; wait ${IRIS_TICKS}t`);
+  must(`server tp @p ${px + 0.5 + dx * PANEL_FROM} ${py} ${pz + 0.5 + dz * PANEL_FROM}; wait 10t; use ${panel.at_abs.join(",")}; wait ${IRIS_TICKS}t`);
   expect(must(`block ${middle.join(",")}`).props?.open === "true", "freighter: pressed, her window's panel opens it");
   const below = [...Array(shaft + BELLY_BELOW).keys()].map((down) => must(`block ${middle[0]},${middle[1] - 1 - down},${middle[2]}`).id);
   expect(below.includes("skyliners:smoked_glass"), "freighter: down its shaft, her belly is glass", below.join(", "));
@@ -6946,6 +6968,7 @@ const CHECKS = {
   "freighter-console": { run: checkFreighterConsole, about: "a freighter's console curves round her seats, its boost says no on the ground and its toggles click" },
   "freighter-solid": { run: checkFreighterSolid, about: "a freighter's jump drive rings, band and sun loungers stop whoever walks into them" },
   "freighter-console-solid": { run: checkFreighterConsoleSolid, about: "a freighter's console desk stops whoever walks at it where it is drawn, not its whole block" },
+  "nothing-walk-through": { run: checkNothingWalkThrough, about: "every block of the mod is solid as drawn, but a curtain, a ball pit, a climbing rope and an open door's doorway, walked through for what they do" },
   "hammock-posts": { run: checkHammockPosts, about: "a Spookie's hammock stands on two solid posts, built and set down by hand, and broken comes down whole as one hammock" },
   "dish-bowl": { run: checkDishBowl, about: "a big satellite dish's bowl stops whoever walks under it, out past its block, however it is turned" },
   "freighter-outside-solid": { run: checkFreighterOutsideSolid, about: "a freighter's cannon housing and big dish are stood on, and her parcel scanner's gantry stops whoever walks into it" },

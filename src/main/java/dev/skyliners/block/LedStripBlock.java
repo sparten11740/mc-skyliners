@@ -97,10 +97,11 @@ public class LedStripBlock extends Block {
         return strip.setValue(BRIGHTNESS, brightnessBeside(context, ceiling));
     }
 
-    /** Whether something solid stands beside where a strip is put, the given way; another strip has no collision. */
-    private static boolean solidBeside(BlockPlaceContext context, Direction side) {
+    /** Whether something solid stands beside where a strip is put, the given way: another strip is not a wall. */
+    private boolean solidBeside(BlockPlaceContext context, Direction side) {
         BlockPos at = context.getClickedPos().relative(side);
-        return !context.getLevel().getBlockState(at).getCollisionShape(context.getLevel(), at).isEmpty();
+        BlockState beside = context.getLevel().getBlockState(at);
+        return !beside.is(this) && !beside.getCollisionShape(context.getLevel(), at).isEmpty();
     }
 
     /** How bright a strip beside where one is put is, on the floor or under the ceiling as it will be; else full. */

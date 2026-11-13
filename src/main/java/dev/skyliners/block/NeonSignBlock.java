@@ -36,7 +36,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * olive on a pick, a pair of music notes, a ringed planet, a rocket, a pair of lips or a lightning bolt. Click it to
  * switch it off and on (LIT), with the clink of its transformer and the buzz of its tubes striking or dying away; off,
  * its tubes are dark glass and it gives no light. Sneak and click it with an empty hand and it strikes up the next
- * picture. Nothing collides with it, so it is walked past as a picture is. FACING is the way it faces, out from the
+ * picture. It is solid as drawn, its tubes thin against the wall behind it. FACING is the way it faces, out from the
  * wall behind it.
  */
 public class NeonSignBlock extends HorizontalDirectionalBlock {

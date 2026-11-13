@@ -52,13 +52,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 /**
@@ -240,6 +245,12 @@ public final class BlockpilotCommands {
             .group("skyliners")
             .help("whether a solar flare's blackout has this client's ship's screens dark")
             .field("dark", "whether they are dark with it"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("walkthrough", (context, args) -> walkthrough())
+            .onServer()
+            .group("skyliners")
+            .help("the mod's blocks with a state the player can aim at but walks through: none should be but what must")
+            .field("count", "how many there are")
+            .field("blocks", "their names, comma-separated"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("planetarium", (context, args) -> planetarium())
             .needsWorld()
             .group("skyliners")
@@ -290,6 +301,37 @@ public final class BlockpilotCommands {
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("skyliners:build zeppelin"));
+    }
+
+    /**
+     * The mod's blocks with a state that has a shape to aim at and none to bump into, asked for the player as they
+     * would bump into it: a block drawn with a body is solid as drawn, so only what must be walked through for what it
+     * does is listed.
+     */
+    private static Result walkthrough() throws CommandException {
+        CollisionContext walker = CollisionContext.of(player());
+        List<String> through = new ArrayList<>();
+        for (Block block : BuiltInRegistries.BLOCK) {
+            ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+            boolean ours = id.getNamespace().equals(Skyliners.MOD_ID);
+            if (ours && block.getStateDefinition().getPossibleStates().stream().anyMatch(state -> hollow(state, walker))) {
+                through.add(id.getPath());
+            }
+        }
+        return Result.ok(new Fields().tag("count", through.size()).tag("blocks", String.join(",", through)));
+    }
+
+    /**
+     * Whether a state has a shape to aim at but none to bump into, for whoever asks; one whose shapes cannot be asked
+     * for away from a level counts as such, so the block is named rather than the whole query failing.
+     */
+    private static boolean hollow(BlockState state, CollisionContext walker) {
+        try {
+            return !state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, walker).isEmpty()
+                && state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, walker).isEmpty();
+        } catch (RuntimeException failed) {
+            return true;
+        }
     }
 
     /** Whether the orrery this client drew nearest its player draws its sky, as the planetarium query reads it. */

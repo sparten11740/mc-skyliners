@@ -15,6 +15,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   the control jets but did not free it. At 50 blocks a second it held its height.
 - **A removed ship comes back.** `/sable remove` only drops the loaded copy; Sable's stored copy stays in
   `sable storage find_all_sub_levels` and flies again once its area loads.
+- **The airliner's screens are walked through where they only graze a block.** The flight deck's slanted row of
+  screens (`ScreenArc`) is drawn across its blocks, each screen known to one of them; a block it covers a quarter of
+  or more is solid whole, and one it only grazes is not solid at all, so a corner of a screen there is walked through.
+  It wants the screens' own slanted shape in each block they pass through.
 - **Ships far from the world's middle move in steps.** Sable's physics rounds a ship's position so coarsely out there
   that slow speeds vanish while its speed still reads as moving: at x 111,600, told two blocks a second, the freighter
   went 0.3 blocks in ten seconds, and told three it went at nearly six. The freighter's landing copes by nudging herself

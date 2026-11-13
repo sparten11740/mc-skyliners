@@ -37,7 +37,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * warm fairy lights, the greenhouse's hanging baskets, the pool's bunting, the club's stage spotlights and the lab's
  * cable tray. Under a ceiling it hangs in the block under the girder, clipped to the girder's lower flange, over the
  * head of anyone walking under it; put up by hand it takes its shape from where it goes (see {@link #MOUNT}), so it can
- * also be fixed to a wall or stand on the floor, each shape drawing in what holds it there. Nothing collides with it.
+ * also be fixed to a wall or stand on the floor, each shape drawing in what holds it there. It is solid as drawn.
  * AXIS is the way it runs: along the girder, along its wall or across the floor; FACING, on a wall or the floor, the
  * way it faces; PART, which of a pair of blocks along the way it runs it is (see {@link Part}). Placed by the rocket's
  * blueprint, or by hand; broken, it gives itself back as it was, whatever it was put up against.

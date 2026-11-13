@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -48,6 +50,16 @@ public class LavIceBlock extends Block {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    /**
+     * Solid to whoever walks into it, but not to what asks for its shape on no one's behalf, as Sable does for a ship's
+     * wheels rolling over the ground: a lump melting on a runway never jolts a landing airliner.
+     */
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        boolean someone = context instanceof EntityCollisionContext entity && entity.getEntity() != null;
+        return someone ? SHAPE : Shapes.empty();
     }
 
     @Override

@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -49,8 +50,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * rows by turns on the blocks' middles and between them; using a standing pin nudges it across, so a rack set down by
  * hand can be lined up. POSE is whether it stands, wobbles on its way over or lies fallen, and ON_LANE whether it
  * stands on a square of a lane's boards, set down where they were, as a lane's rack does. It is set down only on a
- * floor, as a pin is: fixed to a wall or under a ceiling it would make no sense. Nothing stops against it, so whoever
- * walks down the lane to the end of the tunnel walks through the rack, the ball alone knocking it over.
+ * floor, as a pin is: fixed to a wall or under a ceiling it would make no sense. It is solid as drawn to everyone, so
+ * whoever walks down the lane bumps into the rack; only the ball rolls on into it, knocking it over.
  */
 public class BowlingPinBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<BowlingPinBlock> CODEC = simpleCodec(BowlingPinBlock::new);
@@ -179,9 +180,11 @@ public class BowlingPinBlock extends HorizontalDirectionalBlock {
         return List.copyOf(shapes);
     }
 
+    /** Solid as drawn, but to the ball, which rolls on into a pin to knock it over (see {@link BowlingBall}). */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.empty();
+        boolean ball = context instanceof EntityCollisionContext rolling && rolling.getEntity() instanceof BowlingBall;
+        return ball ? Shapes.empty() : shape(state);
     }
 
     /**

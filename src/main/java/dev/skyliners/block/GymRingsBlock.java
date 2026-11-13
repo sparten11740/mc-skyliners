@@ -27,9 +27,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Gymnastic rings: a pair of wooden rings on straps. Where they are put up (MOUNT) they hang under a ceiling, as the
  * gym hall's hang on chains from its roof truss; from the crossbar of a free-standing steel frame on the floor, two
- * uprights on long feet; or from a steel bracket's bar held out from a wall on two arms, facing out from it. Nothing
- * bumps into them, nor into their frame or bracket; using them is grabbing them, and swings you up off the floor with a
- * creak of the straps. FACING is the way the pair faces, the rings side by side across it.
+ * uprights on long feet; or from a steel bracket's bar held out from a wall on two arms, facing out from it. They are
+ * solid as drawn, frame and bracket too; using them is grabbing them, and swings you up off the floor with a creak of
+ * the straps. FACING is the way the pair faces, the rings side by side across it.
  */
 public class GymRingsBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<GymRingsBlock> CODEC = simpleCodec(GymRingsBlock::new);

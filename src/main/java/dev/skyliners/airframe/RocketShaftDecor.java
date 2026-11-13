@@ -24,11 +24,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * and in the lab a whiteboard of a molecule and a graph.
  *
  * <p>Each piece goes in the ring of cells against the shaft's glass and its corner girders, the walkway round it, which
- * stays walkable as nothing collides with them: only in open cells, never where a poster, the lift's door or its call
- * button, or anything else stands, and on the shaft's front only before its corner girders, as the doorway, the lift's
- * call button and the LED panel beside it have the middle three. A piece of several blocks is laid whole or not at all.
- * Every block touches the shaft face to face, so it is assembled with her. Laid after the posters, which have the first
- * pick of the shaft's faces, and before the LED strips, whose panel by each lift door is kept clear.
+ * stays walkable as each piece is thin against the glass: only in open cells, never where a poster, the lift's door or
+ * its call button, or anything else stands, and on the shaft's front only before its corner girders, as the doorway,
+ * the lift's call button and the LED panel beside it have the middle three. A piece of several blocks is laid whole or
+ * not at all. Every block touches the shaft face to face, so it is assembled with her. Laid after the posters, which
+ * have the first pick of the shaft's faces, and before the LED strips, whose panel by each lift door is kept clear.
  */
 final class RocketShaftDecor implements RocketPiece {
     /** How far out from her axis the cells against the shaft's walls are, in blocks: the walkway's ring round it. */

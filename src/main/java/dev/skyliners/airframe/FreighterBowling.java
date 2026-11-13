@@ -18,7 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * pins at the far end (see {@link BowlingPinBlock}) standing on the boards in a triangle, its point toward the bowler,
  * and a ball return in the inner corner of the head of the lane, facing across it, beside where the bowler stands to
  * take a ball from it (see {@link BallReturnBlock}). The tunnel's outer half is left open, so its portholes and the
- * secret panel at its end are walked to as before, and the pins, which stop nobody, are walked through.
+ * secret panel at its end are walked to as before, past the pins, which stand on the lane and stop whoever walks into
+ * them.
  *
  * <p>Found from her starboard nose jet's relay, as the hold is, and from where her tunnel is open, so it follows her
  * shape. Laid out nose north, the bowler looking north up her prong, after her LED strips along the foot of the

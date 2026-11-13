@@ -43,8 +43,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * cannot be drawn.
  *
  * <p>Used, with or without anything in hand, it switches off, or on, with a chime falling or rising: a child who
- * cannot read sees it slow to a stop and go dark, or spin up and light the room. Nothing bumps into it, however it is
- * put up: hung overhead it is out of the way of a child leaping out of the ball pit under it.
+ * cannot read sees it slow to a stop and go dark, or spin up and light the room. It is solid as drawn, however it is
+ * put up.
  */
 public class DiscoBallBlock extends Block implements EntityBlock {
     private static final MapCodec<DiscoBallBlock> CODEC = simpleCodec(DiscoBallBlock::new);

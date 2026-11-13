@@ -30,7 +30,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A space poster, a few blocks wide and tall, each block a piece of it: its column from the left and its row from the
  * top as seen from in front, and which picture it is (see {@link SpacePoster}). It is a sheet of board a pixel thick
  * against the back of its block, the side away from the way it faces, so it hangs flat on whatever stands behind it,
- * and nothing collides with it, so it is walked past as a picture is. The rocket hangs them on her glass lift shaft
+ * solid as drawn, as thin as a picture. The rocket hangs them on her glass lift shaft
  * (see {@code RocketPosters}): blocks, not paintings, as a painting is an entity, which would be left behind when she
  * is assembled; and a poster rolled up is put up by hand (see {@code SpacePosterItem}). Taking any piece away takes
  * the whole poster down, with a painting's tearing sound, and it is given back rolled up from its top left piece. The
