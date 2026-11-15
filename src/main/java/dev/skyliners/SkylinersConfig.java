@@ -27,7 +27,6 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue ENGINE_SPOOL_SECONDS;
-    public static final ModConfigSpec.DoubleValue FULL_LEVER_THRUST;
     public static final ModConfigSpec.BooleanValue LANDING_ASSIST;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
     public static final ModConfigSpec.BooleanValue CONTROL_SURFACES;
@@ -266,14 +265,6 @@ public final class SkylinersConfig {
                 "0 sets the thrust at once."
             )
             .defineInRange("engineSpoolSeconds", 8.0, 0.0, 30.0);
-        FULL_LEVER_THRUST = builder
-            .comment(
-                "How much of the airliner's full engine thrust her thrust levers give at full, as a share of it, flying by hand:",
-                "enough to outrun her cruising speed, little enough that she rolls a while down the runway before she lifts off.",
-                "Every notch of the levers is cut alike. The autopilot sets the thrust it needs itself. 1 gives the engines' whole",
-                "thrust at full lever, as before."
-            )
-            .defineInRange("fullLeverThrust", 0.33, 0.05, 1.0);
         LANDING_ASSIST = builder
             .comment(
                 "Whether the airliner, flown by hand with her thrust levers at idle, is brought down to land once she is low over",

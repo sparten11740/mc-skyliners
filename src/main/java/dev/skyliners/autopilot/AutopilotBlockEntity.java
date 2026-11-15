@@ -1995,15 +1995,15 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Flown by hand at so many blocks a second, her engines wind up or drop to what her thrust levers ask, as a share
-     * of their full thrust at full lever (the server config's {@code autopilot.fullLeverThrust}), but never to more
-     * than holds her at {@link #MAX_SAFE_SPEED}: the levers leave her engines' relays to the autopilot while she is
-     * assembled (see {@link #spools}), so that they wind up rather than leap. Cut off whenever she passed that speed
+     * Flown by hand at so many blocks a second, her engines wind up or drop to what her thrust levers ask, but never to
+     * more than holds her at {@link #MAX_SAFE_SPEED}: the levers leave her engines' relays to the autopilot while she
+     * is assembled (see {@link #spools}), so that they wind up rather than leap. Cut off whenever she passed that speed
      * and handed back once she had slowed, her engines wound up again from idle each time, and she swung up and down as
-     * she sped up and slowed.
+     * she sped up and slowed. Full lever gives their whole thrust, as the autopilot takes off with: a third of it held
+     * her to eleven blocks a second on her wheels, and she never left the ground.
      */
     private void followLevers(ServerLevel level, double speed) {
-        double asked = Math.max(0, leverSignal(level)) * SkylinersConfig.FULL_LEVER_THRUST.get();
+        double asked = Math.max(0, leverSignal(level));
         double thrust = Math.min(asked, holdSpeed(speed, MAX_SAFE_SPEED));
         for (Channel engine : ENGINES) {
             driveEngine(level, engine, thrust);
