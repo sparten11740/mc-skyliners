@@ -1,4 +1,4 @@
-# <img src="docs/icon.png" alt="" width="48" height="48"> Create: Skyliners
+# <img src="docs/icon.png" alt="" width="48" height="48" align="absmiddle"> Create: Skyliners
 
 | The freighter | The airliner |
 | :---: | :---: |
