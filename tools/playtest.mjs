@@ -394,7 +394,7 @@ const STANDS_WITHIN = 0.05;
 // walks through it, a ball pit is waded into, a climbing rope is climbed from inside its block, up the zeppelin's
 // shafts with no room beside it, and an airliner's open plug door and cockpit door leave their doorway clear, a sliver
 // across it only to aim at and shut them. The flight deck's screens are still walked through where they
-// only graze a block, an open fault (see docs/backlog.md), not a choice. Every other block is solid as drawn.
+// only graze a block, an open fault, not a choice. Every other block is solid as drawn.
 const WALK_THROUGH = ["cabin_curtain", "ball_pit", "climbing_rope", "plug_door", "cockpit_door", "cockpit_display"];
 // Walking at a Spookie's hammock set down by hand from beyond either end of it: how far out from the middle of the
 // post's block to start, in blocks, and how far out from it the post stops the player at least, in blocks: its post
