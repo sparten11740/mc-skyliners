@@ -6,6 +6,7 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+logoFile="assets/${mod_id}/icon.png"
 description='''
 Giant aircraft laid down whole by a single blueprint: an A380-style airliner, a Hindenburg-sized zeppelin and a retro
 rocket, big enough to walk around in, furnished inside, and flown by their own autopilots with you aboard.
