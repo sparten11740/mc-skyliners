@@ -4082,7 +4082,7 @@ if (speaker) {
   }
 }
 
-// The freighter's sounds (see docs/plans/2026-11-06-freighter.md), each from a random sequence of its own so no sound
+// The freighter's sounds, each from a random sequence of its own so no sound
 // above changes. All of them are synthesised here from scratch: nothing is recorded or resampled, and none imitates a
 // film's sounds, its music or its creatures' voices.
 

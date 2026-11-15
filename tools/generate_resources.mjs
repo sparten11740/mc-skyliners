@@ -2709,7 +2709,7 @@ function rocketSoundsLang() {
   return Object.fromEntries(Object.entries({ ...ROCKET_SUBTITLES, ...LAUNCH_SUBTITLES }).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
 }
 
-// The freighter's sounds (see tools/generate_sounds.mjs and docs/plans/2026-11-06-freighter.md), each with its
+// The freighter's sounds (see tools/generate_sounds.mjs), each with its
 // subtitle and, where it differs from the game's own, how far it is heard (heard, in blocks, the volume falling off
 // evenly to nothing there), whether it is streamed as music and long loops are rather than loaded whole (stream), the
 // pitches its takes are played at, picked one at random each time (takes), and whether it is played to each listener
