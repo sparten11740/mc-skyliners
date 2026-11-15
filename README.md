@@ -19,8 +19,7 @@ by Create Aeronautics' hot air), with you and your friends aboard.
   a lounge bar under a starlit ceiling, duty free, a secret den and a hold full of luggage. Its autopilot takes off,
   flies to a pin you drop on its map and lands on a runway, with callouts, air traffic control on the radio and cabin
   announcements.
-- **The zeppelin**: 245 blocks of airship (the Hindenburg's full 490 behind a server setting) floating on hot air in
-  sixteen coloured gas cells, with a
+- **The zeppelin**: 245 blocks of airship floating on hot air in sixteen coloured gas cells, with a
   control car under the bow, passenger decks behind promenade windows, a techno club, a sky crane and liveries to
   repaint her in. A festive edition comes dressed for Christmas.
 - **The rocket**: as tall as the airliner is long, standing on four fins, with multiple levels round a glass lift, a lab, a
