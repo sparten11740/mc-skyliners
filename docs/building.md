@@ -195,7 +195,9 @@ by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running 
 pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes, and `OvalWindowWall` dresses one set
 by hand in the wall it is set into (`OvalWindowPieceBlock` holds what every round or oval window shares, measured by
 its `OvalWindowPieceBlock.Size`, which the model reads from its JSON; `StandingWindowBlock` what one standing in a wall
-shares, as `OvalWindowBlock` does, and `FlatWindowBlock` what one lying flat shares, as `FlatOvalWindowBlock` does).
+shares, as `OvalWindowBlock` does, and `FlatWindowBlock` what one lying flat shares, as `FlatOvalWindowBlock` does; set
+by hand, the oval window takes the largest `OvalWindowBlock.Span` that fits its opening, the smaller ones blocks of their
+own, `SmallOvalWindowBlock` and `FlatSmallOvalWindowBlock`, each state one piece of one size).
 `SpaceSky` draws space round any
 camera far over the top of the world, over the game's own sky, the fog the land fades into taking the planet's colour,
 and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along

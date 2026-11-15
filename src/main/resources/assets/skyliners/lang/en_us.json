@@ -54,6 +54,8 @@
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",
+  "block.skyliners.small_oval_window": "Oval Window",
+  "block.skyliners.flat_small_oval_window": "Oval Window",
   "block.skyliners.porthole": "Porthole",
   "block.skyliners.flat_porthole": "Porthole",
   "block.skyliners.lift_machine": "Lift Machine",

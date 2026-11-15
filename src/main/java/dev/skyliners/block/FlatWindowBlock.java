@@ -19,7 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A round or oval window lying flat in a floor or a roof, as its item sets it there by hand (see {@link
  * StandingWindowBlock#getStateForPlacement}): a skylight looking up out of a roof, or a window in a floor looking down
  * at what is under it, or either the other way up. FACING is the way it looks out, its glass bulging that way, up or
- * down, toward whoever set it; ALONG is the way its top row lies from its middle, away from them. Each piece fills its
+ * down, away from whoever set it, its inside toward them; ALONG is the way its top row lies from its middle, away from
+ * them. Each piece fills its
  * whole block, flush with the floor or roof on both sides, its glass standing out of it in its collar; in a floor it is
  * solid over the glass too, so it is walked over, dome and all. It looks like the floor or roof it is set into, is only
  * ever whole and gives back the window standing in a wall it pairs with, as one set into a wall does (see {@link
@@ -39,13 +40,13 @@ public abstract class FlatWindowBlock extends OvalWindowPieceBlock {
     protected abstract StandingWindowBlock standing();
 
     /**
-     * A window lying flat set by hand: looking up toward whoever sets it from above, or down toward them from below,
-     * its top away from them.
+     * A window lying flat set by hand: looking down away from whoever sets it from above, or up away from them from
+     * below, its inside toward them, its top away from them.
      */
     public BlockState lying(BlockPlaceContext context) {
         Player player = context.getPlayer();
         boolean above = player != null ? player.getEyeY() > context.getClickedPos().getY() + 0.5 : context.getNearestLookingVerticalDirection() == Direction.DOWN;
-        return defaultBlockState().setValue(FACING, above ? Direction.UP : Direction.DOWN).setValue(ALONG, context.getHorizontalDirection());
+        return defaultBlockState().setValue(FACING, above ? Direction.DOWN : Direction.UP).setValue(ALONG, context.getHorizontalDirection());
     }
 
     @Override

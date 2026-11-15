@@ -4238,6 +4238,18 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   };
   OVAL_WALLS.push(...ovalWindowTextures(ROCKET_WINDOW));
   ovalWindowTextures(PORTHOLE_WINDOW);
+  // The oval window's smaller sizes, as it goes set by hand into an opening too small for the rocket's (see
+  // OvalWindowBlock.Span, kept in step with these), how many blocks wide and tall, each named by its blocks and measured
+  // as hers is (see OvalWindowPieceBlock.Size#ofBlocks): its oval as far in from its sides, in pixels, and its dome
+  // bulging as far for each block across its narrower side.
+  const OVAL_SPANS = [[3, 3], [2, 4], [2, 3], [3, 2], [1, 4], [2, 2], [1, 3], [3, 1], [1, 2], [2, 1]];
+  const OVAL_INSET = 3;
+  const BULGE_PER_BLOCK = 2;
+  for (const [columns, rows] of OVAL_SPANS) {
+    const wide = (columns * SIZE) / 2 - OVAL_INSET;
+    const tall = (rows * SIZE) / 2 - OVAL_INSET;
+    ovalWindowTextures({ ...ROCKET_WINDOW, name: `oval_window_${columns}x${rows}`, columns, rows, wide, tall, bulge: BULGE_PER_BLOCK * Math.min(columns, rows) });
+  }
   // The collar from its inner edge down (the dark rubber gasket the glass sits in, then polished steel catching the
   // light and dulling toward the skin), the lip round the hole inside from the reveal out, and the reveal from the
   // inner face in, each the same all the way round.

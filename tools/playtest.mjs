@@ -897,13 +897,20 @@ const SIZED_COUNT_REACH = 16;
 const EDGE_CAMERA_OUT = 3.5;
 const EDGE_MEASURE = 0.3;
 const EDGE_GOLD_RED = 1.5;
-// Windows set by hand: each kind, with how many blocks wide and tall its opening is and how many pieces it has; how far
-// apart their walls stand, how far in front of a wall the player stands and how far round a window its pieces are
-// looked for, in blocks.
-const HAND_SET_WINDOWS = [["oval_window", 3, 4, 12], ["porthole", 1, 1, 1]];
-const WINDOW_WALLS_APART = 8;
+// Windows set by hand: each kind's item, the block it goes in as there, how many blocks wide and tall its opening is and
+// how many pieces it has, the oval window into openings of its full size and smaller ones it shrinks to fit, a block of
+// its own at those; how far apart their walls stand, how far in front of a wall the player stands and how far round a
+// window its pieces are looked for, in blocks; and where on a corner block of a window, as a share of the block from
+// its outer corner, is the wall round its hole.
+const HAND_SET_WINDOWS = [["oval_window", "oval_window", 3, 4, 12], ["oval_window", "small_oval_window", 2, 4, 8],
+  ["oval_window", "small_oval_window", 2, 2, 4], ["oval_window", "small_oval_window", 1, 3, 3], ["porthole", "porthole", 1, 1, 1]];
+// Windows laid into a hole in a floor from above: each kind's item, the block it lies flat as there, how many blocks
+// across and along the player's look the hole is, and how many pieces it has.
+const FLOOR_WINDOWS = [["oval_window", "flat_small_oval_window", 2, 3, 6], ["porthole", "flat_porthole", 1, 1, 1]];
+const WINDOW_WALLS_APART = 12;
 const WINDOW_STAND_OFF = 2.5;
 const WINDOW_REACH = 8;
+const WINDOW_CORNER = 0.05;
 // A freighter's portholes: how many she has at least, along both prongs and both sides of her cockpit's tube, and how
 // much of the sky's light reaches the block inside each at least, as a block's light.
 const FREIGHTER_PORTHOLES = 8;
@@ -5652,14 +5659,18 @@ function pressScreen([sx, sy, sz]) {
 }
 
 // The Oval Window and the Porthole, each set by hand into an opening in a stone wall as a player would: each goes in
-// whole, its dome toward whoever set it, dims at a touch with its chime, and broken in survival comes out whole, giving
-// back one of itself. A porthole set into a hole in a floor lies flat in it, and comes out as a porthole too.
+// whole, filling the opening, the oval window shrinking to fit a smaller one, its inside toward whoever set it and its
+// dome out the far side; its glass dims at a touch with its chime, a block in the hand goes against the wall round its
+// hole without dimming it, and broken in survival it comes out whole, giving back one of itself. An oval window and a
+// porthole set into a hole in a floor from above lie flat in it, their inside up, the oval window shrinking to fit,
+// and come out whole too.
 function checkHandSetWindows() {
   const x0 = nextSite++ * SITE_APART;
   creative();
   must(`server tp @p ${x0} ${ground} ${-WINDOW_STAND_OFF}; wait ${CHUNKS_TICKS}t`);
-  HAND_SET_WINDOWS.forEach(([id, wide, tall, pieces], i) => setIntoWall(id, x0 + i * WINDOW_WALLS_APART, wide, tall, pieces));
-  layIntoFloor("porthole", x0 + HAND_SET_WINDOWS.length * WINDOW_WALLS_APART);
+  HAND_SET_WINDOWS.forEach(([id, block, wide, tall, pieces], i) => setIntoWall(id, block, x0 + i * WINDOW_WALLS_APART, wide, tall, pieces));
+  FLOOR_WINDOWS.forEach(([id, block, wide, along, pieces], i) =>
+    layIntoFloor(id, block, x0 + (HAND_SET_WINDOWS.length + i) * WINDOW_WALLS_APART, wide, along, pieces));
 }
 
 // How many blocks of a window, in a state if given, stand round the player.
@@ -5675,8 +5686,8 @@ function windowsGivenBack(id) {
 }
 
 // One window set by hand into an opening in a stone wall, a row of stone under it, the player in front of it to the
-// north; whether it goes in whole, dims, and comes out whole.
-function setIntoWall(id, x, wide, tall, pieces) {
+// north; whether it goes in whole, dims from its glass and not from its collar, and comes out whole.
+function setIntoWall(id, block, x, wide, tall, pieces) {
   const sill = ground + 1;
   must(`server fill ${x - 2} ${ground} 0 ${x + wide + 1} ${sill + tall + 1} 0 stone; server fill ${x} ${sill} 0 ${x + wide - 1} ${sill + tall - 1} 0 air`);
   emptyHands();
@@ -5684,39 +5695,61 @@ function setIntoWall(id, x, wide, tall, pieces) {
   send(`place skyliners:${id} ${x},${sill},0`);
   must("wait 5t");
   const facing = must(`block ${x},${sill},0`).props?.facing;
-  const name = id.replaceAll("_", " ");
-  expect(windowPieces(id) === pieces && facing === "north", `${name}: set by hand into a wall, it goes in whole, its dome toward whoever set it`,
-    `${windowPieces(id)} of ${pieces} pieces, facing ${facing}`);
+  const name = `${id.replaceAll("_", " ")} in a ${wide} by ${tall} opening`;
+  expect(windowPieces(block) === pieces && facing === "south", `${name}: set by hand into a wall, it fills it, its inside toward whoever set it`,
+    `${windowPieces(block)} of ${pieces} pieces, facing ${facing}`);
+  // On its face toward the player, its inside: as its own model turns it, looking out south, its south face.
+  const middle = `${x + Math.floor(wide / 2)},${sill + Math.floor(tall / 2)},0 at 0.5,0.5,1`;
   const used = now();
-  must(`use ${x},${sill},0; wait 5t`);
-  expect(windowPieces(id, "[dim=1]") === pieces && Boolean(heard("*note_block.chime*", used, LOOK_EVERY)), `${name}: touched, all of its glass dims a step with a chime`,
-    `${windowPieces(id, "[dim=1]")} of ${pieces} pieces dimmed`);
+  must(`use ${middle}; wait 5t`);
+  expect(windowPieces(block, "[dim=1]") === pieces && Boolean(heard("*note_block.chime*", used, LOOK_EVERY)), `${name}: its glass touched, all of it dims a step with a chime`,
+    `${windowPieces(block, "[dim=1]")} of ${pieces} pieces dimmed`);
+  holdingABlock(block, name, x, sill, middle, pieces);
   survival();
   emptyHands();
   must(`server tp @p ${x + 0.5} ${ground} ${-WINDOW_STAND_OFF} 0 20; wait 10t; mine ${x},${sill},0 timeout=10s; wait 20t`);
   const given = windowsGivenBack(id);
-  expect(windowPieces(id) === 0 && given === 1, `${name}: broken in survival, it all comes out and gives back one ${name}`,
-    `${windowPieces(id)} pieces left, ${given} given back`);
+  expect(windowPieces(block) === 0 && given === 1, `${name}: broken in survival, it all comes out and gives back one`,
+    `${windowPieces(block)} pieces left, ${given} given back`);
   creative();
 }
 
-// A porthole set by hand into a hole in a stone floor, the player over it; whether it lies flat in it, its dome up
-// toward them, and comes out as a porthole.
-function layIntoFloor(id, x) {
+// A block in the hand used on a window's inner face, by its bottom corner on the side away from the wall, outside its
+// hole, and then on its glass: by the corner it is set there, the glass left as it was, and on the glass it dims it and
+// is not set.
+function holdingABlock(id, name, x, sill, middle, pieces) {
+  emptyHands();
+  must(`server give @p minecraft:oak_planks 2; wait 5t; select 0; use ${x},${sill},0 at ${1 - WINDOW_CORNER},${WINDOW_CORNER},1; wait 5t`);
+  const against = must(`block ${x},${sill},-1`).id;
+  expect(against === "oak_planks" && windowPieces(id, "[dim=1]") === pieces, `${name}: a block in the hand used beside its hole goes against it, the glass left as it was`,
+    `${against} in front of it, ${windowPieces(id, "[dim=1]")} of ${pieces} pieces still a step dim`);
+  must(`?server setblock ${x} ${sill} -1 air; use ${middle}; wait 5t`);
+  const [mx, my] = middle.split(" ")[0].split(",");
+  const inFront = must(`block ${mx},${my},-1`).id;
+  expect(windowPieces(id, "[dim=2]") === pieces && inFront === "air", `${name}: a block in the hand used on its glass dims it, and is not set there`,
+    `${windowPieces(id, "[dim=2]")} of ${pieces} pieces two steps dim, ${inFront} in front of it`);
+}
+
+// A window set by hand into a hole in a stone floor, the player over it looking along the hole; whether it lies flat in
+// it, filling it, its inside up toward them, and comes out whole, giving back one of itself.
+function layIntoFloor(id, block, x, wide, along, pieces) {
   const floor = ground + 3;
-  must(`server fill ${x - 2} ${floor} -2 ${x + 2} ${floor} 2 stone; server fill ${x} ${floor} 0 ${x} ${floor} 0 air`);
+  const far = -(along - 1);
+  must(`server fill ${x - 2} ${floor} ${far - 2} ${x + wide + 1} ${floor} 2 stone; server fill ${x} ${floor} ${far} ${x + wide - 1} ${floor} 0 air`);
   emptyHands();
   must(`server give @p skyliners:${id} 1; wait 5t; select 0; server tp @p ${x + 0.5} ${floor + 2} 1.5 180 70; wait 10t`);
   send(`place skyliners:${id} ${x},${floor},0`);
   must("wait 5t");
   const laid = must(`block ${x},${floor},0`);
-  expect(laid.id === `skyliners:flat_${id}` && laid.props?.facing !== "down", "porthole: set by hand into a hole in a floor, it lies flat, its dome up",
-    `${laid.id} facing ${laid.props?.facing ?? "up"}`);
+  const name = `${id.replaceAll("_", " ")} in a ${wide} by ${along} floor hole`;
+  expect(laid.id === `skyliners:${block}` && laid.props?.facing === "down" && windowPieces(block) === pieces,
+    `${name}: set by hand from above, it lies flat in it, filling it, its inside up`,
+    `${laid.id} facing ${laid.props?.facing ?? "up"}, ${windowPieces(block)} of ${pieces} pieces`);
   survival();
   emptyHands();
   must(`server tp @p ${x + 0.5} ${floor + 1} -1.5 0 50; wait 10t; mine ${x},${floor},0 timeout=10s; wait 20t`);
   const given = windowsGivenBack(id);
-  expect(windowPieces(`flat_${id}`) === 0 && given === 1, "porthole: broken out of a floor, it gives back one porthole", `${given} given back`);
+  expect(windowPieces(block) === 0 && given === 1, `${name}: broken out of the floor, it gives back one`, `${given} given back`);
   creative();
 }
 

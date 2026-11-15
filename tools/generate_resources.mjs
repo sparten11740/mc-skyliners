@@ -6644,7 +6644,8 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // turned for the other ways. A piece of hers gives back glass. Set into a wall by hand (wall=matched), both its parts
 // are marked as set by hand: it fills its whole block, its frame on the block's outer side and its glass standing out
 // of it, and its frame looks like the wall beside it (see OvalWindowWall), keeping the weave where no wall is found;
-// the whole window, taken away, gives back the window itself from the middle of its bottom row. In the hand: its icon.
+// the whole window, taken away, gives back the window itself from the middle of its bottom row. Set by hand into an
+// opening too small for hers, it is a smaller window, a block of its own (see below). In the hand: its icon.
 // The porthole (see PortholeBlock), a block across and round, is drawn by the same loader at its own size (the
 // model's "window"), always as one set by hand, and lying flat as the oval window does; it gives itself back.
 {
@@ -6740,6 +6741,49 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   });
   write(`assets/${ID}/models/item/oval_window.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/oval_window` } });
   cubes.oval_window = null;
+  // The oval window set by hand at its smaller sizes, where an opening or a hole has no room for hers (see
+  // SmallOvalWindowBlock and FlatSmallOvalWindowBlock): each state a piece one of its windows really has, numbered by
+  // size as they are tried (kept in step with OvalWindowBlock.Span), then column by column from the left as seen from
+  // outside and down each column from the top, as SmallOvalWindowBlock.PIECES numbers them; each piece at each step of
+  // its dimming with models of its own, named by the size's blocks. Each gives back the Oval Window from the middle of
+  // its bottom row.
+  const SMALLER_SPANS = [[3, 3], [2, 4], [2, 3], [3, 2], [1, 4], [2, 2], [1, 3], [3, 1], [1, 2], [2, 1]];
+  const smallerPieces = SMALLER_SPANS.flatMap(([columns, rows]) => Array.from({ length: columns * rows },
+    (_, i) => ({ columns, rows, column: Math.floor(i / rows), row: i % rows })));
+  const smallVariants = {};
+  const flatSmallVariants = {};
+  smallerPieces.forEach(({ columns, rows, column, row }, piece) => {
+    const name = `oval_window_${columns}x${rows}_${column}_${row}`;
+    for (let dim = 0; dim < 4; dim++) {
+      const model = `${ID}:block/${name}_dim${dim}_matched`;
+      write(`assets/${ID}/models/block/${name}_dim${dim}_matched.json`, ovalWindowModel(column, row, {
+        glass: `${ID}:block/oval_window_${columns}x${rows}_glass_dim${dim}`, frame: `${ID}:block/${name}_frame`, inside: `${ID}:block/${name}_inside`,
+        rim: `${ID}:block/oval_window_rim`, lip: `${ID}:block/oval_window_lip`, reveal: `${ID}:block/oval_window_reveal`, edge,
+      }, undefined, true, `${columns}x${rows}`));
+      for (const [facing, y] of Object.entries(yRot)) {
+        smallVariants[`dim=${dim},facing=${facing},piece=${piece}`] = { model, y };
+        flatSmallVariants[`along=${facing},dim=${dim},facing=down,piece=${piece}`] = { model, x: 90, y };
+        flatSmallVariants[`along=${facing},dim=${dim},facing=up,piece=${piece}`] = { model, x: 270, y: (y + 180) % 360 };
+      }
+    }
+  });
+  write(`assets/${ID}/blockstates/small_oval_window.json`, { variants: smallVariants });
+  write(`assets/${ID}/blockstates/flat_small_oval_window.json`, { variants: flatSmallVariants });
+  const keepers = smallerPieces.map((piece, i) => [piece, i]).filter(([{ columns, rows, column, row }]) => column === Math.floor(columns / 2) && row === rows - 1);
+  for (const name of ["small_oval_window", "flat_small_oval_window"]) {
+    write(`data/${ID}/loot_table/blocks/${name}.json`, {
+      type: "minecraft:block",
+      pools: [{
+        rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:oval_window` }],
+        conditions: [{
+          condition: "minecraft:any_of",
+          terms: keepers.map(([, i]) => ({ condition: "minecraft:block_state_property", block: `${ID}:${name}`, properties: { piece: `${i}` } })),
+        }, { condition: "minecraft:survives_explosion" }],
+      }],
+      random_sequence: `${ID}:blocks/${name}`,
+    });
+  }
+  cubes.small_oval_window = null;
   const portholeVariants = {};
   const flatPortholeVariants = {};
   for (let dim = 0; dim < 4; dim++) {
@@ -12231,6 +12275,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.skyliners.cabin_window_shell": "Curved Cabin Window",
   "block.skyliners.oval_window": "Oval Window",
   "block.skyliners.flat_oval_window": "Oval Window",
+  "block.skyliners.small_oval_window": "Oval Window",
+  "block.skyliners.flat_small_oval_window": "Oval Window",
   "block.skyliners.porthole": "Porthole",
   "block.skyliners.flat_porthole": "Porthole",
   "block.skyliners.lift_machine": "Lift Machine",

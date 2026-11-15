@@ -101,6 +101,7 @@ import dev.skyliners.block.FlagHalyardBlock;
 import dev.skyliners.block.FlagHalyardBlockEntity;
 import dev.skyliners.block.FlagstaffBlock;
 import dev.skyliners.block.FlatOvalWindowBlock;
+import dev.skyliners.block.FlatSmallOvalWindowBlock;
 import dev.skyliners.block.FlatPortholeBlock;
 import dev.skyliners.block.FloodlightBlock;
 import dev.skyliners.block.FloorLightBlock;
@@ -274,6 +275,7 @@ import dev.skyliners.block.SelfDestructButtonBlockEntity;
 import dev.skyliners.block.ShaftDecorBlock;
 import dev.skyliners.block.ShelfUnitBlock;
 import dev.skyliners.block.ShellBlock;
+import dev.skyliners.block.SmallOvalWindowBlock;
 import dev.skyliners.block.SpaceRockBlock;
 import dev.skyliners.block.SignalFlareBlock;
 import dev.skyliners.block.SignalFlareBlockEntity;
@@ -853,6 +855,12 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<OvalWindowBlock> OVAL_WINDOW = BLOCKS.registerBlock("oval_window", OvalWindowBlock::new, glass());
     /** The oval window lying flat in a floor or a roof, set there by hand from the Oval Window. */
     public static final DeferredBlock<FlatOvalWindowBlock> FLAT_OVAL_WINDOW = BLOCKS.registerBlock("flat_oval_window", FlatOvalWindowBlock::new, glass());
+    /** The oval window set into a wall by hand at a smaller size, where the opening has no room for hers. */
+    public static final DeferredBlock<SmallOvalWindowBlock> SMALL_OVAL_WINDOW =
+        BLOCKS.registerBlock("small_oval_window", SmallOvalWindowBlock::new, glass());
+    /** The oval window lying flat at a smaller size, where the hole has no room for hers. */
+    public static final DeferredBlock<FlatSmallOvalWindowBlock> FLAT_SMALL_OVAL_WINDOW =
+        BLOCKS.registerBlock("flat_small_oval_window", FlatSmallOvalWindowBlock::new, glass());
     /** The porthole, a small round window a block across, along the freighter's passages and set in walls by hand. */
     public static final DeferredBlock<PortholeBlock> PORTHOLE = BLOCKS.registerBlock("porthole", PortholeBlock::new, glass());
     /** The porthole lying flat in a floor or a roof, set there by hand from the Porthole. */

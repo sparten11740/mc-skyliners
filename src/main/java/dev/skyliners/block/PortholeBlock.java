@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  * The porthole: a small round window a block across, the rocket's oval window made small (see {@link
  * OvalWindowPieceBlock.Size#PORTHOLE}), its glass domed a little out of its steel collar and its steel-lined recess
  * running back through the block behind a steel lip. It is always as one set by hand (see {@link StandingWindowBlock}):
- * standing in a wall, looking out toward whoever sets it, or laid by the same item in a floor or a roof (see {@link
+ * standing in a wall, looking out away from whoever sets it, or laid by the same item in a floor or a roof (see {@link
  * FlatPortholeBlock}), it fills its block, flush on both sides, and round its glass, outside and in, it looks like the
  * wall beside it. It dims as the rocket's windows do, and broken it gives itself back. The freighter has them down her
  * long passages (see {@code airframe.FreighterPortholes}).

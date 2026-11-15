@@ -94,7 +94,7 @@ public final class OvalWindowWall {
     private static List<BlockPos> besideWindow(OvalWindowPieceBlock window, BlockPos pos, BlockState piece) {
         Direction left = window.left(piece);
         List<BlockPos> beside = new ArrayList<>();
-        OvalWindowPieceBlock.Size size = window.size();
+        OvalWindowPieceBlock.Size size = window.size(piece);
         for (int row = 0; row < size.rows(); row++) {
             beside.add(window.pieceAt(pos, piece, 0, row).relative(left));
             beside.add(window.pieceAt(pos, piece, size.columns() - 1, row).relative(left.getOpposite()));

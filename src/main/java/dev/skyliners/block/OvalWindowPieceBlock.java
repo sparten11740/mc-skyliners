@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -27,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -38,17 +41,20 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * round its oval, is its {@link Size}; a window a block across has no column or row to keep. On the rocket each piece
  * is the inner half of its block, its glass bulging out of the outer half; set by hand, it fills its whole block, flush
  * with the wall on both sides, its glass bulging out of the wall's face, and is solid over its glass as through its
- * block (see {@code client.OvalWindowModel}). Its glass dims electrically: using any piece of it darkens the whole
- * window's glass a step, from clear through light, medium and dark and back to clear, with a chime that falls as it
- * darkens; a window dimmer (see {@link WindowDimmerBlock}) or the rocket's cockpit console sets every window of a story
- * at once (see {@link #dimWithin}). Only the glass darkens: its frame and the wall round it, and the light it lets in,
- * stay as they are.
+ * block (see {@code client.OvalWindowModel}). Its glass dims electrically: using its glass darkens the whole window's
+ * glass a step, from clear through light, medium and dark and back to clear, with a chime that falls as it darkens,
+ * while using its collar or the wall round its oval does nothing, so a block in the hand goes against it there as
+ * against any wall; a window dimmer (see {@link WindowDimmerBlock}) or the rocket's cockpit console sets every window
+ * of a story at once (see {@link #dimWithin}). Only the glass darkens: its frame and the wall round it, and the light
+ * it lets in, stay as they are.
  *
  * <p>A window set by hand fills the opening that the spot is in, wherever in it the spot is, whichever way it fits the
  * opening best: standing in a wall, or lying in a floor or a roof (see {@link
- * StandingWindowBlock#getStateForPlacement}). Every piece goes in at once, or none where there is no room. Such a
- * window looks like the wall it is set into (see {@code client.OvalWindowWall}) and is only ever whole: taking any
- * piece away takes the whole window, which gives back the window itself.
+ * StandingWindowBlock#getStateForPlacement}), and at the largest of its sizes that has room there, as the oval window
+ * goes into an opening anything from three blocks wide and four tall down to one wide and two tall (see {@link
+ * OvalWindowBlock.Span}). Every piece goes in at once, or none where there is no room. Such a window looks like the
+ * wall it is set into (see {@code client.OvalWindowWall}) and is only ever whole: taking any piece away takes the whole
+ * window, which gives back the window itself.
  */
 public abstract class OvalWindowPieceBlock extends TransparentBlock {
     /**
@@ -91,21 +97,62 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
          * edge, so no stepped pixel of it shows past them.
          */
         public static final Size PORTHOLE = new Size("porthole", 1, 1, 5.5F, 5.5F, 0.5F, 2, 1.6F, 1, 1.5F);
-        /** Every size a window's model can name. */
-        private static final List<Size> ALL = List.of(ROCKET, PORTHOLE);
+        /**
+         * The sizes a window's model names by their own names, rather than by how many blocks wide and tall they are.
+         */
+        private static final List<Size> NAMED = List.of(ROCKET, PORTHOLE);
+        /** How far in from the window's sides its oval's edge lies, in pixels, at every size the oval window takes. */
+        private static final int OVAL_INSET = 3;
+        /** How far the dome bulges at its middle for each block across the window's narrower side, in pixels. */
+        private static final float BULGE_PER_BLOCK = 2;
+        /**
+         * The name of an oval window at a size other than the rocket's: how many blocks wide, an x, and how many tall.
+         */
+        private static final Pattern BLOCKS = Pattern.compile("([1-9])x([1-9])");
+
+        /**
+         * The oval window so many blocks wide and tall, as it goes into a smaller opening set by hand (see {@link
+         * OvalWindowBlock.Span}): the rocket's own at her window's size, and at any other measured as hers is, its oval
+         * as far in from its sides, its dome bulging as far for each block across its narrower side, its collar, rim
+         * and lip as wide. It is named by its blocks, "2x4", as its model and its textures name it.
+         */
+        public static Size ofBlocks(int columns, int rows) {
+            if (columns == ROCKET.columns && rows == ROCKET.rows) {
+                return ROCKET;
+            }
+            return new Size(columns + "x" + rows, columns, rows, columns * BLOCK / 2F - OVAL_INSET, rows * BLOCK / 2F - OVAL_INSET,
+                ROCKET.collar, BULGE_PER_BLOCK * Math.min(columns, rows), ROCKET.rim, ROCKET.hole, ROCKET.lip);
+        }
 
         /**
          * The size a window's model names, so a model naming one that does not exist fails to load rather than drawing
-         * a window of the wrong size.
+         * a window of the wrong size: the rocket's or the porthole's by name, an oval window by its blocks, no bigger
+         * than the rocket's.
          */
         public static Size named(String name) {
-            return ALL.stream().filter(size -> size.name().equals(name)).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No oval window is sized " + name));
+            for (Size size : NAMED) {
+                if (size.name().equals(name)) {
+                    return size;
+                }
+            }
+            Matcher blocks = BLOCKS.matcher(name);
+            if (!blocks.matches() || Integer.parseInt(blocks.group(1)) > ROCKET.columns || Integer.parseInt(blocks.group(2)) > ROCKET.rows) {
+                throw new IllegalArgumentException("No oval window is sized " + name);
+            }
+            return ofBlocks(Integer.parseInt(blocks.group(1)), Integer.parseInt(blocks.group(2)));
         }
 
         /** How many blocks the whole window has. */
         public int pieces() {
             return columns * rows;
+        }
+
+        /**
+         * How many blocks stand round the window's edge in the wall it is set into: twice as many as it is wide and
+         * tall.
+         */
+        int edge() {
+            return 2 * (columns + rows);
         }
 
         /** The piece that gives back a window set by hand when it is taken away: the middle of its bottom row. */
@@ -138,6 +185,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         }
     }
 
+    /** How big a window of this kind is, where it has only the one size. */
     private final Size size;
 
     protected OvalWindowPieceBlock(Properties properties, Size size) {
@@ -145,9 +193,17 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         this.size = size;
     }
 
-    /** How big a window of this kind is. */
-    public Size size() {
+    /** How big a piece's window is. */
+    public Size size(BlockState piece) {
         return size;
+    }
+
+    /**
+     * A piece of a window at each of the sizes it can be set in by hand, in the order they are tried, the largest
+     * first: only as it is, for a window of the one size.
+     */
+    protected List<BlockState> sizes(BlockState piece) {
+        return List.of(piece);
     }
 
     /**
@@ -183,7 +239,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
 
     /** A piece of a window mirrored: its columns from the left run the other way round. */
     protected BlockState mirrored(BlockState piece) {
-        return at(piece, size.columns() - 1 - column(piece), row(piece));
+        return at(piece, size(piece).columns() - 1 - column(piece), row(piece));
     }
 
     /** The way a piece's window looks out: out of its wall, or up or down out of its floor or roof. */
@@ -212,14 +268,14 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
      * it at its highest, to the next whole pixel.
      */
     protected VoxelShape solidWithDome(BlockState piece) {
-        return DOMES.computeIfAbsent(piece, state -> solidOver(out(state), up(state), column(state), row(state)));
+        return DOMES.computeIfAbsent(piece, state -> solidOver(size(state), out(state), up(state), column(state), row(state)));
     }
 
     /**
-     * A piece's block and the steps over its share of the dome, by the way it looks out, the way toward its window's
-     * top, and its column and row.
+     * A piece's block and the steps over its share of the dome, by its window's size, the way it looks out, the way
+     * toward its window's top, and its column and row.
      */
-    private VoxelShape solidOver(Direction out, Direction up, int column, int row) {
+    private static VoxelShape solidOver(Size size, Direction out, Direction up, int column, int row) {
         Direction[] ways = {left(out, up).getOpposite(), up.getOpposite(), out};
         int squares = BLOCK / DOME_STEP;
         List<VoxelShape> steps = new ArrayList<>();
@@ -261,22 +317,45 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     }
 
     /**
-     * The piece for the spot clicked that fits a window best into an opening round it, of the ways it can lie, the
-     * first given winning where two fit as well; for each, the middle of its bottom row on the spot when none fits
-     * better; null where none has room.
+     * The piece for the spot clicked that fits a window best into an opening round it: of the ways it can lie, at each
+     * of its sizes, the one with the most of the blocks round its edge in its wall standing there already, as a share
+     * of them all, so it fills the opening as closely as it can; the larger winning where two fill it as well, so a
+     * window in open wall is as big as it gets, and then the way first given; for each, the middle of its bottom row on
+     * the spot when none fits better. Null where none has room.
      */
     @Nullable
     protected static BlockState bestFit(BlockPlaceContext context, List<BlockState> ways) {
         BlockState best = null;
-        int bestFit = -1;
-        for (BlockState piece : ways.stream().flatMap(OvalWindowPieceBlock::spots).toList()) {
-            int fit = ((OvalWindowPieceBlock) piece.getBlock()).fit(context, piece);
-            if (fit > bestFit) {
+        int bestWalled = 0;
+        int bestEdge = 1;
+        for (BlockState piece : candidates(ways)) {
+            int walled = window(piece).fit(context, piece);
+            int edge = window(piece).size(piece).edge();
+            if (walled >= 0 && (best == null || walled * bestEdge > bestWalled * edge)) {
                 best = piece;
-                bestFit = fit;
+                bestWalled = walled;
+                bestEdge = edge;
             }
         }
         return best;
+    }
+
+    /**
+     * Every piece the spot clicked could be, in the order they are tried: the largest size first, then each way the
+     * window can lie at it, then its spots (see {@link #spots}).
+     */
+    private static List<BlockState> candidates(List<BlockState> ways) {
+        int sizes = ways.stream().mapToInt(way -> window(way).sizes(way).size()).max().orElse(0);
+        return IntStream.range(0, sizes).boxed().flatMap(rank -> sized(ways, rank).stream()).flatMap(OvalWindowPieceBlock::spots).toList();
+    }
+
+    /** The ways a window can lie, each at the size it tries so many sizes down from its largest, where it has one. */
+    private static List<BlockState> sized(List<BlockState> ways, int rank) {
+        return ways.stream().map(way -> window(way).sizes(way)).filter(sizes -> rank < sizes.size()).map(sizes -> sizes.get(rank)).toList();
+    }
+
+    private static OvalWindowPieceBlock window(BlockState piece) {
+        return (OvalWindowPieceBlock) piece.getBlock();
     }
 
     /**
@@ -284,19 +363,21 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
      * its bottom row first, then on along that row and up through the rows above it.
      */
     private static Stream<BlockState> spots(BlockState way) {
-        OvalWindowPieceBlock window = (OvalWindowPieceBlock) way.getBlock();
-        int columns = window.size.columns();
-        return IntStream.range(0, window.size.pieces())
-            .mapToObj(spot -> window.at(way, (columns / 2 + spot) % columns, window.size.rows() - 1 - spot / columns));
+        OvalWindowPieceBlock window = window(way);
+        Size size = window.size(way);
+        int columns = size.columns();
+        return IntStream.range(0, size.pieces())
+            .mapToObj(spot -> window.at(way, (columns / 2 + spot) % columns, size.rows() - 1 - spot / columns));
     }
 
     /**
      * How well a window would fit with the piece on the spot clicked: how many of the blocks round its edge in its wall
      * stand there already, or -1 where any of its pieces has no room, or has someone standing in its block. Whoever
-     * stands where only its dome will reach is pushed aside by it, as it stands out of the wall toward them.
+     * stands where only its dome will reach is pushed aside by it, as it stands out of the wall.
      */
     private int fit(BlockPlaceContext context, BlockState piece) {
         Level level = context.getLevel();
+        Size size = size(piece);
         int walled = 0;
         for (int i = 0; i < size.pieces(); i++) {
             BlockPos at = pieceAt(context.getClickedPos(), piece, i % size.columns(), i / size.columns());
@@ -327,6 +408,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         if (level.isClientSide || !setByHand(state)) {
             return;
         }
+        Size size = size(state);
         for (int i = 0; i < size.pieces(); i++) {
             BlockPos at = pieceAt(pos, state, i % size.columns(), i / size.columns());
             if (!at.equals(pos)) {
@@ -348,6 +430,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
         Direction up = up(piece);
         int column = column(piece) + (way == left ? -1 : way == left.getOpposite() ? 1 : 0);
         int row = row(piece) + (way == up ? -1 : way == up.getOpposite() ? 1 : 0);
+        Size size = size(piece);
         boolean inside = column >= 0 && column < size.columns() && row >= 0 && row < size.rows();
         return inside ? at(piece, column, row) : null;
     }
@@ -368,7 +451,7 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
      */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        BlockPos keeper = pieceAt(pos, state, size.keeperColumn(), size.keeperRow());
+        BlockPos keeper = pieceAt(pos, state, size(state).keeperColumn(), size(state).keeperRow());
         if (!level.isClientSide && player.isCreative() && setByHand(state) && !keeper.equals(pos) && level.getBlockState(keeper).is(this)) {
             level.setBlock(keeper, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
         }
@@ -376,12 +459,17 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     }
 
     /**
-     * Using a piece dims its whole window. The game sends whoever used it that piece's new look at once, but the rest
-     * of the window's only at the end of the server's tick, so under lag the piece pressed would darken alone for a
-     * moment, its share of the dome a dark patch in the glass: they are sent the whole window at once with it.
+     * Using a piece's glass dims its whole window, with a block in the hand too. Used anywhere else on it, its collar
+     * or the wall round its oval, it does nothing, so a block in the hand goes against it as against the wall beside
+     * it. The game sends whoever used it that piece's new look at once, but the rest of the window's only at the end of
+     * the server's tick, so under lag the piece pressed would darken alone for a moment, its share of the dome a dark
+     * patch in the glass: they are sent the whole window at once with it.
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!onGlass(state, pos, hit.getLocation())) {
+            return InteractionResult.PASS;
+        }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -393,12 +481,31 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     }
 
     /**
+     * Whether a point on a piece, where the piece's block is, lies on its window's glass: inside its oval, seen square
+     * on from outside or in, as the glass and the hole through its inner face both are.
+     */
+    public boolean onGlass(BlockState piece, BlockPos pos, Vec3 point) {
+        Size size = size(piece);
+        double fromLeft = (column(piece) + across(point, pos, left(piece).getOpposite())) * BLOCK;
+        double fromTop = (row(piece) + across(point, pos, up(piece).getOpposite())) * BLOCK;
+        return size.domeHeight(fromLeft - size.columns() * BLOCK / 2.0, fromTop - size.rows() * BLOCK / 2.0) > 0;
+    }
+
+    /**
+     * How far a point lies across a block one way, from the block's side facing the other way, as a share of the block.
+     */
+    private static double across(Vec3 point, BlockPos pos, Direction way) {
+        double inBlock = point.get(way.getAxis()) - pos.get(way.getAxis());
+        return way.getAxisDirection() == Direction.AxisDirection.POSITIVE ? inBlock : 1 - inBlock;
+    }
+
+    /**
      * Dims the whole window the piece is part of a step darker, or clears it from its darkest, with its chime; gives
      * back where its pieces are.
      */
     private List<BlockPos> dim(Level level, BlockPos pos, BlockState state) {
         int dim = (state.getValue(DIM) + 1) % (DARKEST + 1);
-        List<BlockPos> window = JoinedBlocks.from(level, pos, size.pieces(), this::sameWindow);
+        List<BlockPos> window = JoinedBlocks.from(level, pos, size(state).pieces(), this::sameWindow);
         for (BlockPos at : window) {
             level.setBlock(at, level.getBlockState(at).setValue(DIM, dim), Block.UPDATE_ALL);
         }
@@ -441,11 +548,11 @@ public abstract class OvalWindowPieceBlock extends TransparentBlock {
     }
 
     /**
-     * Whether a piece's neighbour is the next piece of its window: the same kind of window, looking out the same way
-     * with its top the same way, a row or a column on.
+     * Whether a piece's neighbour is the next piece of its window: the same kind of window at the same size, looking
+     * out the same way with its top the same way, a row or a column on.
      */
     private boolean sameWindow(BlockState piece, Direction way, BlockState neighbor) {
-        if (!neighbor.is(this) || out(neighbor) != out(piece) || up(neighbor) != up(piece)) {
+        if (!neighbor.is(this) || out(neighbor) != out(piece) || up(neighbor) != up(piece) || !size(neighbor).equals(size(piece))) {
             return false;
         }
         int columns = Math.abs(column(neighbor) - column(piece));

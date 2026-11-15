@@ -19,7 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A round or oval window standing in a wall (see {@link OvalWindowPieceBlock}), looking out the way FACING says, its
  * top up: the rocket's big oval window in her skin, or any window of its kind set into a wall by hand, from its item or
- * picked from one in creative mode, looking out toward whoever sets it, as a painting does. The same item lays it in a
+ * picked from one in creative mode, looking out away from whoever sets it, its inside toward them, as they stand in
+ * the room it looks out of. The same item lays it in a
  * floor or a roof, as the kind of window lying flat it pairs with (see {@link FlatWindowBlock}). Set by hand, each
  * piece fills its whole block, flush with the wall on both sides, its glass standing out of the wall's face in its
  * collar as the rocket's stands out of her skin; in her skin, each piece is the inner half of its block (see {@link
@@ -61,13 +62,14 @@ public abstract class StandingWindowBlock extends OvalWindowPieceBlock {
 
     /**
      * Set by hand: the piece for the spot that fits the window best into an opening round it, standing in a wall
-     * looking out toward whoever sets it, or lying flat in a floor or a roof (see {@link FlatWindowBlock#lying}),
-     * standing first unless they look up or down; null where the window has no room either way.
+     * looking out away from whoever sets it, its inside toward them, or lying flat in a floor or a roof (see {@link
+     * FlatWindowBlock#lying}), standing first unless they look up or down; null where the window has no room either
+     * way.
      */
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockState standing = handSet(defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()));
+        BlockState standing = handSet(defaultBlockState().setValue(FACING, context.getHorizontalDirection()));
         BlockState flat = lyingFlat().lying(context);
         boolean steep = context.getNearestLookingDirection().getAxis().isVertical();
         return bestFit(context, steep ? List.of(flat, standing) : List.of(standing, flat));

@@ -313,8 +313,8 @@ public final class SkylinersClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(SpaceRockTint::tint, SkylinersRegistry.SPACE_ROCK.get(),
             SkylinersRegistry.SPACE_ROCK_MAGMA.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(OvalWindowWall::tint,
-            SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get(), SkylinersRegistry.PORTHOLE.get(),
-            SkylinersRegistry.FLAT_PORTHOLE.get()));
+            SkylinersRegistry.OVAL_WINDOW.get(), SkylinersRegistry.FLAT_OVAL_WINDOW.get(), SkylinersRegistry.SMALL_OVAL_WINDOW.get(),
+            SkylinersRegistry.FLAT_SMALL_OVAL_WINDOW.get(), SkylinersRegistry.PORTHOLE.get(), SkylinersRegistry.FLAT_PORTHOLE.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, SkylinersRegistry.ZEPPELIN_FABRIC_ITEM.get(),
             SkylinersRegistry.FREIGHTER_COVER_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
