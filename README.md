@@ -1,15 +1,10 @@
 # Create: Skyliners
 
-<table>
-  <tr>
-    <td><img src="docs/images/freighter-lift-off.jpg" alt="The freighter lifting off a meadow on her thrusters"><br><sub>The freighter</sub></td>
-    <td><img src="docs/images/airliner-take-off.jpg" alt="The airliner lifting off over the end of the runway"><br><sub>The airliner</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/images/zeppelin-lift-off.jpg" alt="The zeppelin rising over a meadow by a river, her mooring lines still hanging"><br><sub>The zeppelin</sub></td>
-    <td><img src="docs/images/rocket-lift-off.jpg" alt="The rocket lifting off her launch pad"><br><sub>The rocket</sub></td>
-  </tr>
-</table>
+| The freighter | The airliner |
+| :---: | :---: |
+| ![The freighter seen from above, flying over a meadow and a river](docs/images/freighter-in-flight.jpg) | ![The airliner lifting off her runway, nose up and wheels down](docs/images/airliner-take-off.jpg) |
+| **The zeppelin** | **The rocket** |
+| ![The zeppelin rising over a meadow by a river, her mooring lines still hanging](docs/images/zeppelin-lift-off.jpg) | ![The rocket lifting off her launch pad](docs/images/rocket-lift-off.jpg) |
 
 Giant aircraft for [Create](https://modrinth.com/mod/create) and
 [Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each laid down whole by a single blueprint: an
@@ -40,28 +35,15 @@ Every control is a picture, a colour or a sound, so players who cannot read yet 
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td><img src="docs/images/flight-deck.jpg" alt="The airliner's flight deck"><br><sub>The flight deck</sub></td>
-    <td><img src="docs/images/autopilot-screen.png" alt="The autopilot's screen"><br><sub>The autopilot</sub></td>
-    <td><img src="docs/images/airliner-banking.jpg" alt="The airliner banking under the clouds"><br><sub>In flight</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/images/moon-pool.jpg" alt="The moon pool with its glass floor"><br><sub>The moon pool</sub></td>
-    <td><img src="docs/images/gym-hall.jpg" alt="The gym hall with basketball hoops"><br><sub>The gym hall</sub></td>
-    <td><img src="docs/images/lounge-bar.jpg" alt="The lounge bar under a starlit ceiling"><br><sub>The lounge bar</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/images/zeppelin-control-car.jpg" alt="The zeppelin's control car, with its wheels and engine telegraphs"><br><sub>The zeppelin's control car</sub></td>
-    <td><img src="docs/images/zeppelin-inside-the-hull.jpg" alt="Inside the zeppelin's hull, under its gas cells"><br><sub>Inside her hull</sub></td>
-    <td><img src="docs/images/zeppelin-passenger-deck.jpg" alt="The zeppelin's passenger deck"><br><sub>Her passenger deck</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/images/rocket-on-launch-pad.jpg" alt="The rocket on its launch pad"><br><sub>The rocket on her pad</sub></td>
-    <td><img src="docs/images/rocket-pool.jpg" alt="The pool round the rocket's glass lift shaft"><br><sub>Her pool</sub></td>
-    <td><img src="docs/images/rocket-cockpit.jpg" alt="The rocket's cockpit"><br><sub>Her cockpit</sub></td>
-  </tr>
-</table>
+| The flight deck | The autopilot | In flight |
+| :---: | :---: | :---: |
+| ![The airliner's flight deck](docs/images/flight-deck.jpg) | ![The autopilot's screen](docs/images/autopilot-screen.png) | ![The airliner banking under the clouds](docs/images/airliner-banking.jpg) |
+| **The moon pool** | **The gym hall** | **The lounge bar** |
+| ![The moon pool with its glass floor](docs/images/moon-pool.jpg) | ![The gym hall with basketball hoops](docs/images/gym-hall.jpg) | ![The lounge bar under a starlit ceiling](docs/images/lounge-bar.jpg) |
+| **The zeppelin's control car** | **Inside her hull** | **Her passenger deck** |
+| ![The zeppelin's control car, with its wheels and engine telegraphs](docs/images/zeppelin-control-car.jpg) | ![Inside the zeppelin's hull, under its gas cells](docs/images/zeppelin-inside-the-hull.jpg) | ![The zeppelin's passenger deck](docs/images/zeppelin-passenger-deck.jpg) |
+| **The rocket on her pad** | **Her pool** | **Her cockpit** |
+| ![The rocket on its launch pad](docs/images/rocket-on-launch-pad.jpg) | ![The pool round the rocket's glass lift shaft](docs/images/rocket-pool.jpg) | ![The rocket's cockpit](docs/images/rocket-cockpit.jpg) |
 
 More in [docs/images](docs/images).
 
