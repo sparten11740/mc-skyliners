@@ -23,6 +23,10 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   that slow speeds vanish while its speed still reads as moving: at x 111,600, told two blocks a second, the freighter
   went 0.3 blocks in ten seconds, and told three it went at nearly six. The freighter's landing copes by nudging herself
   closer. The airliner, the zeppelin and the rocket have not been tried out there.
+- **The airliner sometimes scrapes something as she lands on her autopilot.** Two of five runs of the `flight` play-test
+  on 2026-11-15 heard one `impact_scrape` around touchdown or the roll-out, on code with and without that day's tailplane,
+  spool and landing assist changes; the other three heard nothing. What she touches is not known yet: a wingtip, the
+  tail or a wheel's mount.
 
 ## The freighter
 
