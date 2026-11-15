@@ -24,7 +24,8 @@ the pointer that follows the look, the key under it and the one picked lit throu
 panel, as `AutopilotRenderer` draws the control head's display; `AutopilotBlockEntity` flies
 (not sending the clients the control jets' relays, which nothing there reads, nor the wing blocks `ControlSurfaces`
 turns over; its engines, and her thrust levers' once she is assembled, wind up through `EngineSpool`, and
-`LandingAssist` brings her down to land flown by hand with her levers at idle),
+`LandingAssist` brings her down to land flown by hand with her levers at idle, each holding the nose through
+a `ClimbHold` of its own),
 assembling its airliner when engaged on one not yet assembled through `PhysicsAssembler`, which works the
 assembler as a Create deployer does, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's
 trolleys, basketballs and paper planes among an assembled airliner's blocks while they are inside its hull

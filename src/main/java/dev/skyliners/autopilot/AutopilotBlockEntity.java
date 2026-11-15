@@ -289,7 +289,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final int CEILING_MARGIN = 30;
     /** Nose attitude at rotation, in degrees: what lifts the airliner off the runway. */
-    static final double ROTATION_PITCH = 9;
+    private static final double ROTATION_PITCH = 9;
     /** Rate of climb asked for, in blocks a second per block of height still to go, and the most up and down. */
     static final double HEIGHT_GAIN = 0.2;
     static final double MAX_CLIMB_RATE = 8;
@@ -298,19 +298,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Degrees of pitch added per block a second it climbs too slowly, taken off per block a second each second it is
      * gaining climb (damping), and the range the nose is held in.
      */
-    static final double CLIMB_GAIN = 0.8;
-    static final double CLIMB_DAMPING = 0.5;
-    static final double MIN_PITCH = -15;
+    private static final double MIN_PITCH = -15;
     private static final double MAX_PITCH = 20;
-    /**
-     * How fast the trim learns, in degrees a tick per block a second the climb is off, counting no more than this
-     * many blocks a second off, so a big change of height learns no faster than a small one; and only while the nose
-     * is within this many degrees of where it is wanted and not held at either end of its range: while the nose is
-     * still swinging round, or pinned at a limit, learning would only wind it up.
-     */
-    static final double TRIM_RATE = 0.01;
-    static final double TRIM_CLIMB_LIMIT = 3;
-    static final double TRIM_WINDOW = 3;
     /**
      * The engines' signal it starts from at the speed being held, and how much it changes per block a second off that
      * speed.
@@ -324,19 +313,6 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final double THRUST_TRIM_RATE = 0.005;
     private static final double THRUST_TRIM_LIMIT = 5;
-    /**
-     * How fast the push the nose needs to stay where it is wanted is learnt, in signal a tick per degree it is off, and
-     * the most that is learnt. Pushed back only as hard as it is off, the nose would rest off wherever the airliner
-     * pitches by itself, as far off as it needs to be pushed back; and the trim, which only learns with the nose near
-     * where it is wanted, might then never learn the climb at all, the airliner holding a height off the one set.
-     */
-    static final double PITCH_HOLD_RATE = 0.01;
-    static final double PITCH_HOLD_LIMIT = 8;
-    /** Signal per degree of pitch or bank error, and per degree a second it is changing at (damping). */
-    static final double PITCH_GAIN = 0.75;
-    static final double PITCH_DAMPING = 0.4;
-    static final double ROLL_GAIN = 0.5;
-    static final double ROLL_DAMPING = 0.3;
     /**
      * Degrees of bank per degree off the heading wanted, taken off per degree a second it turns faster than it should
      * (damping, so it rolls out before it swings past), and the steepest bank it flies.
@@ -407,7 +383,6 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double LANDING_STEEP_HEIGHT = 60;
     private static final double LANDING_SETTLE_HEIGHT = 30;
     private static final double LANDING_FAST_SINK = 4.5;
-    static final double LANDING_SINK_EASE = 0.5;
     /**
      * The steepest bank it flies, in degrees per block above the ground, up to {@link #MAX_BANK}: low down, after
      * take-off or landing, its long wings must stay clear of the ground.
@@ -500,6 +475,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * {@link #driveEngine}).
      */
     private static final double ENGINE_HOLD = 0.75;
+    /** The thrust levers' signal for an airliner built without them: below any a lever sends. */
+    private static final int NO_LEVERS = -1;
 
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
     /** The control jets' signals as last set, not saved: set afresh on the first tick after loading. */
@@ -573,15 +550,13 @@ public class AutopilotBlockEntity extends BlockEntity {
     double orbitZ;
     double orbitRadius = DEFAULT_RADIUS;
     CircleSize circle = CircleSize.TIGHT;
-    /**
-     * The pitch that holds the height at this speed, and the engines' signal that holds the speed, learnt as it flies.
-     */
-    private double trim;
+    /** The engines' signal that holds the speed, learnt as it flies. */
     private double thrustTrim = CRUISE_THRUST;
     /**
-     * The push the nose needs to stay where it is wanted, in signal, learnt as it flies (see {@link #PITCH_HOLD_RATE}).
+     * How its nose is set and held to climb, its trim and the push its nose needs learnt as it flies (see {@link
+     * ClimbHold}).
      */
-    private double pitchHold;
+    private final ClimbHold climbHold = new ClimbHold();
     private double lastPitch;
     private double lastRoll;
     private double lastSpeed;
@@ -593,12 +568,6 @@ public class AutopilotBlockEntity extends BlockEntity {
      * than {@link #MAX_ACCELERATION}.
      */
     private double speedCommand;
-    /**
-     * Landing, the rate it is set to sink at this tick, in blocks a second, eased into (see
-     * {@link #LANDING_SINK_EASE}); NaN while it is not landing. Not saved: landing on after the world loads, it starts
-     * from the rate it sinks at.
-     */
-    private double sinkCommand = Double.NaN;
     /** Whether it is still climbing out after take-off, below {@link #TURN_HEIGHT}, holding the runway's heading. */
     private boolean climbingOut;
     /** Whether last tick's readings are real; false after loading, so the first tick does not see a jump. */
@@ -1476,7 +1445,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Its landing called off, unannounced, for a craft that has something of its own to say about it. */
     void callOffLanding() {
         announcements.letGo(Announcement.LANDING);
-        sinkCommand = Double.NaN;
+        climbHold.forgetSink();
         phase = Phase.CLIMB;
         flight.goAround();
     }
@@ -1572,10 +1541,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         runwayHeading = plan.heading();
         lateral = Lateral.HEADING;
         if (phase == Phase.CRUISE) {
-            trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
+            climbHold.trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
         }
         thrustTrim = CRUISE_THRUST;
-        pitchHold = 0;
+        climbHold.pitchHold = 0;
         climbingOut = phase == Phase.TAKEOFF;
         flight.engage(this, state);
         gearRaised = false;
@@ -1951,8 +1920,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             double climbLimit = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
             double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
             double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
-            pitchCommand = PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate;
-            rollCommand = ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate;
+            pitchCommand = ClimbHold.pitchBack(pitchBack, pitchRate);
+            rollCommand = ClimbHold.rollPush(rollBack, rollRate);
         }
         driveJets(level, state, pitchCommand, rollCommand);
     }
@@ -1973,8 +1942,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         double speed = state.airspeed();
         double climb = state.velocity().y;
-        LandingAssist.Steer steer = landingAssist.steer(radio, state.pitch(), pitchRate, state.roll(), rollRate, climb,
-            speed, approach -> holdSpeed(speed, approach));
+        LandingAssist.Steer steer = landingAssist.steer(landingSink(radio), state.pitch(), pitchRate, state.roll(),
+            rollRate, climb, MIN_PITCH, ROTATION_PITCH, approach -> holdSpeed(speed, approach));
         driveJets(level, state, steer.pitch(), steer.roll());
         for (Channel engine : ENGINES) {
             driveEngine(level, engine, steer.thrust());
@@ -1987,13 +1956,16 @@ public class AutopilotBlockEntity extends BlockEntity {
      * autopilot while she is assembled (see {@link #spools}), so that they wind up rather than leap.
      */
     private void followLevers(ServerLevel level) {
-        double thrust = leverSignal(level) * SkylinersConfig.FULL_LEVER_THRUST.get();
+        double thrust = Math.max(0, leverSignal(level)) * SkylinersConfig.FULL_LEVER_THRUST.get();
         for (Channel engine : ENGINES) {
             driveEngine(level, engine, thrust);
         }
     }
 
-    /** The signal her thrust levers ask of each engine's relays, all of them moving together; none without levers. */
+    /**
+     * The signal her thrust levers ask of each engine's relays, all of them moving together; less than none without
+     * levers, so nothing takes her to have them at idle.
+     */
     private int leverSignal(ServerLevel level) {
         for (BlockPos offset : controls) {
             BlockState control = level.getBlockState(worldPosition.offset(offset));
@@ -2001,7 +1973,7 @@ public class AutopilotBlockEntity extends BlockEntity {
                 return ThrustLeverBlock.power(control);
             }
         }
-        return 0;
+        return NO_LEVERS;
     }
 
     /**
@@ -2131,7 +2103,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             if (radio > AIRBORNE) {
                 phase = Phase.CLIMB;
                 // The pitch it lifts off at is where the trim starts learning from.
-                trim = Mth.clamp(pitch, MIN_PITCH, MAX_PITCH);
+                climbHold.trim = Mth.clamp(pitch, MIN_PITCH, MAX_PITCH);
             }
         } else if (rollingOut) {
             // Down after landing: the nose lowered onto its wheel so the wings stop lifting, the engines at idle.
@@ -2145,11 +2117,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             double climbError = wantedClimb - climb;
             // Landing, the nose comes up no further than at rotation, so the tail stays clear of the ground.
             double maxPitch = landing ? ROTATION_PITCH : MAX_PITCH;
-            targetPitch = Mth.clamp(trim + CLIMB_GAIN * climbError - CLIMB_DAMPING * climbRate, MIN_PITCH, maxPitch);
-            boolean pinned = targetPitch <= MIN_PITCH || targetPitch >= maxPitch;
-            if (!pinned && Math.abs(targetPitch - pitch) < TRIM_WINDOW) {
-                trim = Mth.clamp(trim + TRIM_RATE * Mth.clamp(climbError, -TRIM_CLIMB_LIMIT, TRIM_CLIMB_LIMIT), MIN_PITCH, MAX_PITCH);
-            }
+            targetPitch = climbHold.pitchFor(climbError, climbRate, pitch, MIN_PITCH, maxPitch, MAX_PITCH);
             if ((landing || onFinal) && radio > FLARE_HEIGHT) {
                 // Coming in, slower while the nose is below the way it goes and faster while above; flaring, it keeps
                 // the speed it found. Down the glide path to a runway near the pin, it finds the speed there already.
@@ -2187,10 +2155,8 @@ public class AutopilotBlockEntity extends BlockEntity {
 
         // In the air the push the nose needs is learnt, kept right down to the touchdown: let go in the flare, a few
         // blocks up, the nose rose and the airliner floated along over the ground. On the ground the wheels hold it.
-        double pitchError = targetPitch - pitch;
-        pitchHold = onGround ? 0 : Mth.clamp(pitchHold + PITCH_HOLD_RATE * pitchError, -PITCH_HOLD_LIMIT, PITCH_HOLD_LIMIT);
-        double pitchCommand = pitchHold + PITCH_GAIN * pitchError - PITCH_DAMPING * pitchRate;
-        double rollCommand = ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate;
+        double pitchCommand = climbHold.pitchPush(targetPitch, pitch, pitchRate, onGround);
+        double rollCommand = ClimbHold.rollPush(bank - roll, rollRate);
         boolean rolls = !onGround || radio > 0.5;
         driveJets(level, state, pitchCommand, rolls ? rollCommand : 0);
 
@@ -2235,15 +2201,16 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * The rate to climb at, in blocks a second, in the air (not taking off or rolling out), climbing at the rate given
-     * now. Landing, it sinks (see {@link #easedSink}); on a runway near the pin, over whichever is nearer, the ground
-     * below or the runway, so it does not sink below the runway over a dip before it. Down the glide path to such a
-     * runway, the rate the path asks for; else the rate the height still to go asks for.
+     * now. Landing, it sinks (see {@link ClimbHold#easedSink}); on a runway near the pin, over whichever is nearer,
+     * the ground below or the runway, so it does not sink below the runway over a dip before it. Down the glide path
+     * to such a runway, the rate the path asks for; else the rate the height still to go asks for.
      */
     private double wantedClimb(boolean landing, @Nullable PinLanding.Guide guide, double heightToGo, double radio, double climb) {
         if (landing) {
-            return -easedSink(guide != null ? Math.min(radio, guide.aboveRunway()) : radio, climb);
+            double above = guide != null ? Math.min(radio, guide.aboveRunway()) : radio;
+            return -climbHold.easedSink(landingSink(above), climb);
         }
-        sinkCommand = Double.NaN;
+        climbHold.forgetSink();
         if (guide != null && !Double.isNaN(guide.climb())) {
             return guide.climb();
         }
@@ -2251,23 +2218,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The rate it sinks at landing this tick, in blocks a second, this high above the ground and climbing at the rate
-     * given: the rate for its height (see {@link #landingSink}), but rising to it from the rate it sank at as it
-     * started landing no faster than {@link #LANDING_SINK_EASE}; sinking less, as it eases out over the ground and
-     * flares, it does at once.
-     */
-    private double easedSink(double above, double climb) {
-        double from = Double.isNaN(sinkCommand) ? Math.max(0, -climb) : sinkCommand;
-        sinkCommand = Math.min(landingSink(above), from + LANDING_SINK_EASE / 20);
-        return sinkCommand;
-    }
-
-    /**
      * The rate it sinks at landing, in blocks a second, this high above the ground: faster from high up, easing to a
      * gentle sink between {@link #LANDING_STEEP_HEIGHT} and {@link #LANDING_SETTLE_HEIGHT}, and ever more gently the
      * nearer the ground below the flare's height.
      */
-    static double landingSink(double above) {
+    private static double landingSink(double above) {
         if (above > LANDING_SETTLE_HEIGHT) {
             return Mth.clampedMap(above, LANDING_SETTLE_HEIGHT, LANDING_STEEP_HEIGHT, LANDING_SINK_RATE, LANDING_FAST_SINK);
         }
@@ -2547,7 +2502,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         phase = Phase.OFF;
         awaitingClearance = false;
         pinLanding.abandon();
-        sinkCommand = Double.NaN;
+        climbHold.forgetSink();
         announcements.letGo(Announcement.LANDING);
         changed();
         if (!(level instanceof ServerLevel serverLevel)) {
@@ -2692,9 +2647,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         saveFrame(tag);
         Turning.save(tag, getBlockState());
         saveTargets(tag);
-        tag.putDouble("Trim", trim);
+        tag.putDouble("Trim", climbHold.trim);
         tag.putDouble("ThrustTrim", thrustTrim);
-        tag.putDouble("PitchHold", pitchHold);
+        tag.putDouble("PitchHold", climbHold.pitchHold);
         tag.putDouble("RunwayHeading", runwayHeading);
         tag.putInt("WheelsBelow", wheelsBelow);
         if (gearLever != null) {
@@ -2771,11 +2726,11 @@ public class AutopilotBlockEntity extends BlockEntity {
             // Saved as "Levers" before the tiller and the parking brake joined them.
             controls = Turning.turn(Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY)), turn);
             surfaces.load(tag, turn);
-            trim = tag.getDouble("Trim");
+            climbHold.trim = tag.getDouble("Trim");
             // Saved before the signal that holds the speed was learnt.
             thrustTrim = tag.contains("ThrustTrim") ? tag.getDouble("ThrustTrim") : CRUISE_THRUST;
             // Saved before the push the nose needs was learnt: none, learnt afresh in a few seconds.
-            pitchHold = tag.getDouble("PitchHold");
+            climbHold.pitchHold = tag.getDouble("PitchHold");
             // Saved before a take-off held the runway's heading apart from the one set.
             runwayHeading = tag.contains("RunwayHeading") ? tag.getDouble("RunwayHeading") : tag.getDouble("TargetHeading");
             wheelsBelow = tag.getInt("WheelsBelow");

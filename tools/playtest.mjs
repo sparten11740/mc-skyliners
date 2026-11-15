@@ -6850,6 +6850,28 @@ function checkHandLanding() {
   expect(!struck, "hand landing: she is never heard striking anything", struck ? soundOf(struck) : "");
 }
 
+// A freighter hovering low over the ground for the landing assist to leave alone, in blocks, and how long after her
+// autopilot is switched off it is listened for, in ticks.
+const ASSIST_FREIGHTER_HEIGHT = 25;
+const ASSIST_LISTEN_TICKS = 60;
+
+// The airliner's landing assist is hers alone: a freighter hovering low over the ground with her autopilot switched
+// off is never taken by it, its chime never heard.
+function checkLandingAssistAirlinerOnly() {
+  layDown("freighter");
+  must(`skyliners:autopilot fly altitude=${ground + ASSIST_FREIGHTER_HEIGHT} speed=0`, BUILD_SECONDS);
+  const freighter = findShipFlying("skyliners:engine_grille");
+  must(`sable:tp ${freighter} skyliners:console_climb; wait ${LOOK_EVERY}t`);
+  const hovering = waitForReport(freighterReport, (report) => report.phase === "cruise", FREIGHTER_UP_TICKS);
+  expect(Boolean(hovering), "landing assist: a freighter hovers low over the ground", hovering ? `at y ${hovering.altitude}` : "she never got there");
+  const since = now();
+  must(`skyliners:autopilot off; wait ${ASSIST_LISTEN_TICKS}t`);
+  const chimes = played("skyliners:pa_chime", since).length;
+  send(`?server sable remove ${freighter}`);
+  expect(chimes === 0, "landing assist: switched off low over the ground, the freighter is not taken by the airliner's landing assist",
+    `${chimes} chimes heard`);
+}
+
 function flyAndLand() {
   layDown("airliner");
   board();
@@ -7238,6 +7260,7 @@ const CHECKS = {
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },
   "hand-landing": { run: checkHandLanding, slow: true, about: "an airliner flown by hand comes down gently and level, her gear down, when her levers are pulled back to idle low over the ground" },
+  "landing-assist-airliner-only": { run: checkLandingAssistAirlinerOnly, slow: true, about: "the airliner's landing assist never takes a freighter switched off low over the ground" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
   "freighter-self-destruct": { run: checkFreighterSelfDestruct, about: "a freighter's self-destruct button by her jump seats arms her, counts down and blows her up, whoever stood aboard given a parachute" },
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },
