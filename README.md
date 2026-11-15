@@ -1,6 +1,15 @@
 # Create: Skyliners
 
-![The airliner lifting off over the end of the runway](docs/images/airliner-take-off.jpg)
+<table>
+  <tr>
+    <td><img src="docs/images/freighter-lift-off.jpg" alt="The freighter lifting off a meadow on her thrusters"><br><sub>The freighter</sub></td>
+    <td><img src="docs/images/airliner-take-off.jpg" alt="The airliner lifting off over the end of the runway"><br><sub>The airliner</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/zeppelin-lift-off.jpg" alt="The zeppelin rising over a meadow by a river, her mooring lines still hanging"><br><sub>The zeppelin</sub></td>
+    <td><img src="docs/images/rocket-lift-off.jpg" alt="The rocket lifting off her launch pad"><br><sub>The rocket</sub></td>
+  </tr>
+</table>
 
 Giant aircraft for [Create](https://modrinth.com/mod/create) and
 [Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each laid down whole by a single blueprint: an
@@ -43,13 +52,13 @@ Every control is a picture, a colour or a sound, so players who cannot read yet 
     <td><img src="docs/images/lounge-bar.jpg" alt="The lounge bar under a starlit ceiling"><br><sub>The lounge bar</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/images/zeppelin-over-the-runway.jpg" alt="The zeppelin lifting off the runway"><br><sub>The zeppelin lifting off</sub></td>
+    <td><img src="docs/images/zeppelin-control-car.jpg" alt="The zeppelin's control car, with its wheels and engine telegraphs"><br><sub>The zeppelin's control car</sub></td>
     <td><img src="docs/images/zeppelin-inside-the-hull.jpg" alt="Inside the zeppelin's hull, under its gas cells"><br><sub>Inside her hull</sub></td>
     <td><img src="docs/images/zeppelin-passenger-deck.jpg" alt="The zeppelin's passenger deck"><br><sub>Her passenger deck</sub></td>
   </tr>
   <tr>
     <td><img src="docs/images/rocket-on-launch-pad.jpg" alt="The rocket on its launch pad"><br><sub>The rocket on her pad</sub></td>
-    <td><img src="docs/images/rocket-lift-off.jpg" alt="The rocket lifting off"><br><sub>Lift-off</sub></td>
+    <td><img src="docs/images/rocket-pool.jpg" alt="The pool round the rocket's glass lift shaft"><br><sub>Her pool</sub></td>
     <td><img src="docs/images/rocket-cockpit.jpg" alt="The rocket's cockpit"><br><sub>Her cockpit</sub></td>
   </tr>
 </table>
