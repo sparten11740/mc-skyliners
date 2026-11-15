@@ -6716,6 +6716,46 @@ function checkFinTurnsWithTheAirliner() {
     `${outOfHerSides} face out of her sides, ${alongHer} along her`);
 }
 
+// Where an airliner laid down facing north has her tailplane, from where she was laid down, in blocks: across, up from
+// the ground and back.
+const TAILPLANE_ACROSS = 36;
+const TAILPLANE_FROM_UP = 10;
+const TAILPLANE_TO_UP = 22;
+const TAILPLANE_FROM_BACK = 110;
+const TAILPLANE_TO_BACK = 160;
+
+// An airliner's tailplane is one surface out to its tips: where its lifting layer, a thin plate in the middle of its
+// block, steps up a row toward the tip, both columns either side of the step are closed with skin. The outer part of
+// it was left a row up beside the rest with an open slot between, as if it floated off the end of the tailplane.
+function checkTailplaneSteps() {
+  const site = ship("airliner");
+  const blocks = read([site.x - TAILPLANE_ACROSS, ground + TAILPLANE_FROM_UP, site.z - TAILPLANE_TO_BACK],
+    [site.x + TAILPLANE_ACROSS, ground + TAILPLANE_TO_UP, site.z - TAILPLANE_FROM_BACK]);
+  const plates = new Map();
+  for (const [at, state] of blocks) {
+    const facing = propsOf(state).facing;
+    if (idOf(state) === "createpropulsion:wing" && (facing === "up" || facing === "down")) {
+      const [x, y, z] = at.split(",").map(Number);
+      plates.set(`${x},${z}`, y);
+    }
+  }
+  const steps = [...plates].flatMap(([column, y]) => openSteps(blocks, plates, column, y));
+  const open = steps.filter((step) => step.open);
+  expect(steps.length > 0 && open.length === 0, "airliner: every step in her tailplane's lifting layer is closed with skin",
+    `${open.length} of ${steps.length} open, the first at ${open[0]?.at ?? "none"}`);
+}
+
+// The step from a column of a tailplane's lifting layer to the one beside it toward her east, if its plate lies in
+// another row: whether either column leaves the other's row open there.
+function openSteps(blocks, plates, column, y) {
+  const [x, z] = column.split(",").map(Number);
+  const beside = plates.get(`${x + 1},${z}`);
+  if (beside === undefined || beside === y) {
+    return [];
+  }
+  return [{ at: key(x, y, z), open: !blocks.has(key(x, beside, z)) || !blocks.has(key(x + 1, y, z)) }];
+}
+
 function checkControlSurfacesDefault() {
   const setting = must("config skyliners server autopilot.controlSurfaces");
   expect(setting.default === true, "control surfaces: on by default", `default ${setting.default}`);
@@ -7115,6 +7155,7 @@ const CHECKS = {
   "fog-hiss": { run: checkFogHissStops, about: "a fog machine's hiss plays out, and stops when the machine goes however it goes" },
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
+  "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
   "freighter-self-destruct": { run: checkFreighterSelfDestruct, about: "a freighter's self-destruct button by her jump seats arms her, counts down and blows her up, whoever stood aboard given a parachute" },

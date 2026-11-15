@@ -842,10 +842,66 @@ public final class AirframeLayout implements Layout {
     /**
      * A pair of swept, tapered lifting surfaces, mirrored to both sides: the wings, or the tailplane. Its middle
      * layer is the lifting block, laid flat; the rest of its thickness is skin. Inside the fuselage nothing is
-     * placed, so the hull stays whole and the hold stays open.
+     * placed, so the hull stays whole and the hold stays open. Where its dihedral lifts the middle layer a row from
+     * one column to the next, the step is closed with skin (see {@link #closeSteps}).
      */
     private void wings(double halfSpan, double rootChord, double tipChord, double rootThickness, double tipThickness,
                        DoubleUnaryOperator leadingEdge, DoubleUnaryOperator centreY) {
+        layWings(halfSpan, rootChord, tipChord, rootThickness, tipThickness, leadingEdge, centreY);
+        closeSteps(halfSpan, rootChord, tipChord, leadingEdge, centreY);
+    }
+
+    /**
+     * Closes each step in a pair of lifting surfaces, where the middle layer lies a row higher in one column than in
+     * the next: a lifting block is a thin plate in the middle of its block, so two of them a row apart, with no skin
+     * round them where the surface is thin, leave an open slot between them, and the outer part of the surface looks
+     * as if it floats beside the rest. Along the chord where both columns lie, each takes skin in the other's row, so
+     * each plate meets a block of skin at the step.
+     */
+    private void closeSteps(double halfSpan, double rootChord, double tipChord, DoubleUnaryOperator leadingEdge,
+                            DoubleUnaryOperator centreY) {
+        int span = (int) Math.ceil(halfSpan * scale);
+        for (int xb = 1; xb <= span; xb++) {
+            int inner = (int) Math.floor(centreY.applyAsDouble((xb - 1) / scale) * scale);
+            int outer = (int) Math.floor(centreY.applyAsDouble(xb / scale) * scale);
+            if (inner == outer) {
+                continue;
+            }
+            int[] innerChord = chordRows(xb - 1, halfSpan, rootChord, tipChord, leadingEdge);
+            int[] outerChord = chordRows(xb, halfSpan, rootChord, tipChord, leadingEdge);
+            for (int z = Math.max(innerChord[0], outerChord[0]); z <= Math.min(innerChord[1], outerChord[1]); z++) {
+                closeStep(xb, Math.min(inner, outer), Math.max(inner, outer), z);
+            }
+        }
+    }
+
+    /**
+     * The first and last rows back a lifting surface's column lies in, as {@link #layWings} lays it: those whose middle
+     * lies within its chord.
+     */
+    private int[] chordRows(int xb, double halfSpan, double rootChord, double tipChord,
+                            DoubleUnaryOperator leadingEdge) {
+        double x = xb / scale;
+        double front = leadingEdge.applyAsDouble(x);
+        double chord = lerp(rootChord, tipChord, x / halfSpan);
+        return new int[]{(int) Math.ceil(front * scale - 0.5), (int) Math.floor((front + chord) * scale - 0.5)};
+    }
+
+    /** Skin in both columns beside a step, on both sides, from its lower row to its upper, where nothing stands. */
+    private void closeStep(int xb, int lower, int upper, int z) {
+        BlockState skin = palette.hull();
+        for (int cell = 0; cell < 4 * (upper - lower + 1); cell++) {
+            int x = (cell % 2 == 0 ? xb : xb - 1) * (cell / 2 % 2 == 0 ? 1 : -1);
+            int y = lower + cell / 4;
+            if (!inFuselage(x, y, z) && !has(x, y, z)) {
+                set(x, y, z, skin);
+            }
+        }
+    }
+
+    /** Lays a pair of lifting surfaces' blocks, column by column out from the middle (see {@link #wings}). */
+    private void layWings(double halfSpan, double rootChord, double tipChord, double rootThickness, double tipThickness,
+                          DoubleUnaryOperator leadingEdge, DoubleUnaryOperator centreY) {
         int span = (int) Math.ceil(halfSpan * scale);
         for (int xb = 0; xb <= span; xb++) {
             double x = xb / scale;
