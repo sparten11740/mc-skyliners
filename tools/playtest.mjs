@@ -6815,6 +6815,41 @@ function releaseParkingBrake(ship) {
   must(`server setblock ${at.join(" ")} skyliners:parking_brake[facing=${facing},powered=false]${nbt} replace; wait 5t; skyliners:autopilot off; wait 10t`);
 }
 
+// Landed by hand, her thrust levers back at idle from cruising: how high over the ground she cruises first, in blocks,
+// and how long she is given to get up there, in ticks; how long her way down is watched, in samples; how high over the
+// ground her wheels count as down, in blocks; and how fast she may sink as she touches down, in blocks a second, and
+// how far her nose may point down, in degrees.
+const HAND_LAND_HEIGHT = 75;
+const HAND_LAND_CLIMB_TICKS = 900;
+const HAND_LAND_SAMPLES = 240;
+const HAND_LAND_DOWN = 1.5;
+const HAND_LAND_SINK_MOST = 5;
+const HAND_LAND_NOSE_DOWN_MOST = 5;
+
+// An airliner flown by hand comes down to land when her thrust levers are pulled back to idle, low over the ground,
+// gently and level, her gear down: left to herself she slowed until her wings no longer held her and struck the ground
+// nose first, sinking at 11 blocks a second.
+function checkHandLanding() {
+  layDown("airliner");
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + HAND_LAND_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  const ship = findShipFlying("skyliners:thrust_lever");
+  must(`wait ${HAND_LAND_CLIMB_TICKS}t`, BUILD_SECONDS);
+  const since = now();
+  const rows = must(`skyliners:autopilot off; sample sable:info ${ship} brief every ${HAND_SAMPLE_EVERY}t x${HAND_LAND_SAMPLES}`, BUILD_SECONDS).rows;
+  const down = rows.findIndex((row, i) => i > 0 && Number(row.agl) < HAND_LAND_DOWN);
+  const coming = down > 0 ? [rows[down - 1], rows[down]] : [];
+  // Her climb as she meets the ground, and her pitch, which Blockpilot counts down from level with her nose.
+  const sink = -Math.min(...coming.map((row) => Number(row.climb)));
+  const noseDown = Math.max(...coming.map((row) => Number(row.pitch)));
+  const struck = heard(IMPACT_SOUND, since, 0);
+  send(`?server sable remove ${ship}`);
+  expect(down > 0, "hand landing: her levers back at idle, she comes down to the ground");
+  expect(down > 0 && sink <= HAND_LAND_SINK_MOST && noseDown <= HAND_LAND_NOSE_DOWN_MOST,
+    "hand landing: she touches down gently and level, not nose first", `sinking ${round(sink)} blocks a second, her nose ${round(noseDown)} degrees down`);
+  expect(!struck, "hand landing: she is never heard striking anything", struck ? soundOf(struck) : "");
+}
+
 function flyAndLand() {
   layDown("airliner");
   board();
@@ -7202,6 +7237,7 @@ const CHECKS = {
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },
+  "hand-landing": { run: checkHandLanding, slow: true, about: "an airliner flown by hand comes down gently and level, her gear down, when her levers are pulled back to idle low over the ground" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
   "freighter-self-destruct": { run: checkFreighterSelfDestruct, about: "a freighter's self-destruct button by her jump seats arms her, counts down and blows her up, whoever stood aboard given a parachute" },
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },

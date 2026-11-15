@@ -289,7 +289,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final int CEILING_MARGIN = 30;
     /** Nose attitude at rotation, in degrees: what lifts the airliner off the runway. */
-    private static final double ROTATION_PITCH = 9;
+    static final double ROTATION_PITCH = 9;
     /** Rate of climb asked for, in blocks a second per block of height still to go, and the most up and down. */
     static final double HEIGHT_GAIN = 0.2;
     static final double MAX_CLIMB_RATE = 8;
@@ -298,9 +298,9 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Degrees of pitch added per block a second it climbs too slowly, taken off per block a second each second it is
      * gaining climb (damping), and the range the nose is held in.
      */
-    private static final double CLIMB_GAIN = 0.8;
-    private static final double CLIMB_DAMPING = 0.5;
-    private static final double MIN_PITCH = -15;
+    static final double CLIMB_GAIN = 0.8;
+    static final double CLIMB_DAMPING = 0.5;
+    static final double MIN_PITCH = -15;
     private static final double MAX_PITCH = 20;
     /**
      * How fast the trim learns, in degrees a tick per block a second the climb is off, counting no more than this
@@ -308,9 +308,9 @@ public class AutopilotBlockEntity extends BlockEntity {
      * is within this many degrees of where it is wanted and not held at either end of its range: while the nose is
      * still swinging round, or pinned at a limit, learning would only wind it up.
      */
-    private static final double TRIM_RATE = 0.01;
-    private static final double TRIM_CLIMB_LIMIT = 3;
-    private static final double TRIM_WINDOW = 3;
+    static final double TRIM_RATE = 0.01;
+    static final double TRIM_CLIMB_LIMIT = 3;
+    static final double TRIM_WINDOW = 3;
     /**
      * The engines' signal it starts from at the speed being held, and how much it changes per block a second off that
      * speed.
@@ -330,13 +330,13 @@ public class AutopilotBlockEntity extends BlockEntity {
      * pitches by itself, as far off as it needs to be pushed back; and the trim, which only learns with the nose near
      * where it is wanted, might then never learn the climb at all, the airliner holding a height off the one set.
      */
-    private static final double PITCH_HOLD_RATE = 0.01;
-    private static final double PITCH_HOLD_LIMIT = 8;
+    static final double PITCH_HOLD_RATE = 0.01;
+    static final double PITCH_HOLD_LIMIT = 8;
     /** Signal per degree of pitch or bank error, and per degree a second it is changing at (damping). */
-    private static final double PITCH_GAIN = 0.75;
-    private static final double PITCH_DAMPING = 0.4;
-    private static final double ROLL_GAIN = 0.5;
-    private static final double ROLL_DAMPING = 0.3;
+    static final double PITCH_GAIN = 0.75;
+    static final double PITCH_DAMPING = 0.4;
+    static final double ROLL_GAIN = 0.5;
+    static final double ROLL_DAMPING = 0.3;
     /**
      * Degrees of bank per degree off the heading wanted, taken off per degree a second it turns faster than it should
      * (damping, so it rolls out before it swings past), and the steepest bank it flies.
@@ -407,7 +407,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double LANDING_STEEP_HEIGHT = 60;
     private static final double LANDING_SETTLE_HEIGHT = 30;
     private static final double LANDING_FAST_SINK = 4.5;
-    private static final double LANDING_SINK_EASE = 0.5;
+    static final double LANDING_SINK_EASE = 0.5;
     /**
      * The steepest bank it flies, in degrees per block above the ground, up to {@link #MAX_BANK}: low down, after
      * take-off or landing, its long wings must stay clear of the ground.
@@ -513,6 +513,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final EngineSpool spool = new EngineSpool();
     /** Whether any of her engines was still winding up to the thrust asked of it last tick. */
     private boolean engineWinding;
+    /** What brings her down to land flown by hand, her levers at idle (see {@link LandingAssist}). */
+    private final LandingAssist landingAssist = new LandingAssist();
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
     /**
@@ -1889,17 +1891,15 @@ public class AutopilotBlockEntity extends BlockEntity {
         double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
         lastPitch = pitch;
         lastRoll = roll;
-        double pitchCommand = 0;
-        double rollCommand = 0;
         double radio = radioAltitude(level, state);
-        if (radio > AIRBORNE) {
-            double climbLimit = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
-            double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
-            double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
-            pitchCommand = PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate;
-            rollCommand = ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate;
+        double climb = state.velocity().y;
+        boolean assisting = landingAssist.wanted(radio, leverSignal(level), state.airspeed(), climb);
+        if (assisting) {
+            assistLanding(level, state, radio, pitchRate, rollRate);
+        } else {
+            letGoOfLanding(level, radio);
+            keepWithinLimits(level, state, radio, pitchRate, rollRate);
         }
-        driveJets(level, state, pitchCommand, rollCommand);
 
         double speed = state.airspeed();
         double apex = state.apex();
@@ -1917,9 +1917,67 @@ public class AutopilotBlockEntity extends BlockEntity {
             resyncControls(level);
             setChanged();
         }
-        holdOnBrake(level, radio);
-        if (!governing && !heldOnBrake) {
+        // Brought down to land, she is in the air: a parking brake left set takes her engines once she is down.
+        if (!assisting) {
+            holdOnBrake(level, radio);
+        }
+        if (!governing && !heldOnBrake && !assisting) {
             followLevers(level);
+        }
+    }
+
+    /**
+     * The landing assist lets go of her, if it had her: with the autopilot's disconnect tone should she still be in the
+     * air, the levers come up off idle or she climbing out of its reach; silently as she touches down.
+     */
+    private void letGoOfLanding(ServerLevel level, double radio) {
+        if (landingAssist.on() && radio > Callouts.ON_GROUND) {
+            level.playSound(null, worldPosition, SkylinersRegistry.AUTOPILOT_OFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+        landingAssist.letGo();
+    }
+
+    /**
+     * Flown by hand, she is kept from climbing, diving or banking past {@link #PROTECT_CLIMB}, {@link #PROTECT_DIVE}
+     * and {@link #PROTECT_BANK} degrees while in the air, righted by the jets; within them she is left be.
+     */
+    private void keepWithinLimits(ServerLevel level, SableFlight.State state, double radio, double pitchRate,
+                                  double rollRate) {
+        double pitchCommand = 0;
+        double rollCommand = 0;
+        if (radio > AIRBORNE) {
+            double pitch = state.pitch();
+            double roll = state.roll();
+            double climbLimit = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
+            double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
+            double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
+            pitchCommand = PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate;
+            rollCommand = ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate;
+        }
+        driveJets(level, state, pitchCommand, rollCommand);
+    }
+
+    /**
+     * Flown by hand, low and her levers at idle, she is brought down to land (see {@link LandingAssist}), her landing
+     * gear thrown down as the autopilot's is coming in, should it be up, and the cabin's chime heard on the flight deck
+     * as it takes her.
+     */
+    private void assistLanding(ServerLevel level, SableFlight.State state, double radio, double pitchRate,
+                               double rollRate) {
+        if (!landingAssist.on()) {
+            level.playSound(null, worldPosition, SkylinersRegistry.PA_CHIME.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+        GearLeverBlockEntity gear = gear(level);
+        if (gear != null && !gear.down()) {
+            gear.lower(level);
+        }
+        double speed = state.airspeed();
+        double climb = state.velocity().y;
+        LandingAssist.Steer steer = landingAssist.steer(radio, state.pitch(), pitchRate, state.roll(), rollRate, climb,
+            speed, approach -> holdSpeed(speed, approach));
+        driveJets(level, state, steer.pitch(), steer.roll());
+        for (Channel engine : ENGINES) {
+            driveEngine(level, engine, steer.thrust());
         }
     }
 
@@ -2209,7 +2267,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * gentle sink between {@link #LANDING_STEEP_HEIGHT} and {@link #LANDING_SETTLE_HEIGHT}, and ever more gently the
      * nearer the ground below the flare's height.
      */
-    private static double landingSink(double above) {
+    static double landingSink(double above) {
         if (above > LANDING_SETTLE_HEIGHT) {
             return Mth.clampedMap(above, LANDING_SETTLE_HEIGHT, LANDING_STEEP_HEIGHT, LANDING_SINK_RATE, LANDING_FAST_SINK);
         }
