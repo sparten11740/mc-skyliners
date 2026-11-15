@@ -42,6 +42,7 @@ import dev.skyliners.block.WallLightBlock;
 import dev.skyliners.block.WindowDimmerBlock;
 import dev.skyliners.block.WindowDimmerBlockEntity;
 import dev.skyliners.club.BandstandBlock;
+import dev.skyliners.console.ConsoleBlock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,6 +94,11 @@ public final class FreighterLayout extends HullLayout {
     /** The core round the turrets' ladder: its walls so many blocks out from her axis, three blocks of well inside. */
     static final int CORE = 2;
     private static final int CORE_INSIDE = 2 * CORE - 1;
+    /**
+     * Where across her core the ladder up to her turret stands, in blocks from her axis: in its corner, out of the
+     * gunner's way.
+     */
+    private static final int TURRET_LADDER_X = CORE - 1;
     /** How far out from her axis the ring corridor's outer wall stands, in blocks: three blocks of corridor or more. */
     static final double CORRIDOR = 6.5;
     /** The walls between her six rooms, at these bearings in degrees clockwise from her bow. */
@@ -1245,12 +1251,14 @@ public final class FreighterLayout extends HullLayout {
     }
 
     /**
-     * Her top turret, up her core: a ladder up the core's back wall from her deck to the top of the shaft under her top
-     * dome, a platform there round the ladder's top, the gunner's seat on it facing her bow a block ahead of the ladder,
-     * so whoever climbs it steps back off onto the platform between them, a floor light either side of the seat
-     * lighting it and that step kept clear, their head in the dome's glass, the core's walls taken out of the dome's row so the gunner sees out all round,
-     * and the laser cannon on its pedestal on the hub where the dome's ribs meet over them, facing her bow, its sight
-     * seeing past her rim; none with the server config's {@code freighter.turrets} off.
+     * Her top turret, up her core: a ladder up the corner of the core's back wall from her deck to the top of the shaft
+     * under her top dome, a floor over the shaft there round the ladder's top, and on it the gunner's seat in the
+     * middle, under the cannon and facing her bow, with a scanner console in front of it, a desk with its scope facing
+     * the seat, so whoever climbs up steps back off beside the seat and sees where the turret is worked; a floor light
+     * either side of the console lighting it and the step off kept clear, their head in the dome's glass, the core's
+     * walls taken out of the dome's row so the gunner sees out all round, and the laser cannon on its pedestal on the
+     * hub where the dome's ribs meet over them, facing her bow, its sight seeing past her rim; none with the server
+     * config's {@code freighter.turrets} off.
      */
     private void turret() {
         int under = deck + 1;
@@ -1264,25 +1272,36 @@ public final class FreighterLayout extends HullLayout {
         BlockState ladder = SkylinersRegistry.CREW_LADDER.get().defaultBlockState()
             .setValue(RungLadderBlock.FACING, Direction.NORTH);
         for (int y = deck + 1; y <= seat; y++) {
-            set(0, y, CORE - 1, ladder.setValue(RungLadderBlock.TOP, y == seat));
+            set(TURRET_LADDER_X, y, CORE - 1, ladder.setValue(RungLadderBlock.TOP, y == seat));
         }
-        BlockState floor = SkylinersRegistry.CABIN_FLOOR.get().defaultBlockState();
-        for (int cell = 0; cell < 2 * CORE_INSIDE; cell++) {
-            set(cell % CORE_INSIDE - 1, seat - 1, cell / CORE_INSIDE - 1, floor);
-        }
+        turretFloor(seat - 1);
         openDomeRow(under);
-        seat(0, seat, -1, PilotSeatBlock.Stick.NONE);
+        seat(0, seat, 0, PilotSeatBlock.Stick.NONE);
+        set(0, seat, -1, SkylinersRegistry.CONSOLE_SCANNER.get().defaultBlockState().setValue(ConsoleBlock.FACING, Direction.SOUTH)
+            .setValue(ConsoleBlock.MOUNT, Mount.FLOOR));
         BlockState lamp = SkylinersRegistry.FLOOR_LIGHT.get().defaultBlockState();
         set(-1, seat, -1, lamp);
         set(1, seat, -1, lamp);
         // Lit by those, so the pass for her dark corners sets no floor light where the climber steps off.
-        keepClear(0, seat, 0);
+        keepClear(TURRET_LADDER_X, seat, 0);
         int crown = under + 1;
         while (!isOpen(0, crown, 0) && crown < top) {
             crown++;
         }
         set(0, crown, 0, SkylinersRegistry.LASER_CANNON.get().defaultBlockState());
         FreighterExterior.pad(this, new BlockPos(0, crown, 0), Direction.DOWN);
+    }
+
+    /** The gunner's floor over her core's shaft, everywhere across the shaft but where the ladder comes up through it. */
+    private void turretFloor(int y) {
+        BlockState floor = SkylinersRegistry.CABIN_FLOOR.get().defaultBlockState();
+        for (int cell = 0; cell < CORE_INSIDE * CORE_INSIDE; cell++) {
+            int x = cell % CORE_INSIDE - (CORE - 1);
+            int z = cell / CORE_INSIDE - (CORE - 1);
+            if (x != TURRET_LADDER_X || z != CORE - 1) {
+                set(x, y, z, floor);
+            }
+        }
     }
 
     /**
