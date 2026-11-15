@@ -6,7 +6,7 @@ Four ships to build, board and fly, with a page on the main features of each. Th
 ## The ships
 
 - [The airliner](guide/airliner.md): an A380-style double-decker with a pool, a gym hall and a bar.
-- [The zeppelin](guide/zeppelin.md): a Hindenburg-sized airship lifted by real hot air.
+- [The zeppelin](guide/zeppelin.md): a Hindenburg-style airship lifted by real hot air.
 - [The rocket](guide/rocket.md): a rocket with stories to live in, who climbs into space and lands on her fins.
 - [The freighter](guide/freighter.md): a battered saucer with guns, a club and a hyperspace jump.
 

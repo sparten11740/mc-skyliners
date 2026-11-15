@@ -6805,6 +6805,15 @@ function openSteps(blocks, plates, column, y) {
   return [{ at: key(x, y, z), open: !blocks.has(key(x, beside, z)) || !blocks.has(key(x + 1, y, z)) }];
 }
 
+// The full-size zeppelin, which costs enough to fly to slow a server down, is switched off unless a server turns it on:
+// its blueprints out of the creative tab and the half-size one built in their place.
+function checkZeppelinFullSizeOff() {
+  const setting = must("config skyliners server zeppelin.fullSize");
+  expect(setting.default === false, "zeppelin: full size is off by default", `default ${setting.default}`);
+  const asked = JSON.stringify(send(`?server skyliners build 0 ${ground - 1} 40 south zeppelin full`));
+  expect(asked.includes("switched off"), "zeppelin: asked for at full size by command, she is refused while it is off", asked.slice(0, 160));
+}
+
 function checkControlSurfacesDefault() {
   const setting = must("config skyliners server autopilot.controlSurfaces");
   expect(setting.default === true, "control surfaces: on by default", `default ${setting.default}`);
@@ -7356,6 +7365,7 @@ const CHECKS = {
   "fog-hiss": { run: checkFogHissStops, about: "a fog machine's hiss plays out, and stops when the machine goes however it goes" },
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
+  "zeppelin-full-size-off": { run: checkZeppelinFullSizeOff, about: "the full-size zeppelin is switched off by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },

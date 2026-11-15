@@ -41,6 +41,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.IntValue LASER_RANGE;
     public static final ModConfigSpec.IntValue LASER_BOLTS_PER_SECOND;
     public static final ModConfigSpec.BooleanValue SELF_DESTRUCT;
+    public static final ModConfigSpec.BooleanValue ZEPPELIN_FULL_SIZE;
     public static final ModConfigSpec.ConfigValue<String> BURNER_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENVELOPE_BLOCK;
     public static final ModConfigSpec.BooleanValue SAFETY_CANOPY;
@@ -367,6 +368,14 @@ public final class SkylinersConfig {
         builder.pop();
 
         builder.push("zeppelin");
+        ZEPPELIN_FULL_SIZE = builder
+            .comment(
+                "Whether the full-size zeppelin, the Hindenburg's 490 blocks, can be built: its three blueprints in the creative tab",
+                "and /skyliners build ... zeppelin full. Flying one costs enough to slow a server down, so it is off: only the",
+                "half-size zeppelin, 245 blocks, is built, and a full-size blueprint already in hand builds a half-size one.",
+                "Full-size zeppelins already standing are left as they are. The creative tab shows the change after restarting the game."
+            )
+            .define("fullSize", false);
         BURNER_BLOCK = builder
             .comment(
                 "The hot air burner standing in each of the zeppelin's gas cells, lifting it with the hot air it fills the cell with.",

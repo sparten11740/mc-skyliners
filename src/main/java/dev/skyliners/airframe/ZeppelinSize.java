@@ -1,5 +1,6 @@
 package dev.skyliners.airframe;
 
+import dev.skyliners.SkylinersConfig;
 import java.util.Set;
 
 /**
@@ -39,6 +40,19 @@ public enum ZeppelinSize {
      * so she speeds up and turns as the full-size ship does, which her pilot is tuned for, rather than hunting.
      */
     public record EngineCarShape(double radius, int halfLength, double nose, double standoff, float propellerReach, double thrust) {
+    }
+
+    /**
+     * Whether a full-size zeppelin may be built, as the server config's {@code zeppelin.fullSize} says: flying one
+     * costs enough to slow a server down. Not before the config has loaded, as off is its default.
+     */
+    public static boolean fullAllowed() {
+        return SkylinersConfig.SPEC.isLoaded() && SkylinersConfig.ZEPPELIN_FULL_SIZE.get();
+    }
+
+    /** The size a zeppelin asked for at this size is built at: half where full size is not allowed. */
+    public static ZeppelinSize buildable(ZeppelinSize wanted) {
+        return wanted == FULL && !fullAllowed() ? HALF : wanted;
     }
 
     ZeppelinShape.CellFill cells() {

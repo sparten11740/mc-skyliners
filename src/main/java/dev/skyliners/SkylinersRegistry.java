@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.skyliners.airframe.AirframeLayout;
 import dev.skyliners.airframe.FreighterLayout;
+import dev.skyliners.airframe.Layout;
 import dev.skyliners.airframe.RocketLayout;
 import dev.skyliners.airframe.ZeppelinLayout;
 import dev.skyliners.airframe.ZeppelinOptions;
@@ -422,6 +423,7 @@ import dev.skyliners.repairs.RepairBoardBlockEntity;
 import dev.skyliners.zerog.GravitySwitchBlock;
 import dev.skyliners.zerog.GravitySwitchBlockEntity;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -3269,14 +3271,17 @@ public final class SkylinersRegistry {
             () -> MODEL_AIRLINER.get().defaultBlockState(), AIRLINER_MODEL_MIDDLE, "item.skyliners.furnished_airliner_blueprint.tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
-    /** The Hindenburg-sized zeppelin, always at its own size. */
+    /**
+     * The Hindenburg-sized zeppelin, at its own size where the server config lets it be built, else at half (see {@link
+     * ZeppelinSize#buildable}); out of the creative tab then.
+     */
     public static final DeferredItem<AirframeBlueprintItem> ZEPPELIN_BLUEPRINT = ITEMS.register(
-        "zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(ZeppelinOptions.PLAIN), () -> MODEL_ZEPPELIN.get().defaultBlockState(),
+        "zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> fullZeppelin(ZeppelinOptions.PLAIN), () -> MODEL_ZEPPELIN.get().defaultBlockState(),
             ZEPPELIN_MODEL_MIDDLE, "item.skyliners.zeppelin_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
     /** The same zeppelin with its decks furnished: cabins, a galley, a dining room, a lounge and promenades. */
     public static final DeferredItem<AirframeBlueprintItem> FURNISHED_ZEPPELIN_BLUEPRINT = ITEMS.register(
-        "furnished_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED),
+        "furnished_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> fullZeppelin(ZeppelinOptions.FURNISHED),
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.skyliners.furnished_zeppelin_blueprint.tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
@@ -3285,7 +3290,7 @@ public final class SkylinersRegistry {
      * green gas cells, fairy lights, a wreath on its nose, a star on its mast and sleigh bells with its engines.
      */
     public static final DeferredItem<AirframeBlueprintItem> FESTIVE_ZEPPELIN_BLUEPRINT = ITEMS.register(
-        "festive_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE),
+        "festive_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> fullZeppelin(ZeppelinOptions.FESTIVE),
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.skyliners.festive_zeppelin_blueprint.tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
@@ -3332,6 +3337,11 @@ public final class SkylinersRegistry {
     public static final DeferredItem<RunwayBlueprintItem> RUNWAY_BLUEPRINT = ITEMS.register(
         "runway_blueprint", () -> new RunwayBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
+
+    /** A zeppelin built with these options at full size, or at half where the server config keeps full size off. */
+    private static Layout fullZeppelin(ZeppelinOptions options) {
+        return ZeppelinLayout.create(options.sized(ZeppelinSize.buildable(ZeppelinSize.FULL)));
+    }
 
     /** A blueprint for a half-size zeppelin built with these options, its tooltip under its own name's. */
     private static DeferredItem<AirframeBlueprintItem> halfZeppelinBlueprint(String name, ZeppelinOptions options) {
@@ -3650,10 +3660,22 @@ public final class SkylinersRegistry {
         ))
     );
 
+    /**
+     * The full-size zeppelin's blueprints, left out of the creative tab while the server config keeps full size off.
+     */
+    private static final Set<Supplier<? extends Item>> FULL_ZEPPELIN_BLUEPRINTS =
+        Set.of(ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT, FESTIVE_ZEPPELIN_BLUEPRINT);
+
+    /** Whether an item of the tab's sections is shown in it. */
+    private static boolean inTab(Supplier<? extends Item> item) {
+        return ZeppelinSize.fullAllowed() || !FULL_ZEPPELIN_BLUEPRINTS.contains(item);
+    }
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("skyliners", () -> CreativeModeTab.builder()
         .title(Component.translatable("itemGroup.skyliners"))
         .icon(() -> AIRLINER_BLUEPRINT.get().getDefaultInstance())
-        .displayItems((parameters, output) -> TAB_SECTIONS.forEach(section -> section.items().forEach(item -> output.accept(item.get()))))
+        .displayItems((parameters, output) -> TAB_SECTIONS.forEach(section -> section.items().stream().filter(SkylinersRegistry::inTab)
+            .forEach(item -> output.accept(item.get()))))
         .build());
 
     private SkylinersRegistry() {

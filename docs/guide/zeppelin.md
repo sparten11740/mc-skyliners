@@ -1,14 +1,15 @@
 # The zeppelin
 
-A rigid airship in the Hindenburg's style, as big as the real one: about 490 blocks long, as long as three airliners
-nose to tail. She is lifted by real hot air and flown from a glazed control car, mostly by her autopilot, and she has
-decks to walk, a club to find and a roof to jump from.
+A rigid airship in the Hindenburg's style, half the real one's size: about 245 blocks long, her control car and decks
+as big as ever. She is lifted by real hot air and flown from a glazed control car, mostly by her autopilot, and she has
+decks to walk, a club to find and a roof to jump from. The full Hindenburg, 490 blocks, as long as three airliners nose
+to tail, costs a lot to fly: the server setting `zeppelin.fullSize` brings back her full-size blueprints.
 
 ## Getting her flying
 
-- Take a Zeppelin Blueprint from the Create: Skyliners creative tab (the Furnished one also fits out the decks) and use
-  it on the ground. The nose goes just past the block you click and the tail stretches away the way you face. She takes
-  a few tens of seconds to go up.
+- Take a Half-Size Zeppelin Blueprint from the Create: Skyliners creative tab (the Furnished one also fits out the
+  decks) and use it on the ground. The nose goes just past the block you click and the tail stretches away the way you
+  face. She takes a few tens of seconds to go up.
 - Her boarding stairs come down of their own accord. Her burners need Create Aeronautics.
 - In the control car, use the autopilot's control head to open its settings and press Take Off.
 - She is held a moment on her lines, then the handlers let go at the call "Up ship!" and she rises straight up, climbing

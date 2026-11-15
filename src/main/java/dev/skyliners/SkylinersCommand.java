@@ -92,13 +92,25 @@ final class SkylinersCommand {
         return build(context, along, AirframeLayout.create(SkylinersConfig.SCALE.get(), furnished), "commands.skyliners.build");
     }
 
-    /** A zeppelin's word in the command, built at full size, or at the size named after it. */
+    /**
+     * A zeppelin's word in the command, built at full size, or at half where the server config keeps full size off
+     * (see {@link ZeppelinSize#buildable}), or at the size named after it, full only where it is allowed.
+     */
     private static LiteralArgumentBuilder<CommandSourceStack> sized(LiteralArgumentBuilder<CommandSourceStack> word, Direction along, ZeppelinOptions options) {
-        word.executes(context -> buildZeppelin(context, along, options));
+        word.executes(context -> buildZeppelin(context, along, options.sized(ZeppelinSize.buildable(ZeppelinSize.FULL))));
         for (ZeppelinSize size : ZeppelinSize.values()) {
-            word.then(Commands.literal(size.name().toLowerCase(Locale.ROOT)).executes(context -> buildZeppelin(context, along, options.sized(size))));
+            word.then(Commands.literal(size.name().toLowerCase(Locale.ROOT)).executes(context -> buildNamedSize(context, along, options.sized(size))));
         }
         return word;
+    }
+
+    /** A zeppelin at the size the command named: refused at full size where the server config keeps it off. */
+    private static int buildNamedSize(CommandContext<CommandSourceStack> context, Direction along, ZeppelinOptions options) throws CommandSyntaxException {
+        if (options.size() == ZeppelinSize.FULL && !ZeppelinSize.fullAllowed()) {
+            context.getSource().sendFailure(Component.translatable("commands.skyliners.full_zeppelin_off"));
+            return 0;
+        }
+        return buildZeppelin(context, along, options);
     }
 
     private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, ZeppelinOptions options) throws CommandSyntaxException {

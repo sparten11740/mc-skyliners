@@ -8,7 +8,7 @@
 
 Giant aircraft for [Create](https://modrinth.com/mod/create) and
 [Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each created from a single blueprint: an
-A380-style airliner, a Hindenburg-sized zeppelin, a retro rocket, and a battered saucer freighter. They fly on [Sable](https://modrinth.com/mod/sable)'s physics, lifted and
+A380-style airliner, a Hindenburg-style zeppelin, a retro rocket, and a battered saucer freighter. They fly on [Sable](https://modrinth.com/mod/sable)'s physics, lifted and
 driven by [Create Propulsion](https://modrinth.com/mod/create-propulsion-simulated)'s thrusters and wings (the zeppelin
 by Create Aeronautics' hot air), with you and your friends aboard.
 
@@ -19,7 +19,8 @@ by Create Aeronautics' hot air), with you and your friends aboard.
   a lounge bar under a starlit ceiling, duty free, a secret den and a hold full of luggage. Its autopilot takes off,
   flies to a pin you drop on its map and lands on a runway, with callouts, air traffic control on the radio and cabin
   announcements.
-- **The zeppelin**: 490 blocks of airship (245 at half size) floating on hot air in sixteen coloured gas cells, with a
+- **The zeppelin**: 245 blocks of airship (the Hindenburg's full 490 behind a server setting) floating on hot air in
+  sixteen coloured gas cells, with a
   control car under the bow, passenger decks behind promenade windows, a techno club, a sky crane and liveries to
   repaint her in. A festive edition comes dressed for Christmas.
 - **The rocket**: as tall as the airliner is long, standing on four fins, with multiple levels round a glass lift, a lab, a
