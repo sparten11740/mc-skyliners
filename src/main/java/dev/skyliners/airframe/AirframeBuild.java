@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -117,8 +118,7 @@ public final class AirframeBuild {
             BlockPos turned = cell.rotate(rotation);
             at.set(nose.getX() + turned.getX(), nose.getY() + turned.getY(), nose.getZ() + turned.getZ());
             positions[count] = at.asLong();
-            // Through the level, so blocks that turn themselves with their surroundings in mind (other mods') can.
-            states[count] = state.rotate(level, at, rotation);
+            states[count] = turned(at, state);
             count++;
             top = Math.max(top, at.getY());
             if (!level.isInWorldBounds(at) || layout.intoTheGround(cell)) {
@@ -131,6 +131,22 @@ public final class AirframeBuild {
                     firstBlocked = at.immutable();
                 }
             }
+        }
+
+        /**
+         * A block turned with the airframe: by its own block, through the level, so blocks that turn themselves with
+         * their surroundings in mind (other mods') can; and where the block leaves a six-way facing as it was, by that
+         * facing. Vanilla's {@link DirectionalBlock} never turns its facing, so a block on it that does not turn itself
+         * faces the same way however the airframe is turned: Create Propulsion's wing is one, and the lifting layer
+         * down the middle of the airliner's fin, which faces out of her sides, stood edge-on in rows on every airliner
+         * built facing east or west.
+         */
+        private BlockState turned(BlockPos pos, BlockState state) {
+            BlockState turned = state.rotate(level, pos, rotation);
+            if (turned != state || !state.hasProperty(DirectionalBlock.FACING)) {
+                return turned;
+            }
+            return state.setValue(DirectionalBlock.FACING, rotation.rotate(state.getValue(DirectionalBlock.FACING)));
         }
     }
 

@@ -6622,6 +6622,26 @@ function checkCurtainPartsAboard() {
   must(`server tp @p 0 ${ground} 0`);
 }
 
+// How far past where an airliner built facing east was laid down the player stands to look over her fin, in blocks: her
+// tail ends about 145 blocks on, beyond the 128 a find reaches.
+const FIN_LOOK_FROM = 100;
+
+// An airliner built facing east has the lifting layer down the middle of her fin facing out of her sides, as one built
+// facing north does. Create Propulsion's wing never turned with her, so on her it faced along her and stood edge-on in
+// rows: a fin of grey slats with the sky between them.
+function checkFinTurnsWithTheAirliner() {
+  const site = { x: nextSite++ * SITE_APART, z: 0 };
+  creative();
+  standToBuild(site.x, site.z, -90);
+  must("skyliners:build airliner", BUILD_SECONDS);
+  must(`server tp @p ${site.x + FIN_LOOK_FROM} ${ground + 5} ${site.z}; wait ${CHUNKS_TICKS}t; settle`, BUILD_SECONDS);
+  const facing = (way) => must(`find createpropulsion:wing[facing=${way}] 128 1`).count ?? 0;
+  const outOfHerSides = facing("north") + facing("south");
+  const alongHer = facing("east") + facing("west");
+  expect(outOfHerSides > 0 && alongHer === 0, "an airliner built facing east: her fin's lifting layer faces out of her sides",
+    `${outOfHerSides} face out of her sides, ${alongHer} along her`);
+}
+
 function checkControlSurfacesDefault() {
   const setting = must("config skyliners server autopilot.controlSurfaces");
   expect(setting.default === true, "control surfaces: on by default", `default ${setting.default}`);
@@ -7021,6 +7041,7 @@ const CHECKS = {
   "fog-hiss": { run: checkFogHissStops, about: "a fog machine's hiss plays out, and stops when the machine goes however it goes" },
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
+  "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
   "freighter-self-destruct": { run: checkFreighterSelfDestruct, about: "a freighter's self-destruct button by her jump seats arms her, counts down and blows her up, whoever stood aboard given a parachute" },
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },
