@@ -6899,6 +6899,51 @@ function checkHandLanding() {
   expect(!struck, "hand landing: she is never heard striking anything", struck ? soundOf(struck) : "");
 }
 
+// Flown by hand at full thrust from cruising: how long she is watched, in samples of HAND_SAMPLE_EVERY ticks (half a
+// minute and more, about one of the swings she flew); how fast she may sink at most, in blocks a second; and how far her
+// nose may swing between its highest and its lowest, in degrees.
+const HAND_FULL_SAMPLES = 200;
+const HAND_FULL_SINK_MOST = 4;
+const HAND_FULL_PITCH_SWING_MOST = 12;
+
+// An airliner flown by hand with her thrust levers pushed to full from cruising climbs steadily: left free in pitch,
+// she swung up and down by more than a hundred blocks half a minute apart, her nose rising 27 degrees and dropping 15,
+// diving at 26 blocks a second; and once fast, her engines cut at her top speed and winding up again from idle each
+// time she had slowed, she sped up and slowed and rose and sank every seven seconds. Air pockets and turbulence, which
+// drop and rock her on purpose, are switched off while she is watched.
+function checkHandFullThrust() {
+  try {
+    must("config skyliners server cabin.airPockets false; config skyliners server cabin.turbulence false");
+    flyByHandAtFullThrust();
+  } finally {
+    send("?config reset");
+  }
+}
+
+function flyByHandAtFullThrust() {
+  layDown("airliner");
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  const ship = findShipFlying("skyliners:thrust_lever");
+  must(`wait ${CLIMB_OUT_TICKS}t`, BUILD_SECONDS);
+  const [{ at: lever }] = must(`sable:find ${ship} skyliners:thrust_lever 1 side=server`).rows;
+  const at = lever.join(",");
+  // The levers pushed to full while the autopilot still flies her, which leaves them be, so her engines go on from
+  // cruising thrust as it lets go, not from idle.
+  must(`sable:tp ${at}; wait 20t; use ${at}; wait 2t; use ${at}; wait 2t; use ${at}; wait 2t; use ${at}; wait 5t`);
+  const rows = must(`skyliners:autopilot off; sample sable:info ${ship} brief every ${HAND_SAMPLE_EVERY}t x${HAND_FULL_SAMPLES}`,
+    BUILD_SECONDS).rows;
+  send(`?server sable remove ${ship}`);
+  const sink = -Math.min(...rows.map((row) => Number(row.climb)));
+  const pitches = rows.map((row) => Number(row.pitch));
+  const swing = Math.max(...pitches) - Math.min(...pitches);
+  const climbed = Number(rows.at(-1).y) - Number(rows[0].y);
+  expect(climbed > 0, "hand flying at full thrust: she climbs", `${round(climbed)} blocks in ${HAND_FULL_SAMPLES * HAND_SAMPLE_EVERY / 20} s`);
+  expect(sink <= HAND_FULL_SINK_MOST && swing <= HAND_FULL_PITCH_SWING_MOST,
+    "hand flying at full thrust: she climbs steadily, never swinging up and diving down",
+    `sinking ${round(sink)} blocks a second at most, her nose swinging through ${round(swing)} degrees`);
+}
+
 // A freighter hovering low over the ground for the landing assist to leave alone, in blocks, and how long after her
 // autopilot is switched off it is listened for, in ticks.
 const ASSIST_FREIGHTER_HEIGHT = 25;
@@ -7309,6 +7354,7 @@ const CHECKS = {
   "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },
+  "hand-full-thrust": { run: checkHandFullThrust, slow: true, about: "an airliner flown by hand with her thrust levers at full from cruising climbs steadily, never swinging up and diving down" },
   "hand-landing": { run: checkHandLanding, slow: true, about: "an airliner flown by hand comes down gently and level, her gear down, when her levers are pulled back to idle low over the ground" },
   "landing-assist-airliner-only": { run: checkLandingAssistAirlinerOnly, slow: true, about: "the airliner's landing assist never takes a freighter switched off low over the ground" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },

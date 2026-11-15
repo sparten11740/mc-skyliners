@@ -5,9 +5,10 @@ import net.minecraft.util.Mth;
 /**
  * How the airliner's nose is set and held to climb or sink at a rate, and her wings to a bank, shared by her
  * autopilot's flying (see {@code AutopilotBlockEntity.fly}) and her landing assist (see {@link LandingAssist}), each
- * with a hold of its own: the pitch asked for from how far her climb is off, round the trim she climbs at a level rate
- * from, learnt as she flies; the push on her nose toward that pitch, round the push she needs to stay there, learnt as
- * well; the push on her wings toward a bank; and, landing, the sink eased into from the rate she sank at.
+ * with a hold of its own, the autopilot's also holding her nose steady flown by hand (see {@code
+ * AutopilotBlockEntity.holdByHand}): the pitch asked for from how far her climb is off, round the trim she climbs at a
+ * level rate from, learnt as she flies; the push on her nose toward that pitch, round the push she needs to stay there,
+ * learnt as well; the push on her wings toward a bank; and, landing, the sink eased into from the rate she sank at.
  */
 final class ClimbHold {
     /**
@@ -84,6 +85,14 @@ final class ClimbHold {
     /** The push on her nose back by so many degrees, turning so fast, in degrees a second, with nothing learnt. */
     static double pitchBack(double error, double pitchRate) {
         return PITCH_GAIN * error - PITCH_DAMPING * pitchRate;
+    }
+
+    /**
+     * The pitch to set for a nose held at the pitch given, gaining climb so fast, in blocks a second each second: eased
+     * against the change, as the autopilot damps its climb, so she settles rather than swinging up and down about it.
+     */
+    static double steadied(double held, double climbRate) {
+        return held - CLIMB_DAMPING * climbRate;
     }
 
     /** The push on her wings toward a bank so many degrees off, rolling so fast, in degrees a second. */

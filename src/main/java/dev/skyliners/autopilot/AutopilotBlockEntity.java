@@ -96,12 +96,12 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * it, down onto it along its centre line (see {@link PinLanding}).
  *
  * <p>Whether it is engaged or not, it gives the flight deck its callouts (see {@link Callouts}), and off it still
- * keeps the airliner safe: in the air its jets steady any quick pitching or rolling and push the nose and the wings
- * back once they go past {@link #PROTECT_CLIMB}, {@link #PROTECT_DIVE} or {@link #PROTECT_BANK} degrees, righting it
- * even from upside down; past {@link #MAX_SAFE_SPEED}, or climbing fast enough to coast past the top of the world, it
- * cuts the engines itself until the airliner has slowed and levelled, then hands them back to the levers. Nothing
- * else holds the airliner while it is flown on the thrust levers: at full thrust its engines would pitch it up until
- * it tumbled, or fling it off far faster than the world can be made around it.
+ * keeps the airliner safe: in the air its jets hold the nose steady where it was as she came into hand flying, so the
+ * thrust levers climb her or bring her down without her swinging up and down, keep the wings from banking past {@link
+ * #PROTECT_BANK} degrees, and right her once she goes past {@link #PROTECT_CLIMB} or {@link #PROTECT_DIVE} degrees,
+ * even from upside down; it holds the levers' thrust to what keeps her at {@link #MAX_SAFE_SPEED}, so at full thrust
+ * they never fling her off far faster than the world can be made around her, and climbing fast enough to coast past
+ * the top of the world, it cuts the engines itself until she has levelled, then hands them back to the levers.
  *
  * <p>Set to take off or to land, and once it has landed and stopped, it makes the cabin announcements (see
  * {@link CabinAnnouncements}); and air traffic control talks to the airliner (see {@link AtcRadio}), so set to take
@@ -278,11 +278,25 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double PROTECT_DIVE = 20;
     private static final double PROTECT_BANK = 35;
     /**
-     * The fastest it lets the airliner go on the thrust levers, in blocks a second, and how far below that it must
-     * slow before the levers have the engines again.
+     * Flown by hand, the lowest and highest pitch her nose is held at, in degrees (see {@link #holdByHand}):
+     * taken from where it was as she came into hand flying, so let go of in a dive she is brought out of it, and in a
+     * steep climb kept from slowing until her wings no longer hold her.
+     */
+    private static final double HAND_PITCH_LOWEST = -5;
+    private static final double HAND_PITCH_HIGHEST = 10;
+    /**
+     * Flown by hand, how fast she must fly for her nose to be held, and how slow she must get for it to be let go
+     * again, as shares of her rotation speed: slower, her nose is left to find its own way, dropping as she slows, for
+     * held where it was it only kept her nose up as she slowed; the gap keeps it from being taken and let go tick by
+     * tick about one speed.
+     */
+    private static final double HAND_HELD_FROM = 1.4;
+    private static final double HAND_LET_GO_BELOW = 1.3;
+    /**
+     * The fastest it lets the airliner go on the thrust levers, in blocks a second: there it holds her thrust to what
+     * keeps her at that speed.
      */
     private static final double MAX_SAFE_SPEED = 90;
-    private static final double GOVERNOR_MARGIN = 15;
     /**
      * How far below the top of the world the airliner is kept, in blocks; once it would coast past that, it must
      * come down as far again under it before the levers have the engines again.
@@ -492,6 +506,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean engineWinding;
     /** What brings her down to land flown by hand, her levers at idle (see {@link LandingAssist}). */
     private final LandingAssist landingAssist = new LandingAssist();
+    /**
+     * Flown by hand in the air, the pitch her nose is held at, in degrees, taken as she came into hand flying (see
+     * {@link #holdByHand}); NaN on the ground, while the autopilot or the landing assist has her, and after
+     * loading, so it is taken afresh. Not saved.
+     */
+    private double handPitch = Double.NaN;
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
     /**
@@ -574,7 +594,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean primed;
     /** How far its block stands above the bottom of the wheels, for the radio altitude. */
     int wheelsBelow;
-    /** Whether the protection has taken the engines from the levers, to slow an airliner going too fast or too high. */
+    /** Whether the protection has taken the engines from the levers, as the airliner climbs too high. */
     private boolean governing;
     /**
      * Whether the set parking brake holds the engines at idle, on the ground with the autopilot off (see
@@ -1545,6 +1565,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         thrustTrim = CRUISE_THRUST;
         climbHold.pitchHold = 0;
+        handPitch = Double.NaN;
         climbingOut = phase == Phase.TAKEOFF;
         flight.engage(this, state);
         gearRaised = false;
@@ -1864,15 +1885,15 @@ public class AutopilotBlockEntity extends BlockEntity {
         double climb = state.velocity().y;
         boolean assisting = landingAssist.wanted(radio, leverSignal(level), state.airspeed(), climb);
         if (assisting) {
+            handPitch = Double.NaN;
             assistLanding(level, state, radio, pitchRate, rollRate);
         } else {
             letGoOfLanding(level, radio);
-            keepWithinLimits(level, state, radio, pitchRate, rollRate);
+            holdByHand(level, state, radio, pitchRate, rollRate);
         }
 
-        double speed = state.airspeed();
         double apex = state.apex();
-        if (speed > MAX_SAFE_SPEED || apex > highestAltitude(level)) {
+        if (apex > highestAltitude(level)) {
             if (!governing) {
                 governing = true;
                 setChanged();
@@ -1881,7 +1902,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             for (Channel engine : ENGINES) {
                 drive(level, engine, 0);
             }
-        } else if (governing && speed < MAX_SAFE_SPEED - GOVERNOR_MARGIN && apex < highestAltitude(level) - CEILING_MARGIN) {
+        } else if (governing && apex < highestAltitude(level) - CEILING_MARGIN) {
             governing = false;
             resyncControls(level);
             setChanged();
@@ -1891,7 +1912,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             holdOnBrake(level, radio);
         }
         if (!governing && !heldOnBrake && !assisting) {
-            followLevers(level);
+            followLevers(level, state.airspeed());
         }
     }
 
@@ -1907,21 +1928,42 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Flown by hand, she is kept from climbing, diving or banking past {@link #PROTECT_CLIMB}, {@link #PROTECT_DIVE}
-     * and {@link #PROTECT_BANK} degrees while in the air, righted by the jets; within them she is left be.
+     * Flown by hand, in the air, her nose is held where it was as she came into hand flying, as she left the ground or
+     * as the autopilot or the landing assist let her go, between {@link #HAND_PITCH_LOWEST} and {@link
+     * #HAND_PITCH_HIGHEST}, while she flies fast enough (see {@link #HAND_HELD_FROM}), and eased against any change in
+     * her climb (see {@link ClimbHold#steadied}), so her thrust levers climb her or bring her down steadily: left free,
+     * at full thrust she swung up and down by more than a hundred blocks, half a minute apart, her nose rising past
+     * twenty-five degrees and dropping fifteen. At the highest she may fly, it is held no higher than level. Her wings
+     * are kept from banking past {@link #PROTECT_BANK} degrees, righted by the jets; on the ground she is left be.
      */
-    private void keepWithinLimits(ServerLevel level, SableFlight.State state, double radio, double pitchRate,
-                                  double rollRate) {
+    private void holdByHand(ServerLevel level, SableFlight.State state, double radio, double pitchRate,
+                            double rollRate) {
         double pitchCommand = 0;
         double rollCommand = 0;
         if (radio > AIRBORNE) {
             double pitch = state.pitch();
             double roll = state.roll();
-            double climbLimit = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
-            double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
+            double climb = state.velocity().y;
+            double rotate = SkylinersConfig.AUTOPILOT_ROTATE_SPEED.get();
+            if (state.airspeed() < HAND_LET_GO_BELOW * rotate) {
+                handPitch = Double.NaN;
+            } else if (Double.isNaN(handPitch) && state.airspeed() >= HAND_HELD_FROM * rotate) {
+                handPitch = Mth.clamp(pitch, HAND_PITCH_LOWEST, HAND_PITCH_HIGHEST);
+                lastClimb = climb;
+            }
+            double climbRate = (climb - lastClimb) * 20;
+            lastClimb = climb;
+            double ceiling = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
             double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
-            pitchCommand = ClimbHold.pitchBack(pitchBack, pitchRate);
+            if (Double.isNaN(handPitch)) {
+                pitchCommand = ClimbHold.pitchBack(Mth.clamp(pitch, -PROTECT_DIVE, ceiling) - pitch, pitchRate);
+            } else {
+                double held = Mth.clamp(ClimbHold.steadied(handPitch, climbRate), -PROTECT_DIVE, ceiling);
+                pitchCommand = climbHold.pitchPush(held, pitch, pitchRate, false);
+            }
             rollCommand = ClimbHold.rollPush(rollBack, rollRate);
+        } else {
+            handPitch = Double.NaN;
         }
         driveJets(level, state, pitchCommand, rollCommand);
     }
@@ -1935,6 +1977,8 @@ public class AutopilotBlockEntity extends BlockEntity {
                                double rollRate) {
         if (!landingAssist.on()) {
             level.playSound(null, worldPosition, SkylinersRegistry.PA_CHIME.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+            // The thrust that holds a speed, learnt by hand at her top speed, would hold her rotation speed slowly.
+            thrustTrim = CRUISE_THRUST;
         }
         GearLeverBlockEntity gear = gear(level);
         if (gear != null && !gear.down()) {
@@ -1951,12 +1995,16 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Flown by hand, her engines wind up or drop to what her thrust levers ask, as a share of their full thrust at full
-     * lever (the server config's {@code autopilot.fullLeverThrust}): the levers leave her engines' relays to the
-     * autopilot while she is assembled (see {@link #spools}), so that they wind up rather than leap.
+     * Flown by hand at so many blocks a second, her engines wind up or drop to what her thrust levers ask, as a share
+     * of their full thrust at full lever (the server config's {@code autopilot.fullLeverThrust}), but never to more
+     * than holds her at {@link #MAX_SAFE_SPEED}: the levers leave her engines' relays to the autopilot while she is
+     * assembled (see {@link #spools}), so that they wind up rather than leap. Cut off whenever she passed that speed
+     * and handed back once she had slowed, her engines wound up again from idle each time, and she swung up and down as
+     * she sped up and slowed.
      */
-    private void followLevers(ServerLevel level) {
-        double thrust = Math.max(0, leverSignal(level)) * SkylinersConfig.FULL_LEVER_THRUST.get();
+    private void followLevers(ServerLevel level, double speed) {
+        double asked = Math.max(0, leverSignal(level)) * SkylinersConfig.FULL_LEVER_THRUST.get();
+        double thrust = Math.min(asked, holdSpeed(speed, MAX_SAFE_SPEED));
         for (Channel engine : ENGINES) {
             driveEngine(level, engine, thrust);
         }
