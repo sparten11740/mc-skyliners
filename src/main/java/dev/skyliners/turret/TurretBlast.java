@@ -39,8 +39,12 @@ import net.minecraft.world.phys.Vec3;
  * rocket's still hurts hostile mobs.
  */
 final class TurretBlast {
-    /** How strong a bolt's blast is, as an explosion's power: a little under a creeper's 3. */
-    private static final float POWER = 1.6F;
+    /**
+     * How strong a bolt's blast is, as an explosion's power: enough to knock out the block of stone it strikes, a layer
+     * at a time. The game's blast needs over 2.1 to break a block as hard as stone just past it. Well under a creeper's
+     * 3, it digs only a block or two into softer ground.
+     */
+    private static final float POWER = 2.2F;
     /** How strong a rocket's blast is, as an explosion's power: a creeper's. */
     private static final float ROCKET_POWER = 3.0F;
     /** How far back along the bolt from the face it struck the blast goes off, in blocks, so it is not inside the block. */

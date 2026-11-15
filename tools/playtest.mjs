@@ -1171,6 +1171,8 @@ const round = (value) => Math.round(value * 100) / 100;
 const now = () => must("messages limit=1").tick;
 const key = (x, y, z) => `${x},${y},${z}`;
 const idOf = (state) => state.split("[")[0];
+// A block's id without the game's own namespace, as Blockpilot names the game's blocks: "stone", not "minecraft:stone".
+const vanilla = (id) => id?.replace(/^minecraft:/, "");
 
 // A block state's properties, as Blockpilot leaves those at their defaults off.
 function propsOf(state) {
@@ -2425,8 +2427,8 @@ function turretBlastsBlocks([cx, cy, cz]) {
   aimFromSight([x + 0.5, y + 0.5, z + 1]);
   aimFromSight([x + 0.5, y + 0.5, z + 1]);
   must(`key down key.attack; wait ${TURRET_FIRE_TICKS}t; key up key.attack; wait 10t`);
-  const left = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => must(`block ${x + dx},${y + dy},${z}`).id)).filter((id) => id === "minecraft:stone").length;
-  must(`server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} air`);
+  const left = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => must(`block ${x + dx},${y + dy},${z}`).id)).filter((id) => vanilla(id) === "stone").length;
+  send(`?server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} air`);
   expect(left < TURRET_BLASTED_LEFT, "freighter: her cannon's bolts blast away a block of stone they strike", `${left} of 9 stone left`);
 }
 
@@ -2585,7 +2587,7 @@ function rocketSparesHer([x, y, z]) {
   aimFromSight([x + 0.5, deck + 2.4, ahead]);
   must(`key press key.use; wait ${ROCKET_FLIGHT_TICKS}t`);
   const stone = [-1, 0, 1].flatMap((dx) => [1, 2].map((dy) => must(`block ${x + dx},${deck + dy},${ahead} side=server`).id))
-    .filter((id) => id === "minecraft:stone").length;
+    .filter((id) => vanilla(id) === "stone").length;
   const changed = cover().filter((id, i) => id !== before[i]).length;
   send(`?server fill ${row} air`);
   expect(stone < ROCKET_DECK_STONE && changed === 0, "freighter: a rocket at stone on her deck blasts the stone, but none of her deck's cover under it",
@@ -2611,7 +2613,7 @@ function rocketBlastsBlocks([cx, cy, cz]) {
   aimFromSight([x + 0.5, y + 0.5, z + 1]);
   must(`key press key.use; wait ${ROCKET_FLIGHT_TICKS}t`);
   const shown = gunnerSight()?.rockets;
-  const left = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => must(`block ${x + dx},${y + dy},${z}`).id)).filter((id) => id === "minecraft:stone").length;
+  const left = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => must(`block ${x + dx},${y + dy},${z}`).id)).filter((id) => vanilla(id) === "stone").length;
   send(`?server fill ${x - 1} ${y - 1} ${z} ${x + 1} ${y + 1} ${z} air`);
   expect(shown === ROCKETS - 1, "freighter: a quick tap of use launches just one rocket, the sight showing three left", `${shown} shown`);
   expect(left < TURRET_BLASTED_LEFT, "freighter: her rocket's blast knocks out a block of stone it strikes", `${left} of 9 stone left`);
@@ -6515,7 +6517,7 @@ function checkFreighterFixedLegs() {
 function checkFreighterRobot() {
   ship("freighter");
   const robots = must(`find skyliners:deck_robot 128 ${FREIGHTER_ROBOTS + 1}`).rows;
-  const floored = robots.filter((row) => must(`block ${row.at_abs[0]},${row.at_abs[1] - 1},${row.at_abs[2]}`).id !== "minecraft:air");
+  const floored = robots.map((row) => must(`block ${row.at_abs[0]},${row.at_abs[1] - 1},${row.at_abs[2]}`).id).filter((id) => vanilla(id) !== "air");
   expect(robots.length === FREIGHTER_ROBOTS && floored.length === FREIGHTER_ROBOTS,
     "freighter: she is built with a deck robot in each of two rooms, each standing on the deck",
     `${robots.length} robots, ${floored.length} on the deck`);
