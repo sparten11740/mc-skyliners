@@ -645,6 +645,10 @@ const WEATHER_SETTLED_SPEED = 1;
 const WEATHER_SETTLED_TILT = 3;
 const WEATHER_SETTLED_WITHIN = 5;
 const ROCK_HARDER = 1.5;
+// A freighter jumping out of an asteroid storm: how far east of her her pin is, in blocks, and how long she is watched
+// once out of the jump for a rock of the storm striking her there, in ticks, well within what was left of it.
+const STORM_JUMP = 1000;
+const STORM_AFTER_JUMP_TICKS = 300;
 // Shooting at space rocks from a freighter's laser cannon: how near the cannon's sight a rock flying in must have come
 // before it is aimed at, in blocks, inside where rocks become real bodies; what a block of rock weighs, in Sable's
 // units; how far ahead of a rock the sight is aimed for one bolt, in ticks of its flight, how long after aiming that
@@ -4899,6 +4903,41 @@ function checkFreighterBoost() {
 // the pin loads as she spools without ever holding the server up, and she comes out over the pin, whoever pressed it
 // still aboard, her lowest block kept well clear over the pillar's top rather than in it, and no frame of the game
 // held up.
+// A freighter that jumps through hyperspace in the middle of an asteroid storm at y 1,600 leaves it behind: once she
+// is out at her pin, no storm blows round her, no rock of it is coming at her and none strikes her there. Its rocks
+// kept coming at her wherever she was, so the storm she jumped out of struck her again where she came out.
+function checkFreighterJumpOutOfStorm() {
+  const freighter = freighterInSpace("jump out of a storm");
+  if (!freighter) {
+    return;
+  }
+  const [mx, mz] = freighterReport().middle.split(",").map(Number);
+  const pin = [Math.round(mx) + STORM_JUMP, Math.round(mz)];
+  must(`skyliners:autopilot fly altitude=${WEATHER_HEIGHT} speed=0 pin=${pin[0]},${pin[1]}; wait 20t`);
+  const asked = must("skyliners:spaceweather start=asteroid_storm");
+  const coming = waitForReport(() => must("skyliners:spaceweather"), (weather) => weather.coming > 0, WEATHER_TICKS_MOST);
+  expect(asked.started === "coming" && Boolean(coming), "jump out of a storm: an asteroid storm blows round her, its rocks coming at her",
+    `${asked.started}, ${coming?.coming ?? 0} coming`);
+  if (!coming) {
+    return;
+  }
+  const { at } = must(`sable:find ${freighter} skyliners:console_jump 1 side=server`).rows[0];
+  must(`sable:tp ${at.join(",")}; wait 20t; use ${at.join(",")}`);
+  must(`wait ${JUMP_WITHIN}t`, BUILD_SECONDS);
+  const out = freighterReport();
+  const off = out ? Math.hypot(...out.middle.split(",").map(Number).map((v, i) => v - pin[i])) : Infinity;
+  expect(off < JUMP_NEAR, "jump out of a storm: she comes out of the jump over her pin", out ? `middle at ${out.middle}` : "no report");
+  const there = must("skyliners:spaceweather");
+  expect(there.blowing === "none" && there.coming === 0 && !there.flying_on, "jump out of a storm: where she comes out, no storm blows and no rock of it is coming at her",
+    `${there.blowing} blowing, ${there.coming} coming, flying on ${there.flying_on}`);
+  const since = now();
+  const later = must(`wait ${STORM_AFTER_JUMP_TICKS}t; skyliners:spaceweather`);
+  const strikes = played(WEATHER.asteroid_storm.strike, since).length;
+  expect(later.landed === there.landed && strikes === 0, "jump out of a storm: no rock strikes her where she came out",
+    `${later.landed - there.landed} landed, ${strikes} heard`);
+  must("skyliners:autopilot land");
+}
+
 function checkFreighterJump() {
   const site = layDown("freighter");
   const [{ at_abs: head }] = must("find skyliners:autopilot 128 1").rows;
@@ -7106,6 +7145,7 @@ const CHECKS = {
   "rocket-space-weather": { run: checkRocketSpaceWeather, slow: true, about: "an asteroid storm, announced, strikes a rocket in space, shoving and tipping her; she waits it out, stands upright again, nobody hurt" },
   "freighter-slam": { run: checkFreighterSlam, slow: true, about: "a freighter's slam button drives her straight down hard, strikes the ground with a crash, and sets her down unharmed, nobody aboard hurt" },
   "freighter-jump": { run: checkFreighterJump, slow: true, about: "a freighter jumps through hyperspace to her pin, clear over a pillar standing on it, everyone aboard with her" },
+  "freighter-jump-out-of-storm": { run: checkFreighterJumpOutOfStorm, slow: true, about: "a freighter jumping through hyperspace out of an asteroid storm leaves it behind: no rock of it strikes her where she comes out" },
   "turret-throws-players": { run: checkTurretThrowsPlayers, about: "a laser cannon's rocket throws a player far, flying in creative mode unhurt, in survival hurt and landing under their canopy" },
   "fairing-corners": { run: checkFairingCorners, about: "airframe fairings put down by hand round a corner, resting or hung, turn it as stairs do; lone ones and straight runs stay straight" },
   "transponder-pictures": { run: checkTransponderPictures, about: "a transponder's panel shows every picture on the screen, the space ones among them, and each picks and keeps its own" },

@@ -1285,6 +1285,20 @@ public final class SpaceWeather {
     }
 
     /**
+     * She has jumped through hyperspace, out of whatever weather blew round her: it is over for her and its rocks are
+     * let go of at once, those flying on too, so none follows her through the jump to strike her where she comes out,
+     * far from where it blew. Nothing is said aboard, as when weather is left behind rather than passes.
+     */
+    public void leftBehind(ServerLevel level, AutopilotBlockEntity autopilot) {
+        if (kind != null) {
+            end(level, autopilot, level.getGameTime(), false);
+        }
+        if (overAt != Long.MAX_VALUE) {
+            letGoOfRocks(level);
+        }
+    }
+
+    /**
      * The weather over: everyone shown so, and, when it passed by rather than was left, her flight deck saying it is
      * all clear to everyone aboard; none blows again for a while, and none of its rocks sets out any more, but those on
      * their way fly on (see {@link #flyOn}).

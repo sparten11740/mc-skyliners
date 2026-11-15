@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.compat.SableFlight;
 import dev.skyliners.engineering.JumpDriveBlock;
+import dev.skyliners.spaceweather.SpaceWeather;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.ArrayList;
@@ -336,8 +337,9 @@ public final class FreighterJump {
 
     /**
      * She jumps: moved straight to the pin, her middle over it, as high as she was or so high her lowest block keeps
-     * {@link #CLEARANCE} over the highest block under her and round her, everyone aboard with her; her autopilot set to
-     * hold that height at least, her drive in engineering firing, everyone aboard told she is out, and those near where
+     * {@link #CLEARANCE} over the highest block under her and round her, everyone aboard with her, and any space
+     * weather left behind where it blew (see {@link SpaceWeather#leftBehind}); her autopilot set to hold that height
+     * at least, her drive in engineering firing, everyone aboard told she is out, and those near where
      * she went from and where she came out shown it from outside.
      */
     private void arrive(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State state, Vec3 middle, FreighterPilot pilot,
@@ -357,6 +359,10 @@ public final class FreighterJump {
         settling = SETTLE_FROM + SETTLE_TICKS;
         autopilot.targetAltitude = Math.max(autopilot.targetAltitude, height);
         pilot.jumped();
+        SpaceWeather weather = autopilot.spaceWeather();
+        if (weather != null) {
+            weather.leftBehind(level, autopilot);
+        }
         aboard.forEach(player -> PacketDistributor.sendToPlayer(player, new HyperspaceJump(HyperspaceJump.Stage.ARRIVE, GO_TICKS)));
         jumpedAt = level.getGameTime();
         show(level, new HyperspaceWake(HyperspaceWake.Stage.DEPART, middle, middle, state.nose(), hull, 0), aboard);
