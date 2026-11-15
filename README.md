@@ -7,11 +7,10 @@
 | ![The zeppelin rising over a meadow by a river, her mooring lines still hanging](docs/images/zeppelin-lift-off.jpg) | ![The rocket lifting off her launch pad](docs/images/rocket-lift-off.jpg) |
 
 Giant aircraft for [Create](https://modrinth.com/mod/create) and
-[Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each laid down whole by a single blueprint: an
-A380-style airliner, a Hindenburg-sized zeppelin, a retro rocket and a battered saucer freighter. They are big enough
-to walk around in and furnished inside, and they fly on [Sable](https://modrinth.com/mod/sable)'s physics, lifted and
+[Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each created from a single blueprint: an
+A380-style airliner, a Hindenburg-sized zeppelin, a retro rocket, and a battered saucer freighter. They fly on [Sable](https://modrinth.com/mod/sable)'s physics, lifted and
 driven by [Create Propulsion](https://modrinth.com/mod/create-propulsion-simulated)'s thrusters and wings (the zeppelin
-by Create Aeronautics' hot air), mostly under their own autopilots, with you and your friends aboard.
+by Create Aeronautics' hot air), with you and your friends aboard.
 
 ## What's inside
 
@@ -23,17 +22,13 @@ by Create Aeronautics' hot air), mostly under their own autopilots, with you and
 - **The zeppelin**: 490 blocks of airship (245 at half size) floating on hot air in sixteen coloured gas cells, with a
   control car under the bow, passenger decks behind promenade windows, a techno club, a sky crane and liveries to
   repaint her in. A festive edition comes dressed for Christmas.
-- **The rocket**: as tall as the airliner is long, standing on four fins, with storeys round a glass lift, a lab, a
+- **The rocket**: as tall as the airliner is long, standing on four fins, with multiple levels round a glass lift, a lab, a
   greenhouse, an observation deck, a rover and a cockpit in the nose. She lifts off from her pad, climbs to the edge of
-  space, where everyone aboard floats, and lands back where she rose.
+  space to zero gravity.
 - **The freighter**: a battered saucer 60 blocks across with two prongs, a ramp that comes down by itself, a club with
   a robot jazz trio and a laser cannon with rocket pods. She climbs into the black of space, rides out meteor showers
-  and asteroid storms, slams down to the ground for show and jumps through hyperspace to a pin on her map.
-- **The airfield**: a runway sized for the airliner, a control tower, a launch pad and a jet bridge.
-- **Things to do aboard**: skydive, take villagers along with boarding passes, push the meal trolley down the aisle,
-  fold paper planes, hunt for rubber ducks and earn the First Flight advancements.
-
-Every control is a picture, a colour or a sound, so players who cannot read yet can fly too.
+  and asteroid storms, and jumps through hyperspace to a pin on her map.
+- **Ground**: a runway sized for the airliner, a control tower, a launch pad and a jet bridge.
 
 ## Screenshots
 
@@ -44,7 +39,7 @@ Every control is a picture, a colour or a sound, so players who cannot read yet 
 | ![The moon pool with its glass floor](docs/images/moon-pool.jpg) | ![The view from the freighter's turret, through its sight](docs/images/freighter-turret-view.jpg) | ![The lounge bar under a starlit ceiling](docs/images/lounge-bar.jpg) |
 | **The freighter's cockpit** | **Inside the zeppelin's hull** | **The zeppelin's passenger deck** |
 | ![The freighter's cockpit: her pilots' seats, her console of big buttons and the canopy](docs/images/freighter-cockpit.jpg) | ![Inside the zeppelin's hull, under its gas cells](docs/images/zeppelin-inside-the-hull.jpg) | ![The zeppelin's passenger deck](docs/images/zeppelin-passenger-deck.jpg) |
-| **The rocket on her pad** | **Her lab** | **Her bar** |
+| **The rocket on her pad** | **The rocket's lab** | **The rocket's bar** |
 | ![The rocket on its launch pad](docs/images/rocket-on-launch-pad.jpg) | ![The rocket's lab, a tardigrade in its mossy tank beside a black hole poster](docs/images/rocket-lab.jpg) | ![The rocket's bar, its stools along the counter by a lit dance floor](docs/images/rocket-bar.jpg) |
 
 More in [docs/images](docs/images).
