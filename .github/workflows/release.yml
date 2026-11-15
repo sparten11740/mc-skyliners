@@ -54,8 +54,10 @@ jobs:
             echo "java=$(property java_version)"
           } >> "$GITHUB_OUTPUT"
       - run: ./gradlew build
-      # Lists the feat and fix commits since the previous tag, or since the previous release's for a release, so that
-      # its notes cover its alphas too. Before the first tag, since the version bump before this one.
+      # Notes written by hand in .github/release-notes/<version>.md, for a release a list of commits would not explain
+      # (the first on CurseForge). Otherwise lists the feat and fix commits since the previous tag, or since the
+      # previous release's for a release, so that its notes cover its alphas too. Before the first tag, since the
+      # version bump before this one.
       - name: Collect the jar and release notes
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -63,6 +65,12 @@ jobs:
         run: |
           mkdir dist
           cp build/libs/skyliners-"$VERSION"+*.jar dist/
+          written=".github/release-notes/$VERSION.md"
+          if [ -f "$written" ]; then
+            cp "$written" dist/release-notes.md
+            cat dist/release-notes.md
+            exit 0
+          fi
           prereleases=()
           if [ "$RELEASE_TYPE" = release ]; then
             prereleases=(--exclude 'v*-*')

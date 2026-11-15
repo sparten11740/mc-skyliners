@@ -127,7 +127,8 @@ what. Its mod id, packages and commands are `skyliners`. Up to
   Pushing the tag `v<mod_version>` publishes that build: `.github/workflows/release.yml` builds it and uploads it to
   CurseForge as an alpha, beta or release by its version, with Create, Create Propulsion: Simulated and Create
   Aeronautics as required mods. Its notes are the subjects of the `feat` and `fix` commits since the last tag (the
-  last release's, for a release), so those subjects are written for players. It needs the repository's
+  last release's, for a release), so those subjects are written for players, unless
+  `.github/release-notes/<version>.md` gives them written by hand, as for 1.2.0, the first. It needs the repository's
   `CURSEFORGE_TOKEN` secret and `CURSEFORGE_PROJECT_ID` variable.
 - **Docs.** `docs/guide.md` and one page for each ship in `docs/guide/` give only the main features, at most a page
   (about 500 words) each, and leave the rest for players to find. A new main feature, or a change to what they say,
