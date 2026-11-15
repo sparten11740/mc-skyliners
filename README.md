@@ -9,7 +9,9 @@
 Giant aircraft for [Create](https://modrinth.com/mod/create) and
 [Create Aeronautics](https://modrinth.com/mod/create-aeronautics), each laid down whole by a single blueprint: an
 A380-style airliner, a Hindenburg-sized zeppelin, a retro rocket and a battered saucer freighter. They are big enough
-to walk around in, furnished inside, and they really fly, on their own autopilots, with you and your friends aboard.
+to walk around in and furnished inside, and they fly on [Sable](https://modrinth.com/mod/sable)'s physics, lifted and
+driven by [Create Propulsion](https://modrinth.com/mod/create-propulsion-simulated)'s thrusters and wings (the zeppelin
+by Create Aeronautics' hot air), mostly under their own autopilots, with you and your friends aboard.
 
 ## What's inside
 
@@ -38,12 +40,12 @@ Every control is a picture, a colour or a sound, so players who cannot read yet 
 | The flight deck | The autopilot | In flight |
 | :---: | :---: | :---: |
 | ![The airliner's flight deck](docs/images/flight-deck.jpg) | ![The autopilot's screen](docs/images/autopilot-screen.png) | ![The airliner banking under the clouds](docs/images/airliner-banking.jpg) |
-| **The moon pool** | **The gym hall** | **The lounge bar** |
-| ![The moon pool with its glass floor](docs/images/moon-pool.jpg) | ![The gym hall with basketball hoops](docs/images/gym-hall.jpg) | ![The lounge bar under a starlit ceiling](docs/images/lounge-bar.jpg) |
-| **The zeppelin's control car** | **Inside her hull** | **Her passenger deck** |
-| ![The zeppelin's control car, with its wheels and engine telegraphs](docs/images/zeppelin-control-car.jpg) | ![Inside the zeppelin's hull, under its gas cells](docs/images/zeppelin-inside-the-hull.jpg) | ![The zeppelin's passenger deck](docs/images/zeppelin-passenger-deck.jpg) |
-| **The rocket on her pad** | **Her pool** | **Her cockpit** |
-| ![The rocket on its launch pad](docs/images/rocket-on-launch-pad.jpg) | ![The pool round the rocket's glass lift shaft](docs/images/rocket-pool.jpg) | ![The rocket's cockpit](docs/images/rocket-cockpit.jpg) |
+| **The airliner's moon pool** | **The freighter's turret sight** | **The airliner's lounge bar** |
+| ![The moon pool with its glass floor](docs/images/moon-pool.jpg) | ![The view from the freighter's turret, through its sight](docs/images/freighter-turret-view.jpg) | ![The lounge bar under a starlit ceiling](docs/images/lounge-bar.jpg) |
+| **The freighter's cockpit** | **Inside the zeppelin's hull** | **The zeppelin's passenger deck** |
+| ![The freighter's cockpit: her pilots' seats, her console of big buttons and the canopy](docs/images/freighter-cockpit.jpg) | ![Inside the zeppelin's hull, under its gas cells](docs/images/zeppelin-inside-the-hull.jpg) | ![The zeppelin's passenger deck](docs/images/zeppelin-passenger-deck.jpg) |
+| **The rocket on her pad** | **Her lab** | **Her bar** |
+| ![The rocket on its launch pad](docs/images/rocket-on-launch-pad.jpg) | ![The rocket's lab, a tardigrade in its mossy tank beside a black hole poster](docs/images/rocket-lab.jpg) | ![The rocket's bar, its stools along the counter by a lit dance floor](docs/images/rocket-bar.jpg) |
 
 More in [docs/images](docs/images).
 
