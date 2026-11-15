@@ -9,6 +9,11 @@ gone from `docs/plans`; `git log --diff-filter=D -- docs/plans` finds them, with
   autopilot with nobody aboard never finished saving: the integrated server spun in `stopServer`'s chunk unloading
   (`ChunkMap.processUnloads`), so the game had to be killed. Suspects: a keep-loaded ticket of the autopilot or of
   `ParkedShips`, or Sable. The stack dump is in `run/logs/stop-hang-2026-11-01.jstack` (not committed).
+- **The airliner barely glides with her engines at idle.** On 2026-11-15, let go of by her autopilot as she climbed
+  out 268 blocks over the ground, her thrust levers at idle, she slowed to 20 to 26 blocks a second and fell at about
+  20 blocks a second, nose down, until the landing assist caught her at 60 blocks and set her down gently. Her nose
+  left free, as before, or held where it was, she fell alike; a limit on her nose above the way she went ran away into
+  a dive. With her engines at idle she has next to no glide.
 - **The airliner can't hold its height at its slowest speed.** Twice on 2026-11-01 (1.0.0's code), set to circle a pin
   at altitude 150 and 30 blocks a second (the lowest the autopilot's screen offers), a furnished airliner sank and
   flew into the ground, nose down at y 100 to 112: once into the rocket's launch pad, once into a hill. Unstuck fired
