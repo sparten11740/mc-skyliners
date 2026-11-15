@@ -138,7 +138,7 @@ public class ThrustLeverBlock extends BaseEntityBlock {
     }
 
     /** The signal a lever sends its engine's thrusters in this state. */
-    static int power(BlockState state) {
+    public static int power(BlockState state) {
         return POWER[state.getValue(THRUST)];
     }
 

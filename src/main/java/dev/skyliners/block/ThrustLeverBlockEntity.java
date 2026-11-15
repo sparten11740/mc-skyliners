@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import dev.skyliners.SkylinersRegistry;
+import dev.skyliners.autopilot.AutopilotBlockEntity;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -34,9 +35,12 @@ public class ThrustLeverBlockEntity extends BlockEntity implements Control {
         drive(ThrustLeverBlock.power(getBlockState()));
     }
 
-    /** Sets every relay of this lever's engine to the signal, which the thrusters next to them pick up. */
+    /**
+     * Sets every relay of this lever's engine to the signal, which the thrusters next to them pick up; aboard an
+     * assembled airliner, her autopilot winds her engines up to it instead (see {@link AutopilotBlockEntity#spools}).
+     */
     void drive(int power) {
-        if (level != null) {
+        if (level != null && !AutopilotBlockEntity.spools(level, worldPosition)) {
             mendLinks();
             Relays.drive(level, worldPosition, relays, power);
         }

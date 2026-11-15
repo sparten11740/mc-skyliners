@@ -26,6 +26,8 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue LET_PARKED_SHIPS_GO;
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
+    public static final ModConfigSpec.DoubleValue ENGINE_SPOOL_SECONDS;
+    public static final ModConfigSpec.DoubleValue FULL_LEVER_THRUST;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
     public static final ModConfigSpec.BooleanValue CONTROL_SURFACES;
     public static final ModConfigSpec.BooleanValue ATC_CHATTER;
@@ -256,6 +258,21 @@ public final class SkylinersConfig {
                 "Never less than a quarter above the speed it rotated at, so the wings keep lifting."
             )
             .defineInRange("cruiseSpeed", 50.0, 5.0, 300.0);
+        ENGINE_SPOOL_SECONDS = builder
+            .comment(
+                "How long the airliner's engines take to wind up from idle to full thrust, in seconds: slowly at first and faster",
+                "as they come up, as a jet's do, whether the thrust levers or the autopilot ask for it. Thrust drops at once.",
+                "0 sets the thrust at once."
+            )
+            .defineInRange("engineSpoolSeconds", 8.0, 0.0, 30.0);
+        FULL_LEVER_THRUST = builder
+            .comment(
+                "How much of the airliner's full engine thrust her thrust levers give at full, as a share of it, flying by hand:",
+                "enough to outrun her cruising speed, little enough that she rolls a while down the runway before she lifts off.",
+                "Every notch of the levers is cut alike. The autopilot sets the thrust it needs itself. 1 gives the engines' whole",
+                "thrust at full lever, as before."
+            )
+            .defineInRange("fullLeverThrust", 0.33, 0.05, 1.0);
         CONTROL_SURFACES = builder
             .comment(
                 "Whether the autopilot rolls and pitches the airliner with control surfaces, turning the wing blocks of the",

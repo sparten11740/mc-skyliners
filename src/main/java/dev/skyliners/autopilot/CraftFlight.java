@@ -140,6 +140,14 @@ public abstract class CraftFlight {
         return announcement;
     }
 
+    /**
+     * Whether it winds the engines up to what its thrust levers ask while it is assembled, so the levers leave their
+     * relays to it (see {@link AutopilotBlockEntity#spools}); none for a craft without thrust levers.
+     */
+    boolean followsLevers() {
+        return false;
+    }
+
     /** The space weather it meets far past the black of space; none for a craft that never flies that high. */
     @Nullable
     SpaceWeather spaceWeather() {

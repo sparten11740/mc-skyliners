@@ -12600,6 +12600,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "skyliners.configuration.autopilot": "Autopilot",
   "skyliners.configuration.climbHeight": "Climb Height",
   "skyliners.configuration.rotateSpeed": "Rotate Speed",
+  "skyliners.configuration.engineSpoolSeconds": "Engine Spool Seconds",
+  "skyliners.configuration.fullLeverThrust": "Full Lever Thrust",
   "skyliners.configuration.cruiseSpeed": "Cruise Speed",
   "skyliners.configuration.controlSurfaces": "Control Surfaces",
   "skyliners.configuration.radio": "Radio",

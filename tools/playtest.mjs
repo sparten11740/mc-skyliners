@@ -6771,6 +6771,50 @@ function checkFlightAndLanding() {
   }
 }
 
+// Flown by hand from a standstill, her thrust levers pushed to full with the parking brake off: how long her take-off
+// roll must last at least, in seconds, and how far it must run, in blocks; how often her speed and height are read and
+// for how long, in ticks; and how high over the ground her wheels must be for her to count as off it, in blocks.
+const HAND_ROLL_LEAST_SECONDS = 4;
+const HAND_ROLL_LEAST_BLOCKS = 80;
+const HAND_SAMPLE_EVERY = 5;
+const HAND_SAMPLES = 160;
+const HAND_OFF_THE_GROUND = 1.8;
+
+// An airliner flown by hand rolls a good way down the runway before she lifts off, her engines winding up as a jet's
+// do: her thrust levers pushed to full from a standstill, she leapt off the ground in under a second, 32 blocks on, the
+// engines' whole thrust there at once. She still lifts off by herself, the levers left at full.
+function checkHandTakeoff() {
+  layDown("airliner");
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=5`, BUILD_SECONDS);
+  const ship = findShipFlying("skyliners:thrust_lever");
+  must("skyliners:autopilot off; wait 20t");
+  releaseParkingBrake(ship);
+  const [{ at: lever }] = must(`sable:find ${ship} skyliners:thrust_lever 1 side=server`).rows;
+  const at = lever.join(",");
+  must(`sable:tp ${at}; wait 20t`);
+  const rows = must(`use ${at}; wait 2t; use ${at}; wait 2t; use ${at}; wait 2t; use ${at}; sample sable:info ${ship} brief every ${HAND_SAMPLE_EVERY}t x${HAND_SAMPLES}`,
+    BUILD_SECONDS).rows;
+  const off = rows.findIndex((row) => Number(row.agl) > HAND_OFF_THE_GROUND);
+  const rolled = rows.slice(0, Math.max(off, 0)).reduce((sum, row) => sum + Number(row.speed) * HAND_SAMPLE_EVERY / 20, 0);
+  const seconds = off * HAND_SAMPLE_EVERY / 20;
+  send(`?server sable remove ${ship}`);
+  expect(off >= 0, "hand take-off: her thrust levers at full, she lifts off by herself", off >= 0 ? `after ${seconds} s` : "never left the ground");
+  expect(off >= 0 && seconds >= HAND_ROLL_LEAST_SECONDS && rolled >= HAND_ROLL_LEAST_BLOCKS,
+    "hand take-off: she rolls a good way down the runway first, her engines winding up", `${seconds} s and ${Math.round(rolled)} blocks`);
+}
+
+// Releases an assembled airliner's parking brake, which is worked from a key under her flight deck's screens: the
+// brake set to released with its links kept, then the autopilot switched off, so every control sets its relays afresh.
+function releaseParkingBrake(ship) {
+  const [{ at }] = must(`sable:find ${ship} skyliners:parking_brake 1 side=server`).rows;
+  const line = must(`server data get block ${at.join(" ")}`).rows?.[0]?.line ?? "";
+  // A semicolon ends a step of a Blockpilot script, so those in the block's data are escaped.
+  const nbt = line.slice(line.indexOf("{")).replaceAll(";", "\\;");
+  const facing = must(`block ${at.join(",")}`).props?.facing ?? "north";
+  must(`server setblock ${at.join(" ")} skyliners:parking_brake[facing=${facing},powered=false]${nbt} replace; wait 5t; skyliners:autopilot off; wait 10t`);
+}
+
 function flyAndLand() {
   layDown("airliner");
   board();
@@ -7157,6 +7201,7 @@ const CHECKS = {
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
+  "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },
   "flight": { run: checkFlightAndLanding, about: "take-off, cruise, landing, and walking up the stairs after it", slow: true },
   "freighter-self-destruct": { run: checkFreighterSelfDestruct, about: "a freighter's self-destruct button by her jump seats arms her, counts down and blows her up, whoever stood aboard given a parachute" },
   "rocket-self-destruct-ground": { run: checkRocketSelfDestructOnTheGround, about: "a rocket's self-destruct puts her together, arms and blows her up" },

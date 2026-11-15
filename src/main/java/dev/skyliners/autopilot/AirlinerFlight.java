@@ -12,6 +12,12 @@ import net.minecraft.world.level.Level;
  * height over the ground only as far as her gear is down.
  */
 final class AirlinerFlight extends CraftFlight {
+    /** Flown by hand, her engines wind up to what her thrust levers ask (see {@link AutopilotBlockEntity#spools}). */
+    @Override
+    boolean followsLevers() {
+        return true;
+    }
+
     @Override
     public Craft craft() {
         return Craft.AIRLINER;

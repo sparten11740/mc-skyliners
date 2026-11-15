@@ -55,6 +55,16 @@ public final class Relays {
         }
     }
 
+    /** The total of the signals the relays at the offsets from origin stand at: none where a relay is not. */
+    public static int total(Level level, BlockPos origin, List<BlockPos> offsets) {
+        int total = 0;
+        for (BlockPos offset : offsets) {
+            BlockState state = level.getBlockState(origin.offset(offset));
+            total += isRelay(state) ? state.getValue(ThrustRelayBlock.POWER) : 0;
+        }
+        return total;
+    }
+
     /**
      * Sets a group of relays to signals adding up to a total, as nearly as they can: each gets an even share and what
      * is left over goes one more to the first ones, so the first is given a signal whenever any is. A group of

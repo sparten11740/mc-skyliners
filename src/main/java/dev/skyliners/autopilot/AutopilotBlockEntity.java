@@ -509,6 +509,10 @@ public class AutopilotBlockEntity extends BlockEntity {
      * set afresh on the first tick after loading.
      */
     private final Map<Channel, Integer> engineTotals = new EnumMap<>(Channel.class);
+    /** Her engines winding up to the thrust asked of them (see {@link EngineSpool}). */
+    private final EngineSpool spool = new EngineSpool();
+    /** Whether any of her engines was still winding up to the thrust asked of it last tick. */
+    private boolean engineWinding;
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
     /**
@@ -1665,6 +1669,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * air traffic control talks to her, and the clients see her control surfaces move.
      */
     void airlinerTick(ServerLevel level, SableFlight.State flight) {
+        engineWinding = spool.takeWinding();
         callouts.watch(level, flight, wheelsBelow, () -> Aboard.players(this));
         double radio = radioAltitude(level, flight);
         turbulence.tick(level, this, flight.position(), radio, flight.airspeed());
@@ -1913,6 +1918,49 @@ public class AutopilotBlockEntity extends BlockEntity {
             setChanged();
         }
         holdOnBrake(level, radio);
+        if (!governing && !heldOnBrake) {
+            followLevers(level);
+        }
+    }
+
+    /**
+     * Flown by hand, her engines wind up or drop to what her thrust levers ask, as a share of their full thrust at full
+     * lever (the server config's {@code autopilot.fullLeverThrust}): the levers leave her engines' relays to the
+     * autopilot while she is assembled (see {@link #spools}), so that they wind up rather than leap.
+     */
+    private void followLevers(ServerLevel level) {
+        double thrust = leverSignal(level) * SkylinersConfig.FULL_LEVER_THRUST.get();
+        for (Channel engine : ENGINES) {
+            driveEngine(level, engine, thrust);
+        }
+    }
+
+    /** The signal her thrust levers ask of each engine's relays, all of them moving together; none without levers. */
+    private int leverSignal(ServerLevel level) {
+        for (BlockPos offset : controls) {
+            BlockState control = level.getBlockState(worldPosition.offset(offset));
+            if (control.getBlock() instanceof ThrustLeverBlock) {
+                return ThrustLeverBlock.power(control);
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Whether the relays a thrust lever works are left to an airliner's autopilot, which winds her engines up to what
+     * the lever asks (see {@link #followLevers}): an assembled airliner's autopilot with the lever among its controls.
+     * While that autopilot flies her, it sets her thrust itself and the levers ask nothing, as ever. A lever anywhere
+     * else works its relays itself.
+     */
+    public static boolean spools(Level level, BlockPos lever) {
+        for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
+            boolean among = autopilot.controls.contains(lever.subtract(autopilot.worldPosition));
+            boolean assembled = SableFlight.bodyAt(level, autopilot.worldPosition) != null;
+            if (among && assembled && autopilot.flight.followsLevers()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2270,7 +2318,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double holdSpeed(double speed, double target) {
         double error = target - speed;
         double signal = thrustTrim + SPEED_GAIN * error;
-        if (signal > 0 && signal < 15) {
+        // Not while an engine still winds up to what it was asked: the speed lags it, and the trim would run on past.
+        if (signal > 0 && signal < 15 && !engineWinding) {
             thrustTrim = Mth.clamp(thrustTrim + THRUST_TRIM_RATE * Mth.clamp(error, -THRUST_TRIM_LIMIT, THRUST_TRIM_LIMIT), 0, 15);
         }
         return Mth.clamp(signal, 0, 15);
@@ -2487,7 +2536,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         Integer last = engineTotals.get(engine);
         int total = last != null && Math.abs(wanted - last) < ENGINE_HOLD ? last : (int) Math.round(wanted);
         engineTotals.put(engine, total);
-        Relays.spreadEvenly(level, worldPosition, engineRelays, total, engine.synced());
+        int shown = Relays.total(level, worldPosition, engineRelays);
+        double seconds = SkylinersConfig.ENGINE_SPOOL_SECONDS.get();
+        int set = spool.toward(engine, shown, total, 15 * engineRelays.size(), seconds);
+        Relays.spreadEvenly(level, worldPosition, engineRelays, set, engine.synced());
     }
 
     /**
