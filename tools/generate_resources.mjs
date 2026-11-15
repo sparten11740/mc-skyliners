@@ -10930,14 +10930,16 @@ const GYM_HALL = ["wall_bars", "gym_mat", "climbing_rope", "glass_backboard", "g
 }
 // The gym mat (see GymMatBlock): a pad a quarter of a block high, blue vinyl on top and seamed round its sides, and
 // along each edge that does not run on into another mat a grey cord of piping round its top and its foot, drawn along
-// the north edge and turned for the others. In the hand, a mat piped all round.
+// the north edge and turned for the others. The piping is a model of its own in the blockstate, so its outer face would
+// lie in the plane of the pad's side and flicker through it, which unfight cannot see across two models: it stands out
+// past the block's side by PROUD. In the hand, a mat piped all round.
 {
   const block = (name) => `${ID}:block/${name}`;
   const textures = { top: block("gym_mat"), side: block("gym_mat_side"), piping: block("gym_mat_piping"), particle: block("gym_mat") };
   const pad = [[0, 0, 0], [16, 4, 16], { up: "#top", all: "#side" }];
   const piping = ([x0, z0], [x1, z1]) => [[[x0, 3, z0], [x1, 4.5, z1], "#piping"], [[x0, 0, z0], [x1, 1, z1], "#piping"]];
   write(`assets/${ID}/models/block/gym_mat.json`, boxes(textures, [pad]));
-  write(`assets/${ID}/models/block/gym_mat_piping.json`, boxes(textures, piping([0, 0], [16, 1])));
+  write(`assets/${ID}/models/block/gym_mat_piping.json`, boxes(textures, piping([0, -PROUD], [16, 1])));
   write(`assets/${ID}/blockstates/gym_mat.json`, {
     multipart: [
       { apply: { model: block("gym_mat") } },

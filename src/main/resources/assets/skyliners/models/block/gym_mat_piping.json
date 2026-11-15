@@ -11,7 +11,7 @@
       "from": [
         0,
         3,
-        0
+        -0.05
       ],
       "to": [
         16,
@@ -26,16 +26,40 @@
           "texture": "#piping"
         },
         "east": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            14.95,
+            11.5,
+            16,
+            13
+          ]
         },
         "west": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            14.95,
+            11.5,
+            16,
+            13
+          ]
         },
         "up": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            0,
+            14.95,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            0,
+            14.95,
+            16,
+            16
+          ]
         }
       }
     },
@@ -43,7 +67,7 @@
       "from": [
         0,
         0,
-        0
+        -0.05
       ],
       "to": [
         16,
@@ -58,16 +82,40 @@
           "texture": "#piping"
         },
         "east": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            14.95,
+            15,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            14.95,
+            15,
+            16,
+            16
+          ]
         },
         "up": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            0,
+            14.95,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#piping"
+          "texture": "#piping",
+          "uv": [
+            0,
+            14.95,
+            16,
+            16
+          ]
         }
       }
     }
