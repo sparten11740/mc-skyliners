@@ -1076,8 +1076,9 @@ public final class AirframeLayout implements Layout {
      * which stay skin. Each post stands upright at one station along the nose on each side: the one whose skin, at
      * the pilots' eye level, faces closest to the post's angle round the nose. Picked row by row instead, the post
      * would wander back a block every row or two up the curving nose and break up into specks of skin across the
-     * glass. The middle column is glass like the rest (it is counted with the starboard side), so the front is one
-     * wide pane. The shell cuts the glass to the curve with the skin around it.
+     * glass. At its station it takes all the skin on its side under the glass (see {@link #windscreenAt}). The middle
+     * column is glass like the rest (it is counted with the starboard side), so the front is one wide pane. The shell
+     * cuts the glass to the curve with the skin around it.
      */
     private void windscreen() {
         BlockState glass = SkylinersRegistry.COCKPIT_GLASS.get().defaultBlockState();
@@ -1116,16 +1117,18 @@ public final class AirframeLayout implements Layout {
     }
 
     /**
-     * Whether skin at this block is the windscreen's glass: under the glass and not one of its posts. The shell pass
-     * asks it too, for the skin it adds around the curve, so the glass ends along the same rows and stations.
+     * Whether skin at this block is the windscreen's glass: under the glass and not one of its posts. A post is all
+     * the skin at its station on its side, following the skin from the hull under the glass up over the shoulder of
+     * the nose, where it curves in toward the crown, to the hull over it. Kept only where the skin faces near the
+     * post's angle, it stopped a row short of the top there, and the glass ran on across over it, so the post ended
+     * in mid-air in the windscreen. The shell pass asks it too, for the skin it adds around the curve, so the glass
+     * ends along the same rows and stations.
      */
     boolean windscreenAt(BlockPos pos) {
         if (!Windscreen.covers((pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale)) {
             return false;
         }
-        Map<Double, Integer> stations = postStations.getOrDefault(pos.getX() >= 0 ? 1 : -1, Map.of());
-        return stations.entrySet().stream().noneMatch(station -> pos.getZ() == station.getValue()
-            && Math.abs(facing(pos) - station.getKey()) <= Windscreen.POST_TOLERANCE);
+        return !postStations.getOrDefault(pos.getX() >= 0 ? 1 : -1, Map.of()).containsValue(pos.getZ());
     }
 
     /** Which way the fuselage's skin faces at a block, in degrees round from straight ahead: 0 forward, 90 sideways. */

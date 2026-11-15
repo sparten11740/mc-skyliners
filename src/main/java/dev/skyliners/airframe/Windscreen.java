@@ -24,10 +24,11 @@ public final class Windscreen {
     static final double EYE_HEIGHT = 1.62;
     /**
      * The side posts, by which way the skin faces where they stand at the pilots' eye level: degrees round from
-     * straight ahead. Each stands upright at that station all the way up the glass.
+     * straight ahead. Each stands upright at that station all the way up the glass, from the hull under it to the
+     * hull over it, curving in with the skin over the shoulder of the nose.
      */
     static final double[] SIDE_POSTS = {70, 88};
-    /** A post is only put where the skin faces within this many degrees of it. */
+    /** A post's station is only picked where the skin at the pilots' eye level faces within this many degrees of it. */
     static final double POST_TOLERANCE = 15;
 
     private Windscreen() {

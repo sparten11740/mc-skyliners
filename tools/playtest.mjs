@@ -6761,6 +6761,39 @@ function checkTailplaneSteps() {
     `${open.length} of ${steps.length} open, the first at ${open[0]?.at ?? "none"}`);
 }
 
+// How far round the player an airliner's windscreen glass is looked for, in blocks, and how many of its blocks at most.
+const WINDSCREEN_REACH = 128;
+const WINDSCREEN_MOST = 1000;
+
+// An airliner's windscreen posts, the hull standing between panes of its glass, each run unbroken from the hull under
+// the glass to the hull over it: at a post's station along her nose, on its side, no glass crosses it. The posts
+// beside the pilots stopped a row short of the top, where her nose curves in over them, and glass ran on across above
+// them, so from the flight deck each ended in mid-air in the windscreen.
+function checkWindscreenPosts() {
+  ship("airliner");
+  const glass = must(`find skyliners:cockpit_glass ${WINDSCREEN_REACH} ${WINDSCREEN_MOST}`).rows.map((row) => row.at_abs);
+  if (glass.length === 0) {
+    expect(false, "airliner: her windscreen has its glass");
+    return;
+  }
+  const low = [0, 1, 2].map((axis) => Math.min(...glass.map((at) => at[axis])) - 1);
+  const high = [0, 1, 2].map((axis) => Math.max(...glass.map((at) => at[axis])) + 1);
+  const blocks = read(low, high);
+  const middle = (low[0] + high[0]) / 2;
+  const isGlass = (x, y, z) => idOf(blocks.get(key(x, y, z)) ?? "air") === "skyliners:cockpit_glass";
+  const posts = new Set();
+  for (const at of blocks.keys()) {
+    const [x, y, z] = at.split(",").map(Number);
+    if (x !== middle && !isGlass(x, y, z) && isGlass(x, y, z - 1) && isGlass(x, y, z + 1)) {
+      posts.add(`${Math.sign(x - middle)},${z}`);
+    }
+  }
+  const across = [...blocks.keys()].map((at) => at.split(",").map(Number))
+    .filter(([x, y, z]) => isGlass(x, y, z) && posts.has(`${Math.sign(x - middle)},${z}`));
+  expect(posts.size > 0 && across.length === 0, "airliner: each windscreen post runs from the hull under the glass to the hull over it",
+    `${posts.size} posts, ${across.length} blocks of glass across them, the first at ${across[0]?.join(",") ?? "none"}`);
+}
+
 // The step from a column of a tailplane's lifting layer to the one beside it toward her east, if its plate lies in
 // another row: whether either column leaves the other's row open there.
 function openSteps(blocks, plates, column, y) {
@@ -7273,6 +7306,7 @@ const CHECKS = {
   "tardigrade-ice-cream": { run: checkTardigradeIceCream, about: "an ice cream: gulp, massive burp, the ship shakes, hyperspace, back" },
   "control-surfaces": { run: checkControlSurfacesDefault, about: "control surfaces are on by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
+  "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },
   "hand-landing": { run: checkHandLanding, slow: true, about: "an airliner flown by hand comes down gently and level, her gear down, when her levers are pulled back to idle low over the ground" },
