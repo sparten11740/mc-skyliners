@@ -515,7 +515,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterBowling.build(layout, layout.deck, layout.jets[STARBOARD_NOSE_JET]);
         layout.lights();
         if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
-            DarkCorners.light(layout, LightTone.WARM, layout::leastLight);
+            DarkCorners.light(layout, LightTone.WARM, layout::leastLight, at -> !layout.underCanopy(at));
         }
         layout.countAir();
         return layout;
@@ -570,6 +570,17 @@ public final class FreighterLayout extends HullLayout {
                 noteCanopy(dimming, new BlockPos(x, y, z));
             }
         }
+    }
+
+    /**
+     * Whether a block is under her cockpit's canopy, in the glass nose of her pod: no wall washer goes there, as its
+     * light up the wall would hang in the air under the glass, where her cockpit has no wall above it.
+     */
+    private boolean underCanopy(BlockPos at) {
+        double x = at.getX() / scale;
+        double y = (at.getY() + 0.5) / scale;
+        double z = at.getZ() / scale;
+        return z < FreighterShape.NOSE_FROM && FreighterShape.nearest(x, y, z) == FreighterShape.Part.POD;
     }
 
     /**

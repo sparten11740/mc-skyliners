@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,6 +31,8 @@ final class DarkCorners {
     private static final int FULL = 15;
 
     private final HullLayout layout;
+    /** Where the ship lets a wall washer go, by the block it would stand in. */
+    private final Predicate<BlockPos> washed;
     private final HullLayout.Box box;
     private final int width;
     private final int height;
@@ -38,8 +41,9 @@ final class DarkCorners {
     /** Every block of the air inside the hull, found once. */
     private final List<BlockPos> interior = new ArrayList<>();
 
-    private DarkCorners(HullLayout layout) {
+    private DarkCorners(HullLayout layout, Predicate<BlockPos> washed) {
         this.layout = layout;
+        this.washed = washed;
         this.box = layout.airBox();
         this.width = box.maxX() - box.minX() + 1;
         this.height = box.maxY() - box.minY() + 1;
@@ -50,10 +54,11 @@ final class DarkCorners {
 
     /**
      * Lights a ship's dark corners, in the tone given, each block someone could stand in up to the least light the
-     * ship asks for there, at least {@link #UNLIT}; gives how many lights it added.
+     * ship asks for there, at least {@link #UNLIT}, with a wall washer only where the ship lets one go (a floor light
+     * where it does not); gives how many lights it added.
      */
-    static int light(HullLayout layout, LightTone tone, ToIntFunction<BlockPos> least) {
-        DarkCorners pass = new DarkCorners(layout);
+    static int light(HullLayout layout, LightTone tone, ToIntFunction<BlockPos> least, Predicate<BlockPos> washed) {
+        DarkCorners pass = new DarkCorners(layout, washed);
         layout.forEachInterior(pass.interior::add);
         pass.interior.forEach(at -> pass.inside[pass.index(at)] = true);
         pass.spreadFromLamps();
@@ -160,13 +165,14 @@ final class DarkCorners {
     }
 
     /**
-     * Lights a dark spot: a wall washer at head height on a wall beside it, shining away from the wall, or a floor
-     * light in the spot itself where it has no wall; gives whether it found room for one.
+     * Lights a dark spot: a wall washer at head height on a wall beside it, shining away from the wall, where the ship
+     * lets one go, or a floor light in the spot itself; gives whether it found room for one.
      */
     private boolean lightUp(BlockPos dark, LightTone tone) {
         BlockPos head = dark.above();
+        boolean room = washed.test(head) && layout.isOpen(head.getX(), head.getY(), head.getZ());
         for (Direction side : Direction.Plane.HORIZONTAL) {
-            if (layout.isOpen(head.getX(), head.getY(), head.getZ()) && solidWall(head.relative(side), side.getOpposite())) {
+            if (room && solidWall(head.relative(side), side.getOpposite())) {
                 return place(head, SkylinersRegistry.WALL_LIGHT.get().shining(side.getOpposite(), tone));
             }
         }

@@ -5610,6 +5610,22 @@ function checkFreighterFurnishings() {
 
 // A freighter lit all through: no spot inside her that someone could stand in is left unlit, where monsters could
 // spawn, as there were by her thrusters before, and none of her passages looks black.
+// Round a freighter's control head, how far across and how far above it her cockpit under the canopy reaches, in
+// blocks, for wall washers to be looked for in it.
+const COCKPIT_ACROSS = 6;
+const COCKPIT_ABOVE = 3;
+
+// A freighter's cockpit has no wall washer in it: under her canopy their light up the wall hung in the air as pale
+// rectangles over her console, where her cockpit has no wall above them. Her cockpit is lit by floor lights instead.
+function checkFreighterCockpitLights() {
+  ship("freighter");
+  const [{ at_abs: [x, y, z] }] = must("find skyliners:autopilot 128 1").rows;
+  const washers = must("find skyliners:wall_light 128 300").rows.map((row) => row.at_abs)
+    .filter(([wx, wy, wz]) => Math.abs(wx - x) <= COCKPIT_ACROSS && Math.abs(wz - z) <= COCKPIT_ACROSS && wy >= y && wy <= y + COCKPIT_ABOVE);
+  expect(washers.length === 0, "freighter: no wall washer hangs its light in the air under her cockpit's canopy",
+    washers.map((at) => at.join(",")).join("; ") || "none");
+}
+
 function checkFreighterLit() {
   ship("freighter");
   const [{ at_abs: [x, y, z] }] = must("find skyliners:jump_drive 128 1").rows;
@@ -7349,6 +7365,7 @@ const CHECKS = {
   "freighter-furnishings": { run: checkFreighterFurnishings, about: "a freighter's rooms are filled out with furniture of their own" },
   "freighter-screens": { slow: true, run: checkFreighterScreens, about: "a freighter's passenger screens, pressed aboard her flying, show her outside cameras" },
   "freighter-portholes": { run: checkFreighterPortholes, about: "a freighter has portholes down her prongs and her cockpit's tube, each letting daylight in" },
+  "freighter-cockpit-lights": { run: checkFreighterCockpitLights, about: "a freighter's cockpit has no wall washer hanging its light in the air under her canopy" },
   "freighter-lit": { run: checkFreighterLit, about: "a freighter has no spot inside her left unlit, where monsters could spawn" },
   "hand-set-windows": { run: checkHandSetWindows, about: "an oval window and a porthole set by hand into a wall go in whole, dim at a touch and come out whole; a porthole lies flat in a floor" },
   "floor-window": { run: checkFloorWindow, about: "a round floor window laid into the ground blends into it, opens from its panel and comes out whole" },
