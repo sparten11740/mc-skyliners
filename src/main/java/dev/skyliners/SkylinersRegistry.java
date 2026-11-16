@@ -492,8 +492,11 @@ public final class SkylinersRegistry {
      * the airliner, in its way as it takes off.
      */
     private static final float ONLY_EVER_PLACED = Float.MAX_VALUE;
-    /** How brightly the freighter's console modules' screens and lamps light what is round them, in light levels. */
-    private static final int CONSOLE_GLOW = 4;
+    /**
+     * How brightly the freighter's console modules' screens and lamps light what is round them, in light levels: enough
+     * to light her cockpit round her pilots at night, as a real cockpit's instruments do.
+     */
+    private static final int CONSOLE_GLOW = 10;
     /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see AirframeBlueprintItem). */
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
