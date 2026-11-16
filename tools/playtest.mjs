@@ -6860,6 +6860,37 @@ function checkDoorPanelSolid() {
   expect(left === 0, "airliner: shutting again, her door's panel leaves nothing in the air beside the doorway", `${left} blocks left`);
 }
 
+// A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
+// blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
+// window must look, as a share of the hull's brightness.
+const SHADE_LOOK_OUT = 4;
+const SHADE_SPOT = 0.25;
+const SHADE_DARKER = 0.75;
+
+// An airliner's window with its shade pulled down still shows as a window from outside, darker than the white hull
+// round it. With the fault its outside showed the shade's pale plastic as if through clear glass, nearly as white as
+// the hull, and after a flight with the shades down her windows all but vanished.
+function checkWindowShadeOutside() {
+  const site = ship("airliner");
+  const panes = must("find skyliners:cabin_window_shell[down=true,up=false] 128 400 side=server").rows.map((row) => row.at_abs)
+    .filter(([x]) => x > site.x).sort((a, b) => a[2] - b[2]);
+  expect(panes.length > 0, "airliner: she is built with tall windows down her main deck");
+  if (panes.length === 0) {
+    return;
+  }
+  const [x, y, z] = panes[Math.floor(panes.length / 2)];
+  creative();
+  must(`server tp @p ${x + 0.5 + SHADE_LOOK_OUT} ${y - 1} ${z + 0.5} 90 0; wait 20t; use ${x},${y},${z}; wait 20t`);
+  const shaded = must(`block ${x},${y},${z} side=server`).props.shaded === "true";
+  const seen = must(`option hud off; wait 10t; pixels window=@${x + 0.5},${y + 0.5},${z + 0.5} r=${SHADE_SPOT} `
+    + `hull=@${x + 0.5},${y + 0.5},${z + 1.5} r=${SHADE_SPOT}`);
+  must("option hud on");
+  const window = seen.window?.luma ?? 255;
+  const hull = seen.hull?.luma ?? 0;
+  expect(shaded && window < hull * SHADE_DARKER, "airliner: a window with its shade pulled down still shows darker than her hull from outside",
+    `${shaded ? "shade down" : "shade still up"}, window ${round(window)}, hull ${round(hull)}`);
+}
+
 // The step from a column of a tailplane's lifting layer to the one beside it toward her east, if its plate lies in
 // another row: whether either column leaves the other's row open there.
 function openSteps(blocks, plates, column, y) {
@@ -7434,6 +7465,7 @@ const CHECKS = {
   "zeppelin-full-size-off": { run: checkZeppelinFullSizeOff, about: "the full-size zeppelin is switched off by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
+  "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },
   "door-panel-solid": { run: checkDoorPanelSolid, about: "an airliner's open passenger door stops whoever walks into its panel beside the doorway, and leaves nothing behind once shut" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },

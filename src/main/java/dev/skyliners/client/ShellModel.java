@@ -68,6 +68,10 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
  * <p>
  * Given more skins too ("skin1", "skin2", and so on), each block is drawn with one of them, turned any of four ways,
  * the same one every time for its place, so a rock's stone never repeats block after block.
+ * <p>
+ * Given an "outside" texture too, the faces looking out of the hull, its cut faces and its sides whose neighbour lies
+ * beyond its cut, are drawn with it, and the rest with the skin: a curved cabin window with its shade down shows its
+ * glass over the shade from outside and the shade itself from the cabin.
  */
 public final class ShellModel implements IUnbakedGeometry<ShellModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "shell");
@@ -135,6 +139,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             skins.add(spriteGetter.apply(context.getMaterial("skin" + more)));
         }
         boolean lining = context.hasMaterial("lining");
+        TextureAtlasSprite outside = context.hasMaterial("outside") ? spriteGetter.apply(context.getMaterial("outside")) : null;
         TextureAtlasSprite[] looks = new TextureAtlasSprite[LOOKS.length];
         for (Lining.Look look : LOOKS) {
             looks[look.ordinal()] = look == Lining.Look.SKIN || !lining ? skin : spriteGetter.apply(context.getMaterial(texture(look)));
@@ -142,8 +147,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         ResourceLocation hint = context.getRenderTypeHint();
         RenderTypeGroup group = hint != null ? context.getRenderType(hint) : RenderTypeGroup.EMPTY;
         RenderType renderType = group.isEmpty() ? RenderType.solid() : group.block();
-        return new Baked(looks, skins, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane, tintIndex,
-            liningTintIndex, alwaysLit);
+        return new Baked(looks, skins, outside, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane,
+            tintIndex, liningTintIndex, alwaysLit);
     }
 
     /** The texture a look is drawn with, by its name in the model's JSON. */
@@ -182,6 +187,9 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * description).
          */
         private final List<TextureAtlasSprite> skins;
+        /** The texture of the faces looking out of the hull, where the model gives one apart from its skin. */
+        @Nullable
+        private final TextureAtlasSprite outside;
         private final boolean lining;
         private final TextureAtlasSprite particle;
         private final ChunkRenderTypeSet renderTypes;
@@ -202,10 +210,12 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         private record Shape(List<List<BakedQuad>> quads, List<List<BakedQuad>> wholeCulled) {
         }
 
-        Baked(TextureAtlasSprite[] looks, List<TextureAtlasSprite> skins, boolean lining, TextureAtlasSprite particle, RenderType renderType, ItemTransforms transforms,
-              boolean ambientOcclusion, boolean singlePane, int tintIndex, int liningTintIndex, boolean alwaysLit) {
+        Baked(TextureAtlasSprite[] looks, List<TextureAtlasSprite> skins, @Nullable TextureAtlasSprite outside, boolean lining, TextureAtlasSprite particle,
+              RenderType renderType, ItemTransforms transforms, boolean ambientOcclusion, boolean singlePane, int tintIndex, int liningTintIndex,
+              boolean alwaysLit) {
             this.looks = looks;
             this.skins = skins;
+            this.outside = outside;
             for (int way = 0; way < ways(); way++) {
                 shapes.add(new AtomicReferenceArray<>(ShellGeometry.COUNT));
             }
@@ -316,17 +326,34 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                 byWholeSide.add(new ArrayList<>());
             }
             List<ShellGeometry.Face> faces = ShellGeometry.faces(shape);
+            double[] out = ShellGeometry.outward(shape);
+            double[] onCut = onCut(shape);
             for (int i = 0; i < faces.size(); i++) {
                 ShellGeometry.Face face = faces.get(i);
                 Direction side = face.side();
                 Lining.Look look = Lining.look(face, (linedFaces & 1 << i) != 0, context);
                 int tint = look == Lining.Look.SKIN ? tintIndex : liningTintIndex;
-                TextureAtlasSprite sprite = look == Lining.Look.SKIN && skins.size() > 1 ? skins.get(way / TURNS) : looks[look.ordinal()];
+                boolean outward = side == null || beyondCut(side, onCut, out);
+                TextureAtlasSprite sprite = sprite(look, outward, way);
                 List<BakedQuad> baked = bake(face, sprite, look == Lining.Look.REVEAL_LEFT, tint, way % TURNS);
                 bySide.get(side == null ? rest : side.get3DDataValue()).addAll(baked);
                 byWholeSide.get(side == null || !ShellGeometry.whole(shape, side) ? rest : side.get3DDataValue()).addAll(baked);
             }
             return new Shape(bySide.stream().map(List::copyOf).toList(), byWholeSide.stream().map(List::copyOf).toList());
+        }
+
+        /**
+         * The texture a face is drawn with: its look's, one of several skins block by block, or the outside's for a
+         * face of the skin looking out of the hull where the model gives one.
+         */
+        private TextureAtlasSprite sprite(Lining.Look look, boolean outward, int way) {
+            if (look != Lining.Look.SKIN) {
+                return looks[look.ordinal()];
+            }
+            if (outward && outside != null) {
+                return outside;
+            }
+            return skins.size() > 1 ? skins.get(way / TURNS) : looks[look.ordinal()];
         }
 
         /**

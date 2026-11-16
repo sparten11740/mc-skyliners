@@ -3,6 +3,7 @@
   "render_type": "minecraft:translucent",
   "textures": {
     "skin": "skyliners:block/cabin_window_bottom_shaded",
-    "particle": "skyliners:block/cabin_window_bottom_shaded"
+    "particle": "skyliners:block/cabin_window_bottom_shaded",
+    "outside": "skyliners:block/cabin_window_bottom_shaded_outside"
   }
 }

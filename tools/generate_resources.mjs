@@ -6627,15 +6627,17 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   write(`assets/${ID}/blockstates/cabin_window.json`, { variants });
 }
 // The same window cut to the hull's curve, every pane of it baked for every shape by the "shell" loader, with the
-// flat window's textures. It gives back a cabin window.
+// flat window's textures; with its shade down, its outside shows the shade behind its glass. It gives back a cabin
+// window.
 {
   const variants = {};
   for (const [joins, up, down] of WINDOW_JOINS) {
     for (const shaded of [false, true]) {
       const texture = `${ID}:block/cabin_window${joins}${shaded ? "_shaded" : ""}`;
       const name = `cabin_window_shell${joins}${shaded ? "_shaded" : ""}`;
+      const outside = shaded ? { outside: `${texture}_outside` } : {};
       write(`assets/${ID}/models/block/${name}.json`, {
-        loader: `${ID}:shell`, render_type: "minecraft:translucent", textures: { skin: texture, particle: texture },
+        loader: `${ID}:shell`, render_type: "minecraft:translucent", textures: { skin: texture, particle: texture, ...outside },
       });
       variants[`down=${down},shaded=${shaded},up=${up}`] = { model: `${ID}:block/${name}` };
     }

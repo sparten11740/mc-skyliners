@@ -149,9 +149,18 @@ function plating(base, seam, rivet) {
 texture(blockOutput, "airframe_panel", plating(WHITE, SEAM, RIVET), 3);
 texture(blockOutput, "livery_panel", plating(BLUE, BLUE_SEAM, BLUE_RIVET), 3);
 
+// A cabin window's shade pulled down: its pale plastic, ribbed every third row, and the grey pull tab at its foot.
+const SHADE = [0xe2, 0xde, 0xd4];
+const SHADE_RIB = [0xd6, 0xd2, 0xc8];
+const SHADE_TAB = [0x9c, 0xa0, 0xa6];
+/** A colour seen through a pane of tinted glass laid over it, as one opaque colour. */
+const throughGlass = (pane, behind) => behind.map((colour, i) => Math.round(pane[i] * pane[3] / 255 + colour * (1 - pane[3] / 255)));
+
 // A rounded cabin window in its white frame, with a highlight across the upper corner; with its shade pulled down,
 // the glass filled with the shade's pale plastic and a pull tab at its foot. A pane joined to one above or below runs
 // on through that edge, so stacked panes make one tall window: the highlight in its top pane, the tab in its bottom.
+// Seen from outside, a curved window's shade lies behind its glass: the plastic tinted by the glass over it, the
+// highlight across it as on a window with its shade up, so it still shows as a window in the white hull.
 for (const [joins, up, down] of [["", false, false], ["_bottom", true, false], ["_top", false, true], ["_middle", true, true]]) {
   const frame = (x, y) => {
     const dx = Math.max(Math.abs(x - 7.5) - 2.5, 0);
@@ -165,12 +174,19 @@ for (const [joins, up, down] of [["", false, false], ["_bottom", true, false], [
     if (!up && x - y > -2 && x - y < 1 && y < 8) return GLASS_SHINE;
     return GLASS;
   });
+  const shade = (x, y) => (!down && y >= 11 && x >= 6 && x <= 9 ? SHADE_TAB : y % 3 === 0 ? SHADE_RIB : SHADE);
   texture(blockOutput, `cabin_window${joins}_shaded`, (x, y) => {
     const corner = frame(x, y);
     if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
     if (corner > 1.9) return FRAME_DARK;
-    if (!down && y >= 11 && x >= 6 && x <= 9) return [0x9c, 0xa0, 0xa6];
-    return y % 3 === 0 ? [0xd6, 0xd2, 0xc8] : [0xe2, 0xde, 0xd4];
+    return shade(x, y);
+  });
+  texture(blockOutput, `cabin_window${joins}_shaded_outside`, (x, y) => {
+    const corner = frame(x, y);
+    if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
+    if (corner > 1.9) return FRAME_DARK;
+    if (!up && x - y > -2 && x - y < 1 && y < 8) return throughGlass(GLASS_SHINE, shade(x, y));
+    return throughGlass(GLASS, shade(x, y));
   });
 }
 
