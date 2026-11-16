@@ -6807,6 +6807,59 @@ function checkWindscreenPosts() {
     `${posts.size} posts, ${across.length} blocks of glass across them, the first at ${across[0]?.join(",") ?? "none"}`);
 }
 
+// Walking along the hull into an airliner's open passenger door, flat against it beside the doorway: how long the door
+// takes to swing open, and its panel's blocks to go once it is used again, in ticks; how far beyond its panel's far
+// edge the player starts, in blocks; how long they walk at it, in ticks; and how far past that edge toward the doorway
+// the middle of them may get, in blocks (stopped, it is half their width short of it).
+const PANEL_OPEN_TICKS = 40;
+const PANEL_GONE_TICKS = 10;
+const PANEL_RUN_UP = 1.5;
+const PANEL_WALK_TICKS = 30;
+const PANEL_PAST_MOST = 0;
+// How far out of the doorway the open panel's far edge stands, across from the doorway's left edge, in blocks: two
+// columns and a little past it on its hinge's side.
+const PANEL_FAR_EDGE = { left: -2.05, right: 4.05 };
+
+// An airliner's door at the top of her stairs, opened from there, stops whoever walks into its panel, swung round flat
+// against the hull beside the doorway as it is, and its blocks go once it is shut again. With the fault an open door
+// had nothing to bump into but a sliver across its doorway, and the player walked straight through its panel at the
+// top of the stairs.
+function checkDoorPanelSolid() {
+  ship("airliner");
+  const steps = must("find skyliners:airstair_step 128 1000 side=server").rows.map((row) => row.at_abs);
+  const doors = must("find skyliners:plug_door[column=0,row=0] 128 20 side=server").rows.map((row) => row.at_abs);
+  expect(steps.length > 0 && doors.length > 0, "airliner: she is built with her stairs down at a door");
+  if (steps.length === 0 || doors.length === 0) {
+    return;
+  }
+  const top = steps.reduce((high, at) => (at[1] > high[1] ? at : high));
+  const apart = (at) => Math.hypot(at[0] - top[0], at[2] - top[2]);
+  const at = doors.reduce((near, door) => (apart(door) < apart(near) ? door : near));
+  const { props } = must(`block ${at.join(",")} side=server`);
+  const out = STEPS[props.facing];
+  const right = STEPS[COUNTER_CLOCKWISE[props.facing]];
+  const side = props.hinge === "right" ? 1 : -1;
+  const facingDoor = Math.atan2(out[0], -out[1]) * 180 / Math.PI;
+  const use = `use ${at[0]},${at[1] + 1},${at[2]}`;
+  creative();
+  must(`fly off; server tp @p ${top[0] + 0.5} ${top[1] + 1} ${top[2] + 0.5} ${facingDoor} 0; wait 20t; ${use}; wait ${PANEL_OPEN_TICKS}t`);
+  const opened = must(`block ${at.join(",")} side=server`).props.open === "true";
+  expect(opened, "airliner: her door at the top of her stairs opens");
+  // Across from the doorway's left edge and out from the middle of its blocks, in the world.
+  const point = (across, outward) => [0, 1].map((i) => at[i * 2] + 0.5 + right[i] * (across - 0.5) + out[i] * outward);
+  const [sx, sz] = point(PANEL_FAR_EDGE[props.hinge] + side * PANEL_RUN_UP, 1);
+  const yaw = Math.atan2(side * right[0], -side * right[1]) * 180 / Math.PI;
+  must(`fly on; server tp @p ${sx} ${at[1] + 0.2} ${sz} ${yaw} 0; wait 20t; move forward ${PANEL_WALK_TICKS}t; wait 10t`);
+  const pos = must("status").pos;
+  const across = (pos[0] - at[0] - 0.5) * right[0] + (pos[2] - at[2] - 0.5) * right[1] + 0.5;
+  const past = side * (PANEL_FAR_EDGE[props.hinge] - across);
+  expect(opened && past <= PANEL_PAST_MOST, "airliner: walking along her hull into her open door, its panel stops the player",
+    `${round(past)} blocks past its far edge toward the doorway`);
+  must(`fly off; server tp @p ${top[0] + 0.5} ${top[1] + 1} ${top[2] + 0.5} ${facingDoor} 0; wait 20t; ${use}; wait ${PANEL_GONE_TICKS}t`);
+  const left = must("find skyliners:parked_panel 16 20 side=server").rows.length;
+  expect(left === 0, "airliner: shutting again, her door's panel leaves nothing in the air beside the doorway", `${left} blocks left`);
+}
+
 // The step from a column of a tailplane's lifting layer to the one beside it toward her east, if its plate lies in
 // another row: whether either column leaves the other's row open there.
 function openSteps(blocks, plates, column, y) {
@@ -7381,6 +7434,7 @@ const CHECKS = {
   "zeppelin-full-size-off": { run: checkZeppelinFullSizeOff, about: "the full-size zeppelin is switched off by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
+  "door-panel-solid": { run: checkDoorPanelSolid, about: "an airliner's open passenger door stops whoever walks into its panel beside the doorway, and leaves nothing behind once shut" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
   "hand-takeoff": { run: checkHandTakeoff, slow: true, about: "an airliner flown by hand, her thrust levers at full, rolls a good way down the runway before she lifts off" },
   "hand-full-thrust": { run: checkHandFullThrust, slow: true, about: "an airliner flown by hand with her thrust levers at full from cruising climbs steadily, never swinging up and diving down" },

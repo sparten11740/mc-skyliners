@@ -227,6 +227,7 @@ import dev.skyliners.block.PassengerScreenBlockEntity;
 import dev.skyliners.block.PendantLightBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.PlanterBlock;
+import dev.skyliners.block.ParkedPanelBlock;
 import dev.skyliners.block.PlugDoorBlock;
 import dev.skyliners.block.PlugDoorBlockEntity;
 import dev.skyliners.block.PoolCopingBlock;
@@ -756,6 +757,16 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<PlugDoorBlock> PLUG_DOOR = BLOCKS.registerBlock("plug_door", PlugDoorBlock::new, metal(MapColor.SNOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PlugDoorBlockEntity>> PLUG_DOOR_ENTITY =
         BLOCK_ENTITIES.register("plug_door", () -> BlockEntityType.Builder.of(PlugDoorBlockEntity::new, PLUG_DOOR.get()).build(null));
+    /**
+     * Where an open plug door's panel stands beside its doorway: invisible blocks the door lays and takes away, so the
+     * panel stops whoever walks into it (see {@link ParkedPanelBlock}). No item and nothing to mine.
+     */
+    public static final DeferredBlock<ParkedPanelBlock> PARKED_PANEL = BLOCKS.registerBlock(
+        "parked_panel", ParkedPanelBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.METAL).isValidSpawn(SkylinersRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
+    );
     /**
      * The cockpit door in the bulkhead behind the flight deck: one big panel swinging out into the aisle, drawn by its
      * renderer. Placed only by the blueprints, so it has no item (see {@link CockpitDoorBlock}).

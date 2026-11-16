@@ -3,6 +3,7 @@ package dev.skyliners.block;
 import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.compat.SableFlight;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -33,8 +34,9 @@ import net.minecraft.world.phys.Vec3;
  * swing it is, ticked alike on the server and on every client, which draws the panel from it. Opening, the doorway is
  * clear at once while the panel lifts, moves out of the frame and swings away; shutting, it swings back and only
  * stops the doorway again once it is home in the frame and latched, and it waits, a chime saying so, while anyone
- * stands where the panel goes back in. A pneumatic hiss as it starts to move, a clunk of its latches as it unlatches
- * and as it shuts.
+ * stands where the panel goes back in. Swung open, it lays blocks where the panel stands beside the doorway, so the
+ * panel stops whoever walks into it (see {@link ParkedPanelBlock}), and takes them away as it starts to shut. A
+ * pneumatic hiss as it starts to move, a clunk of its latches as it unlatches and as it shuts.
  *
  * <p>Villagers find their way through it as through a wooden door: while the airliner stands still (or is not
  * assembled at all), it opens for a villager that walks up to it from either side, and shuts again behind it once no
@@ -89,6 +91,8 @@ public class PlugDoorBlockEntity extends BlockEntity {
     private int villagersGone;
     /** How far out of its frame the panel moves (see {@link #standoff()}), worked out afresh each time it opens. */
     private float standoff = Float.NaN;
+    /** Whether the panel's blocks stand where it is open (see {@link ParkedPanelBlock}): laid afresh after loading. */
+    private boolean parked;
 
     public PlugDoorBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.PLUG_DOOR_ENTITY.get(), pos, state);
@@ -245,6 +249,8 @@ public class PlugDoorBlockEntity extends BlockEntity {
         if (open) {
             sound(SkylinersRegistry.PLUG_DOOR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
             clear(true);
+        } else {
+            unpark();
         }
         sync();
     }
@@ -287,6 +293,9 @@ public class PlugDoorBlockEntity extends BlockEntity {
             if (ticks < SWING_TICKS) {
                 ticks++;
                 setChanged();
+            }
+            if (ticks == SWING_TICKS && !parked) {
+                park(level);
             }
             return;
         }
@@ -361,6 +370,74 @@ public class PlugDoorBlockEntity extends BlockEntity {
             }
         }
         return false;
+    }
+
+    /**
+     * Where the panel stands open, flat against the hull beside the doorway, as it is drawn: the blocks across the two
+     * columns beside the doorway on its hinge's side, as tall as the door, in the row out from the hull that the
+     * panel's inner side, its lining's crown, lies in. None for a door hinged along its top, which swings up over its
+     * doorway instead.
+     */
+    private List<BlockPos> panelBlocks() {
+        BlockState state = getBlockState();
+        PlugDoorBlock.Hinge hinge = state.getValue(PlugDoorBlock.HINGE);
+        List<BlockPos> blocks = new ArrayList<>();
+        if (hinge == PlugDoorBlock.Hinge.TOP) {
+            return blocks;
+        }
+        Direction out = state.getValue(PlugDoorBlock.FACING);
+        Direction right = PlugDoorBlock.right(state);
+        int first = hinge == PlugDoorBlock.Hinge.RIGHT ? PlugDoorBlock.COLUMNS : -PlugDoorBlock.COLUMNS;
+        int depth = (int) Math.floor(panelInside());
+        for (int row = 0; row < rows(); row++) {
+            for (int column = first; column < first + PlugDoorBlock.COLUMNS; column++) {
+                blocks.add(worldPosition.relative(right, column).above(row).relative(out, depth));
+            }
+        }
+        return blocks;
+    }
+
+    /**
+     * How far out the open panel's inner side stands, in blocks from the doorway's inner face: the door's depth in from
+     * the hull's outer face, carried out as far as it moves out of its frame.
+     */
+    private double panelInside() {
+        return 1 - PlugDoorBlock.DEPTH / 16.0 + standoff();
+    }
+
+    /**
+     * Lays the panel's blocks where it stands open, wherever nothing else stands there. Where the hull bulges, so the
+     * panel would reach on into the next block out, its box is moved in toward the hull instead, whole in its block.
+     */
+    private void park(ServerLevel level) {
+        parked = true;
+        double inside = panelInside();
+        int from = Math.min((int) Math.floor((inside - Math.floor(inside)) * 16), 16 - PlugDoorBlock.DEPTH);
+        BlockState panel = ParkedPanelBlock.of(SkylinersRegistry.PARKED_PANEL.get().defaultBlockState(),
+            getBlockState().getValue(PlugDoorBlock.FACING), from);
+        for (BlockPos at : panelBlocks()) {
+            if (level.getBlockState(at).isAir()) {
+                level.setBlock(at, panel, Block.UPDATE_ALL);
+            }
+        }
+    }
+
+    /** Takes the panel's blocks away, as it starts to shut or the door goes. */
+    void unpark() {
+        parked = false;
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        for (BlockPos at : panelBlocks()) {
+            if (level.getBlockState(at).getBlock() instanceof ParkedPanelBlock) {
+                level.removeBlock(at, false);
+            }
+        }
+    }
+
+    /** Whether the door stands open with its panel's block at this spot. */
+    boolean holds(BlockPos panel) {
+        return open && ticks == SWING_TICKS && panelBlocks().contains(panel);
     }
 
     /** Whether anyone stands where the panel goes back into its frame: in it, or just outside, where it comes in from. */

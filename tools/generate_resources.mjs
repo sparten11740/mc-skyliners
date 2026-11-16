@@ -1221,6 +1221,12 @@ write(`assets/${ID}/models/item/airliner_door.json`, { parent: "minecraft:item/g
 write(`assets/${ID}/blockstates/plug_door.json`, { variants: { "": { model: `${ID}:block/plug_door` } } });
 write(`assets/${ID}/models/block/plug_door.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
 cubes.plug_door = null;
+// Where an open plug door's panel stands beside its doorway: invisible blocks the door lays and takes away (see
+// ParkedPanelBlock), so the model only gives the particles; no item and no loot. Light like the rest of the airliner,
+// but no part of its airframe, whose bulge round a doorway the door measures to see how far out its panel parks.
+write(`assets/${ID}/blockstates/parked_panel.json`, { variants: { "": { model: `${ID}:block/parked_panel` } } });
+write(`assets/${ID}/models/block/parked_panel.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
+cubes.parked_panel = null;
 // The plug door's pneumatic hiss, the clunk of its latches, and the alarm while one stands open in flight (see
 // tools/generate_sounds.mjs).
 function plugDoorSounds() {
@@ -1231,6 +1237,7 @@ function plugDoorSounds() {
 function plugDoorLang() {
   return {
     "block.skyliners.plug_door": "Plug Door",
+    "block.skyliners.parked_panel": "Open Door Panel",
     "subtitles.skyliners.plug_door_hiss": "Door hisses",
     "subtitles.skyliners.plug_door_latch": "Door latches",
     "subtitles.skyliners.door_alarm": "Door alarm wails",
@@ -11856,6 +11863,8 @@ const FITTINGS = ["space_rock", "space_rock_magma", "light_strip", "pendant_ligh
   "model_airliner", "model_zeppelin", "model_rocket", "model_freighter", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
+// An open plug door's panel stands in blocks of its own, laid and taken away by the door.
+FITTINGS.push("parked_panel");
 FITTINGS.push(...roverFittings());
 FITTINGS.push(...rampFittings());
 // The club's bandstand is fitted into her club, set down and taken up by hand.

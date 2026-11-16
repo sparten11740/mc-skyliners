@@ -162,7 +162,10 @@ public class PlugDoorBlock extends BaseEntityBlock {
         return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
     }
 
-    /** Open, the doorway is clear: the panel stands out of the way outside, and nothing bumps into it there. */
+    /**
+     * Open, the doorway is clear: the panel stands outside beside it, where blocks of its own stop whoever walks into it
+     * (see {@link ParkedPanelBlock}).
+     */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
@@ -204,9 +207,16 @@ public class PlugDoorBlock extends BaseEntityBlock {
         }
     }
 
-    /** Taken apart on purpose (see {@link dev.skyliners.FrameProtection}), the whole door goes, not just the part. */
+    /**
+     * Taken apart on purpose (see {@link dev.skyliners.FrameProtection}), the whole door goes, not just the part, and
+     * the blocks its open panel stands in with it.
+     */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        PlugDoorBlockEntity door = PlugDoorBlockEntity.of(level, pos);
+        if (door != null) {
+            door.unpark();
+        }
         if (!level.isClientSide) {
             for (BlockPos part : parts(level, controller(state, pos))) {
                 if (!part.equals(pos)) {
