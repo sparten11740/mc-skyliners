@@ -515,7 +515,7 @@ public final class FreighterLayout extends HullLayout {
         FreighterBowling.build(layout, layout.deck, layout.jets[STARBOARD_NOSE_JET]);
         layout.lights();
         if (SkylinersConfig.FREIGHTER_LIGHTS.get()) {
-            DarkCorners.light(layout, LightTone.WARM, layout::leastLight, at -> !layout.underCanopy(at));
+            DarkCorners.light(layout, LightTone.WARM, layout::leastLight, at -> !layout.underCanopy(at), at -> !layout.onCanopy(at));
         }
         layout.countAir();
         return layout;
@@ -581,6 +581,15 @@ public final class FreighterLayout extends HullLayout {
         double y = (at.getY() + 0.5) / scale;
         double z = at.getZ() / scale;
         return z < FreighterShape.NOSE_FROM && FreighterShape.nearest(x, y, z) == FreighterShape.Part.POD;
+    }
+
+    /**
+     * Whether a block stands on her canopy's glass, along the rim of her cockpit's nose: no floor light goes there, as
+     * the canopy is drawn as one smooth dome over its blocks, and a lamp lying on them hung in the air under it. Nothing
+     * spawns on the glass, so the spot needs none.
+     */
+    private boolean onCanopy(BlockPos at) {
+        return stateAt(at.getX(), at.getY() - 1, at.getZ()).getBlock() instanceof DimmingGlassBlock;
     }
 
     /**
