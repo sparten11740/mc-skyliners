@@ -524,6 +524,11 @@ public final class SkylinersRegistry {
     private static final int HULL_FLOODLIGHT_GLOW = 15;
     /** How brightly the freighter's light band round her rim glows, in light levels: a bright ring at night. */
     private static final int LIGHT_BAND_GLOW = 12;
+    /**
+     * How brightly a freighter's dome light glows, in light levels: from her canopy's lining, just behind the front of
+     * her canopy, whose top its lens is drawn on (see {@link dev.skyliners.client.CanopyLiningRenderer}).
+     */
+    private static final int DOME_LIGHT_GLOW = 12;
     /** How brightly a hull light strip glows, in light levels: enough to light a loading bay. */
     private static final int LIGHT_STRIP_GLOW = 10;
 
@@ -1219,7 +1224,7 @@ public final class SkylinersRegistry {
     public static final DeferredBlock<CanopyLiningBlock> CANOPY_LINING = BLOCKS.registerBlock(
         "canopy_lining", CanopyLiningBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.NONE).noCollission().noOcclusion().noLootTable().strength(ONLY_EVER_PLACED, 3600000.0F)
-            .isValidSpawn(SkylinersRegistry::never)
+            .isValidSpawn(SkylinersRegistry::never).lightLevel(state -> DOME_LIGHT_GLOW)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CanopyLiningBlockEntity>> CANOPY_LINING_ENTITY =
         BLOCK_ENTITIES.register("canopy_lining", () -> BlockEntityType.Builder.of(CanopyLiningBlockEntity::new, CANOPY_LINING.get()).build(null));

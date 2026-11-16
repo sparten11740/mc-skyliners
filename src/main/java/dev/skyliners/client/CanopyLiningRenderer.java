@@ -92,6 +92,19 @@ public class CanopyLiningRenderer implements BlockEntityRenderer<CanopyLiningBlo
     private static final int RIM_LAMPS = 24;
     private static final double LAMP_HALF = 0.04;
     private static final double LAMP_PROUD = 0.01;
+    /**
+     * Her dome light, a curved bar on the inside of her front's rim along its top, where the light her lining gives
+     * seems to come from: how far either way round the rim its housing and its lens reach, in radians; how far either
+     * way along the canopy, in blocks; how proud of the rim each stands, in blocks; and how many flat faces each is
+     * drawn in round the rim.
+     */
+    private static final double DOME_HOUSING_ROUND = 0.42;
+    private static final double DOME_LENS_ROUND = 0.36;
+    private static final double DOME_HOUSING_ALONG = 0.15;
+    private static final double DOME_LENS_ALONG = 0.09;
+    private static final double DOME_HOUSING_PROUD = 0.02;
+    private static final double DOME_LENS_PROUD = 0.04;
+    private static final int DOME_STEPS = 8;
     /** How far past the dome the renderer still draws, for whether it is in view, in blocks. */
     private static final double REACH_MARGIN = 1;
     /** How far off the canopy is still drawn, in blocks: it is her hull's glass, seen as far as her blocks are. */
@@ -121,6 +134,9 @@ public class CanopyLiningRenderer implements BlockEntityRenderer<CanopyLiningBlo
     private static final int RIB_SIDE = 0xFF464C54;
     private static final int RIVET = 0xFF7E858D;
     private static final int LAMP = 0xFFFFB040;
+    /** Her dome light's dark housing and its warm white lens. */
+    private static final int DOME_HOUSING = 0xFF2A2E33;
+    private static final int DOME_LENS = 0xFFFFF1D6;
 
     @Override
     public void render(CanopyLiningBlockEntity lining, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -142,6 +158,7 @@ public class CanopyLiningRenderer implements BlockEntityRenderer<CanopyLiningBlo
         ribs(ribs, at, frame, lights);
         rivets(ribs, at, frame, light);
         lamps(ribs, at, frame);
+        domeLight(ribs, at, frame, light);
         VertexConsumer glass = buffers.getBuffer(GLASS_TYPE);
         glass(glass, at, frame, new Sheen(GLASS[Mth.clamp(lining.darkness(), 0, GLASS.length - 1)], at), lights);
     }
@@ -476,6 +493,33 @@ public class CanopyLiningRenderer implements BlockEntityRenderer<CanopyLiningBlo
         for (int lamp = 0; lamp < RIM_LAMPS; lamp++) {
             double round = Mth.TWO_PI * lamp / RIM_LAMPS;
             stud(consumer, pose, frame, along, round, LAMP_HALF, -RIM_INSIDE - LAMP_PROUD, LAMP, LightTexture.FULL_BRIGHT);
+        }
+    }
+
+    /**
+     * Her dome light: a dark housing curving along the inside of her front's rim at its top, and a lens in it glowing
+     * warm white whatever the light, over her console and her pilots.
+     */
+    private static void domeLight(VertexConsumer consumer, PoseStack.Pose pose, Frame frame, int light) {
+        double along = frame.past(1, -FRONT_RIM_HALF / 2);
+        double rimInside = frame.cone().skin() - RIB_DEPTH - RIM_RAISE;
+        arc(consumer, pose, frame, along, DOME_HOUSING_ALONG, DOME_HOUSING_ROUND, rimInside - DOME_HOUSING_PROUD, DOME_HOUSING, light);
+        arc(consumer, pose, frame, along, DOME_LENS_ALONG, DOME_LENS_ROUND, rimInside - DOME_LENS_PROUD, DOME_LENS, LightTexture.FULL_BRIGHT);
+    }
+
+    /**
+     * A strip facing in, curving round the canopy at its top: about a place along its profile, so far either way along
+     * it in blocks and so far either way round from straight up in radians, at an offset in from the lining.
+     */
+    private static void arc(VertexConsumer consumer, PoseStack.Pose pose, Frame frame, double profile, double along, double round, double off,
+                            int colour, int light) {
+        double alongHalf = along / frame.speed(profile);
+        for (int step = 0; step < DOME_STEPS; step++) {
+            double from = Mth.HALF_PI - round + 2 * round * step / DOME_STEPS;
+            double to = from + 2 * round / DOME_STEPS;
+            quad(consumer, pose, light, colour, frame.normal(profile, from).scale(-1), frame.normal(profile, to).scale(-1),
+                frame.point(profile - alongHalf, from, off), frame.point(profile - alongHalf, to, off), frame.point(profile + alongHalf, to, off),
+                frame.point(profile + alongHalf, from, off));
         }
     }
 
