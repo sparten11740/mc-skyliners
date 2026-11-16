@@ -578,6 +578,9 @@ const CONSOLE_SLICES = { console_readouts: 1, console_boost: 1, console_climb: 1
   console_spin: 1 };
 const CONSOLE_KINDS = ["console_readouts", "console_scanner", "console_engines", "console_switches", "console_boost", "console_jump", "console_climb",
   "console_slam", "console_spin"];
+// How far a module of her pilots' console stands from her control head at most, across, in blocks: the gunner's own
+// scanner, up in her turret, stands further off and is no slice of their ring.
+const CONSOLE_ROUND_MOST = 6;
 // Airframe fairings put down by hand: how far off the cell the player stands to put one down, in blocks, and how far
 // apart the corners are laid along the site, in blocks.
 const FAIRING_STAND_OFF = 2.5;
@@ -3674,7 +3677,10 @@ function rocketAtPlayer(flies) {
 // button, clicks a toggle up under the hand.
 function checkFreighterConsole() {
   ship("freighter");
-  const slices = Object.entries(CONSOLE_SLICES).map(([kind, count]) => [kind, count, must(`find skyliners:${kind} 128 ${count + 1}`).rows]);
+  const [head] = must("find skyliners:autopilot 128 1").rows;
+  const besideHead = (row) => Math.hypot(row.at_abs[0] - head.at_abs[0], row.at_abs[2] - head.at_abs[2]) <= CONSOLE_ROUND_MOST;
+  const slices = Object.entries(CONSOLE_SLICES)
+    .map(([kind, count]) => [kind, count, must(`find skyliners:${kind} 128 ${count + 2}`).rows.filter(besideHead)]);
   for (const [kind, count, rows] of slices) {
     expect(rows.length === count, `freighter: her console has its ${kind.replace("console_", "")}`, `${rows.length} of ${count}`);
   }
