@@ -995,7 +995,7 @@ const CLUB_LOOK_UP = 30;
 const CLUB_LOOK_RADIUS = 8;
 // Fittings that only hang from a ceiling or are fixed to a wall, and the mount each goes up on; the awning's canopy
 // goes up against a wall, never on top of a block.
-const MOUNTED_ONLY = [["light_strip", "wall"], ["fairy_lights", "wall"], ["grow_light", "ceiling"], ["horn_cord", "ceiling"], ["ships_plaque", "wall"],
+const MOUNTED_ONLY = [["fairy_lights", "wall"], ["grow_light", "ceiling"], ["horn_cord", "ceiling"], ["ships_plaque", "wall"],
   ["searchlight", "ceiling"], ["floodlight", "ceiling"], ["banner_cleat", "wall"], ["awning", "wall"]];
 // An orrery's planetarium: how high over the ground a ceiling is put up to hang one under by hand, how far under the
 // orrery the glass floor of the room is, and how far off it the orrery is looked at from, in blocks; how far up and

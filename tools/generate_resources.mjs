@@ -4154,7 +4154,14 @@ function towerInstrumentsLang() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((open) =>
       [`facing=${facing},open=${open}`, { model: `${ID}:block/overhead_bin${open ? "_open" : ""}`, y }]))),
   });
-  for (const name of ["light_strip", "pendant_light", "light_cable", "overhead_bin"]) {
+  // The cabin's strips have no item of their own: only the blueprints put them up, and broken they give an LED strip.
+  write(`data/${ID}/loot_table/blocks/light_strip.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:led_strip` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/light_strip`,
+  });
+  cubes.light_strip = null;
+  for (const name of ["pendant_light", "light_cable", "overhead_bin"]) {
     write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
     dropsItself(name);
     cubes[name] = null;
@@ -12044,7 +12051,7 @@ shaped("christening_bottle", ["N", "S", "B"], { N: "minecraft:gold_nugget", S: "
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
-shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
+shaped("led_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
 shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);

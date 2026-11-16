@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "skyliners:light_strip"
+          "name": "skyliners:led_strip"
         }
       ],
       "conditions": [

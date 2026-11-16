@@ -1972,7 +1972,6 @@ public final class SkylinersRegistry {
             .lightLevel(GirderDecorBlock::light).isValidSpawn(SkylinersRegistry::never)
     );
     public static final DeferredItem<BlockItem> GIRDER_DECOR_ITEM = ITEMS.registerSimpleBlockItem(GIRDER_DECOR);
-    public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
     public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
@@ -3643,7 +3642,7 @@ public final class SkylinersRegistry {
             BALL_PIT_ITEM, BEAN_BAG_ITEM, BUNK_ITEM, BUNK_LADDER_ITEM, SECRET_BOOKSHELF_ITEM, SECRET_PANEL_ITEM, LOOSE_RIVET_ITEM
         )),
         new TabSection("lights", List.of(
-            PENDANT_LIGHT_ITEM, HALO_LIGHT_ITEM, LIGHT_CABLE_ITEM, LIGHT_STRIP_ITEM, CABIN_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, FAIRY_LIGHTS_ITEM,
+            PENDANT_LIGHT_ITEM, HALO_LIGHT_ITEM, LIGHT_CABLE_ITEM, CABIN_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, FAIRY_LIGHTS_ITEM,
             FLOODLIGHT_ITEM, NAV_LIGHT_ITEM, LED_STRIP_ITEM, LED_PANEL_ITEM, LED_CONSOLE_ITEM
         )),
         new TabSection("decorations", List.of(
@@ -3767,6 +3766,9 @@ public final class SkylinersRegistry {
         }
         // The Wall Washer item from alpha.183 to alpha.186: the Halo Light now, which is a wall washer on a wall.
         ITEMS.addAlias(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "wall_light"), HALO_LIGHT_ITEM.getId());
+        // The LED Light Strip item up to 1.2.0, the airliner's cabin strip, which went up only on a wall: the LED Strip
+        // now, which lies on any face. The cabin's own strips stay, and give one back.
+        ITEMS.addAlias(ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "light_strip"), LED_STRIP_ITEM.getId());
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
