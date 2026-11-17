@@ -35,12 +35,13 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The laser path clearer: a turret in the underside of the nose that, armed from the flight deck (see
- * {@link LaserSwitchBlock}), drops out of its hatch and fires rapid short laser bolts at whatever lies in the assembled
- * airliner's flight path ahead (where it is going, or, standing still, where its nose points): hostile mobs first, each
- * bolt hurting one, and otherwise the nearest block in the way, each bolt vaporising a bite round it. Each
- * bolt is a beam drawn on every client near (see the client's {@code LaserBolts}), with sparks where it strikes and a
- * hiss.
+ * The laser path clearer: turrets in the underside of the nose, along the belly and under the wings that, armed from
+ * the flight deck (see {@link LaserSwitchBlock}), drop out of their hatches and fire rapid short laser bolts at
+ * whatever lies in the assembled airliner's flight path ahead of each (where it is going, or, standing still, where its
+ * nose points): hostile mobs first, each bolt hurting one, and otherwise the nearest block in the way, each bolt
+ * vaporising a bite round it. On the ground each looks all round it too, so what stands about her, under a wing or by
+ * her tail, is cleared as well as what is in front of her. Each bolt is a beam drawn on every client
+ * near (see the client's {@code LaserBolts}), with sparks where it strikes and a hiss.
  *
  * <p>Low down with the engines idle it holds its fire at blocks, so it never digs into the runway it stands on: below
  * {@link #HOLD_BELOW} blocks over the ground it shoots only hostile mobs, until it is above {@link #CLEAR_ABOVE} again
@@ -91,7 +92,14 @@ public class LaserTurretBlockEntity extends BlockEntity {
     /** How far out of its hatch the turret is, in ticks of {@link #DEPLOY_TICKS}. */
     private int deployed;
     private int sinceBolt;
+    /**
+     * Where it looks along the way ahead, and, on the ground, all round: what it saw all round forgotten once she is up
+     * and away, as it is soon far off, never to be fired at as she next comes down.
+     */
     private final LaserAim aim = new LaserAim();
+    private final LaserRing ring = new LaserRing();
+    /** Whether it is low over the ground, on it or nearly, as it last looked: there it looks all round too. */
+    private boolean low = true;
     /** Whether the airliner has been measured round the turret since it was armed. */
     private boolean outlined;
     /** The hostile mob it fires at next, if any. */
@@ -111,6 +119,7 @@ public class LaserTurretBlockEntity extends BlockEntity {
         outlined = false;
         quarry = null;
         aim.forget();
+        ring.forget();
         level.playSound(null, worldPosition, SkylinersRegistry.LASER_CHARGE.get(), SoundSource.BLOCKS, HISS_VOLUME, on ? 1.0F : 0.7F);
         changed();
     }
@@ -147,7 +156,11 @@ public class LaserTurretBlockEntity extends BlockEntity {
         }
     }
 
-    /** Out and armed: looks along the way ahead, and fires on its beat. */
+    /**
+     * Out and armed: looks along the way ahead, and fires on its beat. Low over the ground it looks all round too,
+     * every other tick, so on the ground it clears whatever stands about her as well as what is ahead: a house under
+     * her wing, a tree by her tail.
+     */
     private void fly(ServerLevel level) {
         SableFlight.State state = SableFlight.read(this, nose());
         if (state == null || !outline(level)) {
@@ -156,35 +169,42 @@ public class LaserTurretBlockEntity extends BlockEntity {
         Vec3 muzzle = muzzle(level);
         watchHold(level, muzzle);
         Vec3 path = state.velocity().length() > MIN_SPEED ? state.velocity().normalize() : state.nose();
-        double range = SkylinersConfig.LASER_RANGE.get();
-        aim.sweep(level, muzzle, path, state.right(), state.up(), range);
+        LaserLook.Lookout look = new LaserLook.Lookout(muzzle, path, state.right(), state.up(), SkylinersConfig.LASER_RANGE.get());
+        (low && level.getGameTime() % 2 == 0 ? ring : aim).sweep(level, look);
         if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), MOB_LOOK_TICKS) == 0) {
-            quarry = quarry(level, muzzle, path, state, range);
+            quarry = quarry(level, look);
         }
         if (++sinceBolt >= 20 / SkylinersConfig.LASER_BOLTS_PER_SECOND.get()) {
             sinceBolt = 0;
-            fire(level, muzzle, path, range, state);
+            fire(level, look);
         }
     }
 
     /**
-     * Holds the fire at blocks below {@link #HOLD_BELOW} over the ground and lets it go again above
-     * {@link #CLEAR_ABOVE}, over ground not loaded too, but never while the engines run.
+     * Notes whether it is low over the ground, where it looks all round too, and holds the fire at blocks below
+     * {@link #HOLD_BELOW} over the ground and lets it go again above {@link #CLEAR_ABOVE}, over ground not loaded too,
+     * but never while the engines run.
      */
     private void watchHold(ServerLevel level, Vec3 muzzle) {
         BlockPos under = BlockPos.containing(muzzle);
         double ground = level.hasChunkAt(under) ? level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, under.getX(), under.getZ()) : muzzle.y;
-        boolean low = muzzle.y - ground < (holding ? CLEAR_ABOVE : HOLD_BELOW);
-        boolean hold = low && !enginesRunning(level);
+        low = muzzle.y - ground < (holding ? CLEAR_ABOVE : HOLD_BELOW);
+        if (!low) {
+            ring.forget();
+        }
+        boolean hold = low && !enginesRunning();
         if (hold != holding) {
             holding = hold;
             changed();
         }
     }
 
-    /** Whether the airliner's engines run, as its autopilot finds them. */
-    private boolean enginesRunning(ServerLevel level) {
-        AutopilotBlockEntity autopilot = AutopilotBlockEntity.nearest(level, worldPosition);
+    /**
+     * Whether the airliner's engines run, as her autopilot finds them: the autopilot of the ship the turret is part of,
+     * however far from the flight deck it is, out under a wing or back under the tail.
+     */
+    private boolean enginesRunning() {
+        AutopilotBlockEntity autopilot = AutopilotBlockEntity.shipOf(this);
         return autopilot != null && autopilot.enginesRunning();
     }
 
@@ -196,26 +216,44 @@ public class LaserTurretBlockEntity extends BlockEntity {
                 return false;
             }
             aim.outline(blocks, worldPosition, nose(), worldPosition.getY() - MUZZLE_DROP);
+            ring.outline(blocks, worldPosition, nose(), worldPosition.getY() - MUZZLE_DROP);
             outlined = true;
         }
         return true;
     }
 
-    /** One bolt: at the hostile mob in the way, if there is one, else at the nearest block in the way, if any. */
-    private void fire(ServerLevel level, Vec3 muzzle, Vec3 path, double range, SableFlight.State state) {
-        if (quarry != null && quarry.isAlive() && inWay(quarry, muzzle, path, state, range)) {
+    /**
+     * One bolt: at the hostile mob in the way, if there is one, else at the nearest block in the way ahead, if any, and
+     * on the ground at the nearest all round otherwise.
+     */
+    private void fire(ServerLevel level, LaserLook.Lookout look) {
+        if (quarry != null && quarry.isAlive() && inWay(quarry, look)) {
             Vec3 struck = quarry.getBoundingBox().getCenter();
             quarry.hurt(laser(level), DAMAGE);
-            bolt(level, muzzle, struck);
+            bolt(level, look.muzzle(), struck);
             return;
         }
-        boolean mayCut = !holding && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-        BlockPos obstacle = mayCut ? aim.next(level) : null;
-        double floor = aim.wheels(muzzle, state.up()) + ABOVE_WHEELS;
-        if (obstacle != null && vaporise(level, obstacle, floor)) {
-            aim.spread(level, obstacle, state.right(), state.up(), muzzle, path, range);
-            bolt(level, muzzle, Vec3.atCenterOf(obstacle));
+        if (holding || !level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            return;
         }
+        double floor = aim.wheels(look) + ABOVE_WHEELS;
+        if (!cut(level, aim, look, floor) && low) {
+            cut(level, ring, look, floor);
+        }
+    }
+
+    /**
+     * Vaporises the next block one look has found, standing above the floor (a height in the world), the clearing
+     * spreading round it; whether one went.
+     */
+    private boolean cut(ServerLevel level, LaserLook way, LaserLook.Lookout look, double floor) {
+        BlockPos obstacle = way.next(level);
+        if (obstacle == null || !vaporise(level, obstacle, floor)) {
+            return false;
+        }
+        way.spread(level, obstacle, look);
+        bolt(level, look.muzzle(), Vec3.atCenterOf(obstacle));
+        return true;
     }
 
     /** The beam drawn by every client near, sparks where it strikes, and its hiss. */
@@ -260,11 +298,11 @@ public class LaserTurretBlockEntity extends BlockEntity {
 
     /** The nearest hostile mob in the way, not aboard an airliner; null for none. */
     @Nullable
-    private LivingEntity quarry(ServerLevel level, Vec3 muzzle, Vec3 path, SableFlight.State state, double range) {
-        AABB around = new AABB(muzzle, muzzle.add(path.scale(range))).inflate(aim.reach());
-        return level.getEntitiesOfClass(LivingEntity.class, around, entity -> hostile(entity) && inWay(entity, muzzle, path, state, range))
+    private LivingEntity quarry(ServerLevel level, LaserLook.Lookout look) {
+        AABB around = new AABB(look.muzzle(), look.muzzle().add(look.path().scale(look.range()))).inflate(aim.reach());
+        return level.getEntitiesOfClass(LivingEntity.class, around, entity -> hostile(entity) && inWay(entity, look))
             .stream()
-            .min(Comparator.comparingDouble(entity -> entity.position().subtract(muzzle).dot(path)))
+            .min(Comparator.comparingDouble(entity -> entity.position().subtract(look.muzzle()).dot(look.path())))
             .orElse(null);
     }
 
@@ -272,10 +310,9 @@ public class LaserTurretBlockEntity extends BlockEntity {
      * Whether a mob is in the airliner's way: its feet or the top of its head, so one standing on the runway, its feet
      * below the wheels' hubs, is in the way all the same.
      */
-    private boolean inWay(LivingEntity entity, Vec3 muzzle, Vec3 path, SableFlight.State state, double range) {
+    private boolean inWay(LivingEntity entity, LaserLook.Lookout look) {
         Vec3 feet = entity.position();
-        Vec3 head = feet.add(0, entity.getBbHeight(), 0);
-        return aim.inWay(muzzle, path, state.right(), state.up(), range, feet) || aim.inWay(muzzle, path, state.right(), state.up(), range, head);
+        return aim.inWay(look, feet) || aim.inWay(look, feet.add(0, entity.getBbHeight(), 0));
     }
 
     /** Whether the laser fires at an entity: a hostile mob, alive, and not aboard this airliner. */
@@ -287,14 +324,14 @@ public class LaserTurretBlockEntity extends BlockEntity {
         return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SkylinersRegistry.LASER_DAMAGE));
     }
 
-    /** Where the bolts leave from, in the world: the turret's muzzle, out under the nose. */
+    /** Where the bolts leave from, in the world: the turret's muzzle, out under its hatch. */
     private Vec3 muzzle(Level level) {
         return SableFlight.toWorld(level, muzzle(worldPosition, nose()));
     }
 
     /**
      * Where a turret's bolts leave from among its airliner's blocks, the turret at a position there with its nose
-     * pointing the given way: its muzzle, out under the nose. A client tells a turret's bolts from others' by it, and
+     * pointing the given way: its muzzle, out under its hatch. A client tells a turret's bolts from others' by it, and
      * draws them from the tip of its barrel as it is turned instead.
      */
     public static Vec3 muzzle(BlockPos turret, Direction nose) {

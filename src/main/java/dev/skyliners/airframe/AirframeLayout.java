@@ -74,11 +74,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -180,6 +182,11 @@ public final class AirframeLayout implements Layout {
     private static final int NARROW_SEAT_X = 3;
     /** How many rows up from the lowest a column is looked up for the airframe's underside, in blocks. */
     private static final int COLUMN_SEARCH = 64;
+    /**
+     * How far from its station a laser turret's place is looked for, in blocks along her and across, where the skin
+     * under the station is broken: by a light or the drop bay in her belly, or a wing's lifting block.
+     */
+    private static final int TURRET_WIGGLE = 2;
     /**
      * Rows between the screens and the pilots' seats: with the centre console, the row of its throttle, the pilots'
      * legs either side of it; in a nose too narrow for the console, the row of the panel's own seats' legroom.
@@ -3461,22 +3468,61 @@ public final class AirframeLayout implements Layout {
     }
 
     /**
-     * The laser path clearer's turret in the underside of the nose, a few metres back from its tip, in place of the
-     * lowest block of the skin there, wired to the switch on the flight deck; only with a switch to arm it.
+     * The laser path clearer's turrets, all wired to the switch on the flight deck; only with a switch to arm them. One
+     * is in the underside of the nose, a few metres back from its tip, in place of the lowest block of the skin there;
+     * three more are along the belly and two under each wing, each in place of flat skin under it, so together they
+     * look along every part of her that could run into something, not only ahead of her nose (see {@link
+     * AirframeShape#LASER_TURRET_BELLY_Z}, {@link AirframeShape#LASER_TURRET_WING_X}).
      */
     private void laserTurret() {
-        int z = (int) Math.round(LASER_TURRET_Z * scale);
-        BlockPos at = lowestBlock(0, z);
-        if (laserSwitch == null || at == null) {
+        BlockPos nose = lowestBlock(0, (int) Math.round(LASER_TURRET_Z * scale));
+        if (laserSwitch == null || nose == null) {
             return;
         }
-        set(at.getX(), at.getY(), at.getZ(), SkylinersRegistry.LASER_TURRET.get().defaultBlockState().setValue(LaserTurretBlock.FACING, Direction.NORTH));
+        List<BlockPos> turrets = new ArrayList<>(List.of(nose));
+        for (double station : LASER_TURRET_BELLY_Z) {
+            underSkin(0, (int) Math.round(station * scale), 1, turrets);
+        }
+        for (double out : LASER_TURRET_WING_X) {
+            double chord = lerp(WING_ROOT_CHORD, WING_TIP_CHORD, out / WING_HALF_SPAN);
+            int z = (int) Math.round((wingLeadingEdge(out) + chord / 2) * scale);
+            for (int side : new int[]{1, -1}) {
+                underSkin(side * (int) Math.round(out * scale), z, side, turrets);
+            }
+        }
+        BlockState turret = SkylinersRegistry.LASER_TURRET.get().defaultBlockState().setValue(LaserTurretBlock.FACING, Direction.NORTH);
+        turrets.forEach(at -> set(at.getX(), at.getY(), at.getZ(), turret));
         BlockPos button = laserSwitch;
         fittings.put(button, (blockEntity, rotation) -> {
             if (blockEntity instanceof LaserSwitchBlockEntity laser) {
-                laser.configure(at.subtract(button).rotate(rotation));
+                laser.configure(offsets(button, turrets, rotation));
             }
         });
+    }
+
+    /**
+     * Adds a turret's place under the skin at a station, or the nearest within {@link #TURRET_WIGGLE} along her and
+     * across, toward her middle first on the side given (1 to her right, -1 to her left), so the two wings' turrets
+     * stay a mirror of each other; none if the skin is broken all round it.
+     */
+    private void underSkin(int x, int z, int side, List<BlockPos> turrets) {
+        IntStream.rangeClosed(0, TURRET_WIGGLE).boxed()
+            .flatMap(reach -> Stream.of(new int[]{x, z + reach}, new int[]{x, z - reach}, new int[]{x - side * reach, z}, new int[]{x + side * reach, z}))
+            .map(spot -> skinUnder(spot[0], spot[1]))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .ifPresent(turrets::add);
+    }
+
+    /**
+     * The lowest block of a column, if it is flat skin, which a turret's hatch can take the place of without standing
+     * out of her: never skin cut to a curve, a light, glass, the drop bay, an engine, a gear leg or a wing's lifting
+     * block. Null for none.
+     */
+    @Nullable
+    private BlockPos skinUnder(int x, int z) {
+        BlockPos at = lowestBlock(x, z);
+        return at != null && stateAt(at.getX(), at.getY(), at.getZ()).is(palette.hull().getBlock()) ? at : null;
     }
 
     /** The lowest block of the layout in a column, no more than {@link #COLUMN_SEARCH} rows up; null if there is none. */

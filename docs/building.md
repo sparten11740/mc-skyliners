@@ -48,9 +48,10 @@ about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the
 walked on; `SlideRenderer` draws an evacuation slide
 inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
 `SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `LaserTurretRenderer` draws the laser path
-clearer's turret out of its hatch, turned toward the newest of its bolts, and `LaserBolts` those bolts, from the tip of
-its barrel as it is turned; its `LaserTurretBlockEntity` fires them, from its muzzle under the nose, at what
-`LaserAim`'s rays find in the way; `SelfDestructButtonBlockEntity` arms the self-destruct button, laid
+clearer's turrets out of their hatches, turned toward the newest of their bolts, and `LaserBolts` those bolts, from the
+tip of each barrel as it is turned; each `LaserTurretBlockEntity` fires them, from its muzzle under the nose, the belly
+or a wing, at what `LaserAim`'s rays find in the way ahead and, on the ground, `LaserRing`'s all round;
+`SelfDestructButtonBlockEntity` arms the self-destruct button, laid
 through `SelfDestructFitting` on the airliner's wall and by `RocketSelfDestruct` on the rocket's pedestal, and `SelfDestruct`
 sounds its alarm aboard and blows its ship up, taking it away through `SableFlight.remove` once the level's tick is
 over, stopping those thrown clear where it blew up (`ThrownClear` on their clients), as `Blast` plays the explosion out in particles (`BlastPuffParticle`) and sounds, and `BlastFlash`, `CameraShake`

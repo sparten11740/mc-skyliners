@@ -27,16 +27,18 @@ import org.joml.Quaternionf;
 import org.joml.Vector3d;
 
 /**
- * Draws the laser path clearer's turret out of its hatch under the nose (see {@link LaserTurretBlockEntity}): lowered
- * out of the block as it is armed and raised back in as it is disarmed, its head swung round and its barrel tilted to
- * point where it is shooting. Folded in, nothing is drawn: the hatch is the block's own model.
+ * Draws a laser path clearer's turret out of its hatch, under the nose, the belly or a wing (see {@link
+ * LaserTurretBlockEntity}): lowered out of the block as it is armed and raised back in as it is disarmed, its head
+ * swung round and its barrel tilted to point where it is shooting. Folded in, nothing is drawn: the hatch is the
+ * block's own model.
  *
  * <p>A client hears of each bolt the turret fires, where it leaves from and where it strikes (see {@link LaserBolts}),
  * and of nothing else it aims at. So the turret takes the bolts that left its muzzle as its own and turns toward the
  * newest one's strike as a turret on a motor would: gathering speed, no faster than {@link #TOP_SPEED}, and slowing as
- * it comes round. Once it has not fired for {@link #HOLD_TICKS}, or is disarmed, it turns back to face ahead. Hanging
- * under the belly, it turns only so far: {@link #MOST_SWING} either way, its barrel down to {@link #MOST_DOWN} and up
- * to {@link #MOST_UP}, short of the skin above it. Its bolts are drawn from the tip of its barrel as it is turned.
+ * it comes round, the short way. Once it has not fired for {@link #HOLD_TICKS}, or is disarmed, it turns back to face
+ * ahead. It swings right round, as on the ground it fires all round; hanging under the skin, its barrel tilts down to
+ * {@link #MOST_DOWN} and up to {@link #MOST_UP}, short of the skin above it. Its bolts are drawn from the tip of its
+ * barrel as it is turned.
  */
 public class LaserTurretRenderer implements BlockEntityRenderer<LaserTurretBlockEntity> {
     /** How far from the camera the turret is drawn, in blocks: from out on the apron. */
@@ -48,8 +50,6 @@ public class LaserTurretRenderer implements BlockEntityRenderer<LaserTurretBlock
     private static final float PIVOT_HEIGHT = 11 / 16F;
     /** How far out from where it turns about the tip of the barrel's glowing emitter is, in blocks: its bolts start there. */
     private static final double TIP = 13 / 16D;
-    /** How far it swings either way from straight ahead, in degrees: square to the nose at most, never round behind. */
-    private static final double MOST_SWING = 90;
     /**
      * How far its barrel tilts down and up, in degrees: down to nearly straight below, and up only until the tip of the
      * barrel is just short of the belly's skin above it.
@@ -151,7 +151,7 @@ public class LaserTurretRenderer implements BlockEntityRenderer<LaserTurretBlock
         Vec3 way = amongBlocks(placing, aim.newest.to().subtract(pivot));
         double ahead = way.x * nose.getStepX() + way.z * nose.getStepZ();
         double left = way.x * nose.getStepZ() - way.z * nose.getStepX();
-        aim.swingTo = Mth.clamp(Math.toDegrees(Math.atan2(left, ahead)), -MOST_SWING, MOST_SWING);
+        aim.swingTo = Math.toDegrees(Math.atan2(left, ahead));
         aim.tiltTo = Mth.clamp(Math.toDegrees(Math.atan2(way.y, Math.hypot(ahead, left))), -MOST_DOWN, MOST_UP);
     }
 
@@ -172,7 +172,9 @@ public class LaserTurretRenderer implements BlockEntityRenderer<LaserTurretBlock
         double seconds = Double.isNaN(aim.drawnAt) ? 0 : Mth.clamp((now - aim.drawnAt) / SharedConstants.TICKS_PER_SECOND, 0, LONGEST_FRAME);
         aim.drawnAt = now;
         if (seconds > 0) {
-            ease(aim.swing, firing ? aim.swingTo : 0, seconds);
+            // The short way round to where it is to point, its swing kept within a turn either way.
+            ease(aim.swing, aim.swing.angle + Mth.wrapDegrees((firing ? aim.swingTo : 0) - aim.swing.angle), seconds);
+            aim.swing.angle = Mth.wrapDegrees(aim.swing.angle);
             ease(aim.tilt, firing ? aim.tiltTo : 0, seconds);
         }
     }

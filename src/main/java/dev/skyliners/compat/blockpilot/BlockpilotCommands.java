@@ -26,6 +26,7 @@ import dev.skyliners.autopilot.ZeppelinPilot;
 import dev.skyliners.block.AutopilotBlock;
 import dev.skyliners.block.BoardingRamp;
 import dev.skyliners.block.LaserBolt;
+import dev.skyliners.block.LaserSwitchBlockEntity;
 import dev.skyliners.block.LedStripLineBlock;
 import dev.skyliners.block.OrreryBlockEntity;
 import dev.skyliners.block.StripPath;
@@ -103,6 +104,8 @@ public final class BlockpilotCommands {
     private static final int DARK_ABOVE = 24;
     private static final int DARK_LEAST = 4;
     private static final int DARK_SKY = 1;
+    /** How far round the nearest autopilot its airliner's laser switch is looked for, in blocks every way. */
+    private static final int LASER_SWITCH_REACH = 12;
     /** The kinds of space weather, as the space weather command names them. */
     private static final List<String> WEATHER_KINDS = Arrays.stream(SpaceWeather.Kind.values()).map(SpaceWeather.Kind::getSerializedName).toList();
 
@@ -165,6 +168,13 @@ public final class BlockpilotCommands {
             .option("land", "at the pin, land (true) or circle (false)", List.of("true", "false"))
             .help("sets the nearest autopilot as its settings screen would, assembling its airframe first if need be")
             .example("skyliners:autopilot fly altitude=120 speed=15"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("laser", BlockpilotCommands::laser)
+            .onServer()
+            .group("skyliners")
+            .keyword("op", "on", "off")
+            .help("arms or disarms the nearest airliner's laser path clearer as its switch on the flight deck would")
+            .field("turrets", "how many turrets the switch works")
+            .example("skyliners:laser on"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("assembly", (context, args) -> assembly())
             .onServer()
             .group("skyliners")
@@ -600,6 +610,22 @@ public final class BlockpilotCommands {
         Component assembling = action == SetAutopilot.Action.FLY ? autopilot.assembleToFly(player, settings) : null;
         Component said = assembling != null ? assembling : autopilot.set(action, settings);
         return Result.ok(new Fields().put("said", said.getString(), said.getString()));
+    }
+
+    private static Result laser(CommandContext context, Args args) throws CommandException {
+        AutopilotBlockEntity autopilot = nearest(player());
+        if (autopilot == null || !(autopilot.getLevel() instanceof ServerLevel level)) {
+            return Result.error("no_autopilot");
+        }
+        BlockPos at = autopilot.getBlockPos();
+        for (BlockPos pos : BlockPos.betweenClosed(at.offset(-LASER_SWITCH_REACH, -LASER_SWITCH_REACH, -LASER_SWITCH_REACH),
+            at.offset(LASER_SWITCH_REACH, LASER_SWITCH_REACH, LASER_SWITCH_REACH))) {
+            if (level.getBlockEntity(pos) instanceof LaserSwitchBlockEntity laser) {
+                laser.arm(level, args.word("op").equals("on"));
+                return Result.ok(new Fields().tag("turrets", laser.turretCount()));
+            }
+        }
+        return Result.error("no_laser_switch");
     }
 
     /** The settings the screen offers, with what the command sets in place of them. */

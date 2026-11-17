@@ -77,6 +77,16 @@ final class AirframeShape {
     /** How far back from the nose tip the laser path clearer's turret sits in the underside of the nose. */
     static final double LASER_TURRET_Z = 3;
     /**
+     * Where the laser path clearer's turrets along the belly sit, back from the nose tip: ahead of the wing, under it
+     * behind the moon pool, and behind the main gear, where the belly is still flat before it sweeps up to the tail.
+     */
+    static final double[] LASER_TURRET_BELLY_Z = {18.0, 33.0, 47.5};
+    /**
+     * How far out along each wing its laser path clearer's turrets sit, under its middle: inboard of the inner engine,
+     * and between the engines, in the skin between the wing's lifting blocks.
+     */
+    static final double[] LASER_TURRET_WING_X = {9.5, 20.0};
+    /**
      * The wing and body gear in pairs, (x, z) for the starboard one, z measured back from the airframe's centre of
      * mass: just behind it, as on the real aircraft, so the airliner rests on its nose gear and does not sit back on
      * its tail.

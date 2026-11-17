@@ -24,9 +24,9 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 /**
- * The laser path clearer's turret, in the underside of the nose: the belly's skin with a hatch in it, behind which the
- * turret waits; armed from the flight deck, it drops out under the nose and fires along the airliner's flight path (see
- * {@link LaserTurretBlockEntity}). FACING is the way the nose points. PART is what the state looks like (see
+ * A laser path clearer's turret, in the underside of the nose, the belly or a wing: the skin with a hatch in it,
+ * behind which the turret waits; armed from the flight deck, it drops out and fires along the airliner's flight path
+ * (see {@link LaserTurretBlockEntity}). FACING is the way the nose points. PART is what the state looks like (see
  * {@link Part}): only the hatch is ever placed.
  */
 public class LaserTurretBlock extends BaseEntityBlock {

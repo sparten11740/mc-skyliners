@@ -7154,6 +7154,69 @@ function checkDoorsClosedRound() {
     `${dark.length} of ${lights.length} dark${dark.length ? `: ${dark.join("; ")}` : ""}`);
 }
 
+// An airliner's laser path clearer, armed as she takes off: how many turrets it has (one under her nose, three along
+// her belly, two under each wing); where the stone it is to clear stands from the turret under the outer part of her
+// right wing, in blocks out toward the tip and back toward the tail, and how big it is across, along and up: a house
+// in front of the wing, a pillar behind it and a tower out past the wingtip; and how long the turrets have to clear
+// them all once she is set flying, in ticks.
+const LASER_TURRETS = 8;
+const LASER_HOUSE = { out: 2, back: -22, size: [5, 5, 4] };
+const LASER_PILLAR = { out: -1, back: 11, size: [3, 3, 4] };
+const LASER_TOWER = { out: 50, back: -1, size: [3, 3, 6] };
+const LASER_CLEAR_TICKS = 400;
+
+// An airliner's laser path clearer clears whatever stands about her on the ground, not only what is ahead of her
+// nose: a house in front of her right wing, behind her nose, a pillar behind that wing and a tower out past its tip,
+// all gone once she is armed and set flying, and the ground under them never dug below her wheels. With the fault its
+// one turret under the nose looked only ahead of the nose, and an airliner set down among the houses of a village
+// stayed stuck with a house under her wing.
+function checkLaserClearsAllRound() {
+  const site = layDown("airliner");
+  board();
+  const turrets = must("find skyliners:laser_turret 128 20 side=server").rows.map((row) => row.at_abs);
+  const wing = turrets.filter(([x]) => x > site.x).reduce((far, at) => (!far || at[0] > far[0] ? at : far), null);
+  expect(turrets.length === LASER_TURRETS && Boolean(wing), "airliner: she is built with laser turrets under her nose, belly and wings",
+    `${turrets.length} turrets`);
+  if (!wing) {
+    return;
+  }
+  // Back toward her tail is away from her autopilot, in the cockpit; out toward this wing's tip is +x.
+  const [autopilot] = must("find skyliners:autopilot 128 1 side=server").rows.map((row) => row.at_abs);
+  const tail = Math.sign(wing[2] - autopilot[2]);
+  const span = (from, size) => [Math.min(from, from + tail * (size - 1)), Math.max(from, from + tail * (size - 1))];
+  const boxOf = ({ out, back, size: [across, along, up] }) => {
+    const [nearZ, farZ] = span(wing[2] + tail * back, along);
+    return [[wing[0] + out, ground, nearZ], [wing[0] + out + across - 1, ground + up - 1, farZ]];
+  };
+  const stones = { house: boxOf(LASER_HOUSE), pillar: boxOf(LASER_PILLAR), tower: boxOf(LASER_TOWER) };
+  const boxes = Object.values(stones);
+  const groundUnder = ([low, high]) => [[low[0], ground - 1, low[2]], [high[0], ground - 1, high[2]]];
+  boxes.forEach(([low, high]) => must(`server forceload add ${low[0]} ${low[2]} ${high[0]} ${high[2]}`));
+  must(`wait ${CHUNKS_TICKS}t`);
+  boxes.forEach(([low, high]) => must(`server fill ${[...low, ...high].join(" ")} minecraft:stone`));
+  const standing = ([low, high]) => [...read(low, high)].filter(([, state]) => idOf(state) !== "minecraft:air").map(([at]) => at.split(",").map(Number));
+  const leftOf = (blocks) => `${blocks.length} blocks left${blocks.length ? `, at heights ${[...new Set(blocks.map(([, y]) => y - ground))].join(", ")} over the ground` : ""}`;
+  const wired = must("skyliners:laser on").turrets;
+  expect(Number(wired) === LASER_TURRETS, "airliner: her laser switch works every turret", `${wired} of ${LASER_TURRETS}`);
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  const ship = findShipFlying("skyliners:laser_switch");
+  let left = Object.fromEntries(Object.entries(stones).map(([name, box]) => [name, standing(box)]));
+  for (let waited = 0; waited < LASER_CLEAR_TICKS && Object.values(left).some((blocks) => blocks.length > 0); waited += LOOK_EVERY) {
+    must(`wait ${LOOK_EVERY}t`);
+    left = Object.fromEntries(Object.entries(stones).map(([name, box]) => [name, standing(box)]));
+  }
+  const groundLeft = boxes.reduce((sum, box) => sum + standing(groundUnder(box)).length, 0);
+  const groundAll = boxes.reduce((sum, [low, high]) => sum + (high[0] - low[0] + 1) * (high[2] - low[2] + 1), 0);
+  boxes.forEach(([low, high]) => send(`?server forceload remove ${low[0]} ${low[2]} ${high[0]} ${high[2]}`));
+  must(`server tp @p 0 ${ground} 0`);
+  send(`?server sable remove ${ship}`);
+  creative();
+  expect(left.house.length === 0, "airliner: armed and set flying, her laser clears a house in front of her wing, behind her nose", leftOf(left.house));
+  expect(left.pillar.length === 0, "airliner: and a pillar behind her wing", leftOf(left.pillar));
+  expect(left.tower.length === 0, "airliner: and a tower out past her wingtip", leftOf(left.tower));
+  expect(groundLeft === groundAll, "airliner: the ground under them stays, never dug below her wheels", `${groundLeft} of ${groundAll} blocks of ground`);
+}
+
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
 // blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
 // window must look, as a share of the hull's brightness.
@@ -7762,6 +7825,7 @@ const CHECKS = {
   "airliner-unattended-far-off": { slow: true, run: checkAirlinerUnattendedFarOff, about: "an airliner left flying with nobody near comes down on the ground by herself and stops" },
   "airliner-flying-alone": { run: checkAirlinerFlyingAlone, about: "an airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her" },
   "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
+  "laser-clears-all-round": { slow: true, run: checkLaserClearsAllRound, about: "an airliner's laser path clearer clears what stands about her as she takes off, ahead, behind and beside her, never digging the ground" },
   "doors-closed-round": { run: checkDoorsClosedRound, about: "beside each of an airliner's rear doors her hull is closed outside, no hole where the jump light is" },
   "arch-walls-even": { run: checkArchWallsEven, about: "the wall beside each of an airliner's cabin archways is lit evenly, with no light and dark rays fanning out from the arch" },
   "seatbelt-signs": { run: checkSeatbeltSigns, about: "an airliner's seatbelt signs hang on her cabin walls, none set into her skin, and her seatbelt switch lights them all" },
