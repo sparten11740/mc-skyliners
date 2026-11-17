@@ -95,6 +95,13 @@ public final class LaserBolts {
     private static final double SPARK_SPEED = 0.6;
     private static final double CRACKLE_SPEED = 0.25;
     private static final int SMOKE = 2;
+    /**
+     * Where a mounted gun's bolt strikes, as it comes: how many sparks fly, how far round the point they start, in
+     * blocks, and how fast they fly, in blocks a tick.
+     */
+    private static final int MOUNTED_SPARKS = 12;
+    private static final double MOUNTED_SPREAD = 0.2;
+    private static final double MOUNTED_SPARK_SPEED = 0.15;
     /** How loud its sizzle is, as a share of full, and how high, at the lowest and how much higher it may be. */
     private static final float HIT_VOLUME = 0.7F;
     private static final float HIT_PITCH = 0.9F;
@@ -216,10 +223,16 @@ public final class LaserBolts {
     private LaserBolts() {
     }
 
-    /** A bolt fired. */
+    /**
+     * A bolt fired; one from a mounted gun strikes at once, sparks flying there. The client draws those from the bolt
+     * itself, so a gun firing fast, or eight turrets at once, sends no stream of particle packets besides.
+     */
     public static void add(LaserBolt bolt) {
         received++;
         BOLTS.add(new Bolt(bolt, now));
+        if (bolt.holder() == LaserBolt.NO_HOLDER) {
+            sparks(bolt.to());
+        }
         seen = new LaserBolt.Seen(received, bolt.holder(), 0, 0, false, null, 0, 0);
     }
 
@@ -252,6 +265,20 @@ public final class LaserBolts {
         Vec3 heard = SableClient.toWorld(level, bolt.to);
         float pitch = HIT_PITCH + random.nextFloat() * HIT_PITCH_SPREAD;
         level.playLocalSound(heard.x, heard.y, heard.z, SkylinersRegistry.LASER_CROSSBOW_HIT.get(), SoundSource.PLAYERS, HIT_VOLUME, pitch, false);
+    }
+
+    /** A mounted gun's bolt's sparks, where it strikes. */
+    private static void sparks(Vec3 at) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            return;
+        }
+        RandomSource random = level.getRandom();
+        for (int i = 0; i < MOUNTED_SPARKS; i++) {
+            level.addParticle(ParticleTypes.ELECTRIC_SPARK, at.x + random.nextGaussian() * MOUNTED_SPREAD, at.y + random.nextGaussian() * MOUNTED_SPREAD,
+                at.z + random.nextGaussian() * MOUNTED_SPREAD, random.nextGaussian() * MOUNTED_SPARK_SPEED, random.nextGaussian() * MOUNTED_SPARK_SPEED,
+                random.nextGaussian() * MOUNTED_SPARK_SPEED);
+        }
     }
 
     /** So many particles given off from a point, flying out every way at up to so many blocks a tick. */

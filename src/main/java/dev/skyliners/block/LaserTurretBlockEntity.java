@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -222,7 +221,6 @@ public class LaserTurretBlockEntity extends BlockEntity {
     /** The beam drawn by every client near, sparks where it strikes, and its hiss. */
     private void bolt(ServerLevel level, Vec3 muzzle, Vec3 struck) {
         PacketDistributor.sendToPlayersNear(level, null, muzzle.x, muzzle.y, muzzle.z, BOLTS_SEEN, new LaserBolt(muzzle, struck, LaserBolt.RED));
-        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, struck.x, struck.y, struck.z, 12, 0.3, 0.3, 0.3, 0.15);
         level.playSound(null, worldPosition, SkylinersRegistry.LASER_HISS.get(), SoundSource.BLOCKS, HISS_VOLUME, 0.9F + level.getRandom().nextFloat() * 0.2F);
     }
 

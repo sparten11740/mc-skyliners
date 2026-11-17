@@ -5,7 +5,6 @@ import dev.skyliners.block.LaserBolt;
 import dev.skyliners.compat.SableFlight;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -32,11 +31,6 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * hand is drawn flying there, and its clients burst it into sparks themselves as it gets there.
  */
 public final class LaserFire {
-    /** How many sparks fly where a bolt strikes, how far they spread, in blocks, and how fast, in blocks a tick. */
-    private static final int SPARKS = 12;
-    private static final double SPARK_SPREAD = 0.2;
-    private static final double SPARK_SPEED = 0.15;
-
     private LaserFire() {
     }
 
@@ -70,15 +64,12 @@ public final class LaserFire {
     /**
      * A mounted gun's bolt fired from a point, landing where a trace found: a hostile mob it struck hurt so much, by
      * whoever fired it; the bolt drawn in its glow's colour for everyone within so many blocks, and sparks where it
-     * strikes.
+     * strikes, which they draw from the bolt (see the client's {@code LaserBolts}).
      */
     public static void strike(ServerLevel level, @Nullable Entity shooter, Vec3 from, HitResult hit, float damage, int glow, double seen) {
-        Vec3 struck = hit.getLocation();
         hurt(level, shooter, struck(hit), damage);
         LaserBolt bolt = new LaserBolt(from, drawnTo(level, hit), glow);
         PacketDistributor.sendToPlayersNear(level, null, from.x, from.y, from.z, seen, bolt);
-        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, struck.x, struck.y, struck.z, SPARKS, SPARK_SPREAD, SPARK_SPREAD, SPARK_SPREAD,
-            SPARK_SPEED);
     }
 
     /**
