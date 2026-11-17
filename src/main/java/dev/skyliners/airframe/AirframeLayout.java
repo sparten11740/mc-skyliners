@@ -706,13 +706,15 @@ public final class AirframeLayout implements Layout {
      * row from eye level over the main deck up past the eyes of someone seated, the other the same over the upper
      * deck's floor (see {@link UpperDeck}), as an A380's two window lines are. They stand on every other station,
      * never one a wall light or a door takes, wherever the hull faces out sideways, flat or curved: the skin pass cuts
-     * them to the curve along with the skin around them.
+     * them to the curve along with the skin around them. They end where the hull starts to taper to the tail: past it
+     * the skin curves two ways at once, and a window cut to it ran on out over slivers of window beside it, each
+     * framed again and seen through the others, and the two panes of a tall one were cut at angles of their own.
      */
     private void windows() {
         int mainRow = floorY + 2;
         int upperRow = upperDeckY() + 2;
         int first = (int) Math.ceil((NOSE_LENGTH + 1) * scale);
-        int last = (int) Math.floor((TAIL_START + 8) * scale);
+        int last = (int) Math.floor(TAIL_START * scale) - 1;
         // The wall lights all stand on stations of one parity (see lights()): the windows take the other.
         if (Math.floorMod(first - LIGHT_SPACING / 2, 2) == 0) {
             first++;

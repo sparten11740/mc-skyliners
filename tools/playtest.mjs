@@ -7005,6 +7005,38 @@ function checkAirlinerUnattendedFarOff() {
   must(`server tp @p 0 ${ground} 0`);
 }
 
+// How far over the ground an airliner laid down stands the line between her two rows of windows, in blocks: her main
+// deck's are 12 and 13 up, her upper deck's 18 to 20.
+const WINDOW_DECKS_SPLIT = 15;
+
+// An airliner's cabin windows, each one straight pane: every window's panes, plain or cut to the curve, stand in one
+// column on their side of her, cut alike, each deck's window at a station straight up and down. With the fault, toward
+// her tail, where the hull curves two ways at once, a window ran on out over slivers of window stepping across the
+// curve beside it, each framed again and seen through the others, and the two panes of a tall one were cut at angles
+// of their own, bent in the middle, so from outside her rear windows looked broken and full of holes.
+function checkWindowsOnePane() {
+  const site = ship("airliner");
+  const panes = ["skyliners:cabin_window", "skyliners:cabin_window_shell"]
+    .flatMap((id) => must(`find ${id} 160 2000 side=server`).rows.map((row) => row.at_abs));
+  expect(panes.length > 0, "airliner: she is built with cabin windows");
+  const states = send(panes.map(([x, y, z]) => `?block ${x},${y},${z} side=server`).join("; "));
+  const windows = new Map();
+  panes.forEach(([x, y, z], i) => {
+    const key = `${x > site.x ? "starboard" : "port"} ${z} ${y > ground + WINDOW_DECKS_SPLIT ? "upper" : "main"}`;
+    const { shape_high: high = "whole", shape_low: low = "" } = states[i]?.props ?? {};
+    const window = windows.get(key) ?? { columns: new Set(), cuts: new Set() };
+    window.columns.add(x);
+    window.cuts.add(`${high}/${low}`);
+    windows.set(key, window);
+  });
+  const stepping = [...windows].filter(([, window]) => window.columns.size > 1).map(([key]) => key);
+  expect(stepping.length === 0, "airliner: each of her windows is one pane, never stepping across her curve over slivers of window",
+    `${stepping.length} of ${windows.size} windows step across the curve${stepping.length ? `, first ${stepping[0]}` : ""}`);
+  const bent = [...windows].filter(([, window]) => window.cuts.size > 1).map(([key]) => key);
+  expect(bent.length === 0, "airliner: each of her windows is straight, its panes all cut alike, never bent in the middle",
+    `${bent.length} of ${windows.size} windows bent${bent.length ? `, first ${bent[0]}` : ""}`);
+}
+
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
 // blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
 // window must look, as a share of the hull's brightness.
@@ -7613,6 +7645,7 @@ const CHECKS = {
   "airliner-unattended-far-off": { slow: true, run: checkAirlinerUnattendedFarOff, about: "an airliner left flying with nobody near comes down on the ground by herself and stops" },
   "airliner-flying-alone": { run: checkAirlinerFlyingAlone, about: "an airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her" },
   "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
+  "windows-one-pane": { run: checkWindowsOnePane, about: "each of an airliner's cabin windows is one straight pane, none stepping across her curve over slivers of window or bent in the middle" },
   "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },
   "door-panel-solid": { run: checkDoorPanelSolid, about: "an airliner's open passenger door stops whoever walks into its panel beside the doorway, and leaves nothing behind once shut" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },
