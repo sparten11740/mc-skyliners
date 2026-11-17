@@ -12477,7 +12477,7 @@ const LANG = {
   "message.skyliners.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
   "message.skyliners.cabin_lights.night": "Cabin lights set for the night",
   ...ROOM_DIVIDER_LANG,
-  "block.skyliners.light_strip": "LED Light Strip",
+  "block.skyliners.light_strip": "Cabin Light Strip",
   "block.skyliners.pendant_light": "Pendant Light",
   "block.skyliners.halo_light": "Halo Light",
   "block.skyliners.steel_girder": "Steel Girder",
