@@ -153,7 +153,8 @@ what. Its mod id, packages and commands are `skyliners`. Up to
   position with `execute positioned <plot pos> out_sub_level <uuid> run tp <player> ~ ~ ~`.
 - Target airliners by uuid. Never run `sable teleport` or `sable remove` on `@e`: those hit every sub-level, the
   wheels of Create Aeronautics' vehicles included.
-- Stay aboard a flying airliner. One that outruns the loaded chunks round the player unloads where it is.
+- Stay aboard a flying airliner. With nobody aboard she stays loaded in the air but lands by herself, after a minute,
+  or after ten seconds with nobody within 600 blocks.
 - Play-test with Blockpilot (github.com/sparten11740/blockpilot-mcp), a client mod that lets an agent drive the game:
   real clicks and keys, screenshots, waits on conditions, the integrated server's commands with their output, and
   the sounds and messages heard. Put its jar in `run/mods`; every start writes the launcher `run/blockpilot/blockpilot`
@@ -171,9 +172,10 @@ what. Its mod id, packages and commands are `skyliners`. Up to
   - `server ...` runs as the server console at the player's position, rotation and dimension, so `~`, `@p` and
     `distance=` count from the player, but `@s` matches no one: `server as=player <command>` runs it as the player.
   - Taking off from the autopilot's screen leaves a standing player behind, and an airliner flying away from the
-    player unloads within seconds. `sable:tp <sub> <block id or *pattern>` puts the player back aboard beside the
-    nearest such block straight away, from the server's copy of the airliner, even once the client has dropped it;
-    `sable:tp <plot pos>` boards beside a plot position noted before (`sable:find`), which stays put in flight.
+    player is out of the client's sight past 320 blocks. `sable:tp <sub> <block id or *pattern>` puts the player back
+    aboard beside the nearest such block straight away, from the server's copy of the airliner, even once the client
+    has dropped it; `sable:tp <plot pos>` boards beside a plot position noted before (`sable:find`), which stays put in
+    flight.
   - Sneaking and using a block with something in hand uses that instead (a thrust lever pulled back, a button's
     cover shut), and the reply names it as `sneak_item=`: `select` an empty slot first. `use <pos> hold=40t` holds
     the use key down.

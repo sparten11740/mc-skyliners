@@ -6919,6 +6919,86 @@ function checkNothingLeftBehind() {
     `${secondAfter} of ${secondBefore} stretches`);
 }
 
+// An airliner flying on her autopilot with nobody aboard and someone flying after her: how long after she is set flying
+// her take-off and climb take, in ticks, before they leave her; how far behind her middle they keep, in blocks, first
+// past where the land under all of her is still simulated round them (some 130 blocks at a simulation distance of ten
+// chunks, 165 at twelve); how often they look whether she is there, in ticks, and how many times; and how far round
+// them she is looked for, in blocks.
+const ALONE_CLIMB_TICKS = 600;
+const ALONE_BEHIND = 200;
+const ALONE_LOOK_TICKS = 10;
+const ALONE_LOOKS = 10;
+const ALONE_SIGHT = 800;
+
+// An airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her. With the fault,
+// once she drew so far ahead that the land under all of her was no longer simulated round anyone, Sable let her go,
+// frozen where she was and gone from sight, and loaded her again as they caught up: seen from a freighter flying
+// after her, she blinked in and out of view a second at a time.
+function checkAirlinerFlyingAlone() {
+  layDown("airliner");
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  const airliner = findShipFlying("skyliners:autopilot");
+  const { yaw } = must(`wait ${ALONE_CLIMB_TICKS}t; sable:info ${airliner} brief side=server`);
+  const start = must(`sable:info ${airliner} side=server`).at_abs;
+  must("fly on");
+  const near = followAlone(airliner, start, yaw, ALONE_BEHIND);
+  must(`fly off; server tp @p 0 ${ground} 0`);
+  expect(near.seen === ALONE_LOOKS, "airliner: flying on her autopilot with nobody aboard, she stays in sight of someone flying after her",
+    `in sight at ${near.seen} of ${ALONE_LOOKS} looks, ${ALONE_BEHIND} blocks behind her`);
+}
+
+// Keeps so far behind a flying ship's middle along her heading, as Minecraft yaw, looking each time whether she is in
+// sight: how many times she was, and where the server last had her, from where she was first.
+function followAlone(ship, from, yaw, behind) {
+  const [east, south] = [-Math.sin(yaw * Math.PI / 180), Math.cos(yaw * Math.PI / 180)];
+  let at = from;
+  let seen = 0;
+  for (let look = 0; look < ALONE_LOOKS; look++) {
+    const [x, y, z] = at;
+    const list = send(`server tp @p ${x - east * behind} ${y} ${z - south * behind} ${yaw} 0; wait ${ALONE_LOOK_TICKS}t; `
+      + `?sable:list ${ALONE_SIGHT}`).at(-1);
+    seen += (list?.rows ?? []).some((row) => row.id === ship) ? 1 : 0;
+    at = send(`?sable:info ${ship} side=server`).at(-1)?.at_abs ?? at;
+  }
+  return { seen, at };
+}
+
+// An airliner left flying with nobody near (everyone UNATTENDED_AWAY off): how long she has to come down and stop on
+// the ground, in ticks; how often she is looked at meanwhile, in ticks, often enough to see her slow to a stop before
+// she is let go; how far over the ground she may be when stopped, in blocks; and slower than what, in blocks a second,
+// she has stopped.
+const AIRLINER_DOWN_TICKS = 2400;
+const AIRLINER_DOWN_LOOK = 5;
+const AIRLINER_DOWN_AGL = 3;
+const AIRLINER_STOPPED = 1;
+
+// An airliner left flying with nobody near, kept loaded as she flies, comes down by herself on the ground and rolls to
+// a stop there, rather than flying on for ever, coming down where the land under her is not loaded and sinking through
+// it, or freezing where she was as her wheels touched, let go still rolling.
+function checkAirlinerUnattendedFarOff() {
+  const site = layDown("airliner");
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  const airliner = findShipFlying("skyliners:autopilot");
+  must(`wait ${ALONE_CLIMB_TICKS}t; server tp @p ${site.x + UNATTENDED_AWAY} ${ground} ${site.z}`);
+  let last;
+  for (let waited = 0; waited <= AIRLINER_DOWN_TICKS; waited += AIRLINER_DOWN_LOOK) {
+    const info = send(`wait ${AIRLINER_DOWN_LOOK}t; ?sable:info ${airliner} brief side=server`).at(-1);
+    if (!info?.ok) {
+      break;
+    }
+    last = info;
+    if (Number(info.agl) <= AIRLINER_DOWN_AGL && info.speed < AIRLINER_STOPPED) {
+      break;
+    }
+  }
+  const stopped = last && Number(last.agl) <= AIRLINER_DOWN_AGL && last.speed < AIRLINER_STOPPED;
+  expect(stopped && last.y > ground - AIRLINER_DOWN_AGL, "unattended: an airliner left flying with nobody near comes down on the ground and stops",
+    last ? `last seen ${last.agl} over the ground at y ${last.y}, ${last.speed} blocks a second` : "never seen");
+  must(`server tp @p 0 ${ground} 0`);
+}
+
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
 // blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
 // window must look, as a share of the hull's brightness.
@@ -7524,6 +7604,8 @@ const CHECKS = {
   "zeppelin-full-size-off": { run: checkZeppelinFullSizeOff, about: "the full-size zeppelin is switched off by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
+  "airliner-unattended-far-off": { slow: true, run: checkAirlinerUnattendedFarOff, about: "an airliner left flying with nobody near comes down on the ground by herself and stops" },
+  "airliner-flying-alone": { run: checkAirlinerFlyingAlone, about: "an airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her" },
   "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
   "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },
   "door-panel-solid": { run: checkDoorPanelSolid, about: "an airliner's open passenger door stops whoever walks into its panel beside the doorway, and leaves nothing behind once shut" },

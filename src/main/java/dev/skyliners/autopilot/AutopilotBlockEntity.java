@@ -653,6 +653,13 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Sable keeps the ticket in the save meanwhile.
      */
     private boolean keptLoaded;
+    /**
+     * Whether it last had its airliner kept loaded for being under way, or let go for being at rest (see {@link
+     * #keepLoadedUnderWay}); null until it has told Sable since it was loaded itself, as Sable keeps the ticket in the
+     * save meanwhile. Only an airliner's: a zeppelin or rocket keeps its own with {@link #keptLoaded}.
+     */
+    @Nullable
+    private Boolean keptUnderWay;
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(SkylinersRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -1684,6 +1691,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         Decompression.tick(level, this, nose(), flight, radio);
         VillageSpotter.tick(level, this, flight.position());
         boolean clear = radio + flight.apex() - flight.position().y > AIRBORNE;
+        boolean landing = phase == Phase.LAND || phase == Phase.ROLLOUT;
+        keepLoadedUnderWay(level, (clear || landing) && flight.velocity().length() >= STOPPED);
         // Before the jets are set: a burst ending now hands them back this tick.
         hop.tick(flight, level.getGameTime());
         // Offered on while the jets fire, so the button stays under the finger holding it.
@@ -1725,7 +1734,26 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Taken away for good (see {@link dev.skyliners.block.AutopilotBlock#onRemove}): it lets go of the zeppelin it kept
+     * Keeps the airliner loaded while she is under way, flying or rolling out of her autopilot's landing, and lets her go
+     * again once she has come to rest. Sable lets go of a ship once the land under all of her is no longer simulated
+     * round anyone, and an airliner flying on with nobody aboard soon outran everyone: she froze in the air where she
+     * was, gone from sight, and came back only as someone caught up, so seen from a ship flying after her she blinked in
+     * and out of view. Kept loaded, she flies on until she lands by herself (see {@link #watchUnattended}) and has
+     * rolled to a stop, rather than freezing as her wheels touch. At rest she loads and unloads with the land round her,
+     * which takes in all of her round anyone near her, so one hung on a ledge over a drop does not cost the server her
+     * physics for good. Looked at every {@link #ABOARD_LOOK} ticks; Sable is told only of a change, and once after
+     * loading.
+     */
+    private void keepLoadedUnderWay(ServerLevel level, boolean underWay) {
+        if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0 || keptUnderWay != null && keptUnderWay == underWay) {
+            return;
+        }
+        keptUnderWay = underWay;
+        SableFlight.keepLoaded(this, underWay);
+    }
+
+    /**
+     * Taken away for good (see {@link dev.skyliners.block.AutopilotBlock#onRemove}): it lets go of the ship it kept
      * loaded. Not when its chunk merely unloads, which would forget the ticket Sable saves with it.
      */
     public void removed() {
