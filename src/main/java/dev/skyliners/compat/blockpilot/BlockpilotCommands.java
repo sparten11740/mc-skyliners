@@ -168,6 +168,13 @@ public final class BlockpilotCommands {
             .option("land", "at the pin, land (true) or circle (false)", List.of("true", "false"))
             .help("sets the nearest autopilot as its settings screen would, assembling its airframe first if need be")
             .example("skyliners:autopilot fly altitude=120 speed=15"));
+        BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("unstick", (context, args) -> unstick())
+            .onServer()
+            .group("skyliners")
+            .help("asks the nearest autopilot to hop its airliner free, as its screen's Unstuck button does each tick it is held: sampled every tick, it holds the button")
+            .field("said", "what the autopilot says, or firing while it keeps the jets firing")
+            .field("y", "how high the autopilot stands in the world, in blocks")
+            .example("skyliners:unstick"));
         BlockpilotApi.register(Skyliners.MOD_ID, CommandSpec.query("laser", BlockpilotCommands::laser)
             .onServer()
             .group("skyliners")
@@ -610,6 +617,16 @@ public final class BlockpilotCommands {
         Component assembling = action == SetAutopilot.Action.FLY ? autopilot.assembleToFly(player, settings) : null;
         Component said = assembling != null ? assembling : autopilot.set(action, settings);
         return Result.ok(new Fields().put("said", said.getString(), said.getString()));
+    }
+
+    private static Result unstick() throws CommandException {
+        AutopilotBlockEntity autopilot = nearest(player());
+        if (autopilot == null) {
+            return Result.error("no_autopilot");
+        }
+        Component said = autopilot.unstick();
+        double y = SableFlight.toWorld(autopilot.getLevel(), Vec3.atCenterOf(autopilot.getBlockPos())).y;
+        return Result.ok(new Fields().tag("said", said == null ? "firing" : said.getString()).tag("y", Math.round(y * 10) / 10.0));
     }
 
     private static Result laser(CommandContext context, Args args) throws CommandException {

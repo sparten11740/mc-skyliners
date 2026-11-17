@@ -1544,9 +1544,10 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Hops the airliner free from its settings screen, if it is stuck: with its engines running and its brakes off,
-     * once it has stood still a moment wherever it rests, and not again till the jets have rested (see {@link Hop}). A
-     * parking brake set is left set: holding the airliner is what it is for. Asked again while the jets fire, the
-     * button still held, keeps them firing. Says what it does, or why it cannot; nothing while it keeps them firing.
+     * once it has stood still a moment wherever it rests, and, tapped, not again till the jets have rested (see {@link
+     * Hop}). A parking brake set is left set: holding the airliner is what it is for. Asked again while the jets fire,
+     * the button still held, keeps them firing, and held on after, hops it again once it has come to rest. Says what it
+     * does, or why it cannot; nothing while it keeps them firing.
      */
     @Nullable
     public Component unstick() {
@@ -1554,11 +1555,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (state == null || !(level instanceof ServerLevel serverLevel)) {
             return Component.translatable("message.skyliners.autopilot.not_assembled");
         }
+        boolean held = hop.asked(serverLevel.getGameTime());
         if (hop.firing()) {
             hop.keep();
             return null;
         }
-        Hop.Hold hold = hop.hold(stance(serverLevel, state));
+        Hop.Hold hold = hop.hold(stance(serverLevel, state), held);
         if (hold == Hop.Hold.NONE) {
             hop.start(serverLevel, worldPosition, state);
             offerHop(false);

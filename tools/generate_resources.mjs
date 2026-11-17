@@ -12397,7 +12397,7 @@ const LANG = {
   "message.skyliners.autopilot.on_ground": "The autopilot lands from the air: the airliner is on the ground already.",
   "message.skyliners.autopilot.rolling_out": "The autopilot is braking to a stop after landing; disengage it to take over.",
   "message.skyliners.autopilot.landed": "Landed and stopped: thrust levers at idle, parking brake set, autopilot off.",
-  "message.skyliners.autopilot.unstuck": "Control jets firing: hold Unstuck to lift the airliner higher.",
+  "message.skyliners.autopilot.unstuck": "Control jets firing: keep holding Unstuck to hop the airliner until she is free.",
   "message.skyliners.autopilot.unstuck.firing": "The control jets are firing already.",
   "message.skyliners.autopilot.unstuck.resting": "The control jets are resting: try again in a few seconds.",
   "message.skyliners.autopilot.unstuck.engines_off": "Push the thrust levers forward first: the jets only help engines that cannot move the airliner.",
