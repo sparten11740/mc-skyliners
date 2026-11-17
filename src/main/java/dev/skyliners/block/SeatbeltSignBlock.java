@@ -91,29 +91,25 @@ public class SeatbeltSignBlock extends Block implements Relays.Driven {
         if (!(level instanceof ServerLevel)) {
             return;
         }
-        light(level, pos, state, state.getValue(POWERED) || level.hasNeighborSignal(pos));
+        set(level, pos, state, state.setValue(LIT, state.getValue(POWERED) || level.hasNeighborSignal(pos)));
     }
 
     /** Its switch turns it on or off; redstone reaching it still lights it either way. */
     @Override
     public void drive(Level level, BlockPos pos, BlockState state, int signal) {
-        if (!(level instanceof ServerLevel)) {
-            return;
+        if (level instanceof ServerLevel) {
+            set(level, pos, state, state.setValue(POWERED, signal > 0).setValue(LIT, signal > 0 || level.hasNeighborSignal(pos)));
         }
-        BlockState powered = state.setValue(POWERED, signal > 0);
-        if (powered != state) {
-            level.setBlock(pos, powered, Block.UPDATE_CLIENTS);
-        }
-        light(level, pos, powered, signal > 0 || level.hasNeighborSignal(pos));
     }
 
-    /** Lights the sign or puts it out, dinging as it lights. */
-    private static void light(Level level, BlockPos pos, BlockState state, boolean lit) {
-        if (lit != state.getValue(LIT)) {
-            level.setBlock(pos, state.setValue(LIT, lit), Block.UPDATE_CLIENTS);
-            if (lit) {
-                level.playSound(null, pos, SkylinersRegistry.SEATBELT_DING.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
+    /** Gives the sign its new state in one update, if it changed, dinging as it lights. */
+    private static void set(Level level, BlockPos pos, BlockState before, BlockState after) {
+        if (after == before) {
+            return;
+        }
+        level.setBlock(pos, after, Block.UPDATE_CLIENTS);
+        if (after.getValue(LIT) && !before.getValue(LIT)) {
+            level.playSound(null, pos, SkylinersRegistry.SEATBELT_DING.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         }
     }
 
