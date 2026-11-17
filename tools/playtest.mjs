@@ -6868,6 +6868,57 @@ function checkDoorPanelSolid() {
   expect(left === 0, "airliner: shut again, her door's panel leaves nothing in the air beside the doorway", `${left} blocks left`);
 }
 
+// Where an airliner stood, looked down on once she is assembled to fly: how long after her autopilot is set to fly, in
+// ticks, so her Physics Assembler has assembled her and the glue she leaves has been swept up; how far up over the
+// ground it is looked from and how far round, in blocks, the look's cube floored by the first row of air over the flat
+// world's ground and reaching past her nose, wingtips and tail; how far ahead of where she is laid down her middle
+// lies, how far back her tail and how far ahead her nose, in blocks; how far behind where she is laid down a second
+// airliner is laid, in blocks, past her tail and the look but within reach of the sweep of her glue; and how many
+// leftovers are named.
+const ASSEMBLED_LOOK_TICKS = 200;
+const PATCH_LOOK = 96;
+const PATCH_MIDDLE_AHEAD = 75;
+const PATCH_TAIL = 160;
+const PATCH_NOSE_ROOM = 5;
+const SECOND_BEHIND = 175;
+const PATCH_NAMED = 5;
+
+// An airliner assembled to fly takes all of herself along: nothing of hers is left in the world where she stood, no
+// block and no stretch of the Super Glue she was built with, while a second airliner laid just behind her keeps all of
+// its own glue, to take its own blocks along when it flies. With the fault one stretch of her glue, its spot in the
+// open air over her starboard wing, stayed behind unseen at every take-off, and would glue whatever was built there.
+function checkNothingLeftBehind() {
+  const site = layDown("airliner");
+  const behind = site.z - SECOND_BEHIND;
+  standToBuild(site.x, behind);
+  must("skyliners:build airliner", BUILD_SECONDS);
+  // Each held loaded, so every stretch of glue in it is counted wherever the player is; one at a time, as a single
+  // forceload holds so many chunks at most.
+  const [west, east] = [site.x - PATCH_LOOK, site.x + PATCH_LOOK];
+  const patches = [[site.z - PATCH_TAIL, site.z + PATCH_NOSE_ROOM], [behind - 2 * PATCH_LOOK, behind]];
+  patches.forEach(([from, to]) => must(`server forceload add ${west} ${from} ${east} ${to}`));
+  const glueIn = (from, to) => Number(send(`?server execute if entity @e[type=create:super_glue,x=${west},y=${ground - 4},z=${from},`
+    + `dx=${2 * PATCH_LOOK},dy=${PATCH_LOOK},dz=${to - from}]`)[0]?.result ?? 0);
+  const secondGlue = () => glueIn(behind - 2 * PATCH_LOOK, behind);
+  const secondBefore = secondGlue();
+  must(`server tp @p ${site.x} ${ground} ${site.z}; wait ${CHUNKS_TICKS}t`);
+  board();
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+  const over = `${site.x + 0.5} ${ground + PATCH_LOOK} ${site.z - PATCH_MIDDLE_AHEAD + 0.5}`;
+  must(`wait ${ASSEMBLED_LOOK_TICKS}t; fly on; server tp @p ${over}; wait 20t; server tp @p ${over}; wait ${CHUNKS_TICKS}t`);
+  const blocks = must(`find * ${PATCH_LOOK} ${PATCH_NAMED} side=server`);
+  const glue = glueIn(site.z - PATCH_TAIL, site.z + PATCH_NOSE_ROOM);
+  const count = blocks.count ?? blocks.rows.length;
+  expect(count === 0, "airliner: assembled to fly, she leaves no block of hers where she stood",
+    count ? `${count} left, ${blocks.rows.map((row) => `${row.block ?? row.id ?? ""} ${row.at_abs?.join(",")}`).join("; ")}` : "none");
+  expect(glue === 0, "airliner: assembled to fly, she leaves none of the glue she was built with where she stood", `${glue} stretches left`);
+  const secondAfter = secondGlue();
+  must("fly off");
+  patches.forEach(([from, to]) => must(`server forceload remove ${west} ${from} ${east} ${to}`));
+  expect(secondBefore > 0 && secondAfter === secondBefore, "airliner: the airliner laid behind her keeps all of its glue as she is assembled",
+    `${secondAfter} of ${secondBefore} stretches`);
+}
+
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
 // blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
 // window must look, as a share of the hull's brightness.
@@ -7473,6 +7524,7 @@ const CHECKS = {
   "zeppelin-full-size-off": { run: checkZeppelinFullSizeOff, about: "the full-size zeppelin is switched off by default" },
   "tailplane-steps": { run: checkTailplaneSteps, about: "an airliner's tailplane is closed with skin wherever its lifting layer steps up a row, so no part of it floats beside the rest" },
   "windscreen-posts": { run: checkWindscreenPosts, about: "each of an airliner's windscreen posts runs from the hull under the glass to the hull over it, none ending in mid-air" },
+  "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
   "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },
   "door-panel-solid": { run: checkDoorPanelSolid, about: "an airliner's open passenger door stops whoever walks into its panel beside the doorway, and leaves nothing behind once shut" },
   "fin-turns": { run: checkFinTurnsWithTheAirliner, about: "an airliner built facing east has her fin's lifting layer facing out of her sides, not edge-on in rows" },

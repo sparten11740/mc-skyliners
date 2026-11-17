@@ -2,6 +2,7 @@ package dev.skyliners.airframe;
 
 import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import dev.skyliners.SkylinersConfig;
+import dev.skyliners.block.AutopilotBlock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -176,7 +177,8 @@ public final class AirframeBuild {
      * Glues the finished airliner together with Create's Super Glue, which is what the Physics Assembler takes as the
      * structure to assemble. The glue goes on as a grid of stretches over the airliner's bounds, each overlapping the
      * next by a block so every pair of neighbouring blocks shares one, and only where the airliner has blocks. Anything
-     * built inside the hull later is under the same glue and flies along.
+     * built inside the hull later is under the same glue and flies along. Each stretch is marked as hers, so whatever
+     * of it she leaves behind as she is assembled goes (see {@link AirframeGlue}).
      */
     private void glue(ServerLevel level) {
         BlockPos min = null;
@@ -191,6 +193,7 @@ public final class AirframeBuild {
         if (min == null) {
             return;
         }
+        BlockPos autopilot = autopilot();
         Set<BlockPos> stretches = new HashSet<>();
         for (int i = 0; i < positions.length; i++) {
             if (!states[i].isAir()) {
@@ -207,8 +210,19 @@ public final class AirframeBuild {
         for (BlockPos stretch : stretches) {
             BlockPos from = min.offset(stretch.getX() * (GLUE_ACROSS - 1), stretch.getY() * (GLUE_UP - 1), stretch.getZ() * (GLUE_ACROSS - 1));
             BlockPos to = BlockPos.min(max, from.offset(GLUE_ACROSS - 1, GLUE_UP - 1, GLUE_ACROSS - 1));
-            level.addFreshEntity(new SuperGlueEntity(level, AABB.encapsulatingFullBlocks(from, to)));
+            level.addFreshEntity(AirframeGlue.hers(new SuperGlueEntity(level, AABB.encapsulatingFullBlocks(from, to)), autopilot));
         }
+    }
+
+    /** Where the airframe's autopilot stands, which marks its glue as its own; null for one without. */
+    @Nullable
+    private BlockPos autopilot() {
+        for (int i = 0; i < positions.length; i++) {
+            if (states[i].getBlock() instanceof AutopilotBlock) {
+                return BlockPos.of(positions[i]);
+            }
+        }
+        return null;
     }
 
     /**

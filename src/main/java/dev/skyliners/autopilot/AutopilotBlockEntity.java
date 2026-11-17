@@ -4,6 +4,7 @@ import dev.skyliners.Aboard;
 import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.FirstFlight;
+import dev.skyliners.airframe.AirframeGlue;
 import dev.skyliners.airframe.Livery;
 import dev.skyliners.block.Announcement;
 import dev.skyliners.block.AutopilotBlock;
@@ -1054,7 +1055,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         BlockPos seat = PilotSeatBlock.seatOf(player);
         flyOnceAboardSeat = seat == null ? null : seat.subtract(worldPosition);
         setChanged();
-        Component failed = PhysicsAssembler.assemble(server, at, player);
+        Component failed = assembleWith(server, at, player);
         if (failed == null) {
             return Component.translatable(flight.assemblingKey());
         }
@@ -1115,7 +1116,20 @@ public class AutopilotBlockEntity extends BlockEntity {
             return assembleThroughSable(server);
         }
         BlockPos at = assemblerAt(server);
-        return at != null && PhysicsAssembler.assemble(server, at, player) == null;
+        return at != null && assembleWith(server, at, player) == null;
+    }
+
+    /**
+     * Has the airliner's Physics Assembler at this spot assemble her, as the player would: null once she is assembled,
+     * the glue she was built with that stayed in the world swept up (see {@link AirframeGlue}); otherwise why not.
+     */
+    @Nullable
+    private Component assembleWith(ServerLevel server, BlockPos assembler, ServerPlayer player) {
+        Component failed = PhysicsAssembler.assemble(server, assembler, player);
+        if (failed == null) {
+            AirframeGlue.sweep(server, assembler, worldPosition);
+        }
+        return failed;
     }
 
     /** Whether it has its Physics Assembler assembling the airliner, to fly once aboard, and is waiting for it. */
