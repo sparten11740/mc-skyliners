@@ -7037,6 +7037,40 @@ function checkWindowsOnePane() {
     `${bent.length} of ${windows.size} windows bent${bent.length ? `, first ${bent[0]}` : ""}`);
 }
 
+// How long after an airliner is set flying every seatbelt sign aboard must have lit, in ticks: the take-off
+// announcement, which switches them on, comes as her brakes come off, after the tower's clearance.
+const SEATBELT_LIT_WITHIN = 1200;
+// How far in front of a sign the player waits aboard to hear it, in blocks.
+const SEATBELT_STAND = 2;
+
+// An airliner's seatbelt signs hang on her cabin walls, the hull behind them her smooth skin, and her seatbelt switch
+// still lights them all: set flying, the take-off announcement switches them on. With the fault each sign was set into
+// the hull with a relay beside it to light it, the two standing out of her curve as whole white cubes with a pit beside
+// them, half hiding the windows next to them.
+function checkSeatbeltSigns() {
+  layDown("airliner");
+  const signs = must("find skyliners:seatbelt_sign 160 200 side=server").rows.map((row) => row.at_abs);
+  expect(signs.length > 0, "airliner: she is built with seatbelt signs");
+  const plaques = send(signs.map(([x, y, z]) => `?block ${x},${y},${z} side=server`).join("; ")).filter((reply) => reply.props?.plaque === "true");
+  expect(plaques.length === signs.length, "airliner: her seatbelt signs hang on the cabin walls, none set into her skin standing out of its curve",
+    `${signs.length - plaques.length} of ${signs.length} set into the skin`);
+  board();
+  // Aboard in front of a sign, near enough to hear it ding.
+  const [sx, sy, sz] = signs[0];
+  const [dx, dz] = STEPS[plaques[0]?.props?.facing ?? "north"];
+  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}; fly on; `
+    + `server tp @p ${sx + 0.5 + dx * SEATBELT_STAND} ${sy - 1} ${sz + 0.5 + dz * SEATBELT_STAND}`, BUILD_SECONDS);
+  const since = now();
+  const airliner = findShipFlying("skyliners:autopilot");
+  let lit = 0;
+  for (let waited = 0; waited <= SEATBELT_LIT_WITHIN && lit < signs.length; waited += LOOK_EVERY) {
+    lit = must(`wait ${LOOK_EVERY}t; sable:find ${airliner} skyliners:seatbelt_sign[lit=true] ${signs.length} side=server`).rows.length;
+  }
+  expect(lit === signs.length && Boolean(heard("skyliners:seatbelt_ding", since, 0)),
+    "airliner: taking off, her seatbelt switch lights every sign, with a ding", `${lit} of ${signs.length} lit`);
+  must(`server tp @p 0 ${ground} 0`);
+}
+
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
 // blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
 // window must look, as a share of the hull's brightness.
@@ -7645,6 +7679,7 @@ const CHECKS = {
   "airliner-unattended-far-off": { slow: true, run: checkAirlinerUnattendedFarOff, about: "an airliner left flying with nobody near comes down on the ground by herself and stops" },
   "airliner-flying-alone": { run: checkAirlinerFlyingAlone, about: "an airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her" },
   "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
+  "seatbelt-signs": { run: checkSeatbeltSigns, about: "an airliner's seatbelt signs hang on her cabin walls, none set into her skin, and her seatbelt switch lights them all" },
   "windows-one-pane": { run: checkWindowsOnePane, about: "each of an airliner's cabin windows is one straight pane, none stepping across her curve over slivers of window or bent in the middle" },
   "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },
   "door-panel-solid": { run: checkDoorPanelSolid, about: "an airliner's open passenger door stops whoever walks into its panel beside the doorway, and leaves nothing behind once shut" },

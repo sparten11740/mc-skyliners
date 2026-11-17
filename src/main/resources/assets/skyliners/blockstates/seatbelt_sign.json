@@ -1,59 +1,243 @@
 {
   "variants": {
-    "facing=north,lit=false,plated=false": {
+    "facing=north,lit=false,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign"
     },
-    "facing=north,lit=false,plated=true": {
+    "facing=north,lit=false,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign"
+    },
+    "facing=north,lit=false,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 0
+    },
+    "facing=north,lit=false,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 0
+    },
+    "facing=north,lit=false,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated",
       "y": 0
     },
-    "facing=north,lit=true,plated=false": {
+    "facing=north,lit=false,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated",
+      "y": 0
+    },
+    "facing=north,lit=false,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 0
+    },
+    "facing=north,lit=false,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 0
+    },
+    "facing=north,lit=true,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign_on"
     },
-    "facing=north,lit=true,plated=true": {
+    "facing=north,lit=true,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_on"
+    },
+    "facing=north,lit=true,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 0
+    },
+    "facing=north,lit=true,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 0
+    },
+    "facing=north,lit=true,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated_on",
       "y": 0
     },
-    "facing=east,lit=false,plated=false": {
+    "facing=north,lit=true,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated_on",
+      "y": 0
+    },
+    "facing=north,lit=true,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 0
+    },
+    "facing=north,lit=true,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 0
+    },
+    "facing=east,lit=false,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign"
     },
-    "facing=east,lit=false,plated=true": {
+    "facing=east,lit=false,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign"
+    },
+    "facing=east,lit=false,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 90
+    },
+    "facing=east,lit=false,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 90
+    },
+    "facing=east,lit=false,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated",
       "y": 90
     },
-    "facing=east,lit=true,plated=false": {
+    "facing=east,lit=false,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated",
+      "y": 90
+    },
+    "facing=east,lit=false,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 90
+    },
+    "facing=east,lit=false,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 90
+    },
+    "facing=east,lit=true,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign_on"
     },
-    "facing=east,lit=true,plated=true": {
+    "facing=east,lit=true,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_on"
+    },
+    "facing=east,lit=true,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 90
+    },
+    "facing=east,lit=true,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 90
+    },
+    "facing=east,lit=true,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated_on",
       "y": 90
     },
-    "facing=south,lit=false,plated=false": {
+    "facing=east,lit=true,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated_on",
+      "y": 90
+    },
+    "facing=east,lit=true,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 90
+    },
+    "facing=east,lit=true,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 90
+    },
+    "facing=south,lit=false,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign"
     },
-    "facing=south,lit=false,plated=true": {
+    "facing=south,lit=false,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign"
+    },
+    "facing=south,lit=false,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 180
+    },
+    "facing=south,lit=false,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 180
+    },
+    "facing=south,lit=false,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated",
       "y": 180
     },
-    "facing=south,lit=true,plated=false": {
+    "facing=south,lit=false,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated",
+      "y": 180
+    },
+    "facing=south,lit=false,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 180
+    },
+    "facing=south,lit=false,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 180
+    },
+    "facing=south,lit=true,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign_on"
     },
-    "facing=south,lit=true,plated=true": {
+    "facing=south,lit=true,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_on"
+    },
+    "facing=south,lit=true,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 180
+    },
+    "facing=south,lit=true,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 180
+    },
+    "facing=south,lit=true,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated_on",
       "y": 180
     },
-    "facing=west,lit=false,plated=false": {
+    "facing=south,lit=true,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated_on",
+      "y": 180
+    },
+    "facing=south,lit=true,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 180
+    },
+    "facing=south,lit=true,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 180
+    },
+    "facing=west,lit=false,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign"
     },
-    "facing=west,lit=false,plated=true": {
+    "facing=west,lit=false,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign"
+    },
+    "facing=west,lit=false,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 270
+    },
+    "facing=west,lit=false,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 270
+    },
+    "facing=west,lit=false,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated",
       "y": 270
     },
-    "facing=west,lit=true,plated=false": {
+    "facing=west,lit=false,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated",
+      "y": 270
+    },
+    "facing=west,lit=false,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 270
+    },
+    "facing=west,lit=false,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque",
+      "y": 270
+    },
+    "facing=west,lit=true,plaque=false,plated=false,powered=false": {
       "model": "skyliners:block/seatbelt_sign_on"
     },
-    "facing=west,lit=true,plated=true": {
+    "facing=west,lit=true,plaque=false,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_on"
+    },
+    "facing=west,lit=true,plaque=true,plated=false,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 270
+    },
+    "facing=west,lit=true,plaque=true,plated=false,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 270
+    },
+    "facing=west,lit=true,plaque=false,plated=true,powered=false": {
       "model": "skyliners:block/seatbelt_sign_plated_on",
+      "y": 270
+    },
+    "facing=west,lit=true,plaque=false,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plated_on",
+      "y": 270
+    },
+    "facing=west,lit=true,plaque=true,plated=true,powered=false": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
+      "y": 270
+    },
+    "facing=west,lit=true,plaque=true,plated=true,powered=true": {
+      "model": "skyliners:block/seatbelt_sign_plaque_on",
       "y": 270
     }
   }

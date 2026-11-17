@@ -1322,12 +1322,13 @@ public final class AirframeLayout implements Layout {
     }
 
     /**
-     * "Fasten seatbelts" signs in both cabin walls along the cabin, at head height under the overhead lockers, and over
-     * the upper deck's walkways beside them, each lit through a relay beside it; the seatbelt switch in the panel is
-     * wired to them all, and to every curtain the fit-out has hung, which it opens front to back as the signs come on.
+     * "Fasten seatbelts" signs on both cabin walls along the cabin, at head height under the overhead lockers, and over
+     * the upper deck's walkways beside them, each hung on the wall (see {@link #wallSign}); the seatbelt switch in the
+     * panel works them all itself, and every curtain the fit-out has hung, which it opens front to back as the signs
+     * come on.
      */
     private void seatbeltSigns() {
-        List<BlockPos> relays = new ArrayList<>();
+        List<BlockPos> signs = new ArrayList<>();
         int head = floorY + 4;
         // Over the upper deck at the height of its windows, between two of them: a station on or back where one takes
         // the wall, or a banner hangs there.
@@ -1336,29 +1337,52 @@ public final class AirframeLayout implements Layout {
         for (double station : SEATBELT_SIGN_STATIONS) {
             int z = (int) Math.round(station * scale);
             for (int side : new int[]{1, -1}) {
-                // Its face looks in across the cabin, to the middle; outside it is plated like the skin.
-                BlockState facingIn = SeatbeltSignBlock.facingInto(sign, side > 0 ? Direction.WEST : Direction.EAST);
-                wallLamp(side, z, new int[]{head, head + 1, head - 1}, facingIn, relays);
+                // Its face looks in across the cabin, to the middle.
+                BlockState facingIn = SeatbeltSignBlock.plaque(sign, side > 0 ? Direction.WEST : Direction.EAST);
+                wallSign(side, z, new int[]{head, head + 1, head - 1}, facingIn, signs);
                 for (int at : new int[]{z, z + 1, z - 1}) {
-                    if (upperDeck != null && upperDeck.walkwayBeside(side, at) && wallLamp(side, at, upperRows, facingIn, relays) != null) {
+                    if (upperDeck != null && upperDeck.walkwayBeside(side, at) && wallSign(side, at, upperRows, facingIn, signs) != null) {
                         break;
                     }
                 }
             }
         }
-        if (seatbeltSwitch == null || relays.isEmpty()) {
+        if (seatbeltSwitch == null || signs.isEmpty()) {
             return;
         }
         BlockPos at = seatbeltSwitch;
         List<BlockPos> curtains = frontToBack(CurtainBlock::isCurtain);
         fittings.put(at, (blockEntity, rotation) -> {
             if (blockEntity instanceof LinkedControlBlockEntity control) {
-                control.configure(Map.of(SeatbeltSwitchBlock.SIGNS, offsets(at, relays, rotation)));
+                control.configure(Map.of(SeatbeltSwitchBlock.SIGNS, offsets(at, signs, rotation)));
             }
             if (blockEntity instanceof SeatbeltSwitchBlockEntity seatbelts) {
                 seatbelts.configureCurtains(offsets(at, curtains, rotation));
             }
         });
+    }
+
+    /**
+     * A sign hung on the cabin wall at a station on one side, in the first of the rows where the wall is plain skin, not
+     * a window, with open cabin in front of it: the skin behind it stays skin, cut to the hull's curve with the rest. Set
+     * into the hull itself, with a relay to light it, the sign stood out of the curve as a whole block and its relay as
+     * another, a pit beside them, half hiding the windows next to them. Adds the sign to the list and gives where it
+     * went, or null if no row had room.
+     */
+    @Nullable
+    private BlockPos wallSign(int side, int z, int[] rows, BlockState sign, List<BlockPos> signs) {
+        for (int y : rows) {
+            int x = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
+            while (x != 0 && !inFuselage(x, y, z)) {
+                x -= side;
+            }
+            if (stateAt(x, y, z).is(palette.hull().getBlock()) && stateAt(x - side, y, z).isAir()) {
+                set(x - side, y, z, sign);
+                signs.add(new BlockPos(x - side, y, z));
+                return new BlockPos(x - side, y, z);
+            }
+        }
+        return null;
     }
 
     /**

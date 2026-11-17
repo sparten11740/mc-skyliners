@@ -19,6 +19,15 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@link Turning}).
  */
 public final class Relays {
+    /**
+     * A block a control works itself, without a relay beside it to light it by redstone: a seatbelt sign hung on the
+     * cabin wall, with no room in the curved skin behind it for a relay that would not stand out of the hull.
+     */
+    public interface Driven {
+        /** Takes the control's signal, 0 to 15. */
+        void drive(Level level, BlockPos pos, BlockState state, int signal);
+    }
+
     private Relays() {
     }
 
@@ -44,13 +53,15 @@ public final class Relays {
     /**
      * Sets the one relay at the offset from origin to the signal, as
      * {@link #drive(Level, BlockPos, List, int, boolean)} sets several: for a pilot setting each of its thrusters apart
-     * every tick.
+     * every tick. A block the control works itself is handed the signal (see {@link Driven}).
      */
     public static void drive(Level level, BlockPos origin, BlockPos offset, int power, boolean synced) {
         int signal = Mth.clamp(power, 0, 15);
         BlockPos pos = origin.offset(offset);
         BlockState state = level.getBlockState(pos);
-        if (isRelay(state) && state.getValue(ThrustRelayBlock.POWER) != signal) {
+        if (state.getBlock() instanceof Driven driven) {
+            driven.drive(level, pos, state, signal);
+        } else if (isRelay(state) && state.getValue(ThrustRelayBlock.POWER) != signal) {
             level.setBlock(pos, state.setValue(ThrustRelayBlock.POWER, signal), synced ? Block.UPDATE_ALL : Block.UPDATE_NEIGHBORS);
         }
     }
@@ -121,9 +132,14 @@ public final class Relays {
         return count;
     }
 
-    /** Whether the block is a relay, what a control's links lead to. */
+    /** Whether the block is a relay, which a control sets to a signal for the blocks beside it. */
     public static boolean isRelay(BlockState state) {
         return state.getBlock() instanceof ThrustRelayBlock;
+    }
+
+    /** Whether a control's link may lead to the block: a relay, or a block it works itself (see {@link Driven}). */
+    public static boolean isLink(BlockState state) {
+        return isRelay(state) || state.getBlock() instanceof Driven;
     }
 
     public static ListTag write(List<BlockPos> offsets) {

@@ -1,0 +1,79 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "sign": "skyliners:block/seatbelt_sign",
+    "particle": "skyliners:block/seatbelt_sign"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        14
+      ],
+      "to": [
+        15,
+        15,
+        16
+      ],
+      "shade": true,
+      "faces": {
+        "north": {
+          "texture": "#sign",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#sign",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#sign",
+          "uv": [
+            0,
+            1,
+            2,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#sign",
+          "uv": [
+            14,
+            1,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#sign",
+          "uv": [
+            1,
+            0,
+            15,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#sign",
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

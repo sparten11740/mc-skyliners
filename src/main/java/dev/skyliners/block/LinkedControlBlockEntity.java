@@ -73,9 +73,9 @@ public class LinkedControlBlockEntity extends BlockEntity implements Control {
         return groups.values().stream().flatMap(List::stream).toList();
     }
 
-    /** Whether a link leads where it should: to a relay. */
+    /** Whether a link leads where it should: to a relay, or a block it works itself. */
     protected boolean leadsTo(BlockState state) {
-        return Relays.isRelay(state);
+        return Relays.isLink(state);
     }
 
     /** Turns all its links, mending them. */

@@ -4066,11 +4066,32 @@ function towerInstrumentsLang() {
       ],
     });
   }
+  // A plaque, hung on the cabin wall: a thin sign two sixteenths deep against the wall behind it, its face looking
+  // north into the cabin; lit, only its face glows.
+  for (const lit of [false, true]) {
+    const face = { texture: "#sign", uv: [0, 0, 16, 16], ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) };
+    const edge = (uv) => ({ texture: "#sign", uv });
+    write(`assets/${ID}/models/block/seatbelt_sign_plaque${lit ? "_on" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { sign: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}`, particle: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}` },
+      elements: [{
+        from: [1, 1, 14], to: [15, 15, 16], shade: !lit,
+        faces: {
+          north: face, south: { texture: "#sign", uv: [1, 1, 15, 15], cullface: "south" },
+          east: edge([0, 1, 2, 15]), west: edge([14, 1, 16, 15]), up: edge([1, 0, 15, 2]), down: edge([1, 14, 15, 16]),
+        },
+      }],
+    });
+  }
+  const signModel = (lit, plated, plaque) => {
+    const on = lit ? "_on" : "";
+    return plaque ? `seatbelt_sign_plaque${on}` : plated ? `seatbelt_sign_plated${on}` : `seatbelt_sign${on}`;
+  };
   write(`assets/${ID}/blockstates/seatbelt_sign.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((lit) => [false, true].map((plated) =>
-      [`facing=${facing},lit=${lit},plated=${plated}`, plated
-        ? { model: `${ID}:block/seatbelt_sign_plated${lit ? "_on" : ""}`, y }
-        : { model: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}` }])))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((lit) => [false, true].flatMap((plated) =>
+      [false, true].flatMap((plaque) => [false, true].map((powered) =>
+        [`facing=${facing},lit=${lit},plaque=${plaque},plated=${plated},powered=${powered}`,
+          plated || plaque ? { model: `${ID}:block/${signModel(lit, plated, plaque)}`, y } : { model: `${ID}:block/${signModel(lit, false, false)}` }])))))),
   });
   write(`assets/${ID}/blockstates/seatbelt_switch.json`, {
     variants: mountedVariants([false, true].map((on) => [`powered=${on}`, `seatbelt_switch${on ? "_on" : ""}`])),
