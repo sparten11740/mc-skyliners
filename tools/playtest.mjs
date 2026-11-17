@@ -6808,17 +6808,20 @@ function checkWindscreenPosts() {
 }
 
 // Walking along the hull into an airliner's open passenger door, flat against it beside the doorway: how long the door
-// takes to swing open, and its panel's blocks to go once it is used again, in ticks; how far beyond its panel's far
-// edge the player starts, in blocks; how long they walk at it, in ticks; and how far past that edge toward the doorway
-// the middle of them may get, in blocks (stopped, it is half their width short of it).
+// takes to swing open, and to swing shut once used again with nobody in its way, in ticks; how far beyond its panel's
+// far edge the player starts, in blocks; how long they walk at it, in ticks; and how far past that edge toward the
+// doorway the middle of them may get, in blocks (stopped, it is half their width short of it).
 const PANEL_OPEN_TICKS = 40;
-const PANEL_GONE_TICKS = 10;
+const PANEL_SHUT_TICKS = 40;
 const PANEL_RUN_UP = 1.5;
 const PANEL_WALK_TICKS = 30;
 const PANEL_PAST_MOST = 0;
 // How far out of the doorway the open panel's far edge stands, across from the doorway's left edge, in blocks: two
 // columns and a little past it on its hinge's side.
 const PANEL_FAR_EDGE = { left: -2.05, right: 4.05 };
+// How many blocks wide a plug door is, and how far out from it the player steps to be out of its way, in blocks.
+const DOOR_COLUMNS = 2;
+const PANEL_STEP_AWAY = 6;
 
 // An airliner's door at the top of her stairs, opened from there, stops whoever walks into its panel, swung round flat
 // against the hull beside the doorway as it is, and its blocks go once it is shut again. With the fault an open door
@@ -6855,9 +6858,14 @@ function checkDoorPanelSolid() {
   const past = side * (PANEL_FAR_EDGE[props.hinge] - across);
   expect(opened && past <= PANEL_PAST_MOST, "airliner: walking along her hull into her open door, its panel stops the player",
     `${round(past)} blocks past its far edge toward the doorway`);
-  must(`fly off; server tp @p ${top[0] + 0.5} ${top[1] + 1} ${top[2] + 0.5} ${facingDoor} 0; wait 20t; ${use}; wait ${PANEL_GONE_TICKS}t`);
+  // Standing at the top of the stairs is in the door's way: it waits, its panel still there, until they step down.
+  must(`fly off; server tp @p ${top[0] + 0.5} ${top[1] + 1} ${top[2] + 0.5} ${facingDoor} 0; wait 20t; ${use}; wait 10t`);
+  const held = must("find skyliners:parked_panel 16 20 side=server").rows.length;
+  expect(held > 0, "airliner: waiting to shut while someone stands in its way, her door's panel still stops them", `${held} blocks`);
+  const [ax, az] = point(DOOR_COLUMNS / 2, PANEL_STEP_AWAY);
+  must(`server tp @p ${ax} ${at[1]} ${az}; wait ${PANEL_SHUT_TICKS}t`);
   const left = must("find skyliners:parked_panel 16 20 side=server").rows.length;
-  expect(left === 0, "airliner: shutting again, her door's panel leaves nothing in the air beside the doorway", `${left} blocks left`);
+  expect(left === 0, "airliner: shut again, her door's panel leaves nothing in the air beside the doorway", `${left} blocks left`);
 }
 
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
