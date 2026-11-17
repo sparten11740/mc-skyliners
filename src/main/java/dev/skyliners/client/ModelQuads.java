@@ -36,12 +36,29 @@ final class ModelQuads {
 
     /** The same, tinted as its block's colour handler tints this index (see {@code RegisterColorHandlersEvent}). */
     static BakedQuad bake(Corner[] quad, TextureAtlasSprite sprite, Direction side, boolean round, int tint) {
+        return bake(quad, sprite, side, round, !round, tint);
+    }
+
+    /**
+     * A quad of a flat face cut into slivers, a fan of thin triangles, lit as a block's side is but evenly over it,
+     * without its corners darkened: the world darkens each quad's corners from the quad's own bounds, so slivers side
+     * by side came out lit each its own way, in light and dark rays fanning out across a face meant to look flat.
+     */
+    static BakedQuad bakeEven(Corner[] quad, TextureAtlasSprite sprite, Direction side) {
+        return bake(quad, sprite, side, false, false, NO_TINT);
+    }
+
+    /**
+     * A quad baked from its corners, its corners darkened by the world's lighting where something stands near them or
+     * not.
+     */
+    private static BakedQuad bake(Corner[] quad, TextureAtlasSprite sprite, Direction side, boolean round, boolean darkened, int tint) {
         QuadBakingVertexConsumer builder = new QuadBakingVertexConsumer();
         builder.setSprite(sprite);
         builder.setTintIndex(tint);
         builder.setDirection(side);
         builder.setShade(!round);
-        builder.setHasAmbientOcclusion(!round);
+        builder.setHasAmbientOcclusion(darkened);
         for (Corner corner : quad) {
             Vector3f n = corner.normal();
             int grey = round ? Math.round(255 * QuadLighter.calculateShade(n.x(), n.y(), n.z(), false)) : 255;

@@ -7005,6 +7005,55 @@ function checkAirlinerUnattendedFarOff() {
   must(`server tp @p 0 ${ground} 0`);
 }
 
+// A cabin archway seen straight on: how far out from its wall the camera stands, in blocks; how far round each spot its
+// brightness is read, in blocks; where in its two upper corners, beside the curve, the spots are, in blocks in from its
+// outer edges and down from its top, clear of the seam along it; how bright a spot must be to be the cream wall there and not something in front of
+// it, a luma from 0 to 255; and how far apart the brightest and darkest spot of a corner may be, which the texture's
+// own speckle stays well within.
+const ARCH_LOOK_OUT = 4.5;
+const ARCH_SPOT = 0.04;
+const ARCH_ACROSS = [0.1, 0.4, 0.7];
+const ARCH_DOWN = [0.2, 0.35, 0.5, 0.65, 0.8, 0.95];
+const ARCH_CREAM = 100;
+const ARCH_MOST_SPREAD = 6;
+
+// The cream wall beside each of an airliner's cabin archways is lit evenly, seen from either side. With the fault the
+// flat wall round the curve, drawn as a fan of thin slivers, had each sliver's corners darkened by its own outline, so
+// light and dark rays fanned out across the wall from the arch.
+function checkArchWallsEven() {
+  ship("furnished");
+  const pieces = must("find skyliners:cabin_arch 128 400 side=server").rows.map((row) => row.at_abs);
+  const archways = [...new Set(pieces.map(([, , z]) => z))];
+  const corners = archways.flatMap((z) => [1.01, -0.01].flatMap((face) => archCorners(pieces.filter((piece) => piece[2] === z), z + face)));
+  const seen = corners.filter((corner) => corner.lumas.length > 0);
+  expect(seen.length > 0, "cabin archways: some of their corners were seen", `${seen.length} of ${corners.length}`);
+  const uneven = seen.map((corner) => ({ ...corner, spread: Math.max(...corner.lumas) - Math.min(...corner.lumas) }))
+    .filter((corner) => corner.spread > ARCH_MOST_SPREAD);
+  expect(uneven.length === 0, "cabin archways: the wall beside each arch is lit evenly, with no rays fanning out from it",
+    uneven.map((corner) => `${corner.at}: ${corner.lumas.map(round).join(" ")}`).join("; "));
+}
+
+// The brightness of the spots in an archway's two upper corners, seen straight on from in front of one face of its wall
+// (at z), each corner's spots on the cream wall, and where it is; a corner something stands in front of has none, and
+// so do both where anything stands between them and the camera.
+function archCorners(archway, face) {
+  const [left, right] = [Math.min(...archway.map(([x]) => x)), Math.max(...archway.map(([x]) => x)) + 1];
+  const top = Math.max(...archway.map(([, y]) => y)) + 1;
+  const middle = (left + right) / 2;
+  const out = face > archway[0][2] ? ARCH_LOOK_OUT : -ARCH_LOOK_OUT;
+  const near = Math.floor(face + Math.sign(out) * 0.5);
+  const between = read([left, top - 2, Math.min(near, Math.floor(face + out))], [right - 1, top - 1, Math.max(near, Math.floor(face + out))]);
+  if ([...between.values()].some((state) => idOf(state) !== "minecraft:air")) {
+    return [];
+  }
+  const spots = (side) => ARCH_ACROSS.flatMap((across) => ARCH_DOWN.map((down) => [side === "left" ? left + across : right - across, top - down]));
+  const named = ["left", "right"].flatMap((side) => spots(side).map(([x, y], i) => [`${side}${i}`, `${side}${i}=@${x},${y},${face}`]));
+  const reply = send(`camera at ${middle},${top - 1},${face + out} look ${middle},${top - 1},${face}; wait 20t; pixels ${named.map(([, spot]) => spot).join(" ")} r=${ARCH_SPOT}; camera reset`)[2] ?? {};
+  return ["left", "right"].map((side) => ({ at: `${side} corner of the archway at z ${archway[0][2]}, seen from z ${round(face + out)}`,
+    lumas: named.filter(([name]) => name.startsWith(side)).map(([name]) => reply[name]?.luma) }))
+    .map((corner) => ({ ...corner, lumas: corner.lumas.every((luma) => luma >= ARCH_CREAM) ? corner.lumas : [] }));
+}
+
 // How far over the ground an airliner laid down stands the line between her two rows of windows, in blocks: her main
 // deck's are 12 and 13 up, her upper deck's 18 to 20.
 const WINDOW_DECKS_SPLIT = 15;
@@ -7714,6 +7763,7 @@ const CHECKS = {
   "airliner-flying-alone": { run: checkAirlinerFlyingAlone, about: "an airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her" },
   "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
   "doors-closed-round": { run: checkDoorsClosedRound, about: "beside each of an airliner's rear doors her hull is closed outside, no hole where the jump light is" },
+  "arch-walls-even": { run: checkArchWallsEven, about: "the wall beside each of an airliner's cabin archways is lit evenly, with no light and dark rays fanning out from the arch" },
   "seatbelt-signs": { run: checkSeatbeltSigns, about: "an airliner's seatbelt signs hang on her cabin walls, none set into her skin, and her seatbelt switch lights them all" },
   "windows-one-pane": { run: checkWindowsOnePane, about: "each of an airliner's cabin windows is one straight pane, none stepping across her curve over slivers of window or bent in the middle" },
   "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },

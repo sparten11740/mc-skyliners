@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -40,14 +39,14 @@ import org.joml.Vector4f;
  * "narrow_1_1", "textures": {"trim": ..., "groove": ..., "arch": ..., "wall": ..., "particle": ...}}}. The jambs, being
  * straight, are drawn as boxes in their own model (see tools/generate_resources.mjs).
  *
- * <p>The faces along the wall are drawn and lit as a block's sides are, each texture laid over them as over a whole
- * side of the block. So is the wall's edge where it reaches a side of the block, its rim, which shows on an archway
- * standing free, over its top and down its outer sides. The faces lying on a side of the block, the wall's faces and
- * its rim, are culled against whatever stands on that side, and the next piece of the same archway hides its rim there
- * altogether (see {@link CabinArchBlock}). The faces round the curve have no side to take their shade from: each corner
- * gets the shade for the way it really faces, so they brighten and darken smoothly round the arch, without corner
- * darkening, as the hull's cut faces do (see {@link ShellModel}). In the hand each face is one flat colour of its
- * texture, lit by the way it faces.
+ * <p>The faces along the wall are drawn and lit as a block's sides are, but evenly, without corner darkening (see
+ * {@link ModelQuads#bakeEven}), each texture laid over them as over a whole side of the block. So is the wall's edge
+ * where it reaches a side of the block, its rim, which shows on an archway standing free, over its top and down its
+ * outer sides. The faces lying on a side of the block, the wall's faces and its rim, are culled against whatever stands
+ * on that side, and the next piece of the same archway hides its rim there altogether (see {@link CabinArchBlock}). The
+ * faces round the curve have no side to take their shade from: each corner gets the shade for the way it really faces,
+ * so they brighten and darken smoothly round the arch, without corner darkening, as the hull's cut faces do (see {@link
+ * ShellModel}). In the hand each face is one flat colour of its texture, lit by the way it faces.
  */
 public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Skyliners.MOD_ID, "cabin_arch");
@@ -59,8 +58,6 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
      * a fraction of the texture: clear of the partition's seams.
      */
     private static final float SWATCH = 4.5F / 16;
-    /** How many corners a quad has. */
-    private static final int QUAD = 4;
     /** How near a corner has to come to a side of the block to lie on it, as a fraction of the block. */
     private static final float ON_SIDE = 1e-4F;
 
@@ -181,65 +178,21 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
 
     /**
      * Adds a face's quads, fanned out from its first corner, a triangle being a quad with its last corner doubled.
-     * A flat face is lit as a block's side is, culled against what stands on the side it faces if it lies on the
-     * block's side; round the curve each corner is shaded for the way it faces.
+     * A flat face is lit as a block's side is, evenly over it (see {@link ModelQuads#bakeEven}), culled against what
+     * stands on the side it faces if it lies on the block's side; round the curve each corner is shaded for the way it
+     * faces.
      */
     private static void add(IModelBuilder<?> builder, List<Corner> corners, TextureAtlasSprite sprite, boolean round, boolean culled) {
         Direction side = facing(corners);
         for (int i = 1; i + 1 < corners.size(); i += 2) {
             Corner[] quad = {corners.getFirst(), corners.get(i), corners.get(i + 1), corners.get(Math.min(i + 2, corners.size() - 1))};
-            BakedQuad baked = ModelQuads.bake(round ? quad : startingAsSides(quad, side), sprite, side, round);
+            BakedQuad baked = round ? ModelQuads.bake(quad, sprite, side, true) : ModelQuads.bakeEven(quad, sprite, side);
             if (culled) {
                 builder.addCulledFace(side, baked);
             } else {
                 builder.addUnculledFace(baked);
             }
         }
-    }
-
-    /**
-     * A quad of a block's side with its corners turned round, keeping their order, to start where the world's lighting
-     * takes a side's quad to start (see {@link FaceInfo}): so the light and corner darkening it works out for each
-     * corner of the quad's bounds lands on the quad's corner nearest that, as on a box's face.
-     */
-    private static Corner[] startingAsSides(Corner[] quad, Direction side) {
-        float[] bounds = bounds(quad);
-        FaceInfo info = FaceInfo.fromFacing(side);
-        int best = 0;
-        float bestMiss = Float.MAX_VALUE;
-        for (int shift = 0; shift < QUAD; shift++) {
-            float miss = 0;
-            for (int k = 0; k < QUAD; k++) {
-                FaceInfo.VertexInfo vertex = info.getVertexInfo(k);
-                miss += quad[(k + shift) % QUAD].at().distanceSquared(bounds[vertex.xFace], bounds[vertex.yFace], bounds[vertex.zFace]);
-            }
-            if (miss < bestMiss) {
-                bestMiss = miss;
-                best = shift;
-            }
-        }
-        Corner[] turned = new Corner[QUAD];
-        for (int k = 0; k < QUAD; k++) {
-            turned[k] = quad[(k + best) % QUAD];
-        }
-        return turned;
-    }
-
-    /** How far a quad reaches each way, by the index of the side it reaches toward, as {@link FaceInfo} reads them. */
-    private static float[] bounds(Corner[] quad) {
-        float[] bounds = new float[Direction.values().length];
-        bounds[FaceInfo.Constants.MIN_X] = bounds[FaceInfo.Constants.MIN_Y] = bounds[FaceInfo.Constants.MIN_Z] = Float.MAX_VALUE;
-        bounds[FaceInfo.Constants.MAX_X] = bounds[FaceInfo.Constants.MAX_Y] = bounds[FaceInfo.Constants.MAX_Z] = -Float.MAX_VALUE;
-        for (Corner corner : quad) {
-            Vector3f at = corner.at();
-            bounds[FaceInfo.Constants.MIN_X] = Math.min(bounds[FaceInfo.Constants.MIN_X], at.x());
-            bounds[FaceInfo.Constants.MIN_Y] = Math.min(bounds[FaceInfo.Constants.MIN_Y], at.y());
-            bounds[FaceInfo.Constants.MIN_Z] = Math.min(bounds[FaceInfo.Constants.MIN_Z], at.z());
-            bounds[FaceInfo.Constants.MAX_X] = Math.max(bounds[FaceInfo.Constants.MAX_X], at.x());
-            bounds[FaceInfo.Constants.MAX_Y] = Math.max(bounds[FaceInfo.Constants.MAX_Y], at.y());
-            bounds[FaceInfo.Constants.MAX_Z] = Math.max(bounds[FaceInfo.Constants.MAX_Z], at.z());
-        }
-        return bounds;
     }
 
     /** The texture laid over a point of a face as over the whole side of the block it mostly looks toward. */
