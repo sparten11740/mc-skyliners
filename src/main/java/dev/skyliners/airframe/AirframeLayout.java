@@ -41,6 +41,7 @@ import dev.skyliners.block.LaserSwitchBlockEntity;
 import dev.skyliners.block.LaserTurretBlock;
 import dev.skyliners.block.InstrumentPanelBlock;
 import dev.skyliners.block.Joining;
+import dev.skyliners.block.JumpLightBlock;
 import dev.skyliners.block.JumpSwitchBlock;
 import dev.skyliners.block.LinkedControlBlockEntity;
 import dev.skyliners.block.Mount;
@@ -49,6 +50,7 @@ import dev.skyliners.block.ParachuteRackBlock;
 import dev.skyliners.block.ParkingBrakeBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.PlugDoorBlock;
+import dev.skyliners.block.Relays;
 import dev.skyliners.block.SeatbeltSignBlock;
 import dev.skyliners.block.SeatbeltSwitchBlock;
 import dev.skyliners.block.SeatbeltSwitchBlockEntity;
@@ -1166,7 +1168,8 @@ public final class AirframeLayout implements Layout {
     /** The jump light by one door: in the hull just ahead of it, in one of the door's rows; the rack on the floor inside by it. */
     private void jumpDoor(int side, double station, int bottom, List<BlockPos> relays) {
         int z = (int) Math.round(station * scale) - 1;
-        BlockPos light = wallLamp(side, z, new int[]{bottom + 1, bottom, bottom + 2}, SkylinersRegistry.JUMP_LIGHT.get().defaultBlockState(), relays);
+        BlockState lamp = JumpLightBlock.facingInto(SkylinersRegistry.JUMP_LIGHT.get().defaultBlockState(), side > 0 ? Direction.WEST : Direction.EAST);
+        BlockPos light = wallLamp(side, z, new int[]{bottom + 1, bottom, bottom + 2}, lamp, relays);
         if (light == null || !isOpen(light.getX() - side, bottom, z)) {
             return;
         }
@@ -1519,14 +1522,16 @@ public final class AirframeLayout implements Layout {
     /**
      * Whether something other than skin is built onto the hull next to this block: whatever stands outside the
      * fuselage and is not hull, glass, a window or a light; with {@code setIn}, also whatever is set into the skin
-     * itself, like the doors.
+     * itself, like the doors. A lamp or relay set flush into the cabin wall (a door's jump light) is not: skin closes
+     * over it outside as over the rest. Taken for one, it kept the hull's surface from being closed over it where the
+     * hull tapers to the tail, and left a hole in the hull beside each of the rear doors.
      */
     boolean nextToFitting(BlockPos pos, boolean setIn) {
         for (Direction side : Direction.values()) {
             BlockPos next = pos.relative(side);
             BlockState state = cells.get(next);
             if (state == null || state.isAir() || state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())
-                || state.getBlock() instanceof CockpitGlassBlock || CabinWindowBlock.isPane(state)) {
+                || state.getBlock() instanceof CockpitGlassBlock || CabinWindowBlock.isPane(state) || flushInWall(state)) {
                 continue;
             }
             if (!inFuselage(next) || setIn && inSkin(next)) {
@@ -1534,6 +1539,11 @@ public final class AirframeLayout implements Layout {
             }
         }
         return false;
+    }
+
+    /** Whether the block is a lamp or a relay set flush into the cabin wall, plated outside like the skin. */
+    private static boolean flushInWall(BlockState state) {
+        return Relays.isRelay(state) || state.getBlock() instanceof JumpLightBlock;
     }
 
     /**

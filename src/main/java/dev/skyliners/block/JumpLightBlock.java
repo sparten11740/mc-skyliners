@@ -12,8 +12,13 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 /**
@@ -22,6 +27,11 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
  * on the flight deck works it through a relay, and so can anything else. Put up by hand with no relay beside it, a
  * jump switch put up by hand near it works it too (see {@link JumpSwitchBlock}), keeping what that switch turned it to
  * as SWITCHED, so that a door opening beside it or a block put down there leaves it as the switch set it.
+ *
+ * <p>PLATED, as the blueprints set it into the hull beside a door, it shows its light only on its FACING side, the one
+ * that looks into the cabin, and is plated like the skin everywhere else: lit all round, it showed outside too, and
+ * where the hull tapers past a rear door, a dark square in the skin beside the door. One put up by hand, or set into an
+ * airliner built before, is lit all round as it always was.
  */
 public class JumpLightBlock extends Block {
     private static final MapCodec<JumpLightBlock> CODEC = simpleCodec(JumpLightBlock::new);
@@ -32,6 +42,8 @@ public class JumpLightBlock extends Block {
      * for one saved before there was any.
      */
     public static final EnumProperty<Signal> SWITCHED = EnumProperty.create("switched", Signal.class);
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty PLATED = BooleanProperty.create("plated");
 
     /** What the light shows, the redstone signal that makes it, and how much light it gives. */
     public enum Signal implements StringRepresentable {
@@ -76,7 +88,13 @@ public class JumpLightBlock extends Block {
 
     public JumpLightBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(SIGNAL, Signal.OFF).setValue(SWITCHED, Signal.OFF));
+        registerDefaultState(stateDefinition.any().setValue(SIGNAL, Signal.OFF).setValue(SWITCHED, Signal.OFF).setValue(FACING, Direction.NORTH)
+            .setValue(PLATED, false));
+    }
+
+    /** A light set into a wall, plated outside, showing its light this way into the cabin. */
+    public static BlockState facingInto(BlockState light, Direction cabin) {
+        return light.setValue(PLATED, true).setValue(FACING, cabin);
     }
 
     @Override
@@ -86,12 +104,22 @@ public class JumpLightBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(SIGNAL, SWITCHED);
+        builder.add(SIGNAL, SWITCHED, FACING, PLATED);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(SIGNAL, Signal.of(context.getLevel().getBestNeighborSignal(context.getClickedPos())));
+    }
+
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     /** Follows the redstone reaching it; a relay put beside it takes it over from any switch put up by hand. */

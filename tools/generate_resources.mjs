@@ -3621,10 +3621,25 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
       solid([7.75, 7.5, 5], [8.25, 8, 8.5], "#pointer", { origin: [8, 7.5, 5], axis: "y", angle: { off: 0, red: 45, green: -45 }[signal] }),
     ]);
   }
+  // Plated, set into the hull beside a door: the light on its north face only, looking into the cabin, the skin's
+  // plating on the others, so it shows nothing outside.
+  for (const signal of signals) {
+    write(`assets/${ID}/models/block/jump_light_plated_${signal}.json`, {
+      parent: "minecraft:block/block",
+      textures: { lamp: `${ID}:block/jump_light_${signal}`, skin: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel` },
+      elements: [{
+        from: [0, 0, 0], to: [16, 16, 16],
+        faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
+          [face, { texture: face === "north" ? "#lamp" : "#skin", cullface: face }])),
+      }],
+    });
+  }
   // A jump light looks as what it shows; what a jump switch put up by hand set it to (switched, see JumpLightBlock)
-  // changes nothing of its look, so its variants leave it out.
+  // changes nothing of its look, so its variants leave it out. Its facing turns only a plated one.
   write(`assets/${ID}/blockstates/jump_light.json`, {
-    variants: Object.fromEntries(signals.map((signal) => [`signal=${signal}`, { model: `${ID}:block/jump_light_${signal}` }])),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => signals.flatMap((signal) => [false, true].map((plated) =>
+      [`facing=${facing},plated=${plated},signal=${signal}`,
+        plated ? { model: `${ID}:block/jump_light_plated_${signal}`, y } : { model: `${ID}:block/jump_light_${signal}` }])))),
   });
   write(`assets/${ID}/blockstates/jump_switch.json`, {
     variants: mountedVariants(signals.map((signal) => [`signal=${signal}`, `jump_switch_${signal}`])),

@@ -7071,6 +7071,40 @@ function checkSeatbeltSigns() {
   must(`server tp @p 0 ${ground} 0`);
 }
 
+// An airliner's jump lights beside her rear doors, seen from outside: how far out from the hull the camera stands,
+// in blocks; how far round a spot each brightness is measured, in blocks; how far forward along the hull the skin it
+// is held up against lies, in blocks; and how dark against that skin the spot of the light may look, as a share of
+// its brightness.
+const JUMP_LOOK_OUT = 5;
+const JUMP_SPOT = 0.2;
+const JUMP_HULL_AHEAD = 2;
+const JUMP_DARKEST = 0.75;
+
+// Beside each of an airliner's rear doors, where her jump light is set into the wall, her hull outside is closed and
+// as light as the skin round it. With the fault, where the hull tapers to the tail, the skin was not closed over the
+// light and its relay, and from outside the dark lamp showed as a black hole in the hull beside each rear door.
+function checkDoorsClosedRound() {
+  const site = ship("airliner");
+  const lights = must("find skyliners:jump_light 160 20 side=server").rows.map((row) => row.at_abs);
+  expect(lights.length > 0, "airliner: she is built with jump lights by her rear doors");
+  creative();
+  must("fly on; option hud off");
+  const dark = [];
+  for (const [x, y, z] of lights) {
+    const side = x > site.x ? 1 : -1;
+    const face = [x + 0.5 + side * 0.5, y + 0.5, z + 0.5];
+    const seen = must(`server tp @p ${face[0] + side * (JUMP_LOOK_OUT + 3)} ${y} ${z}; wait 20t; `
+      + `camera at ${face[0] + side * JUMP_LOOK_OUT},${face[1]},${face[2]} look ${face.join(",")}; wait 10t; `
+      + `pixels light=@${face.join(",")} r=${JUMP_SPOT} hull=@${face[0]},${face[1]},${face[2] + JUMP_HULL_AHEAD} r=${JUMP_SPOT}`);
+    if (!(seen.light?.luma >= (seen.hull?.luma ?? 255) * JUMP_DARKEST)) {
+      dark.push(`${x},${y},${z} (${round(seen.light?.luma ?? 0)} against ${round(seen.hull?.luma ?? 0)})`);
+    }
+  }
+  must("camera reset; option hud on; fly off");
+  expect(dark.length === 0, "airliner: beside each of her rear doors her hull is closed outside, no hole where the jump light is",
+    `${dark.length} of ${lights.length} dark${dark.length ? `: ${dark.join("; ")}` : ""}`);
+}
+
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
 // blocks; how far round a spot each brightness is measured, in blocks; and how much darker than the hull beside it the
 // window must look, as a share of the hull's brightness.
@@ -7679,6 +7713,7 @@ const CHECKS = {
   "airliner-unattended-far-off": { slow: true, run: checkAirlinerUnattendedFarOff, about: "an airliner left flying with nobody near comes down on the ground by herself and stops" },
   "airliner-flying-alone": { run: checkAirlinerFlyingAlone, about: "an airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her" },
   "nothing-left-behind": { run: checkNothingLeftBehind, about: "an airliner assembled to fly leaves nothing of hers where she stood, no block and none of her glue" },
+  "doors-closed-round": { run: checkDoorsClosedRound, about: "beside each of an airliner's rear doors her hull is closed outside, no hole where the jump light is" },
   "seatbelt-signs": { run: checkSeatbeltSigns, about: "an airliner's seatbelt signs hang on her cabin walls, none set into her skin, and her seatbelt switch lights them all" },
   "windows-one-pane": { run: checkWindowsOnePane, about: "each of an airliner's cabin windows is one straight pane, none stepping across her curve over slivers of window or bent in the middle" },
   "window-shade-outside": { run: checkWindowShadeOutside, about: "an airliner's window with its shade pulled down still shows as a window from outside, darker than her hull" },

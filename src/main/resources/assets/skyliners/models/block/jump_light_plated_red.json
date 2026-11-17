@@ -1,0 +1,48 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "lamp": "skyliners:block/jump_light_red",
+    "skin": "skyliners:block/airframe_panel",
+    "particle": "skyliners:block/airframe_panel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#skin",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#skin",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#skin",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#skin",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#skin",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}
