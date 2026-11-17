@@ -50,7 +50,6 @@ import dev.skyliners.block.ParachuteRackBlock;
 import dev.skyliners.block.ParkingBrakeBlock;
 import dev.skyliners.block.PilotSeatBlock;
 import dev.skyliners.block.PlugDoorBlock;
-import dev.skyliners.block.Relays;
 import dev.skyliners.block.SeatbeltSignBlock;
 import dev.skyliners.block.SeatbeltSwitchBlock;
 import dev.skyliners.block.SeatbeltSwitchBlockEntity;
@@ -1531,7 +1530,7 @@ public final class AirframeLayout implements Layout {
             BlockPos next = pos.relative(side);
             BlockState state = cells.get(next);
             if (state == null || state.isAir() || state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())
-                || state.getBlock() instanceof CockpitGlassBlock || CabinWindowBlock.isPane(state) || flushInWall(state)) {
+                || state.getBlock() instanceof CockpitGlassBlock || CabinWindowBlock.isPane(state) || flushInWall(next, state)) {
                 continue;
             }
             if (!inFuselage(next) || setIn && inSkin(next)) {
@@ -1541,9 +1540,12 @@ public final class AirframeLayout implements Layout {
         return false;
     }
 
-    /** Whether the block is a lamp or a relay set flush into the cabin wall, plated outside like the skin. */
-    private static boolean flushInWall(BlockState state) {
-        return Relays.isRelay(state) || state.getBlock() instanceof JumpLightBlock;
+    /**
+     * Whether the block is a lamp or the relay beside it set flush into the cabin wall, plated outside like the skin:
+     * in the fuselage, unlike the relays of the control jets and the landing gear, which stand outside it.
+     */
+    private boolean flushInWall(BlockPos pos, BlockState state) {
+        return inFuselage(pos) && (state.is(SkylinersRegistry.HULL_RELAY.get()) || state.getBlock() instanceof JumpLightBlock);
     }
 
     /**
