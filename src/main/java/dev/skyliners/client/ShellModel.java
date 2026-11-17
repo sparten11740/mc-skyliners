@@ -239,7 +239,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             if (baked == null) {
                 double[] out = ShellGeometry.outward(shape);
                 double[] onCut = onCut(shape);
-                baked = bothWays(shape, face -> face.side() == null || beyondCut(face.side(), onCut, out));
+                baked = bothWays(shape, face -> looksOut(face.side(), onCut, out));
                 panes.set(shape, baked);
             }
             return baked;
@@ -303,6 +303,11 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             return x * out[0] + y * out[1] + z * out[2] > 0;
         }
 
+        /** Whether a face looks out of the hull: a cut face (no side), or a side whose neighbour lies beyond the cut. */
+        private static boolean looksOut(@Nullable Direction side, double[] onCut, double[] out) {
+            return side == null || beyondCut(side, onCut, out);
+        }
+
         /** How many ways a block may be drawn: each skin, four ways round, with several given; otherwise the one. */
         private int ways() {
             return skins.size() > 1 ? skins.size() * TURNS : 1;
@@ -333,7 +338,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                 Direction side = face.side();
                 Lining.Look look = Lining.look(face, (linedFaces & 1 << i) != 0, context);
                 int tint = look == Lining.Look.SKIN ? tintIndex : liningTintIndex;
-                boolean outward = side == null || beyondCut(side, onCut, out);
+                boolean outward = looksOut(side, onCut, out);
                 TextureAtlasSprite sprite = sprite(look, outward, way);
                 List<BakedQuad> baked = bake(face, sprite, look == Lining.Look.REVEAL_LEFT, tint, way % TURNS);
                 bySide.get(side == null ? rest : side.get3DDataValue()).addAll(baked);
