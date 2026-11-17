@@ -21,19 +21,23 @@ import net.minecraft.world.level.saveddata.SavedData;
  * The ships let go of because they stand parked with nobody near. A zeppelin or rocket keeps itself loaded once
  * assembled (see {@link AutopilotBlockEntity}), and a loaded ship costs the server its physics wherever it is: little
  * once it has come to rest, but one that never quite does on uneven ground costs tens of milliseconds every tick. So one
- * on the ground with its autopilot off and nobody within {@link #LET_GO_AT} is let go, and Sable unloads it.
+ * on the ground with its autopilot off and nobody within {@link #letGoAt} is let go, and Sable unloads it.
  *
  * <p>Sable loads a ship back only once the land under all of it is simulated. A rocket would come back only with someone
  * close under it, and a zeppelin, longer than the land simulated round a player, never would. So where each one stands
- * is noted here, and as anyone comes within {@link #BRING_BACK_AT} the land under it is loaded for it. It takes up
- * keeping itself loaded again as it ticks, and is forgotten here.
+ * is noted here, and as anyone comes within {@link #bringBackAt} the land under it is loaded for it. It takes up
+ * keeping itself loaded again as it ticks, and is forgotten here. Both reach past where Sable shows a ship (see
+ * {@link SableFlight#bodiesShownWithin}), so one is never seen to come or go.
  */
 public final class ParkedShips extends SavedData {
     private static final String NAME = Skyliners.MOD_ID + "_parked_ships";
-    /** How far from everyone a parked ship must be to be let go, in blocks: well past where it comes back. */
-    private static final double LET_GO_AT = 600;
-    /** How near anyone must come to bring a ship back, in blocks: past the 320 Sable shows one at by default. */
-    private static final double BRING_BACK_AT = 400;
+    /**
+     * How far past where Sable shows a ship anyone must come to bring a parked one back, in blocks: half a long ship,
+     * so it is back before any of it would be seen.
+     */
+    private static final double BRING_BACK_PAST = 80;
+    /** How far past where a parked ship comes back everyone must be for it to be let go, in blocks. */
+    private static final double LET_GO_PAST = 200;
     /** How often it looks who has come near, in ticks. */
     private static final int LOOK_EVERY = 20;
     /** How long the land under a ship stays loaded once asked for, in ticks: a few looks, each of which asks again. */
@@ -62,7 +66,7 @@ public final class ParkedShips extends SavedData {
             return false;
         }
         SableFlight.Footprint footprint = SableFlight.footprint(autopilot);
-        if (footprint == null || anyoneNear(level, footprint, LET_GO_AT)) {
+        if (footprint == null || anyoneNear(level, footprint, letGoAt())) {
             return false;
         }
         of(level).note(footprint);
@@ -72,11 +76,21 @@ public final class ParkedShips extends SavedData {
 
     /**
      * Whether nobody is near enough the ship an autopilot is part of to keep it from being let go once parked (see
-     * {@link #LET_GO_AT}); false for an autopilot in no ship.
+     * {@link #letGoAt}); false for an autopilot in no ship.
      */
     static boolean nobodyNear(ServerLevel level, BlockEntity autopilot) {
         SableFlight.Footprint footprint = SableFlight.footprint(autopilot);
-        return footprint != null && !anyoneNear(level, footprint, LET_GO_AT);
+        return footprint != null && !anyoneNear(level, footprint, letGoAt());
+    }
+
+    /** How near anyone must come to bring a parked ship back, in blocks. */
+    private static double bringBackAt() {
+        return SableFlight.bodiesShownWithin() + BRING_BACK_PAST;
+    }
+
+    /** How far from everyone a parked ship must be to be let go, in blocks: well past where it comes back. */
+    private static double letGoAt() {
+        return bringBackAt() + LET_GO_PAST;
     }
 
     /** The ship an autopilot is part of is loaded and looks after itself again, or is taken apart: forgets it. */
@@ -97,7 +111,7 @@ public final class ParkedShips extends SavedData {
     }
 
     private void look(ServerLevel level, SableFlight.Footprint footprint) {
-        if (!anyoneNear(level, footprint, BRING_BACK_AT)) {
+        if (!anyoneNear(level, footprint, bringBackAt())) {
             askedSince.remove(footprint.ship());
             return;
         }

@@ -106,6 +106,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -153,6 +154,7 @@ public final class Skyliners {
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
         NeoForge.EVENT_BUS.addListener(SelfDestruct::onFall);
+        NeoForge.EVENT_BUS.addListener((ServerStartingEvent event) -> SableFlight.showBodiesWithin(SkylinersConfig.SHIP_SIGHT_RANGE.get()));
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SelfDestruct.forget());
         NeoForge.EVENT_BUS.addListener(Braced::onDamage);
         NeoForge.EVENT_BUS.addListener(Braced::forget);

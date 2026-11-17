@@ -24,6 +24,7 @@ public final class SkylinersConfig {
     public static final ModConfigSpec.BooleanValue LAND_AHEAD;
     public static final ModConfigSpec.IntValue LAND_AHEAD_CHUNKS;
     public static final ModConfigSpec.BooleanValue LET_PARKED_SHIPS_GO;
+    public static final ModConfigSpec.DoubleValue SHIP_SIGHT_RANGE;
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue ENGINE_SPOOL_SECONDS;
@@ -232,12 +233,21 @@ public final class SkylinersConfig {
             .define("landAhead", true);
         LET_PARKED_SHIPS_GO = builder
             .comment(
-                "Whether a zeppelin or rocket on the ground with its autopilot off is unloaded once nobody is within 600",
-                "blocks of it, and brought back as someone comes within 400. A ship that never quite comes to rest on uneven",
-                "ground otherwise costs the server its physics every tick, wherever it is. Off, a ship once assembled stays",
-                "loaded for good. An unloaded ship does nothing until it is brought back."
+                "Whether a zeppelin or rocket on the ground with its autopilot off is unloaded once nobody is within 280 blocks",
+                "past where ships are shown (see shipSightRange), and brought back as someone comes within 80 past it, so it is",
+                "never seen to come or go. A ship that never quite comes to rest on uneven ground otherwise costs the server its",
+                "physics every tick, wherever it is. Off, a ship once assembled stays loaded for good. An unloaded ship does",
+                "nothing until it is brought back."
             )
             .define("letParkedShipsGo", true);
+        SHIP_SIGHT_RANGE = builder
+            .comment(
+                "How far off ships are shown, in blocks. As a world starts, Sable's own range for sending its bodies to players",
+                "(sub_level_tracking_range in sable-common.toml, 320 by default) is raised to at least this while the game runs,",
+                "its file left as it is: so a ship stays in sight as far as the land can be seen, 32 chunks, with half the longest",
+                "ship to spare. Farther costs each player the drawing of more ships. 0 leaves Sable's range as it is."
+            )
+            .defineInRange("shipSightRange", 640.0, 0.0, 4096.0);
         LAND_AHEAD_CHUNKS = builder
             .comment("How far past the edge of what each player sees the land ahead is loaded, in chunks.")
             .defineInRange("landAheadChunks", 8, 1, 32);

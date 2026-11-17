@@ -207,9 +207,10 @@ const FREIGHTER_LEVEL_WITHIN = 2;
 const FREIGHTER_WATCH_TICKS = 200;
 const FREIGHTER_AWAY = 400;
 const FREIGHTER_AWAY_TICKS = 60;
-// A freighter left flying with nobody near: how far off everyone goes, in blocks, past the 600 within which a ship is
-// kept once parked, and how soon she must be down and let go after, in ticks: she is gone after some 900, but used to
-// fly on a minute (1,200 ticks) first and come down after it, staying loaded for some 1,950 in all.
+// A freighter left flying with nobody near: how far off everyone goes, in blocks, past the 920 within which a ship is
+// kept once parked (280 past the 640 ships are shown at), and how soon she must be down and let go after, in ticks: she
+// is gone after some 900, but used to fly on a minute (1,200 ticks) first and come down after it, staying loaded for
+// some 1,950 in all.
 const UNATTENDED_AWAY = 1500;
 const UNATTENDED_GONE_TICKS = 1400;
 // How long each of her computer's lines for her flight deck is given to be heard, in ticks, the take-off one waiting
@@ -6922,18 +6923,20 @@ function checkNothingLeftBehind() {
 // An airliner flying on her autopilot with nobody aboard and someone flying after her: how long after she is set flying
 // her take-off and climb take, in ticks, before they leave her; how far behind her middle they keep, in blocks, first
 // past where the land under all of her is still simulated round them (some 130 blocks at a simulation distance of ten
-// chunks, 165 at twelve); how often they look whether she is there, in ticks, and how many times; and how far round
-// them she is looked for, in blocks.
+// chunks, 165 at twelve), then past the farthest anyone sees the land, 32 chunks; how often they look whether she is
+// there, in ticks, and how many times at each; and how far round them she is looked for, in blocks.
 const ALONE_CLIMB_TICKS = 600;
 const ALONE_BEHIND = 200;
+const ALONE_FAR_BEHIND = 560;
 const ALONE_LOOK_TICKS = 10;
 const ALONE_LOOKS = 10;
 const ALONE_SIGHT = 800;
 
-// An airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her. With the fault,
-// once she drew so far ahead that the land under all of her was no longer simulated round anyone, Sable let her go,
-// frozen where she was and gone from sight, and loaded her again as they caught up: seen from a freighter flying
-// after her, she blinked in and out of view a second at a time.
+// An airliner flying on her autopilot with nobody aboard stays in sight of someone flying after her, even past the
+// farthest anyone sees the land. With the fault, once she drew so far ahead that the land under all of her was no
+// longer simulated round anyone, Sable let her go, frozen where she was and gone from sight, and loaded her again as
+// they caught up: seen from a freighter flying after her, she blinked in and out of view a second at a time. And any
+// ship went out of sight 320 blocks off, though the land past it could be seen out to 512.
 function checkAirlinerFlyingAlone() {
   layDown("airliner");
   board();
@@ -6943,9 +6946,12 @@ function checkAirlinerFlyingAlone() {
   const start = must(`sable:info ${airliner} side=server`).at_abs;
   must("fly on");
   const near = followAlone(airliner, start, yaw, ALONE_BEHIND);
+  const far = followAlone(airliner, near.at, yaw, ALONE_FAR_BEHIND);
   must(`fly off; server tp @p 0 ${ground} 0`);
   expect(near.seen === ALONE_LOOKS, "airliner: flying on her autopilot with nobody aboard, she stays in sight of someone flying after her",
     `in sight at ${near.seen} of ${ALONE_LOOKS} looks, ${ALONE_BEHIND} blocks behind her`);
+  expect(far.seen === ALONE_LOOKS, "airliner: she stays in sight of them past the farthest anyone sees the land",
+    `in sight at ${far.seen} of ${ALONE_LOOKS} looks, ${ALONE_FAR_BEHIND} blocks behind her`);
 }
 
 // Keeps so far behind a flying ship's middle along her heading, as Minecraft yaw, looking each time whether she is in

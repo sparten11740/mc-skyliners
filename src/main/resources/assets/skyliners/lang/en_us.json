@@ -592,6 +592,7 @@
   "skyliners.configuration.engineFlames": "Engine Flames",
   "skyliners.configuration.retractableGear": "Retractable Landing Gear",
   "skyliners.configuration.letParkedShipsGo": "Unload Parked Ships",
+  "skyliners.configuration.shipSightRange": "Ship Sight Range",
   "skyliners.configuration.airPockets": "Air Pockets",
   "skyliners.configuration.lightningStrikes": "Lightning Strikes",
   "skyliners.configuration.laser": "Laser",

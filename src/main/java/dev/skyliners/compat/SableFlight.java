@@ -239,6 +239,16 @@ public final class SableFlight {
         return SABLE ? Access.bodiesShownWithin() : 0;
     }
 
+    /**
+     * Has Sable send its flying bodies to players at least this far off, in blocks, while the game runs: its range is
+     * raised, never lowered, and its config file left as it is. Nothing without Sable.
+     */
+    public static void showBodiesWithin(double range) {
+        if (SABLE) {
+            Access.showBodiesWithin(range);
+        }
+    }
+
     /** Where a flying rock's middle is, in the world; null once it is gone. */
     @Nullable
     public static Vec3 rockCentre(ServerLevel level, UUID rock) {
@@ -992,6 +1002,12 @@ public final class SableFlight {
 
         static double bodiesShownWithin() {
             return SableConfig.SUB_LEVEL_TRACKING_RANGE.getAsDouble();
+        }
+
+        static void showBodiesWithin(double range) {
+            if (SableConfig.SUB_LEVEL_TRACKING_RANGE.getAsDouble() < range) {
+                SableConfig.SUB_LEVEL_TRACKING_RANGE.set(range);
+            }
         }
 
         static boolean holdUpRock(ServerLevel level, UUID id) {
