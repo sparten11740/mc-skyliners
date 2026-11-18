@@ -66,6 +66,8 @@ public class LaserTurretBlockEntity extends BlockEntity {
     private static final double MIN_SPEED = 2;
     /** How often it looks for hostile mobs in the way, in ticks. */
     private static final int MOB_LOOK_TICKS = 10;
+    /** How far round it looks for hostile mobs on the ground, in blocks: those about her, not all its rays reach. */
+    private static final double MOBS_ROUND = 32;
     /** How often it looks how high it is over the ground and whether her engines run, in ticks. */
     private static final int HOLD_LOOK_TICKS = 10;
     /** How much a bolt hurts a hostile mob, in half hearts: two or three bolts for a zombie. */
@@ -394,28 +396,39 @@ public class LaserTurretBlockEntity extends BlockEntity {
         return !NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, FakePlayerFactory.getMinecraft(level))).isCanceled();
     }
 
-    /** The nearest hostile mob in the way, not aboard an airliner; null for none. */
+    /**
+     * The nearest hostile mob in the way, ahead or, low over the ground, all round, not aboard an airliner; null for
+     * none.
+     */
     @Nullable
     private LivingEntity quarry(ServerLevel level, LaserLook.Lookout look) {
-        AABB around = new AABB(look.muzzle(), look.muzzle().add(look.path().scale(look.range()))).inflate(aim.reach());
+        AABB around = low
+            ? new AABB(look.muzzle(), look.muzzle()).inflate(MOBS_ROUND, aim.reach(), MOBS_ROUND)
+            : new AABB(look.muzzle(), look.muzzle().add(look.path().scale(look.range()))).inflate(aim.reach());
         return level.getEntitiesOfClass(LivingEntity.class, around, entity -> hostile(entity) && inWay(entity, look))
             .stream()
-            .min(Comparator.comparingDouble(entity -> entity.position().subtract(look.muzzle()).dot(look.path())))
+            .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(look.muzzle())))
             .orElse(null);
     }
 
     /**
-     * Whether a mob is in the airliner's way: its feet or the top of its head, so one standing on the runway, its feet
-     * below the wheels' hubs, is in the way all the same.
+     * Whether a mob is in the airliner's way, ahead or, low over the ground, all round: its feet or the top of its
+     * head, so one standing on the runway, its feet below the wheels' hubs, is in the way all the same.
      */
     private boolean inWay(LivingEntity entity, LaserLook.Lookout look) {
         Vec3 feet = entity.position();
-        return aim.inWay(look, feet) || aim.inWay(look, feet.add(0, entity.getBbHeight(), 0));
+        Vec3 head = feet.add(0, entity.getBbHeight(), 0);
+        boolean ahead = aim.inWay(look, feet) || aim.inWay(look, head);
+        return ahead || low && (ring.inWay(look, feet) || ring.inWay(look, head));
     }
 
-    /** Whether the laser fires at an entity: a hostile mob, alive, and not aboard this airliner. */
+    /**
+     * Whether the laser fires at an entity: a hostile mob, alive, and aboard no airliner or other flying body, this one
+     * or another.
+     */
     private boolean hostile(LivingEntity entity) {
-        return entity instanceof Enemy && entity.isAlive() && !Aboard.isAboard(entity, this);
+        return entity instanceof Enemy && entity.isAlive() && !Aboard.isAboard(entity, this) && SableFlight.ridden(entity) == null
+            && !SableFlight.inPlot(entity);
     }
 
     private static DamageSource laser(ServerLevel level) {
