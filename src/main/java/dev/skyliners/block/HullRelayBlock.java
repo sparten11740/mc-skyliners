@@ -11,8 +11,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
 /**
- * The thrust relay set into the cabin wall beside a lamp it lights (a seatbelt sign, a jump light): passed off as the
- * skin around it, plated outside and lined inside like a whole panel (see {@link Lining}).
+ * The thrust relay set into the cabin wall beside a lamp it lights (a seatbelt sign, a jump light), or into a control
+ * jet's pod on a wing beside the jet it drives: passed off as the skin around it, plated outside and lined inside like
+ * a whole panel (see {@link Lining}).
  */
 public class HullRelayBlock extends ThrustRelayBlock {
     public HullRelayBlock(Properties properties) {

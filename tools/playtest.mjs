@@ -1337,6 +1337,34 @@ function checkNoFinsOverEngines() {
   expect(fins.length === 0, "airliner: nothing stands up above her wing over her engines", fins.slice(0, 12).join(" "));
 }
 
+// An airliner's control jets: how many she is built with, one on top of and one under each of the three stations on
+// each wing and each side of the tailplane; and how far aft of her flight deck the middle of her is, looked at from to
+// find them all, in blocks.
+const CONTROL_JETS = 24;
+const JETS_LOOKED_FROM = 90;
+
+// An airliner's control jets, on her wings and her tailplane, each stand in a pod fixed to the surface, its relay
+// plated like the pod's skin. With the fault each jet stood on the surface's thin lifting plates, its relay beside it,
+// floating over them with daylight under it.
+function checkControlJetsInPods() {
+  layDown("airliner");
+  const [autopilot] = must("find skyliners:autopilot 128 1 side=server").rows.map((row) => row.at_abs);
+  const cores = must("find skyliners:engine_core 128 8 side=server").rows.map((row) => row.at_abs);
+  const aft = Math.sign(cores.reduce((sum, core) => sum + core[2], 0) / cores.length - autopilot[2]);
+  must(`server tp @p ${autopilot[0]} ${autopilot[1]} ${autopilot[2] + aft * JETS_LOOKED_FROM}; wait ${CHUNKS_TICKS}t`);
+  const thrusters = must("find createpropulsion:creative_thruster 128 200 side=server").rows.map((row) => row.at_abs);
+  const jets = thrusters.map((at) => ({ at, facing: must(`block ${at.join(",")}`).props?.facing }))
+    .filter((jet) => jet.facing === "up" || jet.facing === "down");
+  const loose = jets.filter(({ at: [x, y, z], facing }) => {
+    const against = [x, facing === "down" ? y - 1 : y + 1, z];
+    return must(`block ${against.join(",")}`).id !== "skyliners:hull_relay";
+  });
+  must(`server tp @p 0 ${ground} 0`);
+  expect(jets.length === CONTROL_JETS, "airliner: she is built with her control jets on her wings and tailplane", `${jets.length} of ${CONTROL_JETS}`);
+  expect(loose.length === 0, "airliner: each control jet stands in a pod fixed to the wing, not floating over its plates",
+    loose.map(({ at }) => at.join(",")).join(" "));
+}
+
 // An airliner's stairs coming out: how long after their button is pressed they are part way out, swung down to their
 // slope with their lower sections still running down to the ground, in ticks; and how long someone stepped onto them
 // then is watched, in ticks.
@@ -7932,6 +7960,7 @@ const CHECKS = {
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
   "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },
+  "control-jets-in-pods": { run: checkControlJetsInPods, about: "an airliner's control jets on her wings and tailplane each stand in a pod fixed to the surface, not floating over it" },
   "no-fins-over-engines": { run: checkNoFinsOverEngines, about: "nothing of an airliner stands up above her wing over her engines, no fin with a slit in it" },
   "airstairs-solid-coming-out": { run: checkAirstairsSolidComingOut, about: "an airliner's stairs hold whoever steps onto them as they come out, before they are all the way down" },
   "slide-solid-coming-out": { run: checkSlideSolidComingOut, about: "an airliner's evacuation slide holds whoever steps onto it as it comes out, before it is firm" },

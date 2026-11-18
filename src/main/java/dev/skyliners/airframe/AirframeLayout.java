@@ -72,6 +72,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -141,6 +142,8 @@ public final class AirframeLayout implements Layout {
     /** Where along the tailplane and the wings the control jets stand, as shares of their half span: outboard of the engines. */
     private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
+    /** How long a control jet's pod is along the airliner, in blocks: its nose, the jets and their relays, its tail. */
+    private static final int JET_POD_LENGTH = 4;
     /**
      * The ailerons: the wings' lifting blocks from this share of their half span out to this share, aft of this share of
      * the chord. A lifting block turned over pushes so little against an airliner's weight that a real aileron's strip
@@ -2448,7 +2451,7 @@ public final class AirframeLayout implements Layout {
      * them when they are switched off or the airliner flies too slowly: jets on top of and under the outer tailplane
      * to pitch it (pushing the tail down lifts the nose), and on top of and under the outer wings to roll it, at a few
      * stations along each so they can hold the airliner against its engines. Each is a thruster pointing up or down
-     * with its own relay right behind it.
+     * with its own relay beside it, the pair at a station in a pod through the surface (see {@link #jetPair}).
      */
     private void controlJets() {
         if (palette.engine().isEmpty()) {
@@ -2477,31 +2480,65 @@ public final class AirframeLayout implements Layout {
         }
     }
 
-    /** A jet on top of the surface at (x, z) pushing down, and one under it pushing up, each with its relay. */
-    private void jetPair(int x, int z, BlockState down, BlockState up, AutopilotBlockEntity.Channel downChannel, AutopilotBlockEntity.Channel upChannel) {
-        int top = Integer.MIN_VALUE;
-        int bottom = Integer.MAX_VALUE;
-        for (int y = -64; y < 64 * scale; y++) {
-            if (has(x, y, z)) {
-                top = Math.max(top, y);
-                bottom = Math.min(bottom, y);
+    /**
+     * A jet on top of the surface at (x, z) pushing down and one under it pushing up, each with its relay, in a pod
+     * through the surface: a fairing a block wide and four long, its nose and tail cut back at 45 degrees, standing a
+     * row above the surface and a row below it and solid through it, so the jets are fixed to the surface rather than
+     * standing over its thin lifting plates with daylight under them. The top jet sits at the station and the bottom
+     * one a row aft, so each relay, inside the pod against its own jet, touches no other; both nozzles stay open to the
+     * air. None where something already stands in the pod's way.
+     */
+    private void jetPair(int x, int z, BlockState down, BlockState up, AutopilotBlockEntity.Channel downChannel,
+                         AutopilotBlockEntity.Channel upChannel) {
+        IntSummaryStatistics rows = IntStream.range(-1, JET_POD_LENGTH - 1).flatMap(along -> rowsAt(x, z + along)).summaryStatistics();
+        int top = rows.getMax();
+        int bottom = rows.getMin();
+        if (rows.getCount() == 0 || !podRoom(x, top + 1, z) || !podRoom(x, bottom - 1, z)) {
+            return;
+        }
+        for (int along = -1; along < JET_POD_LENGTH - 1; along++) {
+            for (int y = bottom; y <= top; y++) {
+                set(x, y, z + along, palette.hull());
             }
         }
-        if (top == Integer.MIN_VALUE) {
-            return;
-        }
-        jet(x, top + 1, z, down, downChannel);
-        jet(x, bottom - 1, z, up, upChannel);
+        podRow(x, top + 1, z, Half.TOP);
+        podRow(x, bottom - 1, z, Half.BOTTOM);
+        jet(new BlockPos(x, top + 1, z), down, new BlockPos(x, top, z), downChannel);
+        jet(new BlockPos(x, bottom - 1, z + 1), up, new BlockPos(x, bottom, z + 1), upChannel);
     }
 
-    private void jet(int x, int y, int z, BlockState thruster, AutopilotBlockEntity.Channel channel) {
-        if (has(x, y, z) || has(x, y, z + 1)) {
-            return;
+    /** The rows of the layout's blocks in the column at (x, z), lowest first. */
+    private IntStream rowsAt(int x, int z) {
+        return IntStream.range(-64, (int) (64 * scale)).filter(y -> has(x, y, z));
+    }
+
+    /** Whether a jet pod's row a block from the surface at (x, z) has room: nothing stands along it. */
+    private boolean podRoom(int x, int y, int z) {
+        return IntStream.range(-1, JET_POD_LENGTH - 1).noneMatch(along -> has(x, y, z + along));
+    }
+
+    /**
+     * A jet pod's row over or under the surface at (x, z): skin, its front and back blocks cut back at 45 degrees along
+     * the edge away from the surface (the half given), so the pod reads as one streamlined piece, not a box.
+     */
+    private void podRow(int x, int y, int z, Half half) {
+        BlockState fairing = SkylinersRegistry.AIRFRAME_FAIRING.get().defaultBlockState().setValue(FairingBlock.HALF, half);
+        set(x, y, z - 1, fairing.setValue(FairingBlock.FACING, Direction.NORTH));
+        for (int along = 0; along < JET_POD_LENGTH - 2; along++) {
+            set(x, y, z + along, palette.hull());
         }
-        set(x, y, z, thruster);
-        fullThrust(new BlockPos(x, y, z), EngineFlames.NONE);
-        set(x, y, z + 1, SkylinersRegistry.THRUST_RELAY.get().defaultBlockState());
-        jetRelays.computeIfAbsent(channel, ignored -> new ArrayList<>()).add(new BlockPos(x, y, z + 1));
+        set(x, y, z + JET_POD_LENGTH - 2, fairing.setValue(FairingBlock.FACING, Direction.SOUTH));
+    }
+
+    /**
+     * A control jet at its place, turned up to full, with its relay beside it, driven on a channel of the autopilot's:
+     * plated like the skin of the pod it stands in.
+     */
+    private void jet(BlockPos at, BlockState thruster, BlockPos relay, AutopilotBlockEntity.Channel channel) {
+        set(at.getX(), at.getY(), at.getZ(), thruster);
+        fullThrust(at, EngineFlames.NONE);
+        set(relay.getX(), relay.getY(), relay.getZ(), SkylinersRegistry.HULL_RELAY.get().defaultBlockState());
+        jetRelays.computeIfAbsent(channel, ignored -> new ArrayList<>()).add(relay);
     }
 
     /**
