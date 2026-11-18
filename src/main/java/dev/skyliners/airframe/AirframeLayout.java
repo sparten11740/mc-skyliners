@@ -2506,7 +2506,8 @@ public final class AirframeLayout implements Layout {
 
     /**
      * One engine: a round nacelle under the wing at span station x (negative to port), cut to its curve, the intake
-     * up front, the thrusters filling the middle of the exhaust face, and a pylon up to the wing. The intake's face is
+     * up front, the thrusters filling the middle of the exhaust face, and a pylon up to the wing, never past it: a
+     * ridge along the top of the nacelle as high as the wing, under it and ahead of it. The intake's face is
      * the cowl's skin round a mouth of intake blocks; the engine's core is told where it is, so the client can draw
      * the cowl's lip, the fan and its spinner over it, finer than blocks at any scale.
      */
@@ -2556,12 +2557,13 @@ public final class AirframeLayout implements Layout {
             });
         int pylonFrom = (int) Math.floor((front + 1.5) * scale);
         int pylonTo = (int) Math.floor((front + NACELLE_LENGTH - 1) * scale);
+        int pylonTop = (int) Math.ceil(wingY(Math.abs(x)) * scale);
         for (int z = pylonFrom; z <= pylonTo; z++) {
             int y = centreYb;
             while (has(centreX, y, z)) {
                 y++;
             }
-            for (int limit = y + (int) Math.ceil(3 * scale); y < limit && !has(centreX, y, z); y++) {
+            for (; y < pylonTop && !has(centreX, y, z); y++) {
                 set(centreX, y, z, palette.hull());
             }
         }

@@ -1319,6 +1319,24 @@ function pressStairsButton(button) {
   must(`server tp @p ${button[0] + 0.5 + dx * 1.5} ${button[1] - 1} ${button[2] + 0.5 + dz * 1.5}; wait 20t; use ${button.join(",")}; wait ${STAIRS_SWING_TICKS}t`);
 }
 
+// Over an airliner's engines: how far above an engine's core the top of the wing over it lies at most, and how far up
+// from there and along the nacelle either way from the core is looked at, in blocks.
+const ENGINE_WING_TOP = 6;
+const ENGINE_LOOK_UP = 8;
+const ENGINE_LOOK_ALONG = 16;
+
+// Nothing of an airliner stands up above her wing over her engines. With the fault each engine's pylon climbed up
+// through the wing, where the wing sits on the nacelle, and stood six blocks over it: a fin over every engine, with a
+// slit in it.
+function checkNoFinsOverEngines() {
+  layDown("airliner");
+  const cores = must("find skyliners:engine_core 160 8 side=server").rows.map((row) => row.at_abs);
+  expect(cores.length === 4, "airliner: she is built with four engines", `${cores.length} engines`);
+  const fins = cores.flatMap(([x, y, z]) => [...read([x, y + ENGINE_WING_TOP + 1, z - ENGINE_LOOK_ALONG],
+    [x, y + ENGINE_WING_TOP + ENGINE_LOOK_UP, z + ENGINE_LOOK_ALONG]).keys()]);
+  expect(fins.length === 0, "airliner: nothing stands up above her wing over her engines", fins.slice(0, 12).join(" "));
+}
+
 // An airliner's stairs coming out: how long after their button is pressed they are part way out, swung down to their
 // slope with their lower sections still running down to the ground, in ticks; and how long someone stepped onto them
 // then is watched, in ticks.
@@ -7914,6 +7932,7 @@ const CHECKS = {
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
   "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },
+  "no-fins-over-engines": { run: checkNoFinsOverEngines, about: "nothing of an airliner stands up above her wing over her engines, no fin with a slit in it" },
   "airstairs-solid-coming-out": { run: checkAirstairsSolidComingOut, about: "an airliner's stairs hold whoever steps onto them as they come out, before they are all the way down" },
   "slide-solid-coming-out": { run: checkSlideSolidComingOut, about: "an airliner's evacuation slide holds whoever steps onto it as it comes out, before it is firm" },
   "airstairs-mobs": { run: checkAirstairsMobs, about: "a hostile mob on an airliner's stairs does not hold them, an animal does" },
