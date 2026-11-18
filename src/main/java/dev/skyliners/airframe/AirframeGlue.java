@@ -12,7 +12,8 @@ import net.minecraft.world.phys.AABB;
  * structure to assemble. As it assembles her, Sable carries along every stretch of it whose spot lies among her blocks;
  * a stretch whose spot is in the open air beside them, over a wing, stayed standing in the world where she took off,
  * unseen, and would glue whatever was built there later into one. So once she is assembled, the glue she left there
- * goes: her own, marked with where her autopilot stood as she was built, so another airliner's beside her is left alone.
+ * goes: her own, marked with where her autopilot stood as she was built, so another airliner's beside her is left
+ * alone.
  */
 public final class AirframeGlue {
     /** The tag an airliner's own glue carries, followed by where her autopilot stood as she was built. */

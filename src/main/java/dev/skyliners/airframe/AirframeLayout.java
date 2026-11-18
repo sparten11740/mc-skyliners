@@ -1375,11 +1375,11 @@ public final class AirframeLayout implements Layout {
     }
 
     /**
-     * A sign hung on the cabin wall at a station on one side, in the first of the rows where the wall is plain skin, not
-     * a window, with open cabin in front of it: the skin behind it stays skin, cut to the hull's curve with the rest. Set
-     * into the hull itself, with a relay to light it, the sign stood out of the curve as a whole block and its relay as
-     * another, a pit beside them, half hiding the windows next to them. Adds the sign to the list and gives where it
-     * went, or null if no row had room.
+     * A sign hung on the cabin wall at a station on one side, in the first of the rows where the wall is plain skin,
+     * not a window, with open cabin in front of it: the skin behind it stays skin, cut to the hull's curve with the
+     * rest. Set into the hull itself, with a relay to light it, the sign stood out of the curve as a whole block and
+     * its relay as another, a pit beside them, half hiding the windows next to them. Adds the sign to the list and
+     * gives where it went, or null if no row had room.
      */
     @Nullable
     private BlockPos wallSign(int side, int z, int[] rows, BlockState sign, List<BlockPos> signs) {
@@ -3540,9 +3540,9 @@ public final class AirframeLayout implements Layout {
     }
 
     /**
-     * Adds a turret's place under the skin at a station, or the nearest within {@link #TURRET_WIGGLE} along her and
-     * across, toward her middle first on the side given (1 to her right, -1 to her left), so the two wings' turrets
-     * stay a mirror of each other; none if the skin is broken all round it.
+     * Adds a turret's place under the skin at a station, or the nearest within {@link #TURRET_WIGGLE}: along her
+     * first, then across, toward her middle before away from it on the side given (1 to her right, -1 to her left), so
+     * the two wings' turrets stay a mirror of each other; none if the skin is broken all round it.
      */
     private void underSkin(int x, int z, int side, List<BlockPos> turrets) {
         IntStream.rangeClosed(0, TURRET_WIGGLE).boxed()

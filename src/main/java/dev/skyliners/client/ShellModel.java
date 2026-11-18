@@ -303,7 +303,9 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             return x * out[0] + y * out[1] + z * out[2] > 0;
         }
 
-        /** Whether a face looks out of the hull: a cut face (no side), or a side whose neighbour lies beyond the cut. */
+        /**
+         * Whether a face looks out of the hull: a cut face (no side), or a side whose neighbour lies beyond the cut.
+         */
         private static boolean looksOut(@Nullable Direction side, double[] onCut, double[] out) {
             return side == null || beyondCut(side, onCut, out);
         }

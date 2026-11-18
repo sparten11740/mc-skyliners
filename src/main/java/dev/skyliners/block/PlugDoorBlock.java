@@ -163,8 +163,8 @@ public class PlugDoorBlock extends BaseEntityBlock {
     }
 
     /**
-     * Open, the doorway is clear: the panel stands outside beside it, where blocks of its own stop whoever walks into it
-     * (see {@link ParkedPanelBlock}).
+     * Open, the doorway is clear: the panel stands outside beside it, where blocks of its own stop whoever walks into
+     * it (see {@link ParkedPanelBlock}).
      */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {

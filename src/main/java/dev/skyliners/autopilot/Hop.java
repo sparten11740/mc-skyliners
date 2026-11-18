@@ -11,11 +11,12 @@ import net.minecraft.util.Mth;
 /**
  * Hopping a stuck airliner free: with its engines running and its brakes off, yet standing still, held by whatever it
  * has run into or sunk into. Wherever it rests: on the ground, on trees, on a roof, its nose out over a drop; standing
- * still for a while, it rests on something, as no airliner stands still in the air. Asked from the autopilot's settings screen, the control jets that push up
- * (under the wings and the tailplane) fire for a moment, taking the weight off the wheels so the engines can move it
- * again (the autopilot sets them, see {@link AutopilotBlockEntity}). Those jets all push from behind the centre of
- * mass, so at full together they would tip the airliner onto its nose: the tailplane's hold the nose where it stood,
- * under it at full while the nose stays up, eased off as it dips and pushing the tail down past that.
+ * still for a while, it rests on something, as no airliner stands still in the air. Asked from the autopilot's settings
+ * screen, the control jets that push up (under the wings and the tailplane) fire for a moment, taking the weight off
+ * the wheels so the engines can move it again (the autopilot sets them, see {@link AutopilotBlockEntity}). Those jets
+ * all push from behind the centre of mass, so at full together they would tip the airliner onto its nose: the
+ * tailplane's hold the nose where it stood, under it at full while the nose stays up, eased off as it dips and pushing
+ * the tail down past that.
  *
  * <p>Stuck means slower than {@link #STILL} for {@link #STUCK_TICKS} ticks with the engines straining. A burst lasts
  * {@link #BURST} ticks, and goes on for as long as the button is held (see {@link #keep}), so the airliner can be
@@ -25,7 +26,10 @@ import net.minecraft.util.Mth;
  * airliner over and over until it is free.
  */
 final class Hop {
-    /** Slower than this, in blocks a second, the airliner stands still; this many ticks of it, straining, and it is stuck. */
+    /**
+     * Slower than this, in blocks a second, the airliner stands still; this many ticks of it, straining, and it is
+     * stuck.
+     */
     private static final double STILL = 1;
     private static final int STUCK_TICKS = 40;
     /**

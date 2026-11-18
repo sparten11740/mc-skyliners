@@ -1736,14 +1736,14 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Keeps the airliner loaded while she is under way, flying or rolling out of her autopilot's landing, and lets her go
-     * again once she has come to rest. Sable lets go of a ship once the land under all of her is no longer simulated
+     * Keeps the airliner loaded while she is under way, flying or rolling out of her autopilot's landing, and lets her
+     * go again once she has come to rest. Sable lets go of a ship once the land under all of her is no longer simulated
      * round anyone, and an airliner flying on with nobody aboard soon outran everyone: she froze in the air where she
-     * was, gone from sight, and came back only as someone caught up, so seen from a ship flying after her she blinked in
-     * and out of view. Kept loaded, she flies on until she lands by herself (see {@link #watchUnattended}) and has
-     * rolled to a stop, rather than freezing as her wheels touch. At rest she loads and unloads with the land round her,
-     * which takes in all of her round anyone near her, so one hung on a ledge over a drop does not cost the server her
-     * physics for good. Looked at every {@link #ABOARD_LOOK} ticks; Sable is told only of a change, and once after
+     * was, gone from sight, and came back only as someone caught up, so seen from a ship flying after her she blinked
+     * in and out of view. Kept loaded, she flies on until she lands by herself (see {@link #watchUnattended}) and has
+     * rolled to a stop, rather than freezing as her wheels touch. At rest she loads and unloads with the land round
+     * her, which takes in all of her round anyone near her, so one hung on a ledge over a drop does not cost the server
+     * her physics for good. Looked at every {@link #ABOARD_LOOK} ticks; Sable is told only of a change, and once after
      * loading.
      */
     private void keepLoadedUnderWay(ServerLevel level, boolean underWay) {

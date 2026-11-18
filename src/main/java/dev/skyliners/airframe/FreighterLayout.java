@@ -585,8 +585,8 @@ public final class FreighterLayout extends HullLayout {
 
     /**
      * Whether a block stands on her canopy's glass, along the rim of her cockpit's nose: no floor light goes there, as
-     * the canopy is drawn as one smooth dome over its blocks, and a lamp lying on them hung in the air under it. Nothing
-     * spawns on the glass, so the spot needs none.
+     * the canopy is drawn as one smooth dome over its blocks, and a lamp lying on them hung in the air under it.
+     * Nothing spawns on the glass, so the spot needs none.
      */
     private boolean onCanopy(BlockPos at) {
         return stateAt(at.getX(), at.getY() - 1, at.getZ()).getBlock() instanceof DimmingGlassBlock;
@@ -686,8 +686,8 @@ public final class FreighterLayout extends HullLayout {
     /**
      * Whether a point on one of her turrets' domes, in metres, lies on one of its ribs: four running up it from her
      * hull to its crown, where they meet, square to the blocks as her canopy's struts are, so each runs straight along
-     * a row of them. A dome stands only a few blocks proud of her hull, so a ring of ribs round its foot would hide most
-     * of its glass. Her gunner aims from her cannon's sight over the dome, so the ribs stand in nobody's way.
+     * a row of them. A dome stands only a few blocks proud of her hull, so a ring of ribs round its foot would hide
+     * most of its glass. Her gunner aims from her cannon's sight over the dome, so the ribs stand in nobody's way.
      */
     private boolean onDomeRib(double x, double z) {
         return Math.min(Math.abs(x), Math.abs(z)) * scale < 0.5;

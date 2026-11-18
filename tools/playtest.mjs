@@ -7124,9 +7124,9 @@ function checkAirlinerUnattendedFarOff() {
 
 // A cabin archway seen straight on: how far out from its wall the camera stands, in blocks; how far round each spot its
 // brightness is read, in blocks; where in its two upper corners, beside the curve, the spots are, in blocks in from its
-// outer edges and down from its top, clear of the seam along it; how bright a spot must be to be the cream wall there and not something in front of
-// it, a luma from 0 to 255; and how far apart the brightest and darkest spot of a corner may be, which the texture's
-// own speckle stays well within.
+// outer edges and down from its top, clear of the seam along it; how bright a spot must be to be the cream wall there
+// and not something in front of it, a luma from 0 to 255; and how far apart the brightest and darkest spot of a corner
+// may be, which the texture's own speckle stays well within.
 const ARCH_LOOK_OUT = 4.5;
 const ARCH_SPOT = 0.04;
 const ARCH_ACROSS = [0.1, 0.4, 0.7];
