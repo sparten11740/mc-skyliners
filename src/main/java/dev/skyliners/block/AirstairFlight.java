@@ -52,6 +52,8 @@ public final class AirstairFlight {
     /** A stringer's width, and how much narrower each nested section is on either side. */
     private static final float STRINGER_WIDTH = 2 * PX;
     private static final float NEST_INSET = PX;
+    /** How much shallower each nested section's stringers are, top and bottom, so no faces of two meet. */
+    private static final float NEST_SHALLOWER = PX / 4;
     /** How deep a stringer is, square to the slope, and how far its top edge stands over the treads' nosings. */
     private static final float STRINGER_DEPTH = 6.5F * PX;
     private static final float STRINGER_RISE = 0.5F * PX;
@@ -90,6 +92,11 @@ public final class AirstairFlight {
     private static final float RAIL_HEIGHT = 14 * PX;
     private static final float RAIL_SIZE = 2 * PX;
     private static final float POST_SIZE = 1.25F * PX;
+    /** How much thinner and lower each nested section's rail lies than the one it nests in while down. */
+    private static final float NESTED_RAIL_THINNER = PX / 4;
+    private static final float NESTED_RAIL_LOWER = PX / 2;
+    /** How thick the lug fixing a post to a stringer it stands clear of is. */
+    private static final float LUG_THICKNESS = PX;
     /** Where the platform's post stands, out from the hull's face. */
     private static final float PLATFORM_POST = 3 * PX;
     /** The bay's mouth is the row under the sill: y -2 to -1. The folded flight passes it with this much to spare. */
@@ -208,7 +215,7 @@ public final class AirstairFlight {
         float offset = 0;
         for (int section = 0; section < motion.sections(); section++) {
             offset = Math.min(extension, section * (treads - 1F));
-            section(nest, section, offset, treads, motion.width(), coverEnd, RAIL_HEIGHT * up, sink);
+            section(nest, section, offset, treads, motion.width(), coverEnd, up, sink);
             coverEnd = offset + treads;
         }
         if (!motion.belly() && motion.sillGap() >= LIP_LEAST) {
@@ -299,7 +306,7 @@ public final class AirstairFlight {
     private static void feet(Matrix4f nest, int section, float offset, int treads, int width, float down, Sink sink) {
         Matrix4f pose = new Matrix4f(nest).translate(0, -offset / 2, offset / 2);
         float inset = section * NEST_INSET;
-        float shrink = section * PX / 4;
+        float shrink = section * NEST_SHALLOWER;
         float depth = STRINGER_DEPTH - 2 * shrink;
         // The bottom tread's stringers' lowest corner, at the flight's end: its underside meets the end's cut there.
         float u = treads / 2F - depth / ROOT_TWO;
@@ -315,17 +322,17 @@ public final class AirstairFlight {
 
     /**
      * One section of a flight so many blocks wide, run out this many treads down the slope from where it nests: its
-     * stringers, the treads not hidden under the section above, and its handrails, raised this high. The top section
-     * also has the platform: the top tread on beams level with the sill, and the handrail's post at the hull.
+     * stringers, the treads not hidden under the section above, and its handrails, risen this far (0 down, 1 up). The
+     * top section also has the platform: the top tread on beams level with the sill, and the handrail's post at the
+     * hull.
      */
-    private static void section(Matrix4f nest, int section, float offset, int treads, int width, float coverEnd, float rails, Sink sink) {
+    private static void section(Matrix4f nest, int section, float offset, int treads, int width, float coverEnd, float up, Sink sink) {
         Matrix4f pose = new Matrix4f(nest).translate(0, -offset / 2, offset / 2);
         float inset = section * NEST_INSET;
         float left = inset;
         float right = width - inset;
         float inner = STRINGER_WIDTH;
-        // Each nested section a little shallower top and bottom, so no faces of two meet.
-        float shrink = section * PX / 4;
+        float shrink = section * NEST_SHALLOWER;
         if (section == 0) {
             for (float side : new float[]{left, right - inner}) {
                 sink.box(pose, new Vector3f(side, -BEAM_DEPTH, 0), new Vector3f(side + inner, STRINGER_TOP, 0.5F), Part.STRINGER);
@@ -342,10 +349,8 @@ public final class AirstairFlight {
                 }
             }
         }
-        float drop = section * PX / 2;
-        for (float middle : new float[]{left + inner / 2, right - inner / 2}) {
-            handrail(pose, section, middle, offset, treads, coverEnd, rails - drop, sink);
-        }
+        handrail(pose, section, left + inner / 2, inner / 2, offset, treads, coverEnd, up, sink);
+        handrail(pose, section, right - inner / 2, width - inner / 2, offset, treads, coverEnd, up, sink);
     }
 
     /** A tread across a flight so many blocks wide: its plate, and the yellow nosing along its front edge. */
@@ -363,24 +368,40 @@ public final class AirstairFlight {
     }
 
     /**
-     * A handrail along one side of a section: a post at every other tread and the last, and the rail along their tops,
-     * where the section runs out past the one it nests in (the top section all along, from its platform post). Down,
-     * the rail lies on the stringer's top.
+     * A handrail along one side of a section, over the middle of its stringer ({@code stringer}, across) and risen this
+     * far: a post at every other tread and the last, and the rail along their tops, where the section runs out past the
+     * one it nests in (the top section all along, from its platform post). Down, the rail lies on its own stringer's
+     * top, a nested section's a little lower and thinner than the one it nests in. Rising, it moves out to the top
+     * section's line ({@code line}, across), height and thickness, so once up the rails of all the sections run on as
+     * one: each ran on a little further in and lower than the one above, which ended in a stub in the air where they
+     * met. A nested section's posts stand on that line too, each fixed to its own stringer by a lug where it stands
+     * clear of it.
      */
-    private static void handrail(Matrix4f pose, int section, float middle, float offset, int treads, float coverEnd, float height, Sink sink) {
-        float size = RAIL_SIZE - section * PX / 4;
-        // The rail's centre line: over the stringer's top edge, which runs along the nosings.
+    private static void handrail(Matrix4f pose, int section, float stringer, float line, float offset, int treads, float coverEnd, float up,
+                                 Sink sink) {
+        float down = 1 - up;
+        float middle = stringer + (line - stringer) * up;
+        float size = RAIL_SIZE - section * NESTED_RAIL_THINNER * down;
+        float height = RAIL_HEIGHT * up - section * NESTED_RAIL_LOWER * down;
+        boolean risen = height > 0.01F;
+        // The rail's centre line: over the top section's stringers' top edge, which runs along the nosings.
         float lift = STRINGER_TOP + height + size / 2;
+        // How far this section's stringers' top edge lies under the top section's, upright.
+        float sunk = section * NEST_SHALLOWER * ROOT_TWO;
         float start = section == 0 ? 1 : Math.max(1, (float) Math.floor(coverEnd - offset));
         if (section == 0) {
-            post(pose, middle, PLATFORM_POST, STRINGER_TOP, height, sink);
+            if (risen) {
+                post(pose, middle, PLATFORM_POST, STRINGER_TOP, STRINGER_TOP + height, sink);
+            }
             bar(pose, new Vector3f(middle, lift, PLATFORM_POST), new Vector3f(middle, lift, 0.5F), size, sink);
         }
         for (int tread = 1; tread <= treads; tread++) {
             float front = tread / 2F;
             boolean shows = section == 0 || offset + tread > coverEnd;
-            if (shows && (tread % 2 == 0 || tread == treads)) {
-                post(pose, middle, front, 0.5F - front + STRINGER_TOP, height, sink);
+            if (risen && shows && (tread % 2 == 0 || tread == treads)) {
+                float foot = 0.5F - front + STRINGER_TOP - sunk;
+                post(pose, middle, front, foot, foot + sunk + height, sink);
+                lug(pose, middle, stringer, front, foot, sink);
             }
             if (tread > start) {
                 float back = front - 0.5F;
@@ -389,13 +410,23 @@ public final class AirstairFlight {
         }
     }
 
-    /** A post standing on a stringer's top, up to the rail. */
-    private static void post(Matrix4f pose, float middle, float u, float foot, float height, Sink sink) {
-        if (height <= 0.01F) {
+    /** A post at a point along a stringer, from its foot up to the rail, heights over the sill. */
+    private static void post(Matrix4f pose, float middle, float u, float foot, float top, Sink sink) {
+        float half = POST_SIZE / 2;
+        sink.box(pose, new Vector3f(middle - half, foot, u - half), new Vector3f(middle + half, top, u + half), Part.POST);
+    }
+
+    /**
+     * The lug fixing a post standing out on the rail's line to the stringer under it, its top at the stringer's top
+     * edge: none where the post stands on the stringer.
+     */
+    private static void lug(Matrix4f pose, float post, float stringer, float u, float top, Sink sink) {
+        if (Math.abs(post - stringer) <= (POST_SIZE + STRINGER_WIDTH) / 2) {
             return;
         }
         float half = POST_SIZE / 2;
-        sink.box(pose, new Vector3f(middle - half, foot, u - half), new Vector3f(middle + half, foot + height, u + half), Part.POST);
+        sink.box(pose, new Vector3f(Math.min(post, stringer), top - LUG_THICKNESS, u - half), new Vector3f(Math.max(post, stringer), top, u + half),
+            Part.POST);
     }
 
     /**
