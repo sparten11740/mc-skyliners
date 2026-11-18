@@ -57,7 +57,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * never vaporises a block with a block entity (a chest, a sign), one that cannot be broken, a liquid, or another
  * airliner's blocks; it leaves blocks alone wherever {@code mobGriefing} is off, and asks first, as a player breaking
  * it would, so a claim protecting the land keeps it. What it looks at is bounded: a few rays a tick (see
- * {@link LaserAim}) and a look for mobs every {@link #MOB_LOOK_TICKS}.
+ * {@link LaserLook}), none while it holds its fire at blocks, and a look for mobs every {@link #MOB_LOOK_TICKS}.
  */
 public class LaserTurretBlockEntity extends BlockEntity {
     /** How long the turret takes to drop out of its hatch or fold back in, in ticks. */
@@ -66,6 +66,8 @@ public class LaserTurretBlockEntity extends BlockEntity {
     private static final double MIN_SPEED = 2;
     /** How often it looks for hostile mobs in the way, in ticks. */
     private static final int MOB_LOOK_TICKS = 10;
+    /** How often it looks how high it is over the ground and whether her engines run, in ticks. */
+    private static final int HOLD_LOOK_TICKS = 10;
     /** How much a bolt hurts a hostile mob, in half hearts: two or three bolts for a zombie. */
     private static final float DAMAGE = 9;
     /**
@@ -111,7 +113,6 @@ public class LaserTurretBlockEntity extends BlockEntity {
     private boolean holding = true;
     /** How far out of its hatch the turret is, in ticks of {@link #DEPLOY_TICKS}. */
     private int deployed;
-    private int sinceBolt;
     /** Where it looks along the way ahead. */
     private final LaserAim aim = new LaserAim();
     /**
@@ -182,25 +183,35 @@ public class LaserTurretBlockEntity extends BlockEntity {
     /**
      * Out and armed: looks along the way ahead, and fires on its beat. Low over the ground it looks all round too,
      * every other tick, so on the ground it clears whatever stands about her as well as what is ahead: a house under
-     * her wing, a tree by her tail.
+     * her wing, a tree by her tail. While it holds its fire at blocks it looks only for mobs. Its looks and its beat
+     * fall on ticks of its own, so an airliner's turrets take turns rather than all firing on one tick.
      */
     private void fly(ServerLevel level) {
         SableFlight.State state = SableFlight.read(this, nose());
+        boolean justArmed = !outlined;
         if (state == null || !outline(level)) {
             return;
         }
         Vec3 muzzle = muzzle(level);
-        watchHold(level, muzzle);
+        if (justArmed || onBeat(level, HOLD_LOOK_TICKS)) {
+            watchHold(level, muzzle);
+        }
         Vec3 path = state.velocity().length() > MIN_SPEED ? state.velocity().normalize() : state.nose();
         LaserLook.Lookout look = new LaserLook.Lookout(muzzle, path, state.right(), state.up(), SkylinersConfig.LASER_RANGE.get());
-        (low && level.getGameTime() % 2 == 0 ? ring : aim).sweep(level, look);
-        if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), MOB_LOOK_TICKS) == 0) {
+        if (clearing(level)) {
+            (low && level.getGameTime() % 2 == 0 ? ring : aim).sweep(level, look);
+        }
+        if (onBeat(level, MOB_LOOK_TICKS)) {
             quarry = quarry(level, look);
         }
-        if (++sinceBolt >= 20 / SkylinersConfig.LASER_BOLTS_PER_SECOND.get()) {
-            sinceBolt = 0;
+        if (onBeat(level, 20 / SkylinersConfig.LASER_BOLTS_PER_SECOND.get())) {
             fire(level, look);
         }
+    }
+
+    /** Whether this tick is one of the turret's own, once every so many: each turret's fall on ticks of their own. */
+    private boolean onBeat(Level level, int every) {
+        return Math.floorMod(level.getGameTime() + worldPosition.hashCode(), every) == 0;
     }
 
     /** Whether it may fire at blocks: not holding its fire, and only where mobs may change the land. */
@@ -223,6 +234,8 @@ public class LaserTurretBlockEntity extends BlockEntity {
         boolean hold = low && !enginesRunning();
         if (hold != holding) {
             holding = hold;
+            aim.forget();
+            ring.forget();
             changed();
         }
     }
