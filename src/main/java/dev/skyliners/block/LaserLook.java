@@ -39,6 +39,14 @@ abstract class LaserLook {
      */
     private static final int SPREAD = 3;
     private static final int SPREAD_NEAR = 2;
+    /** Those reaches in the order they are tried. */
+    private static final int[] SPREAD_REACHES = {SPREAD, SPREAD_NEAR};
+    /**
+     * How far under her wheels' hubs, where the lowest rays run, the clearing still spreads, in blocks: down past the
+     * bottom of her tires, so what stands lower than the rays, the stumps of a wall or a house it has cut down, goes
+     * too, as far down as the floor it is given lets it.
+     */
+    private static final double STUMPS = 3;
     /** The most blocks waiting to be fired at as the clearing spreads, so a cliff never keeps more than this many. */
     private static final int MOST_SPREAD = 96;
     /** The ways round a block the clearing spreads: to its faces, its edges and its corners. */
@@ -60,7 +68,7 @@ abstract class LaserLook {
      * The next ray of the sweep, the obstacles this sweep has found so far, and the last whole sweep's, nearest first.
      */
     private int next;
-    private final List<Obstacle> sweep = new ArrayList<>();
+    private final List<Obstacle> found = new ArrayList<>();
     private List<Obstacle> obstacles = List.of();
     /** The blocks the clearing spreads to next, oldest first, so the hole grows evenly round where it started. */
     private final Deque<BlockPos> spreading = new ArrayDeque<>();
@@ -94,11 +102,6 @@ abstract class LaserLook {
         return low + (high - low) * row / (ROWS - 1);
     }
 
-    /** The height of the bottom of the airliner's wheels in the world: a block and a half under the lowest rays. */
-    double wheels(Lookout look) {
-        return look.muzzle().add(look.up().scale(low - WHEEL_HUBS - 1)).y;
-    }
-
     /** How many rays a whole sweep casts. */
     protected abstract int rays();
 
@@ -127,15 +130,15 @@ abstract class LaserLook {
         BlockHitResult hit = level.clip(new ClipContext(ray.from(), ray.from().add(ray.way().scale(range)), ClipContext.Block.COLLIDER,
             ClipContext.Fluid.NONE, CollisionContext.empty()));
         if (hit.getType() == HitResult.Type.BLOCK && !SableFlight.aboard(level, Vec3.atCenterOf(hit.getBlockPos()))) {
-            sweep.add(new Obstacle(hit.getBlockPos(), hit.getLocation().distanceTo(ray.from())));
+            found.add(new Obstacle(hit.getBlockPos(), hit.getLocation().distanceTo(ray.from())));
         }
     }
 
     /** A whole sweep done: its obstacles are the ones fired at, nearest first, and the next sweep starts. */
     private void finish() {
-        sweep.sort(Comparator.comparingDouble(Obstacle::distance));
-        obstacles = List.copyOf(sweep);
-        sweep.clear();
+        found.sort(Comparator.comparingDouble(Obstacle::distance));
+        obstacles = List.copyOf(found);
+        found.clear();
         next = 0;
         swept();
     }
@@ -157,36 +160,42 @@ abstract class LaserLook {
 
     /**
      * A block vaporised: the clearing spreads every way round it, to the blocks in the airliner's way just past the
-     * bite, as long as there are not too many waiting already.
+     * bite, or under it as far as her tires reach, standing above the floor (a height in the world), as long as there
+     * are not too many waiting already.
      */
-    void spread(Level level, BlockPos struck, Lookout look) {
+    void spread(Level level, BlockPos struck, Lookout look, double floor) {
         for (BlockPos step : AROUND) {
-            BlockPos next = spreadTo(level, look, struck, step);
-            if (next != null && spreading.size() < MOST_SPREAD) {
-                spreading.addLast(next);
+            BlockPos to = spreadTo(level, look, struck, step, floor);
+            if (to != null && spreading.size() < MOST_SPREAD) {
+                spreading.addLast(to);
             }
         }
     }
 
     /**
      * Where the clearing spreads to one way from a block vaporised: {@link #SPREAD} out, or {@link #SPREAD_NEAR} where
-     * that is open, whichever stands in the airliner's way; null for neither.
+     * that is open, whichever stands in the airliner's way, or under it down to the floor; null for neither.
      */
     @Nullable
-    private BlockPos spreadTo(Level level, Lookout look, BlockPos struck, BlockPos step) {
-        for (int reach : new int[]{SPREAD, SPREAD_NEAR}) {
+    private BlockPos spreadTo(Level level, Lookout look, BlockPos struck, BlockPos step, double floor) {
+        for (int reach : SPREAD_REACHES) {
             BlockPos at = struck.offset(step.multiply(reach));
-            if (inWay(look, Vec3.atCenterOf(at)) && !level.getBlockState(at).isAir()) {
+            if (at.getY() + 1 > floor && underOrInWay(look, Vec3.atCenterOf(at)) && !level.getBlockState(at).isAir()) {
                 return at;
             }
         }
         return null;
     }
 
+    /** Whether a point lies in the airliner's way, or under it no further than {@link #STUMPS} below. */
+    private boolean underOrInWay(Lookout look, Vec3 point) {
+        return inWay(look, point) || inWay(look, point.add(look.up().scale(STUMPS)));
+    }
+
     /** Forgets what it found and where the clearing was spreading to, as the laser is disarmed or it stops looking. */
     void forget() {
         spreading.clear();
-        sweep.clear();
+        found.clear();
         obstacles = List.of();
         next = 0;
     }

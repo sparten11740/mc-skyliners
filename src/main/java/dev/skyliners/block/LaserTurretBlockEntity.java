@@ -5,7 +5,9 @@ import dev.skyliners.SkylinersConfig;
 import dev.skyliners.SkylinersRegistry;
 import dev.skyliners.autopilot.AutopilotBlockEntity;
 import dev.skyliners.compat.SableFlight;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -40,14 +43,15 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * whatever lies in the assembled airliner's flight path ahead of each (where it is going, or, standing still, where its
  * nose points): hostile mobs first, each bolt hurting one, and otherwise the nearest block in the way, each bolt
  * vaporising a bite round it. On the ground each looks all round it too, so what stands about her, under a wing or by
- * her tail, is cleared as well as what is in front of her. Each bolt is a beam drawn on every client
- * near (see the client's {@code LaserBolts}), with sparks where it strikes and a hiss.
+ * her tail, is cleared as well as what is in front of her. Each bolt is a beam drawn on every client near (see the
+ * client's {@code LaserBolts}), with sparks where it strikes and a hiss.
  *
  * <p>Low down with the engines idle it holds its fire at blocks, so it never digs into the runway it stands on: below
  * {@link #HOLD_BELOW} blocks over the ground it shoots only hostile mobs, until it is above {@link #CLEAR_ABOVE} again
  * or the engines run (its switch shows which, see {@link LaserSwitchBlockEntity}). With the engines pushing the
  * airliner along, or at whatever stands in its way, it clears the way however low it is. It never vaporises a block
- * standing no higher than the bottom of the airliner's wheels, so the runway under it is safe either way.
+ * standing no higher than the ground under the airliner's lowest wheel, her nose up as she lifts off or not, so the
+ * runway under her is safe either way.
  *
  * <p>It never fires at players, villagers, pets or any mob that is not hostile, nor at anything aboard an airliner. It
  * never vaporises a block with a block entity (a chest, a sign), one that cannot be broken, a liquid, or another
@@ -80,8 +84,24 @@ public class LaserTurretBlockEntity extends BlockEntity {
      */
     private static final double HOLD_BELOW = 15;
     private static final double CLEAR_ABOVE = 25;
-    /** A block is vaporised only standing at least this much above the bottom of the airliner's wheels, in blocks. */
+    /** A block is vaporised only standing at least this much above the ground under her wheels, in blocks. */
     private static final double ABOVE_WHEELS = 0.5;
+    /**
+     * How far out from the middle of the airliner her wheels are looked for along the bottom of her, in blocks to
+     * either side: past her wing gear, short of her engines.
+     */
+    private static final int WHEELS_ACROSS = 16;
+    /**
+     * How far below her lowest row of blocks, the wheels' mounts, the bottom of her tires is at least, in blocks:
+     * further as her suspension lets them down.
+     */
+    private static final double TIRES_BELOW = 1;
+    /**
+     * How far above the bottom of her lowest tire as reckoned the ground under it is looked for, and how far below, in
+     * blocks: round where her suspension lets it down to, and no further, so a roof over her is never taken for it.
+     */
+    private static final int GROUND_ABOVE = 2;
+    private static final int GROUND_BELOW = 8;
     /** How far below the turret's block the muzzle is once it is out, and how far forward of its middle, in blocks. */
     private static final double MUZZLE_DROP = 0.6;
     private static final double MUZZLE_FORWARD = 0.5;
@@ -92,16 +112,19 @@ public class LaserTurretBlockEntity extends BlockEntity {
     /** How far out of its hatch the turret is, in ticks of {@link #DEPLOY_TICKS}. */
     private int deployed;
     private int sinceBolt;
-    /**
-     * Where it looks along the way ahead, and, on the ground, all round: what it saw all round forgotten once she is up
-     * and away, as it is soon far off, never to be fired at as she next comes down.
-     */
+    /** Where it looks along the way ahead. */
     private final LaserAim aim = new LaserAim();
+    /**
+     * Where it looks all round on the ground: what it saw forgotten once she is up and away, as it is soon far off,
+     * never to be fired at as she next comes down.
+     */
     private final LaserRing ring = new LaserRing();
     /** Whether it is low over the ground, on it or nearly, as it last looked: there it looks all round too. */
     private boolean low = true;
     /** Whether the airliner has been measured round the turret since it was armed. */
     private boolean outlined;
+    /** Where the bottom of each of her tires is from the muzzle, as she was measured. */
+    private List<Tire> tires = List.of();
     /** The hostile mob it fires at next, if any. */
     @Nullable
     private LivingEntity quarry;
@@ -180,6 +203,11 @@ public class LaserTurretBlockEntity extends BlockEntity {
         }
     }
 
+    /** Whether it may fire at blocks: not holding its fire, and only where mobs may change the land. */
+    private boolean clearing(ServerLevel level) {
+        return !holding && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+    }
+
     /**
      * Notes whether it is low over the ground, where it looks all round too, and holds the fire at blocks below
      * {@link #HOLD_BELOW} over the ground and lets it go again above {@link #CLEAR_ABOVE}, over ground not loaded too,
@@ -217,9 +245,64 @@ public class LaserTurretBlockEntity extends BlockEntity {
             }
             aim.outline(blocks, worldPosition, nose(), worldPosition.getY() - MUZZLE_DROP);
             ring.outline(blocks, worldPosition, nose(), worldPosition.getY() - MUZZLE_DROP);
+            tires = tires(level, blocks);
             outlined = true;
         }
         return true;
+    }
+
+    /** The bottom of a tire from the muzzle, in the airliner's own frame: along her nose, to her right and up. */
+    private record Tire(double ahead, double right, double up) {
+    }
+
+    /**
+     * Where the bottom of each of her tires is from the muzzle: under each block along the bottom of her, near her
+     * middle, which with the gear down are the wheels' mounts. None found, as with the gear up, the bottom of her
+     * straight under the muzzle stands in for them.
+     */
+    private List<Tire> tires(ServerLevel level, BoundingBox blocks) {
+        Direction nose = nose();
+        Direction across = nose.getClockWise();
+        double up = blocks.minY() - TIRES_BELOW - (worldPosition.getY() - MUZZLE_DROP);
+        int middleX = (blocks.minX() + blocks.maxX()) / 2;
+        int middleZ = (blocks.minZ() + blocks.maxZ()) / 2;
+        int outX = across.getAxis() == Direction.Axis.X ? WHEELS_ACROSS : blocks.maxX() - middleX + 1;
+        int outZ = across.getAxis() == Direction.Axis.Z ? WHEELS_ACROSS : blocks.maxZ() - middleZ + 1;
+        List<Tire> found = new ArrayList<>();
+        for (BlockPos at : BlockPos.betweenClosed(middleX - outX, blocks.minY(), middleZ - outZ, middleX + outX, blocks.minY(), middleZ + outZ)) {
+            if (!level.getBlockState(at).isAir()) {
+                int x = at.getX() - worldPosition.getX();
+                int z = at.getZ() - worldPosition.getZ();
+                found.add(new Tire(x * nose.getStepX() + z * nose.getStepZ() - MUZZLE_FORWARD, x * across.getStepX() + z * across.getStepZ(), up));
+            }
+        }
+        return found.isEmpty() ? List.of(new Tire(0, 0, up)) : List.copyOf(found);
+    }
+
+    /**
+     * The height of the ground under the airliner's lowest wheel, however she is pitched or banked: her rear wheels as
+     * she lifts her nose off the runway, where the plane of her wheels under a turret behind them would run down into
+     * it. Her tires reach below their mounts by however far her suspension lets them, so the ground they stand on is
+     * measured, looked for down from just over them, not reckoned from her blocks; where none is found near them, in
+     * the air or over ground not loaded, the bottom of the tire as reckoned.
+     */
+    private double ground(ServerLevel level, LaserLook.Lookout look) {
+        Vec3 nose = look.up().cross(look.right());
+        Vec3 lowest = tires.stream()
+            .map(tire -> look.muzzle().add(nose.scale(tire.ahead())).add(look.right().scale(tire.right())).add(look.up().scale(tire.up())))
+            .min(Comparator.comparingDouble(Vec3::y))
+            .orElse(look.muzzle());
+        BlockPos under = BlockPos.containing(lowest);
+        if (!level.hasChunkAt(under)) {
+            return lowest.y;
+        }
+        for (BlockPos at = under.above(GROUND_ABOVE); at.getY() >= under.getY() - GROUND_BELOW; at = at.below()) {
+            VoxelShape shape = level.getBlockState(at).getCollisionShape(level, at);
+            if (!shape.isEmpty()) {
+                return at.getY() + shape.max(Direction.Axis.Y);
+            }
+        }
+        return lowest.y;
     }
 
     /**
@@ -233,27 +316,29 @@ public class LaserTurretBlockEntity extends BlockEntity {
             bolt(level, look.muzzle(), struck);
             return;
         }
-        if (holding || !level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+        if (!clearing(level)) {
             return;
         }
-        double floor = aim.wheels(look) + ABOVE_WHEELS;
+        double floor = ground(level, look) + ABOVE_WHEELS;
         if (!cut(level, aim, look, floor) && low) {
             cut(level, ring, look, floor);
         }
     }
 
     /**
-     * Vaporises the next block one look has found, standing above the floor (a height in the world), the clearing
-     * spreading round it; whether one went.
+     * Vaporises the next block one look has found that may go, standing above the floor (a height in the world), the
+     * clearing spreading round it; whether one went. Those that may not are passed over in the same bolt, the ground
+     * far off where a level ray meets it among them, so none of its bolts is spent on nothing.
      */
     private boolean cut(ServerLevel level, LaserLook way, LaserLook.Lookout look, double floor) {
-        BlockPos obstacle = way.next(level);
-        if (obstacle == null || !vaporise(level, obstacle, floor)) {
-            return false;
+        for (BlockPos obstacle = way.next(level); obstacle != null; obstacle = way.next(level)) {
+            if (vaporise(level, obstacle, floor)) {
+                way.spread(level, obstacle, look, floor);
+                bolt(level, look.muzzle(), Vec3.atCenterOf(obstacle));
+                return true;
+            }
         }
-        way.spread(level, obstacle, look);
-        bolt(level, look.muzzle(), Vec3.atCenterOf(obstacle));
-        return true;
+        return false;
     }
 
     /** The beam drawn by every client near, sparks where it strikes, and its hiss. */

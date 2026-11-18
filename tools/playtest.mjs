@@ -7156,20 +7156,31 @@ function checkDoorsClosedRound() {
 
 // An airliner's laser path clearer, armed as she takes off: how many turrets it has (one under her nose, three along
 // her belly, two under each wing); where the stone it is to clear stands from the turret under the outer part of her
-// right wing, in blocks out toward the tip and back toward the tail, and how big it is across, along and up: a house
-// in front of the wing, a pillar behind it and a tower out past the wingtip; and how long the turrets have to clear
-// them all once she is set flying, in ticks.
+// left wing (she faces south, so it is the one toward +x), in blocks out toward the tip and back toward the tail, and
+// how big it is across, along and up: a house in front of the wing, a pillar behind it and a tower out past the
+// wingtip; and how long the turrets have to clear them all once she is set flying, in ticks.
 const LASER_TURRETS = 8;
 const LASER_HOUSE = { out: 2, back: -22, size: [5, 5, 4] };
 const LASER_PILLAR = { out: -1, back: 11, size: [3, 3, 4] };
 const LASER_TOWER = { out: 50, back: -1, size: [3, 3, 6] };
 const LASER_CLEAR_TICKS = 400;
+// The runway under the middle of the airliner as she takes off, looked at for holes her turrets dug: how far it runs
+// back past her rearmost turret and on ahead of her flight deck, and how far out to either side of her middle, in
+// blocks; how high over the ground she has to be first, past where her turrets look all round, in blocks; and how long
+// she has to get there, in ticks.
+const LASER_RUNWAY_BEHIND = 20;
+const LASER_RUNWAY_AHEAD = 800;
+const LASER_RUNWAY_ACROSS = 12;
+const LASER_LIFTED = 40;
+const LASER_LIFT_TICKS = 1200;
 
 // An airliner's laser path clearer clears whatever stands about her on the ground, not only what is ahead of her
-// nose: a house in front of her right wing, behind her nose, a pillar behind that wing and a tower out past its tip,
-// all gone once she is armed and set flying, and the ground under them never dug below her wheels. With the fault its
-// one turret under the nose looked only ahead of the nose, and an airliner set down among the houses of a village
-// stayed stuck with a house under her wing.
+// nose: a house in front of her left wing, behind her nose, a pillar behind that wing and a tower out past its tip,
+// all gone once she is armed and set flying, and the ground under them never dug below her wheels, nor the runway she
+// lifts off from, her nose up and her tail down. With the fault its one turret under the nose looked only ahead of the
+// nose, and an airliner set down among the houses of a village stayed stuck with a house under her wing; and with the
+// next, the turrets behind her main gear took the plane of her wheels, tilted as she lifted her nose, for the ground,
+// and dug holes in the runway behind her.
 function checkLaserClearsAllRound() {
   const site = layDown("airliner");
   board();
@@ -7189,32 +7200,53 @@ function checkLaserClearsAllRound() {
     return [[wing[0] + out, ground, nearZ], [wing[0] + out + across - 1, ground + up - 1, farZ]];
   };
   const stones = { house: boxOf(LASER_HOUSE), pillar: boxOf(LASER_PILLAR), tower: boxOf(LASER_TOWER) };
-  const boxes = Object.values(stones);
+  const rearmost = turrets.reduce((far, at) => (tail * at[2] > tail * far ? at[2] : far), autopilot[2]);
+  const [runwayNear, runwayFar] = [rearmost + tail * LASER_RUNWAY_BEHIND, autopilot[2] - tail * LASER_RUNWAY_AHEAD];
+  const runway = [[site.x - LASER_RUNWAY_ACROSS, ground - 1, Math.min(runwayNear, runwayFar)], [site.x + LASER_RUNWAY_ACROSS, ground - 1, Math.max(runwayNear, runwayFar)]];
+  const boxes = [...Object.values(stones), runway];
   const groundUnder = ([low, high]) => [[low[0], ground - 1, low[2]], [high[0], ground - 1, high[2]]];
-  boxes.forEach(([low, high]) => must(`server forceload add ${low[0]} ${low[2]} ${high[0]} ${high[2]}`));
-  must(`wait ${CHUNKS_TICKS}t`);
-  boxes.forEach(([low, high]) => must(`server fill ${[...low, ...high].join(" ")} minecraft:stone`));
+  const volume = ([low, high]) => low.reduce((product, from, axis) => product * (high[axis] - from + 1), 1);
   const standing = ([low, high]) => [...read(low, high)].filter(([, state]) => idOf(state) !== "minecraft:air").map(([at]) => at.split(",").map(Number));
   const leftOf = (blocks) => `${blocks.length} blocks left${blocks.length ? `, at heights ${[...new Set(blocks.map(([, y]) => y - ground))].join(", ")} over the ground` : ""}`;
-  const wired = must("skyliners:laser on").turrets;
-  expect(Number(wired) === LASER_TURRETS, "airliner: her laser switch works every turret", `${wired} of ${LASER_TURRETS}`);
-  must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
-  const ship = findShipFlying("skyliners:laser_switch");
-  let left = Object.fromEntries(Object.entries(stones).map(([name, box]) => [name, standing(box)]));
-  for (let waited = 0; waited < LASER_CLEAR_TICKS && Object.values(left).some((blocks) => blocks.length > 0); waited += LOOK_EVERY) {
-    must(`wait ${LOOK_EVERY}t`);
-    left = Object.fromEntries(Object.entries(stones).map(([name, box]) => [name, standing(box)]));
+  let airliner = null;
+  try {
+    boxes.forEach(([low, high]) => must(`server forceload add ${low[0]} ${low[2]} ${high[0]} ${high[2]}`));
+    must(`wait ${CHUNKS_TICKS}t`);
+    const loaded = [runway[0], runway[1]].every((at) => send(`?server execute if loaded ${at.join(" ")}`)[0]?.ok !== false);
+    expect(loaded, "airliner: the runway she lifts off from is loaded, to look at for holes");
+    Object.values(stones).forEach(([low, high]) => must(`server fill ${[...low, ...high].join(" ")} minecraft:stone replace minecraft:air`));
+    const stood = Object.values(stones).every((box) => standing(box).length === volume(box));
+    expect(stood, "airliner: the stone to clear stands round her, clear of her own blocks", Object.entries(stones).map(([name, box]) => `${name} ${standing(box).length} of ${volume(box)}`).join(", "));
+    const wired = must("skyliners:laser on").turrets;
+    expect(Number(wired) === LASER_TURRETS, "airliner: her laser switch works every turret", `${wired} of ${LASER_TURRETS}`);
+    must(`skyliners:autopilot fly altitude=${ground + FLIGHT_HEIGHT} speed=${FLIGHT_SPEED}`, BUILD_SECONDS);
+    airliner = findShipFlying("skyliners:laser_switch");
+    let left = Object.fromEntries(Object.entries(stones).map(([name, box]) => [name, standing(box)]));
+    for (let waited = 0; waited < LASER_CLEAR_TICKS && Object.values(left).some((blocks) => blocks.length > 0); waited += LOOK_EVERY) {
+      must(`wait ${LOOK_EVERY}t`);
+      left = Object.fromEntries(Object.entries(stones).map(([name, box]) => [name, standing(box)]));
+    }
+    const groundLeft = Object.values(stones).reduce((sum, box) => sum + standing(groundUnder(box)).length, 0);
+    const groundAll = Object.values(stones).reduce((sum, [low, high]) => sum + (high[0] - low[0] + 1) * (high[2] - low[2] + 1), 0);
+    let lifted = 0;
+    for (let waited = 0; waited < LASER_LIFT_TICKS && lifted <= LASER_LIFTED; waited += LOOK_EVERY) {
+      lifted = Number(must(`wait ${LOOK_EVERY}t; sable:info ${airliner} brief side=server`).agl) || 0;
+    }
+    const holes = Number(send(`?server fill ${[...runway[0], ...runway[1]].join(" ")} minecraft:stone replace minecraft:air`).at(-1)?.result) || 0;
+    expect(left.house.length === 0, "airliner: armed and set flying, her laser clears a house in front of her wing, behind her nose", leftOf(left.house));
+    expect(left.pillar.length === 0, "airliner: armed and set flying, her laser clears a pillar behind her wing", leftOf(left.pillar));
+    expect(left.tower.length === 0, "airliner: armed and set flying, her laser clears a tower out past her wingtip", leftOf(left.tower));
+    expect(groundLeft === groundAll, "airliner: the ground under them stays, never dug below her wheels", `${groundLeft} of ${groundAll} blocks of ground`);
+    expect(lifted > LASER_LIFTED && holes === 0, "airliner: lifting off armed, her nose up, she digs no holes in the runway behind her",
+      `${holes} holes, she climbed to ${lifted} blocks over the ground`);
+  } finally {
+    boxes.forEach(([low, high]) => send(`?server forceload remove ${low[0]} ${low[2]} ${high[0]} ${high[2]}`));
+    send(`?server tp @p 0 ${ground} 0`);
+    if (airliner) {
+      send(`?server sable remove ${airliner}`);
+    }
+    creative();
   }
-  const groundLeft = boxes.reduce((sum, box) => sum + standing(groundUnder(box)).length, 0);
-  const groundAll = boxes.reduce((sum, [low, high]) => sum + (high[0] - low[0] + 1) * (high[2] - low[2] + 1), 0);
-  boxes.forEach(([low, high]) => send(`?server forceload remove ${low[0]} ${low[2]} ${high[0]} ${high[2]}`));
-  must(`server tp @p 0 ${ground} 0`);
-  send(`?server sable remove ${ship}`);
-  creative();
-  expect(left.house.length === 0, "airliner: armed and set flying, her laser clears a house in front of her wing, behind her nose", leftOf(left.house));
-  expect(left.pillar.length === 0, "airliner: and a pillar behind her wing", leftOf(left.pillar));
-  expect(left.tower.length === 0, "airliner: and a tower out past her wingtip", leftOf(left.tower));
-  expect(groundLeft === groundAll, "airliner: the ground under them stays, never dug below her wheels", `${groundLeft} of ${groundAll} blocks of ground`);
 }
 
 // A main-deck window of an airliner with its shade pulled, seen from outside: how far out from it the player looks, in
