@@ -23,13 +23,13 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * What an evacuation slide stands on once it is out: invisible steps its control lays just under the lane its
- * renderer draws (see {@link SlideControlBlockEntity}), one in each of the lane's columns for each block out, so whoever
- * steps out of the doorway has something underfoot until the slide takes them down, and villagers find their way out
- * down it. Each is solid from its foot to the lane's height over it, in eighths of a block (HEIGHT), and knows the way
- * back up the slide to its door (FACING). Drawn by nothing and not to be aimed at, mined or blown up: only the control
- * lays them and takes them up. A fall onto one never hurts. A step no control holds any more (left standing in the world
- * when an airliner was assembled and flew off with its slide out) takes itself away.
+ * What an evacuation slide stands on, as it comes out and once out: invisible steps its control lays just under the
+ * lane its renderer draws (see {@link SlideControlBlockEntity}), one in each of the lane's columns for each block out,
+ * so whoever steps out of the doorway has something underfoot until the slide takes them down, and villagers find their
+ * way out down it. Each is solid from its foot to the lane's height over it, in eighths of a block (HEIGHT), and knows
+ * the way back up the slide to its door (FACING). Drawn by nothing and not to be aimed at, mined or blown up: only the
+ * control lays them and takes them up. A fall onto one never hurts. A step no control holds any more (left standing in
+ * the world when an airliner was assembled and flew off with its slide out) takes itself away.
  */
 public class SlideStepBlock extends Block {
     private static final MapCodec<SlideStepBlock> CODEC = simpleCodec(SlideStepBlock::new);

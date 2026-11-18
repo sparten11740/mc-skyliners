@@ -39,12 +39,13 @@ import net.minecraft.world.phys.Vec3;
  * A passenger door's evacuation slide, its gas bottle and what it knows, kept in its control in the cabin wall beside
  * the door; its renderer draws it (see {@link EvacuationSlide} for how it is built and comes out). Packed, it is in the
  * door's lining and nothing of it shows. Worked, the door opens, and once it is open the pack drops out onto the sill
- * and the slide unrolls and inflates down to the ground with a rush of gas, in two seconds; then the control lays the
- * steps under it (see {@link SlideStepBlock}) and whoever steps onto it from the doorway, players and villagers alike,
- * is carried down it (see {@link SlideRide}). Where it lands is measured from the world as it sets out, aboard an
- * assembled airliner too: at the first of its angles that comes down onto the ground within its reach, clear of the
- * airliner itself and anything else in its way. It only comes out while the airliner stands still, and not with the
- * ground out of reach, as in flight: it refuses with a bass note.
+ * and the slide unrolls and inflates down to the ground with a rush of gas, in two seconds, the control laying the
+ * steps under it as it unrolls (see {@link SlideStepBlock}), so it holds whoever steps onto it before it is firm. Once
+ * it is out, whoever steps onto it from the doorway, players and villagers alike, is carried down it (see {@link
+ * SlideRide}). Where it lands is measured from the world as it sets out, aboard an assembled airliner too: at the first
+ * of its angles that comes down onto the ground within its reach, clear of the airliner itself and anything else in its
+ * way. It only comes out while the airliner stands still, and not with the ground out of reach, as in flight: it
+ * refuses with a bass note.
  *
  * <p>Worked again, it deflates and rolls itself back up into the doorway once nobody is on it (a chime says it is
  * waiting), and the door shuts behind it, as it does behind the airstairs: an open door with no slide is a long drop.
@@ -289,9 +290,7 @@ public class SlideControlBlockEntity extends BlockEntity {
                     gas(level, SkylinersRegistry.SLIDE_INFLATE.get());
                 }
                 ticks++;
-                if (ticks == EvacuationSlide.INFLATE) {
-                    lay(level);
-                }
+                lay(level, EvacuationSlide.stepsOut(plan, (float) ticks / EvacuationSlide.INFLATE));
                 if (ticks == 1 || ticks == EvacuationSlide.INFLATE) {
                     sync();
                 }
@@ -397,14 +396,17 @@ public class SlideControlBlockEntity extends BlockEntity {
         return SableFlight.velocity(level, Vec3.atCenterOf(worldPosition)).length() > MOVING;
     }
 
-    /** Lays the steps under the lane. */
-    private void lay(ServerLevel level) {
+    /**
+     * Lays these of the steps under the lane, where none stands yet: those under as much of it as has unrolled, as it
+     * comes out, so whoever steps onto it then has something underfoot; laid, it waits for them before it goes away.
+     */
+    private void lay(ServerLevel level, int[][] steps) {
         Frame frame = frame();
-        if (frame == null || plan == null) {
+        if (frame == null || steps.length == 0) {
             return;
         }
         BlockState block = SkylinersRegistry.SLIDE_STEP.get().defaultBlockState();
-        for (int[] step : EvacuationSlide.steps(plan)) {
+        for (int[] step : steps) {
             BlockPos at = frame.cell(step[0], step[1], step[2]);
             BlockState there = level.getBlockState(at);
             if (there.isAir() || there.canBeReplaced()) {

@@ -30,17 +30,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The forward door's integral airstairs, their motor and what they know, kept in the controller in the jamb aft of
- * the door; its renderer draws them (see {@link AirstairFlight} for how they are built and move). Stowed, they lie
- * folded in a bay under the cabin floor, behind a hatch in the hull below the door: the hatch is the hull's own skin
- * there, which the controller takes away as the hatch opens and puts back as it shuts, so shut it is the hull, cut to
- * its curve like the rest. Coming out, the door opens, the hatch drops, the flight slides out of its bay, rises to the
- * sill, swings down and runs out to the ground; once it is down, the controller lays the steps it is walked on (see
- * {@link AirstairStepBlock}). How far down it reaches is settled as it sets out: the first block of the way the
- * ground, or anything else, takes ends it there. Going away it waits, with a chime, until nobody is on it, takes the
- * steps up and runs it all back, shutting the door once the flight is off the sill. It only comes out with the airliner
- * standing still, and goes away of its own accord once the airliner moves. The server runs it and tells every client
- * where it is going; each client runs the same clock to draw it in between.
+ * The forward door's integral airstairs, their motor and what they know, kept in the controller in the jamb aft of the
+ * door; its renderer draws them (see {@link AirstairFlight} for how they are built and move). Stowed, they lie folded
+ * in a bay under the cabin floor, behind a hatch in the hull below the door: the hatch is the hull's own skin there,
+ * which the controller takes away as the hatch opens and puts back as it shuts, so shut it is the hull, cut to its
+ * curve like the rest. Coming out, the door opens, the hatch drops, the flight slides out of its bay, rises to the
+ * sill, swings down and runs out to the ground, the controller laying the steps it is walked on under it as it runs out
+ * (see {@link AirstairStepBlock}), so it holds whoever steps onto it before it is down. How far down it reaches is
+ * settled as it sets out: the first block of the way the ground, or anything else, takes ends it there. Going away it
+ * waits, with a chime, until nobody is on it, takes the steps up and runs it all back, shutting the door once the
+ * flight is off the sill. It only comes out with the airliner standing still, and goes away of its own accord once the
+ * airliner moves. The server runs it and tells every client where it is going; each client runs the same clock to draw
+ * it in between.
  *
  * <p>An airliner built before has its old stairs of blocks out, perhaps, and no bay: the old stairs fold away the old
  * way the first time (see {@link AirstairControllerBlockEntity}), and from then on the new ones come out, their hatch
@@ -299,6 +300,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
             if (ticks == AirstairFlight.HATCH || ticks == AirstairFlight.SLIDE || ticks == AirstairFlight.SWING || ticks == AirstairFlight.EXTEND) {
                 sound(level, SkylinersRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
             }
+            layTreads(level);
             if (ticks == AirstairFlight.OUT) {
                 lay(level);
                 sound(level, SkylinersRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, 1.0F);
@@ -395,6 +397,21 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         }
         Direction up = level.getBlockState(door).getValue(PlugDoorBlock.FACING).getOpposite();
         foot = AirstairSteps.lay(level, this::step, AirstairFlight.WIDTH, length, up);
+        laid = true;
+    }
+
+    /**
+     * Lays the steps under the rows the flight has run out over so far, as it comes out, so it can be stepped onto
+     * before it is all the way down; laid, it waits for whoever is on it before it goes away again.
+     */
+    private void layTreads(ServerLevel level) {
+        BlockPos door = served();
+        int rows = AirstairFlight.rowsOut(ticks, length, rise, sections);
+        if (door == null || rows == 0) {
+            return;
+        }
+        Direction up = level.getBlockState(door).getValue(PlugDoorBlock.FACING).getOpposite();
+        AirstairSteps.layTreads(level, this::step, AirstairFlight.WIDTH, rows, up);
         laid = true;
     }
 

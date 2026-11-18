@@ -1,6 +1,7 @@
 package dev.skyliners.block;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import net.minecraft.util.Mth;
 
@@ -337,6 +338,16 @@ public final class EvacuationSlide {
             }
         }
         return steps.toArray(int[][]::new);
+    }
+
+    /**
+     * The steps under as much of the slide as has unrolled this far through coming out (see {@link #steps}): those
+     * over the blocks its lane has run out across, so it is solid underfoot as it comes down, not only once it is firm.
+     */
+    public static int[][] stepsOut(Plan plan, float progress) {
+        Path path = plan.path();
+        float shown = Inflation.at(progress).unrolled() * path.length();
+        return Arrays.stream(steps(plan)).filter(step -> path.along(step[2]) <= shown).toArray(int[][]::new);
     }
 
     /** The parts the slide is drawn from, each with its own look. */

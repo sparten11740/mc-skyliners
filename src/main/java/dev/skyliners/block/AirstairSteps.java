@@ -16,11 +16,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The blocks integral airstairs are walked on once they are down (see {@link AirstairStepBlock}), and the ground they
- * come down to, the same for an airliner's out of its door, a zeppelin's out of her belly and a rocket's out of her
- * front door: how far down the ground lets them reach, the steps laid under the flight with their guards and a foot
- * below, taken up again, and whether anyone is on them. Each flight says where its steps go ({@link StepAt}), in as
- * many columns as it is wide.
+ * The blocks integral airstairs are walked on, as they run out and once down (see {@link AirstairStepBlock}), and the
+ * ground they come down to, the same for an airliner's out of its door, a zeppelin's out of her belly and a rocket's
+ * out of her front door: how far down the ground lets them reach, the steps laid under the flight with their guards and
+ * a foot below, taken up again, and whether anyone is on them. Each flight says where its steps go ({@link StepAt}), in
+ * as many columns as it is wide.
  */
 final class AirstairSteps {
     /**
@@ -133,6 +133,27 @@ final class AirstairSteps {
             layRow(level, steps, width, down, up, block);
         }
         return layFoot(level, steps, width, length, AirstairStepBlock.foot(block, up));
+    }
+
+    /**
+     * Lays the steps of the rows a flight coming out has reached, the steps rising toward {@code up}, with no guards
+     * over them while its handrails are still down: so anyone stepping onto it as it runs out has steps under them,
+     * not the drawn flight alone. Those already laid stay as they are.
+     */
+    static void layTreads(ServerLevel level, StepAt steps, int width, int rows, Direction up) {
+        BlockState step = AirstairStepBlock.step(SkylinersRegistry.AIRSTAIR_STEP.get().defaultBlockState(), up);
+        for (int down = 1; down <= rows; down++) {
+            layTreadRow(level, steps, width, down, step);
+        }
+    }
+
+    private static void layTreadRow(ServerLevel level, StepAt steps, int width, int down, BlockState step) {
+        for (int column = 0; column < width; column++) {
+            BlockPos at = steps.at(down, column);
+            if (at != null) {
+                place(level, at, step);
+            }
+        }
     }
 
     /**

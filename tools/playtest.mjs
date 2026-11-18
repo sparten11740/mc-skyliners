@@ -1319,6 +1319,77 @@ function pressStairsButton(button) {
   must(`server tp @p ${button[0] + 0.5 + dx * 1.5} ${button[1] - 1} ${button[2] + 0.5 + dz * 1.5}; wait 20t; use ${button.join(",")}; wait ${STAIRS_SWING_TICKS}t`);
 }
 
+// An airliner's stairs coming out: how long after their button is pressed they are part way out, swung down to their
+// slope with their lower sections still running down to the ground, in ticks; and how long someone stepped onto them
+// then is watched, in ticks.
+const STAIRS_RUNNING_OUT_TICKS = 65;
+const STAIRS_STOOD_TICKS = 10;
+
+// An airliner's stairs hold whoever steps onto them as they come out, before they are all the way down: the part
+// already out is solid. With the fault the steps were laid only once the stairs were down and their handrails up, so
+// someone stepping onto them as they ran out to the ground fell straight through the drawn flight.
+function checkAirstairsSolidComingOut() {
+  layDown("airliner");
+  const [button] = must("find skyliners:airstair_button 128 1").rows;
+  const steps = must("find skyliners:airstair_step[part=step] 64 100 side=server").rows.map((row) => row.at_abs);
+  expect(Boolean(button) && steps.length > 0, "airliner: its stairs are down, with a button");
+  if (!button || steps.length === 0) {
+    return;
+  }
+  const top = steps.reduce((highest, at) => (at[1] > highest[1] ? at : highest));
+  const at = button.at_abs;
+  pressStairsButton(at);
+  const folded = must("find skyliners:airstair_step[part=step] 64 100 side=server").rows.length;
+  expect(folded === 0, "airliner: its stairs fold away", `${folded} steps left`);
+  const [dx, dz] = STEPS[must(`block ${at.join(",")}`).props.facing];
+  survival();
+  must(`server tp @p ${at[0] + 0.5 + dx * 1.5} ${at[1] - 1} ${at[2] + 0.5 + dz * 1.5}; wait 20t`);
+  const stood = must(`use ${at.join(",")}; wait ${STAIRS_RUNNING_OUT_TICKS}t; server tp @p ${top[0] + 0.5} ${top[1] + 1} ${top[2] + 0.5}; wait ${STAIRS_STOOD_TICKS}t; status`);
+  creative();
+  expect(stood.pos[1] >= top[1] + 0.5, "airliner: stepped onto as its stairs come out, their top step holds the player",
+    `standing at y ${round(stood.pos[1])}, the top step at y ${top[1]}, the ground at y ${ground}`);
+}
+
+// An airliner's evacuation slide coming out: how long after its control is worked it is out and firm, its door's swing
+// open and its two seconds of inflating; how long it takes to deflate and its door to shut again; and how long after
+// its control is worked it is part way down, unrolled but not yet firm, in ticks; how long someone stepped onto it then
+// is watched, before it is firm and starts carrying them down, in ticks.
+const SLIDE_OUT_TICKS = 80;
+const SLIDE_AWAY_TICKS = 90;
+const SLIDE_COMING_OUT_TICKS = 45;
+const SLIDE_STOOD_TICKS = 5;
+
+// An airliner's evacuation slide holds whoever steps onto it as it comes out, before it is firm: the part already
+// unrolled is solid. With the fault its steps were laid only once it was firm, so someone stepping out of the doorway
+// onto it as it unrolled fell straight through it to the ground.
+function checkSlideSolidComingOut() {
+  layDown("airliner");
+  const [control] = must("find skyliners:slide_control 128 1 side=server").rows;
+  expect(Boolean(control), "airliner: her doors have slides");
+  if (!control) {
+    return;
+  }
+  const at = control.at_abs;
+  const [dx, dz] = STEPS[must(`block ${at.join(",")}`).props.facing];
+  const standBy = `server tp @p ${at[0] + 0.5 + dx * 1.5} ${at[1] - 1} ${at[2] + 0.5 + dz * 1.5}; wait 20t`;
+  must(`${standBy}; use ${at.join(",")}; wait ${SLIDE_OUT_TICKS}t`);
+  const steps = must("find skyliners:slide_step 64 100 side=server").rows.map((row) => row.at_abs);
+  expect(steps.length > 0, "airliner: worked, her slide comes out with steps under it", `${steps.length} steps`);
+  if (steps.length === 0) {
+    return;
+  }
+  const top = steps.reduce((highest, step) => (step[1] > highest[1] ? step : highest));
+  must(`${standBy}; use ${at.join(",")}; wait ${SLIDE_AWAY_TICKS}t`);
+  const packed = must("find skyliners:slide_step 64 100 side=server").rows.length;
+  expect(packed === 0, "airliner: worked again, her slide goes away", `${packed} steps left`);
+  survival();
+  must(standBy);
+  const stood = must(`use ${at.join(",")}; wait ${SLIDE_COMING_OUT_TICKS}t; server tp @p ${top[0] + 0.5} ${top[1] + 1} ${top[2] + 0.5}; wait ${SLIDE_STOOD_TICKS}t; status`);
+  creative();
+  expect(stood.pos[1] >= top[1] + 0.1, "airliner: stepped onto as her slide comes out, before it is firm, it holds the player",
+    `standing at y ${round(stood.pos[1])}, the slide's top step at y ${top[1]}, the ground at y ${ground}`);
+}
+
 // What holds an airliner's airstairs from folding: a hostile mob standing on them does not, and they fold all the same;
 // an animal there does, until it is gone. Before, a zombie that wandered onto them held them for as long as it stood.
 function checkAirstairsMobs() {
@@ -7843,6 +7914,8 @@ const CHECKS = {
   "bartender-leaning-rocket": { run: checkBartenderOnALeaningRocket, about: "a bartender on a leaning rocket does not keep whirring at someone standing still" },
   "bartender-racket": { run: checkBartendersAreNoRacket, about: "a crowd of robot bartenders is not a constant racket of servos" },
   "airstairs-reach-ground": { run: checkAirstairsReachTheGround, about: "a newly built airliner's stairs can be walked up from the ground" },
+  "airstairs-solid-coming-out": { run: checkAirstairsSolidComingOut, about: "an airliner's stairs hold whoever steps onto them as they come out, before they are all the way down" },
+  "slide-solid-coming-out": { run: checkSlideSolidComingOut, about: "an airliner's evacuation slide holds whoever steps onto it as it comes out, before it is firm" },
   "airstairs-mobs": { run: checkAirstairsMobs, about: "a hostile mob on an airliner's stairs does not hold them, an animal does" },
   "airstairs-leave-no-steps": { run: checkNoStepsLeftBehind, about: "taking off from a new build leaves no steps behind and takes no ground along" },
   "zeppelin-stairs": { run: checkZeppelinStairs, about: "a zeppelin's stairs can be walked up from the ground" },

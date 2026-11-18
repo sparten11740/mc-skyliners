@@ -25,15 +25,15 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * What the airstairs stand on once they are down: blocks the airstair controller lays under the flight its renderer
- * draws (see {@link AirstairBlockEntity}, and a zeppelin's and a rocket's {@link BoardingAirstairs}), so the stairs are
- * walked like any others. A STEP is shaped like a stair, its two half steps rising toward FACING, the way up to the
- * door; a GUARD stands on a step at either side of the flight and holds the handrail's thin wall along its EDGE (left
- * or right, seen climbing), so nobody walks off the side; a FOOT, under an assembled airliner, is a thin plate one
- * block further out and down than the bottom step, at the top of its block, half way between the ground and the
- * bottom tread (see {@link AirstairBlockEntity}). All are drawn by nothing and cannot be aimed at, mined or blown up:
- * only the controller places them and takes them away. A step or foot no controller holds any more (left standing in
- * the world when an airliner was assembled and flew off with its stairs out) takes itself away, and the guard on a
+ * What the airstairs are walked on, as they run out and once down: blocks the airstair controller lays under the flight
+ * its renderer draws (see {@link AirstairBlockEntity}, and a zeppelin's and a rocket's {@link BoardingAirstairs}), so
+ * the stairs are walked like any others. A STEP is shaped like a stair, its two half steps rising toward FACING, the
+ * way up to the door; a GUARD stands on a step at either side of the flight and holds the handrail's thin wall along
+ * its EDGE (left or right, seen climbing), so nobody walks off the side; a FOOT, under an assembled airliner, is a thin
+ * plate one block further out and down than the bottom step, at the top of its block, half way between the ground and
+ * the bottom tread (see {@link AirstairBlockEntity}). All are drawn by nothing and cannot be aimed at, mined or blown
+ * up: only the controller places them and takes them away. A step or foot no controller holds any more (left standing
+ * in the world when an airliner was assembled and flew off with its stairs out) takes itself away, and the guard on a
  * step goes with it.
  */
 public class AirstairStepBlock extends Block {

@@ -28,12 +28,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * down through the opening. A rocket's lies in a bay under her entry floor behind the mouth in her skin below the door
  * ({@link Bay}), as the airliner's does: its hatch is her skin over the mouth, and coming out the flight slides out of
  * the bay, rises to the sill and swings down. Either way it comes out with the clunk of its latch, its sections run out
- * to the ground and its handrails rise, to the hum of the motor; once down, the steps it is walked on are laid (see
- * {@link AirstairSteps}). Going away it waits, with a chime, until nobody is on it, runs back, and the hatch's blocks
- * come back last; out of a door, the door opens as it sets out and shuts once it is back off the sill (see
- * {@link Keeper#doorTo}). Its button keeps it and works it with the rest of her stairs (see
- * {@link BoardingStairsBlockEntity} and {@link RocketStairsBlockEntity}); the server runs it and tells every client
- * where it is going, each client running the same clock to draw it in between.
+ * to the ground and its handrails rise, to the hum of the motor; the steps it is walked on are laid under it as it runs
+ * out (see {@link AirstairSteps}). Going away it waits, with a chime, until nobody is on it, runs back, and the hatch's
+ * blocks come back last; out of a door, the door opens as it sets out and shuts once it is back off the sill (see
+ * {@link Keeper#doorTo}). Its button keeps it and works it with the rest of her stairs (see {@link
+ * BoardingStairsBlockEntity} and {@link RocketStairsBlockEntity}); the server runs it and tells every client where it
+ * is going, each client running the same clock to draw it in between.
  */
 final class BoardingAirstairs {
     private static final float MOTOR_VOLUME = 0.9F;
@@ -260,6 +260,11 @@ final class BoardingAirstairs {
             ticks++;
             if (stepEnds(ticks)) {
                 sound(level, SkylinersRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
+            }
+            int rows = AirstairFlight.rowsOut(ticks, length, rise, sections);
+            if (rows > 0) {
+                AirstairSteps.layTreads(level, this::step, width, rows, out.getOpposite());
+                laid = true;
             }
             if (ticks == AirstairFlight.OUT) {
                 foot = AirstairSteps.lay(level, this::step, width, length, out.getOpposite());

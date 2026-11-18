@@ -154,6 +154,21 @@ public final class AirstairFlight {
         return Math.ceilDiv(sectionTreads(rise, sections), 2);
     }
 
+    /**
+     * How many rows of steps, a block down each, the flight covers at a moment as it comes out: none until it has
+     * swung down to its slope, then the top section's and those the lower ones have run out over, all of them once it
+     * is out.
+     */
+    public static int rowsOut(float ticks, int length, int rise, int sections) {
+        if (ticks < SWING) {
+            return 0;
+        }
+        int treads = sectionTreads(rise, sections);
+        float extension = Math.max(0, 2 * length - treads) * ease(clamp((ticks - SWING) / (EXTEND - SWING)));
+        float covered = Math.min(extension, (sections - 1) * (treads - 1F)) + treads;
+        return Math.min(length, (int) (covered / 2));
+    }
+
     /** How long a bay the folded flight needs behind the mouth, in blocks. */
     public static float bayLength(int rise, int sections) {
         Bounds level = Bounds.level(rise, sections);
