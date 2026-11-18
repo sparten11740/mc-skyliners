@@ -229,9 +229,10 @@ public final class LaserBolts {
      */
     public static void add(LaserBolt bolt) {
         received++;
-        BOLTS.add(new Bolt(bolt, now));
-        if (bolt.holder() == LaserBolt.NO_HOLDER) {
-            sparks(bolt.to());
+        Bolt drawn = new Bolt(bolt, now);
+        BOLTS.add(drawn);
+        if (!drawn.held()) {
+            sparks(drawn.to());
         }
         seen = new LaserBolt.Seen(received, bolt.holder(), 0, 0, false, null, 0, 0);
     }
@@ -267,7 +268,7 @@ public final class LaserBolts {
         level.playLocalSound(heard.x, heard.y, heard.z, SkylinersRegistry.LASER_CROSSBOW_HIT.get(), SoundSource.PLAYERS, HIT_VOLUME, pitch, false);
     }
 
-    /** A mounted gun's bolt's sparks, where it strikes. */
+    /** A mounted gun's bolt's sparks, where it strikes in the world, on a ship's blocks as she is drawn or not. */
     private static void sparks(Vec3 at) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) {
